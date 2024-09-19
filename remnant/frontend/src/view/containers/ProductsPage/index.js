@@ -1,10 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Image, Space, Layout, Table, Tag, Button, InputNumber, Select, Modal, Form, Input } from 'antd';
 import { 
-    SyncOutlined,
-    EditOutlined,
-    LinkOutlined,
-    InboxOutlined,
     PlusOutlined,
 } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
@@ -16,16 +12,16 @@ const { Content } = Layout;
 
 export default function Page() {
 
-    const [loading, setLoading] = useState(true);
+    // const [loading, setLoading] = useState(true);
     const [products, setProducts] = useState([]);
-    const [languages, setLangauges] = useState([]);
+    const [categories, setCategories] = useState([]);
     const [openProductModal, setOpenProductModal] = useState(false);
     const [form] = Form.useForm();
 
     const { t } = useTranslation();
 
     const { tokens, profile } = useSelector((state) => state.auth);
-    const { currencies } = useSelector((state) => state.theme);
+    const { currencies, languages, selectedLanguage } = useSelector((state) => state.theme);
     const params = { userId: profile._id, tokens }
 
     const createProduct = async (v) => {
@@ -34,18 +30,17 @@ export default function Page() {
 
     const getProducts = async (value) => {
         const { status, data } = await request.getProducts(value, params);
-        console.log(data)
         if (status === 'success') setProducts(data.products);
     }
 
-    const getLanguages = async (value) => {
-        const { status, data } = await request.getLanguages(value, params);
-        if (status === 'success') setLangauges(data.languages);
+    const getCategories = async (value) => {
+        const { status, data } = await request.getCategories({}, params);
+        if (status === 'success') setCategories(data.categories);
     }
 
     useEffect(() => {
         getProducts({});
-        getLanguages({})
+        getCategories();
     }, [])
 
     const columns = [
@@ -76,7 +71,6 @@ export default function Page() {
         {
             title: t('product.name'),
             dataIndex: 'name',
-            render: (text) => <a>{text}</a>,
         },
         {
             title: t('product.price'),
@@ -133,42 +127,14 @@ export default function Page() {
         },
     ];
 
-    const data = [
-    {
-        key: '1',
-        name: 'John Brown',
-        age: 32,
-        address: 'New York No. 1 Lake Park',
-        tags: ['nice', 'developer'],
-    },
-    {
-        key: '2',
-        name: 'Jim Green',
-        age: 42,
-        address: 'London No. 1 Lake Park',
-        tags: ['loser'],
-    },
-    {
-        key: '3',
-        name: 'Joe Black',
-        age: 32,
-        address: 'Sydney No. 1 Lake Park',
-        tags: ['cool', 'teacher'],
-    },
-    ];
-
     return (<>
         <Content style={{ margin: '8px 16px', backgroundColor: 'white' }} >
             <Space.Compact style={{ padding: 8, float: 'right' }}>
-                <Button icon={<SyncOutlined />} type="primary">Update quantity</Button>
-                <Button icon={<EditOutlined />} type="primary">Batch edit</Button>
-                <Button icon={<LinkOutlined />} type="primary">Sync products</Button>
-                <Button icon={<InboxOutlined />} type="primary">Product inventory</Button>
                 <Button icon={<PlusOutlined />} type="primary" onClick={() => setOpenProductModal(true)}/>
             </Space.Compact>
             <Table 
                 columns={columns} 
-                dataSource={data} 
+                dataSource={products} 
                 rowKey={(record) => record._id}
             />
         </Content>
@@ -191,17 +157,40 @@ export default function Page() {
         >
             <Form form={form} layout='vertical' onFinish={(v) => createProduct(v)}>
                 {
-                    languages.map((item, key) => 
+                    languages.all.map((item, key) => 
                     <Form.Item
                         key={key}
                         label={`name${item.code}`}
                         name={`name${item.code}`}   
-                        rules={[{ required: true, message: t(`requiredProductName`) }]}
+                        rules={[{ required: item.main, message: t(`requiredProductName`) }]}
                     >
                         <Input />
                     </Form.Item>
                     )
                 }
+                <Form.Item
+                    name="price"
+                    label={t('price')}
+                    rules={[{ required: true, message: t(`requiredProductPrice`) }]}
+                >
+                <InputNumber 
+                    style={{width: '100%'}} 
+                    addonAfter={
+                    <Form.Item 
+                        name="priceCurrency" 
+                        noStyle
+                        rules={[{ required: true, message: t(`requiredProductPriceCurrency`) }]}
+                    >
+                        <Select
+                            style={{width: 50}}
+                            options={(currencies.all || []).map(currency => ({
+                                label: currency.symbol,
+                                value: currency._id
+                            }))}
+                        />
+                    </Form.Item>
+                    } />
+                </Form.Item>
                 <Form.Item
                     name="wholesalePrice"
                     label={t('wholesalePrice')}
@@ -219,6 +208,17 @@ export default function Page() {
                         />
                     </Form.Item>
                     } />
+                </Form.Item>
+                <Form.Item 
+                    name="categories" 
+                    rules={[{ required: true, message: t(`requiredProductCategories`) }]}
+                >
+                    <Select
+                        options={(categories || []).map(category => ({
+                            label: category.names[selectedLanguage],
+                            value: category._id
+                        }))}
+                    />
                 </Form.Item>
             </Form>
 

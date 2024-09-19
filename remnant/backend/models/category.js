@@ -19,7 +19,8 @@ const generalSchema = new Schema({
         },
     },
     parent: {
-        type: Schema.Types.ObjectId
+        type: Schema.Types.ObjectId,
+        ref: 'category'
     },
     priority: {
         type: Schema.Types.Number,

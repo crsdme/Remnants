@@ -15,7 +15,7 @@ const axiosCustomInstance = ({ refresh, access }) => {
                 if (error.response && error.response.status === 404) return { data: { status: 'failed' } };
                 const res = await axios.post(process.env.REACT_APP_BACK_URL + 'auth/check/token', { token: refresh });
                 access = res.data.payload;
-                configureStore().dispatch({ type: 'SAGA_AUTH_UPDATE_TOKEN', token: res.data.payload });
+                configureStore().dispatch({ type: 'SAGA_AUTH_UPDATE_TOKENS', token: res.data.payload });
                 logoutFlag = false;
                 error.config.headers['Authorization'] = 'Bearer ' + access;
                 
@@ -23,7 +23,7 @@ const axiosCustomInstance = ({ refresh, access }) => {
             } catch (err) {
                 if (err.response && err.response.status === 403) {
                     logoutFlag = true;
-                    configureStore().dispatch({ type: 'SAGA_AUTH_LOGOUT' });
+                    configureStore().dispatch({ type: 'AUTH_LOGOUT' });
                 }
 
                 return { data: { status: 'failed', data: null, warnings: [], errors: [err.response.status] } }

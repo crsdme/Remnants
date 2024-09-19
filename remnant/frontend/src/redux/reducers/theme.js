@@ -6,8 +6,11 @@ import {
 } from '../types';
 
 export const initialState = {
-  selectedLanguage: null,
-  languages: null,
+  selectedLanguage: 'ru',
+  languages: {
+    all: null,
+    main: null,
+  },
   sidebarStatus: false,
   currencies: {
     all: null,
@@ -22,6 +25,10 @@ const reducer = (state = initialState, { payload, type }) => {
     case THEME_SUCCESS:
       return update(state, {
         languages: { $set: payload.data.languages },
+        currencies: { 
+          all: { $set: payload.data.currencies.all },
+          main: { $set: payload.data.currencies.main },
+        },
       });
       break;
 

@@ -2,7 +2,8 @@ import {
     AUTH_IN_PROGRESS,
     AUTH_SUCCESS,
     AUTH_FAILED,
-    AUTH_LOGOUT
+    AUTH_LOGOUT,
+    AUTH_UPDATE_TOKENS,
 } from '../types';
 
   
@@ -41,4 +42,13 @@ const authLogout = (data, errors, warnings, info) => {
   return action;
 }
 
-export { authSuccess, authFailed, authInProgress, authLogout };
+const authUpdateTokens = (data, errors, warnings, info) => {
+  const action = {
+    type: AUTH_UPDATE_TOKENS,
+    payload: { data, errors, warnings, info }
+  };
+
+  return action;
+}
+
+export { authSuccess, authFailed, authInProgress, authLogout, authUpdateTokens };

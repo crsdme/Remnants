@@ -32,7 +32,9 @@ const editCategory = async ({ _id, names, parent, priority }) => {
     let errors = [];
     let info = [];
 
-    const editedCategory = await categoryModel.updateOne({ _id }, { names, parent, priority });
+    if (!parent) parent = null;
+
+    const editedCategory = await categoryModel.findOneAndUpdate({ _id }, { names, parent, priority }, { new: true });
 
     if (editedCategory) {
         status = 'success';
@@ -57,9 +59,36 @@ const getCategories = async ({ filter, sorter, pagination }) => {
     let errors = [];
     let info = [];
 
-    const { current, pageSize, allPages } = (pagination || { current: null, pageSize: null, allPages: null });
+    const { current, pageSize, allPages } = (pagination || { current: 1, pageSize: 10, allPages: false });
 
-    let categoriesQuery = categoryModel.find();
+    let categoriesQuery = categoryModel.aggregate([
+        {
+            $match: { parent: { $eq: null } }
+        },
+        {
+            $sort: { priority: 1 }
+        },
+        {
+            $graphLookup: {
+                from: "categories",
+                startWith: "$_id",
+                connectFromField: "_id",
+                connectToField: "parent",
+                as: "children",
+                depthField: "level"
+            }
+        },
+        {
+            $addFields: {
+                children: { 
+                    $sortArray: {
+                        input: "$children", 
+                        sortBy: { priority: 1 } 
+                    } 
+                }
+            }
+        }
+    ]);
 
     let categoriesCount = await categoryModel.count();
 
@@ -67,7 +96,39 @@ const getCategories = async ({ filter, sorter, pagination }) => {
         categoriesQuery = categoriesQuery.skip((current - 1) * pageSize).limit(pageSize);
     }
 
-    const categories = await categoriesQuery.exec();
+    let categories = await categoriesQuery.exec();
+
+    const result = [];
+
+    for (category of categories) {
+        result.push(...category.children)
+        result.push({ ...category, children: null})
+    }
+
+    function buildHierarchy(categories) {
+        const map = new Map();
+
+        categories.forEach(category => {
+            map.set(category._id.toString(), { 
+                ...category,
+                key: category._id 
+            });
+        });
+    
+        const result = [];
+        map.forEach((category, id) => {
+            if (category.parent) {
+                const parentCategory = map.get(category.parent.toString());
+                if (!parentCategory.children) parentCategory.children = [];
+                if (parentCategory) parentCategory.children.push(category);
+            } else {
+                result.push(category);
+            }
+        });
+        return result;
+    }
+
+    categories = buildHierarchy(result);
 
     if (categories) {
         status = 'success';
@@ -117,3 +178,17 @@ module.exports = {
     removeCategory,
     editCategory,
   };
+
+
+
+
+
+
+
+
+
+
+
+
+
+

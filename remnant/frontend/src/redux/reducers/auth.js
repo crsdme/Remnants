@@ -3,7 +3,8 @@ import {
   AUTH_FAILED, 
   AUTH_IN_PROGRESS, 
   AUTH_SUCCESS,
-  AUTH_LOGOUT
+  AUTH_LOGOUT,
+  AUTH_UPDATE_TOKENS
 } from '../types';
 
 export const initialState = {
@@ -67,6 +68,13 @@ const reducer = (state = initialState, { payload, type }) => {
         info: { $set: null },
       });
       break;
+
+      case AUTH_UPDATE_TOKENS:
+        return update(state, {
+          tokens: {
+            access: { $set: payload.data.tokens.access }
+          },
+        });
 
       case AUTH_LOGOUT:
         return update(state, {

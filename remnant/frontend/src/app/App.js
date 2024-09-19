@@ -13,7 +13,7 @@ import CurrenciesPage from '../view/containers/CurrenciesPage';
 // import UsersPage from '../view/containers/UsersPage';
 import ProfilePage from '../view/containers/ProfilePage';
 // import LogsPage from '../view/containers/LogsPage';
-// import CategoriesPage from '../view/containers/CategoriesPage';
+import CategoriesPage from '../view/containers/CategoriesPage';
 
 function MyApp() {
 
@@ -68,7 +68,8 @@ function MyApp() {
               <Route path="/logs" element={<LogsPage />} />
               <Route path="/users" element={<UsersPage />} />
               <Route path="/categories" element={<CategoriesPage />} /> */}
-
+              
+              <Route path="/categories" element={<CategoriesPage />} />
               <Route path="/settings/currencies" element={<CurrenciesPage />} />
               <Route path="/settings/languages" element={<LanguagesPage />} />
               <Route path="/profile/:_id" element={<ProfilePage />} />

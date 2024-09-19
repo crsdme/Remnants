@@ -5,10 +5,10 @@ import i18n from 'i18next';
 
 // ACTIONS
 
-import { authSuccess, authFailed, authInProgress, authLogout } from '../actions/auth';
+import { authSuccess, authFailed, authInProgress, authLogout, authUpdateTokens } from '../actions/auth';
 
 import { themeSuccess, themeChangeLanguage, themeChangeSidebar } from '../actions/theme';
-import { act } from 'react';
+
 
 // SAGA LIST
 
@@ -35,6 +35,12 @@ function* logout(action) {
   return { status: 'success' };
 }
 
+function* updateTokens(action) {
+  yield put(authUpdateTokens(action.profile));
+
+  return { status: 'success' };
+}
+
 function* changeLanguage(action) {  
   yield put(themeChangeLanguage(action.payload, [], [], [] ));
   i18n.changeLanguage(action.payload);
@@ -51,6 +57,7 @@ function* changeSidebar(action) {
 function* mySaga() {
   yield takeLatest("SAGA_AUTH_LOGIN", login);
   yield takeLatest("SAGA_AUTH_LOGOUT", logout);
+  yield takeLatest("SAGA_AUTH_UPDATE_TOKENS", updateTokens);
   yield takeLatest("SAGA_THEME_LANGUAGE", changeLanguage);
   yield takeLatest("SAGA_THEME_SIDEBAR", changeSidebar);
 }

@@ -1,6 +1,7 @@
 const userModel = require('../models/user.js');
 const { generateAccessToken, generateRefreshToken } = require('./auth.js');
-const { getLanguages } = require('./language.js')
+const { getLanguages } = require('./language.js');
+const { getCurrencies } = require('./currency.js')
 
 const createUser = async ({ name, login, password, sites, stocks, cashregisters, role, access }) => {
 
@@ -90,6 +91,8 @@ const loginUser = async ({ login, password }) => {
 
         const languagesData = await getLanguages({ filter: { active: true } });
 
+        const currenciesData = await getCurrencies({ filter: { active: true } });
+
         status = 'success';
         data = {
             _id,
@@ -101,7 +104,14 @@ const loginUser = async ({ login, password }) => {
             sites, 
             cashregisters,
             tokens: { access: accessToken, refresh: refreshToken },
-            languages: languagesData.data.languages
+            languages: {
+                all: languagesData.data.languages,
+                main: languagesData.data.languages.find(item => item.main === true),
+            },
+            currencies: {
+                all: currenciesData.data.currencies,
+                main: currenciesData.data.currencies.find(item => item.main === true),
+            }
         };
     }
 

@@ -236,7 +236,7 @@ export default function LayoutContainer({ list }) {
                                 <Select
                                     style={{ width: '100%' }}
                                     value={selectedLanguage}
-                                    options={(languages || []).map(item => ({
+                                    options={(languages.all || []).map(item => ({
                                         value: item.code,
                                         label: item.name
                                     }))}
