@@ -19,12 +19,77 @@ const userLogin = async (value) => {
 
 
 
+const createProduct = async (value, { userId, tokens }) => {
+    const axiosInstance = axiosCustomInstance(tokens);
+
+    const formData = new FormData();
+
+    for (const name in value) {
+        if (!value[name]) continue;
+        formData.append(name, name === 'names' || name === 'attributes' ? JSON.stringify(value[name]) : value[name]);
+    }
+
+    value.uploadList.forEach(item => {
+        formData.append("files", item);
+    });
+
+    formData.append("userId", userId);
+
+    const { data } = await axiosInstance.post('products/create', formData);
+
+    if (data.status === 'success') message.success(t('product.created'));
+
+    if (data.status === 'failed') notification.error({ message: t('product.not.created'), description: JSON.stringify(data) });
+
+    return data;
+}
+
+const editProduct = async (value, { userId, tokens }) => {
+    const axiosInstance = axiosCustomInstance(tokens);
+
+    const formData = new FormData();
+
+    value.uploadList.forEach(item => {
+        formData.append("files", item);
+    });
+
+    value.uploadList = value.uploadList.map(item => ({ ...item, thumbUrl: null }));
+
+    value.fileList = value.fileList.map(item => ({ ...item, thumbUrl: null }));
+
+    for (const name in value) {
+        if (!value[name]) continue;
+        formData.append(name, name === 'names' || name === 'attributes' || name === 'fileList' ? JSON.stringify(value[name]) : value[name]);
+    }
+
+    formData.append("userId", userId);
+
+    const { data } = await axiosInstance.post('products/edit', formData);
+
+    if (data.status === 'success') message.success(t('product.edited'));
+
+    if (data.status === 'failed') notification.error({ message: t('product.not.edited'), description: JSON.stringify(data) });
+
+    return data;
+}
+
+const removeProduct = async (value, { userId, tokens }) => {
+    const axiosInstance = axiosCustomInstance(tokens);
+
+    const { data } = await axiosInstance.post('products/remove', { ...value, userId });
+
+    if (data.status === 'success' && data.data.deletedCount !== 0) message.success(t('product.removed'));
+
+    if (data.status === 'failed' || data.data.deletedCount === 0) notification.error({ message: t('product.not.removed'), description: JSON.stringify(data) });
+
+    return data;
+}
 
 const getProducts = async (value, { userId, tokens }) => {
     const axiosInstance = axiosCustomInstance(tokens);
 
     const { data } = await axiosInstance.post('products/get', { ...value, userId });
-    console.log(data)
+
     if (data.status === 'success') message.success(t('product.founded'));
 
     if (data.status === 'failed') notification.error({ message: t('product.wasnFounded'), description: JSON.stringify(data) });
@@ -222,14 +287,13 @@ const getCategories = async (value, { userId, tokens }) => {
 
     const { data } = await axiosInstance.post('categories/get', { ...value, userId });
 
-    console.log(data)
-
     if (data.status === 'failed') notification.error({ message: t(' '), description: JSON.stringify(data) });
 
     return data;
 }
 
 
+// eslint-disable-next-line import/no-anonymous-default-export
 export default {
     createLanguage,
     getLanguages,
@@ -245,6 +309,9 @@ export default {
     getCategories,
     userLogin,
     getProducts,
+    createProduct,
+    removeProduct,
+    editProduct,
     createCurrency,
     editCurrency,
     removeCurrency,

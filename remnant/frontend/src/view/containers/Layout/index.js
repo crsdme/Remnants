@@ -171,7 +171,7 @@ export default function Page() {
             <Sidemenu list={sidemenuItems} />
 
             <Layout>
-                <Content class={`transition-all duration-300 ease-in-out`} style={{ paddingLeft: sidebarStatus ? 224 : 63 }}>
+                <Content className={`transition-all duration-300 ease-in-out`} style={{ paddingLeft: sidebarStatus ? 224 : 63 }}>
                     <Outlet />
                 </Content>
 

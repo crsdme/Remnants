@@ -72,7 +72,7 @@ const reducer = (state = initialState, { payload, type }) => {
       case AUTH_UPDATE_TOKENS:
         return update(state, {
           tokens: {
-            access: { $set: payload.data.tokens.access }
+            access: { $set: payload.data }
           },
         });
 

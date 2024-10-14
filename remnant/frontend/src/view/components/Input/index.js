@@ -14,10 +14,10 @@ export default function LayoutContainer({ list }) {
     const { t, i18n } = useTranslation();
 
     return (
-        <div class="w-72">
-            <div class="relative w-full min-w-[200px] h-10">
+        <div className="w-72">
+            <div className="relative w-full min-w-[200px] h-10">
                 <input
-                    class="
+                    className="
                         peer w-full h-full bg-transparent text-blue-gray-700 font-sans font-normal outline outline-0 focus:outline-0 
                         disabled:bg-blue-gray-50 disabled:border-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 
                         placeholder-shown:border-t-blue-gray-200 border focus:border-2 border-t-transparent focus:border-t-transparent text-sm px-3 
@@ -25,7 +25,7 @@ export default function LayoutContainer({ list }) {
                     placeholder=" " 
                 />
                 <label
-                    class="
+                    className="
                         flex w-full h-full select-none pointer-events-none absolute left-0 font-normal !overflow-visible truncate peer-placeholder-shown:text-blue-gray-500
                         leading-tight peer-focus:leading-tight peer-disabled:text-transparent peer-disabled:peer-placeholder-shown:text-blue-gray-500 transition-all -top-1.5
                         peer-placeholder-shown:text-sm text-[11px] peer-focus:text-[11px] before:content[' '] before:block before:box-border before:w-2.5 before:h-1.5

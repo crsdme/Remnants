@@ -61,9 +61,15 @@ const getCategories = async ({ filter, sorter, pagination }) => {
 
     const { current, pageSize, allPages } = (pagination || { current: 1, pageSize: 10, allPages: false });
 
-    let categoriesQuery = categoryModel.aggregate([
+    const { name, language } = (filter || { name: null, language: null });
+
+    let query = { parent: { $eq: null } };
+
+    // if (name) query = { ...query, [`names.${language}`]: { $regex: name, $options: 'i' } } 
+
+    let pipline = [
         {
-            $match: { parent: { $eq: null } }
+            $match: query
         },
         {
             $sort: { priority: 1 }
@@ -87,10 +93,21 @@ const getCategories = async ({ filter, sorter, pagination }) => {
                     } 
                 }
             }
-        }
-    ]);
+        },
+    ];
 
-    let categoriesCount = await categoryModel.count();
+    if (name && language) {
+        pipline.push({
+            $match: {
+                $or: [
+                    { [`names.${language}`]: { $regex: name, $options: 'i' } },
+                    { [`children.names.${language}`]: { $regex: name, $options: 'i' } }
+                ]
+            }
+        })
+    }
+
+    let categoriesQuery = categoryModel.aggregate(pipline);
 
     if (allPages === false || !allPages) {
         categoriesQuery = categoriesQuery.skip((current - 1) * pageSize).limit(pageSize);
@@ -129,6 +146,8 @@ const getCategories = async ({ filter, sorter, pagination }) => {
     }
 
     categories = buildHierarchy(result);
+
+    const categoriesCount = await categoryModel.count(query);
 
     if (categories) {
         status = 'success';

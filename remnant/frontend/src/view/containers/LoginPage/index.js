@@ -27,12 +27,12 @@ export default function Page() {
     }
 
     return (
-    <div class="bg-neutral-surface-subtle w-screen h-screen flex justify-center items-center">
-        <div class="flex items-center flex-col gap-7">
-            <img src={Logo} class="w-[145px]" />
-            <div class="bg-neutral-white w-80 p-6 rounded-lg">
-                <h3 class="text-2xl font-medium text-center mb-2">{t('loginPage.signIn')}</h3>
-                <p class="text-sm text-neutral-textIcon-subtitle text-center mb-8">{t('loginPage.forgotPassword')}</p>
+    <div className="bg-neutral-surface-subtle w-screen h-screen flex justify-center items-center">
+        <div className="flex items-center flex-col gap-7">
+            <img src={Logo} className="w-[145px]" />
+            <div className="bg-neutral-white w-80 p-6 rounded-lg">
+                <h3 className="text-2xl font-medium text-center mb-2">{t('loginPage.signIn')}</h3>
+                <p className="text-sm text-neutral-textIcon-subtitle text-center mb-8">{t('loginPage.forgotPassword')}</p>
                 <Form layout="vertical" onFinish={loginUser}>
                     <Form.Item
                         name="login"
@@ -71,7 +71,7 @@ export default function Page() {
 
                     <Form.Item style={{ marginBottom: 0 }}>
                         <Button 
-                        class="appearance-none" 
+                        className="appearance-none" 
                         type="primary" 
                         htmlType="submit" 
                         block 

@@ -36,7 +36,7 @@ function* logout(action) {
 }
 
 function* updateTokens(action) {
-  yield put(authUpdateTokens(action.profile));
+  yield put(authUpdateTokens(action.token));
 
   return { status: 'success' };
 }

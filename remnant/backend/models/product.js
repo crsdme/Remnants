@@ -102,7 +102,7 @@ const generalSchema = new Schema({
         ref: 'barcode'
       }
   }],
-  category: [{
+  categories: [{
     _id: {
       type: Schema.Types.ObjectId,
       ref: 'category'

@@ -8,6 +8,7 @@ import {
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 import request from '../../../utils/requests';
+import debounce from '../../../utils/helpers';
 
 const { Content } = Layout;
 const { Title } = Typography;
@@ -19,8 +20,8 @@ export default function Page() {
     const [editingCategory, setEditingCategory] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [categories, setCategories] = useState([]);
+    const [selectCategories, setSelectCategories] = useState([]);
 
-    
     const { tokens, profile } = useSelector((state) => state.auth);
     const { languages, selectedLanguage } = useSelector((state) => state.theme);
     const params = { userId: profile._id, tokens }
@@ -36,7 +37,7 @@ export default function Page() {
 
     const editCategory = async () => {
         const { names, parent, priority } = form.getFieldsValue();
-        const { status, data } = await request.editCategory({ _id: editingCategory, names, parent, priority }, params);
+        const { status } = await request.editCategory({ _id: editingCategory, names, parent, priority }, params);
         if (status === 'success') {
             getCategories();
             closeCategoryModal();
@@ -51,7 +52,10 @@ export default function Page() {
 
     const getCategories = async () => {
         const { status, data } = await request.getCategories({}, params);
-        if (status === 'success') setCategories(data.categories);
+        if (status === 'success') {
+            setCategories(data.categories);
+            setSelectCategories(data.categories.map(mapCategory));
+        }
     }
 
 
@@ -92,22 +96,46 @@ export default function Page() {
         form.resetFields();
     }
 
-    const mapCategoriesToTree = () => {
-        function mapCategory(category) {
-            const children = Array.isArray(category.children) ? category.children : [];
+    // const mapCategoriesToTree = () => {
+    //     function mapCategory(category) {
+    //         const children = Array.isArray(category.children) ? category.children : [];
         
-            return {
-                title: category.names[selectedLanguage],
-                value: category._id,
-                children: children.map(mapCategory)
-            };
-        }
+    //         return {
+    //             title: category.names[selectedLanguage],
+    //             value: category._id,
+    //             children: children.map(mapCategory)
+    //         };
+    //     }
+    //     return selectCategories.map(mapCategory);
+    // }
     
-        return categories.map(mapCategory);
+    const handleSearch = debounce(async (value) => {
+        const { status, data } = await request.getCategories(
+            { filter: { name: value, language: selectedLanguage } },
+            params
+        );
+        if (status === 'success') setSelectCategories(data.categories.map(mapCategory));
+        console.log(data.categories.map(mapCategory))
+        return true;
+    });
+
+    function mapCategory(category) {
+        const children = Array.isArray(category.children) ? category.children : [];
+
+        return {
+            title: category.names[selectedLanguage],
+            value: category._id,
+            children: children.map(mapCategory)
+        };
     }
+
+    // useEffect(() => {
+    //     setSelectCategories(selectCategories);
+    // }, [selectCategories]);
 
     useEffect(() => {
         getCategories();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const columns = [
@@ -156,11 +184,12 @@ export default function Page() {
                 onCancel={() => closeCategoryModal()}
             >
                 <Form form={form} onFinish={async () => editingCategory ? await editCategory() : await createCategory()} layout='vertical'>
-                    { languages.all.map(language => 
+                    { languages.all.map((language, key) => 
                         <Form.Item 
                             name={['names', language.code]} 
                             label={t(`categoryPage.name.${language.code}`)}
                             rules={[{ required: language.main }]}
+                            key={key}
                         >
                             <Input />
                         </Form.Item>
@@ -171,17 +200,21 @@ export default function Page() {
                     >
                         <InputNumber style={{ width: '100%' }} />
                     </Form.Item>
-                    <Form.Item name="parent" label={t('categoryPage.parentCategory')}>
+                    <Form.Item 
+                        name="parent" 
+                        label={t('categoryPage.parentCategory')}
+                    >
                         <TreeSelect
                             showSearch
+                            onSearch={handleSearch}
                             dropdownStyle={{
                                 maxHeight: 400,
                                 overflow: 'auto',
                             }}
                             placeholder={t('categoryPage.select.category')}
                             allowClear
-                            treeDefaultExpandAll
-                            treeData={mapCategoriesToTree()}  
+                            treeDefaultExpandAll={false}
+                            treeData={selectCategories}  
                         />
                     </Form.Item>
                 </Form>

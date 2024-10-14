@@ -14,6 +14,7 @@ import CurrenciesPage from '../view/containers/CurrenciesPage';
 import ProfilePage from '../view/containers/ProfilePage';
 // import LogsPage from '../view/containers/LogsPage';
 import CategoriesPage from '../view/containers/CategoriesPage';
+// import TestPage from '../view/containers/TestPage';
 
 function MyApp() {
 
@@ -63,6 +64,7 @@ function MyApp() {
             <Route path="/" element={<Layout />}>
               <Route path="/dashboard" element={<DashboardPage />} />
               <Route path="/" element={<DashboardPage />} />
+              {/* <Route path="/test" element={<TestPage />} /> */}
               <Route path="/products" element={<ProductsPage />} />
               {/*
               <Route path="/logs" element={<LogsPage />} />

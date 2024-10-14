@@ -11,7 +11,7 @@ const createProduct = async ({
     wholesalePrice,
     wholesaleCurrency, 
     barcode, 
-    category 
+    categories
 }) => {
     let status = null;
     let data = null;
@@ -19,11 +19,19 @@ const createProduct = async ({
     let errors = [];
     let info = [];
 
-    const createdProduct = await productsModel.create({ name, code, main, active });
+    if (Array.isArray(categories)) { // MULTI CATEGORY SELECT OPTION
+        categories = categories.map(item => ({ _id: item }))
+    } else {
+        categories = [{ _id: categories }]
+    }
+    
+    names = JSON.parse(names);
+
+    const createdProduct = await productsModel.create({ names, price, currency, wholesalePrice, wholesaleCurrency, categories, images });
 
     if (createdProduct) {
         status = 'success';
-        data = createdProduct;
+        data = getProduct({ _id: createdProduct._id });
     } else {
         status = 'failed';
     }
@@ -37,28 +45,81 @@ const createProduct = async ({
     };
 }
 
-const editLanguage = async ({ _id, name, code, main, active }) => {
+const editProduct = async ({
+    _id,
+    names, 
+    attributeGroup, 
+    attributes, 
+    images,
+    fileList,
+    price, 
+    currency, 
+    discount, 
+    wholesalePrice,
+    wholesaleCurrency, 
+    barcode, 
+    categories
+}) => {
     let status = null;
     let data = null;
     let warnings = [];
     let errors = [];
     let info = [];
 
-    if (!main) {
-        main = false
+    const product = await productsModel.findOne({ _id });
+    
+    categories = categories.split(',');
+
+    if (categories.length > 0) {
+        if (Array.isArray(categories)) { // MULTI CATEGORY SELECT OPTION
+            categories = categories.map(item => ({ _id: item }))
+        } else {
+            categories = [{ _id: categories }]
+        }
     }
 
-    if (!active) {
-        active = false
-    }
+    if (!Array.isArray(images)) images = [images];
 
-    const editedLanguage = await languageModel.updateOne({ _id }, { name, code, main, active });
+    if (!Array.isArray(fileList)) fileList = JSON.parse(fileList);
 
-    if (editedLanguage) {
+    const oldImages = [];
+
+    let imagesNew = 0;
+
+    fileList.forEach(file => {
+        const sameFile = product.images.find(image => JSON.stringify(image._id) === JSON.stringify(file.uid));
+        if (sameFile) {
+            oldImages.push(sameFile)
+        } else {
+            oldImages.push(images[imagesNew])
+            imagesNew++
+        }
+    });
+
+    images = oldImages || [];
+
+    names = JSON.parse(names);
+
+    const editedProduct = await productsModel.updateOne(
+        { _id }, 
+        { 
+            names, 
+            attributeGroup, 
+            attributes, 
+            images, 
+            price, 
+            currency, 
+            discount, 
+            wholesalePrice,
+            wholesaleCurrency, 
+            barcode, 
+            categories
+        }
+    );
+
+    if (editedProduct) {
         status = 'success';
-        data = editedLanguage;
-
-        wsServer.getIo().emit('/updateLanguages', { status: true }); 
+        data = editedProduct;
     } else {
         status = 'failed';
     }   
@@ -79,11 +140,88 @@ const getProducts = async ({ filter, sorter, pagination }) => {
     let errors = [];
     let info = [];
 
-    const { current, pageSize, allPages } = (pagination || { current: null, pageSize: null, allPages: null });
+    const { current, pageSize, allPages } = (pagination || { current: 1, pageSize: 10, allPages: false });
 
-    let productsQuery = productsModel.find(filter);
+    let query = { ...filter };
 
-    let productsCount = await productsModel.count();
+    let pipline = [
+        {
+            $match: query
+        },
+        // CURRENIES
+        {
+            $lookup: {
+                from: "currencies",
+                localField: "currency",
+                foreignField: "_id",
+                as: "currency",
+                pipeline: [
+                    {
+                        $project: {
+                            _id: 1,
+                            symbol: 1
+                        }
+                    }
+                ]
+            },
+        },
+        {
+            $unwind: {
+                path: "$currency",
+                preserveNullAndEmptyArrays: true
+            }
+        },
+        {
+            $lookup: {
+                from: "currencies",
+                localField: "wholesaleCurrency",
+                foreignField: "_id",
+                as: "wholesaleCurrency",
+                pipeline: [
+                    {
+                        $project: {
+                            _id: 1,
+                            symbol: 1
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            $unwind: {
+                path: "$wholesaleCurrency",
+                preserveNullAndEmptyArrays: true
+            }
+        },
+        {
+            $addFields: {
+                wholesaleCurrency: {
+                    $ifNull: ["$wholesaleCurrency", "$currency"]
+                }
+            }
+        },
+        // CATEGORY
+        {
+            $lookup: {
+                from: "categories",
+                localField: "categories._id",
+                foreignField: "_id",
+                as: "categories",
+                pipeline: [
+                    {
+                        $project: {
+                            _id: 1,
+                            names: 1
+                        }
+                    }
+                ]
+            },
+        },
+    ];
+
+    let productsCount = await productsModel.count(query);
+
+    let productsQuery = productsModel.aggregate(pipline);
 
     if (allPages === false || !allPages) {
         productsQuery = productsQuery.skip((current - 1) * pageSize).limit(pageSize);
@@ -107,21 +245,104 @@ const getProducts = async ({ filter, sorter, pagination }) => {
     };
 }
 
-const removeLanguage = async ({ _id }) => {
+const getProduct = async ({ _id }) => {
     let status = null;
     let data = null;
     let warnings = [];
     let errors = [];
     let info = [];
 
-    console.log(_id)
-    const removedLanguage = await languageModel.deleteOne({ _id });
+    let query = { _id };
 
-    if (removedLanguage) {
+    let pipline = [
+        {
+            $match: query
+        },
+        {
+            $lookup: {
+                from: "currencies",
+                localField: "currency",
+                foreignField: "_id",
+                as: "currency",
+                pipeline: [
+                    {
+                        $project: {
+                            _id: 1,
+                            symbol: 1
+                        }
+                    }
+                ]
+            },
+        },
+        {
+            $unwind: {
+                path: "$currency",
+                preserveNullAndEmptyArrays: true
+            }
+        },
+        {
+            $lookup: {
+                from: "currencies",
+                localField: "wholesaleCurrency",
+                foreignField: "_id",
+                as: "wholesaleCurrency",
+                pipeline: [
+                    {
+                        $project: {
+                            _id: 1,
+                            symbol: 1
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            $unwind: {
+                path: "$wholesaleCurrency",
+                preserveNullAndEmptyArrays: true
+            }
+        },
+        {
+            $addFields: {
+                wholesaleCurrency: {
+                    $ifNull: ["$wholesaleCurrency", "$currency"]
+                }
+            }
+        }
+    ];
+
+    let productQuery = productsModel.aggregate(pipline);
+
+    const product = await productQuery.exec();
+
+    if (product) {
         status = 'success';
-        data = removedLanguage;
+        data = product;
+    } else {
+        status = 'failed';
+    }
+    
+    return {
+        status, 
+        data, 
+        errors,
+        warnings,
+        info
+    };
+}
 
-        wsServer.getIo().emit('/updateLanguages', { status: true }); 
+const removeProduct = async ({ _id }) => {
+    let status = null;
+    let data = null;
+    let warnings = [];
+    let errors = [];
+    let info = [];
+
+    const removedProduct = await productsModel.deleteOne({ _id });
+
+    if (removedProduct) {
+        status = 'success';
+        data = removedProduct;
     } else {
         status = 'failed';
     }
@@ -139,6 +360,7 @@ const removeLanguage = async ({ _id }) => {
 module.exports = {
     createProduct,
     getProducts,
-    removeLanguage,
-    editLanguage,
-  };
+    removeProduct,
+    editProduct,
+    getProduct
+};

@@ -65,7 +65,7 @@ export default function LayoutContainer({ list }) {
   
 
     return (
-        <nav class={`
+        <nav className={`
             transition-all duration-300 ease-in-out
             flex justify-between flex-col
             fixed m-2 rounded-lg z-50
@@ -74,7 +74,7 @@ export default function LayoutContainer({ list }) {
             <ul>
                 <li>
                     <Link to="#">
-                        <div class={`
+                        <div className={`
                             transition-all duration-300 ease-in-out
                             flex justify-center items-center
                             ${isSidebarOpen ? `w-52` : `w-12`} h-12 bg-zinc-800 rounded-lg m-2
@@ -88,21 +88,21 @@ export default function LayoutContainer({ list }) {
                         const ItemComponent = item.link ? Link : 'span';
 
                         return (
-                            <li class={`relative`} key={key} onMouseEnter={() => handleMouseEnter(key)} onMouseLeave={handleMouseLeave}>
-                                <ItemComponent to={item.link} class={`
+                            <li className={`relative`} key={key} onMouseEnter={() => handleMouseEnter(key)} onMouseLeave={handleMouseLeave}>
+                                <ItemComponent to={item.link} className={`
                                     transition-all duration-300 ease-in-out
                                     flex items-center relative cursor-pointer
                                     ${isSidebarOpen ? `w-54` : `w-12`} h-12 rounded-lg m-2 z-10
                                     hover:bg-zinc-200
                                 `}>
-                                    <span class={`
+                                    <span className={`
                                         transition-all duration-300 ease-in-out
                                         ml-[15px] text-zinc-800
                                         ${isSidebarOpen ? `text-sm` : `text-lg`}
                                     `}>
                                         <item.icon />
                                     </span>
-                                    <p class={`
+                                    <p className={`
                                         transition-all duration-300 ease-in-out
                                         absolute ml-10
                                         ${isSidebarOpen ? `opacity-1 visible` : `opacity-0 invisible`}
@@ -110,24 +110,24 @@ export default function LayoutContainer({ list }) {
                                 </ItemComponent>
                                 {
                                     (item.children && key === activeCategory) && 
-                                    <div class={`w-64 h-12 absolute z-0 top-0`}>
-                                        <ul class={`w-56 absolute ${isSidebarOpen ? `left-56` : `left-16`} ml-2 bg-white rounded-lg shadow-xl`}>
+                                    <div className={`w-64 h-12 absolute z-0 top-0`}>
+                                        <ul className={`w-56 absolute ${isSidebarOpen ? `left-56` : `left-16`} ml-2 bg-white rounded-lg shadow-xl`}>
                                             {
-                                                item.children.map((child, childKey) => 
-                                                    <li key={childKey}>
-                                                        <Link to={child.link} class={`
+                                                item.children.map((child, key) => 
+                                                    <li key={key}>
+                                                        <Link to={child.link} className={`
                                                             transition-all duration-300 ease-in-out
                                                             flex items-center relative cursor-pointer
                                                             w-54 h-12 rounded-lg m-2
                                                             hover:bg-zinc-200
                                                         `}>
-                                                            <span class={`
+                                                            <span className={`
                                                                 transition-all duration-300 ease-in-out
                                                                 ml-[15px] text-zinc-800
                                                             `}>
                                                                 <child.icon />
                                                             </span>
-                                                            <p class={`
+                                                            <p className={`
                                                                 transition-all duration-300 ease-in-out
                                                                 absolute ml-10
                                                             `}>{child.label}</p>
@@ -144,21 +144,21 @@ export default function LayoutContainer({ list }) {
                 }
             </ul>
             <ul>
-                <li class={`relative`} onMouseEnter={() => handleMouseEnter('settings')} onMouseLeave={handleMouseLeave}>
-                    <span class={`
+                <li className={`relative`} onMouseEnter={() => handleMouseEnter('settings')} onMouseLeave={handleMouseLeave}>
+                    <span className={`
                         transition-all duration-300 ease-in-out
                         flex items-center relative cursor-pointer
                         ${isSidebarOpen ? `w-54` : `w-12`} h-12 rounded-lg m-2 z-10
                         hover:bg-zinc-200
                     `}>
-                        <span class={`
+                        <span className={`
                             transition-all duration-300 ease-in-out
                             ml-[15px] text-zinc-800
                             ${isSidebarOpen ? `text-sm` : `text-lg`}
                         `}>
                             <SettingOutlined />
                         </span>
-                        <p class={`
+                        <p className={`
                             transition-all duration-300 ease-in-out
                             absolute ml-10
                             ${isSidebarOpen ? `opacity-1 visible` : `opacity-0 invisible`}
@@ -166,24 +166,24 @@ export default function LayoutContainer({ list }) {
                     </span>
                     {
                         ('settings' === activeCategory) && 
-                        <div class={`w-64 h-12 absolute z-0 bottom-0`}>
-                            <ul class={`w-56 absolute ${isSidebarOpen ? `left-56` : `left-16`} bottom-0 ml-2 bg-white rounded-lg shadow-xl`}>
+                        <div className={`w-64 h-12 absolute z-0 bottom-0`}>
+                            <ul className={`w-56 absolute ${isSidebarOpen ? `left-56` : `left-16`} bottom-0 ml-2 bg-white rounded-lg shadow-xl`}>
                                 {
-                                    sidemenuSettingsItems.map(item => 
-                                        <li>
-                                            <Link to={item.link} class={`
+                                    sidemenuSettingsItems.map((item, key) => 
+                                        <li key={key}>
+                                            <Link to={item.link} className={`
                                                 transition-all duration-300 ease-in-out
                                                 flex items-center relative cursor-pointer
                                                 w-54 h-12 rounded-lg m-2
                                                 hover:bg-zinc-200
                                             `}>
-                                                <span class={`
+                                                <span className={`
                                                     transition-all duration-300 ease-in-out
                                                     ml-[15px] text-zinc-800
                                                 `}>
                                                     <item.icon />
                                                 </span>
-                                                <p class={`
+                                                <p className={`
                                                     transition-all duration-300 ease-in-out
                                                     absolute ml-10
                                                 `}>{item.label}</p>
@@ -195,8 +195,8 @@ export default function LayoutContainer({ list }) {
                         </div>
                     }
                 </li>
-                <hr class={`mx-2`} />
-                <li class={`
+                <hr className={`mx-2`} />
+                <li className={`
                     transition-all duration-300 ease-in-out
                     
                     ${isSidebarOpen ? `w-56` : `w-16`}
@@ -204,22 +204,22 @@ export default function LayoutContainer({ list }) {
                 onMouseEnter={() => handleMouseEnter('profile')}
                 onMouseLeave={handleMouseLeave}
                 >
-                    <Link to={'/profile'} class={`
+                    <Link to={'/profile'} className={`
                         transition-all duration-500 ease-in-out
                          bg-zinc-400 rounded-lg m-2
                         flex justify-center items-center relative
                         ${isSidebarOpen ? `w-10 h-10` : `w-12 h-12`}
                     `}>
                         <UserOutlined style={{ fontSize: 20, color: 'white' }} />
-                        <div class={`
+                        <div className={`
                             transition-all duration-200 ease-in-out
                             ${isSidebarOpen ? `opacity-1 visible` : `opacity-0 invisible`}
                         `}>
-                            <p class={`
+                            <p className={`
                                 transition-all duration-300 ease-in-out
                                 absolute top-0 left-14 font-bold whitespace-nowrap
                             `}>{t('Volodymyr Lytvynov')}</p>
-                            <p class={`
+                            <p className={`
                                 transition-all duration-300 ease-in-out
                                 absolute top-5 left-14 text-zinc-500
                             `}>{t('manager')}</p>
@@ -227,8 +227,8 @@ export default function LayoutContainer({ list }) {
                     </Link>
                     {
                         ('profile' === activeCategory) && 
-                        <div class={`w-64 h-12 absolute z-0 bottom-0`}>
-                            <div class={`
+                        <div className={`w-64 h-12 absolute z-0 bottom-0`}>
+                            <div className={`
                                 w-56 absolute ${isSidebarOpen ? `left-56` : `left-16`} bottom-0 ml-2 bg-white rounded-lg shadow-xl
                                 flex justify-between gap-2
                                 p-3
