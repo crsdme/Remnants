@@ -14,7 +14,10 @@ const usersRouter = require('../../routes/http/users');
 const productsRouter = require('../../routes/http/products');
 
 const categoryRouter = require('../../routes/http/categories');
+const barcodeRouter = require('../../routes/http/barcodes');
 const currencyRouter = require('../../routes/http/currencies');
+const customFieldRouter = require('../../routes/http/custom-field');
+const customFieldOptionRouter = require('../../routes/http/custom-field-option');
 const app = express();
 
 // app.use(logger); // логер. Там внутри pino
@@ -53,6 +56,9 @@ app.use('/users', usersRouter);
 app.use('/products', productsRouter);
 app.use('/categories', categoryRouter);
 app.use('/currencies', currencyRouter);
+app.use('/custom-fields', customFieldRouter);
+app.use('/custom-fields-option', customFieldOptionRouter);
+app.use('/barcodes', barcodeRouter);
 // app.use('/strategy/local', localStrategyRouter);
 
 // catch 404 and forward to error handler

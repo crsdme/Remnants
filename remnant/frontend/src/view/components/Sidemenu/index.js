@@ -44,13 +44,10 @@ export default function LayoutContainer({ list }) {
             label: t('sidemenu.currencies'), icon: SettingOutlined, link: '/settings/currencies'
         },
         {
-            label: t('sidemenu.sourses'), icon: SettingOutlined, link: '/settings/sources'
+            label: t('sidemenu.sources'), icon: SettingOutlined, link: '/settings/sources'
         },
         {
             label: t('sidemenu.stocks'), icon: SettingOutlined, link: '/settings/stocks'
-        },
-        {
-            label: t('sidemenu.cashregisters'), icon: SettingOutlined, link: '/settings/cashregisters'
         },
         {
             label: t('sidemenu.users'), icon: SettingOutlined, link: '/settings/users'

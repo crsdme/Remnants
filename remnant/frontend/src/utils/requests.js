@@ -287,7 +287,144 @@ const getCategories = async (value, { userId, tokens }) => {
 
     const { data } = await axiosInstance.post('categories/get', { ...value, userId });
 
-    if (data.status === 'failed') notification.error({ message: t(' '), description: JSON.stringify(data) });
+    if (data.status === 'failed') notification.error({ message: t('categories.wasnFounded'), description: JSON.stringify(data) });
+
+    return data;
+}
+
+
+
+
+const createAttribute = async (value, { userId, tokens }) => {
+    const axiosInstance = axiosCustomInstance(tokens);
+
+    const { data } = await axiosInstance.post('custom-fields/create', { ...value, userId });
+
+    if (data.status === 'success') message.success(t('custom-field.created'));
+
+    if (data.status === 'failed') notification.error({ message: t('custom-field.not.created'), description: JSON.stringify(data) });
+
+    return data;
+}
+
+const editAttribute = async (value, { userId, tokens }) => {
+    const axiosInstance = axiosCustomInstance(tokens);
+
+    const { data } = await axiosInstance.post('custom-fields/edit', { ...value, userId });
+
+    if (data.status === 'success') message.success(t('custom-field.edited'));
+
+    if (data.status === 'failed') notification.error({ message: t('custom-field.not.edited'), description: JSON.stringify(data) });
+
+    return data;
+}
+
+const removeAttribute = async (value, { userId, tokens }) => {
+    const axiosInstance = axiosCustomInstance(tokens);
+
+    const { data } = await axiosInstance.post('custom-fields/remove', { ...value, userId });
+
+    if (data.status === 'success' && data.data.deletedCount !== 0) message.success(t('custom-field.removed'));
+
+    if (data.status === 'failed' || data.data.deletedCount === 0) notification.error({ message: t('custom-field.not.removed'), description: JSON.stringify(data) });
+
+    return data;
+}
+
+const getAttributes = async (value, { userId, tokens }) => {
+    const axiosInstance = axiosCustomInstance(tokens);
+
+    const { data } = await axiosInstance.post('custom-fields/get', { ...value, userId });
+
+    if (data.status === 'failed') notification.error({ message: t('custom-fields.wasnFounded'), description: JSON.stringify(data) });
+
+    return data;
+}
+
+
+
+const createAttributeOption = async (value, { userId, tokens }) => {
+    const axiosInstance = axiosCustomInstance(tokens);
+
+    const { data } = await axiosInstance.post('custom-fields-option/create', { ...value, userId });
+
+    if (data.status === 'success') message.success(t('custom-field-option.created'));
+
+    if (data.status === 'failed') notification.error({ message: t('custom-field-option.not.created'), description: JSON.stringify(data) });
+
+    return data;
+}
+
+const removeAttributeOption = async (value, { userId, tokens }) => {
+    const axiosInstance = axiosCustomInstance(tokens);
+
+    const { data } = await axiosInstance.post('custom-fields-option/remove', { ...value, userId });
+
+    if (data.status === 'success' && data.data.deletedCount !== 0) message.success(t('custom-field-option.removed'));
+
+    if (data.status === 'failed' || data.data.deletedCount === 0) notification.error({ message: t('custom-field-option.not.removed'), description: JSON.stringify(data) });
+
+    return data;
+}
+
+const getAttributeOptions = async (value, { userId, tokens }) => {
+    const axiosInstance = axiosCustomInstance(tokens);
+
+    const { data } = await axiosInstance.post('custom-fields-option/get', { ...value, userId });
+
+    if (data.status === 'failed') notification.error({ message: t('custom-fields-option.wasnFounded'), description: JSON.stringify(data) });
+
+    return data;
+}
+
+
+
+
+
+
+
+const createBarcode = async (value, { userId, tokens }) => {
+    const axiosInstance = axiosCustomInstance(tokens);
+
+    const { data } = await axiosInstance.post('barcodes/create', { ...value, userId });
+
+    if (data.status === 'success') message.success(t('barcode.created'));
+
+    if (data.status === 'failed') notification.error({ message: t('barcode.not.created'), description: JSON.stringify(data) });
+
+    return data;
+}
+
+const editBarcode = async (value, { userId, tokens }) => {
+    const axiosInstance = axiosCustomInstance(tokens);
+
+    const { data } = await axiosInstance.post('barcodes/edit', { ...value, userId });
+
+    if (data.status === 'success') message.success(t('barcode.edited'));
+
+    if (data.status === 'failed') notification.error({ message: t('barcode.not.edited'), description: JSON.stringify(data) });
+
+    return data;
+}
+
+const removeBarcode = async (value, { userId, tokens }) => {
+    const axiosInstance = axiosCustomInstance(tokens);
+
+    const { data } = await axiosInstance.post('barcodes/remove', { ...value, userId });
+
+    if (data.status === 'success' && data.data.deletedCount !== 0) message.success(t('barcode.removed'));
+
+    if (data.status === 'failed' || data.data.deletedCount === 0) notification.error({ message: t('barcode.not.removed'), description: JSON.stringify(data) });
+
+    return data;
+}
+
+const getBarcodes = async (value, { userId, tokens }) => {
+    const axiosInstance = axiosCustomInstance(tokens);
+
+    const { data } = await axiosInstance.post('barcodes/get', { ...value, userId });
+
+    if (data.status === 'failed') notification.error({ message: t('barcodes.wasnFounded'), description: JSON.stringify(data) });
 
     return data;
 }
@@ -315,5 +452,16 @@ export default {
     createCurrency,
     editCurrency,
     removeCurrency,
-    getCurrencies
+    getCurrencies,
+    getAttributes,
+    editAttribute,
+    removeAttribute,
+    createAttribute,
+    createAttributeOption,
+    removeAttributeOption,
+    getAttributeOptions,
+    getBarcodes,
+    createBarcode,
+    removeBarcode,
+    editBarcode,
 };

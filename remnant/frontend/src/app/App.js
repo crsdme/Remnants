@@ -1,25 +1,33 @@
+import React, { useEffect, useState } from 'react';
 import { Routes, Route } from "react-router-dom";
 import { useSelector } from 'react-redux';
 import { ConfigProvider, App } from 'antd';
 import './App.css';
+import request from '../utils/requests';
+
 
 import Layout from '../view/containers/Layout';
 import PageNotFound from '../view/containers/PageNotFound';
 import LoginPage from '../view/containers/LoginPage';
+
 import DashboardPage from '../view/containers/DashboardPage';
+
 import ProductsPage from '../view/containers/ProductsPage';
+import CategoriesPage from '../view/containers/CategoriesPage';
+import AttributesPage from '../view/containers/AttributesPage';
+import BarcodesPage from '../view/containers/BarcodesPage';
+
 import LanguagesPage from '../view/containers/LanguagesPage';
 import CurrenciesPage from '../view/containers/CurrenciesPage';
-// import UsersPage from '../view/containers/UsersPage';
+
 import ProfilePage from '../view/containers/ProfilePage';
-// import LogsPage from '../view/containers/LogsPage';
-import CategoriesPage from '../view/containers/CategoriesPage';
-// import TestPage from '../view/containers/TestPage';
 
 function MyApp() {
 
-  let authStatus = useSelector((state) => state.auth.status);
+  const { tokens, profile, status: authStatus } = useSelector((state) => state.auth);
+  const params = { userId: profile._id, tokens }
 
+  const [attributes, setAttributes] = useState([]);
   // let interfaceTheme = useSelector((state) => state.theme.theme);
 
   // function hasRole(allowedRoles) {
@@ -42,6 +50,17 @@ function MyApp() {
   //   );
   // };
 
+  const getAttributes = async () => {
+    const { status, data } = await request.getAttributes({}, params);
+    if (status === 'success') setAttributes(data.customFields);
+    console.log(data)
+  }
+
+  useEffect(() => {
+    getAttributes();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   return (
     <App>
       <ConfigProvider theme={{
@@ -57,24 +76,24 @@ function MyApp() {
           "fontFamily": 'Poppins',
           "colorLinkHover": 'black'
         },
-        // algorithm: interfaceTheme === 'dark' ? theme.darkAlgorithm : null,
       }}>
         <Routes>
           { authStatus === 'auth' ?
             <Route path="/" element={<Layout />}>
               <Route path="/dashboard" element={<DashboardPage />} />
               <Route path="/" element={<DashboardPage />} />
-              {/* <Route path="/test" element={<TestPage />} /> */}
-              <Route path="/products" element={<ProductsPage />} />
-              {/*
-              <Route path="/logs" element={<LogsPage />} />
-              <Route path="/users" element={<UsersPage />} />
-              <Route path="/categories" element={<CategoriesPage />} /> */}
-              
+
+
+              <Route path="/products" element={<ProductsPage props={{attributes: attributes}} />} />
               <Route path="/categories" element={<CategoriesPage />} />
+              <Route path="/attributes" element={<AttributesPage />} />
+              <Route path="/barcodes" element={<BarcodesPage />} />
+
               <Route path="/settings/currencies" element={<CurrenciesPage />} />
               <Route path="/settings/languages" element={<LanguagesPage />} />
+              
               <Route path="/profile/:_id" element={<ProfilePage />} />
+
               <Route path="*" element={<PageNotFound loginStatus="guest" />} />
             </Route>
           :
@@ -84,7 +103,6 @@ function MyApp() {
               <Route path="*" element={<PageNotFound loginStatus="guest" />} />
             </>
           }
-
         </Routes>
       </ConfigProvider>
     </App>

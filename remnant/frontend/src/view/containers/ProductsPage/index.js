@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Image, Space, Layout, Table, Tag, Button, InputNumber, Select, Modal, Form, Input, TreeSelect, Upload   } from 'antd';
+import { Image, Space, Layout, Table, Tag, Button, InputNumber, Select, Modal, Form, Input, TreeSelect, Upload, Divider } from 'antd';
 import { 
     PlusOutlined,
     DeleteFilled,
@@ -44,7 +44,7 @@ const DraggableUploadListItem = ({ originNode, file }) => {
     );
 };
 
-export default function Page() {
+export default function Page({ props }) {
     const [products, setProducts] = useState([]);
     const [categories, setCategories] = useState([]);
     const [editingProduct, setEditingProduct] = useState(null);
@@ -199,6 +199,7 @@ export default function Page() {
     useEffect(() => {
         getProducts({});
         getCategories();
+        console.log(props)
     }, [])
 
     const columns = [
@@ -240,10 +241,6 @@ export default function Page() {
         {
             title: t('productsPage.quantity'),
             dataIndex: 'quantity',
-        },
-        {
-            title: t('productsPage.reserve'),
-            dataIndex: 'reserve',
         },
         {
             title: t('productsPage.categories'),
@@ -412,6 +409,26 @@ export default function Page() {
                         </SortableContext>
                     </DndContext>
                 </Form.Item>
+                <Divider orientation="left">{ t('productsPage.dividerAttributes') }</Divider>
+                {
+                    (props.attributes || []).map((item, key) => 
+                        <Form.Item
+                            key={key}
+                            label={item.names[selectedLanguage]}
+                            name={['customField', item._id]}
+                            rules={[{ required: item.main, message: t(`productsPage.requiredAttribute`) }]}
+                        >
+                            { 
+                                item.type === 'text' ? 
+                                <Input /> :
+                                <Select options={item.options.map(item => ({ 
+                                    value: item._id,
+                                    label: item.names[selectedLanguage]
+                                }))} /> 
+                            }
+                        </Form.Item>
+                    ) 
+                }
             </Form>
 
         </Modal>

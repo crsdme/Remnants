@@ -5,11 +5,11 @@ dotenv.config();
 let refreshTokens = []; // SAVE DB
 
 const generateAccessToken = ({ login }) => {
-    return jwt.sign({ login }, process.env.JWT_ACCESS_TOKEN, { expiresIn: '600s' });
+    return jwt.sign({ login }, process.env.JWT_ACCESS_TOKEN, { expiresIn: '6000s' });
 }
 
 const generateRefreshToken = ({ login }) => {
-    const refreshToken = jwt.sign({ login }, process.env.JWT_REFRESH_TOKEN, { expiresIn: '7000s' });
+    const refreshToken = jwt.sign({ login }, process.env.JWT_REFRESH_TOKEN, { expiresIn: '70000s' });
     refreshTokens.push(refreshToken);
 
     return refreshToken;

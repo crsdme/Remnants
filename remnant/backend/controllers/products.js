@@ -58,7 +58,8 @@ const editProduct = async ({
     wholesalePrice,
     wholesaleCurrency, 
     barcode, 
-    categories
+    categories,
+    customField
 }) => {
     let status = null;
     let data = null;
@@ -66,6 +67,9 @@ const editProduct = async ({
     let errors = [];
     let info = [];
 
+    customField = JSON.parse(customField);
+
+    console.log(customField)
     const product = await productsModel.findOne({ _id });
     
     categories = categories.split(',');
