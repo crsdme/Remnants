@@ -18,17 +18,18 @@ const generalSchema = new Schema({
       type: Schema.Types.String,
     },
   },
-  attributeGroup: {
+  customFieldsGroup: {
     type: Schema.Types.ObjectId,
-    ref: 'attributeGroup'
+    ref: 'custom-field-group'
   },
-  attributes: [{
+  customFields: [{
     _id: {
       type: Schema.Types.ObjectId,
-      ref: 'attributes'
+      ref: 'custom-field'
     },
     data: {
       type: Schema.Types.Mixed,
+      ref: 'custom-field-options'
     }
   }],
   images: [{
@@ -53,6 +54,10 @@ const generalSchema = new Schema({
     type: Schema.Types.Number,
     required: true
   },
+  unit: {
+    type: Schema.Types.ObjectId,
+    ref: 'units'
+  },
   currency: {
     type: Schema.Types.ObjectId,
     ref: 'currency'
@@ -70,31 +75,8 @@ const generalSchema = new Schema({
     ref: 'currency'
   },
   quantity: [{
-    stock: {
-      type: Schema.Types.ObjectId,
-      ref: 'stock'
-    },
-    status: {
-      type: Schema.Types.String, // Discontinued, OutOfStock, InStock
-      default: 'Discontinued'
-    },
-    amount: {
-      type: Schema.Types.Number,
-      default: 0
-    },
-  }],
-  reserve: [{
-    stock: {
-      type: Schema.Types.ObjectId,
-      ref: 'stock'
-    },
-    order: {
-      type: Schema.Types.ObjectId,
-      ref: 'order'
-    },
-    amount: {
-      type: Schema.Types.Number,
-    }
+    type: Schema.Types.ObjectId,
+    ref: 'quantity'
   }],
   barcode: [{
       number: {

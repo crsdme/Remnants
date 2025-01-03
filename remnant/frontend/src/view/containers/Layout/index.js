@@ -46,6 +46,9 @@ export default function Page() {
                     label: t('sidemenu.attributes'), icon: QrcodeOutlined, link: '/attributes'
                 },
                 {
+                    label: t('sidemenu.custom-field-group'), icon: QrcodeOutlined, link: '/custom-field/groups'
+                },
+                {
                     label: t('sidemenu.barcodes'), icon: QrcodeOutlined, link: '/barcodes'
                 }
             ]

@@ -50,6 +50,8 @@ export default function Page({ props }) {
     const [editingProduct, setEditingProduct] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectCategories, setSelectCategories] = useState([]);
+    const [selectedCustomFieldGroup, setSelectedCustomFieldGroup] = useState([]);
+    const [selectedStock, setSelectedStock] = useState(null);
     const [fileList, setFileList] = useState([]);
     const [uploadList, setUploadList] = useState([]);
     const [productsTableData, setProductsTableData] = useState({ pagination: null, sorter: null, filter: null, count: 0 });
@@ -77,7 +79,6 @@ export default function Page({ props }) {
 
     const editProduct = async () => {
         const formData = form.getFieldsValue();
-
         const { status } = await request.editProduct({ _id: editingProduct, ...formData, uploadList, fileList }, params);
 
         if (status === 'success') {
@@ -129,9 +130,12 @@ export default function Page({ props }) {
         const productData = {
             ...product,
             currency: product.currency._id,
+            unit: product.unit._id,
             wholesaleCurrency: product.wholesaleCurrency._id,
             categories: product.categories.map(item => item._id)
         }
+
+        changeCustomFieldGroup(product.customFieldsGroup)
 
         const images = product.images.map((image, index) => ({
             uid: image._id,
@@ -192,14 +196,22 @@ export default function Page({ props }) {
     };
 
     const productsTableChange = (pagination, filters, sorter) => {
+        console.log({ pagination, filters, sorter })
+        setSelectedStock(filters.quantity);
         getProducts({ pagination, filters, sorter });
         setProductsTableData(state => ({ pagination, filters, sorter, ...state }))
+    }
+
+    const changeCustomFieldGroup = (v) => {
+        const customFieldGroup = props.customFieldGroups.find(item => item._id === v);
+        if (!customFieldGroup) return;
+        const customFields = props.attributes
+        setSelectedCustomFieldGroup(customFields.filter(item => (customFieldGroup.customFields || []).includes(item._id)));
     }
 
     useEffect(() => {
         getProducts({});
         getCategories();
-        console.log(props)
     }, [])
 
     const columns = [
@@ -241,6 +253,15 @@ export default function Page({ props }) {
         {
             title: t('productsPage.quantity'),
             dataIndex: 'quantity',
+            filters: (props.stocks || []).map(item => ({
+                text: item.names[selectedLanguage],
+                value: item._id
+            })),
+            filteredValue: selectedStock || null,
+            filtred: selectedStock !== null,
+            defaultFilteredValue: (props?.stocks?.[0]?._id || null),
+            filterMultiple: false,
+            render: (quantity, { unit }) => `${(quantity?.amount || 0)} ${(unit?.symbol || '')}`
         },
         {
             title: t('productsPage.categories'),
@@ -256,19 +277,18 @@ export default function Page({ props }) {
         {
             title: t('productsPage.updated'),
             dataIndex: 'updatedAt',
-            // render: (text) => <>{moment(text).format("DD.MM.YYYY HH:mm:ss")}</>
         },
         {
             title: t('productsPage.created'),
             dataIndex: 'createdAt',
-            // render: (text) => <>{moment(text).format("DD.MM.YYYY HH:mm:ss")}</>
         },
         {
             width: 40,
             key: 'key',
-            render: (_, { _id }) => <Space>
-            <Button icon={<EditFilled />} onClick={() => openEditProductModal(_id)} />
-            <Button icon={<DeleteFilled />} onClick={() => removeProduct(_id)} />
+            render: (_, { _id }) => 
+            <Space>
+                <Button icon={<EditFilled />} onClick={() => openEditProductModal(_id)} />
+                <Button icon={<DeleteFilled />} onClick={() => removeProduct(_id)} />
             </Space>
         },
     ];
@@ -409,22 +429,51 @@ export default function Page({ props }) {
                         </SortableContext>
                     </DndContext>
                 </Form.Item>
+                <Form.Item
+                    label={t('productsPage.unit')}
+                    name={'unit'}
+                    rules={[{ required: true, message: t(`productsPage.requiredUnit`) }]}
+                >
+                    <Select
+                        // onChange={(v) => changeCustomFieldGroup(v)}
+                        options={props.units.map(item => ({ 
+                            value: item._id,
+                            label: item.names[selectedLanguage]
+                        }))}
+                    />
+                </Form.Item>
                 <Divider orientation="left">{ t('productsPage.dividerAttributes') }</Divider>
+                <Form.Item
+                    label={t('productsPage.customFieldGroups')}
+                    name={'customFieldsGroup'}
+                    rules={[{ required: true, message: t(`productsPage.requiredCustomFieldGroup`) }]}
+                >
+                    <Select
+                        onChange={(v) => changeCustomFieldGroup(v)}
+                        options={props.customFieldGroups.map(item => ({ 
+                            value: item._id,
+                            label: item.names[selectedLanguage]
+                        }))}
+                    />
+                </Form.Item>
                 {
-                    (props.attributes || []).map((item, key) => 
+                    (selectedCustomFieldGroup || []).map((item, key) => 
                         <Form.Item
                             key={key}
                             label={item.names[selectedLanguage]}
-                            name={['customField', item._id]}
+                            name={['customFields', item._id]}
                             rules={[{ required: item.main, message: t(`productsPage.requiredAttribute`) }]}
                         >
                             { 
                                 item.type === 'text' ? 
                                 <Input /> :
-                                <Select options={item.options.map(item => ({ 
-                                    value: item._id,
-                                    label: item.names[selectedLanguage]
-                                }))} /> 
+                                <Select
+                                    mode={item.is_multiple ? 'multiple' : 'default'} 
+                                    options={item.options.map(item => ({ 
+                                        value: item._id,
+                                        label: item.names[selectedLanguage]
+                                    }))}
+                                /> 
                             }
                         </Form.Item>
                     ) 

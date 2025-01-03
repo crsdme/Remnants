@@ -50,6 +50,9 @@ export default function LayoutContainer({ list }) {
             label: t('sidemenu.stocks'), icon: SettingOutlined, link: '/settings/stocks'
         },
         {
+            label: t('sidemenu.units'), icon: SettingOutlined, link: '/settings/units'
+        },
+        {
             label: t('sidemenu.users'), icon: SettingOutlined, link: '/settings/users'
         },
         {

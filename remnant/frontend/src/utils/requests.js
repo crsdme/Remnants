@@ -59,7 +59,7 @@ const editProduct = async (value, { userId, tokens }) => {
 
     for (const name in value) {
         if (!value[name]) continue;
-        formData.append(name, name === 'names' || name === 'attributes' || name === 'fileList' ? JSON.stringify(value[name]) : value[name]);
+        formData.append(name, name === 'names' || name === 'attributes' || name === 'customFields' || name === 'fileList' ? JSON.stringify(value[name]) : value[name]);
     }
 
     formData.append("userId", userId);
@@ -383,6 +383,167 @@ const getAttributeOptions = async (value, { userId, tokens }) => {
 
 
 
+
+
+const createCustomFieldGroup = async (value, { userId, tokens }) => {
+    const axiosInstance = axiosCustomInstance(tokens);
+
+    const { data } = await axiosInstance.post('custom-fields-group/create', { ...value, userId });
+
+    if (data.status === 'success') message.success(t('custom-field-group.created'));
+
+    if (data.status === 'failed') notification.error({ message: t('custom-field-group.not.created'), description: JSON.stringify(data) });
+
+    return data;
+}
+
+const editCustomFieldGroup = async (value, { userId, tokens }) => {
+    const axiosInstance = axiosCustomInstance(tokens);
+
+    const { data } = await axiosInstance.post('custom-fields-group/edit', { ...value, userId });
+
+    if (data.status === 'success') message.success(t('custom-field-group.edited'));
+
+    if (data.status === 'failed') notification.error({ message: t('custom-field-group.not.edited'), description: JSON.stringify(data) });
+
+    return data;
+}
+
+const removeCustomFieldGroup = async (value, { userId, tokens }) => {
+    const axiosInstance = axiosCustomInstance(tokens);
+
+    const { data } = await axiosInstance.post('custom-fields-group/remove', { ...value, userId });
+
+    if (data.status === 'success' && data.data.deletedCount !== 0) message.success(t('custom-field-group.removed'));
+
+    if (data.status === 'failed' || data.data.deletedCount === 0) notification.error({ message: t('custom-field-group.not.removed'), description: JSON.stringify(data) });
+
+    return data;
+}
+
+const getCustomFieldGroups = async (value, { userId, tokens }) => {
+    const axiosInstance = axiosCustomInstance(tokens);
+
+    const { data } = await axiosInstance.post('custom-fields-group/get', { ...value, userId });
+
+    if (data.status === 'failed') notification.error({ message: t('custom-fields-group.wasnFounded'), description: JSON.stringify(data) });
+
+    return data;
+}
+
+
+
+
+
+
+
+
+
+
+const createStock = async (value, { userId, tokens }) => {
+    const axiosInstance = axiosCustomInstance(tokens);
+
+    const { data } = await axiosInstance.post('stocks/create', { ...value, userId });
+
+    if (data.status === 'success') message.success(t('stocks.created'));
+
+    if (data.status === 'failed') notification.error({ message: t('stocks.not.created'), description: JSON.stringify(data) });
+
+    return data;
+}
+
+const editStock = async (value, { userId, tokens }) => {
+    const axiosInstance = axiosCustomInstance(tokens);
+
+    const { data } = await axiosInstance.post('stocks/edit', { ...value, userId });
+
+    if (data.status === 'success') message.success(t('stocks.edited'));
+
+    if (data.status === 'failed') notification.error({ message: t('stocks.not.edited'), description: JSON.stringify(data) });
+
+    return data;
+}
+
+const removeStock = async (value, { userId, tokens }) => {
+    const axiosInstance = axiosCustomInstance(tokens);
+
+    const { data } = await axiosInstance.post('stocks/remove', { ...value, userId });
+
+    if (data.status === 'success' && data.data.deletedCount !== 0) message.success(t('stocks.removed'));
+
+    if (data.status === 'failed' || data.data.deletedCount === 0) notification.error({ message: t('stocks.not.removed'), description: JSON.stringify(data) });
+
+    return data;
+}
+
+const getStocks = async (value, { userId, tokens }) => {
+    const axiosInstance = axiosCustomInstance(tokens);
+
+    const { data } = await axiosInstance.post('stocks/get', { ...value, userId });
+
+    if (data.status === 'failed') notification.error({ message: t('stocks.wasnFounded'), description: JSON.stringify(data) });
+
+    return data;
+}
+
+
+
+
+
+
+
+
+const createUnit = async (value, { userId, tokens }) => {
+    const axiosInstance = axiosCustomInstance(tokens);
+
+    const { data } = await axiosInstance.post('units/create', { ...value, userId });
+
+    if (data.status === 'success') message.success(t('units.created'));
+
+    if (data.status === 'failed') notification.error({ message: t('units.not.created'), description: JSON.stringify(data) });
+
+    return data;
+}
+
+const editUnit = async (value, { userId, tokens }) => {
+    const axiosInstance = axiosCustomInstance(tokens);
+
+    const { data } = await axiosInstance.post('units/edit', { ...value, userId });
+
+    if (data.status === 'success') message.success(t('units.edited'));
+
+    if (data.status === 'failed') notification.error({ message: t('units.not.edited'), description: JSON.stringify(data) });
+
+    return data;
+}
+
+const removeUnit = async (value, { userId, tokens }) => {
+    const axiosInstance = axiosCustomInstance(tokens);
+
+    const { data } = await axiosInstance.post('units/remove', { ...value, userId });
+
+    if (data.status === 'success' && data.data.deletedCount !== 0) message.success(t('units.removed'));
+
+    if (data.status === 'failed' || data.data.deletedCount === 0) notification.error({ message: t('units.not.removed'), description: JSON.stringify(data) });
+
+    return data;
+}
+
+const getUnits = async (value, { userId, tokens }) => {
+    const axiosInstance = axiosCustomInstance(tokens);
+
+    const { data } = await axiosInstance.post('units/get', { ...value, userId });
+
+    if (data.status === 'failed') notification.error({ message: t('units.wasnFounded'), description: JSON.stringify(data) });
+
+    return data;
+}
+
+
+
+
+
+
 const createBarcode = async (value, { userId, tokens }) => {
     const axiosInstance = axiosCustomInstance(tokens);
 
@@ -460,8 +621,20 @@ export default {
     createAttributeOption,
     removeAttributeOption,
     getAttributeOptions,
+    createCustomFieldGroup,
+    editCustomFieldGroup,
+    removeCustomFieldGroup,
+    getCustomFieldGroups,
     getBarcodes,
     createBarcode,
     removeBarcode,
     editBarcode,
+    getStocks,
+    removeStock,
+    createStock,
+    editStock,
+    getUnits,
+    removeUnit,
+    editUnit,
+    createUnit
 };

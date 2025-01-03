@@ -1,4 +1,6 @@
+const mongoose = require('mongoose');
 const productsModel = require('../models/product.js');
+const { countQuantity } = require('./quantity.js');
 
 const createProduct = async ({ 
     names, 
@@ -7,7 +9,8 @@ const createProduct = async ({
     images, 
     price, 
     currency, 
-    discount, 
+    discount,
+    unit,
     wholesalePrice,
     wholesaleCurrency, 
     barcode, 
@@ -19,15 +22,17 @@ const createProduct = async ({
     let errors = [];
     let info = [];
 
+    categories = categories.split(',');
+
     if (Array.isArray(categories)) { // MULTI CATEGORY SELECT OPTION
         categories = categories.map(item => ({ _id: item }))
     } else {
         categories = [{ _id: categories }]
     }
-    
+
     names = JSON.parse(names);
 
-    const createdProduct = await productsModel.create({ names, price, currency, wholesalePrice, wholesaleCurrency, categories, images });
+    const createdProduct = await productsModel.create({ names, price, currency, unit, wholesalePrice, wholesaleCurrency, categories, images });
 
     if (createdProduct) {
         status = 'success';
@@ -54,12 +59,14 @@ const editProduct = async ({
     fileList,
     price, 
     currency, 
+    unit,
     discount, 
     wholesalePrice,
     wholesaleCurrency, 
     barcode, 
     categories,
-    customField
+    customFields,
+    customFieldsGroup
 }) => {
     let status = null;
     let data = null;
@@ -67,9 +74,11 @@ const editProduct = async ({
     let errors = [];
     let info = [];
 
-    customField = JSON.parse(customField);
+    customFields = Object.entries(JSON.parse(customFields)).map(([key, value]) => ({
+        _id: key,
+        data: value
+    }));
 
-    console.log(customField)
     const product = await productsModel.findOne({ _id });
     
     categories = categories.split(',');
@@ -116,8 +125,11 @@ const editProduct = async ({
             discount, 
             wholesalePrice,
             wholesaleCurrency, 
-            barcode, 
-            categories
+            barcode,
+            unit,
+            categories,
+            customFieldsGroup,
+            customFields
         }
     );
 
@@ -137,7 +149,7 @@ const editProduct = async ({
     };
 }
 
-const getProducts = async ({ filter, sorter, pagination }) => {
+const getProducts = async ({ filters, sorter, pagination }) => {
     let status = null;
     let data = null;
     let warnings = [];
@@ -146,7 +158,11 @@ const getProducts = async ({ filter, sorter, pagination }) => {
 
     const { current, pageSize, allPages } = (pagination || { current: 1, pageSize: 10, allPages: false });
 
-    let query = { ...filter };
+    const { quantity } = (filters || { quantity: null });
+    
+    let query = {};
+
+    const stockFilter = new mongoose.Types.ObjectId(quantity?.[0]);
 
     let pipline = [
         {
@@ -221,7 +237,63 @@ const getProducts = async ({ filter, sorter, pagination }) => {
                 ]
             },
         },
+        // CUSTOM FIELDS
+        {
+            $set: { customFields: {
+                $arrayToObject: { $map: {
+                    input: "$customFields",
+                    as: "field",
+                    in: {
+                        k: { $toString: "$$field._id" },
+                        v: "$$field.data"
+                    }
+                }}
+            }}
+        },
+        // QUANTITY
+        ...(stockFilter ? [
+            {
+                $lookup: {
+                    from: "quantities",
+                    localField: "quantity",
+                    foreignField: "_id",
+                    as: "quantity",
+                },
+            },
+            {
+                $addFields: {
+                    quantity: {
+                      $arrayElemAt: [
+                        {
+                          $filter: {
+                            input: "$quantity", // The array to filter
+                            as: "qty", // Alias for each element in the array
+                            cond: { $eq: ["$$qty.stock", stockFilter] }, // Filtering condition
+                          },
+                        },
+                        0, // Extract the first matching element
+                      ],
+                    },
+                  },
+            },
+        ] : []),
+        // UNITS
+        {
+            $lookup: {
+                from: "units",
+                localField: "unit",
+                foreignField: "_id",
+                as: "unit",
+            },
+        },
+        {
+            $addFields: {
+              unit: { $arrayElemAt: ["$unit", 0] },
+            },
+        },
     ];
+
+    // countQuantity({ product: '670c2dc1d105bd9155b64046', amount: 1, stock: '677699c0f6ba0de7cc0bc5d9' });
 
     let productsCount = await productsModel.count(query);
 
@@ -232,7 +304,7 @@ const getProducts = async ({ filter, sorter, pagination }) => {
     }
 
     const products = await productsQuery.exec();
-
+    console.log(products[0].quantity)
     if (products) {
         status = 'success';
         data = { products, productsCount };

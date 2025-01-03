@@ -12,6 +12,7 @@ import { useSelector } from 'react-redux';
 import request from '../../../utils/requests';
 import BarcodeScanner from '../../../utils/barcodeScanner';
 import ProductTable from '../../components/ProductTable';
+import SelectProductTable from '../../components/SelectProductTable';
 
 const { Content } = Layout;
 const { Title } = Typography;
@@ -75,6 +76,10 @@ export default function Page() {
 
             return [...state, { ...product, quantity: quantity }];
         });
+    }
+
+    const removeProduct = (_id) => {
+        setSelectedProducts(state => state.filter((item) => item._id !== _id));
     }
 
 
@@ -177,6 +182,10 @@ export default function Page() {
                         <InputNumber style={{ width: '100%' }} />
                     </Form.Item>
                 </Form>
+                <SelectProductTable
+                    products={selectedProducts}
+                    removeProduct={removeProduct}
+                />
             </Modal>
         </Content>
     );

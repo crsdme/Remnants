@@ -12,26 +12,15 @@ import {
     UnorderedListOutlined
 } from '@ant-design/icons';
 
-
-export default function ProductTable({ addProduct }) {
+export default function SelectProductTable({ products, removeProduct }) {
     const { t } = useTranslation();
-
-    const [products, setProducts] = useState([]);
 
     const { tokens, profile } = useSelector((state) => state.auth);
     const { languages, selectedLanguage } = useSelector((state) => state.theme);
     const params = { userId: profile._id, tokens }
 
-    const getProducts = async (value) => {
-        const { status, data } = await request.getProducts(value, params);
-        if (status === 'success') {
-            setProducts(data.products);
-            // setProductsTableData({ count: data.productsCount });
-        }
-    }
-
     useEffect(() => {
-        getProducts({});
+ 
     }, []);
 
 
@@ -67,6 +56,11 @@ export default function ProductTable({ addProduct }) {
             render: (text, { currency }) => `${text} ${currency.symbol}`
         },
         {
+            title: t('productsTable.price'),
+            dataIndex: 'price',
+            render: (text, { quantity }) => `${quantity}`
+        },
+        {
             title: t('productsTable.categories'),
             dataIndex: 'categories',
             render: (categories) => (<>
@@ -80,9 +74,9 @@ export default function ProductTable({ addProduct }) {
         {
             width: 40,
             key: 'key',
-            render: (_, product) => 
+            render: (_, { _id }) => 
             <Space>
-                <Button onClick={() => addProduct(product)} />
+                <Button type="primary" danger icon={<DeleteFilled />} onClick={() => removeProduct(_id)} />
             </Space>
         },
     ];
@@ -92,9 +86,6 @@ export default function ProductTable({ addProduct }) {
             scroll={{ y: 300, x: 'auto' }}
             columns={columns} 
             dataSource={products}
-            // onChange={productsTableChange}
-            // pagination={{ total: productsTableData.count }}
-            // rowKey={(record) => record._id}
         />
     );
 }
