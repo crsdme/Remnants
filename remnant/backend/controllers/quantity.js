@@ -38,12 +38,11 @@ const countQuantity = async ({ type, product, amount, stock }) => {
     }
 
     let editedQuantity = await quantityModel.findOneAndUpdate({ product, stock }, { $inc: { amount } });
-    
-    if (editedQuantity.matchedCount === 0) {
+
+    if (!editedQuantity) {
         editedQuantity = await quantityModel.create({ product, stock, amount });
+        await productModel.updateOne({ _id: product }, { $push: { quantity: editedQuantity._id } });
     }
-    console.log(editedQuantity)
-    await productModel.updateOne({ _id: product }, { $push: { quantity: editedQuantity._id } });
     
     if (editedQuantity) {
         status = 'success';

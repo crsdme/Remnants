@@ -21,11 +21,11 @@ export default function LayoutContainer({ list }) {
 
     const { profile } = useSelector((state) => state.auth);
 
-    const { languages, selectedLanguage } = useSelector((state) => state.theme);
+    const { languages, selectedLanguage, sidebarStatus } = useSelector((state) => state.theme);
 
     const openSidemenu = () => {
         setIsSidebarOpen(!isSidebarOpen);
-        dispatch({type: 'SAGA_THEME_SIDEBAR', payload: !isSidebarOpen})
+        dispatch({type: 'SAGA_THEME_SIDEBAR', payload: !isSidebarOpen});
     }
 
     const handleMouseEnter = (category) => {
@@ -45,6 +45,9 @@ export default function LayoutContainer({ list }) {
         },
         {
             label: t('sidemenu.sources'), icon: SettingOutlined, link: '/settings/sources'
+        },
+        {
+            label: t('sidemenu.statuses'), icon: SettingOutlined, link: '/settings/orders/statuses'
         },
         {
             label: t('sidemenu.stocks'), icon: SettingOutlined, link: '/settings/stocks'
@@ -69,7 +72,7 @@ export default function LayoutContainer({ list }) {
             transition-all duration-300 ease-in-out
             flex justify-between flex-col
             fixed m-2 rounded-lg z-50
-             bg-white h-[calc(100%-16px)] ${isSidebarOpen ? `w-56` : `w-16`}
+             bg-white h-[calc(100%-16px)] ${sidebarStatus ? `w-56` : `w-16`}
         `}>
             <ul>
                 <li>
@@ -77,7 +80,7 @@ export default function LayoutContainer({ list }) {
                         <div className={`
                             transition-all duration-300 ease-in-out
                             flex justify-center items-center
-                            ${isSidebarOpen ? `w-52` : `w-12`} h-12 bg-zinc-800 rounded-lg m-2
+                            ${sidebarStatus ? `w-52` : `w-12`} h-12 bg-zinc-800 rounded-lg m-2
                         `} onClick={() => openSidemenu()}>
                             <img src={logo} />
                         </div>
@@ -92,26 +95,26 @@ export default function LayoutContainer({ list }) {
                                 <ItemComponent to={item.link} className={`
                                     transition-all duration-300 ease-in-out
                                     flex items-center relative cursor-pointer
-                                    ${isSidebarOpen ? `w-54` : `w-12`} h-12 rounded-lg m-2 z-10
+                                    ${sidebarStatus ? `w-54` : `w-12`} h-12 rounded-lg m-2 z-10
                                     hover:bg-zinc-200
                                 `}>
                                     <span className={`
                                         transition-all duration-300 ease-in-out
                                         ml-[15px] text-zinc-800
-                                        ${isSidebarOpen ? `text-sm` : `text-lg`}
+                                        ${sidebarStatus ? `text-sm` : `text-lg`}
                                     `}>
                                         <item.icon />
                                     </span>
                                     <p className={`
                                         transition-all duration-300 ease-in-out
                                         absolute ml-10
-                                        ${isSidebarOpen ? `opacity-1 visible` : `opacity-0 invisible`}
+                                        ${sidebarStatus ? `opacity-1 visible` : `opacity-0 invisible`}
                                     `}>{item.label}</p>
                                 </ItemComponent>
                                 {
                                     (item.children && key === activeCategory) && 
                                     <div className={`w-64 h-12 absolute z-0 top-0`}>
-                                        <ul className={`w-56 absolute ${isSidebarOpen ? `left-56` : `left-16`} ml-2 bg-white rounded-lg shadow-xl`}>
+                                        <ul className={`w-56 absolute ${sidebarStatus ? `left-56` : `left-16`} ml-2 bg-white rounded-lg shadow-xl`}>
                                             {
                                                 item.children.map((child, key) => 
                                                     <li key={key}>
@@ -148,26 +151,26 @@ export default function LayoutContainer({ list }) {
                     <span className={`
                         transition-all duration-300 ease-in-out
                         flex items-center relative cursor-pointer
-                        ${isSidebarOpen ? `w-54` : `w-12`} h-12 rounded-lg m-2 z-10
+                        ${sidebarStatus ? `w-54` : `w-12`} h-12 rounded-lg m-2 z-10
                         hover:bg-zinc-200
                     `}>
                         <span className={`
                             transition-all duration-300 ease-in-out
                             ml-[15px] text-zinc-800
-                            ${isSidebarOpen ? `text-sm` : `text-lg`}
+                            ${sidebarStatus ? `text-sm` : `text-lg`}
                         `}>
                             <SettingOutlined />
                         </span>
                         <p className={`
                             transition-all duration-300 ease-in-out
                             absolute ml-10
-                            ${isSidebarOpen ? `opacity-1 visible` : `opacity-0 invisible`}
+                            ${sidebarStatus ? `opacity-1 visible` : `opacity-0 invisible`}
                         `}>{t('sidemenu.settings')}</p>
                     </span>
                     {
                         ('settings' === activeCategory) && 
                         <div className={`w-64 h-12 absolute z-0 bottom-0`}>
-                            <ul className={`w-56 absolute ${isSidebarOpen ? `left-56` : `left-16`} bottom-0 ml-2 bg-white rounded-lg shadow-xl`}>
+                            <ul className={`w-56 absolute ${sidebarStatus ? `left-56` : `left-16`} bottom-0 ml-2 bg-white rounded-lg shadow-xl`}>
                                 {
                                     sidemenuSettingsItems.map((item, key) => 
                                         <li key={key}>
@@ -199,7 +202,7 @@ export default function LayoutContainer({ list }) {
                 <li className={`
                     transition-all duration-300 ease-in-out
                     
-                    ${isSidebarOpen ? `w-56` : `w-16`}
+                    ${sidebarStatus ? `w-56` : `w-16`}
                 `}
                 onMouseEnter={() => handleMouseEnter('profile')}
                 onMouseLeave={handleMouseLeave}
@@ -208,12 +211,12 @@ export default function LayoutContainer({ list }) {
                         transition-all duration-500 ease-in-out
                          bg-zinc-400 rounded-lg m-2
                         flex justify-center items-center relative
-                        ${isSidebarOpen ? `w-10 h-10` : `w-12 h-12`}
+                        ${sidebarStatus ? `w-10 h-10` : `w-12 h-12`}
                     `}>
                         <UserOutlined style={{ fontSize: 20, color: 'white' }} />
                         <div className={`
                             transition-all duration-200 ease-in-out
-                            ${isSidebarOpen ? `opacity-1 visible` : `opacity-0 invisible`}
+                            ${sidebarStatus ? `opacity-1 visible` : `opacity-0 invisible`}
                         `}>
                             <p className={`
                                 transition-all duration-300 ease-in-out
@@ -229,7 +232,7 @@ export default function LayoutContainer({ list }) {
                         ('profile' === activeCategory) && 
                         <div className={`w-64 h-12 absolute z-0 bottom-0`}>
                             <div className={`
-                                w-56 absolute ${isSidebarOpen ? `left-56` : `left-16`} bottom-0 ml-2 bg-white rounded-lg shadow-xl
+                                w-56 absolute ${sidebarStatus ? `left-56` : `left-16`} bottom-0 ml-2 bg-white rounded-lg shadow-xl
                                 flex justify-between gap-2
                                 p-3
                             `}>

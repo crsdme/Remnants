@@ -22,6 +22,12 @@ import LanguagesPage from '../view/containers/LanguagesPage';
 import CurrenciesPage from '../view/containers/CurrenciesPage';
 import StocksPage from '../view/containers/StocksPage';
 import UnitsPage from '../view/containers/UnitsPage';
+import OrderStatusPage from '../view/containers/OrderStatusPage';
+
+import OrdersPage from '../view/containers/OrdersPage';
+
+import ProcurementsPage from '../view/containers/ProcurementsPage';
+import PurchasesPage from '../view/containers/PurchasesPage';
 
 import ProfilePage from '../view/containers/ProfilePage';
 
@@ -34,6 +40,7 @@ function MyApp() {
   const [customFieldGroups, setCustomFieldGroups] = useState([]);
   const [stocks, setStocks] = useState([]);
   const [units, setUnits] = useState([]);
+  const [orderStatuses, setOrderStatuses] = useState([]);
   // let interfaceTheme = useSelector((state) => state.theme.theme);
 
   // function hasRole(allowedRoles) {
@@ -76,11 +83,17 @@ function MyApp() {
     if (status === 'success') setUnits(data.units);
   }
 
+  const getOrdersStatuses = async () => {
+    const { status, data } = await request.getOrderStatuses({}, params);
+    if (status === 'success') setOrderStatuses(data.orderStatuses);
+  }
+
   useEffect(() => {
     getAttributes();
     getCustomFieldGroups();
     getStocks();
     getUnits();
+    getOrdersStatuses();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -113,10 +126,16 @@ function MyApp() {
               <Route path="/custom-field/groups" element={<CustomFiledGroupPage props={{ customFields: attributes }} />} />
               <Route path="/barcodes" element={<BarcodesPage />} />
 
+              <Route path="/orders" element={<OrdersPage props={{ orderStatuses: orderStatuses }} />} />
+
+              <Route path="/procurements" element={<ProcurementsPage />} />
+              <Route path="/purchases" element={<PurchasesPage props={{ stocks: stocks }} />} />
+
               <Route path="/settings/currencies" element={<CurrenciesPage />} />
               <Route path="/settings/languages" element={<LanguagesPage />} />
               <Route path="/settings/stocks" element={<StocksPage />} />
               <Route path="/settings/units" element={<UnitsPage />} />
+              <Route path="/settings/orders/statuses" element={<OrderStatusPage />} />
               
               <Route path="/profile/:_id" element={<ProfilePage />} />
 

@@ -544,6 +544,168 @@ const getUnits = async (value, { userId, tokens }) => {
 
 
 
+const createPurchase = async (value, { userId, tokens }) => {
+    const axiosInstance = axiosCustomInstance(tokens);
+
+    const { data } = await axiosInstance.post('purchases/create', { ...value, userId });
+
+    if (data.status === 'success') message.success(t('purchases.created'));
+
+    if (data.status === 'failed') notification.error({ message: t('purchases.not.created'), description: JSON.stringify(data) });
+
+    return data;
+}
+
+const editPurchase = async (value, { userId, tokens }) => {
+    const axiosInstance = axiosCustomInstance(tokens);
+
+    const { data } = await axiosInstance.post('purchases/edit', { ...value, userId });
+
+    if (data.status === 'success') message.success(t('purchases.edited'));
+
+    if (data.status === 'failed') notification.error({ message: t('purchases.not.edited'), description: JSON.stringify(data) });
+
+    return data;
+}
+
+const removePurchase = async (value, { userId, tokens }) => {
+    const axiosInstance = axiosCustomInstance(tokens);
+
+    const { data } = await axiosInstance.post('purchases/remove', { ...value, userId });
+
+    if (data.status === 'success' && data.data.deletedCount !== 0) message.success(t('purchases.removed'));
+
+    if (data.status === 'failed' || data.data.deletedCount === 0) notification.error({ message: t('purchases.not.removed'), description: JSON.stringify(data) });
+
+    return data;
+}
+
+const getPurchases = async (value, { userId, tokens }) => {
+    const axiosInstance = axiosCustomInstance(tokens);
+
+    const { data } = await axiosInstance.post('purchases/get', { ...value, userId });
+
+    if (data.status === 'failed') notification.error({ message: t('purchases.wasnFounded'), description: JSON.stringify(data) });
+
+    return data;
+}
+
+const getPurchaseProducts = async (value, { userId, tokens }) => {
+    const axiosInstance = axiosCustomInstance(tokens);
+
+    const { data } = await axiosInstance.post('purchases/get/products', { ...value, userId });
+
+    if (data.status === 'failed') notification.error({ message: t('purchases.products.wasnFounded'), description: JSON.stringify(data) });
+
+    return data;
+}
+
+
+
+
+
+const createOrderStatus = async (value, { userId, tokens }) => {
+    const axiosInstance = axiosCustomInstance(tokens);
+
+    const { data } = await axiosInstance.post('order-statuses/create', { ...value, userId });
+
+    if (data.status === 'success') message.success(t('order.status.created'));
+
+    if (data.status === 'failed') notification.error({ message: t('order.status.not.created'), description: JSON.stringify(data) });
+
+    return data;
+}
+
+const editOrderStatus = async (value, { userId, tokens }) => {
+    const axiosInstance = axiosCustomInstance(tokens);
+
+    const { data } = await axiosInstance.post('order-statuses/edit', { ...value, userId });
+
+    if (data.status === 'success') message.success(t('order.status.edited'));
+
+    if (data.status === 'failed') notification.error({ message: t('order.status.not.edited'), description: JSON.stringify(data) });
+
+    return data;
+}
+
+const removeOrderStatus = async (value, { userId, tokens }) => {
+    const axiosInstance = axiosCustomInstance(tokens);
+
+    const { data } = await axiosInstance.post('order-statuses/remove', { ...value, userId });
+
+    if (data.status === 'success' && data.data.deletedCount !== 0) message.success(t('order.status.removed'));
+
+    if (data.status === 'failed' || data.data.deletedCount === 0) notification.error({ message: t('order.status.not.removed'), description: JSON.stringify(data) });
+
+    return data;
+}
+
+const getOrderStatuses = async (value, { userId, tokens }) => {
+    const axiosInstance = axiosCustomInstance(tokens);
+
+    const { data } = await axiosInstance.post('order-statuses/get', { ...value, userId });
+
+    if (data.status === 'failed') notification.error({ message: t('order.status.wasnFounded'), description: JSON.stringify(data) });
+
+    return data;
+}
+
+
+
+
+
+
+const createOrder = async (value, { userId, tokens }) => {
+    const axiosInstance = axiosCustomInstance(tokens);
+
+    const { data } = await axiosInstance.post('orders/create', { ...value, userId });
+
+    if (data.status === 'success') message.success(t('orders.created'));
+
+    if (data.status === 'failed') notification.error({ message: t('orders.not.created'), description: JSON.stringify(data) });
+
+    return data;
+}
+
+const editOrder = async (value, { userId, tokens }) => {
+    const axiosInstance = axiosCustomInstance(tokens);
+
+    const { data } = await axiosInstance.post('orders/edit', { ...value, userId });
+
+    if (data.status === 'success') message.success(t('orders.edited'));
+
+    if (data.status === 'failed') notification.error({ message: t('orders.not.edited'), description: JSON.stringify(data) });
+
+    return data;
+}
+
+const removeOrder = async (value, { userId, tokens }) => {
+    const axiosInstance = axiosCustomInstance(tokens);
+
+    const { data } = await axiosInstance.post('orders/remove', { ...value, userId });
+
+    if (data.status === 'success' && data.data.deletedCount !== 0) message.success(t('orders.removed'));
+
+    if (data.status === 'failed' || data.data.deletedCount === 0) notification.error({ message: t('orders.not.removed'), description: JSON.stringify(data) });
+
+    return data;
+}
+
+const getOrders = async (value, { userId, tokens }) => {
+    const axiosInstance = axiosCustomInstance(tokens);
+
+    const { data } = await axiosInstance.post('orders/get', { ...value, userId });
+
+    if (data.status === 'failed') notification.error({ message: t('orders.wasnFounded'), description: JSON.stringify(data) });
+
+    return data;
+}
+
+
+
+
+
+
 const createBarcode = async (value, { userId, tokens }) => {
     const axiosInstance = axiosCustomInstance(tokens);
 
@@ -593,6 +755,14 @@ const getBarcodes = async (value, { userId, tokens }) => {
 
 // eslint-disable-next-line import/no-anonymous-default-export
 export default {
+    getOrders,
+    removeOrder,
+    editOrder,
+    createOrder,
+    getOrderStatuses,
+    removeOrderStatus,
+    createOrderStatus,
+    editOrderStatus,
     createLanguage,
     getLanguages,
     removeLanguage,
@@ -622,6 +792,11 @@ export default {
     removeAttributeOption,
     getAttributeOptions,
     createCustomFieldGroup,
+    createPurchase,
+    editPurchase,
+    removePurchase,
+    getPurchaseProducts,
+    getPurchases,
     editCustomFieldGroup,
     removeCustomFieldGroup,
     getCustomFieldGroups,
