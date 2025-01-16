@@ -22,7 +22,9 @@ import LanguagesPage from '../view/containers/LanguagesPage';
 import CurrenciesPage from '../view/containers/CurrenciesPage';
 import StocksPage from '../view/containers/StocksPage';
 import UnitsPage from '../view/containers/UnitsPage';
+import SourcesPage from '../view/containers/SourcesPage';
 import OrderStatusPage from '../view/containers/OrderStatusPage';
+import DeliveryServicesPage from '../view/containers/DeliveryServicesPage';
 
 import OrdersPage from '../view/containers/OrdersPage';
 
@@ -134,7 +136,9 @@ function MyApp() {
               <Route path="/settings/currencies" element={<CurrenciesPage />} />
               <Route path="/settings/languages" element={<LanguagesPage />} />
               <Route path="/settings/stocks" element={<StocksPage />} />
+              <Route path="/settings/sources" element={<SourcesPage />} />
               <Route path="/settings/units" element={<UnitsPage />} />
+              <Route path="/settings/delivery/services" element={<DeliveryServicesPage />} />
               <Route path="/settings/orders/statuses" element={<OrderStatusPage />} />
               
               <Route path="/profile/:_id" element={<ProfilePage />} />

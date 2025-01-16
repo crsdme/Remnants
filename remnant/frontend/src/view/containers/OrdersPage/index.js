@@ -68,11 +68,6 @@ export default function Page({ props }) {
             key: 'key',
         },
         {
-            title: t('ordersPage.summary'),
-            dataIndex: 'summary',
-            key: 'key',
-        },
-        {
             title: t('ordersPage.createdAt'),
             dataIndex: 'createdAt',
             key: 'key',

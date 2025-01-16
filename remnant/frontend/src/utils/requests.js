@@ -706,6 +706,108 @@ const getOrders = async (value, { userId, tokens }) => {
 
 
 
+
+
+const createSource = async (value, { userId, tokens }) => {
+    const axiosInstance = axiosCustomInstance(tokens);
+
+    const { data } = await axiosInstance.post('sources/create', { ...value, userId });
+
+    if (data.status === 'success') message.success(t('sources.created'));
+
+    if (data.status === 'failed') notification.error({ message: t('sources.not.created'), description: JSON.stringify(data) });
+
+    return data;
+}
+
+const editSource = async (value, { userId, tokens }) => {
+    const axiosInstance = axiosCustomInstance(tokens);
+
+    const { data } = await axiosInstance.post('sources/edit', { ...value, userId });
+
+    if (data.status === 'success') message.success(t('sources.edited'));
+
+    if (data.status === 'failed') notification.error({ message: t('sources.not.edited'), description: JSON.stringify(data) });
+
+    return data;
+}
+
+const removeSource = async (value, { userId, tokens }) => {
+    const axiosInstance = axiosCustomInstance(tokens);
+
+    const { data } = await axiosInstance.post('sources/remove', { ...value, userId });
+
+    if (data.status === 'success' && data.data.deletedCount !== 0) message.success(t('sources.removed'));
+
+    if (data.status === 'failed' || data.data.deletedCount === 0) notification.error({ message: t('sources.not.removed'), description: JSON.stringify(data) });
+
+    return data;
+}
+
+const getSources = async (value, { userId, tokens }) => {
+    const axiosInstance = axiosCustomInstance(tokens);
+
+    const { data } = await axiosInstance.post('sources/get', { ...value, userId });
+
+    if (data.status === 'failed') notification.error({ message: t('sources.wasnFounded'), description: JSON.stringify(data) });
+
+    return data;
+}
+
+
+
+
+
+const createDeliveryService = async (value, { userId, tokens }) => {
+    const axiosInstance = axiosCustomInstance(tokens);
+
+    const { data } = await axiosInstance.post('delivery-services/create', { ...value, userId });
+
+    if (data.status === 'success') message.success(t('delivery-services.created'));
+
+    if (data.status === 'failed') notification.error({ message: t('delivery-services.not.created'), description: JSON.stringify(data) });
+
+    return data;
+}
+
+const editDeliveryService = async (value, { userId, tokens }) => {
+    const axiosInstance = axiosCustomInstance(tokens);
+
+    const { data } = await axiosInstance.post('delivery-services/edit', { ...value, userId });
+
+    if (data.status === 'success') message.success(t('delivery-services.edited'));
+
+    if (data.status === 'failed') notification.error({ message: t('delivery-services.not.edited'), description: JSON.stringify(data) });
+
+    return data;
+}
+
+const removeDeliveryService = async (value, { userId, tokens }) => {
+    const axiosInstance = axiosCustomInstance(tokens);
+
+    const { data } = await axiosInstance.post('delivery-services/remove', { ...value, userId });
+
+    if (data.status === 'success' && data.data.deletedCount !== 0) message.success(t('delivery-services.removed'));
+
+    if (data.status === 'failed' || data.data.deletedCount === 0) notification.error({ message: t('delivery-services.not.removed'), description: JSON.stringify(data) });
+
+    return data;
+}
+
+const getDeliveryServices = async (value, { userId, tokens }) => {
+    const axiosInstance = axiosCustomInstance(tokens);
+
+    const { data } = await axiosInstance.post('delivery-services/get', { ...value, userId });
+
+    if (data.status === 'failed') notification.error({ message: t('delivery-services.wasnFounded'), description: JSON.stringify(data) });
+
+    return data;
+}
+
+
+
+
+
 const createBarcode = async (value, { userId, tokens }) => {
     const axiosInstance = axiosCustomInstance(tokens);
 
@@ -755,6 +857,14 @@ const getBarcodes = async (value, { userId, tokens }) => {
 
 // eslint-disable-next-line import/no-anonymous-default-export
 export default {
+    getDeliveryServices,
+    removeDeliveryService,
+    createDeliveryService,
+    editDeliveryService,
+    getSources,
+    editSource,
+    removeSource,
+    createSource,
     getOrders,
     removeOrder,
     editOrder,
