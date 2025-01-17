@@ -27,6 +27,7 @@ import OrderStatusPage from '../view/containers/OrderStatusPage';
 import DeliveryServicesPage from '../view/containers/DeliveryServicesPage';
 
 import OrdersPage from '../view/containers/OrdersPage';
+import OrderPage from '../view/containers/OrderPage';
 
 import ProcurementsPage from '../view/containers/ProcurementsPage';
 import PurchasesPage from '../view/containers/PurchasesPage';
@@ -42,7 +43,9 @@ function MyApp() {
   const [customFieldGroups, setCustomFieldGroups] = useState([]);
   const [stocks, setStocks] = useState([]);
   const [units, setUnits] = useState([]);
+  const [sources, setSources] = useState([]);
   const [orderStatuses, setOrderStatuses] = useState([]);
+  const [deliveryServices, setDeliveryServices] = useState([]);
   // let interfaceTheme = useSelector((state) => state.theme.theme);
 
   // function hasRole(allowedRoles) {
@@ -90,12 +93,24 @@ function MyApp() {
     if (status === 'success') setOrderStatuses(data.orderStatuses);
   }
 
+  const getSources = async () => {
+    const { status, data } = await request.getSources({}, params);
+    if (status === 'success') setSources(data.sources);
+  }
+
+  const getDeliveryServices = async () => {
+    const { status, data } = await request.getDeliveryServices({}, params);
+    if (status === 'success') setDeliveryServices(data.deliveryServices);
+  }
+
   useEffect(() => {
     getAttributes();
     getCustomFieldGroups();
     getStocks();
     getUnits();
     getOrdersStatuses();
+    getSources();
+    getDeliveryServices();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -129,6 +144,8 @@ function MyApp() {
               <Route path="/barcodes" element={<BarcodesPage />} />
 
               <Route path="/orders" element={<OrdersPage props={{ orderStatuses: orderStatuses }} />} />
+              <Route path="/order/:id" element={<OrderPage props={{ orderStatuses: orderStatuses }} />} /> {/* TYPES: EDIT, ACCEPT, VIEW */}
+              <Route path="/order" element={<OrderPage props={{ sources: sources, stocks: stocks, units: units, orderStatuses: orderStatuses, deliveryServices: deliveryServices }} />} />
 
               <Route path="/procurements" element={<ProcurementsPage />} />
               <Route path="/purchases" element={<PurchasesPage props={{ stocks: stocks }} />} />

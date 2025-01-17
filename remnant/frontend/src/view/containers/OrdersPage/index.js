@@ -32,7 +32,7 @@ export default function Page({ props }) {
     const getOrders = async () => {
         const { status, data } = await request.getOrders({}, params);
         if (status === 'success') {
-            setOrders(data.purchases);
+            setOrders(data.orders);
         }
     }
 
@@ -78,7 +78,7 @@ export default function Page({ props }) {
             render: (_, { _id, type }) => 
             <Space>
                 <Button icon={<EditFilled />} onClick={() => console.log(_id)} />
-                <Button icon={<DeleteFilled />} onClick={() => console.log(_id)} />
+                <Button icon={<DeleteFilled />} onClick={() => removeOrder(_id)} />
             </Space>
         },
     ];

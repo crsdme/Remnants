@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Space, Layout, Table, Button, Col, Row, Form, Input, Typography, InputNumber, Flex, Modal, Checkbox, Select } from 'antd';
+import { Space, Layout, Table, Button, Col, Row, Form, Input, Typography, InputNumber, Flex, Modal, Checkbox, Select, Skeleton } from 'antd';
 import { 
     EditFilled,
     DeleteFilled,
@@ -126,10 +126,12 @@ export default function Page({ props }) {
                     </Flex>
                 </Col>
             </Row>
-            <Table 
-                columns={columns}
-                dataSource={deliveryServices}
-            />
+            <Skeleton loading={!deliveryServices}>
+                <Table 
+                    columns={columns}
+                    dataSource={deliveryServices}
+                />
+            </Skeleton>
 
             <Modal 
                 title={true ? t('deliveryServicesPage.edit.title') : t('deliveryServicesPage.create.title')}

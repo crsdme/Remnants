@@ -19,9 +19,9 @@ const generalSchema = new Schema({
         type: Schema.Types.ObjectId,
         ref: 'order-status'
     },
-    deliveryType: {
+    deliveryService: {
         type: Schema.Types.ObjectId,
-        ref: 'deliveryType'
+        ref: 'deliveryService'
     },
     client: {
         type: Schema.Types.ObjectId,
@@ -42,6 +42,10 @@ const generalSchema = new Schema({
     }],
     comment: {
         type: Schema.Types.String
+    },
+    removed: {
+        type: Schema.Types.Boolean,
+        default: false
     },
 }, { timestamps: true });
 
