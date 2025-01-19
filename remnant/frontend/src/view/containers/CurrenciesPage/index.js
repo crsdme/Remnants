@@ -26,6 +26,7 @@ export default function Page() {
     const [form] = Form.useForm();
 
     const { t } = useTranslation();
+    const { languages, selectedLanguage } = useSelector((state) => state.theme);
 
     const initialValues = {
         name: null,
@@ -72,15 +73,7 @@ export default function Page() {
 
     const startEditCurrency = async (_id) => {
         const currency = currencies.find(item => item._id === _id);
-        const currencyValues = {
-            name: currency.name,
-            code: currency.code,
-            exchangeRate: currency.exchangeRate,
-            symbol: currency.symbol,
-            main: currency.main,
-            active: currency.active,
-        }
-        form.setFieldsValue(currencyValues);
+        form.setFieldsValue(currency);
         setOpenCurrencyModal(true);
         setEditingCurrency(currency);
     }
@@ -102,9 +95,10 @@ export default function Page() {
 
     const columns = [
         {
-            title: t('name'),
-            dataIndex: 'name',
-            key: 'name',
+            title: t('names'),
+            dataIndex: 'names',
+            key: 'names',
+            render: (names) => names[selectedLanguage] 
         },
         {
             title: t('symbol'),
@@ -205,13 +199,16 @@ export default function Page() {
             ]}
         >
             <Form form={form} layout="vertical" onFinish={(v) => editingCurrency ? editCurrency(v) : createCurrency(v)}>
-                <Form.Item
-                    label={t('currencyName')}
-                    name="name"
-                    rules={[{ required: true, message: t('requiredCurrencyName') }]}
-                >
-                    <Input />
-                </Form.Item>
+                { languages.all.map((language, key) => 
+                    <Form.Item 
+                        name={['names', language.code]} 
+                        label={t(`currenciesPage.name.${language.code}`)}
+                        rules={[{ required: language.main }]}
+                        key={key}
+                    >
+                        <Input />
+                    </Form.Item>
+                ) }
                 <Form.Item
                     label={t('currencyCode')}
                     name="code"

@@ -20,12 +20,16 @@ const deliveryServiceRouter = require('../../routes/http/delivery-services');
 const stocksRouter = require('../../routes/http/stocks');
 const unitsRouter = require('../../routes/http/units');
 const ordersRouter = require('../../routes/http/orders');
+const clientsRouter = require('../../routes/http/clients');
 const purchasesRouter = require('../../routes/http/purchases');
+const cashregistersRouter = require('../../routes/http/cashregisters');
 const sourcesRouter = require('../../routes/http/sources');
 const customFieldRouter = require('../../routes/http/custom-field');
 const orderStatusRouter = require('../../routes/http/order-statuses');
 const customFieldGroupRouter = require('../../routes/http/custom-field-group');
 const customFieldOptionRouter = require('../../routes/http/custom-field-option');
+const cashregisterAccountsRouter = require('../../routes/http/cashregister-accounts');
+const orderPaymentsRouter = require('../../routes/http/order-payments');
 const app = express();
 
 // app.use(logger); // логер. Там внутри pino
@@ -66,7 +70,9 @@ app.use('/products', productsRouter);
 app.use('/categories', categoryRouter);
 app.use('/purchases', purchasesRouter);
 app.use('/units', unitsRouter);
+app.use('/clients', clientsRouter);
 app.use('/orders', ordersRouter);
+app.use('/cashregisters', cashregistersRouter);
 app.use('/currencies', currencyRouter);
 app.use('/delivery-services', deliveryServiceRouter);
 app.use('/sources', sourcesRouter);
@@ -74,6 +80,8 @@ app.use('/custom-fields', customFieldRouter);
 app.use('/order-statuses', orderStatusRouter);
 app.use('/custom-fields-group', customFieldGroupRouter);
 app.use('/custom-fields-option', customFieldOptionRouter);
+app.use('/cashregister-accounts', cashregisterAccountsRouter);
+app.use('/order-payments', orderPaymentsRouter);
 app.use('/barcodes', barcodeRouter);
 // app.use('/strategy/local', localStrategyRouter);
 

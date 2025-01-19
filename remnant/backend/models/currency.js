@@ -4,9 +4,16 @@ const mongoose = require('mongoose');
 const { Schema } = mongoose;
 
 const generalSchema = new Schema({
-  name: {
-    type: Schema.Types.String,
-    required: true
+  names: {
+    type: Map,
+    of: String,
+    validate: {
+        validator: function(value) {
+            const allowedLanguages = ['ru', 'en'];
+            return Array.from(value.keys()).every(key => allowedLanguages.includes(key));
+        },
+        message: 'ru en keys only'
+    }
   },
   code: {
     type: Schema.Types.String,

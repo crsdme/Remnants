@@ -1,7 +1,7 @@
 const currencyModel = require('../models/currency.js');
 const { createNotification } = require('./notification.js');
 
-const createCurrency = async ({ name, symbol, code, exchangeRate, main, active, userId }) => {
+const createCurrency = async ({ names, symbol, code, exchangeRate, main, active, userId }) => {
     let status = null;
     let data = null;
     let warnings = [];
@@ -16,7 +16,7 @@ const createCurrency = async ({ name, symbol, code, exchangeRate, main, active, 
         active = false
     }
 
-    const createdCurrency = await currencyModel.create({ name, symbol, code, exchangeRate, main, active });
+    const createdCurrency = await currencyModel.create({ names, symbol, code, exchangeRate, main, active });
 
     if (createdCurrency) {
         status = 'success';
@@ -34,7 +34,7 @@ const createCurrency = async ({ name, symbol, code, exchangeRate, main, active, 
     };
 }
 
-const editCurrency = async ({ _id, name, symbol, code, exchangeRate, main, active, userId }) => {
+const editCurrency = async ({ _id, names, symbol, code, exchangeRate, main, active, userId }) => {
     let status = null;
     let data = null;
     let warnings = [];
@@ -49,7 +49,7 @@ const editCurrency = async ({ _id, name, symbol, code, exchangeRate, main, activ
         active = false
     }
 
-    const editedCurrency = await currencyModel.updateOne({ _id }, { name, symbol, code, exchangeRate, main, active });
+    const editedCurrency = await currencyModel.updateOne({ _id }, { names, symbol, code, exchangeRate, main, active });
 
     if (editedCurrency) {
         status = 'success';

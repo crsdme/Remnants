@@ -15,13 +15,27 @@ const generalSchema = new Schema({
             message: 'ru en keys only'
         }
     },
-    parent: {
+    cashregister: {
         type: Schema.Types.ObjectId,
-        ref: 'category'
+        ref: 'cashregister'
     },
+    balance: [{
+        amount: {
+            type: Schema.Types.Number,
+            default: 0
+        },
+        currency: {
+            type: Schema.Types.ObjectId,
+            ref: 'currency'
+        }
+    }],
     priority: {
         type: Schema.Types.Number,
         default: 0
+    },
+    removed: {
+        type: Schema.Types.Boolean,
+        default: false
     }
 }, { timestamps: true });
 

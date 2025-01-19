@@ -15,13 +15,17 @@ const generalSchema = new Schema({
             message: 'ru en keys only'
         }
     },
-    parent: {
+    accounts: [{
         type: Schema.Types.ObjectId,
-        ref: 'category'
-    },
+        ref: 'cashregister-account'
+    }],
     priority: {
         type: Schema.Types.Number,
         default: 0
+    },
+    removed: {
+        type: Schema.Types.Boolean,
+        default: false
     }
 }, { timestamps: true });
 

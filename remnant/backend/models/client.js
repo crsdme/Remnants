@@ -24,7 +24,7 @@ const generalSchema = new Schema({
   phones: [{
     type: Schema.Types.String
   }],
-  dayOfBith: {
+  dayOfBirth: {
     type: Schema.Types.Date
   },
   comment: {

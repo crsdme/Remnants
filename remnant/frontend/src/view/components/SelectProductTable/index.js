@@ -19,11 +19,6 @@ export default function SelectProductTable({ products, removeProduct }) {
     const { languages, selectedLanguage } = useSelector((state) => state.theme);
     const params = { userId: profile._id, tokens }
 
-    useEffect(() => {
- 
-    }, []);
-
-
     const columns = [
         { 
             title: t('productsTable.image'), 

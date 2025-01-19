@@ -10,12 +10,14 @@ import {
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 import request from '../../../utils/requests';
+import { useNavigate } from "react-router-dom";
 
 const { Content } = Layout;
 const { Title } = Typography;
 
 export default function Page({ props }) {
     const { t } = useTranslation();
+    const navigate = useNavigate();
 
     const [orders, setOrders] = useState([]);
 
@@ -75,9 +77,9 @@ export default function Page({ props }) {
         {
             width: 40,
             key: 'key',
-            render: (_, { _id, type }) => 
+            render: (_, { _id, id }) => 
             <Space>
-                <Button icon={<EditFilled />} onClick={() => console.log(_id)} />
+                <Button icon={<EditFilled />} onClick={() => navigate(`/order/${id}?type=edit`)} />
                 <Button icon={<DeleteFilled />} onClick={() => removeOrder(_id)} />
             </Space>
         },
@@ -98,7 +100,7 @@ export default function Page({ props }) {
                 </Col>
                 <Col span={3}>
                     <Flex justify='start' align='center' style={{ height: '100%' }}>
-                        <Button block icon={<PlusOutlined />} onClick={() => console.log()} >{t('ordersPage.create')}</Button>
+                        <Button block icon={<PlusOutlined />} onClick={() => navigate('/order?type=create')} >{t('ordersPage.create')}</Button>
                     </Flex>
                 </Col>
             </Row>

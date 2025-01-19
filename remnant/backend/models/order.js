@@ -40,6 +40,10 @@ const generalSchema = new Schema({
             type: Schema.Types.Number
         },
     }],
+    orderPayments: [{
+        type: Schema.Types.ObjectId,
+        ref: 'order-payment'
+    }],
     comment: {
         type: Schema.Types.String
     },

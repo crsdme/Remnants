@@ -807,6 +807,202 @@ const getDeliveryServices = async (value, { userId, tokens }) => {
 
 
 
+const createClient = async (value, { userId, tokens }) => {
+    const axiosInstance = axiosCustomInstance(tokens);
+
+    const { data } = await axiosInstance.post('clients/create', { ...value, userId });
+
+    if (data.status === 'success') message.success(t('clients.created'));
+
+    if (data.status === 'failed') notification.error({ message: t('clients.not.created'), description: JSON.stringify(data) });
+
+    return data;
+}
+
+const editClient = async (value, { userId, tokens }) => {
+    const axiosInstance = axiosCustomInstance(tokens);
+
+    const { data } = await axiosInstance.post('clients/edit', { ...value, userId });
+
+    if (data.status === 'success') message.success(t('clients.edited'));
+
+    if (data.status === 'failed') notification.error({ message: t('clients.not.edited'), description: JSON.stringify(data) });
+
+    return data;
+}
+
+const removeClient = async (value, { userId, tokens }) => {
+    const axiosInstance = axiosCustomInstance(tokens);
+
+    const { data } = await axiosInstance.post('clients/remove', { ...value, userId });
+
+    if (data.status === 'success' && data.data.deletedCount !== 0) message.success(t('clients.removed'));
+
+    if (data.status === 'failed' || data.data.deletedCount === 0) notification.error({ message: t('clients.not.removed'), description: JSON.stringify(data) });
+
+    return data;
+}
+
+const getClients = async (value, { userId, tokens }) => {
+    const axiosInstance = axiosCustomInstance(tokens);
+
+    const { data } = await axiosInstance.post('clients/get', { ...value, userId });
+
+    if (data.status === 'failed') notification.error({ message: t('clients.wasnFounded'), description: JSON.stringify(data) });
+
+    return data;
+}
+
+
+
+const createCashRegisterAccount = async (value, { userId, tokens }) => {
+    const axiosInstance = axiosCustomInstance(tokens);
+
+    const { data } = await axiosInstance.post('cashregister-accounts/create', { ...value, userId });
+
+    if (data.status === 'success') message.success(t('cashregisters.accountscreated'));
+
+    if (data.status === 'failed') notification.error({ message: t('cashregisters.accountsnot.created'), description: JSON.stringify(data) });
+
+    return data;
+}
+
+const editCashRegisterAccount = async (value, { userId, tokens }) => {
+    const axiosInstance = axiosCustomInstance(tokens);
+
+    const { data } = await axiosInstance.post('cashregister-accounts/edit', { ...value, userId });
+
+    if (data.status === 'success') message.success(t('cashregisters.accountsedited'));
+
+    if (data.status === 'failed') notification.error({ message: t('cashregisters.accountsnot.edited'), description: JSON.stringify(data) });
+
+    return data;
+}
+
+const removeCashRegisterAccount = async (value, { userId, tokens }) => {
+    const axiosInstance = axiosCustomInstance(tokens);
+
+    const { data } = await axiosInstance.post('cashregister-accounts/remove', { ...value, userId });
+
+    if (data.status === 'success' && data.data.deletedCount !== 0) message.success(t('cashregisters.accountsremoved'));
+
+    if (data.status === 'failed' || data.data.deletedCount === 0) notification.error({ message: t('cashregisters.accountsnot.removed'), description: JSON.stringify(data) });
+
+    return data;
+}
+
+const getCashRegisterAccounts = async (value, { userId, tokens }) => {
+    const axiosInstance = axiosCustomInstance(tokens);
+
+    const { data } = await axiosInstance.post('cashregister-accounts/get', { ...value, userId });
+
+    if (data.status === 'failed') notification.error({ message: t('cashregisters.accountswasnFounded'), description: JSON.stringify(data) });
+
+    return data;
+}
+
+
+
+
+const createCashRegister = async (value, { userId, tokens }) => {
+    const axiosInstance = axiosCustomInstance(tokens);
+
+    const { data } = await axiosInstance.post('cashregisters/create', { ...value, userId });
+
+    if (data.status === 'success') message.success(t('cashregisters.created'));
+
+    if (data.status === 'failed') notification.error({ message: t('cashregisters.not.created'), description: JSON.stringify(data) });
+
+    return data;
+}
+
+const editCashRegister = async (value, { userId, tokens }) => {
+    const axiosInstance = axiosCustomInstance(tokens);
+
+    const { data } = await axiosInstance.post('cashregisters/edit', { ...value, userId });
+
+    if (data.status === 'success') message.success(t('cashregisters.edited'));
+
+    if (data.status === 'failed') notification.error({ message: t('cashregisters.not.edited'), description: JSON.stringify(data) });
+
+    return data;
+}
+
+const removeCashRegister = async (value, { userId, tokens }) => {
+    const axiosInstance = axiosCustomInstance(tokens);
+
+    const { data } = await axiosInstance.post('cashregisters/remove', { ...value, userId });
+
+    if (data.status === 'success' && data.data.deletedCount !== 0) message.success(t('cashregisters.removed'));
+
+    if (data.status === 'failed' || data.data.deletedCount === 0) notification.error({ message: t('cashregisters.not.removed'), description: JSON.stringify(data) });
+
+    return data;
+}
+
+const getCashRegisters = async (value, { userId, tokens }) => {
+    const axiosInstance = axiosCustomInstance(tokens);
+
+    const { data } = await axiosInstance.post('cashregisters/get', { ...value, userId });
+
+    if (data.status === 'failed') notification.error({ message: t('cashregisters.wasnFounded'), description: JSON.stringify(data) });
+
+    return data;
+}
+
+
+
+const createOrderPayment = async (value, { userId, tokens }) => {
+    const axiosInstance = axiosCustomInstance(tokens);
+
+    const { data } = await axiosInstance.post('order-payments/create', { ...value, userId });
+
+    if (data.status === 'success') message.success(t('order-payment.created'));
+
+    if (data.status === 'failed') notification.error({ message: t('order-payment.not.created'), description: JSON.stringify(data) });
+
+    return data;
+}
+
+const editOrderPayment = async (value, { userId, tokens }) => {
+    const axiosInstance = axiosCustomInstance(tokens);
+
+    const { data } = await axiosInstance.post('order-payments/edit', { ...value, userId });
+
+    if (data.status === 'success') message.success(t('order-payment.edited'));
+
+    if (data.status === 'failed') notification.error({ message: t('order-payment.not.edited'), description: JSON.stringify(data) });
+
+    return data;
+}
+
+const removeOrderPayment = async (value, { userId, tokens }) => {
+    const axiosInstance = axiosCustomInstance(tokens);
+
+    const { data } = await axiosInstance.post('order-payments/remove', { ...value, userId });
+
+    if (data.status === 'success' && data.data.deletedCount !== 0) message.success(t('order-payment.removed'));
+
+    if (data.status === 'failed' || data.data.deletedCount === 0) notification.error({ message: t('order-payment.not.removed'), description: JSON.stringify(data) });
+
+    return data;
+}
+
+const getOrderPayments = async (value, { userId, tokens }) => {
+    const axiosInstance = axiosCustomInstance(tokens);
+
+    const { data } = await axiosInstance.post('order-payments/get', { ...value, userId });
+
+    if (data.status === 'failed') notification.error({ message: t('order-payment.wasnFounded'), description: JSON.stringify(data) });
+
+    return data;
+}
+
+
+
+
+
+
 
 const createBarcode = async (value, { userId, tokens }) => {
     const axiosInstance = axiosCustomInstance(tokens);
@@ -857,7 +1053,23 @@ const getBarcodes = async (value, { userId, tokens }) => {
 
 // eslint-disable-next-line import/no-anonymous-default-export
 export default {
-    getDeliveryServices,
+    getOrderPayments,
+    editOrderPayment,
+    removeOrderPayment,
+    createOrderPayment,
+    createCashRegisterAccount,
+    removeCashRegisterAccount,
+    editCashRegisterAccount,
+    getCashRegisterAccounts,
+    createCashRegister,
+    removeCashRegister,
+    editCashRegister,
+    getCashRegisters,
+    createClient,
+    editClient,
+    removeClient,
+    getClients,
+    getDeliveryServices, 
     removeDeliveryService,
     createDeliveryService,
     editDeliveryService,

@@ -304,7 +304,7 @@ const getProducts = async ({ filters, sorter, pagination }) => {
     }
 
     const products = await productsQuery.exec();
-    console.log(products[0].quantity)
+
     if (products) {
         status = 'success';
         data = { products, productsCount };

@@ -29,6 +29,9 @@ import DeliveryServicesPage from '../view/containers/DeliveryServicesPage';
 import OrdersPage from '../view/containers/OrdersPage';
 import OrderPage from '../view/containers/OrderPage';
 
+import CashRegistersPage from '../view/containers/CashRegistersPage';
+import CashRegisterAccountsPage from '../view/containers/CashRegisterAccountsPage';
+
 import ProcurementsPage from '../view/containers/ProcurementsPage';
 import PurchasesPage from '../view/containers/PurchasesPage';
 
@@ -46,6 +49,8 @@ function MyApp() {
   const [sources, setSources] = useState([]);
   const [orderStatuses, setOrderStatuses] = useState([]);
   const [deliveryServices, setDeliveryServices] = useState([]);
+  const [currencies, setCurrencies] = useState([]);
+  const [cashregisters, setCashregisters] = useState([]);
   // let interfaceTheme = useSelector((state) => state.theme.theme);
 
   // function hasRole(allowedRoles) {
@@ -71,6 +76,11 @@ function MyApp() {
   const getAttributes = async () => {
     const { status, data } = await request.getAttributes({}, params);
     if (status === 'success') setAttributes(data.customFields);
+  }
+
+  const getCurrencies = async () => {
+    const { status, data } = await request.getCurrencies({}, params);
+    if (status === 'success') setCurrencies(data.currencies);
   }
 
   const getStocks = async () => {
@@ -103,6 +113,11 @@ function MyApp() {
     if (status === 'success') setDeliveryServices(data.deliveryServices);
   }
 
+  const getCashregisters = async () => {
+    const { status, data } = await request.getCashRegisters({}, params);
+    if (status === 'success') setCashregisters(data.cashregisters);
+  }
+
   useEffect(() => {
     getAttributes();
     getCustomFieldGroups();
@@ -111,6 +126,8 @@ function MyApp() {
     getOrdersStatuses();
     getSources();
     getDeliveryServices();
+    getCurrencies();
+    getCashregisters();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -144,11 +161,14 @@ function MyApp() {
               <Route path="/barcodes" element={<BarcodesPage />} />
 
               <Route path="/orders" element={<OrdersPage props={{ orderStatuses: orderStatuses }} />} />
-              <Route path="/order/:id" element={<OrderPage props={{ orderStatuses: orderStatuses }} />} /> {/* TYPES: EDIT, ACCEPT, VIEW */}
-              <Route path="/order" element={<OrderPage props={{ sources: sources, stocks: stocks, units: units, orderStatuses: orderStatuses, deliveryServices: deliveryServices }} />} />
+              <Route path="/order/:id" element={<OrderPage props={{ cashregisters: cashregisters, currencies: currencies, sources: sources, stocks: stocks, units: units, orderStatuses: orderStatuses, deliveryServices: deliveryServices }} />} /> {/* TYPES: EDIT, ACCEPT, VIEW */}
+              <Route path="/order" element={<OrderPage props={{ cashregisters: cashregisters, currencies: currencies, sources: sources, stocks: stocks, units: units, orderStatuses: orderStatuses, deliveryServices: deliveryServices }} />} />
 
               <Route path="/procurements" element={<ProcurementsPage />} />
               <Route path="/purchases" element={<PurchasesPage props={{ stocks: stocks }} />} />
+
+              <Route path="/cashregisters" element={<CashRegistersPage props={{ currencies: currencies }} />} />
+              <Route path="/cashregisters/accounts" element={<CashRegisterAccountsPage props={{ currencies: currencies }} />} />
 
               <Route path="/settings/currencies" element={<CurrenciesPage />} />
               <Route path="/settings/languages" element={<LanguagesPage />} />
