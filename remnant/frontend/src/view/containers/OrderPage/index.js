@@ -43,9 +43,10 @@ export default function Page({ props }) {
     const params = { userId: profile._id, tokens }
 
     const getOrder = async () => {
+        if (!id) return;
         const { status, data } = await request.getOrders({ filter: { id } }, params);
         if (status === 'success') {
-            const order =data.orders[0];
+            const order = data.orders[0];
             setOrder(order);
             setSelectedProducts(order.products);
             console.log(order.products)
@@ -54,14 +55,15 @@ export default function Page({ props }) {
     }
 
     const createOrder = async () => {
-        const { stock, source, orderStatus, deliveryService, comment } = form.getFieldsValue();
-        const { status, data } = await request.createOrder({ stock, source, orderStatus, deliveryService, comment, products: selectedProducts }, params);
+        const { stock, source, orderStatus, deliveryService, client, paymentStatus, comment } = form.getFieldsValue();
+        const { status, data } = await request.createOrder({ stock, source, orderStatus, paymentStatus, deliveryService, client, comment, products: selectedProducts }, params);
         navigate('/orders');
     }
 
     const editOrder = async () => {
-        // const { status, data } = await request.editOrder({}, params);
-        console.log('edit')
+        const { stock, source, orderStatus, deliveryService, paymentStatus, client, comment } = form.getFieldsValue();
+        const { status, data } = await request.editOrder({ id, stock, source, orderStatus, paymentStatus, deliveryService, client, comment, products: selectedProducts }, params);
+        console.log(status, data)
     }
 
     const acceptOrder = async () => {
@@ -134,8 +136,8 @@ export default function Page({ props }) {
         getOrderPayments();
     }
 
-    const getOrderPayments = async (orderPayment) => {
-        const { status, data } = await request.getOrderPayments({ order: order._id }, params);
+    const getOrderPayments = async () => {
+        const { status, data } = await request.getOrderPayments({ filter: { order: order._id } }, params);
         setOrder(state => ({ ...state, orderPayments: data.orderPayments  }))
     }
 
@@ -238,6 +240,26 @@ export default function Page({ props }) {
                             </Col>
                             <Col span={24}>
                                 <Form.Item 
+                                    name="paymentStatus" 
+                                    label={t('orderPage.paymentStatus')}
+                                >
+                                    <Select
+                                        optionFilterProp="label"
+                                        options={[
+                                            {
+                                                label: t('orderPage.paid'),
+                                                value: 'paid'
+                                            },
+                                            {
+                                                label: t('orderPage.notpaid'),
+                                                value: 'notPaid'
+                                            }
+                                        ]}
+                                    />
+                                </Form.Item>
+                            </Col>
+                            <Col span={24}>
+                                <Form.Item 
                                     name="client" 
                                     label={t('orderPage.clients')}
                                 >
@@ -324,118 +346,122 @@ export default function Page({ props }) {
                     </Form>
                 </Col>
                 <Col span={8}>
-                    <Divider orientation="left" orientationMargin="0">Payment</Divider>
-                    <Form form={paymentForm} onFinish={async () => createOrderPayment()} layout='vertical'>
-                        <Row gutter={[12, 0]}>
+                    {
+                        ['edit', 'view'].includes(type) && <>
+                            <Divider orientation="left" orientationMargin="0">Payment</Divider>
+                            <Form form={paymentForm} onFinish={async () => createOrderPayment()} layout='vertical'>
+                                <Row gutter={[12, 0]}>
 
-                            <Col span={12}>
-                                <Form.Item 
-                                    name="cashregister" 
-                                    label={t('orderPage.cashregister')}
-                                >
-                                    <Select
-                                        onChange={(v) => setSelectedCashregister(v)}
-                                        optionFilterProp="label"
-                                        options={(props.cashregisters || []).map(item => ({
-                                            value: item._id,
-                                            label: item.names[selectedLanguage]
-                                        }))}
-                                    />
-                                </Form.Item>
-                            </Col>
-                            <Col span={12}>
-                                <Form.Item 
-                                    name="cashregisterAccount" 
-                                    label={t('orderPage.cashregisterAccount')}
-                                >
-                                    <Select
-                                        onChange={(v) => setSelectedCashregisterAccount(v)}
-                                        optionFilterProp="label"
-                                        options={(cashregisterAccounts || []).map(item => ({
-                                            value: item._id,
-                                            label: item.names[selectedLanguage]
-                                        }))}
-                                    />
-                                </Form.Item>
-                            </Col>
-                            <Col span={12}>
-                                <Form.Item
-                                    name="amount"
-                                    label={t('orderPage.amount')}
-                                    style={{
-                                        display: 'inline-block',
-                                        width: 'calc(50% - 4px)',
-                                    }}
-                                >
-                                <InputNumber 
-                                    style={{width: '100%'}} 
-                                    addonAfter={
-                                    <Form.Item 
-                                        name="currency" 
-                                        noStyle
-                                        rules={[{ required: true, message: t(`orderPage.currency`) }]}
-                                    >
-                                        <Select
-                                            style={{width: 50}}
-                                            options={(props.currencies || []).map((currency, key) => ({
-                                                label: currency.symbol,
-                                                value: currency._id,
-                                                disabled: !allowedCurrencies.includes(currency._id),
-                                                key
-                                            }))}
+                                    <Col span={12}>
+                                        <Form.Item 
+                                            name="cashregister" 
+                                            label={t('orderPage.cashregister')}
+                                        >
+                                            <Select
+                                                onChange={(v) => setSelectedCashregister(v)}
+                                                optionFilterProp="label"
+                                                options={(props.cashregisters || []).map(item => ({
+                                                    value: item._id,
+                                                    label: item.names[selectedLanguage]
+                                                }))}
+                                            />
+                                        </Form.Item>
+                                    </Col>
+                                    <Col span={12}>
+                                        <Form.Item 
+                                            name="cashregisterAccount" 
+                                            label={t('orderPage.cashregisterAccount')}
+                                        >
+                                            <Select
+                                                onChange={(v) => setSelectedCashregisterAccount(v)}
+                                                optionFilterProp="label"
+                                                options={(cashregisterAccounts || []).map(item => ({
+                                                    value: item._id,
+                                                    label: item.names[selectedLanguage]
+                                                }))}
+                                            />
+                                        </Form.Item>
+                                    </Col>
+                                    <Col span={12}>
+                                        <Form.Item
+                                            name="amount"
+                                            label={t('orderPage.amount')}
+                                            style={{
+                                                display: 'inline-block',
+                                                width: 'calc(50% - 4px)',
+                                            }}
+                                        >
+                                        <InputNumber 
+                                            style={{width: '100%'}} 
+                                            addonAfter={
+                                            <Form.Item 
+                                                name="currency" 
+                                                noStyle
+                                                rules={[{ required: true, message: t(`orderPage.currency`) }]}
+                                            >
+                                                <Select
+                                                    style={{width: 50}}
+                                                    options={(props.currencies || []).map((currency, key) => ({
+                                                        label: currency.symbol,
+                                                        value: currency._id,
+                                                        disabled: !allowedCurrencies.includes(currency._id),
+                                                        key
+                                                    }))}
+                                                />
+                                            </Form.Item>
+                                            } 
                                         />
+                                        </Form.Item>
+                                    </Col>
+                                    <Col span={12}>
+                                        <Form.Item 
+                                            name="paymentStatus" 
+                                            label={t('orderPage.paymentStatus')}
+                                        >
+                                            <Segmented defaultValue="notPaid" options={[{ label: t('paid'), value: 'paid' }, { label: t('notPaid'), value: 'notPaid' }]} />
+                                        </Form.Item>
+                                    </Col>
+                                    <Col span={12}>
+                                        <Form.Item 
+                                            name="comment" 
+                                            label={t('orderPage.comment')}
+                                        >
+                                            <TextArea />
+                                        </Form.Item>
+                                    </Col>
+                                    <Col span={12}>
+                                        <Form.Item 
+                                            name="paymentDate" 
+                                            label={t('orderPage.paymentDate')}
+                                        >
+                                            <DatePicker defaultValue={dayjs()} />
+                                        </Form.Item>
+                                    </Col>
+                                    <Col span={12}>
+                                    <Form.Item label={null}>
+                                        <Button type="primary" htmlType="submit">
+                                            {t(`orderPage.button.${type}`)}
+                                        </Button>
                                     </Form.Item>
-                                    } 
-                                />
-                                </Form.Item>
-                            </Col>
-                            <Col span={12}>
-                                <Form.Item 
-                                    name="paymentStatus" 
-                                    label={t('orderPage.paymentStatus')}
-                                >
-                                    <Segmented defaultValue="notPaid" options={[{ label: t('paid'), value: 'paid' }, { label: t('notPaid'), value: 'notPaid' }]} />
-                                </Form.Item>
-                            </Col>
-                            <Col span={12}>
-                                <Form.Item 
-                                    name="comment" 
-                                    label={t('orderPage.comment')}
-                                >
-                                    <TextArea />
-                                </Form.Item>
-                            </Col>
-                            <Col span={12}>
-                                <Form.Item 
-                                    name="paymentDate" 
-                                    label={t('orderPage.paymentDate')}
-                                >
-                                    <DatePicker defaultValue={dayjs()} />
-                                </Form.Item>
-                            </Col>
-                            <Col span={12}>
-                            <Form.Item label={null}>
-                                <Button type="primary" htmlType="submit">
-                                    {t(`orderPage.button.${type}`)}
-                                </Button>
-                            </Form.Item>
-                            </Col>
-                            <Col span={24}>
-                            <List
-                                dataSource={(order.orderPayments || [])}
-                                renderItem={(orderPayment) => (
-                                    <List.Item actions={[<Button icon={<DeleteFilled />} onClick={() => removeOrderPayment(orderPayment._id)} />]}>
-                                        <List.Item.Meta
-                                            title={`${orderPayment.amount} ${orderPayment.currency.symbol} | ${orderPayment.cashregister.names[selectedLanguage]}`}
-                                            description={`${orderPayment.cashregisterAccount.names[selectedLanguage]} | ${orderPayment.comment} | ${orderPayment.paymentStatus} | ${orderPayment.date}`}
-                                        />
-                                    </List.Item>
-                                )}
-                            />
-                            </Col>
+                                    </Col>
+                                    <Col span={24}>
+                                    <List
+                                        dataSource={(order.orderPayments || [])}
+                                        renderItem={(orderPayment) => (
+                                            <List.Item actions={[<Button icon={<DeleteFilled />} onClick={() => removeOrderPayment(orderPayment._id)} />]}>
+                                                <List.Item.Meta
+                                                    title={`${orderPayment.amount} ${orderPayment.currency.symbol} | ${orderPayment.cashregister.names[selectedLanguage]}`}
+                                                    description={`${orderPayment.cashregisterAccount.names[selectedLanguage]} | ${orderPayment.comment} | ${orderPayment.paymentStatus} | ${orderPayment.date}`}
+                                                />
+                                            </List.Item>
+                                        )}
+                                    />
+                                    </Col>
 
-                        </Row>
-                    </Form>
+                                </Row>
+                            </Form>
+                        </>
+                    }
                 
                 </Col>
             </Row>

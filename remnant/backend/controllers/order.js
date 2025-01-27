@@ -1,6 +1,67 @@
 const orderModel = require('../models/order.js');
+const { createProductTransaction } = require('./product-transactions.js');
 
-const createOrder = async ({ stock, source, products, comment, orderStatus, deliveryService, client, userId }) => {
+const calculateStockChanges = ({ newProducts, oldProducts, newStock, oldStock }) => {
+    const changes = [];
+
+    // Создаем Map для старого заказа (ключ = _id + склад)
+    const oldMap = new Map(oldProducts.map(p => [`${p._id}-${oldStock}`, p.quantity]));
+
+    newStock = newStock.toString();
+    oldStock = oldStock.toString();
+
+    // Обрабатываем новый заказ
+    for (const newItem of newProducts) {
+        const id = newItem._id.toString();
+        const newQty = newItem.quantity;
+        const oldQty = oldMap.get(`${id}-${oldStock}`) ?? 0; // Берем старое количество или 0
+        const keyNew = `${id}-${newStock}`;
+        const keyOld = `${id}-${oldStock}`;
+
+        if (newStock !== oldStock) {
+            // Если склад изменился, сначала возвращаем на старый, потом списываем с нового
+            if (oldQty > 0) {
+                changes.push({ _id: id, stock: oldStock, quantity: oldQty }); // Возвращаем старое количество
+            }
+            if (newQty > 0) {
+                changes.push({ _id: id, stock: newStock, quantity: -newQty }); // Списываем новое количество
+            }
+        } else {
+            // Если склад тот же, просто изменяем количество
+            if (newQty !== oldQty) {
+                changes.push({ _id: id, stock: newStock, quantity: newQty - oldQty });
+            }
+        }
+
+        oldMap.delete(keyOld);
+    }
+
+    // Оставшиеся товары в старом заказе нужно полностью вернуть
+    for (const [key, qty] of oldMap.entries()) {
+        const [id, stock] = key.split("-");
+        changes.push({ _id: id, stock, quantity: qty }); // Вернуть оставшиеся товары на старый склад
+    }
+
+    return changes;
+};
+
+const calculateTotalPrice = ({ products }) => {
+    const totals = {};
+
+    for (const item of products) {
+        const price = item.price;
+        const quantity = item.quantity;
+        const currencyId = item.currency._id;
+        const totalItemPrice = price * quantity;
+
+        if (!totals[currencyId]) totals[currencyId] = 0;
+        totals[currencyId] += totalItemPrice;
+    }
+
+    return Object.entries(totals).map(([currency, amount]) => ({ currency, amount }));
+};
+
+const createOrder = async ({ stock, source, products, comment, orderStatus, deliveryService, paymentStatus, client, userId }) => {
     let status = null;
     let data = null;
     let warnings = [];
@@ -9,7 +70,9 @@ const createOrder = async ({ stock, source, products, comment, orderStatus, deli
 
     const id = await orderModel.count();
 
-    const createdStatus = await orderModel.create({ 
+    const totals = calculateTotalPrice({ products });
+
+    const createdOrder = await orderModel.create({ 
         id: id + 1, 
         stock, 
         source, 
@@ -17,12 +80,21 @@ const createOrder = async ({ stock, source, products, comment, orderStatus, deli
         comment, 
         orderStatus, 
         deliveryService, 
-        client 
+        client,
+        totals
     });
-    console.log(createdStatus)
-    if (createdStatus) {
+
+    products = products.map(product => ({
+        _id: product._id,
+        quantity: product.quantity * -1,
+        stock
+    }))
+    
+    createProductTransaction({ from: { stock }, to: { stock }, type: 'order', orderId: createdOrder._id, products });
+
+    if (createdOrder) {
         status = 'success';
-        data = createdStatus;
+        data = createdOrder;
     } else {
         status = 'failed';
     }
@@ -36,14 +108,25 @@ const createOrder = async ({ stock, source, products, comment, orderStatus, deli
     };
 }
 
-const editOrder = async ({ _id, stock, source, products, comment, orderStatus, deliveryType, client, userId }) => {
+const editOrder = async ({ id, stock, source, products, comment, orderStatus, deliveryType, paymentStatus, client, userId }) => {
     let status = null;
     let data = null;
     let warnings = [];
     let errors = [];
     let info = [];
 
-    const editedOrder = await orderModel.updateOne({ _id }, { stock, source, products, comment, orderStatus, deliveryType, client, });
+    const totals = calculateTotalPrice({ products });
+
+    const editedOrder = await orderModel.findOneAndUpdate({ id }, { stock, source, products, comment, orderStatus, deliveryType, client, totals });
+
+    const productsMap = calculateStockChanges({ 
+        oldProducts: editedOrder.products, 
+        newProducts: products,
+        oldStock: editedOrder.stock,
+        newStock: stock
+    });
+
+    createProductTransaction({ from: { stock: editedOrder.stock }, to: { stock }, type: 'order', orderId: editedOrder._id, products: productsMap });
 
     if (editedOrder) {
         status = 'success';
@@ -82,6 +165,56 @@ const getOrders = async ({ filter, sorter, pagination }) => {
         {
             $match: filter
         },
+        // CLIENTS
+        {
+            $lookup: {
+                from: "clients",
+                localField: "client",
+                foreignField: "_id",
+                as: "client"
+            }
+        },
+        {
+            $unwind: {
+                path: "$client",
+                preserveNullAndEmptyArrays: true
+            }
+        },
+        // TOTALS
+        {
+            $lookup: {
+                from: "currencies",
+                localField: "totals.currency",
+                foreignField: "_id",
+                as: "currencyData"
+            }
+        },
+        {
+            $addFields: {
+                "totals": {
+                    $map: {
+                        input: "$totals",
+                        as: "total",
+                        in: {
+                            currency: {
+                                $arrayElemAt: [
+                                    {
+                                        $filter: {
+                                            input: "$currencyData",
+                                            as: "cur",
+                                            cond: { $eq: ["$$cur._id", "$$total.currency"] }
+                                        }
+                                    },
+                                    0
+                                ]
+                            },
+                            amount: "$$total.amount"
+                        }
+                    }
+                }
+            }
+        },
+        // ORDER PAYMENTS
         {
             $lookup: {
                 from: "order-payments",
@@ -137,6 +270,7 @@ const getOrders = async ({ filter, sorter, pagination }) => {
                 ]
             }
         },
+        // PRODUCTS
         {
             $lookup: {
                 from: "products",
@@ -250,7 +384,7 @@ const getOrders = async ({ filter, sorter, pagination }) => {
                 }
             }
         },
-        { $unset: "populatedProducts" }
+        { $unset: ["populatedProducts", "currencyData"] }
     ];
 
     let ordersQuery = orderModel.aggregate(pipline);

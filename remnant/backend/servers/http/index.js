@@ -30,6 +30,8 @@ const customFieldGroupRouter = require('../../routes/http/custom-field-group');
 const customFieldOptionRouter = require('../../routes/http/custom-field-option');
 const cashregisterAccountsRouter = require('../../routes/http/cashregister-accounts');
 const orderPaymentsRouter = require('../../routes/http/order-payments');
+const moneyTransactionsRouter = require('../../routes/http/money-transactions');
+const productTransactionsRouter = require('../../routes/http/product-transactions');
 const app = express();
 
 // app.use(logger); // логер. Там внутри pino
@@ -83,6 +85,8 @@ app.use('/custom-fields-option', customFieldOptionRouter);
 app.use('/cashregister-accounts', cashregisterAccountsRouter);
 app.use('/order-payments', orderPaymentsRouter);
 app.use('/barcodes', barcodeRouter);
+app.use('/money-transactions', moneyTransactionsRouter);
+app.use('/product-transactions', productTransactionsRouter);
 // app.use('/strategy/local', localStrategyRouter);
 
 // catch 404 and forward to error handler

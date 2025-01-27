@@ -1000,6 +1000,29 @@ const getOrderPayments = async (value, { userId, tokens }) => {
 
 
 
+const getMoneyTransactions = async (value, { userId, tokens }) => {
+    const axiosInstance = axiosCustomInstance(tokens);
+
+    const { data } = await axiosInstance.post('money-transactions/get', { ...value, userId });
+
+    if (data.status === 'failed') notification.error({ message: t('money-transactions.wasnFounded'), description: JSON.stringify(data) });
+
+    return data;
+}
+
+
+
+const getProductTransactions = async (value, { userId, tokens }) => {
+    const axiosInstance = axiosCustomInstance(tokens);
+
+    const { data } = await axiosInstance.post('product-transactions/get', { ...value, userId });
+
+    if (data.status === 'failed') notification.error({ message: t('product-transactions.wasnFounded'), description: JSON.stringify(data) });
+
+    return data;
+}
+
+
 
 
 
@@ -1053,6 +1076,8 @@ const getBarcodes = async (value, { userId, tokens }) => {
 
 // eslint-disable-next-line import/no-anonymous-default-export
 export default {
+    getProductTransactions,
+    getMoneyTransactions,
     getOrderPayments,
     editOrderPayment,
     removeOrderPayment,

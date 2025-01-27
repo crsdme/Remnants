@@ -19,7 +19,9 @@ export default function Page({ props }) {
 
     const [editingCashRegister, setEditingCashRegister] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isTransactionsModalOpen, setIsTransactionsModalOpen] = useState(false);
     const [cashRegisters, setCashRegisters] = useState([]);
+    const [moneyTransactions, setMoneyTransactions] = useState([]);
 
     const { tokens, profile } = useSelector((state) => state.auth);
     const { languages, selectedLanguage } = useSelector((state) => state.theme);
@@ -56,6 +58,13 @@ export default function Page({ props }) {
         }
     }
 
+    const getMoneyTransactions = async (_id) => {
+        const { status, data } = await request.getMoneyTransactions({ filter: { cashregister: _id } }, params);
+        if (status === 'success') {
+            setMoneyTransactions(data.moneyTransactions);
+        }
+    }
+
 
     const openCreateModal = () => {
         setIsModalOpen(true);
@@ -72,6 +81,16 @@ export default function Page({ props }) {
         setIsModalOpen(false);
         setEditingCashRegister(null);
         form.resetFields();
+    }
+
+    const closeTransactionsModal = () => {
+        setIsTransactionsModalOpen(false);
+        setMoneyTransactions(null);
+    }
+
+    const openTransactionsModal = (_id) => {
+        setIsTransactionsModalOpen(true);
+        getMoneyTransactions(_id);
     }
 
     useEffect(() => {
@@ -114,6 +133,58 @@ export default function Page({ props }) {
             render: (_, { _id }) => <Space>
                 <Button icon={<EditFilled />} onClick={() => openEditModal(_id)} />
                 <Button icon={<DeleteFilled />} onClick={() => removeCashRegister(_id)} />
+                <Button onClick={() => openTransactionsModal(_id)} />
+            </Space>
+        },
+    ];
+
+    const columnsMoneyTransactions = [
+        {
+            title: t('t.fromCashregister'),
+            dataIndex: ['from', 'cashregister', 'names', selectedLanguage],
+            key: 'key'
+        },
+        {
+            title: t('t.toCashregister'),
+            dataIndex: ['to', 'cashregister', 'names', selectedLanguage],
+            key: 'key'
+        },
+        {
+            title: t('t.fromCashregisterAccount'),
+            dataIndex: ['from', 'cashregisterAccount', 'names', selectedLanguage],
+            key: 'key'
+        },
+        {
+            title: t('t.toCashregisterAccount'),
+            dataIndex: ['to', 'cashregisterAccount', 'names', selectedLanguage],
+            key: 'key'
+        },
+        {
+            title: t('t.fromAmount'),
+            dataIndex: ['from', 'amount'],
+            key: 'key'
+        },
+        {
+            title: t('t.toAmount'),
+            dataIndex: ['to', 'amount'],
+            key: 'key'
+        },
+        {
+            title: t('t.fromcurrency'),
+            dataIndex: ['from', 'currency', 'names', selectedLanguage],
+            key: 'key'
+        },
+        {
+            title: t('t.tocurrency'),
+            dataIndex: ['to', 'currency', 'names', selectedLanguage],
+            key: 'key'
+        },
+        {
+            width: 40,
+            key: 'key',
+            render: (_, { _id }) => <Space>
+                {/* <Button icon={<EditFilled />} onClick={() => openEditModal(_id)} />
+                <Button icon={<DeleteFilled />} onClick={() => removeCashRegister(_id)} /> */}
             </Space>
         },
     ];
@@ -164,6 +235,19 @@ export default function Page({ props }) {
                         <InputNumber style={{ width: '100%' }} />
                     </Form.Item>
                 </Form>
+            </Modal>
+            <Modal 
+                title={t('cashRegistersPage.moneyTransactions')}
+                open={isTransactionsModalOpen} 
+                width={'auto'}
+                centered
+                onOk={() => closeTransactionsModal()}
+                onCancel={() => closeTransactionsModal()}
+            >
+                <Table 
+                    columns={columnsMoneyTransactions}
+                    dataSource={moneyTransactions}
+                />
             </Modal>
         </Content>
     );

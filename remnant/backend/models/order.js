@@ -44,6 +44,15 @@ const generalSchema = new Schema({
         type: Schema.Types.ObjectId,
         ref: 'order-payment'
     }],
+    totals: [{
+        currency: {
+            type: Schema.Types.ObjectId,
+            ref: 'currencies'
+        },
+        amount: {
+            type: Schema.Types.Number
+        }
+    }],
     comment: {
         type: Schema.Types.String
     },

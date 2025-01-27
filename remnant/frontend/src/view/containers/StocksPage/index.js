@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Space, Layout, Table, Button, Modal, Form, Input, InputNumber, Popconfirm } from 'antd';
+import { Space, Layout, Table, Button, Modal, Form, Input, InputNumber, Popconfirm, Timeline } from 'antd';
 import { 
     PlusOutlined,
     DeleteOutlined,
@@ -15,8 +15,10 @@ const { Content } = Layout;
 export default function Page() {
 
     const [stocks, setStocks] = useState([]);
+    const [productTransactions, setProductTransactions] = useState([]);
 
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isTransactionsModalOpen, setIsTransactionsModalOpen] = useState(false);
     const [tablePagination, setTablePagination] = useState([]);
     const [editingStock, setEditingStock] = useState(null);
     const [tableFilters, setTableFilters] = useState({ pagination: { current: 1, pageSize: 10 } });
@@ -79,6 +81,23 @@ export default function Page() {
         getStocks({ pagination, filters, sorter })
     }
 
+    const getProductTransactions = async (_id) => {
+        const { status, data } = await request.getProductTransactions({ filter: { stock: _id } }, params);
+        if (status === 'success') {
+            setProductTransactions(data.productTransactions);
+        }
+    }
+
+    const closeTransactionsModal = () => {
+        setIsTransactionsModalOpen(false);
+        setProductTransactions(null);
+    }
+
+    const openTransactionsModal = (_id) => {
+        setIsTransactionsModalOpen(true);
+        getProductTransactions(_id);
+    }
+
     useEffect(() => {
         getStocks(tableFilters);
     }, []);
@@ -99,6 +118,7 @@ export default function Page() {
             width: 30,
             render: (_id) => <Space>
                 <Button icon={<EditOutlined />} onClick={() => startEditStock(_id)} />
+                <Button type='primary' onClick={() => openTransactionsModal(_id)} />
                 <Popconfirm
                     title="Delete the task"
                     description="Are you sure to delete this task?"
@@ -108,6 +128,57 @@ export default function Page() {
                 </Popconfirm>
             </Space>
         }
+    ];
+
+    const columnsProductTransactions = [
+        {
+            title: t('t.fromStock'),
+            dataIndex: ['from', 'stock', 'names', selectedLanguage],
+            key: 'key'
+        },
+        {
+            title: t('t.toStock'),
+            dataIndex: ['to', 'stock', 'names', selectedLanguage],
+            key: 'key'
+        },
+        {
+            title: t('t.fromCashregisterAccount'),
+            dataIndex: ['from', 'cashregisterAccount', 'names', selectedLanguage],
+            key: 'key'
+        },
+        {
+            title: t('t.type'),
+            dataIndex: 'type',
+            key: 'key',
+        },
+        {
+            title: t('t.purchaseId'),
+            dataIndex: ['purchase', 'id'],
+            key: 'key'
+        },
+        {
+            title: t('t.products'),
+            dataIndex: 'products',
+            key: 'key'
+        },
+        {
+            title: t('t.fromcurrency'),
+            dataIndex: ['from', 'currency', 'names', selectedLanguage],
+            key: 'key'
+        },
+        {
+            title: t('t.tocurrency'),
+            dataIndex: ['to', 'currency', 'names', selectedLanguage],
+            key: 'key'
+        },
+        {
+            width: 40,
+            key: 'key',
+            render: (_, { _id }) => <Space>
+                {/* <Button icon={<EditFilled />} onClick={() => openEditModal(_id)} />
+                <Button icon={<DeleteFilled />} onClick={() => removeCashRegister(_id)} /> */}
+            </Space>
+        },
     ];
 
     return (<>
@@ -158,6 +229,29 @@ export default function Page() {
                     <InputNumber style={{ width: '100%' }} />
                 </Form.Item>
             </Form>
+        </Modal>
+
+        <Modal 
+            title={t('stocksPage.transactions')}
+            open={isTransactionsModalOpen} 
+            width={500}
+            centered
+            onOk={() => closeTransactionsModal()}
+            onCancel={() => closeTransactionsModal()}
+        >
+            {/* <Table 
+                columns={columnsProductTransactions}
+                dataSource={productTransactions}
+            /> */}
+            <Timeline
+                items={(productTransactions || []).map(transaction => ({
+                    children: `
+                        ${transaction.createdAt} |
+                        ${transaction.type} | ${(transaction.orderId || transaction.purchase.id)} |
+                        ${(transaction.products || []).map(product => `${product.names?.[selectedLanguage] || "N/A"} (${product.quantity || 0})`).join(", ")}
+                    `
+                }))}
+            />
         </Modal>
     </>);
 }

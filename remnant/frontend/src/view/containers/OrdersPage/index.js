@@ -60,14 +60,24 @@ export default function Page({ props }) {
             key: 'key',
         },
         {
+            title: t('ordersPage.payments'),
+            dataIndex: 'orderPayments',
+            key: 'key',
+            render: (v) => (v || []).map(item => <Tag>{ item.amount } { item.currency.symbol }</Tag>)
+        },
+        {
             title: t('ordersPage.client'),
             dataIndex: 'client',
             key: 'key',
+            render: (client) => {
+                if (client) return `${client.name} ${client.middlename} ${client.lastname}`
+            }
         },
         {
-            title: t('ordersPage.summary'),
-            dataIndex: 'summary',
+            title: t('ordersPage.totals'),
+            dataIndex: 'totals',
             key: 'key',
+            render: (v) => (v || []).map(item => <Tag>{ item.amount } { item.currency.symbol }</Tag>)
         },
         {
             title: t('ordersPage.createdAt'),

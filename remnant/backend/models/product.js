@@ -90,7 +90,7 @@ const generalSchema = new Schema({
       ref: 'category'
     },
   }],
-  disabled: {
+  removed: {
     type: Schema.Types.Boolean,
     default: false
   },

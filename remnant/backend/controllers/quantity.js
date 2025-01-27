@@ -26,16 +26,12 @@ const createQuantity = async ({ product, amount, stock }) => {
     };
 }
 
-const countQuantity = async ({ type, product, amount, stock }) => {
+const countQuantity = async ({ product, amount, stock }) => {
     let status = null;
     let data = null;
     let warnings = [];
     let errors = [];
     let info = [];
-
-    if (type === 'dec') {
-        amount = amount * -1; 
-    }
 
     let editedQuantity = await quantityModel.findOneAndUpdate({ product, stock }, { $inc: { amount } });
 

@@ -1,6 +1,6 @@
 const purchaseModel = require('../models/purchase.js');
 
-const { countQuantity } = require('./quantity.js');
+const { createProductTransaction } = require('./product-transactions.js');
 
 const createPurchase = async ({ stock, toStock, type, comment, products }) => {
     let status = null;
@@ -33,9 +33,13 @@ const createPurchase = async ({ stock, toStock, type, comment, products }) => {
         products 
     });
 
-    for (const product of products) {
-        countQuantity({ type: purchaseTypes[type], product: product._id, amount: product.quantity, stock });
-    }
+    products = products.map(product => ({
+        _id: product._id,
+        quantity: product.quantity,
+        stock
+    }))
+
+    createProductTransaction({ from: { stock }, to: { stock }, type: 'purchase', purchaseId: createdPurchase._id, products });
 
     if (createdPurchase) {
         status = 'success';

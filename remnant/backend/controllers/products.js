@@ -160,7 +160,7 @@ const getProducts = async ({ filters, sorter, pagination }) => {
 
     const { quantity } = (filters || { quantity: null });
     
-    let query = {};
+    let query = { removed: false };
 
     const stockFilter = new mongoose.Types.ObjectId(quantity?.[0]);
 
@@ -414,7 +414,7 @@ const removeProduct = async ({ _id }) => {
     let errors = [];
     let info = [];
 
-    const removedProduct = await productsModel.deleteOne({ _id });
+    const removedProduct = await productsModel.updateOne({ _id }, { removed: true });
 
     if (removedProduct) {
         status = 'success';

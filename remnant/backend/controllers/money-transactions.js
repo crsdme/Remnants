@@ -2,6 +2,8 @@ const moneyTransactionsModel = require('../models/money-transaction.js');
 const { createNotification } = require('./notification.js');
 const { countMoneyCashregisterAccount } = require('./cashregister-account.js');
 
+const mongoose = require('mongoose');
+
 const createMoneyTransaction = async ({ to, from, exchangeRate, paymentDate, comment, userId }) => {
     let status = null;
     let data = null;
@@ -67,21 +69,111 @@ const getMoneyTransactions = async ({ filter, sorter, pagination }) => {
     let errors = [];
     let info = [];
 
-    const { current, pageSize, allPages } = (pagination || { current: null, pageSize: null, allPages: null });
+    const { current, pageSize, allPages } = (pagination || { current: 1, pageSize: 10, allPages: false });
 
-    filter = { ...filter, removed: false };
+    const { cashregister } = (filter || { cashregister: false });
 
-    let query = moneyTransactionsModel.find(filter);
+    query = { removed: false };
+
+    if (cashregister) {
+        query['$or'] = [
+            {
+                'to.cashregister': mongoose.Types.ObjectId(cashregister)
+            },
+            {
+                'from.cashregister': mongoose.Types.ObjectId(cashregister)
+            }
+        ];
+    }
+
+    console.log(query)
+
+    let pipline = [
+        {
+            $match: query
+        },
+        {
+            $lookup: {
+                from: "cashregisters",
+                localField: "from.cashregister",
+                foreignField: "_id",
+                as: "from.cashregister"
+            }
+        },
+        {
+            $lookup: {
+              from: "cashregister-accounts",
+              localField: "from.cashregisterAccount",
+              foreignField: "_id",
+              as: "from.cashregisterAccount"
+            }
+        },
+        {
+            $lookup: {
+              from: "currencies",
+              localField: "from.currency",
+              foreignField: "_id",
+              as: "from.currency"
+            }
+        },
+        {
+            $lookup: {
+                from: "cashregisters",
+                localField: "to.cashregister",
+                foreignField: "_id",
+                as: "to.cashregister"
+            }
+        },
+        {
+            $lookup: {
+              from: "cashregister-accounts",
+              localField: "to.cashregisterAccount",
+              foreignField: "_id",
+              as: "to.cashregisterAccount"
+            }
+        },
+        {
+            $lookup: {
+              from: "currencies",
+              localField: "to.currency",
+              foreignField: "_id",
+              as: "to.currency"
+            }
+        },
+        {
+            $unwind: { path: "$from.cashregister", preserveNullAndEmptyArrays: true }
+        },
+        {
+            $unwind: { path: "$from.cashregisterAccount", preserveNullAndEmptyArrays: true }
+        },
+        {
+            $unwind: { path: "$from.currency", preserveNullAndEmptyArrays: true }
+        },
+        {
+            $unwind: { path: "$to.cashregister", preserveNullAndEmptyArrays: true }
+        },
+        {
+            $unwind: { path: "$to.cashregisterAccount", preserveNullAndEmptyArrays: true }
+        },
+        {
+            $unwind: { path: "$to.currency", preserveNullAndEmptyArrays: true }
+        },
+        {
+            $sort: { createdAt: -1 }
+        },
+    ];
+
+    let moneyTransactionsQuery = moneyTransactionsModel.aggregate(pipline);
+
+    if (allPages === false || !allPages) {
+        moneyTransactionsQuery = moneyTransactionsQuery.skip((current - 1) * pageSize).limit(pageSize);
+    }
+
+    let moneyTransactions = await moneyTransactionsQuery.exec();
 
     let moneyTransactionsCount = await moneyTransactionsModel.count();
 
-    if (allPages === false || !allPages) {
-        query = query.skip((current - 1) * pageSize).limit(pageSize);
-    }
-
-    const moneyTransactions = await query.exec();
-
-    if (currencies) {
+    if (moneyTransactions) {
         status = 'success';
         data = { moneyTransactions, moneyTransactionsCount };
     } else {

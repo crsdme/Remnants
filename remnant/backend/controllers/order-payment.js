@@ -178,7 +178,27 @@ const removeOrderPayment = async ({ order, orderPayment }) => {
     let errors = [];
     let info = [];
 
-    const removedOrderPayment = await orderPaymentModel.updateOne({ _id: orderPayment }, { removed: true });
+    const removedOrderPayment = await orderPaymentModel.findOneAndUpdate({ _id: orderPayment }, { removed: true });
+
+    createMoneyTransaction({
+        from: {
+            cashregister: removedOrderPayment.cashregister,
+            cashregisterAccount: removedOrderPayment.cashregisterAccount,
+            amount: removedOrderPayment.amount,
+            currency: removedOrderPayment.currency
+        },
+        to: {
+            cashregister: removedOrderPayment.cashregister,
+            cashregisterAccount: removedOrderPayment.cashregisterAccount,
+            amount: removedOrderPayment.amount * -1,
+            currency: removedOrderPayment.currency
+        },
+        status: 'cancelled',
+        paymentDate: removedOrderPayment.paymentDate,
+        acceptedBy: null,
+        createdBy: null,
+        canceledBy: null,
+    });
 
     if (removedOrderPayment) {
         status = 'success';
