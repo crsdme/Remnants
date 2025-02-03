@@ -1,37 +1,37 @@
-const path = require('path');
-const createError = require('http-errors');
-const cors = require('cors');
-const express = require('express');
-const { staticDir } = require('../../config').server.http;
+const path = require("path");
+const createError = require("http-errors");
+const cors = require("cors");
+const express = require("express");
+const { staticDir } = require("../../config").server.http;
 
 // Мидлвейры
 // const helmet = require('helmet');
 
-const indexRouter = require('../../routes/http/index');
-const languagesRouter = require('../../routes/http/languages');
-const authRouter = require('../../routes/http/auth');
-const usersRouter = require('../../routes/http/users');
-const productsRouter = require('../../routes/http/products');
+const indexRouter = require("../../routes/http/index");
+const languagesRouter = require("../../routes/http/languages");
+const authRouter = require("../../routes/http/auth");
+const usersRouter = require("../../routes/http/users");
+const productsRouter = require("../../routes/http/products");
 
-const categoryRouter = require('../../routes/http/categories');
-const barcodeRouter = require('../../routes/http/barcodes');
-const currencyRouter = require('../../routes/http/currencies');
-const deliveryServiceRouter = require('../../routes/http/delivery-services');
-const stocksRouter = require('../../routes/http/stocks');
-const unitsRouter = require('../../routes/http/units');
-const ordersRouter = require('../../routes/http/orders');
-const clientsRouter = require('../../routes/http/clients');
-const purchasesRouter = require('../../routes/http/purchases');
-const cashregistersRouter = require('../../routes/http/cashregisters');
-const sourcesRouter = require('../../routes/http/sources');
-const customFieldRouter = require('../../routes/http/custom-field');
-const orderStatusRouter = require('../../routes/http/order-statuses');
-const customFieldGroupRouter = require('../../routes/http/custom-field-group');
-const customFieldOptionRouter = require('../../routes/http/custom-field-option');
-const cashregisterAccountsRouter = require('../../routes/http/cashregister-accounts');
-const orderPaymentsRouter = require('../../routes/http/order-payments');
-const moneyTransactionsRouter = require('../../routes/http/money-transactions');
-const productTransactionsRouter = require('../../routes/http/product-transactions');
+const categoryRouter = require("../../routes/http/categories");
+const barcodeRouter = require("../../routes/http/barcodes");
+const currencyRouter = require("../../routes/http/currencies");
+const deliveryServiceRouter = require("../../routes/http/delivery-services");
+const stocksRouter = require("../../routes/http/stocks");
+const unitsRouter = require("../../routes/http/units");
+const ordersRouter = require("../../routes/http/orders");
+const clientsRouter = require("../../routes/http/clients");
+const purchasesRouter = require("../../routes/http/purchases");
+const cashregistersRouter = require("../../routes/http/cashregisters");
+const sourcesRouter = require("../../routes/http/sources");
+const customFieldRouter = require("../../routes/http/custom-field");
+const orderStatusRouter = require("../../routes/http/order-statuses");
+const customFieldGroupRouter = require("../../routes/http/custom-field-group");
+const customFieldOptionRouter = require("../../routes/http/custom-field-option");
+const cashregisterAccountsRouter = require("../../routes/http/cashregister-accounts");
+const orderPaymentsRouter = require("../../routes/http/order-payments");
+const moneyTransactionsRouter = require("../../routes/http/money-transactions");
+const productTransactionsRouter = require("../../routes/http/product-transactions");
 const app = express();
 
 // app.use(logger); // логер. Там внутри pino
@@ -63,30 +63,30 @@ app.use((req, res, next) => {
 });
 
 // Routes prefix
-app.use('/', indexRouter);
-app.use('/languages', languagesRouter);
-app.use('/auth', authRouter);
-app.use('/users', usersRouter);
-app.use('/stocks', stocksRouter);
-app.use('/products', productsRouter);
-app.use('/categories', categoryRouter);
-app.use('/purchases', purchasesRouter);
-app.use('/units', unitsRouter);
-app.use('/clients', clientsRouter);
-app.use('/orders', ordersRouter);
-app.use('/cashregisters', cashregistersRouter);
-app.use('/currencies', currencyRouter);
-app.use('/delivery-services', deliveryServiceRouter);
-app.use('/sources', sourcesRouter);
-app.use('/custom-fields', customFieldRouter);
-app.use('/order-statuses', orderStatusRouter);
-app.use('/custom-fields-group', customFieldGroupRouter);
-app.use('/custom-fields-option', customFieldOptionRouter);
-app.use('/cashregister-accounts', cashregisterAccountsRouter);
-app.use('/order-payments', orderPaymentsRouter);
-app.use('/barcodes', barcodeRouter);
-app.use('/money-transactions', moneyTransactionsRouter);
-app.use('/product-transactions', productTransactionsRouter);
+app.use("/", indexRouter);
+app.use("/languages", languagesRouter);
+app.use("/auth", authRouter);
+app.use("/users", usersRouter);
+app.use("/stocks", stocksRouter);
+app.use("/products", productsRouter);
+app.use("/categories", categoryRouter);
+app.use("/purchases", purchasesRouter);
+app.use("/units", unitsRouter);
+app.use("/clients", clientsRouter);
+app.use("/orders", ordersRouter);
+app.use("/cashregisters", cashregistersRouter);
+app.use("/currencies", currencyRouter);
+app.use("/delivery-services", deliveryServiceRouter);
+app.use("/sources", sourcesRouter);
+app.use("/custom-fields", customFieldRouter);
+app.use("/order-statuses", orderStatusRouter);
+app.use("/custom-fields-group", customFieldGroupRouter);
+app.use("/custom-fields-option", customFieldOptionRouter);
+app.use("/cashregister-accounts", cashregisterAccountsRouter);
+app.use("/order-payments", orderPaymentsRouter);
+app.use("/barcodes", barcodeRouter);
+app.use("/money-transactions", moneyTransactionsRouter);
+app.use("/product-transactions", productTransactionsRouter);
 // app.use('/strategy/local', localStrategyRouter);
 
 // catch 404 and forward to error handler
@@ -108,7 +108,7 @@ app.use((err, req, res, next) => {
 // Включатель роутов
 const enableRoutes = () => {
   if (isRoutesEnabled === true) {
-    console.log('Routes already enabled');
+    console.log("Routes already enabled");
     return;
   }
 

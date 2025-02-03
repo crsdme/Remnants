@@ -1,10 +1,10 @@
 // Найтройки веб сервера
 
-const path = require('path');
+const path = require("path");
 
 // Normalize a port into a number, string, or false.
 const normalizePort = (val) => {
-  if (typeof val === 'undefined') {
+  if (typeof val === "undefined") {
     return false;
   }
 
@@ -27,13 +27,10 @@ const httpPort = normalizePort(process.env.PORT) || 3001;
 
 module.exports = {
   http: {
-    staticDir: path.join(__dirname, '../public'),
+    staticDir: path.join(__dirname, "../public"),
     port: httpPort,
   },
   ws: {
-    origins: [
-      `http://localhost:${httpPort}`,
-      `*`,
-    ],
+    origins: [`http://localhost:${httpPort}`, `*`],
   },
 };
