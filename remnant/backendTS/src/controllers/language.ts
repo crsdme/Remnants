@@ -4,7 +4,7 @@ import * as LanguageService from "../services/language.service";
 
 export const get = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const languages = await LanguageService.get(req.query);
+    const languages = await LanguageService.get(req.body);
 
     const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
     await sleep(1000);

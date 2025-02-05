@@ -10,12 +10,12 @@ export type getLanguagesParams = {
   //   pageSize: number;
   // };
   pagination: {
-    current: number;
+    current?: number;
     pageSize: number;
   };
 };
 
-export const getLanguages = async (params) =>
+export const getLanguages = async (params: getLanguagesParams) =>
   api.get<LanguagesResponse>('languages/get', { params });
 
 export type createLanguagesParams = Language;

@@ -21,7 +21,7 @@ export default function EditLanguagePage() {
 
   return (
     <Modal
-      title={t('languagePage.modal.title')}
+      title={t(`languagePage.modal.title.${languageContext.selectedLanguage ? 'edit' : 'create'}`)}
       open={languageContext.isModalOpen}
       confirmLoading={languageContext.isLoading}
       onCancel={() => languageContext.closeModal()}
@@ -33,7 +33,7 @@ export default function EditLanguagePage() {
           onClick={() => form.submit()}
           key='create'
         >
-          {t('languagePage.modal.accept')}
+          {t(`languagePage.modal.button.${languageContext.selectedLanguage ? 'edit' : 'create'}`)}
         </Button>
       ]}
     >

@@ -5,6 +5,7 @@ import type { getLanguagesParams } from '../../requests';
 
 export const useRequestLanguages = (params: getLanguagesParams) =>
   useSuspenseQuery({
-    queryKey: ['languages', 'get'],
-    queryFn: () => getLanguages(params)
+    queryKey: ['languages', 'get', params.pagination.current],
+    queryFn: () => getLanguages(params),
+    staleTime: 60000
   });

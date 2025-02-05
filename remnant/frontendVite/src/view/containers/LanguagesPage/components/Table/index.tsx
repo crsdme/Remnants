@@ -1,50 +1,59 @@
 import * as React from 'react';
 
 import { useTranslation } from 'react-i18next';
-import { TableColumnsType, Space, Button, Table } from 'antd';
+import { TableColumnsType, Space, Button, Table, Tag } from 'antd';
 import { useRequestLanguages } from '@/utils/api/hooks';
 import { EditFilled, DeleteFilled } from '@ant-design/icons';
 import { useLanguageContext } from '@/utils/contexts';
+import formatDate from '@/utils/helpers/formatDate';
 
 export default function CustomTable() {
   const { t } = useTranslation();
-  const requestLanguages = useRequestLanguages({ pagination: { current: 1, pageSize: 10 } });
+  const [paginationParams, setPaginationParams] = React.useState({
+    current: 1,
+    pageSize: 10
+  });
+
+  const requestLanguages = useRequestLanguages({ pagination: paginationParams });
 
   const languageContext = useLanguageContext();
-
-  const languages = requestLanguages?.data?.data?.languages ?? [];
 
   const columns: TableColumnsType<Language> = [
     {
       title: t('languagesPage.name'),
-      dataIndex: 'name'
+      dataIndex: 'name',
+      fixed: 'left'
     },
     {
       title: t('languagesPage.code'),
-      dataIndex: 'code'
+      dataIndex: 'code',
+      render: (text) => <Tag>{text}</Tag>
     },
     {
       title: t('languagesPage.main'),
       dataIndex: 'main',
-      render: (text) => text.toString()
+      render: (text) => <Tag color={text ? 'green' : 'red'}>{text.toString()}</Tag>
     },
     {
       title: t('languagesPage.active'),
       dataIndex: 'active',
-      render: (text) => text.toString()
+      render: (text) => <Tag color={text ? 'green' : 'red'}>{text.toString()}</Tag>
     },
     {
       title: t('languagesPage.updated'),
-      dataIndex: 'updatedAt'
+      dataIndex: 'updatedAt',
+      render: (value) => formatDate(value)
     },
     {
       title: t('languagesPage.created'),
-      dataIndex: 'createdAt'
+      dataIndex: 'createdAt',
+      render: (value) => formatDate(value)
     },
     {
       width: 40,
       key: 'key',
       dataIndex: '_id',
+      fixed: 'right',
       render: (_id, record) => (
         <Space>
           <Button icon={<EditFilled />} onClick={() => languageContext.openModal(record)} />
@@ -57,10 +66,19 @@ export default function CustomTable() {
   return (
     <Table
       columns={columns}
-      dataSource={languages}
-      // onChange={productsTableChange}
-      // pagination={{ total: productsTableData.count }}
+      dataSource={requestLanguages?.data?.data?.languages ?? []}
+      onChange={(tableData) =>
+        setPaginationParams({
+          current: tableData.current ?? 1,
+          pageSize: tableData.pageSize ?? 10
+        })
+      }
+      pagination={{
+        total: requestLanguages?.data?.data?.languagesCount ?? 0
+      }}
       rowKey={(record) => record._id}
+      scroll={{ x: 'max-content' }}
+      // sticky={{ offsetHeader: 0 }}
     />
   );
 }
