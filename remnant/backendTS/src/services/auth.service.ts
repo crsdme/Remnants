@@ -7,22 +7,61 @@ dotenv.config();
 
 const JWT_SECRET = process.env.JWT_SECRET || "secret";
 
-export const login = async (
-  email: string,
-  password: string
-): Promise<string> => {
-  const user: IUser | null = await User.findOne({ email });
+const generateRefreshToken = (data: any) =>
+  jwt.sign(data, JWT_SECRET, { expiresIn: "12h" });
+
+const generateAccessToken = (data: any) =>
+  jwt.sign(data, JWT_SECRET, { expiresIn: "15m" });
+
+interface loginParams {
+  login: string;
+  password: string;
+}
+
+interface loginResult {
+  accessToken: string;
+  refreshToken: string;
+  user: object;
+}
+
+export const login = async (payload: loginParams): Promise<loginResult> => {
+  const { login, password } = payload;
+
+  const user = await User.findOne({ login });
+
   if (!user) {
     throw new Error("User not found");
   }
+
   const isMatch = await bcrypt.compare(password, user.password);
+
   if (!isMatch) {
-    throw new Error("Invalid credentials");
+    throw new Error("Invalid password");
   }
-  const token = jwt.sign({ id: user._id, email: user.email }, JWT_SECRET, {
-    expiresIn: "1h",
+
+  const accessToken = generateAccessToken({ id: user._id, login: user.login });
+  console.log(accessToken);
+  const refreshToken = generateRefreshToken({
+    id: user._id,
+    login: user.login,
   });
-  return token;
+
+  return { accessToken, refreshToken, user };
+};
+
+interface refreshParams {
+  refreshToken: string;
+}
+
+interface refreshResult {
+  accessToken: string;
+}
+
+export const refresh = async (
+  payload: refreshParams
+): Promise<refreshResult> => {
+  const accessToken = generateAccessToken({ id: "test" });
+  return { accessToken };
 };
 
 export const register = async (

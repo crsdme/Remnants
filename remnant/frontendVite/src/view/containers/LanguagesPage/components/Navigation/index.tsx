@@ -2,7 +2,7 @@ import * as React from 'react';
 
 import { useTranslation } from 'react-i18next';
 import { useLanguageContext } from '@/utils/contexts';
-import { Space, Button } from 'antd';
+import { Flex, Button } from 'antd';
 
 import EditModal from './components/EditModal';
 
@@ -11,12 +11,11 @@ export default function Navigation() {
 
   const languageContext = useLanguageContext();
 
-  // const editProduct = useEditProduct({ filters: [] });
   return (
     <>
-      <Space>
+      <Flex justify='end' style={{ marginBottom: 10 }}>
         <Button onClick={() => languageContext.openModal()}>{t('createLanguage')}</Button>
-      </Space>
+      </Flex>
       <EditModal />
     </>
   );

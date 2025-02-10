@@ -1,5 +1,16 @@
 {
   "socketError": "Socket connection error",
+  "required": "Обязательное поле",
+
+  "loginPage.signIn": "Войти",
+  "loginPage.forgotPassword": "Забыли пароль?",
+  "loginPage.login": "Логин",
+  "loginPage.password": "Пароль",
+  "loginPage.type": "Тип пользователя",
+  "loginPage.typeGuest": "Гость",
+  "loginPage.typeWork": "Сотрудник",
+  "loginPage.submit": "Отправить",
+
   "sidemenu.label.dashboard": "Панель управления",
   "sidemenu.label.charts": "Графики",
   "sidemenu.label.orders": "Заказы",

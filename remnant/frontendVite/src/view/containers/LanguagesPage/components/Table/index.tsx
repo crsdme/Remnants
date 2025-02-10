@@ -66,7 +66,7 @@ export default function CustomTable() {
   return (
     <Table
       columns={columns}
-      dataSource={requestLanguages?.data?.data?.languages ?? []}
+      dataSource={requestLanguages.data.data.languages ?? []}
       onChange={(tableData) =>
         setPaginationParams({
           current: tableData.current ?? 1,
@@ -74,7 +74,7 @@ export default function CustomTable() {
         })
       }
       pagination={{
-        total: requestLanguages?.data?.data?.languagesCount ?? 0
+        total: requestLanguages.data.data.languagesCount ?? 0
       }}
       rowKey={(record) => record._id}
       scroll={{ x: 'max-content' }}

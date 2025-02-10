@@ -1,11 +1,20 @@
 import './App.css';
+import React from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router';
-import { DashboardPage, LoginPage, ProductsPage, LanguagesPage } from '../view/containers/';
+import {
+  DashboardPage,
+  LoginPage,
+  LanguagesPage,
+  UnitsPage,
+  CategoriesPage
+} from '../view/containers/';
 import Layout from '../view/components/Layout';
 import { HelmetProvider } from 'react-helmet-async';
-import { App as AppAntd, ConfigProvider } from 'antd';
+import { ConfigProvider } from 'antd';
+// import { useRefreshToken } from '@/utils/api/hooks';
+import { useAuthContext } from '@/utils/contexts';
 
-function App() {
+function AppMain() {
   const theme = {
     token: {
       colorPrimary: '#262626',
@@ -15,26 +24,37 @@ function App() {
     }
   };
 
+  const authContenxt = useAuthContext();
+
+  if (!authContenxt.state.isAuthChecked) {
+    return <>Loading ...</>;
+  }
+
   return (
     <HelmetProvider>
       <BrowserRouter>
         <ConfigProvider theme={theme}>
-          <AppAntd>
-            <Routes>
-              <Route path='/' element={<Layout />}>
-                <Route path='/login' element={<LoginPage />} />
-                <Route path='/' element={<DashboardPage />} />
-                <Route path='/products' element={<ProductsPage />} />
+          <Routes>
+            <Route
+              path='/'
+              element={authContenxt.state.isAuthenticated ? <Layout /> : <LoginPage />}
+            >
+              <Route path='/' element={<DashboardPage />} />
 
-                <Route path='/settings/languages' element={<LanguagesPage />} />
-                <Route path='*' element={<DashboardPage />} />
-              </Route>
-            </Routes>
-          </AppAntd>
+              <Route path='/categories' element={<CategoriesPage />} />
+
+              <Route path='/settings/languages' element={<LanguagesPage />} />
+              <Route path='/settings/units' element={<UnitsPage />} />
+
+              <Route path='*' element={<DashboardPage />} />
+            </Route>
+            <Route path='/login' element={<LoginPage />} />
+            <Route path='*' element={<DashboardPage />} />
+          </Routes>
         </ConfigProvider>
       </BrowserRouter>
     </HelmetProvider>
   );
 }
 
-export default App;
+export default AppMain;

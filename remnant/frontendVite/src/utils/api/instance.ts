@@ -2,32 +2,83 @@ import axios from 'axios';
 import { backendUrl } from '../constants';
 
 export const api = axios.create({
-  baseURL: `${backendUrl}api/`
-  // headers: { Authorization: `Bearer ${access}` },
+  baseURL: `${backendUrl}api/`,
+  withCredentials: true,
+  headers: { 'Content-Type': 'application/json' }
 });
 
-api.interceptors.response.use(
-  (response) => ({ ...response, ...response.data }),
-  async () => {
-    try {
-      // if (error.response.status === 404) return { data: { status: 'failed' } };
-      // const res = await axios.post(process.env.REACT_APP_BACK_URL + '/auth/check/token', {
-      //   token: refresh
-      // });
-      // access = res.data.payload;
-      // console.log(res.data.payload);
-      // configureStore().dispatch({ type: 'SAGA_AUTH_UPDATE_TOKENS', token: res.data.payload });
-      // error.config.headers['Authorization'] = 'Bearer ' + access;
-      // return axiosInstance.request(error.config);
-    } catch (err) {
-      console.log(err);
-      // if (err.response && err.response.status === 403) {
-      //   configureStore().dispatch({ type: 'SAGA_AUTH_LOGOUT' });
-      // }
+let requestInterceptor;
+let responseInterceptor;
 
-      // return {
-      //   data: { status: 'failed', data: null, warnings: [], errors: [err.response.status] }
-      // };
+export const setupAxiosInterceptors = ({
+  logout,
+  notification,
+  refresh
+}: {
+  logout: () => void;
+  refresh: () => void;
+  notification: ({ message, description }: { message: string; description: string }) => void;
+}) => {
+  if (requestInterceptor) api.interceptors.request.eject(requestInterceptor);
+  if (responseInterceptor) api.interceptors.response.eject(responseInterceptor);
+
+  requestInterceptor = api.interceptors.request.use(
+    (config) => config,
+    (error) => Promise.reject(error)
+  );
+
+  responseInterceptor = api.interceptors.response.use(
+    (response) => response,
+    async (error) => {
+      const originalRequest = error.config;
+
+      if (error.response?.status === 401 && !originalRequest._retry) {
+        originalRequest._retry = true;
+        try {
+          refresh();
+          return api.request(originalRequest);
+        } catch (refreshError) {
+          logout();
+          notification({
+            message: `Error: ${refreshError.response?.data?.message || 'Request failed'}`,
+            description: error.toString()
+          });
+          return Promise.reject(refreshError);
+        }
+      }
+
+      if (error.response?.status === 403) {
+        logout();
+        notification({
+          message: `Error: ${error.response?.data?.message || 'Request failed'}`,
+          description: error.toString()
+        });
+        return Promise.reject(error);
+      }
+
+      return Promise.reject(error);
     }
-  }
-);
+  );
+
+  // responseInterceptor = api.interceptors.response.use(
+  //   (response) => response,
+  //   (error) => {
+  //     if (error.response?.status === 401) {
+  //       refresh();
+  //       return api.request(error.config);
+  //     }
+
+  //     if (error.response?.status === 403) {
+  //       logout();
+  //       return Promise.reject(error);
+  //     }
+
+  //     notification({
+  //       message: `Error: ${error.response.data.message || 'Request failed'}`,
+  //       description: error.toString()
+  //     });
+
+  //     return Promise.reject(error);
+  //   }
+  // );
+};

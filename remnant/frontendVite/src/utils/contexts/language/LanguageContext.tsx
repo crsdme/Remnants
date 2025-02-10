@@ -1,7 +1,6 @@
 import { createContext, useState, useContext, ReactNode } from 'react';
 import { useCreateLanguage } from '@/utils/api/hooks';
-import { useEditLanguage } from '@/utils/api/hooks/languages/useEditLanguage';
-import { useRemoveLanguage } from '@/utils/api/hooks/languages/useRemoveLanguage';
+import { useEditLanguage, useRemoveLanguage } from '@/utils/api/hooks/';
 import { useQueryClient } from '@tanstack/react-query';
 
 interface LanguageContextType {

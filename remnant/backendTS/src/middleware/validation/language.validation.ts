@@ -4,8 +4,9 @@ import { z } from "zod";
 
 const getLanguageSchema = z.object({
   pagination: z.object({
-    current: z.preprocess((val) => Number(val), z.number()),
-    pageSize: z.preprocess((val) => Number(val), z.number()),
+    full: z.preprocess((val) => Boolean(val), z.boolean()),
+    current: z.preprocess((val) => Number(val), z.number()).optional(),
+    pageSize: z.preprocess((val) => Number(val), z.number()).optional(),
   }),
 });
 
@@ -16,6 +17,7 @@ export const validateGetLanguage = (
 ) => {
   try {
     const result = getLanguageSchema.safeParse(req.query);
+    console.log(result, req.query);
     req.body = result.data;
     next();
   } catch (error) {

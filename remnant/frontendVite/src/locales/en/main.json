@@ -2,6 +2,15 @@
   "socketError": "Socket connection error",
   "required": "Required",
 
+  "loginPage.signIn": "Sign In",
+  "loginPage.forgotPassword": "Forgot your password?",
+  "loginPage.login": "Login",
+  "loginPage.password": "Password",
+  "loginPage.type": "User Type",
+  "loginPage.typeGuest": "Guest",
+  "loginPage.typeWork": "Work",
+  "loginPage.submit": "Submit",
+
   "sidemenu.label.dashboard": "Dashboard",
   "sidemenu.label.charts": "Dashboard",
   "sidemenu.label.orders": "Orders",

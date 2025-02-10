@@ -4,6 +4,7 @@ import cors from "cors";
 import helmet from "helmet";
 import morgan from "morgan";
 import routes from "./routes/";
+import cookieParser from "cookie-parser";
 import { errorHandler } from "./middleware/error.middleware";
 
 const app = express();
@@ -11,7 +12,13 @@ const app = express();
 // Настройка middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(cors());
+app.use(cookieParser());
+app.use(
+  cors({
+    origin: "http://localhost:5173",
+    credentials: true,
+  })
+);
 app.use(helmet());
 app.use(morgan("dev"));
 

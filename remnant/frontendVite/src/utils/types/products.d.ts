@@ -1,8 +1,3 @@
-interface NameTranslations {
-  ru: string;
-  en: string;
-}
-
 interface Currency {
   _id: string;
   symbol: string;
@@ -21,19 +16,7 @@ interface ImageItem {
 
 interface Category {
   _id: string;
-  names: NameTranslations;
-}
-
-interface Unit {
-  _id: string;
-  names: NameTranslations;
-  symbol: string;
-  active: boolean;
-  priority: number;
-  disabled: boolean;
-  createdAt: string;
-  updatedAt: string;
-  __v: number;
+  names: Names;
 }
 
 interface CustomFields {
@@ -42,7 +25,7 @@ interface CustomFields {
 
 interface Product {
   _id: string;
-  names: NameTranslations;
+  names: Names;
   price: number;
   currency: Currency;
   discount: number;

@@ -10,8 +10,9 @@ export type getLanguagesParams = {
   //   pageSize: number;
   // };
   pagination: {
+    full: boolean;
     current?: number;
-    pageSize: number;
+    pageSize?: number;
   };
 };
 
