@@ -1,3 +1,4 @@
 {
-    "socketError": "Socket connection error"
+  "socketError": "Socket connection error",
+  "sidemenu.dashboard": "Dashboard"
 }
