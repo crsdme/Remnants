@@ -1,9 +1,9 @@
-// src/routes/index.ts
 import { Router } from "express";
 import authRoutes from "./auth";
 import productRoutes from "./product";
 import languageRoutes from "./language";
 import unitsRoutes from "./unit";
+import currencyRoutes from "./currency";
 import categoriesRoutes from "./category";
 import { authenticateJWT } from "../middleware/auth.middleware";
 
@@ -13,6 +13,7 @@ router.use("/auth", authRoutes);
 router.use("/products", productRoutes);
 router.use("/languages", authenticateJWT, languageRoutes);
 router.use("/units", authenticateJWT, unitsRoutes);
+router.use("/currencies", authenticateJWT, currencyRoutes);
 router.use("/categories", authenticateJWT, categoriesRoutes);
 
 export default router;

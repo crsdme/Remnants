@@ -190,7 +190,7 @@ export const Sidemenu: React.FC = () => {
         },
         {
           key: 'sidemenu.currencies',
-          label: <Link to='/settings/currencies'>{t('sidemenu.label.timetable')}</Link>
+          label: <Link to='/settings/currencies'>{t('sidemenu.label.currencies')}</Link>
         },
         {
           key: 'sidemenu.sources',

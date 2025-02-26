@@ -1,4 +1,7 @@
 export * from './products/useRequestProducts';
+export * from './products/useCreateProduct';
+export * from './products/useEditProduct';
+export * from './products/useRemoveProduct';
 
 export * from './languages/useRequestLanguages';
 export * from './languages/useCreateLanguage';
@@ -19,3 +22,8 @@ export * from './categories/useCreateCategory';
 export * from './categories/useEditCategory';
 export * from './categories/useRemoveCategory';
 export * from './categories/useSearchCategories';
+
+export * from './currencies/useRequestCurrencies';
+export * from './currencies/useCreateCurrency';
+export * from './currencies/useEditCurrency';
+export * from './currencies/useRemoveCurrency';

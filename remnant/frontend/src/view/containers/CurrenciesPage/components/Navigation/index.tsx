@@ -1,22 +1,22 @@
 import * as React from 'react';
 
 import { useTranslation } from 'react-i18next';
-import { useProductContext } from '@/utils/contexts';
 import { Flex, Button } from 'antd';
 
-import EditModal from './components/EditModal';
+import CurrencyModal from './components/CurrencyModal';
+import { useCurrencyContext } from '@/utils/contexts';
 
 export default function Navigation() {
   const { t } = useTranslation();
 
-  const productContext = useProductContext();
+  const unitContext = useCurrencyContext();
 
   return (
     <>
       <Flex justify='end' style={{ marginBottom: 10 }}>
-        <Button onClick={() => productContext.openModal()}>{t('createProduct')}</Button>
+        <Button onClick={() => unitContext.openModal()}>{t('createCurrency')}</Button>
       </Flex>
-      <EditModal />
+      <CurrencyModal />
     </>
   );
 }

@@ -9,6 +9,6 @@ interface Unit {
 
 type UnitsResponse = {
   status: string;
-  units: Language[];
+  units: Unit[];
   unitsCount: number;
 };

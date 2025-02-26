@@ -84,9 +84,9 @@ export default function CategoryModal() {
             <Input />
           </Form.Item>
         ))}
-        <Form.Item label={t('categoryPage.modal.form.priority')} name={'parent'}>
+        {/* <Form.Item label={t('categoryPage.modal.form.priority')} name={'parent'}>
           <DebounceSelect fetchOptions={async (search) => await fetchCategoriesHandler(search)} />
-        </Form.Item>
+        </Form.Item> */}
         <Form.Item label={t('categoryPage.modal.form.priority')} name={'parent'}>
           <DebounceTreeSelect
             fetchOptions={async (search) => await fetchCategoriesHandlerTree(search)}

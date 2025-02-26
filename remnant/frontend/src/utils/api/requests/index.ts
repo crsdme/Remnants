@@ -3,3 +3,4 @@ export * from './languages';
 export * from './auth';
 export * from './units';
 export * from './categories';
+export * from './currencies';

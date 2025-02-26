@@ -10,8 +10,9 @@ export type getUnitsParams = {
   //   pageSize: number;
   // };
   pagination: {
+    full?: boolean;
     current?: number;
-    pageSize: number;
+    pageSize?: number;
   };
 };
 

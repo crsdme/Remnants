@@ -2,20 +2,22 @@
 import { Request, Response, NextFunction } from "express";
 import { z } from "zod";
 
-const getUnitSchema = z.object({
+const getCurrencySchema = z.object({
   pagination: z.object({
     current: z.preprocess((val) => Number(val), z.number()).optional(),
     pageSize: z.preprocess((val) => Number(val), z.number()).optional(),
+    full: z.preprocess((val) => Boolean(val), z.boolean()).optional(),
   }),
 });
 
-export const validateGetUnits = (
+export const validateGetCurrencies = (
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
   try {
-    const result = getUnitSchema.safeParse(req.query);
+    const result = getCurrencySchema.safeParse(req.query);
+    console.log("@", result.error);
     req.body = result.data;
     next();
   } catch (error) {

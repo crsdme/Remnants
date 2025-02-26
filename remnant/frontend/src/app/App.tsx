@@ -1,12 +1,13 @@
 import './App.css';
-import React from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router';
 import {
   DashboardPage,
   LoginPage,
   LanguagesPage,
   UnitsPage,
-  CategoriesPage
+  CategoriesPage,
+  ProductsPage,
+  CurrenciesPage
 } from '../view/containers/';
 import Layout from '../view/components/Layout';
 import { HelmetProvider } from 'react-helmet-async';
@@ -41,9 +42,11 @@ function AppMain() {
             >
               <Route path='/' element={<DashboardPage />} />
 
+              <Route path='/products' element={<ProductsPage />} />
               <Route path='/categories' element={<CategoriesPage />} />
 
               <Route path='/settings/languages' element={<LanguagesPage />} />
+              <Route path='/settings/currencies' element={<CurrenciesPage />} />
               <Route path='/settings/units' element={<UnitsPage />} />
 
               <Route path='*' element={<DashboardPage />} />

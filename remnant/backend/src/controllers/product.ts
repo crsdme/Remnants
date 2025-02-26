@@ -8,7 +8,7 @@ export const get = async (req: Request, res: Response, next: NextFunction) => {
 
     const products = await ProductService.get({ filters });
 
-    res.status(200).json({ products });
+    res.status(200).json(products);
   } catch (err) {
     next(err);
   }

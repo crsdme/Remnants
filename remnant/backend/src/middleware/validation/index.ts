@@ -3,3 +3,4 @@ export * from "./product.validation";
 export * from "./language.validation";
 export * from "./unit.validation";
 export * from "./category.validation";
+export * from "./currency.validation";
