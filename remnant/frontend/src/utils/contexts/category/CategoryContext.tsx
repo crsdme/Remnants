@@ -1,5 +1,5 @@
 import { createContext, useState, useContext, ReactNode } from 'react';
-import { useEditCategory, useRemoveCategory, useCreateCategory } from '@/utils/api/hooks/';
+import { useEditCategory, useRemoveCategory, useCreateCategory } from '@/api/hooks/';
 import { useQueryClient } from '@tanstack/react-query';
 
 interface CategoryContextType {

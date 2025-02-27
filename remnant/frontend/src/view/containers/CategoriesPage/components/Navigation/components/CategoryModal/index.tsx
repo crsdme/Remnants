@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Modal, Form, Button, Input, InputNumber } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
-import { useRequestLanguages, useSearchCategories } from '@/utils/api/hooks';
+import { useRequestLanguages, useSearchCategories } from '@/api/hooks';
 import { useCategoryContext } from '@/utils/contexts';
 import DebounceSelect from '@/view/components/DebounceSelect';
 import DebounceTreeSelect from '@/view/components/DebounceTreeSelect';

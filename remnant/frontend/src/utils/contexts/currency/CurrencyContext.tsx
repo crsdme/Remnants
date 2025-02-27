@@ -1,6 +1,6 @@
 import { createContext, useState, useContext, ReactNode } from 'react';
-import { useCreateCurrency } from '@/utils/api/hooks';
-import { useEditCurrency, useRemoveCurrency } from '@/utils/api/hooks/';
+import { useCreateCurrency } from '@/api/hooks';
+import { useEditCurrency, useRemoveCurrency } from '@/api/hooks/';
 import { useQueryClient } from '@tanstack/react-query';
 
 interface CurrencyContextType {

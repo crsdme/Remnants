@@ -1,5 +1,5 @@
 import { createContext, useState, useContext, ReactNode } from 'react';
-import { useEditProduct, useRemoveProduct, useCreateProduct } from '@/utils/api/hooks/';
+import { useEditProduct, useRemoveProduct, useCreateProduct } from '@/api/hooks/';
 import { useQueryClient } from '@tanstack/react-query';
 
 interface ProductContextType {

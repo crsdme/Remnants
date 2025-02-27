@@ -1,4 +1,4 @@
-import { api } from '@/utils/api/instance';
+import { api } from '@/api/instance';
 
 export type getCategoriesParams = {
   filters?: {

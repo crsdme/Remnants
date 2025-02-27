@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Modal, Form, Button, Input, Checkbox, InputNumber, Divider } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
-import { useRequestLanguages } from '@/utils/api/hooks';
+import { useRequestLanguages } from '@/api/hooks';
 
 import { useUnitContext } from '@/utils/contexts';
 

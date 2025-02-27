@@ -1,5 +1,4 @@
 import { createRoot } from 'react-dom/client';
-import './index.css';
 import './locales/i18n.ts';
 import App from './app/App';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';

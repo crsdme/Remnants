@@ -12,7 +12,7 @@ import {
 import Layout from '../view/components/Layout';
 import { HelmetProvider } from 'react-helmet-async';
 import { ConfigProvider } from 'antd';
-// import { useRefreshToken } from '@/utils/api/hooks';
+// import { useRefreshToken } from '@/api/hooks';
 import { useAuthContext } from '@/utils/contexts';
 
 function AppMain() {

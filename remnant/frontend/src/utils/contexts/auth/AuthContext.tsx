@@ -1,7 +1,7 @@
 import { createContext, useReducer, useContext, ReactNode, useEffect } from 'react';
-import { setupAxiosInterceptors } from '@/utils/api/instance';
+import { setupAxiosInterceptors } from '@/api/instance';
 import { App } from 'antd';
-import { useRefreshToken, useAuthLogin, useAuthLogout } from '@/utils/api/hooks';
+import { useRefreshToken, useAuthLogin, useAuthLogout } from '@/api/hooks';
 
 interface AuthState {
   isAuthenticated: boolean;

@@ -7,7 +7,7 @@ import {
   useRequestLanguages,
   useRequestUnits,
   useSearchCategories
-} from '@/utils/api/hooks';
+} from '@/api/hooks';
 import DebounceSelect from '@/view/components/DebounceSelect';
 
 import { useProductContext } from '@/utils/contexts';

@@ -2,7 +2,7 @@ import * as React from 'react';
 
 import { useTranslation } from 'react-i18next';
 import { TableColumnsType, Space, Button, Table, Tag } from 'antd';
-import { useRequestLanguages } from '@/utils/api/hooks';
+import { useRequestLanguages } from '@/api/hooks';
 import { EditFilled, DeleteFilled } from '@ant-design/icons';
 import { useLanguageContext } from '@/utils/contexts';
 import formatDate from '@/utils/helpers/formatDate';
