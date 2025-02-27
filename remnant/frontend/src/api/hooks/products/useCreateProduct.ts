@@ -1,7 +1,7 @@
 import { useMutation } from '@tanstack/react-query';
 
-import { createProduct } from '../../requests';
-import type { createProductParams } from '../../requests';
+import { createProduct } from '@/api/requests';
+import type { createProductParams } from '@/api/requests';
 
 export const useCreateProduct = (
   settings?: MutationSettings<createProductParams, typeof createProduct>

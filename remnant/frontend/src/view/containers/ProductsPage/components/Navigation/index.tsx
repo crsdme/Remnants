@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { useProductContext } from '@/utils/contexts';
 import { Flex, Button } from 'antd';
 
-import EditModal from './components/EditModal';
+import CustomModal from './components/CustomModal';
 
 export default function Navigation() {
   const { t } = useTranslation();
@@ -16,7 +16,7 @@ export default function Navigation() {
       <Flex justify='end' style={{ marginBottom: 10 }}>
         <Button onClick={() => productContext.openModal()}>{t('createProduct')}</Button>
       </Flex>
-      <EditModal />
+      <CustomModal />
     </>
   );
 }

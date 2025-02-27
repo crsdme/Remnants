@@ -59,26 +59,4 @@ export const setupAxiosInterceptors = ({
       return Promise.reject(error);
     }
   );
-
-  // responseInterceptor = api.interceptors.response.use(
-  //   (response) => response,
-  //   (error) => {
-  //     if (error.response?.status === 401) {
-  //       refresh();
-  //       return api.request(error.config);
-  //     }
-
-  //     if (error.response?.status === 403) {
-  //       logout();
-  //       return Promise.reject(error);
-  //     }
-
-  //     notification({
-  //       message: `Error: ${error.response.data.message || 'Request failed'}`,
-  //       description: error.toString()
-  //     });
-
-  //     return Promise.reject(error);
-  //   }
-  // );
 };

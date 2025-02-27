@@ -1,7 +1,7 @@
 import { useSuspenseQuery } from '@tanstack/react-query';
 
-import { getCurrencies } from '../../requests';
-import type { getCurrenciesParams } from '../../requests';
+import { getCurrencies } from '@/api/requests';
+import type { getCurrenciesParams } from '@/api/requests';
 
 export const useRequestCurrencies = (params: getCurrenciesParams) =>
   useSuspenseQuery({

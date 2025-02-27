@@ -3,7 +3,7 @@ import * as React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Flex, Button } from 'antd';
 
-import CategoryModal from './components/CategoryModal';
+import Modal from './components/CustomModal';
 import { useCategoryContext } from '@/utils/contexts';
 
 export default function Navigation() {
@@ -16,7 +16,7 @@ export default function Navigation() {
       <Flex justify='end' style={{ marginBottom: 10 }}>
         <Button onClick={() => categoryContext.openModal()}>{t('createCategory')}</Button>
       </Flex>
-      <CategoryModal />
+      <Modal />
     </>
   );
 }

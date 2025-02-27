@@ -4,7 +4,7 @@ import { Modal, Form, Button, Input, InputNumber } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
 import { useRequestLanguages, useSearchCategories } from '@/api/hooks';
 import { useCategoryContext } from '@/utils/contexts';
-import DebounceSelect from '@/view/components/DebounceSelect';
+// import DebounceSelect from '@/view/components/DebounceSelect';
 import DebounceTreeSelect from '@/view/components/DebounceTreeSelect';
 
 export default function CategoryModal() {
@@ -17,14 +17,14 @@ export default function CategoryModal() {
 
   const fetchCategories = useSearchCategories();
 
-  const fetchCategoriesHandler = async (search: string) => {
-    const { data } = await fetchCategories({
-      filters: { names: search, language: i18n.language, flat: true },
-      pagination: { current: 1, pageSize: 5 }
-    });
+  // const fetchCategoriesHandler = async (search: string) => {
+  //   const { data } = await fetchCategories({
+  //     filters: { names: search, language: i18n.language, flat: true },
+  //     pagination: { current: 1, pageSize: 5 }
+  //   });
 
-    return data.categories;
-  };
+  //   return data.categories;
+  // };
 
   const fetchCategoriesHandlerTree = async (search: string) => {
     const { data } = await fetchCategories({

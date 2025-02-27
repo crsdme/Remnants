@@ -1,7 +1,7 @@
 import { useMutation } from '@tanstack/react-query';
 
-import { removeCategory } from '../../requests';
-import type { removeCategoryParams } from '../../requests';
+import { removeCategory } from '@/api/requests';
+import type { removeCategoryParams } from '@/api/requests';
 
 export const useRemoveCategory = (
   settings?: MutationSettings<removeCategoryParams, typeof removeCategory>

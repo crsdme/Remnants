@@ -1,7 +1,7 @@
 import { useMutation } from '@tanstack/react-query';
 
-import { removeProduct } from '../../requests';
-import type { removeProductParams } from '../../requests';
+import { removeProduct } from '@/api/requests';
+import type { removeProductParams } from '@/api/requests';
 
 export const useRemoveProduct = (
   settings?: MutationSettings<removeProductParams, typeof removeProduct>

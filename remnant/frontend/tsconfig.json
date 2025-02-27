@@ -6,7 +6,8 @@
       "@/*": ["src/*"]
     },
     "esModuleInterop": true,
-    "allowSyntheticDefaultImports": true
+    "allowSyntheticDefaultImports": true,
+    "resolveJsonModule": true
   },
   "include": ["*.js", "**/*.ts", "**/*.tsx"]
 }

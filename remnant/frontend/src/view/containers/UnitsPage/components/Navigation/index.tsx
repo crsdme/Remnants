@@ -3,7 +3,7 @@ import * as React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Flex, Button } from 'antd';
 
-import UnitModal from './components/UnitModal';
+import CustomModal from './components/CustomModal';
 import { useUnitContext } from '@/utils/contexts';
 
 export default function Navigation() {
@@ -16,7 +16,7 @@ export default function Navigation() {
       <Flex justify='end' style={{ marginBottom: 10 }}>
         <Button onClick={() => unitContext.openModal()}>{t('createUnit')}</Button>
       </Flex>
-      <UnitModal />
+      <CustomModal />
     </>
   );
 }

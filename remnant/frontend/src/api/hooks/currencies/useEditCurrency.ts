@@ -1,7 +1,7 @@
 import { useMutation } from '@tanstack/react-query';
 
-import { editCurrency } from '../../requests';
-import type { editCurrencyParams } from '../../requests';
+import { editCurrency } from '@/api/requests';
+import type { editCurrencyParams } from '@/api/requests';
 
 export const useEditCurrency = (
   settings?: MutationSettings<editCurrencyParams, typeof editCurrency>
