@@ -19,7 +19,7 @@ export const get = async (payload: getUnitsParams): Promise<getUnitsResult> => {
   const { current = 1, pageSize = 10 } = payload.pagination;
   let query = { removed: false };
 
-  let pipline = [
+  let pipeline = [
     {
       $match: query,
     },
@@ -27,7 +27,7 @@ export const get = async (payload: getUnitsParams): Promise<getUnitsResult> => {
 
   let unitsCount = await UnitModel.countDocuments(query);
 
-  let unitsQuery = UnitModel.aggregate(pipline);
+  let unitsQuery = UnitModel.aggregate(pipeline);
 
   unitsQuery = unitsQuery.skip((current - 1) * pageSize).limit(pageSize);
 

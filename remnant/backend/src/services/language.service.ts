@@ -22,7 +22,7 @@ export const get = async (
 
   let query = { removed: false };
 
-  let pipline = [
+  let pipeline = [
     {
       $match: query,
     },
@@ -30,7 +30,7 @@ export const get = async (
 
   let languagesCount = await LanguageModel.countDocuments(query);
 
-  let languagesQuery = LanguageModel.aggregate(pipline);
+  let languagesQuery = LanguageModel.aggregate(pipeline);
 
   languagesQuery = languagesQuery
     .skip((current - 1) * pageSize)

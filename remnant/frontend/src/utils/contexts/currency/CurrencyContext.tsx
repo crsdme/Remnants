@@ -7,9 +7,10 @@ interface CurrencyContextType {
   selectedCurrency: Currency;
   isModalOpen: boolean;
   isLoading: boolean;
+  toggleModal: (currency?: Currency) => void;
   openModal: (currency?: Currency) => void;
   closeModal: () => void;
-  submitCurrencyForm: (params: Currency) => void;
+  submitCurrencyForm: (params) => void;
   removeCurrency: (params: { _id: string }) => void;
 }
 
@@ -67,6 +68,8 @@ export const CurrencyProvider = ({ children }: CurrencyProviderProps) => {
     setSelectedCurrency(null);
   };
 
+  const toggleModal = (currency) => (isModalOpen ? closeModal() : openModal(currency));
+
   const submitCurrencyForm = (params) => {
     setIsLoading(true);
     if (!selectedCurrency) {
@@ -84,6 +87,7 @@ export const CurrencyProvider = ({ children }: CurrencyProviderProps) => {
     selectedCurrency,
     isModalOpen,
     isLoading,
+    toggleModal,
     openModal,
     closeModal,
     submitCurrencyForm,

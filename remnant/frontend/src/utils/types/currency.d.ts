@@ -2,7 +2,8 @@ interface Currency {
   _id: string;
   names: Names;
   symbols: Names;
-  main: boolean;
+  active: boolean;
+  priority: number;
   disabled: boolean;
   createdAt: Date;
   updatedAt: Date;

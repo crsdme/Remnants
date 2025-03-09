@@ -5,6 +5,7 @@ const LOCAL_STORAGE_KEY = 'appTheme';
 
 interface Theme {
   language: string;
+  layoutTheme: string;
   activeColumns: string[];
 }
 
@@ -20,12 +21,13 @@ interface ThemeProviderProps {
 }
 
 export const ThemeProvider = ({ children }: ThemeProviderProps) => {
-  const [theme, setTheme] = useState({ language: 'en', activeColumns: [] });
+  const [theme, setTheme] = useState({ language: 'en', layoutTheme: 'light', activeColumns: [] });
   const { i18n } = useTranslation();
 
-  const updateTheme = (params) => {
-    setTheme((state) => ({ ...state, ...params }));
-    if (params.language) i18n.changeLanguage(params.language);
+  const updateTheme = ({ language, layoutTheme }) => {
+    setTheme((state) => ({ ...state, language, layoutTheme }));
+    if (language) i18n.changeLanguage(language);
+    if (layoutTheme) document.documentElement.classList.toggle('dark', layoutTheme === 'dark');
   };
 
   const value: ThemeContextType = {

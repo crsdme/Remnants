@@ -1,174 +1,191 @@
-const cashregisterModel = require('../models/cashregister.js');
-const { createNotification } = require('./notification.js');
+const cashregisterModel = require("../models/cashregister.js");
+const { createNotification } = require("./notification.js");
 
 const createCashregister = async ({ names, priority }) => {
-    let status = null;
-    let data = null;
-    let warnings = [];
-    let errors = [];
-    let info = [];
+  let status = null;
+  let data = null;
+  let warnings = [];
+  let errors = [];
+  let info = [];
 
-    const createdCashregister = await cashregisterModel.create({ names, priority });
+  const createdCashregister = await cashregisterModel.create({
+    names,
+    priority,
+  });
 
-    if (createdCashregister) {
-        status = 'success';
-        data = createdCashregister;
-    } else {
-        status = 'failed';
-    }
+  if (createdCashregister) {
+    status = "success";
+    data = createdCashregister;
+  } else {
+    status = "failed";
+  }
 
-    return {
-        status, 
-        data, 
-        errors,
-        warnings,
-        info
-    };
-}
+  return {
+    status,
+    data,
+    errors,
+    warnings,
+    info,
+  };
+};
 
 const addCashregisterAccount = async ({ cashregister, account }) => {
-    let status = null;
-    let data = null;
-    let warnings = [];
-    let errors = [];
-    let info = [];
+  let status = null;
+  let data = null;
+  let warnings = [];
+  let errors = [];
+  let info = [];
 
-    const updatedCashregister = await cashregisterModel.updateOne({ _id: cashregister }, { $push: { accounts: account } });
+  const updatedCashregister = await cashregisterModel.updateOne(
+    { _id: cashregister },
+    { $push: { accounts: account } }
+  );
 
-    if (updatedCashregister) {
-        status = 'success';
-        data = updatedCashregister;
-    } else {
-        status = 'failed';
-    }
+  if (updatedCashregister) {
+    status = "success";
+    data = updatedCashregister;
+  } else {
+    status = "failed";
+  }
 
-    return {
-        status, 
-        data, 
-        errors,
-        warnings,
-        info
-    };
-}
+  return {
+    status,
+    data,
+    errors,
+    warnings,
+    info,
+  };
+};
 
 const editCashregister = async ({ _id, names, priority }) => {
-    let status = null;
-    let data = null;
-    let warnings = [];
-    let errors = [];
-    let info = [];
+  let status = null;
+  let data = null;
+  let warnings = [];
+  let errors = [];
+  let info = [];
 
-    const editedCashregister = await cashregisterModel.updateOne({ _id }, { names, priority });
+  const editedCashregister = await cashregisterModel.updateOne(
+    { _id },
+    { names, priority }
+  );
 
-    if (editedCashregister) {
-        status = 'success';
-        data = editedCashregister;
-    } else {
-        status = 'failed';
-    }   
+  if (editedCashregister) {
+    status = "success";
+    data = editedCashregister;
+  } else {
+    status = "failed";
+  }
 
-    return {
-        status, 
-        data, 
-        errors,
-        warnings,
-        info
-    };
-}
+  return {
+    status,
+    data,
+    errors,
+    warnings,
+    info,
+  };
+};
 
 const getCashregisters = async ({ filter, sorter, pagination }) => {
-    let status = null;
-    let data = null;
-    let warnings = [];
-    let errors = [];
-    let info = [];
+  let status = null;
+  let data = null;
+  let warnings = [];
+  let errors = [];
+  let info = [];
 
-    const { current, pageSize, allPages } = (pagination || { current: 1, pageSize: 10, allPages: null });
+  const { current, pageSize, allPages } = pagination || {
+    current: 1,
+    pageSize: 10,
+    allPages: null,
+  };
 
-    filter = { removed: false };
-    
-    let pipline = [
-        {
-            $match: filter
-        },
-        {
-            $lookup: {
-                from: "cashregister-accounts",
-                localField: "accounts",
-                foreignField: "_id",
-                as: "accounts",
-                pipeline: [
-                    { $sort: { priority: 1 } }
-                    // {
-                    //     $project: {
-                    //         _id: 1,
-                    //         symbol: 1
-                    //     }
-                    // }
-                ]
-            }
-        },
-        {
-            $sort: { priority: 1 }
-        },
-    ];
+  filter = { removed: false };
 
-    let cashregisterQuery = cashregisterModel.aggregate(pipline);
+  let pipeline = [
+    {
+      $match: filter,
+    },
+    {
+      $lookup: {
+        from: "cashregister-accounts",
+        localField: "accounts",
+        foreignField: "_id",
+        as: "accounts",
+        pipeline: [
+          { $sort: { priority: 1 } },
+          // {
+          //     $project: {
+          //         _id: 1,
+          //         symbol: 1
+          //     }
+          // }
+        ],
+      },
+    },
+    {
+      $sort: { priority: 1 },
+    },
+  ];
 
-    if (allPages === false || !allPages) {
-        cashregisterQuery = cashregisterQuery.skip((current - 1) * pageSize).limit(pageSize);
-    }
+  let cashregisterQuery = cashregisterModel.aggregate(pipeline);
 
-    let cashregisters = await cashregisterQuery.exec();
+  if (allPages === false || !allPages) {
+    cashregisterQuery = cashregisterQuery
+      .skip((current - 1) * pageSize)
+      .limit(pageSize);
+  }
 
-    let cashregistersCount = await cashregisterModel.count();
+  let cashregisters = await cashregisterQuery.exec();
 
-    if (cashregisters) {
-        status = 'success';
-        data = { cashregisters, cashregistersCount };
-    } else {
-        status = 'failed';
-    }
+  let cashregistersCount = await cashregisterModel.count();
 
-    return {
-        status, 
-        data, 
-        errors,
-        warnings,
-        info
-    };
-}
+  if (cashregisters) {
+    status = "success";
+    data = { cashregisters, cashregistersCount };
+  } else {
+    status = "failed";
+  }
+
+  return {
+    status,
+    data,
+    errors,
+    warnings,
+    info,
+  };
+};
 
 const removeCashregister = async ({ _id }) => {
-    let status = null;
-    let data = null;
-    let warnings = [];
-    let errors = [];
-    let info = [];
+  let status = null;
+  let data = null;
+  let warnings = [];
+  let errors = [];
+  let info = [];
 
-    const removedCashregister = await cashregisterModel.updateOne({ _id }, { removed: true });
+  const removedCashregister = await cashregisterModel.updateOne(
+    { _id },
+    { removed: true }
+  );
 
-    if (removedCashregister) {
-        status = 'success';
-        data = removedCashregister;
-    } else {
-        status = 'failed';
-    }
+  if (removedCashregister) {
+    status = "success";
+    data = removedCashregister;
+  } else {
+    status = "failed";
+  }
 
-
-    return {
-        status, 
-        data, 
-        errors,
-        warnings,
-        info
-    };
-}
+  return {
+    status,
+    data,
+    errors,
+    warnings,
+    info,
+  };
+};
 
 module.exports = {
-    createCashregister,
-    getCashregisters,
-    removeCashregister,
-    editCashregister,
-    addCashregisterAccount,
-  };
+  createCashregister,
+  getCashregisters,
+  removeCashregister,
+  editCashregister,
+  addCashregisterAccount,
+};

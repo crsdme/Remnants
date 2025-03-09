@@ -16,7 +16,7 @@ export const get = async (filters: object): Promise<ProductsResult> => {
 
   // const stockFilter = new ObjectId(quantity?.[0]);
 
-  let pipline = [
+  let pipeline = [
     {
       $match: query,
     },
@@ -153,7 +153,7 @@ export const get = async (filters: object): Promise<ProductsResult> => {
 
   let productsCount = await ProductModel.countDocuments(query);
 
-  let productsQuery = ProductModel.aggregate(pipline);
+  let productsQuery = ProductModel.aggregate(pipeline);
 
   // if (allPages === false || !allPages) {
   //   productsQuery = productsQuery.skip((current - 1) * pageSize).limit(pageSize);

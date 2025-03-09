@@ -2,10 +2,11 @@ import { Suspense } from 'react';
 
 import { useTranslation } from 'react-i18next';
 import { Helmet } from 'react-helmet-async';
-import Navigation from './components/Navigation';
-import Table from './components/Table';
 import { CurrencyProvider } from '@/utils/contexts';
 import { Loading } from './loading';
+
+import { ActionBar } from './components/action-bar';
+import { DataTable } from './components/data-table';
 
 export function CurrenciesPage() {
   const { t } = useTranslation();
@@ -18,8 +19,14 @@ export function CurrenciesPage() {
       </Helmet>
       <Suspense fallback={<Loading />}>
         <CurrencyProvider>
-          <Navigation />
-          <Table />
+          <div className='flex items-center justify-between flex-wrap'>
+            <div>
+              <h2 className='text-2xl font-bold tracking-tight'>Currencies</h2>
+              <p className='text-muted-foreground'>Description</p>
+            </div>
+            <ActionBar />
+          </div>
+          <DataTable />
         </CurrencyProvider>
       </Suspense>
     </>

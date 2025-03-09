@@ -1,14 +1,17 @@
 import { api } from '@/api/instance';
 
 export type getCurrenciesParams = {
-  // filters: {
-  //   current: number;
-  //   pageSize: number;
-  // };
-  // sorters: {
-  //   current: number;
-  //   pageSize: number;
-  // };
+  filters?: {
+    names?: string;
+    symbols?: string;
+    language: string;
+  };
+  sorters?: {
+    names?: number;
+    priority?: number;
+    createdAt?: number;
+    updatedAt?: number;
+  };
   pagination: {
     full?: boolean;
     current?: number;

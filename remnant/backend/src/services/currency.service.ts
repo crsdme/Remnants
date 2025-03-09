@@ -7,8 +7,17 @@ interface getCurrenciesResult {
 }
 
 interface getCurrenciesParams {
-  filters: any[];
-  sorters: any[];
+  filters: {
+    names: string;
+    symbols: string;
+    language: string;
+  };
+  sorters: {
+    names: number;
+    priority: number;
+    updatedAt: number;
+    createdAt: number;
+  };
   pagination: {
     current: number;
     pageSize: number;
@@ -19,17 +28,41 @@ export const get = async (
   payload: getCurrenciesParams
 ): Promise<getCurrenciesResult> => {
   const { current = 1, pageSize = 10 } = payload.pagination;
+
+  const { names = "", symbols = "", language = "en" } = payload.filters;
+
+  const sorters = payload.sorters;
+
   let query = { removed: false };
 
-  let pipline = [
+  if (names.trim()) {
+    query = {
+      ...query,
+      [`names.${language}`]: { $regex: names, $options: "i" },
+    };
+  }
+
+  if (symbols.trim()) {
+    query = {
+      ...query,
+      [`symbols.${language}`]: { $regex: symbols, $options: "i" },
+    };
+  }
+
+  let pipeline = [
     {
       $match: query,
     },
+    ...(sorters && Object.keys(sorters).length > 0
+      ? [{ $sort: sorters as Record<string, 1 | -1> }]
+      : []),
   ];
+
+  console.log(sorters);
 
   let currenciesCount = await CurrencyModel.countDocuments(query);
 
-  let currenciesQuery = CurrencyModel.aggregate(pipline);
+  let currenciesQuery = CurrencyModel.aggregate(pipeline);
 
   currenciesQuery = currenciesQuery
     .skip((current - 1) * pageSize)
