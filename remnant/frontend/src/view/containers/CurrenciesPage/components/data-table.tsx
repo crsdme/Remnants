@@ -32,11 +32,15 @@ import {
   TableRow
 } from '@/view/components/ui/table';
 
-import { Input, Skeleton } from '@/view/components/ui';
+import { Select, SelectTrigger, SelectContent, SelectItem } from '@/view/components/ui/select';
+
+import { Input } from '@/view/components/ui';
 import { useRequestCurrencies } from '@/api/hooks';
 import { useTranslation } from 'react-i18next';
 import debounce from 'lodash.debounce';
 import { ColumnVisibilityMenu } from '@/view/components/ColumnVisibilityMenu';
+import TableSelectionDropdown from '@/view/components/TableSelectionDropdown';
+import Papa from 'papaparse';
 
 export function DataTable() {
   const [sorting, setSorting] = useState<SortingState>([]);
@@ -46,7 +50,7 @@ export function DataTable() {
 
   const { t, i18n } = useTranslation();
 
-  const [pagination, setPaginationParams] = useState({
+  const [pagination, setPagination] = useState({
     current: 1,
     pageSize: 10
   });
@@ -61,16 +65,20 @@ export function DataTable() {
 
   const columns = useColumns({ setSorters });
 
-  const requestCurrencies = useRequestCurrencies({ pagination, filters, sorters });
+  const requestCurrencies = useRequestCurrencies(
+    { pagination, filters, sorters },
+    { options: { keepPreviousData: true } }
+  );
 
-  const currencies = requestCurrencies.data.data.currencies;
-  const currenciesCount = requestCurrencies.data.data.currenciesCount;
+  const currencies = requestCurrencies?.data?.data?.currencies || [];
+  const currenciesCount = requestCurrencies?.data?.data?.currenciesCount || 0;
   const totalPages = Math.ceil(currenciesCount / pagination.pageSize);
 
   const table = useReactTable({
     data: currencies,
     columns,
     onSortingChange: setSorting,
+    manualPagination: true,
     onColumnFiltersChange: setColumnFilters,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
@@ -82,7 +90,11 @@ export function DataTable() {
       sorting,
       columnFilters,
       columnVisibility,
-      rowSelection
+      rowSelection,
+      pagination: {
+        pageIndex: pagination.current - 1,
+        pageSize: pagination.pageSize
+      }
     }
   });
 
@@ -92,6 +104,47 @@ export function DataTable() {
     }, 300),
     []
   );
+
+  const changePagination = useCallback(
+    debounce((value) => {
+      setPagination((state) => ({ ...state, ...value }));
+    }, 300),
+    []
+  );
+
+  const handleBatchDelete = () => {
+    console.log('11111');
+    setRowSelection({});
+  };
+
+  const handleBatchExport = () => {
+    const filteredData = currencies.filter((_, index) => rowSelection[index]);
+    const formatedCurrencies = filteredData.map((item) => ({
+      names: item.names[i18n.language],
+      symbols: item.symbols[i18n.language],
+      priority: item.priority,
+      active: item.active,
+      updatedAt: item.updatedAt,
+      createdAt: item.createdAt
+    }));
+
+    const csv = Papa.unparse(formatedCurrencies);
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', 'data.csv');
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    setRowSelection({});
+  };
+
+  const handleBatchCopy = () => {
+    console.log('11111');
+    setRowSelection({});
+  };
 
   return (
     <>
@@ -108,118 +161,123 @@ export function DataTable() {
             className='max-w-3xs max-md:max-w-full'
           />
           <ColumnVisibilityMenu table={table} tableId='currency' />
+          <TableSelectionDropdown
+            selectedCount={Object.keys(rowSelection).length}
+            onDelete={handleBatchDelete}
+            onCopy={handleBatchCopy}
+            onExport={handleBatchExport}
+          />
         </div>
       </div>
-
-      <Table className='rounded-lg border'>
-        <TableHeader>
-          {table.getHeaderGroups().map((headerGroup) => (
-            <TableRow key={headerGroup.id}>
-              {headerGroup.headers.map((header) => {
-                return (
-                  <TableHead key={header.id}>
-                    {header.isPlaceholder
-                      ? null
-                      : flexRender(header.column.columnDef.header, header.getContext())}
-                  </TableHead>
-                );
-              })}
-            </TableRow>
-          ))}
-        </TableHeader>
-        <TableBody>
-          {requestCurrencies.isLoading ? (
-            Array.from({ length: 10 }).map((_, rowIndex) => (
-              <TableRow key={`loading-${rowIndex}`}>
-                {columns.map((column, cellIndex) => (
-                  <TableCell key={`loading-${rowIndex}-${cellIndex}`}>
-                    <Skeleton className='h-6 w-full' />
-                  </TableCell>
-                ))}
+      <div className='border rounded-sm'>
+        <Table>
+          <TableHeader>
+            {table.getHeaderGroups().map((headerGroup) => (
+              <TableRow key={headerGroup.id}>
+                {headerGroup.headers.map((header) => {
+                  return (
+                    <TableHead key={header.id}>
+                      {header.isPlaceholder
+                        ? null
+                        : flexRender(header.column.columnDef.header, header.getContext())}
+                    </TableHead>
+                  );
+                })}
               </TableRow>
-            ))
-          ) : table.getRowModel().rows?.length ? (
-            table.getRowModel().rows.map((row) => (
-              <TableRow key={row.id} data-state={row.getIsSelected() && 'selected'}>
-                {row.getVisibleCells().map((cell) => (
-                  <TableCell key={cell.id}>
-                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                  </TableCell>
-                ))}
+            ))}
+          </TableHeader>
+          <TableBody>
+            {table.getRowModel().rows?.length ? (
+              table.getRowModel().rows.map((row) => (
+                <TableRow key={row.id} data-state={row.getIsSelected() && 'selected'}>
+                  {row.getVisibleCells().map((cell) => (
+                    <TableCell key={cell.id}>
+                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                    </TableCell>
+                  ))}
+                </TableRow>
+              ))
+            ) : (
+              <TableRow>
+                <TableCell colSpan={columns.length} className='h-24 text-center'>
+                  No results.
+                </TableCell>
               </TableRow>
-            ))
-          ) : (
-            <TableRow>
-              <TableCell colSpan={columns.length} className='h-24 text-center'>
-                No results.
-              </TableCell>
-            </TableRow>
-          )}
-          {/* {table.getRowModel().rows?.length ? (
-            table.getRowModel().rows.map((row) => (
-              <TableRow key={row.id} data-state={row.getIsSelected() && 'selected'}>
-                {row.getVisibleCells().map((cell) => (
-                  <TableCell key={cell.id}>
-                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                  </TableCell>
-                ))}
-              </TableRow>
-            ))
-          ) : (
-            <TableRow>
-              <TableCell colSpan={columns.length} className='h-24 text-center'>
-                No results.
-              </TableCell>
-            </TableRow>
-          )} */}
-        </TableBody>
-      </Table>
-      <Pagination className='flex justify-end mt-4'>
-        <PaginationContent>
-          <PaginationItem>
-            <PaginationPrevious
-              href='#'
-              onClick={() =>
-                setPaginationParams((state) => ({
-                  ...state,
-                  current: Math.max(state.current - 1, 1)
-                }))
-              }
-            />
-          </PaginationItem>
+            )}
+          </TableBody>
+        </Table>
+      </div>
 
-          {[...Array(totalPages)].map((_, i) => (
-            <PaginationItem key={i + 1}>
-              <PaginationLink
-                href='#'
-                isActive={pagination.current === i + 1}
-                onClick={() =>
-                  setPaginationParams((state) => ({
-                    ...state,
-                    current: i + 1
-                  }))
-                }
-              >
-                {i + 1}
-              </PaginationLink>
-            </PaginationItem>
-          ))}
+      <div className='flex justify-between items-center mt-4'>
+        <span className='text-sm text-muted-foreground'>
+          {t('pagination.selected', {
+            selected: Object.keys(rowSelection).length,
+            total: currenciesCount
+          })}
+        </span>
+        <div className='flex justify-end items-center gap-4'>
+          <Select onValueChange={(value) => changePagination({ pageSize: Number(value) })}>
+            <SelectTrigger>{pagination.pageSize}</SelectTrigger>
+            <SelectContent>
+              <SelectItem value='10'>10</SelectItem>
+              <SelectItem value='20'>20</SelectItem>
+              <SelectItem value='50'>50</SelectItem>
+            </SelectContent>
+          </Select>
+          <span className='text-sm text-muted-foreground w-40'>
+            {t('pagination.current', { current: pagination.current, total: totalPages })}
+          </span>
+          <Pagination>
+            <PaginationContent>
+              <PaginationItem>
+                <PaginationPrevious
+                  href='#'
+                  onClick={() =>
+                    changePagination({
+                      current: Math.max(pagination.current - 1, 1)
+                    })
+                  }
+                  aria-disabled={pagination.current <= 1}
+                  tabIndex={pagination.current <= 1 ? -1 : undefined}
+                  className={pagination.current <= 1 ? 'pointer-events-none opacity-50' : undefined}
+                />
+              </PaginationItem>
 
-          {totalPages > 5 && <PaginationEllipsis />}
+              {[...Array(totalPages)].map((_, i) => (
+                <PaginationItem key={i + 1}>
+                  <PaginationLink
+                    href='#'
+                    isActive={pagination.current === i + 1}
+                    onClick={() =>
+                      changePagination({
+                        current: i + 1
+                      })
+                    }
+                  >
+                    {i + 1}
+                  </PaginationLink>
+                </PaginationItem>
+              ))}
 
-          <PaginationItem>
-            <PaginationNext
-              href='#'
-              onClick={() =>
-                setPaginationParams((state) => ({
-                  ...state,
-                  current: Math.max(state.current + 1, totalPages)
-                }))
-              }
-            />
-          </PaginationItem>
-        </PaginationContent>
-      </Pagination>
+              {totalPages > 5 && <PaginationEllipsis />}
+
+              <PaginationItem>
+                <PaginationNext
+                  href='#'
+                  onClick={() =>
+                    changePagination({
+                      current: Math.max(pagination.current + 1, totalPages)
+                    })
+                  }
+                  aria-disabled={pagination.current > 1}
+                  tabIndex={pagination.current > 1 ? -1 : undefined}
+                  className={pagination.current > 1 ? 'pointer-events-none opacity-50' : undefined}
+                />
+              </PaginationItem>
+            </PaginationContent>
+          </Pagination>
+        </div>
+      </div>
     </>
   );
 }

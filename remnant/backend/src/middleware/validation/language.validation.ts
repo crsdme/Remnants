@@ -17,7 +17,6 @@ export const validateGetLanguage = (
 ) => {
   try {
     const result = getLanguageSchema.safeParse(req.query);
-    console.log(result, req.query);
     req.body = result.data;
     next();
   } catch (error) {

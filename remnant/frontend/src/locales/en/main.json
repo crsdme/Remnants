@@ -57,5 +57,8 @@
   "sidemenu.label.deliveryServices": "Delivery Services",
   "sidemenu.label.units": "Units",
   "sidemenu.label.settings": "Settings",
-  "sidemenu.label.logs": "Logs"
+  "sidemenu.label.logs": "Logs",
+
+  "pagination.selected": "{{selected}} of {{total}} row(s) selected.",
+  "pagination.current": "Page {{current}} of {{total}}"
 }

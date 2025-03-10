@@ -40,7 +40,6 @@ export const login = async (payload: loginParams): Promise<loginResult> => {
   }
 
   const accessToken = generateAccessToken({ id: user._id, login: user.login });
-  console.log(accessToken);
   const refreshToken = generateRefreshToken({
     id: user._id,
     login: user.login,

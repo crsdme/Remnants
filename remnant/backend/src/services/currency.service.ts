@@ -58,8 +58,6 @@ export const get = async (
       : []),
   ];
 
-  console.log(sorters);
-
   let currenciesCount = await CurrencyModel.countDocuments(query);
 
   let currenciesQuery = CurrencyModel.aggregate(pipeline);

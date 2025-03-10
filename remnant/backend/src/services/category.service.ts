@@ -232,7 +232,6 @@ export const edit = async (
   if (!_id) {
     throw new Error("Need _ID");
   }
-  console.log(payload);
   let category = await CategoryModel.updateOne({ _id }, payload);
 
   if (!category) {

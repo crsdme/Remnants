@@ -14,13 +14,40 @@ import { useCurrencyContext } from '@/utils/contexts';
 
 import { MoreHorizontal, ArrowUpDown, ArrowDown, ArrowUp } from 'lucide-react';
 
-import { Button } from '@/view/components/ui';
+import { Button, Checkbox } from '@/view/components/ui';
 
 export function useColumns({ setSorters }): ColumnDef<Currency>[] {
   const { t, i18n } = useTranslation();
   const currencyContext = useCurrencyContext();
 
   return [
+    {
+      id: 'select',
+      header: ({ table }) => {
+        const isChecked = table.getIsAllPageRowsSelected()
+          ? true
+          : table.getIsSomePageRowsSelected()
+            ? 'indeterminate'
+            : false;
+
+        return (
+          <Checkbox
+            checked={isChecked}
+            onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+            aria-label='Select all'
+          />
+        );
+      },
+      cell: ({ row }) => (
+        <Checkbox
+          checked={row.getIsSelected()}
+          onCheckedChange={(value) => row.toggleSelected(!!value)}
+          aria-label='Select row'
+        />
+      ),
+      enableSorting: false,
+      enableHiding: false
+    },
     {
       id: 'names',
       header: ({ column }) => {

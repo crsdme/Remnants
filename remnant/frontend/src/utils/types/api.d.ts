@@ -19,7 +19,7 @@ interface QuerySettings<Func = unknown> {
       any
     >,
     'queryKey'
-  >;
+  > & { keepPreviousData?: boolean };
 }
 
 type AxiosRequestConfig<Params = undefined> = Params extends undefined
