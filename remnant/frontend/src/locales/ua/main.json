@@ -1,4 +1,9 @@
 {
   "socketError": "Socket connection error",
-  "sidemenu.dashboard": "Dashboard"
+  "sidemenu.dashboard": "Dashboard",
+
+  "component.tableSelection.selected": "{{count}} вибрано",
+  "component.tableSelection.copyToClipboard": "Копіювати в буфер обміну",
+  "component.tableSelection.downloadCSV": "Завантажити CSV",
+  "component.tableSelection.delete": "Видалити"
 }

@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 
-import { getCurrencies } from '@/api/requests';
 import type { getCurrenciesParams } from '@/api/requests';
+import { getCurrencies } from '@/api/requests';
 
 export const useRequestCurrencies = (params: getCurrenciesParams, settings?: QuerySettings) =>
   useQuery({

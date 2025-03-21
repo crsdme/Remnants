@@ -1,8 +1,11 @@
-import { createRoot } from 'react-dom/client';
-import './locales/i18n.ts';
-import App from './app/App';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+
+import { createRoot } from 'react-dom/client';
+
+import App from './app/App';
+
 import { AuthProvider, ThemeProvider } from '@/utils/contexts';
+import '@/locales/i18n.ts';
 
 const queryClient = new QueryClient();
 

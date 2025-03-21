@@ -1,6 +1,7 @@
 import { ColumnDef } from '@tanstack/react-table';
+
 import { useTranslation } from 'react-i18next';
-import formatDate from '@/utils/helpers/formatDate';
+import { ArrowDown, ArrowUp, ChevronsUpDown, MoreHorizontal } from 'lucide-react';
 
 import {
   DropdownMenu,
@@ -10,11 +11,9 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger
 } from '@/view/components/ui/dropdown-menu';
+import { Button, Checkbox, Badge } from '@/view/components/ui';
+import formatDate from '@/utils/helpers/formatDate';
 import { useCurrencyContext } from '@/utils/contexts';
-
-import { MoreHorizontal, ArrowUpDown, ArrowDown, ArrowUp } from 'lucide-react';
-
-import { Button, Checkbox } from '@/view/components/ui';
 
 export function useColumns({ setSorters }): ColumnDef<Currency>[] {
   const { t, i18n } = useTranslation();
@@ -23,6 +22,7 @@ export function useColumns({ setSorters }): ColumnDef<Currency>[] {
   return [
     {
       id: 'select',
+      meta: { title: t('component.columnMenu.columns.select') },
       header: ({ table }) => {
         const isChecked = table.getIsAllPageRowsSelected()
           ? true
@@ -50,9 +50,10 @@ export function useColumns({ setSorters }): ColumnDef<Currency>[] {
     },
     {
       id: 'names',
+      meta: { title: t('page.currencies.table.names') },
       header: ({ column }) => {
         const sortOrder = column.getIsSorted() || 'none';
-        const icons = { asc: ArrowUp, desc: ArrowDown, none: ArrowUpDown };
+        const icons = { asc: ArrowUp, desc: ArrowDown, none: ChevronsUpDown };
         const Icon = icons[sortOrder];
 
         const handleSort = () => {
@@ -72,8 +73,13 @@ export function useColumns({ setSorters }): ColumnDef<Currency>[] {
         };
 
         return (
-          <Button variant='ghost' onClick={handleSort} className='m-2 flex items-center gap-2'>
-            {t('table.names')} <Icon className='w-4 h-4' />
+          <Button
+            disabled={currencyContext.isLoading}
+            variant='ghost'
+            onClick={handleSort}
+            className='my-2 flex items-center gap-2'
+          >
+            {t('page.currencies.table.names')} <Icon className='w-4 h-4' />
           </Button>
         );
       },
@@ -81,14 +87,21 @@ export function useColumns({ setSorters }): ColumnDef<Currency>[] {
     },
     {
       id: 'symbols',
-      header: () => t('table.symbols'),
-      accessorFn: (row) => row.symbols?.[i18n.language] || row.symbols?.['en']
+      meta: { title: t('page.currencies.table.symbols') },
+      header: () => t('page.currencies.table.symbols'),
+      accessorFn: (row) => row.symbols?.[i18n.language] || row.symbols?.['en'],
+      cell: ({ row }) => (
+        <Badge variant='outline'>
+          {row.original.symbols?.[i18n.language] || row.original.symbols?.['en']}
+        </Badge>
+      )
     },
     {
       accessorKey: 'priority',
+      meta: { title: t('page.currencies.table.priority') },
       header: ({ column }) => {
         const sortOrder = column.getIsSorted() || 'none';
-        const icons = { asc: ArrowUp, desc: ArrowDown, none: ArrowUpDown };
+        const icons = { asc: ArrowUp, desc: ArrowDown, none: ChevronsUpDown };
         const Icon = icons[sortOrder];
 
         const handleSort = () => {
@@ -108,21 +121,30 @@ export function useColumns({ setSorters }): ColumnDef<Currency>[] {
         };
 
         return (
-          <Button variant='ghost' onClick={handleSort} className='m-2 flex items-center gap-2'>
-            {t('table.priority')} <Icon className='w-4 h-4' />
+          <Button
+            disabled={currencyContext.isLoading}
+            variant='ghost'
+            onClick={handleSort}
+            className='my-2 flex items-center gap-2'
+          >
+            {t('page.currencies.table.priority')} <Icon className='w-4 h-4' />
           </Button>
         );
-      }
+      },
+      cell: ({ row }) => <Badge variant='outline'>{row.original.priority}</Badge>
     },
     {
       accessorKey: 'active',
-      header: t('table.active')
+      meta: { title: t('page.currencies.table.active') },
+      header: t('page.currencies.table.active'),
+      cell: ({ row }) => <Badge variant='outline'>{row.original.active.toString()}</Badge>
     },
     {
       accessorKey: 'createdAt',
+      meta: { title: t('page.currencies.table.createdAt') },
       header: ({ column }) => {
         const sortOrder = column.getIsSorted() || 'none';
-        const icons = { asc: ArrowUp, desc: ArrowDown, none: ArrowUpDown };
+        const icons = { asc: ArrowUp, desc: ArrowDown, none: ChevronsUpDown };
         const Icon = icons[sortOrder];
 
         const handleSort = () => {
@@ -142,18 +164,24 @@ export function useColumns({ setSorters }): ColumnDef<Currency>[] {
         };
 
         return (
-          <Button variant='ghost' onClick={handleSort} className='m-2 flex items-center gap-2'>
-            {t('table.createdAt')} <Icon className='w-4 h-4' />
+          <Button
+            disabled={currencyContext.isLoading}
+            variant='ghost'
+            onClick={handleSort}
+            className='my-2 flex items-center gap-2'
+          >
+            {t('page.currencies.table.createdAt')} <Icon className='w-4 h-4' />
           </Button>
         );
       },
-      cell: ({ row }) => formatDate(row.getValue('createdAt'))
+      cell: ({ row }) => formatDate(row.getValue('createdAt'), 'MMMM dd, yyyy', i18n.language)
     },
     {
       accessorKey: 'updatedAt',
+      meta: { title: t('page.currencies.table.updatedAt') },
       header: ({ column }) => {
         const sortOrder = column.getIsSorted() || 'none';
-        const icons = { asc: ArrowUp, desc: ArrowDown, none: ArrowUpDown };
+        const icons = { asc: ArrowUp, desc: ArrowDown, none: ChevronsUpDown };
         const Icon = icons[sortOrder];
 
         const handleSort = () => {
@@ -173,15 +201,21 @@ export function useColumns({ setSorters }): ColumnDef<Currency>[] {
         };
 
         return (
-          <Button variant='ghost' onClick={handleSort} className='m-2 flex items-center gap-2'>
-            {t('table.updatedAt')} <Icon className='w-4 h-4' />
+          <Button
+            disabled={currencyContext.isLoading}
+            variant='ghost'
+            onClick={handleSort}
+            className='my-2 flex items-center gap-2'
+          >
+            {t('page.currencies.table.updatedAt')} <Icon className='w-4 h-4' />
           </Button>
         );
       },
-      cell: ({ row }) => formatDate(row.getValue('updatedAt'))
+      cell: ({ row }) => formatDate(row.getValue('updatedAt'), 'MMMM dd, yyyy', i18n.language)
     },
     {
       id: 'action',
+      meta: { title: t('page.currencies.table.actions') },
       enableHiding: false,
       cell: ({ row }) => {
         const currency = row.original;
@@ -194,20 +228,21 @@ export function useColumns({ setSorters }): ColumnDef<Currency>[] {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent>
-              <DropdownMenuLabel>{t('currency.columns.actions')}</DropdownMenuLabel>
+              <DropdownMenuLabel>{t('page.currencies.table.actions')}</DropdownMenuLabel>
               <DropdownMenuItem onClick={() => navigator.clipboard.writeText(currency._id)}>
-                {t('currency.columns.copy')}
+                {t('page.currencies.table.copy')}
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => currencyContext.toggleModal(currency)}>
-                {t('currency.columns.edit')}
+                {t('page.currencies.table.edit')}
               </DropdownMenuItem>
               <DropdownMenuItem
                 onClick={() => currencyContext.removeCurrency({ _id: currency._id })}
+                variant='destructive'
               >
-                {t('currency.columns.delete')}
+                {t('page.currencies.table.delete')}
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem>{t('currency.columns.test')}</DropdownMenuItem>
+              <DropdownMenuItem>{t('page.currencies.table.test')}</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         );

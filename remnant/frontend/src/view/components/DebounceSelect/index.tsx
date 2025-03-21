@@ -1,7 +1,9 @@
-import { Select, Spin } from 'antd';
-import { useState, useRef, useMemo } from 'react';
-import debounce from 'lodash.debounce';
+import { useMemo, useRef, useState } from 'react';
+
 import { useTranslation } from 'react-i18next';
+import debounce from 'lodash.debounce';
+import { Select, Spin } from 'antd';
+
 // import debounce from '@/utils/helpers/debounce';
 
 export default function Component({

@@ -1,7 +1,7 @@
 import { useSuspenseQuery } from '@tanstack/react-query';
 
-import { getProducts } from '@/api/requests';
 import type { GetProductsParams } from '@/api/requests';
+import { getProducts } from '@/api/requests';
 
 export const useRequestProducts = (params: GetProductsParams) =>
   useSuspenseQuery({

@@ -1,37 +1,45 @@
 import { useEffect, useState } from 'react';
+
+import { useTranslation } from 'react-i18next';
+import { ChevronDown, Columns3, RefreshCcw, SearchIcon } from 'lucide-react';
+
+import { Input } from '@/view/components/ui/input';
 import {
   DropdownMenu,
-  DropdownMenuTrigger,
-  DropdownMenuContent,
   DropdownMenuCheckboxItem,
+  DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuSeparator
+  DropdownMenuSeparator,
+  DropdownMenuTrigger
 } from '@/view/components/ui/dropdown-menu';
 import { Button } from '@/view/components/ui/button';
-import { Input } from '@/view/components/ui/input';
-import { SearchIcon, Columns3, ChevronDown, RefreshCcw } from 'lucide-react';
 
 export function ColumnVisibilityMenu({ table, tableId }) {
+  const { t } = useTranslation();
   const [searchQuery, setSearchQuery] = useState('');
   const [columnVisibility, setColumnVisibility] = useState({});
 
-  // ✅ Load visibility from localStorage on mount
   useEffect(() => {
     const savedVisibility = JSON.parse(localStorage.getItem(`${tableId}-columnVisibility`)) || {};
     setColumnVisibility(savedVisibility);
     table.setColumnVisibility(savedVisibility);
-  }, [tableId]);
+  }, [tableId, table]);
 
-  // ✅ Save visibility to localStorage whenever it changes
   useEffect(() => {
     localStorage.setItem(`${tableId}-columnVisibility`, JSON.stringify(columnVisibility));
   }, [columnVisibility, tableId]);
 
+  // Function to get column display name
+  const getColumnDisplayName = (column) => {
+    // Use meta.title if available, otherwise use column.id
+    return column.columnDef.meta?.title || column.id;
+  };
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger>
-        <Button variant='outline' className='ml-auto'>
-          <Columns3 /> Columns <ChevronDown className='ml-3' />
+        <Button variant='outline'>
+          <Columns3 /> {t('component.columnMenu.title')} <ChevronDown className='ml-3' />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align='end'>
@@ -40,7 +48,7 @@ export function ColumnVisibilityMenu({ table, tableId }) {
             value={searchQuery}
             onChange={(event) => setSearchQuery(event.target.value)}
             className='pl-8'
-            placeholder='Search'
+            placeholder={t('component.columnMenu.searchPlaceholder')}
             onKeyDown={(event) => event.stopPropagation()}
           />
           <SearchIcon className='absolute inset-y-0 my-auto left-2 h-4 w-4' />
@@ -50,7 +58,13 @@ export function ColumnVisibilityMenu({ table, tableId }) {
           .getAllColumns()
           .filter((column) => column.getCanHide())
           .map((column) => {
-            if (searchQuery && !column.id.toLowerCase().includes(searchQuery.toLowerCase())) {
+            const displayName = getColumnDisplayName(column);
+
+            if (
+              searchQuery &&
+              !displayName.toLowerCase().includes(searchQuery.toLowerCase()) &&
+              !column.id.toLowerCase().includes(searchQuery.toLowerCase())
+            ) {
               return null;
             }
 
@@ -66,7 +80,7 @@ export function ColumnVisibilityMenu({ table, tableId }) {
                 }}
                 onSelect={(e) => e.preventDefault()}
               >
-                {column.id}
+                {displayName}
               </DropdownMenuCheckboxItem>
             );
           })}
@@ -79,7 +93,7 @@ export function ColumnVisibilityMenu({ table, tableId }) {
             setSearchQuery('');
           }}
         >
-          <RefreshCcw /> Reset
+          <RefreshCcw /> {t('component.columnMenu.reset')}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

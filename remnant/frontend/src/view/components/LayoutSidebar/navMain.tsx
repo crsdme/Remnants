@@ -1,8 +1,6 @@
-import { ChevronRight, type LucideIcon } from 'lucide-react';
-
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/view/components/ui/';
-
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import { ChevronRight, type LucideIcon } from 'lucide-react';
 
 import {
   SidebarGroup,
@@ -14,6 +12,7 @@ import {
   SidebarMenuSubButton,
   SidebarMenuSubItem
 } from '@/view/components/ui/sidebar';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/view/components/ui/';
 
 export function NavMain({
   items
@@ -29,9 +28,11 @@ export function NavMain({
     }[];
   }[];
 }) {
+  const { t } = useTranslation();
+
   return (
     <SidebarGroup>
-      <SidebarGroupLabel>Platform</SidebarGroupLabel>
+      <SidebarGroupLabel>{t('layout.sidemenu.label.navigation')}</SidebarGroupLabel>
       <SidebarMenu>
         {items.map((item) => {
           if (!item?.items) {

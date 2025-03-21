@@ -1,5 +1,11 @@
-import dayjs from 'dayjs';
+import { enUS, ru } from 'date-fns/locale';
+import { format } from 'date-fns';
 
-export default (date: string | number | Date, format = 'DD.MM.YYYY HH:mm:ss'): string => {
-  return dayjs(date).format(format);
+export default (
+  date: string | number | Date,
+  formatString = 'MMMM dd, yyyy HH:mm:ss',
+  lang = 'en'
+): string => {
+  const locale = lang === 'ru' ? ru : enUS;
+  return format(new Date(date), formatString, { locale });
 };

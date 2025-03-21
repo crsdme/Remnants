@@ -6,3 +6,5 @@ export * from './card';
 export * from './collapsible';
 export * from './checkbox';
 export * from './skeleton';
+export * from './badge';
+export * from './separator';

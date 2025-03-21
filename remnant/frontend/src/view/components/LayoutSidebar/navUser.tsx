@@ -1,6 +1,11 @@
 import { BadgeCheck, Bell, ChevronsUpDown, CreditCard, LogOut, Sparkles } from 'lucide-react';
 
-import { Avatar, AvatarFallback, AvatarImage } from '@/view/components/ui/avatar';
+import {
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  useSidebar
+} from '@/view/components/ui/sidebar';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -10,13 +15,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger
 } from '@/view/components/ui/dropdown-menu';
-import {
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  useSidebar
-} from '@/view/components/ui/sidebar';
-import { useThemeContext, useAuthContext } from '@/utils/contexts';
+import { Avatar, AvatarFallback, AvatarImage } from '@/view/components/ui/avatar';
+import { useAuthContext, useThemeContext } from '@/utils/contexts';
 
 export function NavUser({
   user

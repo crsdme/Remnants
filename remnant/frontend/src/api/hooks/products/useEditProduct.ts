@@ -1,7 +1,7 @@
 import { useMutation } from '@tanstack/react-query';
 
-import { editProduct } from '@/api/requests';
 import type { editProductParams } from '@/api/requests';
+import { editProduct } from '@/api/requests';
 
 export const useEditProduct = (
   settings?: MutationSettings<editProductParams, typeof editProduct>

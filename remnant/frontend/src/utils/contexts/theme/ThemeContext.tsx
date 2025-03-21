@@ -1,5 +1,8 @@
-import { createContext, useState, useContext, ReactNode, useEffect } from 'react';
+import { createContext, ReactNode, useContext, useEffect, useState } from 'react';
+
 import { useTranslation } from 'react-i18next';
+
+import { Toaster } from '@/view/components/ui/sonner';
 
 const LOCAL_STORAGE_KEY = 'appTheme';
 
@@ -44,7 +47,12 @@ export const ThemeProvider = ({ children }: ThemeProviderProps) => {
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(theme));
   }, [theme]);
 
-  return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
+  return (
+    <ThemeContext.Provider value={value}>
+      <Toaster position='bottom-right' richColors />
+      {children}
+    </ThemeContext.Provider>
+  );
 };
 
 export const useThemeContext = (): ThemeContextType => {

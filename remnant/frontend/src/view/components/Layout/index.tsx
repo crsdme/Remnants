@@ -1,10 +1,12 @@
 import { Outlet } from 'react-router';
 import { useTranslation } from 'react-i18next';
-import { LayoutSidebar } from '@/view/components/LayoutSidebar/';
-import { Separator } from '@/view/components/ui/separator';
+
 import { SidebarInset, SidebarProvider, SidebarTrigger } from '@/view/components/ui/sidebar';
+import { Separator } from '@/view/components/ui/separator';
 import { Avatar, AvatarFallback, AvatarImage } from '@/view/components/ui/avatar';
 import ThemeButton from '@/view/components/ThemeButton';
+import { LayoutSidebar } from '@/view/components/LayoutSidebar/';
+import LanguageButton from '@/view/components/LanguageButton';
 
 export default function Layout() {
   const { t } = useTranslation();
@@ -20,6 +22,7 @@ export default function Layout() {
           </div>
           <div className='flex justify-end items-center w-full px-4 gap-2'>
             <ThemeButton />
+            <LanguageButton />
             <Avatar className='h-9 w-9 rounded-md'>
               <AvatarImage src={'LOCALSTORAGE'} alt={'LOCALSTORAGE'} />
               <AvatarFallback className='rounded-md'>{t('CN')}</AvatarFallback>

@@ -1,7 +1,8 @@
-import { TreeSelect, Spin } from 'antd';
-import { useState, useRef, useMemo } from 'react';
-import debounce from 'lodash.debounce';
+import { useMemo, useRef, useState } from 'react';
+
 import { useTranslation } from 'react-i18next';
+import debounce from 'lodash.debounce';
+import { Spin, TreeSelect } from 'antd';
 
 export default function DebounceTreeSelect({
   fetchOptions,

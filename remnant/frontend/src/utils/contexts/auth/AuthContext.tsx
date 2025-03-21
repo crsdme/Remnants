@@ -1,7 +1,9 @@
-import { createContext, useReducer, useContext, ReactNode, useEffect } from 'react';
+import { createContext, ReactNode, useContext, useEffect, useReducer } from 'react';
+
+import { toast } from 'sonner';
+
 import { setupAxiosInterceptors } from '@/api/instance';
-import { App } from 'antd';
-import { useRefreshToken, useAuthLogin, useAuthLogout } from '@/api/hooks';
+import { useAuthLogin, useAuthLogout, useRefreshToken } from '@/api/hooks';
 
 interface AuthState {
   isAuthenticated: boolean;
@@ -56,7 +58,6 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     isAuthChecked: false,
     user: null
   });
-  const { notification } = App.useApp();
 
   const useQueryRefreshToken = useRefreshToken({
     options: {
@@ -96,14 +97,14 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     useMutateAuthLogout.mutate();
   };
 
-  const sendNotification = (data) => {
-    notification.error(data);
+  const sendToast = (data) => {
+    toast.error(data.title, { description: data.description });
   };
 
   setupAxiosInterceptors({
     logout,
     refresh,
-    notification: sendNotification
+    sendToast
   });
 
   useEffect(() => {

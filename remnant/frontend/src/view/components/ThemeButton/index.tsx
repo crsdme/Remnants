@@ -1,5 +1,6 @@
+import { Moon, Sun } from 'lucide-react';
+
 import { Button } from '@/view/components/ui/';
-import { Sun, Moon } from 'lucide-react';
 import { useThemeContext } from '@/utils/contexts';
 
 export default function ThemeButton() {

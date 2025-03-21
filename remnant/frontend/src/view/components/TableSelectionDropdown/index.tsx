@@ -1,17 +1,19 @@
+import { useTranslation } from 'react-i18next';
+import { Copy, Download, MoreVertical, Trash } from 'lucide-react';
+
 import {
   DropdownMenu,
-  DropdownMenuTrigger,
   DropdownMenuContent,
-  DropdownMenuItem
+  DropdownMenuItem,
+  DropdownMenuTrigger
 } from '@/view/components/ui/dropdown-menu';
 import { Button } from '@/view/components/ui';
-import { MoreVertical, Trash, Copy, Download } from 'lucide-react';
 
 interface SelectionDropdownProps {
   selectedCount: number;
-  onDelete: () => void;
-  onCopy: () => void;
-  onExport: () => void;
+  onDelete?: () => void;
+  onCopy?: () => void;
+  onExport?: () => void;
 }
 
 export default function SelectionDropdown({
@@ -20,6 +22,8 @@ export default function SelectionDropdown({
   onCopy,
   onExport
 }: SelectionDropdownProps) {
+  const { t } = useTranslation();
+
   if (selectedCount === 0) return null;
 
   return (
@@ -27,22 +31,28 @@ export default function SelectionDropdown({
       <DropdownMenuTrigger>
         <Button variant='outline' className='flex items-center gap-2'>
           <MoreVertical className='w-5 h-5' />
-          <span>{selectedCount} выбрано</span>
+          <span>{t('component.tableSelection.selected', { count: selectedCount })}</span>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align='end'>
-        <DropdownMenuItem onClick={onCopy} className='flex items-center gap-2'>
-          <Copy className='w-4 h-4' />
-          Копировать в буфер обмена
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={onExport} className='flex items-center gap-2'>
-          <Download className='w-4 h-4' />
-          Скачать CSV
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={onDelete} className='flex items-center gap-2 text-red-500'>
-          <Trash className='w-4 h-4' />
-          Удалить
-        </DropdownMenuItem>
+        {onCopy && (
+          <DropdownMenuItem onClick={onCopy} className='flex items-center gap-2'>
+            <Copy className='w-4 h-4' />
+            {t('component.tableSelection.copyToClipboard')}
+          </DropdownMenuItem>
+        )}
+        {onExport && (
+          <DropdownMenuItem onClick={onExport} className='flex items-center gap-2'>
+            <Download className='w-4 h-4' />
+            {t('component.tableSelection.downloadCSV')}
+          </DropdownMenuItem>
+        )}
+        {onDelete && (
+          <DropdownMenuItem onClick={onDelete} className='flex items-center gap-2 text-red-500'>
+            <Trash className='w-4 h-4' />
+            {t('component.tableSelection.delete')}
+          </DropdownMenuItem>
+        )}
       </DropdownMenuContent>
     </DropdownMenu>
   );

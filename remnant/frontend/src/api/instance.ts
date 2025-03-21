@@ -1,4 +1,5 @@
 import axios from 'axios';
+
 import { backendUrl } from '@/utils/constants';
 
 export const api = axios.create({
@@ -12,12 +13,12 @@ let responseInterceptor;
 
 export const setupAxiosInterceptors = ({
   logout,
-  notification,
-  refresh
+  refresh,
+  sendToast
 }: {
   logout: () => void;
   refresh: () => void;
-  notification: ({ message, description }: { message: string; description: string }) => void;
+  sendToast: ({ title, description }: { title: string; description: string }) => void;
 }) => {
   if (requestInterceptor) api.interceptors.request.eject(requestInterceptor);
   if (responseInterceptor) api.interceptors.response.eject(responseInterceptor);
@@ -32,6 +33,11 @@ export const setupAxiosInterceptors = ({
     async (error) => {
       const originalRequest = error.config;
 
+      sendToast({
+        title: `Error: ${error.response?.data?.message || 'Request failed'}`,
+        description: error.toString()
+      });
+
       if (error.response?.status === 401 && !originalRequest._retry) {
         originalRequest._retry = true;
         try {
@@ -39,20 +45,17 @@ export const setupAxiosInterceptors = ({
           return api.request(originalRequest);
         } catch (refreshError) {
           logout();
-          notification({
-            message: `Error: ${refreshError.response?.data?.message || 'Request failed'}`,
-            description: error.toString()
-          });
           return Promise.reject(refreshError);
         }
       }
 
       if (error.response?.status === 403) {
         logout();
-        notification({
-          message: `Error: ${error.response?.data?.message || 'Request failed'}`,
+        sendToast({
+          title: `Error: ${error.response?.data?.message || 'Request failed'}`,
           description: error.toString()
         });
+
         return Promise.reject(error);
       }
 

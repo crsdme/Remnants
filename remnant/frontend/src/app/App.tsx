@@ -1,18 +1,12 @@
-import './App.css';
-import { BrowserRouter, Routes, Route } from 'react-router';
-import {
-  DashboardPage,
-  LoginPage,
-  LanguagesPage,
-  UnitsPage,
-  CategoriesPage,
-  ProductsPage,
-  CurrenciesPage
-} from '../view/containers/';
-import Layout from '../view/components/Layout';
+import { BrowserRouter, Route, Routes } from 'react-router';
 import { HelmetProvider } from 'react-helmet-async';
-import { useAuthContext } from '@/utils/contexts';
+
+import { CurrenciesPage, DashboardPage, LoginPage } from '../view/containers/';
+import Layout from '../view/components/Layout';
+
 import LogoIcon from '@/view/components/ui/icons/logoIcon';
+import { useAuthContext } from '@/utils/contexts';
+import '@/app/App.css';
 
 function AppMain() {
   const authContenxt = useAuthContext();
@@ -37,12 +31,7 @@ function AppMain() {
           <Route path='/' element={authContenxt.state.isAuthenticated ? <Layout /> : <LoginPage />}>
             <Route path='/' element={<DashboardPage />} />
 
-            <Route path='/products' element={<ProductsPage />} />
-            <Route path='/categories' element={<CategoriesPage />} />
-
-            <Route path='/settings/languages' element={<LanguagesPage />} />
             <Route path='/settings/currencies' element={<CurrenciesPage />} />
-            <Route path='/settings/units' element={<UnitsPage />} />
 
             <Route path='*' element={<DashboardPage />} />
           </Route>

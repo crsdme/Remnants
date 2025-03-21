@@ -1,7 +1,7 @@
 import { useQueryClient } from '@tanstack/react-query';
 
-import { getCategories } from '@/api/requests';
 import type { getCategoriesParams } from '@/api/requests';
+import { getCategories } from '@/api/requests';
 
 export const useSearchCategories = () => {
   const queryClient = useQueryClient();

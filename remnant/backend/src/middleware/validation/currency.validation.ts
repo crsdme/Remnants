@@ -15,6 +15,28 @@ const getCurrencySchema = z.object({
       names: z.string().optional(),
       symbols: z.string().optional(),
       language: z.string(),
+      createdAt: z
+        .object({
+          from: z.preprocess((val) => {
+            if (!val || (typeof val !== "string" && typeof val !== "number"))
+              return undefined;
+            return new Date(val);
+          }, z.date().optional()),
+          to: z.preprocess((val) => {
+            if (!val || (typeof val !== "string" && typeof val !== "number"))
+              return undefined;
+            return new Date(val);
+          }, z.date().optional()),
+        })
+        .optional(),
+      active: z
+        .preprocess((val) => {
+          if (Array.isArray(val)) {
+            return val.map((item) => item === "true");
+          }
+          return val === "true";
+        }, z.array(z.boolean()))
+        .optional(),
     })
     .optional(),
   sorters: z
@@ -33,6 +55,7 @@ export const validateGetCurrencies = (
   next: NextFunction
 ) => {
   try {
+    console.log(req.query);
     const result = getCurrencySchema.safeParse(req.query);
     req.body = result.data;
     next();

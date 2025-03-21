@@ -1,5 +1,4 @@
-import { useState, useCallback } from 'react';
-import { useColumns } from './columns';
+import { useCallback, useState } from 'react';
 
 import {
   ColumnFiltersState,
@@ -13,15 +12,12 @@ import {
   useReactTable
 } from '@tanstack/react-table';
 
-import {
-  Pagination,
-  PaginationContent,
-  PaginationEllipsis,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious
-} from '@/view/components/ui/pagination';
+import { useTranslation } from 'react-i18next';
+import Papa from 'papaparse';
+import debounce from 'lodash.debounce';
+
+import { DataTableFilters } from './data-table-filters';
+import { useColumns } from './columns';
 
 import {
   Table,
@@ -31,16 +27,11 @@ import {
   TableHeader,
   TableRow
 } from '@/view/components/ui/table';
-
-import { Select, SelectTrigger, SelectContent, SelectItem } from '@/view/components/ui/select';
-
-import { Input } from '@/view/components/ui';
-import { useRequestCurrencies } from '@/api/hooks';
-import { useTranslation } from 'react-i18next';
-import debounce from 'lodash.debounce';
-import { ColumnVisibilityMenu } from '@/view/components/ColumnVisibilityMenu';
+import { Skeleton } from '@/view/components/ui/skeleton';
 import TableSelectionDropdown from '@/view/components/TableSelectionDropdown';
-import Papa from 'papaparse';
+import TablePagination from '@/view/components/TablePagination';
+import { ColumnVisibilityMenu } from '@/view/components/ColumnVisibilityMenu';
+import { useRequestCurrencies } from '@/api/hooks';
 
 export function DataTable() {
   const [sorting, setSorting] = useState<SortingState>([]);
@@ -57,7 +48,7 @@ export function DataTable() {
 
   const [filters, setFilters] = useState({
     names: '',
-    symbol: '',
+    symbols: '',
     language: i18n.language
   });
 
@@ -67,9 +58,10 @@ export function DataTable() {
 
   const requestCurrencies = useRequestCurrencies(
     { pagination, filters, sorters },
-    { options: { keepPreviousData: true } }
+    { options: { placeholderData: (prevData) => prevData } }
   );
 
+  const isLoading = requestCurrencies.isLoading;
   const currencies = requestCurrencies?.data?.data?.currencies || [];
   const currenciesCount = requestCurrencies?.data?.data?.currenciesCount || 0;
   const totalPages = Math.ceil(currenciesCount / pagination.pageSize);
@@ -98,24 +90,12 @@ export function DataTable() {
     }
   });
 
-  const handleSearch = useCallback(
-    debounce((value) => {
-      setFilters((state) => ({ ...state, ...value }));
-    }, 300),
-    []
-  );
-
   const changePagination = useCallback(
     debounce((value) => {
       setPagination((state) => ({ ...state, ...value }));
     }, 300),
     []
   );
-
-  const handleBatchDelete = () => {
-    console.log('11111');
-    setRowSelection({});
-  };
 
   const handleBatchExport = () => {
     const filteredData = currencies.filter((_, index) => rowSelection[index]);
@@ -141,32 +121,61 @@ export function DataTable() {
     setRowSelection({});
   };
 
-  const handleBatchCopy = () => {
-    console.log('11111');
-    setRowSelection({});
+  const renderSkeletonRows = () => {
+    const visibleColumns = table.getVisibleFlatColumns();
+
+    return Array(pagination.pageSize)
+      .fill(0)
+      .map((_, index) => (
+        <TableRow key={`skeleton-${index}`} className='animate-pulse'>
+          {visibleColumns.map((column) => (
+            <TableCell key={`skeleton-cell-${column.id}`}>
+              <Skeleton className={`h-6 'w-full`} />
+            </TableCell>
+          ))}
+        </TableRow>
+      ));
+  };
+
+  const renderTableBody = () => {
+    if (isLoading) {
+      return renderSkeletonRows();
+    }
+
+    if (table.getRowModel().rows?.length) {
+      return table.getRowModel().rows.map((row) => (
+        <TableRow key={row.id} data-state={row.getIsSelected() && 'selected'}>
+          {row.getVisibleCells().map((cell) => (
+            <TableCell key={cell.id}>
+              {flexRender(cell.column.columnDef.cell, cell.getContext())}
+            </TableCell>
+          ))}
+        </TableRow>
+      ));
+    }
+
+    return (
+      <TableRow>
+        <TableCell colSpan={columns.length} className='h-24 text-center'>
+          {t('page.currencies.table.noResults')}
+        </TableCell>
+      </TableRow>
+    );
   };
 
   return (
     <>
       <div className='w-full'>
-        <div className='flex items-center max-md:flex-col py-2 gap-2'>
-          <Input
-            placeholder={t('currencypage.filter.names')}
-            onChange={(event) => handleSearch({ names: event.target.value })}
-            className='max-w-3xs max-md:max-w-full'
-          />
-          <Input
-            placeholder={t('currencypage.filter.symbols')}
-            onChange={(event) => handleSearch({ symbols: event.target.value })}
-            className='max-w-3xs max-md:max-w-full'
-          />
-          <ColumnVisibilityMenu table={table} tableId='currency' />
-          <TableSelectionDropdown
-            selectedCount={Object.keys(rowSelection).length}
-            onDelete={handleBatchDelete}
-            onCopy={handleBatchCopy}
-            onExport={handleBatchExport}
-          />
+        <div className='flex justify-between items-center max-md:flex-col gap-2'>
+          <DataTableFilters setFilters={setFilters} />
+
+          <div className='flex gap-2'>
+            <TableSelectionDropdown
+              selectedCount={Object.keys(rowSelection).length}
+              onExport={handleBatchExport}
+            />
+            <ColumnVisibilityMenu table={table} tableId='currency' />
+          </div>
         </div>
       </div>
       <div className='border rounded-sm'>
@@ -186,98 +195,16 @@ export function DataTable() {
               </TableRow>
             ))}
           </TableHeader>
-          <TableBody>
-            {table.getRowModel().rows?.length ? (
-              table.getRowModel().rows.map((row) => (
-                <TableRow key={row.id} data-state={row.getIsSelected() && 'selected'}>
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell colSpan={columns.length} className='h-24 text-center'>
-                  No results.
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
+          <TableBody>{renderTableBody()}</TableBody>
         </Table>
       </div>
-
-      <div className='flex justify-between items-center mt-4'>
-        <span className='text-sm text-muted-foreground'>
-          {t('pagination.selected', {
-            selected: Object.keys(rowSelection).length,
-            total: currenciesCount
-          })}
-        </span>
-        <div className='flex justify-end items-center gap-4'>
-          <Select onValueChange={(value) => changePagination({ pageSize: Number(value) })}>
-            <SelectTrigger>{pagination.pageSize}</SelectTrigger>
-            <SelectContent>
-              <SelectItem value='10'>10</SelectItem>
-              <SelectItem value='20'>20</SelectItem>
-              <SelectItem value='50'>50</SelectItem>
-            </SelectContent>
-          </Select>
-          <span className='text-sm text-muted-foreground w-40'>
-            {t('pagination.current', { current: pagination.current, total: totalPages })}
-          </span>
-          <Pagination>
-            <PaginationContent>
-              <PaginationItem>
-                <PaginationPrevious
-                  href='#'
-                  onClick={() =>
-                    changePagination({
-                      current: Math.max(pagination.current - 1, 1)
-                    })
-                  }
-                  aria-disabled={pagination.current <= 1}
-                  tabIndex={pagination.current <= 1 ? -1 : undefined}
-                  className={pagination.current <= 1 ? 'pointer-events-none opacity-50' : undefined}
-                />
-              </PaginationItem>
-
-              {[...Array(totalPages)].map((_, i) => (
-                <PaginationItem key={i + 1}>
-                  <PaginationLink
-                    href='#'
-                    isActive={pagination.current === i + 1}
-                    onClick={() =>
-                      changePagination({
-                        current: i + 1
-                      })
-                    }
-                  >
-                    {i + 1}
-                  </PaginationLink>
-                </PaginationItem>
-              ))}
-
-              {totalPages > 5 && <PaginationEllipsis />}
-
-              <PaginationItem>
-                <PaginationNext
-                  href='#'
-                  onClick={() =>
-                    changePagination({
-                      current: Math.max(pagination.current + 1, totalPages)
-                    })
-                  }
-                  aria-disabled={pagination.current > 1}
-                  tabIndex={pagination.current > 1 ? -1 : undefined}
-                  className={pagination.current > 1 ? 'pointer-events-none opacity-50' : undefined}
-                />
-              </PaginationItem>
-            </PaginationContent>
-          </Pagination>
-        </div>
-      </div>
+      <TablePagination
+        pagination={pagination}
+        totalPages={totalPages}
+        changePagination={changePagination}
+        selectedCount={Object.keys(rowSelection).length}
+        totalCount={currenciesCount}
+      />
     </>
   );
 }

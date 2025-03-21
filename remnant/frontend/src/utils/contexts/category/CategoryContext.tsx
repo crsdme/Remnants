@@ -1,6 +1,10 @@
-import { createContext, useState, useContext, ReactNode } from 'react';
-import { useEditCategory, useRemoveCategory, useCreateCategory } from '@/api/hooks/';
+import { createContext, ReactNode, useContext, useState } from 'react';
+
 import { useQueryClient } from '@tanstack/react-query';
+
+import { useLess } from '@siberiacancode/reactuse';
+
+import { useCreateCategory, useEditCategory, useRemoveCategory } from '@/api/hooks/';
 
 interface CategoryContextType {
   selectedCategory: Category;
@@ -21,7 +25,8 @@ interface CategoryProviderProps {
 export const CategoryProvider = ({ children }: CategoryProviderProps) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState(null);
+  const [selectedCategorys, setSelectedCategory] = useState(null);
+  const selectedCategory = useLess(selectedCategorys);
 
   const queryClient = useQueryClient();
 

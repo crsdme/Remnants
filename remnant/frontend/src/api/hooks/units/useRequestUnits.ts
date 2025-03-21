@@ -1,7 +1,7 @@
 import { useSuspenseQuery } from '@tanstack/react-query';
 
-import { getUnits } from '@/api/requests';
 import type { getUnitsParams } from '@/api/requests';
+import { getUnits } from '@/api/requests';
 
 export const useRequestUnits = (params: getUnitsParams) =>
   useSuspenseQuery({

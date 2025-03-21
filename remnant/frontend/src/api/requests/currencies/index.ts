@@ -5,6 +5,11 @@ export type getCurrenciesParams = {
     names?: string;
     symbols?: string;
     language: string;
+    active?: boolean;
+    createdAt?: {
+      from?: Date;
+      to?: Date;
+    };
   };
   sorters?: {
     names?: number;

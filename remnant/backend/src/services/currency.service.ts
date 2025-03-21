@@ -11,6 +11,11 @@ interface getCurrenciesParams {
     names: string;
     symbols: string;
     language: string;
+    active: boolean[];
+    createdAt: {
+      from: Date;
+      to: Date;
+    };
   };
   sorters: {
     names: number;
@@ -29,11 +34,20 @@ export const get = async (
 ): Promise<getCurrenciesResult> => {
   const { current = 1, pageSize = 10 } = payload.pagination;
 
-  const { names = "", symbols = "", language = "en" } = payload.filters;
+  const {
+    names = "",
+    symbols = "",
+    language = "en",
+    active = [],
+    createdAt = {
+      from: undefined,
+      to: undefined,
+    },
+  } = payload.filters;
 
   const sorters = payload.sorters;
 
-  let query = { removed: false };
+  let query: Record<string, any> = { removed: false };
 
   if (names.trim()) {
     query = {
@@ -46,6 +60,21 @@ export const get = async (
     query = {
       ...query,
       [`symbols.${language}`]: { $regex: symbols, $options: "i" },
+    };
+  }
+
+  if (Array.isArray(active) && active.length > 0) {
+    query = {
+      ...query,
+      active: { $in: active },
+    };
+  }
+  console.log(createdAt);
+
+  if (createdAt.from && createdAt.to) {
+    query = {
+      ...query,
+      createdAt: { $gte: createdAt.from, $lte: createdAt.to },
     };
   }
 
