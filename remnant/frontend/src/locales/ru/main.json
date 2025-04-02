@@ -27,6 +27,7 @@
   "page.currencies.description": "Управление валютами",
   "page.currencies.filter.names": "Фильтр по названию",
   "page.currencies.filter.symbols": "Фильтр по символу",
+  "page.currencies.filters.clearAll": "Очистить все",
   "page.currencies.select.placeholder.active": "Фильтр по статусу",
   "page.currencies.select.value.active": "Активные",
   "page.currencies.select.value.notactive": "Неактивные",

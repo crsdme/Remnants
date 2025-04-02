@@ -30,17 +30,25 @@ interface MultiSelectProps {
     isLoading?: boolean;
   };
   onChange?: (selectedValues: string[]) => void;
+  value?: string[];
 }
 
 export function MultiSelect({
   options,
   activeFiltersLabel,
   selectedMutation,
-  onChange
+  onChange,
+  value
 }: MultiSelectProps) {
   const { t } = useTranslation();
   const [open, setOpen] = React.useState(false);
-  const [selectedValues, setSelectedValues] = React.useState<string[]>([]);
+  const [selectedValues, setSelectedValues] = React.useState<string[]>(value || []);
+
+  React.useEffect(() => {
+    if (value !== undefined) {
+      setSelectedValues(value);
+    }
+  }, [value]);
 
   const handleSelect = (currentValue: string) => {
     const newSelectedValues = selectedValues.includes(currentValue)

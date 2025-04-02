@@ -1,5 +1,3 @@
-// import { Suspense } from 'react';
-// import { Loading } from './loading';
 import { useTranslation } from 'react-i18next';
 import { Helmet } from 'react-helmet-async';
 
@@ -17,7 +15,6 @@ export function CurrenciesPage() {
         <title>{t('title.page.currencies')}</title>
         <meta name='description' content={t('description.page.currencies')} />
       </Helmet>
-      {/* <Suspense fallback={<>Loading</>}> */}
       <CurrencyProvider>
         <div className='flex items-center justify-between flex-wrap'>
           <div>
@@ -28,7 +25,6 @@ export function CurrenciesPage() {
         </div>
         <DataTable />
       </CurrencyProvider>
-      {/* </Suspense> */}
     </>
   );
 }

@@ -34,12 +34,14 @@ import { ColumnVisibilityMenu } from '@/view/components/ColumnVisibilityMenu';
 import { useRequestCurrencies } from '@/api/hooks';
 
 export function DataTable() {
+  const { t, i18n } = useTranslation();
+
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = useState({});
-
-  const { t, i18n } = useTranslation();
+  const [sorters, setSorters] = useState({});
+  const columns = useColumns({ setSorters });
 
   const [pagination, setPagination] = useState({
     current: 1,
@@ -49,19 +51,17 @@ export function DataTable() {
   const [filters, setFilters] = useState({
     names: '',
     symbols: '',
+    active: [],
+    createdAt: { from: undefined, to: undefined },
     language: i18n.language
   });
-
-  const [sorters, setSorters] = useState({});
-
-  const columns = useColumns({ setSorters });
 
   const requestCurrencies = useRequestCurrencies(
     { pagination, filters, sorters },
     { options: { placeholderData: (prevData) => prevData } }
   );
 
-  const isLoading = requestCurrencies.isLoading;
+  const isLoading = requestCurrencies.isLoading || requestCurrencies.isFetching;
   const currencies = requestCurrencies?.data?.data?.currencies || [];
   const currenciesCount = requestCurrencies?.data?.data?.currenciesCount || 0;
   const totalPages = Math.ceil(currenciesCount / pagination.pageSize);
@@ -130,7 +130,7 @@ export function DataTable() {
         <TableRow key={`skeleton-${index}`} className='animate-pulse'>
           {visibleColumns.map((column) => (
             <TableCell key={`skeleton-cell-${column.id}`}>
-              <Skeleton className={`h-6 'w-full`} />
+              <Skeleton className={`h-8 'w-full`} />
             </TableCell>
           ))}
         </TableRow>
@@ -138,9 +138,7 @@ export function DataTable() {
   };
 
   const renderTableBody = () => {
-    if (isLoading) {
-      return renderSkeletonRows();
-    }
+    if (isLoading) return renderSkeletonRows();
 
     if (table.getRowModel().rows?.length) {
       return table.getRowModel().rows.map((row) => (
@@ -167,7 +165,7 @@ export function DataTable() {
     <>
       <div className='w-full'>
         <div className='flex justify-between items-center max-md:flex-col gap-2'>
-          <DataTableFilters setFilters={setFilters} />
+          <DataTableFilters filters={filters} setFilters={setFilters} />
 
           <div className='flex gap-2'>
             <TableSelectionDropdown

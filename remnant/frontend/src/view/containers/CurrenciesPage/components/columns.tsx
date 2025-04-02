@@ -57,19 +57,24 @@ export function useColumns({ setSorters }): ColumnDef<Currency>[] {
         const Icon = icons[sortOrder];
 
         const handleSort = () => {
+          let nextSortOrder;
           if (sortOrder === 'asc') {
             column.toggleSorting(true);
+            nextSortOrder = 'desc';
           } else if (sortOrder === 'desc') {
             column.clearSorting();
+            nextSortOrder = 'none';
           } else if (sortOrder === 'none') {
             column.toggleSorting(false);
+            nextSortOrder = 'asc';
           }
           const sortFormat = {
             asc: 1,
-            desc: -1
+            desc: -1,
+            none: undefined
           };
 
-          setSorters({ updatedAt: sortFormat[sortOrder] });
+          setSorters({ names: sortFormat[nextSortOrder] });
         };
 
         return (
@@ -105,19 +110,24 @@ export function useColumns({ setSorters }): ColumnDef<Currency>[] {
         const Icon = icons[sortOrder];
 
         const handleSort = () => {
+          let nextSortOrder;
           if (sortOrder === 'asc') {
             column.toggleSorting(true);
+            nextSortOrder = 'desc';
           } else if (sortOrder === 'desc') {
             column.clearSorting();
+            nextSortOrder = 'none';
           } else if (sortOrder === 'none') {
             column.toggleSorting(false);
+            nextSortOrder = 'asc';
           }
           const sortFormat = {
             asc: 1,
-            desc: -1
+            desc: -1,
+            none: undefined
           };
 
-          setSorters({ updatedAt: sortFormat[sortOrder] });
+          setSorters({ priority: sortFormat[nextSortOrder] });
         };
 
         return (
@@ -148,19 +158,24 @@ export function useColumns({ setSorters }): ColumnDef<Currency>[] {
         const Icon = icons[sortOrder];
 
         const handleSort = () => {
+          let nextSortOrder;
           if (sortOrder === 'asc') {
             column.toggleSorting(true);
+            nextSortOrder = 'desc';
           } else if (sortOrder === 'desc') {
             column.clearSorting();
+            nextSortOrder = 'none';
           } else if (sortOrder === 'none') {
             column.toggleSorting(false);
+            nextSortOrder = 'asc';
           }
           const sortFormat = {
             asc: 1,
-            desc: -1
+            desc: -1,
+            none: undefined
           };
 
-          setSorters({ updatedAt: sortFormat[sortOrder] });
+          setSorters({ createdAt: sortFormat[nextSortOrder] });
         };
 
         return (
@@ -185,19 +200,24 @@ export function useColumns({ setSorters }): ColumnDef<Currency>[] {
         const Icon = icons[sortOrder];
 
         const handleSort = () => {
+          let nextSortOrder;
           if (sortOrder === 'asc') {
             column.toggleSorting(true);
+            nextSortOrder = 'desc';
           } else if (sortOrder === 'desc') {
             column.clearSorting();
+            nextSortOrder = 'none';
           } else if (sortOrder === 'none') {
             column.toggleSorting(false);
+            nextSortOrder = 'asc';
           }
           const sortFormat = {
             asc: 1,
-            desc: -1
+            desc: -1,
+            none: undefined
           };
 
-          setSorters({ updatedAt: sortFormat[sortOrder] });
+          setSorters({ updatedAt: sortFormat[nextSortOrder] });
         };
 
         return (
@@ -215,7 +235,10 @@ export function useColumns({ setSorters }): ColumnDef<Currency>[] {
     },
     {
       id: 'action',
-      meta: { title: t('page.currencies.table.actions') },
+      meta: {
+        title: t('page.currencies.table.actions'),
+        width: '70px'
+      },
       enableHiding: false,
       cell: ({ row }) => {
         const currency = row.original;

@@ -1,4 +1,4 @@
-import * as React from 'react';
+import { useState, useEffect, HTMLAttributes } from 'react';
 
 import { useTranslation } from 'react-i18next';
 import { DateRange } from 'react-day-picker';
@@ -11,16 +11,25 @@ import { Calendar } from '@/view/components/ui/calendar';
 import { Button } from '@/view/components/ui/button';
 import { cn } from '@/utils/lib/utils';
 
-type DatePickerRangeProps = Omit<React.HTMLAttributes<HTMLDivElement>, 'onChange'> & {
+type DatePickerRangeProps = Omit<HTMLAttributes<HTMLDivElement>, 'onChange'> & {
   onSelect?: (date: DateRange | undefined) => void;
+  value?: DateRange | undefined;
 };
 
-export function DatePickerRange({ className, onSelect }: DatePickerRangeProps) {
+export function DatePickerRange({ className, onSelect, value }: DatePickerRangeProps) {
   const { t, i18n } = useTranslation();
-  const [date, setDate] = React.useState<DateRange | undefined>({
-    from: undefined,
-    to: undefined
-  });
+  const [date, setDate] = useState<DateRange | undefined>(
+    value || {
+      from: undefined,
+      to: undefined
+    }
+  );
+
+  useEffect(() => {
+    if (value !== undefined) {
+      setDate(value);
+    }
+  }, [value]);
 
   const handleSelect = (selectedDate: DateRange | undefined) => {
     setDate(selectedDate);

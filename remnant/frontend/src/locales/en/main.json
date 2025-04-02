@@ -27,6 +27,7 @@
   "page.currencies.description": "Manage your currencies here",
   "page.currencies.filter.names": "Filter by name",
   "page.currencies.filter.symbols": "Filter by symbol",
+  "page.currencies.filters.clearAll": "Clear All",
   "page.currencies.select.placeholder.active": "Filter by status",
   "page.currencies.select.value.active": "Active",
   "page.currencies.select.value.notactive": "Not Active",
