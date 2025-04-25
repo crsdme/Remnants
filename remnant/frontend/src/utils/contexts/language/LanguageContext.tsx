@@ -4,7 +4,7 @@ import { useCreateLanguage } from '@/api/hooks'
 import { useEditLanguage, useRemoveLanguage } from '@/api/hooks/'
 
 import { useQueryClient } from '@tanstack/react-query'
-import { createContext, use, useState } from 'react'
+import { createContext, useContext, useState } from 'react'
 
 interface LanguageContextType {
   selectedLanguage: Language
@@ -95,11 +95,11 @@ export function LanguageProvider({ children }: LanguageProviderProps) {
     removeLanguage,
   }
 
-  return <LanguageContext value={value}>{children}</LanguageContext>
+  return <LanguageContext.Provider value={value}>{children}</LanguageContext.Provider>
 }
 
 export function useLanguageContext(): LanguageContextType {
-  const context = use(LanguageContext)
+  const context = useContext(LanguageContext)
   if (!context) {
     throw new Error('useLanguageContext - LanguageContext')
   }

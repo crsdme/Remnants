@@ -29,7 +29,7 @@ export default function TableSelectionDropdown({
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger>
+      <DropdownMenuTrigger asChild>
         <Button variant="outline" className="flex items-center gap-2">
           <MoreVertical className="w-5 h-5" />
           <span>{t('component.tableSelection.selected', { count: selectedCount })}</span>

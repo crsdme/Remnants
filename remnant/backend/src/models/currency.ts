@@ -1,11 +1,11 @@
-import mongoose, { Schema } from "mongoose";
+import mongoose, { Schema } from 'mongoose'
 
 export interface CurrencyInterface {
-  names: string;
-  symbols: string;
-  main: string;
-  active: string;
-  removed: string;
+  names: string
+  symbols: string
+  main: string
+  active: string
+  removed: string
 }
 
 const CurrencySchema: Schema = new Schema(
@@ -15,13 +15,13 @@ const CurrencySchema: Schema = new Schema(
       of: String,
       required: true,
       validate: {
-        validator: function (value: Map<string, string>) {
-          const allowedLanguages = ["ru", "en"];
-          return Array.from(value.keys()).every((key) =>
-            allowedLanguages.includes(key)
-          );
+        validator(value: Map<string, string>) {
+          const allowedLanguages = ['ru', 'en']
+          return Array.from(value.keys()).every(key =>
+            allowedLanguages.includes(key),
+          )
         },
-        message: "ru en keys only",
+        message: 'ru en keys only',
       },
     },
     symbols: {
@@ -29,13 +29,13 @@ const CurrencySchema: Schema = new Schema(
       of: String,
       required: true,
       validate: {
-        validator: function (value: Map<string, string>) {
-          const allowedLanguages = ["ru", "en"];
-          return Array.from(value.keys()).every((key) =>
-            allowedLanguages.includes(key)
-          );
+        validator(value: Map<string, string>) {
+          const allowedLanguages = ['ru', 'en']
+          return Array.from(value.keys()).every(key =>
+            allowedLanguages.includes(key),
+          )
         },
-        message: "ru en keys only",
+        message: 'ru en keys only',
       },
     },
     priority: {
@@ -51,7 +51,7 @@ const CurrencySchema: Schema = new Schema(
       default: false,
     },
   },
-  { timestamps: true }
-);
+  { timestamps: true },
+)
 
-export default mongoose.model<CurrencyInterface>("Currency", CurrencySchema);
+export default mongoose.model<CurrencyInterface>('Currency', CurrencySchema)

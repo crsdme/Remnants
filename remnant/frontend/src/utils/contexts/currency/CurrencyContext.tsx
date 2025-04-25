@@ -9,7 +9,7 @@ import {
 
 import { useQueryClient } from '@tanstack/react-query'
 
-import { createContext, use, useState } from 'react'
+import { createContext, useContext, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { toast } from 'sonner'
@@ -141,11 +141,11 @@ export function CurrencyProvider({ children }: CurrencyProviderProps) {
     importCurrencies,
   }
 
-  return <CurrencyContext value={value}>{children}</CurrencyContext>
+  return <CurrencyContext.Provider value={value}>{children}</CurrencyContext.Provider>
 }
 
 export function useCurrencyContext(): CurrencyContextType {
-  const context = use(CurrencyContext)
+  const context = useContext(CurrencyContext)
   if (!context) {
     throw new Error('useCurrencyContext - CurrencyContext')
   }

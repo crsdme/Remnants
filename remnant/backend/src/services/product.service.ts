@@ -1,18 +1,19 @@
-import ProductModel, { ProductInterface } from "../models/product";
-import mongoose, { Schema } from "mongoose";
-const { ObjectId, Mixed } = Schema.Types;
+import mongoose, { Schema } from 'mongoose'
+import ProductModel, { ProductInterface } from '../models/product'
+
+const { ObjectId, Mixed } = Schema.Types
 
 interface ProductsResult {
-  products: any[];
-  productsCount: number;
+  products: any[]
+  productsCount: number
 }
 
-export const get = async (filters: object): Promise<ProductsResult> => {
+export async function get(filters: object): Promise<ProductsResult> {
   // const { current, pageSize, allPages } = (pagination || { current: 1, pageSize: 10, allPages: false });
 
   // const { quantity } = (filters || { quantity: null });
 
-  let query = { removed: false };
+  let query = { removed: false }
 
   // const stockFilter = new ObjectId(quantity?.[0]);
 
@@ -23,10 +24,10 @@ export const get = async (filters: object): Promise<ProductsResult> => {
     // CURRENIES
     {
       $lookup: {
-        from: "currencies",
-        localField: "currency",
-        foreignField: "_id",
-        as: "currency",
+        from: 'currencies',
+        localField: 'currency',
+        foreignField: '_id',
+        as: 'currency',
         pipeline: [
           {
             $project: {
@@ -39,16 +40,16 @@ export const get = async (filters: object): Promise<ProductsResult> => {
     },
     {
       $unwind: {
-        path: "$currency",
+        path: '$currency',
         preserveNullAndEmptyArrays: true,
       },
     },
     {
       $lookup: {
-        from: "currencies",
-        localField: "wholesaleCurrency",
-        foreignField: "_id",
-        as: "wholesaleCurrency",
+        from: 'currencies',
+        localField: 'wholesaleCurrency',
+        foreignField: '_id',
+        as: 'wholesaleCurrency',
         pipeline: [
           {
             $project: {
@@ -61,24 +62,24 @@ export const get = async (filters: object): Promise<ProductsResult> => {
     },
     {
       $unwind: {
-        path: "$wholesaleCurrency",
+        path: '$wholesaleCurrency',
         preserveNullAndEmptyArrays: true,
       },
     },
     {
       $addFields: {
         wholesaleCurrency: {
-          $ifNull: ["$wholesaleCurrency", "$currency"],
+          $ifNull: ['$wholesaleCurrency', '$currency'],
         },
       },
     },
     // CATEGORY
     {
       $lookup: {
-        from: "categories",
-        localField: "categories._id",
-        foreignField: "_id",
-        as: "categories",
+        from: 'categories',
+        localField: 'categories._id',
+        foreignField: '_id',
+        as: 'categories',
         pipeline: [
           {
             $project: {
@@ -95,11 +96,11 @@ export const get = async (filters: object): Promise<ProductsResult> => {
         customFields: {
           $arrayToObject: {
             $map: {
-              input: "$customFields",
-              as: "field",
+              input: '$customFields',
+              as: 'field',
               in: {
-                k: { $toString: "$$field._id" },
-                v: "$$field.data",
+                k: { $toString: '$$field._id' },
+                v: '$$field.data',
               },
             },
           },
@@ -138,32 +139,32 @@ export const get = async (filters: object): Promise<ProductsResult> => {
     // UNITS
     {
       $lookup: {
-        from: "units",
-        localField: "unit",
-        foreignField: "_id",
-        as: "unit",
+        from: 'units',
+        localField: 'unit',
+        foreignField: '_id',
+        as: 'unit',
       },
     },
     {
       $addFields: {
-        unit: { $arrayElemAt: ["$unit", 0] },
+        unit: { $arrayElemAt: ['$unit', 0] },
       },
     },
-  ];
+  ]
 
-  let productsCount = await ProductModel.countDocuments(query);
+  let productsCount = await ProductModel.countDocuments(query)
 
-  let productsQuery = ProductModel.aggregate(pipeline);
+  let productsQuery = ProductModel.aggregate(pipeline)
 
   // if (allPages === false || !allPages) {
   //   productsQuery = productsQuery.skip((current - 1) * pageSize).limit(pageSize);
   // }
 
-  const products = await productsQuery.exec();
+  const products = await productsQuery.exec()
 
   if (!products) {
-    throw new Error("Products not found");
+    throw new Error('Products not found')
   }
 
-  return { products, productsCount };
-};
+  return { products, productsCount }
+}

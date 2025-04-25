@@ -1,26 +1,26 @@
-import { Router } from "express";
-import * as CurrencyController from "../controllers/currency";
+import { Router } from 'express'
+import * as CurrencyController from '../controllers/currency'
+import { uploadSingle } from '../middleware/upload.middleware'
 import {
-  validateGetCurrencies,
+  validateBatchCurrency,
   validateCreateCurrency,
   validateEditCurrency,
-  validateRemoveCurrency,
-  validateBatchCurrency,
+  validateGetCurrencies,
   validateImportCurrencies,
-} from "../middleware/validation/";
-import { uploadSingle } from "../middleware/upload.middleware";
+  validateRemoveCurrency,
+} from '../middleware/validation/'
 
-const router = Router();
+const router = Router()
 
-router.get("/get", validateGetCurrencies, CurrencyController.get);
-router.post("/create", validateCreateCurrency, CurrencyController.create);
-router.post("/edit", validateEditCurrency, CurrencyController.edit);
-router.post("/remove", validateRemoveCurrency, CurrencyController.remove);
-router.post("/batch", validateBatchCurrency, CurrencyController.batch);
+router.get('/get', validateGetCurrencies, CurrencyController.get)
+router.post('/create', validateCreateCurrency, CurrencyController.create)
+router.post('/edit', validateEditCurrency, CurrencyController.edit)
+router.post('/remove', validateRemoveCurrency, CurrencyController.remove)
+router.post('/batch', validateBatchCurrency, CurrencyController.batch)
 router.post(
-  "/import",
-  uploadSingle("file"),
-  CurrencyController.importCurrencies
-);
+  '/import',
+  uploadSingle('file'),
+  CurrencyController.importCurrencies,
+)
 
-export default router;
+export default router

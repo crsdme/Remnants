@@ -1,45 +1,46 @@
-import CategoryModel, { CategoryInterface } from "../models/category";
-import mongoose, { ObjectId, Schema } from "mongoose";
+import type { ObjectId } from 'mongoose'
+import type { CategoryInterface } from '../models/category'
+import mongoose, { Schema } from 'mongoose'
+import CategoryModel from '../models/category'
 
 interface getCategoriesResult {
-  categories: any[];
-  categoriesCount: number;
+  categories: any[]
+  categoriesCount: number
 }
 
 interface getCategoriesParams {
   filters?: {
-    names: string;
-    language: string;
-    flat: boolean;
-  };
-  sorters: any[];
+    names: string
+    language: string
+    flat: boolean
+  }
+  sorters: any[]
   pagination?: {
-    current: number;
-    pageSize: number;
-  };
+    current: number
+    pageSize: number
+  }
 }
 
-export const get = async (
-  payload: getCategoriesParams
-): Promise<getCategoriesResult> => {
+export async function get(payload: getCategoriesParams): Promise<getCategoriesResult> {
   const { current = 1, pageSize = 10 } = payload?.pagination || {
     current: 1,
     pageSize: 10,
-  };
+  }
 
   const {
     names = null,
-    language = "en",
+    language = 'en',
     flat = false,
   } = payload?.filters || {
     names: null,
     language: null,
     flat: null,
-  };
+  }
 
-  let query: any = { removed: false };
+  let query: any = { removed: false }
 
-  if (!flat) query.parent = { $eq: null };
+  if (!flat)
+    query.parent = { $eq: null }
 
   let pipeline = [
     {
@@ -48,19 +49,19 @@ export const get = async (
     // CATEGORY
     {
       $graphLookup: {
-        from: "categories",
-        startWith: "$_id",
-        connectFromField: "_id",
-        connectToField: "parent",
-        as: "children",
-        depthField: "level",
+        from: 'categories',
+        startWith: '$_id',
+        connectFromField: '_id',
+        connectToField: 'parent',
+        as: 'children',
+        depthField: 'level',
       },
     },
     {
       $addFields: {
         children: {
           $sortArray: {
-            input: "$children",
+            input: '$children',
             sortBy: { priority: 1 },
           },
         },
@@ -69,38 +70,38 @@ export const get = async (
     // CATEGORY LOOKUP
     {
       $lookup: {
-        from: "categories",
-        let: { childParents: "$children.parent" },
+        from: 'categories',
+        let: { childParents: '$children.parent' },
         pipeline: [
           {
             $match: {
-              $expr: { $in: ["$_id", "$$childParents"] },
+              $expr: { $in: ['$_id', '$$childParents'] },
             },
           },
           {
             $project: { names: 1, _id: 1 },
           },
         ],
-        as: "parentData",
+        as: 'parentData',
       },
     },
     {
       $addFields: {
         children: {
           $map: {
-            input: "$children",
-            as: "child",
+            input: '$children',
+            as: 'child',
             in: {
               $mergeObjects: [
-                "$$child",
+                '$$child',
                 {
                   parent: {
                     $arrayElemAt: [
                       {
                         $filter: {
-                          input: "$parentData",
-                          as: "p",
-                          cond: { $eq: ["$$p._id", "$$child.parent"] },
+                          input: '$parentData',
+                          as: 'p',
+                          cond: { $eq: ['$$p._id', '$$child.parent'] },
                         },
                       },
                       0,
@@ -115,7 +116,7 @@ export const get = async (
     },
     { $project: { parentData: 0 } },
     { $sort: { priority: -1 as const } },
-  ];
+  ]
 
   if (names && language) {
     pipeline = [
@@ -123,149 +124,148 @@ export const get = async (
         $match: {
           ...query,
           $or: [
-            { [`names.${language}`]: { $regex: names, $options: "i" } },
+            { [`names.${language}`]: { $regex: names, $options: 'i' } },
             {
               [`children.names.${language}`]: {
                 $regex: names,
-                $options: "i",
+                $options: 'i',
               },
             },
           ],
         } as any,
       },
-    ];
+    ]
   }
 
-  let categoriesCount = await CategoryModel.countDocuments(query);
+  let categoriesCount = await CategoryModel.countDocuments(query)
 
-  let categoriesQuery = CategoryModel.aggregate(pipeline);
+  let categoriesQuery = CategoryModel.aggregate(pipeline)
 
   categoriesQuery = categoriesQuery
     .skip((current - 1) * pageSize)
-    .limit(pageSize);
+    .limit(pageSize)
 
-  let categories = await categoriesQuery.exec();
+  let categories = await categoriesQuery.exec()
 
   // PUSH CHILDREN
 
-  const result = [];
+  const result = []
 
   for (const category of categories) {
-    result.push(...(category?.children || []));
-    result.push({ ...category, children: null });
+    result.push(...(category?.children || []))
+    result.push({ ...category, children: null })
   }
 
   function buildHierarchy(categories: CategoryInterface[]) {
-    const map = new Map();
+    const map = new Map()
 
     categories.forEach((category) => {
       map.set(category._id.toString(), {
         ...category,
         key: category._id,
-      });
-    });
+      })
+    })
 
-    const resultTemp: any[] = [];
+    const resultTemp: any[] = []
     map.forEach((category, id) => {
       if (category.parent) {
-        const parentCategory = map.get(category.parent._id.toString());
-        if (!parentCategory.children) parentCategory.children = [];
-        if (parentCategory) parentCategory.children.push(category);
-      } else {
-        resultTemp.push(category);
+        const parentCategory = map.get(category.parent._id.toString())
+        if (!parentCategory.children)
+          parentCategory.children = []
+        if (parentCategory)
+          parentCategory.children.push(category)
       }
-    });
-    return resultTemp;
+      else {
+        resultTemp.push(category)
+      }
+    })
+    return resultTemp
   }
 
-  if (!flat) categories = buildHierarchy(result);
+  if (!flat)
+    categories = buildHierarchy(result)
 
   // PUSH CHILDREN
 
   if (!categories) {
-    throw new Error("Categories not found");
+    throw new Error('Categories not found')
   }
 
-  return { categories, categoriesCount };
-};
+  return { categories, categoriesCount }
+}
 
 interface createCategoryResult {
-  category: any;
+  category: any
 }
 
 interface createCategoryParams {
-  names: object;
-  parent: ObjectId;
-  priority: number;
+  names: object
+  parent: ObjectId
+  priority: number
 }
 
-export const create = async (
-  payload: createCategoryParams
-): Promise<createCategoryResult> => {
-  let category = await CategoryModel.create(payload);
+export async function create(payload: createCategoryParams): Promise<createCategoryResult> {
+  let category = await CategoryModel.create(payload)
 
   if (!category) {
-    throw new Error("category not created");
+    throw new Error('category not created')
   }
 
-  return { category };
-};
+  return { category }
+}
 
 interface editCategoryResult {
-  category: any;
+  category: any
 }
 
 interface editCategoryParams {
-  _id: string;
-  names: object;
-  parent: ObjectId | null;
-  priority: number;
+  _id: string
+  names: object
+  parent: ObjectId | null
+  priority: number
 }
 
-export const edit = async (
-  payload: editCategoryParams
-): Promise<editCategoryResult> => {
-  const { _id, parent } = payload;
+export async function edit(payload: editCategoryParams): Promise<editCategoryResult> {
+  const { _id, parent } = payload
 
-  if (!parent) payload.parent = null;
+  if (!parent)
+    payload.parent = null
 
   if (!_id) {
-    throw new Error("Need _ID");
+    throw new Error('Need _ID')
   }
-  let category = await CategoryModel.updateOne({ _id }, payload);
+  let category = await CategoryModel.updateOne({ _id }, payload)
 
   if (!category) {
-    throw new Error("category not edited");
+    throw new Error('category not edited')
   }
 
-  return { category };
-};
+  return { category }
+}
 
 interface removeCategoryResult {
-  category: any;
+  category: any
 }
 
 interface removeCategoryParams {
-  _id: string;
+  _id: string
 }
 
-export const remove = async (
-  payload: removeCategoryParams
-): Promise<removeCategoryResult> => {
-  const { _id } = payload;
+export async function remove(payload: removeCategoryParams): Promise<removeCategoryResult> {
+  const { _id } = payload
 
   if (!_id) {
-    throw new Error("Need _ID");
+    throw new Error('Need _ID')
   }
 
   let category = await CategoryModel.updateOne(
     { _id },
-    { $set: { removed: true } }
-  );
+    { $set: { removed: true } },
+  )
 
   if (!category) {
-    throw new Error("unit not removed");
+    throw new Error('unit not removed')
   }
 
-  return { category };
-};
+  return { category }
+}

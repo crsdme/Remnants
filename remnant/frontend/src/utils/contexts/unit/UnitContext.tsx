@@ -3,7 +3,7 @@ import { useCreateUnit, useEditUnit, useRemoveUnit } from '@/api/hooks/'
 
 import { useQueryClient } from '@tanstack/react-query'
 
-import { createContext, use, useState } from 'react'
+import { createContext, useContext, useState } from 'react'
 
 interface UnitContextType {
   selectedUnit: Unit
@@ -94,11 +94,11 @@ export function UnitProvider({ children }: UnitProviderProps) {
     removeUnit,
   }
 
-  return <UnitContext value={value}>{children}</UnitContext>
+  return <UnitContext.Provider value={value}>{children}</UnitContext.Provider>
 }
 
 export function useUnitContext(): UnitContextType {
-  const context = use(UnitContext)
+  const context = useContext(UnitContext)
   if (!context) {
     throw new Error('useUnitContext - UnitContext')
   }

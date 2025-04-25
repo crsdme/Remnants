@@ -1,5 +1,5 @@
 import LogoIcon from '@/view/components/ui/icons/logoIcon'
-import { Helmet } from 'react-helmet-async'
+import { Helmet } from 'react-helmet'
 
 import { useTranslation } from 'react-i18next'
 

@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
 import { Toaster } from '@/view/components/ui/sonner'
 
-import { createContext, use, useEffect, useState } from 'react'
+import { createContext, useContext, useEffect, useState } from 'react'
 
 import { useTranslation } from 'react-i18next'
 
@@ -52,15 +52,15 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
   }, [theme])
 
   return (
-    <ThemeContext value={value}>
+    <ThemeContext.Provider value={value}>
       <Toaster position="bottom-right" richColors />
       {children}
-    </ThemeContext>
+    </ThemeContext.Provider>
   )
 }
 
 export function useThemeContext(): ThemeContextType {
-  const context = use(ThemeContext)
+  const context = useContext(ThemeContext)
   if (!context) {
     throw new Error('useThemeContext - ThemeContext')
   }

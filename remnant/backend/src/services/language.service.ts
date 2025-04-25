@@ -1,128 +1,120 @@
-import LanguageModel, { LanguageInterface } from "../models/language";
-import mongoose, { ObjectId, Schema } from "mongoose";
+import mongoose, { ObjectId, Schema } from 'mongoose'
+import LanguageModel, { LanguageInterface } from '../models/language'
 
 interface getLanguagesResult {
-  languages: any[];
-  languagesCount: number;
+  languages: any[]
+  languagesCount: number
 }
 
 interface getLanguagesParams {
-  filters: any[];
-  sorters: any[];
+  filters: any[]
+  sorters: any[]
   pagination: {
-    current: number;
-    pageSize: number;
-  };
+    current: number
+    pageSize: number
+  }
 }
 
-export const get = async (
-  payload: getLanguagesParams
-): Promise<getLanguagesResult> => {
-  const { current = 1, pageSize = 10 } = payload.pagination;
+export async function get(payload: getLanguagesParams): Promise<getLanguagesResult> {
+  const { current = 1, pageSize = 10 } = payload.pagination
 
-  let query = { removed: false };
+  let query = { removed: false }
 
   let pipeline = [
     {
       $match: query,
     },
-  ];
+  ]
 
-  let languagesCount = await LanguageModel.countDocuments(query);
+  let languagesCount = await LanguageModel.countDocuments(query)
 
-  let languagesQuery = LanguageModel.aggregate(pipeline);
+  let languagesQuery = LanguageModel.aggregate(pipeline)
 
   languagesQuery = languagesQuery
     .skip((current - 1) * pageSize)
-    .limit(pageSize);
+    .limit(pageSize)
 
-  const languages = await languagesQuery.exec();
+  const languages = await languagesQuery.exec()
 
   if (!languages) {
-    throw new Error("Products not found");
+    throw new Error('Products not found')
   }
 
-  return { languages, languagesCount };
-};
+  return { languages, languagesCount }
+}
 
 interface createLanguagesResult {
-  language: any;
+  language: any
 }
 
 interface createLanguageParams {
-  name: string;
-  code: string;
-  main?: boolean;
-  active?: boolean;
+  name: string
+  code: string
+  main?: boolean
+  active?: boolean
 }
 
-export const create = async (
-  payload: createLanguageParams
-): Promise<createLanguagesResult> => {
-  let language = await LanguageModel.create(payload);
+export async function create(payload: createLanguageParams): Promise<createLanguagesResult> {
+  let language = await LanguageModel.create(payload)
 
   if (!language) {
-    throw new Error("Language not created");
+    throw new Error('Language not created')
   }
 
-  return { language };
-};
+  return { language }
+}
 
 interface editLanguagesResult {
-  language: any;
+  language: any
 }
 
 interface editLanguageParams {
-  _id: string;
-  name: string;
-  code: string;
-  main?: boolean;
-  active?: boolean;
+  _id: string
+  name: string
+  code: string
+  main?: boolean
+  active?: boolean
 }
 
-export const edit = async (
-  payload: editLanguageParams
-): Promise<editLanguagesResult> => {
-  const { _id } = payload;
+export async function edit(payload: editLanguageParams): Promise<editLanguagesResult> {
+  const { _id } = payload
 
   if (!_id) {
-    throw new Error("Need _ID");
+    throw new Error('Need _ID')
   }
 
-  let language = await LanguageModel.updateOne({ _id }, payload);
+  let language = await LanguageModel.updateOne({ _id }, payload)
 
   if (!language) {
-    throw new Error("Language not edited");
+    throw new Error('Language not edited')
   }
 
-  return { language };
-};
+  return { language }
+}
 
 interface editLanguagesResult {
-  language: any;
+  language: any
 }
 
 interface removeLanguageParams {
-  _id: string;
+  _id: string
 }
 
-export const remove = async (
-  payload: removeLanguageParams
-): Promise<editLanguagesResult> => {
-  const { _id } = payload;
+export async function remove(payload: removeLanguageParams): Promise<editLanguagesResult> {
+  const { _id } = payload
 
   if (!_id) {
-    throw new Error("Need _ID");
+    throw new Error('Need _ID')
   }
 
   let language = await LanguageModel.updateOne(
     { _id },
-    { $set: { removed: true } }
-  );
+    { $set: { removed: true } },
+  )
 
   if (!language) {
-    throw new Error("Language not removed");
+    throw new Error('Language not removed')
   }
 
-  return { language };
-};
+  return { language }
+}

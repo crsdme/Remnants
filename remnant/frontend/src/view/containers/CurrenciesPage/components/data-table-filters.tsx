@@ -1,6 +1,6 @@
-import { Input } from '@/view/components/ui'
+import { useDebounceCallback } from '@/utils/hooks'
 
-import { useDebounceCallback } from '@siberiacancode/reactuse'
+import { Input } from '@/view/components/ui'
 import { Filter } from 'lucide-react'
 import { useState } from 'react'
 

@@ -3,7 +3,7 @@ import { useCreateProduct, useEditProduct, useRemoveProduct } from '@/api/hooks/
 
 import { useQueryClient } from '@tanstack/react-query'
 
-import { createContext, use, useState } from 'react'
+import { createContext, useContext, useState } from 'react'
 
 interface ProductContextType {
   selectedProduct: Product
@@ -94,11 +94,11 @@ export function ProductProvider({ children }: ProductProviderProps) {
     removeProduct,
   }
 
-  return <ProductContext value={value}>{children}</ProductContext>
+  return <ProductContext.Provider value={value}>{children}</ProductContext.Provider>
 }
 
 export function useProductContext(): ProductContextType {
-  const context = use(ProductContext)
+  const context = useContext(ProductContext)
   if (!context) {
     throw new Error('useProductContext - ProductContext')
   }

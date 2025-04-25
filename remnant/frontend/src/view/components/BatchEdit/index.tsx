@@ -198,7 +198,7 @@ export function BatchEdit({
           {buttonLabel || t('component.batchEdit.button')}
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-xl">
+      <PopoverContent className="w-xl" align="start">
         <Form {...form}>
           <form onSubmit={form.handleSubmit(handleAccept)} className="space-y-4">
             <div className="space-y-2">

@@ -1,7 +1,6 @@
 import { useAuthContext } from '@/utils/contexts'
 import LogoIcon from '@/view/components/ui/icons/logoIcon'
 
-import { HelmetProvider } from 'react-helmet-async'
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
 
 import Layout from '../view/components/Layout'
@@ -25,21 +24,19 @@ function AppMain() {
   }
 
   return (
-    <HelmetProvider>
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={authContenxt.state.isAuthenticated ? <Layout /> : <LoginPage />}>
-            <Route path="/" element={<DashboardPage />} />
-            <Route path="/test" element={<TestPage />} />
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={authContenxt.state.isAuthenticated ? <Layout /> : <LoginPage />}>
+          <Route path="/" element={<DashboardPage />} />
+          <Route path="/test" element={<TestPage />} />
 
-            <Route path="/settings/currencies" element={<CurrenciesPage />} />
-            <Route path="*" element={<DashboardPage />} />
-          </Route>
-          <Route path="/login" element={<LoginPage />} />
+          <Route path="/settings/currencies" element={<CurrenciesPage />} />
           <Route path="*" element={<DashboardPage />} />
-        </Routes>
-      </BrowserRouter>
-    </HelmetProvider>
+        </Route>
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="*" element={<DashboardPage />} />
+      </Routes>
+    </BrowserRouter>
   )
 }
 

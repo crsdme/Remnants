@@ -1,24 +1,18 @@
-// src/middleware/error.middleware.ts
-import { Request, Response, NextFunction } from "express";
+import type { NextFunction, Request, Response } from 'express'
 
-export const errorHandler = (
-  err: any,
-  req: Request,
-  res: Response,
-  next: NextFunction
-): void => {
-  console.error(err);
+export function errorHandler(err: any, req: Request, res: Response, next: NextFunction): void {
+  console.error(err)
 
   if (res.headersSent) {
-    return next(err);
+    return next(err)
   }
 
-  const statusCode = err.statusCode || 500;
+  const statusCode = err.statusCode || 500
 
   const errorResponse = {
-    message: err.message || "Internal Server Error",
-    ...(process.env.NODE_ENV !== "production" && { stack: err.stack }),
-  };
+    message: err.message || 'Internal Server Error',
+    ...(process.env.NODE_ENV !== 'production' && { stack: err.stack }),
+  }
 
-  res.status(statusCode).json(errorResponse);
-};
+  res.status(statusCode).json(errorResponse)
+}

@@ -1,11 +1,9 @@
 import type { ReactNode } from 'react'
 import { useCreateCategory, useEditCategory, useRemoveCategory } from '@/api/hooks/'
 
-import { useLess } from '@siberiacancode/reactuse'
-
 import { useQueryClient } from '@tanstack/react-query'
 
-import { createContext, use, useState } from 'react'
+import { createContext, useContext, useState } from 'react'
 
 interface CategoryContextType {
   selectedCategory: Category
@@ -26,8 +24,7 @@ interface CategoryProviderProps {
 export function CategoryProvider({ children }: CategoryProviderProps) {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
-  const [selectedCategorys, setSelectedCategory] = useState(null)
-  const selectedCategory = useLess(selectedCategorys)
+  const [selectedCategory, setSelectedCategory] = useState(null)
 
   const queryClient = useQueryClient()
 
@@ -36,7 +33,6 @@ export function CategoryProvider({ children }: CategoryProviderProps) {
       onSuccess: () => {
         setIsModalOpen(false)
         setIsLoading(false)
-        setSelectedCategory(null)
         queryClient.invalidateQueries({ queryKey: ['categories'] })
       },
     },
@@ -98,11 +94,11 @@ export function CategoryProvider({ children }: CategoryProviderProps) {
     removeCategory,
   }
 
-  return <CategoryContext value={value}>{children}</CategoryContext>
+  return <CategoryContext.Provider value={value}>{children}</CategoryContext.Provider>
 }
 
 export function useCategoryContext(): CategoryContextType {
-  const context = use(CategoryContext)
+  const context = useContext(CategoryContext)
   if (!context) {
     throw new Error('useCategoryContext - CategoryContext')
   }

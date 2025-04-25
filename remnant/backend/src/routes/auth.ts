@@ -1,13 +1,13 @@
-import { Router } from "express";
-import * as AuthController from "../controllers/auth";
-import { validateLogin } from "../middleware/validation";
-import { refreshJWT } from "../middleware/auth.middleware";
+import { Router } from 'express'
+import * as AuthController from '../controllers/auth'
+import { refreshJWT } from '../middleware/auth.middleware'
+import { validateLogin } from '../middleware/validation'
 
-const router = Router();
+const router = Router()
 
-router.post("/login", validateLogin, AuthController.login);
-router.post("/refresh", refreshJWT, AuthController.refresh);
-router.post("/logout", AuthController.logout);
+router.post('/login', validateLogin, AuthController.login)
+router.post('/refresh', refreshJWT, AuthController.refresh)
+router.post('/logout', AuthController.logout)
 // router.post("/register", validateRegister, AuthController.register);
 
-export default router;
+export default router

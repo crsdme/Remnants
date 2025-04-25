@@ -1,11 +1,11 @@
-import mongoose, { Schema } from "mongoose";
+import mongoose, { Schema } from 'mongoose'
 
 export interface CategoryInterface {
-  _id: Schema.Types.ObjectId;
-  names: object;
-  parent: Schema.Types.ObjectId;
-  priority: number;
-  removed: string;
+  _id: Schema.Types.ObjectId
+  names: object
+  parent: Schema.Types.ObjectId
+  priority: number
+  removed: string
 }
 
 const CategorySchema: Schema = new Schema(
@@ -15,18 +15,18 @@ const CategorySchema: Schema = new Schema(
       of: String,
       required: true,
       validate: {
-        validator: function (value: Map<string, string>) {
-          const allowedLanguages = ["ru", "en"];
-          return Array.from(value.keys()).every((key) =>
-            allowedLanguages.includes(key)
-          );
+        validator(value: Map<string, string>) {
+          const allowedLanguages = ['ru', 'en']
+          return Array.from(value.keys()).every(key =>
+            allowedLanguages.includes(key),
+          )
         },
-        message: "ru en keys only",
+        message: 'ru en keys only',
       },
     },
     parent: {
       type: Schema.Types.ObjectId,
-      ref: "category",
+      ref: 'category',
     },
     priority: {
       type: Number,
@@ -37,7 +37,7 @@ const CategorySchema: Schema = new Schema(
       default: false,
     },
   },
-  { timestamps: true }
-);
+  { timestamps: true },
+)
 
-export default mongoose.model<CategoryInterface>("Category", CategorySchema);
+export default mongoose.model<CategoryInterface>('Category', CategorySchema)

@@ -1,11 +1,11 @@
-import mongoose, { Schema } from "mongoose";
+import mongoose, { Schema } from 'mongoose'
 
 export interface LanguageInterface {
-  name: string;
-  code: string;
-  main: string;
-  active: string;
-  removed: string;
+  name: string
+  code: string
+  main: string
+  active: string
+  removed: string
 }
 
 const LanguageSchema: Schema = new Schema(
@@ -31,7 +31,7 @@ const LanguageSchema: Schema = new Schema(
       default: false,
     },
   },
-  { timestamps: true }
-);
+  { timestamps: true },
+)
 
-export default mongoose.model<LanguageInterface>("Language", LanguageSchema);
+export default mongoose.model<LanguageInterface>('Language', LanguageSchema)

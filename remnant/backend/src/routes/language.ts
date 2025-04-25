@@ -1,12 +1,12 @@
-import { Router } from "express";
-import * as LanguageController from "../controllers/language";
-import { validateGetLanguage } from "../middleware/validation/";
+import { Router } from 'express'
+import * as LanguageController from '../controllers/language'
+import { validateGetLanguage } from '../middleware/validation/'
 
-const router = Router();
+const router = Router()
 
-router.get("/get", validateGetLanguage, LanguageController.get);
-router.post("/create", LanguageController.create);
-router.post("/edit", LanguageController.edit);
-router.post("/remove", LanguageController.remove);
+router.get('/get', validateGetLanguage, LanguageController.get)
+router.post('/create', LanguageController.create)
+router.post('/edit', LanguageController.edit)
+router.post('/remove', LanguageController.remove)
 
-export default router;
+export default router

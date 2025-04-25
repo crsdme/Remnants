@@ -1,6 +1,6 @@
 import type { VariantProps } from 'class-variance-authority'
 
-import { useIsMobile } from '@/utils/hooks/use-mobile'
+import { useIsMobile } from '@/utils/hooks/'
 import { cn } from '@/utils/lib/utils'
 import { Button } from '@/view/components/ui/button'
 

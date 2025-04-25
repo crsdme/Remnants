@@ -1,46 +1,46 @@
-import mongoose, { Schema } from "mongoose";
-const { ObjectId, Mixed } = Schema.Types;
+import type { Types } from 'mongoose'
+import mongoose, { Schema } from 'mongoose'
 
-import { Types } from "mongoose";
+const { ObjectId, Mixed } = Schema.Types
 
 export interface ProductInterface {
   names: {
-    ua: string;
-    ru: string;
-    en: string;
-    tr: string;
-  };
-  customFieldsGroup: Types.ObjectId;
+    ua: string
+    ru: string
+    en: string
+    tr: string
+  }
+  customFieldsGroup: Types.ObjectId
   customFields: Array<{
-    _id: Types.ObjectId;
-    data: any;
-  }>;
+    _id: Types.ObjectId
+    data: any
+  }>
   images: Array<{
     main: {
-      name: string;
-      path: string;
-    };
+      name: string
+      path: string
+    }
     preview: {
-      name: string;
-      path: string;
-    };
-  }>;
-  price: number;
-  unit: Types.ObjectId;
-  currency: Types.ObjectId;
-  discount: number;
-  wholesalePrice: number;
-  wholesaleCurrency: Types.ObjectId;
-  quantity: Types.ObjectId[];
+      name: string
+      path: string
+    }
+  }>
+  price: number
+  unit: Types.ObjectId
+  currency: Types.ObjectId
+  discount: number
+  wholesalePrice: number
+  wholesaleCurrency: Types.ObjectId
+  quantity: Types.ObjectId[]
   barcode: Array<{
-    number: Types.ObjectId;
-  }>;
+    number: Types.ObjectId
+  }>
   categories: Array<{
-    _id: Types.ObjectId;
-  }>;
-  removed: boolean;
-  createdAt?: Date;
-  updatedAt?: Date;
+    _id: Types.ObjectId
+  }>
+  removed: boolean
+  createdAt?: Date
+  updatedAt?: Date
 }
 
 const ProductSchema: Schema = new Schema(
@@ -61,17 +61,17 @@ const ProductSchema: Schema = new Schema(
     },
     customFieldsGroup: {
       type: ObjectId,
-      ref: "custom-field-group",
+      ref: 'custom-field-group',
     },
     customFields: [
       {
         _id: {
           type: ObjectId,
-          ref: "custom-field",
+          ref: 'custom-field',
         },
         data: {
           type: Mixed,
-          ref: "custom-field-options",
+          ref: 'custom-field-options',
         },
       },
     ],
@@ -101,11 +101,11 @@ const ProductSchema: Schema = new Schema(
     },
     unit: {
       type: ObjectId,
-      ref: "units",
+      ref: 'units',
     },
     currency: {
       type: ObjectId,
-      ref: "currency",
+      ref: 'currency',
     },
     discount: {
       type: Number,
@@ -117,19 +117,19 @@ const ProductSchema: Schema = new Schema(
     },
     wholesaleCurrency: {
       type: ObjectId,
-      ref: "currency",
+      ref: 'currency',
     },
     quantity: [
       {
         type: ObjectId,
-        ref: "quantity",
+        ref: 'quantity',
       },
     ],
     barcode: [
       {
         number: {
           type: ObjectId,
-          ref: "barcode",
+          ref: 'barcode',
         },
       },
     ],
@@ -137,7 +137,7 @@ const ProductSchema: Schema = new Schema(
       {
         _id: {
           type: ObjectId,
-          ref: "category",
+          ref: 'category',
         },
       },
     ],
@@ -146,7 +146,7 @@ const ProductSchema: Schema = new Schema(
       default: false,
     },
   },
-  { timestamps: true }
-);
+  { timestamps: true },
+)
 
-export default mongoose.model<ProductInterface>("Product", ProductSchema);
+export default mongoose.model<ProductInterface>('Product', ProductSchema)
