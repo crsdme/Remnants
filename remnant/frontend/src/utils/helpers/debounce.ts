@@ -1,11 +1,11 @@
 export default function (func, delay = 300) {
-  let timeout;
+  let timeout
   return (...args) => {
     if (timeout) {
-      clearTimeout(timeout);
+      clearTimeout(timeout)
     }
     timeout = setTimeout(() => {
-      func(...args);
-    }, delay);
-  };
+      func(...args)
+    }, delay)
+  }
 }

@@ -1,12 +1,11 @@
-import { useMutation } from '@tanstack/react-query';
+import type { importCurrenciesParams } from '@/api/requests'
 
-import type { importCurrenciesParams } from '@/api/requests';
-import { importCurrencies } from '@/api/requests';
+import { importCurrencies } from '@/api/requests'
+import { useMutation } from '@tanstack/react-query'
 
-export const useImportCurrencies = (
-  settings?: MutationSettings<importCurrenciesParams, typeof importCurrencies>
-) =>
-  useMutation({
+export function useImportCurrencies(settings?: MutationSettings<importCurrenciesParams, typeof importCurrencies>) {
+  return useMutation({
     mutationFn: (params: importCurrenciesParams) => importCurrencies(params),
-    ...settings?.options
-  });
+    ...settings?.options,
+  })
+}

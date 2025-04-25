@@ -1,12 +1,11 @@
-import { useMutation } from '@tanstack/react-query';
+import type { postAuthLoginParams } from '@/api/requests'
 
-import type { postAuthLoginParams } from '@/api/requests';
-import { postAuthLogin } from '@/api/requests';
+import { postAuthLogin } from '@/api/requests'
+import { useMutation } from '@tanstack/react-query'
 
-export const useAuthLogin = (
-  settings?: MutationSettings<postAuthLoginParams, typeof postAuthLogin>
-) =>
-  useMutation({
+export function useAuthLogin(settings?: MutationSettings<postAuthLoginParams, typeof postAuthLogin>) {
+  return useMutation({
     mutationFn: (params: postAuthLoginParams) => postAuthLogin(params),
-    ...settings?.options
-  });
+    ...settings?.options,
+  })
+}

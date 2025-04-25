@@ -1,37 +1,41 @@
-import { api } from '@/api/instance';
+import { api } from '@/api/instance'
 
-export type getCategoriesParams = {
+export interface getCategoriesParams {
   filters?: {
-    names: string;
-    language: string;
-    flat?: boolean;
-  };
+    names: string
+    language: string
+    flat?: boolean
+  }
   // sorters: {
   //   current: number;
   //   pageSize: number;
   // };
   pagination?: {
-    current: number;
-    pageSize: number;
-  };
-};
+    current: number
+    pageSize: number
+  }
+}
 
-export const getCategories = async (params: getCategoriesParams) =>
-  api.get<CategoriesResponse>('categories/get', { params });
+export async function getCategories(params: getCategoriesParams) {
+  return api.get<CategoriesResponse>('categories/get', { params })
+}
 
-export type createCategoriesParams = Category;
+export type createCategoriesParams = Category
 
-export const createCategory = async (params: createCategoriesParams) =>
-  api.post<CategoriesResponse>('categories/create', { ...params });
+export async function createCategory(params: createCategoriesParams) {
+  return api.post<CategoriesResponse>('categories/create', { ...params })
+}
 
-export type editCategoryParams = Category;
+export type editCategoryParams = Category
 
-export const editCategory = async (params: editCategoryParams) =>
-  api.post<CategoriesResponse>('categories/edit', params);
+export async function editCategory(params: editCategoryParams) {
+  return api.post<CategoriesResponse>('categories/edit', params)
+}
 
-export type removeCategoryParams = {
-  _id: string;
-};
+export interface removeCategoryParams {
+  _id: string
+}
 
-export const removeCategory = async (params: removeCategoryParams) =>
-  api.post<CategoriesResponse>('categories/remove', params);
+export async function removeCategory(params: removeCategoryParams) {
+  return api.post<CategoriesResponse>('categories/remove', params)
+}

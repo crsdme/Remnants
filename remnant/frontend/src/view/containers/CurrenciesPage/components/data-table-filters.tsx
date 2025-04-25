@@ -1,16 +1,16 @@
-import { useState } from 'react';
+import { Input } from '@/view/components/ui'
 
-import { useTranslation } from 'react-i18next';
-import { Filter } from 'lucide-react';
-import { useDebounceCallback } from '@siberiacancode/reactuse';
+import { useDebounceCallback } from '@siberiacancode/reactuse'
+import { Filter } from 'lucide-react'
+import { useState } from 'react'
 
-import { Input } from '@/view/components/ui';
+import { useTranslation } from 'react-i18next'
 // import { MultiSelect } from '@/view/components/MultiSelect';
 // import { DatePickerRange } from '@/view/components/DatePickerRange';
 
 export function DataTableFilters({ filters, setFilters }) {
-  const { t } = useTranslation();
-  const [localFilters, setLocalFilters] = useState(filters);
+  const { t } = useTranslation()
+  const [localFilters, setLocalFilters] = useState(filters)
 
   // const areAllFiltersCleared = useMemo(() => {
   //   return (
@@ -23,13 +23,13 @@ export function DataTableFilters({ filters, setFilters }) {
   // }, [localFilters]);
 
   const debouncedSetFilters = useDebounceCallback((value: object) => {
-    setFilters((prev) => ({ ...prev, ...value }));
-  }, 300);
+    setFilters(prev => ({ ...prev, ...value }))
+  }, 300)
 
   const handleFilter = (field, value) => {
-    setLocalFilters((prev) => ({ ...prev, [field]: value }));
-    debouncedSetFilters({ [field]: value });
-  };
+    setLocalFilters(prev => ({ ...prev, [field]: value }))
+    debouncedSetFilters({ [field]: value })
+  }
 
   // const handleClearAll = () => {
   //   const clearedFilters = {
@@ -45,15 +45,15 @@ export function DataTableFilters({ filters, setFilters }) {
 
   return (
     <>
-      <div className='relative max-w-3xs min-w-64 max-md:max-w-full'>
-        <div className='absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none'>
-          <Filter className='h-4 w-4 text-gray-400' />
+      <div className="relative max-w-3xs min-w-64 max-md:max-w-full">
+        <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+          <Filter className="h-4 w-4 text-gray-400" />
         </div>
         <Input
           placeholder={t('page.currencies.filter.names')}
           value={localFilters.names}
-          onChange={(event) => handleFilter('names', event.target.value)}
-          className='pl-10'
+          onChange={event => handleFilter('names', event.target.value)}
+          className="pl-10"
         />
       </div>
 
@@ -79,5 +79,5 @@ export function DataTableFilters({ filters, setFilters }) {
         </Button>
       )} */}
     </>
-  );
+  )
 }

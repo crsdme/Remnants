@@ -1,12 +1,11 @@
-import { useMutation } from '@tanstack/react-query';
+import type { editCategoryParams } from '@/api/requests'
 
-import type { editCategoryParams } from '@/api/requests';
-import { editCategory } from '@/api/requests';
+import { editCategory } from '@/api/requests'
+import { useMutation } from '@tanstack/react-query'
 
-export const useEditCategory = (
-  settings?: MutationSettings<editCategoryParams, typeof editCategory>
-) =>
-  useMutation({
+export function useEditCategory(settings?: MutationSettings<editCategoryParams, typeof editCategory>) {
+  return useMutation({
     mutationFn: (params: editCategoryParams) => editCategory(params),
-    ...settings?.options
-  });
+    ...settings?.options,
+  })
+}

@@ -1,12 +1,11 @@
-import { useMutation } from '@tanstack/react-query';
+import type { createLanguagesParams } from '@/api/requests'
 
-import type { createLanguagesParams } from '@/api/requests';
-import { createLanguage } from '@/api/requests';
+import { createLanguage } from '@/api/requests'
+import { useMutation } from '@tanstack/react-query'
 
-export const useCreateLanguage = (
-  settings?: MutationSettings<createLanguagesParams, typeof createLanguage>
-) =>
-  useMutation({
+export function useCreateLanguage(settings?: MutationSettings<createLanguagesParams, typeof createLanguage>) {
+  return useMutation({
     mutationFn: (params: createLanguagesParams) => createLanguage(params),
-    ...settings?.options
-  });
+    ...settings?.options,
+  })
+}

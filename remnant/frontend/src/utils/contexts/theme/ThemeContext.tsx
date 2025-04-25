@@ -1,64 +1,68 @@
-import { createContext, ReactNode, useContext, useEffect, useState } from 'react';
+import type { ReactNode } from 'react'
+import { Toaster } from '@/view/components/ui/sonner'
 
-import { useTranslation } from 'react-i18next';
+import { createContext, use, useEffect, useState } from 'react'
 
-import { Toaster } from '@/view/components/ui/sonner';
+import { useTranslation } from 'react-i18next'
 
-const LOCAL_STORAGE_KEY = 'appTheme';
+const LOCAL_STORAGE_KEY = 'appTheme'
 
 interface Theme {
-  language: string;
-  layoutTheme: string;
-  activeColumns: string[];
+  language: string
+  layoutTheme: string
+  activeColumns: string[]
 }
 
 interface ThemeContextType {
-  theme: Theme;
-  updateTheme: (newTheme: Partial<Theme>) => void;
+  theme: Theme
+  updateTheme: (newTheme: Partial<Theme>) => void
 }
 
-const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
+const ThemeContext = createContext<ThemeContextType | undefined>(undefined)
 
 interface ThemeProviderProps {
-  children: ReactNode;
+  children: ReactNode
 }
 
-export const ThemeProvider = ({ children }: ThemeProviderProps) => {
-  const [theme, setTheme] = useState({ language: 'en', layoutTheme: 'light', activeColumns: [] });
-  const { i18n } = useTranslation();
+export function ThemeProvider({ children }: ThemeProviderProps) {
+  const [theme, setTheme] = useState({ language: 'en', layoutTheme: 'light', activeColumns: [] })
+  const { i18n } = useTranslation()
 
   const updateTheme = ({ language, layoutTheme }) => {
-    setTheme((state) => ({ ...state, language, layoutTheme }));
-    if (language) i18n.changeLanguage(language);
-    if (layoutTheme) document.documentElement.classList.toggle('dark', layoutTheme === 'dark');
-  };
+    setTheme(state => ({ ...state, language, layoutTheme }))
+    if (language)
+      i18n.changeLanguage(language)
+    if (layoutTheme)
+      document.documentElement.classList.toggle('dark', layoutTheme === 'dark')
+  }
 
   const value: ThemeContextType = {
     theme,
-    updateTheme
-  };
+    updateTheme,
+  }
 
   useEffect(() => {
-    const storedTheme = localStorage.getItem(LOCAL_STORAGE_KEY);
-    if (storedTheme) updateTheme(JSON.parse(storedTheme));
-  }, []);
+    const storedTheme = localStorage.getItem(LOCAL_STORAGE_KEY)
+    if (storedTheme)
+      updateTheme(JSON.parse(storedTheme))
+  }, [])
 
   useEffect(() => {
-    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(theme));
-  }, [theme]);
+    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(theme))
+  }, [theme])
 
   return (
-    <ThemeContext.Provider value={value}>
-      <Toaster position='bottom-right' richColors />
+    <ThemeContext value={value}>
+      <Toaster position="bottom-right" richColors />
       {children}
-    </ThemeContext.Provider>
-  );
-};
+    </ThemeContext>
+  )
+}
 
-export const useThemeContext = (): ThemeContextType => {
-  const context = useContext(ThemeContext);
+export function useThemeContext(): ThemeContextType {
+  const context = use(ThemeContext)
   if (!context) {
-    throw new Error('useThemeContext - ThemeContext');
+    throw new Error('useThemeContext - ThemeContext')
   }
-  return context;
-};
+  return context
+}

@@ -1,29 +1,29 @@
-import { Languages } from 'lucide-react';
+import { useThemeContext } from '@/utils/contexts'
 
+import { Button } from '@/view/components/ui/'
 import {
   DropdownMenu,
-  DropdownMenuTrigger,
   DropdownMenuContent,
-  DropdownMenuItem
-} from '@/view/components/ui/dropdown-menu';
-import { Button } from '@/view/components/ui/';
-import { useThemeContext } from '@/utils/contexts';
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/view/components/ui/dropdown-menu'
+import { Languages } from 'lucide-react'
 
 export default function LanguageButton() {
-  const themeContext = useThemeContext();
+  const themeContext = useThemeContext()
 
   const selectLanguage = (language: string) => {
     themeContext.updateTheme({
       ...themeContext.theme,
-      language: language
-    });
-  };
+      language,
+    })
+  }
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant='secondary' className='rounded-md h-9 w-9'>
-          <Languages className='w-4 h-4' />
+        <Button variant="secondary" className="rounded-md h-9 w-9">
+          <Languages className="w-4 h-4" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent>
@@ -31,5 +31,5 @@ export default function LanguageButton() {
         <DropdownMenuItem onClick={() => selectLanguage('ru')}>Русский</DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
-  );
+  )
 }

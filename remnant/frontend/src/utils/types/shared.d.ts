@@ -1,12 +1,12 @@
 interface Names {
-  ru: string;
-  en: string;
+  ru: string
+  en: string
 }
 
-type Pagination = {
-  current: number;
-  pageSize: number;
-};
+interface Pagination {
+  current: number
+  pageSize: number
+}
 
 declare module '*.png';
 declare module '*.svg';

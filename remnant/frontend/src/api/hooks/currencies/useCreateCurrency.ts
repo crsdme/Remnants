@@ -1,12 +1,11 @@
-import { useMutation } from '@tanstack/react-query';
+import type { createCurrenciesParams } from '@/api/requests'
 
-import type { createCurrenciesParams } from '@/api/requests';
-import { createCurrency } from '@/api/requests';
+import { createCurrency } from '@/api/requests'
+import { useMutation } from '@tanstack/react-query'
 
-export const useCreateCurrency = (
-  settings?: MutationSettings<createCurrenciesParams, typeof createCurrency>
-) =>
-  useMutation({
+export function useCreateCurrency(settings?: MutationSettings<createCurrenciesParams, typeof createCurrency>) {
+  return useMutation({
     mutationFn: (params: createCurrenciesParams) => createCurrency(params),
-    ...settings?.options
-  });
+    ...settings?.options,
+  })
+}

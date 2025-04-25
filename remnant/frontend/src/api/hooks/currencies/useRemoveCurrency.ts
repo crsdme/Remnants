@@ -1,12 +1,11 @@
-import { useMutation } from '@tanstack/react-query';
+import type { removeCurrencyParams } from '@/api/requests'
 
-import type { removeCurrencyParams } from '@/api/requests';
-import { removeCurrency } from '@/api/requests';
+import { removeCurrency } from '@/api/requests'
+import { useMutation } from '@tanstack/react-query'
 
-export const useRemoveCurrency = (
-  settings?: MutationSettings<removeCurrencyParams, typeof removeCurrency>
-) =>
-  useMutation({
+export function useRemoveCurrency(settings?: MutationSettings<removeCurrencyParams, typeof removeCurrency>) {
+  return useMutation({
     mutationFn: (params: removeCurrencyParams) => removeCurrency(params),
-    ...settings?.options
-  });
+    ...settings?.options,
+  })
+}

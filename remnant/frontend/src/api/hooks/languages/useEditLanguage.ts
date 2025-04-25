@@ -1,12 +1,11 @@
-import { useMutation } from '@tanstack/react-query';
+import type { editLanguageParams } from '@/api/requests'
 
-import type { editLanguageParams } from '@/api/requests';
-import { editLanguage } from '@/api/requests';
+import { editLanguage } from '@/api/requests'
+import { useMutation } from '@tanstack/react-query'
 
-export const useEditLanguage = (
-  settings?: MutationSettings<editLanguageParams, typeof editLanguage>
-) =>
-  useMutation({
+export function useEditLanguage(settings?: MutationSettings<editLanguageParams, typeof editLanguage>) {
+  return useMutation({
     mutationFn: (params: editLanguageParams) => editLanguage(params),
-    ...settings?.options
-  });
+    ...settings?.options,
+  })
+}

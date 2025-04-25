@@ -1,6 +1,6 @@
-import { api } from '@/api/instance';
+import { api } from '@/api/instance'
 
-export type getLanguagesParams = {
+export interface getLanguagesParams {
   // filters: {
   //   current: number;
   //   pageSize: number;
@@ -10,28 +10,32 @@ export type getLanguagesParams = {
   //   pageSize: number;
   // };
   pagination: {
-    full: boolean;
-    current?: number;
-    pageSize?: number;
-  };
-};
+    full: boolean
+    current?: number
+    pageSize?: number
+  }
+}
 
-export const getLanguages = async (params: getLanguagesParams) =>
-  api.get<LanguagesResponse>('languages/get', { params });
+export async function getLanguages(params: getLanguagesParams) {
+  return api.get<LanguagesResponse>('languages/get', { params })
+}
 
-export type createLanguagesParams = Language;
+export type createLanguagesParams = Language
 
-export const createLanguage = async (params: createLanguagesParams) =>
-  api.post<LanguagesResponse>('languages/create', { ...params });
+export async function createLanguage(params: createLanguagesParams) {
+  return api.post<LanguagesResponse>('languages/create', { ...params })
+}
 
-export type editLanguageParams = Language;
+export type editLanguageParams = Language
 
-export const editLanguage = async (params: editLanguageParams) =>
-  api.post<LanguagesResponse>('languages/edit', params);
+export async function editLanguage(params: editLanguageParams) {
+  return api.post<LanguagesResponse>('languages/edit', params)
+}
 
-export type removeLanguageParams = {
-  _id: string;
-};
+export interface removeLanguageParams {
+  _id: string
+}
 
-export const removeLanguage = async (params: removeLanguageParams) =>
-  api.post<LanguagesResponse>('languages/remove', params);
+export async function removeLanguage(params: removeLanguageParams) {
+  return api.post<LanguagesResponse>('languages/remove', params)
+}

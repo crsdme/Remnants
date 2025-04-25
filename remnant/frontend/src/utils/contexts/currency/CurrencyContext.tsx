@@ -1,129 +1,132 @@
-import { createContext, ReactNode, useContext, useState } from 'react';
-
-import { useQueryClient } from '@tanstack/react-query';
-
-import { toast } from 'sonner';
-import { useTranslation } from 'react-i18next';
-
+import type { ReactNode } from 'react'
 import {
-  useEditCurrency,
-  useRemoveCurrency,
-  useCreateCurrency,
   useBatchCurrency,
-  useImportCurrencies
-} from '@/api/hooks/';
+  useCreateCurrency,
+  useEditCurrency,
+  useImportCurrencies,
+  useRemoveCurrency,
+} from '@/api/hooks/'
+
+import { useQueryClient } from '@tanstack/react-query'
+
+import { createContext, use, useState } from 'react'
+import { useTranslation } from 'react-i18next'
+
+import { toast } from 'sonner'
 
 interface CurrencyContextType {
-  selectedCurrency: Currency;
-  isModalOpen: boolean;
-  isLoading: boolean;
-  toggleModal: (currency?: Currency) => void;
-  openModal: (currency?: Currency) => void;
-  closeModal: () => void;
-  submitCurrencyForm: (params) => void;
-  batchCurrency: (params) => void;
-  removeCurrency: (params: { _ids: string[] }) => void;
-  importCurrencies: (params) => void;
+  selectedCurrency: Currency
+  isModalOpen: boolean
+  isLoading: boolean
+  toggleModal: (currency?: Currency) => void
+  openModal: (currency?: Currency) => void
+  closeModal: () => void
+  submitCurrencyForm: (params) => void
+  batchCurrency: (params) => void
+  removeCurrency: (params: { _ids: string[] }) => void
+  importCurrencies: (params) => void
 }
 
-const CurrencyContext = createContext<CurrencyContextType | undefined>(undefined);
+const CurrencyContext = createContext<CurrencyContextType | undefined>(undefined)
 
 interface CurrencyProviderProps {
-  children: ReactNode;
+  children: ReactNode
 }
 
-export const CurrencyProvider = ({ children }: CurrencyProviderProps) => {
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [selectedCurrency, setSelectedCurrency] = useState(null);
+export function CurrencyProvider({ children }: CurrencyProviderProps) {
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
+  const [selectedCurrency, setSelectedCurrency] = useState(null)
 
-  const { t } = useTranslation();
+  const { t } = useTranslation()
 
-  const queryClient = useQueryClient();
+  const queryClient = useQueryClient()
 
   const useMutateCreateCurrency = useCreateCurrency({
     options: {
       onSuccess: () => {
-        setIsModalOpen(false);
-        setIsLoading(false);
-        setSelectedCurrency(null);
-        queryClient.invalidateQueries({ queryKey: ['currencies'] });
-      }
-    }
-  });
+        setIsModalOpen(false)
+        setIsLoading(false)
+        setSelectedCurrency(null)
+        queryClient.invalidateQueries({ queryKey: ['currencies'] })
+      },
+    },
+  })
 
   const useMutateEditCurrency = useEditCurrency({
     options: {
       onSuccess: () => {
-        setIsModalOpen(false);
-        setIsLoading(false);
-        setSelectedCurrency(null);
-        queryClient.invalidateQueries({ queryKey: ['currencies'] });
-      }
-    }
-  });
+        setIsModalOpen(false)
+        setIsLoading(false)
+        setSelectedCurrency(null)
+        queryClient.invalidateQueries({ queryKey: ['currencies'] })
+      },
+    },
+  })
 
   const useMutateRemoveCurrency = useRemoveCurrency({
     options: {
       onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: ['currencies'] });
-      }
-    }
-  });
+        queryClient.invalidateQueries({ queryKey: ['currencies'] })
+      },
+    },
+  })
 
   const useMutateImportCurrencies = useImportCurrencies({
     options: {
       onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: ['currencies'] });
-      }
-    }
-  });
+        queryClient.invalidateQueries({ queryKey: ['currencies'] })
+      },
+    },
+  })
 
   const useMutateBatchCurrency = useBatchCurrency({
     options: {
       onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: ['currencies'] });
-        toast.success(t('page.currencies.toast.batchCurrency.success'));
+        queryClient.invalidateQueries({ queryKey: ['currencies'] })
+        toast.success(t('page.currencies.toast.batchCurrency.success'))
       },
       onError: () => {
-        toast.error(t('page.currencies.toast.batchCurrency.error'));
-      }
-    }
-  });
+        toast.error(t('page.currencies.toast.batchCurrency.error'))
+      },
+    },
+  })
 
   const openModal = (currency) => {
-    setIsModalOpen(true);
-    if (currency) setSelectedCurrency(currency);
-  };
+    setIsModalOpen(true)
+    if (currency)
+      setSelectedCurrency(currency)
+  }
 
   const closeModal = () => {
-    setIsModalOpen(false);
-    setIsLoading(false);
-    setSelectedCurrency(null);
-  };
+    setIsModalOpen(false)
+    setIsLoading(false)
+    setSelectedCurrency(null)
+  }
 
-  const toggleModal = (currency) => (isModalOpen ? closeModal() : openModal(currency));
+  const toggleModal = currency => (isModalOpen ? closeModal() : openModal(currency))
 
   const submitCurrencyForm = (params) => {
-    setIsLoading(true);
+    setIsLoading(true)
     if (!selectedCurrency) {
-      useMutateCreateCurrency.mutate(params);
-    } else {
-      useMutateEditCurrency.mutate({ ...params, _id: selectedCurrency._id });
+      useMutateCreateCurrency.mutate(params)
     }
-  };
+    else {
+      useMutateEditCurrency.mutate({ ...params, _id: selectedCurrency._id })
+    }
+  }
 
   const removeCurrency = (params) => {
-    useMutateRemoveCurrency.mutate(params);
-  };
+    useMutateRemoveCurrency.mutate(params)
+  }
 
   const batchCurrency = (params) => {
-    useMutateBatchCurrency.mutate(params);
-  };
+    useMutateBatchCurrency.mutate(params)
+  }
 
   const importCurrencies = (params) => {
-    useMutateImportCurrencies.mutate(params);
-  };
+    useMutateImportCurrencies.mutate(params)
+  }
 
   const value: CurrencyContextType = {
     selectedCurrency,
@@ -135,16 +138,16 @@ export const CurrencyProvider = ({ children }: CurrencyProviderProps) => {
     submitCurrencyForm,
     removeCurrency,
     batchCurrency,
-    importCurrencies
-  };
-
-  return <CurrencyContext.Provider value={value}>{children}</CurrencyContext.Provider>;
-};
-
-export const useCurrencyContext = (): CurrencyContextType => {
-  const context = useContext(CurrencyContext);
-  if (!context) {
-    throw new Error('useCurrencyContext - CurrencyContext');
+    importCurrencies,
   }
-  return context;
-};
+
+  return <CurrencyContext value={value}>{children}</CurrencyContext>
+}
+
+export function useCurrencyContext(): CurrencyContextType {
+  const context = use(CurrencyContext)
+  if (!context) {
+    throw new Error('useCurrencyContext - CurrencyContext')
+  }
+  return context
+}

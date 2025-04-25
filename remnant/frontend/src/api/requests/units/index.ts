@@ -1,6 +1,6 @@
-import { api } from '@/api/instance';
+import { api } from '@/api/instance'
 
-export type getUnitsParams = {
+export interface getUnitsParams {
   // filters: {
   //   current: number;
   //   pageSize: number;
@@ -10,28 +10,32 @@ export type getUnitsParams = {
   //   pageSize: number;
   // };
   pagination: {
-    full?: boolean;
-    current?: number;
-    pageSize?: number;
-  };
-};
+    full?: boolean
+    current?: number
+    pageSize?: number
+  }
+}
 
-export const getUnits = async (params: getUnitsParams) =>
-  api.get<UnitsResponse>('units/get', { params });
+export async function getUnits(params: getUnitsParams) {
+  return api.get<UnitsResponse>('units/get', { params })
+}
 
-export type createUnitsParams = Unit;
+export type createUnitsParams = Unit
 
-export const createUnit = async (params: createUnitsParams) =>
-  api.post<UnitsResponse>('units/create', { ...params });
+export async function createUnit(params: createUnitsParams) {
+  return api.post<UnitsResponse>('units/create', { ...params })
+}
 
-export type editUnitParams = Unit;
+export type editUnitParams = Unit
 
-export const editUnit = async (params: editUnitParams) =>
-  api.post<UnitsResponse>('units/edit', params);
+export async function editUnit(params: editUnitParams) {
+  return api.post<UnitsResponse>('units/edit', params)
+}
 
-export type removeUnitParams = {
-  _id: string;
-};
+export interface removeUnitParams {
+  _id: string
+}
 
-export const removeUnit = async (params: removeUnitParams) =>
-  api.post<UnitsResponse>('units/remove', params);
+export async function removeUnit(params: removeUnitParams) {
+  return api.post<UnitsResponse>('units/remove', params)
+}

@@ -1,11 +1,12 @@
-import { useSuspenseQuery } from '@tanstack/react-query';
+import type { GetProductsParams } from '@/api/requests'
 
-import type { GetProductsParams } from '@/api/requests';
-import { getProducts } from '@/api/requests';
+import { getProducts } from '@/api/requests'
+import { useSuspenseQuery } from '@tanstack/react-query'
 
-export const useRequestProducts = (params: GetProductsParams) =>
-  useSuspenseQuery({
+export function useRequestProducts(params: GetProductsParams) {
+  return useSuspenseQuery({
     queryKey: ['products', 'get', params.pagination.current],
     queryFn: () => getProducts(params),
-    staleTime: 60000
-  });
+    staleTime: 60000,
+  })
+}

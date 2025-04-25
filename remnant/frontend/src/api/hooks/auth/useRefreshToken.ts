@@ -1,10 +1,11 @@
-import { useQuery } from '@tanstack/react-query';
+import { postRefreshToken } from '@/api/requests'
 
-import { postRefreshToken } from '@/api/requests';
+import { useQuery } from '@tanstack/react-query'
 
-export const useRefreshToken = (settings?: QuerySettings<typeof postRefreshToken>) =>
-  useQuery({
+export function useRefreshToken(settings?: QuerySettings<typeof postRefreshToken>) {
+  return useQuery({
     queryKey: ['refreshToken'],
     queryFn: () => postRefreshToken(),
-    ...settings?.options
-  });
+    ...settings?.options,
+  })
+}

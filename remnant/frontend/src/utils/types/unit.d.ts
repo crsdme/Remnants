@@ -1,14 +1,14 @@
 interface Unit {
-  _id: string;
-  names: Names;
-  symbols: Names;
-  active: boolean;
-  createdAt: string;
-  updatedAt: string;
+  _id: string
+  names: Names
+  symbols: Names
+  active: boolean
+  createdAt: string
+  updatedAt: string
 }
 
-type UnitsResponse = {
-  status: string;
-  units: Unit[];
-  unitsCount: number;
-};
+interface UnitsResponse {
+  status: string
+  units: Unit[]
+  unitsCount: number
+}

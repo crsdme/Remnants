@@ -1,11 +1,11 @@
-import { enUS, ru } from 'date-fns/locale';
-import { format } from 'date-fns';
+import { format } from 'date-fns'
+import { enUS, ru } from 'date-fns/locale'
 
 export default (
   date: string | number | Date,
   formatString = 'MMMM dd, yyyy HH:mm:ss',
-  lang = 'en'
+  lang = 'en',
 ): string => {
-  const locale = lang === 'ru' ? ru : enUS;
-  return format(new Date(date), formatString, { locale });
-};
+  const locale = lang === 'ru' ? ru : enUS
+  return format(new Date(date), formatString, { locale })
+}

@@ -1,29 +1,29 @@
-import { ColumnDef } from '@tanstack/react-table';
+import type { ColumnDef } from '@tanstack/react-table'
 
-import { useTranslation } from 'react-i18next';
-import {
-  ArrowDown,
-  ArrowUp,
-  ChevronsUpDown,
-  MoreHorizontal,
-  ChevronDown,
-  ChevronRight
-} from 'lucide-react';
+import { useCurrencyContext } from '@/utils/contexts'
+import formatDate from '@/utils/helpers/formatDate'
 
+import { Badge, Button, Checkbox } from '@/view/components/ui'
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
-  DropdownMenuTrigger
-} from '@/view/components/ui/dropdown-menu';
-import { Button, Checkbox, Badge } from '@/view/components/ui';
-import formatDate from '@/utils/helpers/formatDate';
-import { useCurrencyContext } from '@/utils/contexts';
+  DropdownMenuTrigger,
+} from '@/view/components/ui/dropdown-menu'
+import {
+  ArrowDown,
+  ArrowUp,
+  ChevronDown,
+  ChevronRight,
+  ChevronsUpDown,
+  MoreHorizontal,
+} from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 
 export function useColumns({ setSorters, expandedRows, setExpandedRows }): ColumnDef<Currency>[] {
-  const { t, i18n } = useTranslation();
-  const currencyContext = useCurrencyContext();
+  const { t, i18n } = useTranslation()
+  const currencyContext = useCurrencyContext()
 
   return [
     {
@@ -35,25 +35,25 @@ export function useColumns({ setSorters, expandedRows, setExpandedRows }): Colum
           ? true
           : table.getIsSomePageRowsSelected()
             ? 'indeterminate'
-            : false;
+            : false
 
         return (
           <Checkbox
             checked={isChecked}
-            onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-            aria-label='Select all'
+            onCheckedChange={value => table.toggleAllPageRowsSelected(!!value)}
+            aria-label="Select all"
           />
-        );
+        )
       },
       cell: ({ row }) => (
         <Checkbox
           checked={row.getIsSelected()}
-          onCheckedChange={(value) => row.toggleSelected(!!value)}
-          aria-label='Select row'
+          onCheckedChange={value => row.toggleSelected(!!value)}
+          aria-label="Select row"
         />
       ),
       enableSorting: false,
-      enableHiding: false
+      enableHiding: false,
     },
     {
       id: 'names',
@@ -63,46 +63,50 @@ export function useColumns({ setSorters, expandedRows, setExpandedRows }): Colum
         batchEdit: true,
         batchEditType: 'textMultiLanguage',
         filterable: true,
-        filterType: 'text'
+        filterType: 'text',
       },
       header: ({ column }) => {
-        const sortOrder = column.getIsSorted() || 'none';
-        const icons = { asc: ArrowUp, desc: ArrowDown, none: ChevronsUpDown };
-        const Icon = icons[sortOrder];
+        const sortOrder = column.getIsSorted() || 'none'
+        const icons = { asc: ArrowUp, desc: ArrowDown, none: ChevronsUpDown }
+        const Icon = icons[sortOrder]
 
         const handleSort = () => {
-          let nextSortOrder;
+          let nextSortOrder
           if (sortOrder === 'asc') {
-            column.toggleSorting(true);
-            nextSortOrder = 'desc';
-          } else if (sortOrder === 'desc') {
-            column.clearSorting();
-            nextSortOrder = 'none';
-          } else if (sortOrder === 'none') {
-            column.toggleSorting(false);
-            nextSortOrder = 'asc';
+            column.toggleSorting(true)
+            nextSortOrder = 'desc'
+          }
+          else if (sortOrder === 'desc') {
+            column.clearSorting()
+            nextSortOrder = 'none'
+          }
+          else if (sortOrder === 'none') {
+            column.toggleSorting(false)
+            nextSortOrder = 'asc'
           }
           const sortFormat = {
             asc: 1,
             desc: -1,
-            none: undefined
-          };
+            none: undefined,
+          }
 
-          setSorters({ names: sortFormat[nextSortOrder] });
-        };
+          setSorters({ names: sortFormat[nextSortOrder] })
+        }
 
         return (
           <Button
             disabled={currencyContext.isLoading}
-            variant='ghost'
+            variant="ghost"
             onClick={handleSort}
-            className='my-2 flex items-center gap-2'
+            className="my-2 flex items-center gap-2"
           >
-            {t('page.currencies.table.names')} <Icon className='w-4 h-4' />
+            {t('page.currencies.table.names')}
+            {' '}
+            <Icon className="w-4 h-4" />
           </Button>
-        );
+        )
       },
-      accessorFn: (row) => row.names?.[i18n.language] || row.names?.['en']
+      accessorFn: row => row.names?.[i18n.language] || row.names?.en,
     },
     {
       id: 'symbols',
@@ -112,15 +116,15 @@ export function useColumns({ setSorters, expandedRows, setExpandedRows }): Colum
         batchEdit: true,
         batchEditType: 'textMultiLanguage',
         filterable: true,
-        filterType: 'text'
+        filterType: 'text',
       },
       header: () => t('page.currencies.table.symbols'),
-      accessorFn: (row) => row.symbols?.[i18n.language] || row.symbols?.['en'],
+      accessorFn: row => row.symbols?.[i18n.language] || row.symbols?.en,
       cell: ({ row }) => (
-        <Badge variant='outline'>
-          {row.original.symbols?.[i18n.language] || row.original.symbols?.['en']}
+        <Badge variant="outline">
+          {row.original.symbols?.[i18n.language] || row.original.symbols?.en}
         </Badge>
-      )
+      ),
     },
     {
       id: 'priority',
@@ -130,46 +134,50 @@ export function useColumns({ setSorters, expandedRows, setExpandedRows }): Colum
         batchEdit: true,
         batchEditType: 'number',
         filterable: true,
-        filterType: 'number'
+        filterType: 'number',
       },
       header: ({ column }) => {
-        const sortOrder = column.getIsSorted() || 'none';
-        const icons = { asc: ArrowUp, desc: ArrowDown, none: ChevronsUpDown };
-        const Icon = icons[sortOrder];
+        const sortOrder = column.getIsSorted() || 'none'
+        const icons = { asc: ArrowUp, desc: ArrowDown, none: ChevronsUpDown }
+        const Icon = icons[sortOrder]
 
         const handleSort = () => {
-          let nextSortOrder;
+          let nextSortOrder
           if (sortOrder === 'asc') {
-            column.toggleSorting(true);
-            nextSortOrder = 'desc';
-          } else if (sortOrder === 'desc') {
-            column.clearSorting();
-            nextSortOrder = 'none';
-          } else if (sortOrder === 'none') {
-            column.toggleSorting(false);
-            nextSortOrder = 'asc';
+            column.toggleSorting(true)
+            nextSortOrder = 'desc'
+          }
+          else if (sortOrder === 'desc') {
+            column.clearSorting()
+            nextSortOrder = 'none'
+          }
+          else if (sortOrder === 'none') {
+            column.toggleSorting(false)
+            nextSortOrder = 'asc'
           }
           const sortFormat = {
             asc: 1,
             desc: -1,
-            none: undefined
-          };
+            none: undefined,
+          }
 
-          setSorters({ priority: sortFormat[nextSortOrder] });
-        };
+          setSorters({ priority: sortFormat[nextSortOrder] })
+        }
 
         return (
           <Button
             disabled={currencyContext.isLoading}
-            variant='ghost'
+            variant="ghost"
             onClick={handleSort}
-            className='my-2 flex items-center gap-2'
+            className="my-2 flex items-center gap-2"
           >
-            {t('page.currencies.table.priority')} <Icon className='w-4 h-4' />
+            {t('page.currencies.table.priority')}
+            {' '}
+            <Icon className="w-4 h-4" />
           </Button>
-        );
+        )
       },
-      cell: ({ row }) => <Badge variant='outline'>{row.original.priority}</Badge>
+      cell: ({ row }) => <Badge variant="outline">{row.original.priority}</Badge>,
     },
     {
       id: 'active',
@@ -179,10 +187,10 @@ export function useColumns({ setSorters, expandedRows, setExpandedRows }): Colum
         batchEdit: true,
         batchEditType: 'boolean',
         filterable: true,
-        filterType: 'boolean'
+        filterType: 'boolean',
       },
       header: t('page.currencies.table.active'),
-      cell: ({ row }) => <Badge variant='outline'>{row.original.active.toString()}</Badge>
+      cell: ({ row }) => <Badge variant="outline">{row.original.active.toString()}</Badge>,
     },
     {
       id: 'createdAt',
@@ -190,46 +198,50 @@ export function useColumns({ setSorters, expandedRows, setExpandedRows }): Colum
       meta: {
         title: t('page.currencies.table.createdAt'),
         filterable: true,
-        filterType: 'date'
+        filterType: 'date',
       },
       header: ({ column }) => {
-        const sortOrder = column.getIsSorted() || 'none';
-        const icons = { asc: ArrowUp, desc: ArrowDown, none: ChevronsUpDown };
-        const Icon = icons[sortOrder];
+        const sortOrder = column.getIsSorted() || 'none'
+        const icons = { asc: ArrowUp, desc: ArrowDown, none: ChevronsUpDown }
+        const Icon = icons[sortOrder]
 
         const handleSort = () => {
-          let nextSortOrder;
+          let nextSortOrder
           if (sortOrder === 'asc') {
-            column.toggleSorting(true);
-            nextSortOrder = 'desc';
-          } else if (sortOrder === 'desc') {
-            column.clearSorting();
-            nextSortOrder = 'none';
-          } else if (sortOrder === 'none') {
-            column.toggleSorting(false);
-            nextSortOrder = 'asc';
+            column.toggleSorting(true)
+            nextSortOrder = 'desc'
+          }
+          else if (sortOrder === 'desc') {
+            column.clearSorting()
+            nextSortOrder = 'none'
+          }
+          else if (sortOrder === 'none') {
+            column.toggleSorting(false)
+            nextSortOrder = 'asc'
           }
           const sortFormat = {
             asc: 1,
             desc: -1,
-            none: undefined
-          };
+            none: undefined,
+          }
 
-          setSorters({ createdAt: sortFormat[nextSortOrder] });
-        };
+          setSorters({ createdAt: sortFormat[nextSortOrder] })
+        }
 
         return (
           <Button
             disabled={currencyContext.isLoading}
-            variant='ghost'
+            variant="ghost"
             onClick={handleSort}
-            className='my-2 flex items-center gap-2'
+            className="my-2 flex items-center gap-2"
           >
-            {t('page.currencies.table.createdAt')} <Icon className='w-4 h-4' />
+            {t('page.currencies.table.createdAt')}
+            {' '}
+            <Icon className="w-4 h-4" />
           </Button>
-        );
+        )
       },
-      cell: ({ row }) => formatDate(row.getValue('createdAt'), 'MMMM dd, yyyy', i18n.language)
+      cell: ({ row }) => formatDate(row.getValue('createdAt'), 'MMMM dd, yyyy', i18n.language),
     },
     {
       id: 'updatedAt',
@@ -237,83 +249,88 @@ export function useColumns({ setSorters, expandedRows, setExpandedRows }): Colum
       meta: {
         title: t('page.currencies.table.updatedAt'),
         filterable: true,
-        filterType: 'date'
+        filterType: 'date',
       },
       header: ({ column }) => {
-        const sortOrder = column.getIsSorted() || 'none';
-        const icons = { asc: ArrowUp, desc: ArrowDown, none: ChevronsUpDown };
-        const Icon = icons[sortOrder];
+        const sortOrder = column.getIsSorted() || 'none'
+        const icons = { asc: ArrowUp, desc: ArrowDown, none: ChevronsUpDown }
+        const Icon = icons[sortOrder]
 
         const handleSort = () => {
-          let nextSortOrder;
+          let nextSortOrder
           if (sortOrder === 'asc') {
-            column.toggleSorting(true);
-            nextSortOrder = 'desc';
-          } else if (sortOrder === 'desc') {
-            column.clearSorting();
-            nextSortOrder = 'none';
-          } else if (sortOrder === 'none') {
-            column.toggleSorting(false);
-            nextSortOrder = 'asc';
+            column.toggleSorting(true)
+            nextSortOrder = 'desc'
+          }
+          else if (sortOrder === 'desc') {
+            column.clearSorting()
+            nextSortOrder = 'none'
+          }
+          else if (sortOrder === 'none') {
+            column.toggleSorting(false)
+            nextSortOrder = 'asc'
           }
           const sortFormat = {
             asc: 1,
             desc: -1,
-            none: undefined
-          };
+            none: undefined,
+          }
 
-          setSorters({ updatedAt: sortFormat[nextSortOrder] });
-        };
+          setSorters({ updatedAt: sortFormat[nextSortOrder] })
+        }
 
         return (
           <Button
             disabled={currencyContext.isLoading}
-            variant='ghost'
+            variant="ghost"
             onClick={handleSort}
-            className='my-2 flex items-center gap-2'
+            className="my-2 flex items-center gap-2"
           >
-            {t('page.currencies.table.updatedAt')} <Icon className='w-4 h-4' />
+            {t('page.currencies.table.updatedAt')}
+            {' '}
+            <Icon className="w-4 h-4" />
           </Button>
-        );
+        )
       },
-      cell: ({ row }) => formatDate(row.getValue('updatedAt'), 'MMMM dd, yyyy', i18n.language)
+      cell: ({ row }) => formatDate(row.getValue('updatedAt'), 'MMMM dd, yyyy', i18n.language),
     },
     {
       id: 'action',
       size: 85,
       meta: {
-        title: t('page.currencies.table.actions')
+        title: t('page.currencies.table.actions'),
       },
       enableHiding: false,
       cell: ({ row }) => {
-        const currency = row.original;
+        const currency = row.original
 
         return (
-          <div className='flex items-center gap-2'>
+          <div className="flex items-center gap-2">
             <Button
-              variant='ghost'
-              size='icon'
+              variant="ghost"
+              size="icon"
               onClick={() =>
-                setExpandedRows((prev) => ({
+                setExpandedRows(prev => ({
                   ...prev,
-                  [row.id]: !prev[row.id]
-                }))
-              }
-              className='h-8 w-8 p-0'
+                  [row.id]: !prev[row.id],
+                }))}
+              className="h-8 w-8 p-0"
             >
-              {expandedRows[row.id] ? (
-                <ChevronDown className='h-4 w-4' />
-              ) : (
-                <ChevronRight className='h-4 w-4' />
-              )}
+              {expandedRows[row.id]
+                ? (
+                    <ChevronDown className="h-4 w-4" />
+                  )
+                : (
+                    <ChevronRight className="h-4 w-4" />
+                  )}
             </Button>
             <DropdownMenu>
-              <DropdownMenuTrigger>
-                <Button variant='ghost' className='h-8 w-8 p-0'>
-                  <MoreHorizontal className='h-4 w-4' />
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className="h-8 w-8 p-0">
+                  <MoreHorizontal className="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align='end'>
+              <DropdownMenuContent align="end">
                 <DropdownMenuLabel>{t('page.currencies.table.actions')}</DropdownMenuLabel>
                 <DropdownMenuItem onClick={() => navigator.clipboard.writeText(currency._id)}>
                   {t('page.currencies.table.copy')}
@@ -323,15 +340,15 @@ export function useColumns({ setSorters, expandedRows, setExpandedRows }): Colum
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   onClick={() => currencyContext.removeCurrency({ _ids: [currency._id] })}
-                  variant='destructive'
+                  variant="destructive"
                 >
                   {t('page.currencies.table.delete')}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
-        );
-      }
-    }
-  ];
+        )
+      },
+    },
+  ]
 }

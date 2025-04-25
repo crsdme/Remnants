@@ -1,11 +1,12 @@
-import { useSuspenseQuery } from '@tanstack/react-query';
+import type { getLanguagesParams } from '@/api/requests'
 
-import type { getLanguagesParams } from '@/api/requests';
-import { getLanguages } from '@/api/requests';
+import { getLanguages } from '@/api/requests'
+import { useSuspenseQuery } from '@tanstack/react-query'
 
-export const useRequestLanguages = (params: getLanguagesParams) =>
-  useSuspenseQuery({
+export function useRequestLanguages(params: getLanguagesParams) {
+  return useSuspenseQuery({
     queryKey: ['languages', 'get', params.pagination.current],
     queryFn: () => getLanguages(params),
-    staleTime: 60000
-  });
+    staleTime: 60000,
+  })
+}

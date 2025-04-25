@@ -8,5 +8,5 @@ module.exports = {
   jsxSingleQuote: true,
   arrowParens: 'always',
   endOfLine: 'lf',
-  useTabs: false
-};
+  useTabs: false,
+}

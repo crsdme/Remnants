@@ -1,10 +1,10 @@
-type authLoginResponse = {
-  status: string;
-  accessToken: string;
-  user: object;
-};
+interface authLoginResponse {
+  status: string
+  accessToken: string
+  user: object
+}
 
-type refreshTokenResponse = {
-  status: string;
-  accessToken: string;
-};
+interface refreshTokenResponse {
+  status: string
+  accessToken: string
+}

@@ -1,13 +1,13 @@
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { AuthProvider, ThemeProvider } from '@/utils/contexts'
 
-import { createRoot } from 'react-dom/client';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 
-import App from './app/App';
+import { createRoot } from 'react-dom/client'
 
-import { AuthProvider, ThemeProvider } from '@/utils/contexts';
-import '@/locales/i18n.ts';
+import App from './app/App'
+import '@/locales/i18n.ts'
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient()
 
 createRoot(document.getElementById('root')!).render(
   <QueryClientProvider client={queryClient}>
@@ -16,5 +16,5 @@ createRoot(document.getElementById('root')!).render(
         <App />
       </AuthProvider>
     </ThemeProvider>
-  </QueryClientProvider>
-);
+  </QueryClientProvider>,
+)

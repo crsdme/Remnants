@@ -3,11 +3,11 @@
     "jsx": "react-jsx",
     "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"]
+      "@/*": ["./src/*"]
     },
-    "esModuleInterop": true,
+    "resolveJsonModule": true,
     "allowSyntheticDefaultImports": true,
-    "resolveJsonModule": true
+    "esModuleInterop": true
   },
   "include": ["*.js", "**/*.ts", "**/*.tsx"]
 }

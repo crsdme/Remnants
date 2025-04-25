@@ -1,14 +1,15 @@
-import { api } from '@/api/instance';
+import { api } from '@/api/instance'
 
-export type postAuthLoginParams = {
-  login: string;
-  password: string;
-  type: string;
-};
+export interface postAuthLoginParams {
+  login: string
+  password: string
+  type: string
+}
 
-export const postAuthLogin = async (params: postAuthLoginParams) =>
-  api.post<authLoginResponse>('auth/login', { ...params });
+export async function postAuthLogin(params: postAuthLoginParams) {
+  return api.post<authLoginResponse>('auth/login', { ...params })
+}
 
-export const postRefreshToken = async () => api.post<refreshTokenResponse>('auth/refresh');
+export const postRefreshToken = async () => api.post<refreshTokenResponse>('auth/refresh')
 
-export const postAuthLogout = async () => api.post<refreshTokenResponse>('auth/logout');
+export const postAuthLogout = async () => api.post<refreshTokenResponse>('auth/logout')

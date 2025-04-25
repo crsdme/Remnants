@@ -1,9 +1,10 @@
-import { useMutation } from '@tanstack/react-query';
+import { postAuthLogout } from '@/api/requests'
 
-import { postAuthLogout } from '@/api/requests';
+import { useMutation } from '@tanstack/react-query'
 
-export const useAuthLogout = (settings?: MutationSettings) =>
-  useMutation({
+export function useAuthLogout(settings?: MutationSettings) {
+  return useMutation({
     mutationFn: () => postAuthLogout(),
-    ...settings?.options
-  });
+    ...settings?.options,
+  })
+}

@@ -1,89 +1,92 @@
-import { createContext, ReactNode, useContext, useState } from 'react';
+import type { ReactNode } from 'react'
+import { useCreateCategory, useEditCategory, useRemoveCategory } from '@/api/hooks/'
 
-import { useQueryClient } from '@tanstack/react-query';
+import { useLess } from '@siberiacancode/reactuse'
 
-import { useLess } from '@siberiacancode/reactuse';
+import { useQueryClient } from '@tanstack/react-query'
 
-import { useCreateCategory, useEditCategory, useRemoveCategory } from '@/api/hooks/';
+import { createContext, use, useState } from 'react'
 
 interface CategoryContextType {
-  selectedCategory: Category;
-  isModalOpen: boolean;
-  isLoading: boolean;
-  openModal: (item?: Category) => void;
-  closeModal: () => void;
-  submitCategoryForm: (params: Category) => void;
-  removeCategory: (params: { _id: string }) => void;
+  selectedCategory: Category
+  isModalOpen: boolean
+  isLoading: boolean
+  openModal: (item?: Category) => void
+  closeModal: () => void
+  submitCategoryForm: (params: Category) => void
+  removeCategory: (params: { _id: string }) => void
 }
 
-const CategoryContext = createContext<CategoryContextType | undefined>(undefined);
+const CategoryContext = createContext<CategoryContextType | undefined>(undefined)
 
 interface CategoryProviderProps {
-  children: ReactNode;
+  children: ReactNode
 }
 
-export const CategoryProvider = ({ children }: CategoryProviderProps) => {
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [selectedCategorys, setSelectedCategory] = useState(null);
-  const selectedCategory = useLess(selectedCategorys);
+export function CategoryProvider({ children }: CategoryProviderProps) {
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
+  const [selectedCategorys, setSelectedCategory] = useState(null)
+  const selectedCategory = useLess(selectedCategorys)
 
-  const queryClient = useQueryClient();
+  const queryClient = useQueryClient()
 
   const useMutateCreateCategory = useCreateCategory({
     options: {
       onSuccess: () => {
-        setIsModalOpen(false);
-        setIsLoading(false);
-        setSelectedCategory(null);
-        queryClient.invalidateQueries({ queryKey: ['categories'] });
-      }
-    }
-  });
+        setIsModalOpen(false)
+        setIsLoading(false)
+        setSelectedCategory(null)
+        queryClient.invalidateQueries({ queryKey: ['categories'] })
+      },
+    },
+  })
 
   const useMutateEditCategory = useEditCategory({
     options: {
       onSuccess: () => {
-        setIsModalOpen(false);
-        setIsLoading(false);
-        setSelectedCategory(null);
-        queryClient.invalidateQueries({ queryKey: ['categories'] });
-      }
-    }
-  });
+        setIsModalOpen(false)
+        setIsLoading(false)
+        setSelectedCategory(null)
+        queryClient.invalidateQueries({ queryKey: ['categories'] })
+      },
+    },
+  })
 
   const useMutateRemoveCategory = useRemoveCategory({
     options: {
       onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: ['categories'] });
-      }
-    }
-  });
+        queryClient.invalidateQueries({ queryKey: ['categories'] })
+      },
+    },
+  })
 
   const openModal = (category) => {
-    setIsModalOpen(true);
-    if (category) setSelectedCategory(category);
-  };
+    setIsModalOpen(true)
+    if (category)
+      setSelectedCategory(category)
+  }
 
   const closeModal = () => {
-    setIsModalOpen(false);
-    setIsLoading(false);
-    setSelectedCategory(null);
-  };
+    setIsModalOpen(false)
+    setIsLoading(false)
+    setSelectedCategory(null)
+  }
 
   const submitCategoryForm = (params) => {
-    const value = { ...params, parent: params.parent?.value };
-    setIsLoading(true);
+    const value = { ...params, parent: params.parent?.value }
+    setIsLoading(true)
     if (!selectedCategory) {
-      useMutateCreateCategory.mutate(value);
-    } else {
-      useMutateEditCategory.mutate({ ...value, _id: selectedCategory._id });
+      useMutateCreateCategory.mutate(value)
     }
-  };
+    else {
+      useMutateEditCategory.mutate({ ...value, _id: selectedCategory._id })
+    }
+  }
 
   const removeCategory = (params) => {
-    useMutateRemoveCategory.mutate(params);
-  };
+    useMutateRemoveCategory.mutate(params)
+  }
 
   const value: CategoryContextType = {
     selectedCategory,
@@ -92,16 +95,16 @@ export const CategoryProvider = ({ children }: CategoryProviderProps) => {
     openModal,
     closeModal,
     submitCategoryForm,
-    removeCategory
-  };
-
-  return <CategoryContext.Provider value={value}>{children}</CategoryContext.Provider>;
-};
-
-export const useCategoryContext = (): CategoryContextType => {
-  const context = useContext(CategoryContext);
-  if (!context) {
-    throw new Error('useCategoryContext - CategoryContext');
+    removeCategory,
   }
-  return context;
-};
+
+  return <CategoryContext value={value}>{children}</CategoryContext>
+}
+
+export function useCategoryContext(): CategoryContextType {
+  const context = use(CategoryContext)
+  if (!context) {
+    throw new Error('useCategoryContext - CategoryContext')
+  }
+  return context
+}
