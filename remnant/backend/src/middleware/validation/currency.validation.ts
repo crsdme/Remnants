@@ -55,6 +55,7 @@ export function validateGetCurrencies(req: Request, res: Response, next: NextFun
     next()
   }
   catch (error) {
+    console.log(error)
     res.status(400).json({ error: 'Invalid get currency data' })
   }
 }
@@ -79,6 +80,7 @@ export function validateCreateCurrency(req: Request, res: Response, next: NextFu
     next()
   }
   catch (error) {
+    console.log(error)
     res.status(400).json({ error: 'Invalid create currency data' })
   }
 }
@@ -104,6 +106,7 @@ export function validateEditCurrency(req: Request, res: Response, next: NextFunc
     next()
   }
   catch (error) {
+    console.log(error)
     res.status(400).json({ error: 'Invalid edit currency data' })
   }
 }
@@ -119,6 +122,7 @@ export function validateRemoveCurrency(req: Request, res: Response, next: NextFu
     next()
   }
   catch (error) {
+    console.log(error)
     res.status(400).json({ error: 'Invalid remove currency data' })
   }
 }
@@ -140,6 +144,7 @@ export function validateBatchCurrency(req: Request, res: Response, next: NextFun
     next()
   }
   catch (error) {
+    console.log(error)
     res.status(400).json({ error: 'Invalid batch currency data' })
   }
 }
@@ -155,6 +160,7 @@ export function validateImportCurrencies(req: Request, res: Response, next: Next
     next()
   }
   catch (error) {
+    console.log(error)
     res.status(400).json({ error: 'Invalid import currencies data' })
   }
 }

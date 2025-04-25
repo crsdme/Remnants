@@ -92,7 +92,7 @@ export async function get(payload: getCurrenciesParams): Promise<getCurrenciesRe
     }
   }
 
-  let pipeline = [
+  const pipeline = [
     {
       $match: query,
     },
@@ -101,7 +101,7 @@ export async function get(payload: getCurrenciesParams): Promise<getCurrenciesRe
       : []),
   ]
 
-  let currenciesCount = await CurrencyModel.countDocuments(query)
+  const currenciesCount = await CurrencyModel.countDocuments(query)
 
   let currenciesQuery = CurrencyModel.aggregate(pipeline)
 
@@ -130,7 +130,7 @@ interface createCurrencyParams {
 }
 
 export async function create(payload: createCurrencyParams): Promise<createCurrencyResult> {
-  let currency = await CurrencyModel.create(payload)
+  const currency = await CurrencyModel.create(payload)
 
   if (!currency) {
     throw new Error('Currency not created')
@@ -158,7 +158,7 @@ export async function edit(payload: editCurrencyParams): Promise<editCurrenciesR
     throw new Error('Need _ID')
   }
 
-  let currency = await CurrencyModel.updateOne({ _id }, payload)
+  const currency = await CurrencyModel.updateOne({ _id }, payload)
 
   if (!currency) {
     throw new Error('currency not edited')
@@ -182,7 +182,7 @@ export async function remove(payload: removeCurrencyParams): Promise<removeCurre
     throw new Error('Need _IDS')
   }
 
-  let currencies = await CurrencyModel.updateMany(
+  const currencies = await CurrencyModel.updateMany(
     { _id: { $in: _ids } },
     { $set: { removed: true } },
   )
@@ -227,7 +227,7 @@ export async function batch(payload: batchCurrencyParams): Promise<batchCurrency
 
   const mergedBatchQuery = Object.assign({}, ...batchQuery)
 
-  let currencies = await CurrencyModel.updateMany(
+  const currencies = await CurrencyModel.updateMany(
     { _id: { $in: _ids } },
     { $set: mergedBatchQuery },
   )

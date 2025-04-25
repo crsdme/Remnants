@@ -22,7 +22,7 @@ export async function get(payload: getUnitsParams): Promise<getUnitsResult> {
   const pipeline = [
     {
       $match: query,
-    },  
+    },
   ]
 
   const unitsCount = await UnitModel.countDocuments(query)

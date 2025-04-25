@@ -5,15 +5,15 @@ let io: SocketIOServer
 
 export function initSocket(server: Server): void {
   io = new SocketIOServer(server, {
-                      cors: {
-                          origin: '*',
-                        }, 
-  })  
+    cors: {
+      origin: '*',
+    },
+  })
 
   io.on('connection', (socket) => {
     console.log('A user connected: ', socket.id)
 
-    socket.on('message', (data) => {  
+    socket.on('message', (data) => {
       console.log('Received message:', data)
       io.emit('message', data)
     })

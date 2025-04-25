@@ -60,7 +60,7 @@ interface refreshResult {
 }
 
 export async function refresh(payload: refreshParams): Promise<refreshResult> {
-  const accessToken = generateAccessToken({ id: 'test' })
+  const accessToken = generateAccessToken({ id: payload.refreshToken })
   return { accessToken }
 }
 

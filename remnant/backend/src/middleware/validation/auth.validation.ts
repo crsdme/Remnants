@@ -13,6 +13,7 @@ export function validateLogin(req: Request, res: Response, next: NextFunction) {
     next()
   }
   catch (error) {
+    console.log(error)
     res.status(400).json({ error: 'Invalid login data' })
   }
 }
