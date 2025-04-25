@@ -3,6 +3,11 @@ interface Names {
   en: string;
 }
 
+type Pagination = {
+  current: number;
+  pageSize: number;
+};
+
 declare module '*.png';
 declare module '*.svg';
 declare module '*.jpeg';

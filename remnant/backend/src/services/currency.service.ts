@@ -1,5 +1,11 @@
 import CurrencyModel, { CurrencyInterface } from "../models/currency";
 import mongoose, { ObjectId, Schema } from "mongoose";
+import {
+  extractLangMap,
+  parseCSV,
+  toBoolean,
+  toNumber,
+} from "../utils/parseTools";
 
 interface getCurrenciesResult {
   currencies: any[];
@@ -12,6 +18,7 @@ interface getCurrenciesParams {
     symbols: string;
     language: string;
     active: boolean[];
+    priority: number;
     createdAt: {
       from: Date;
       to: Date;
@@ -38,12 +45,15 @@ export const get = async (
     names = "",
     symbols = "",
     language = "en",
-    active = [],
+    active = undefined,
+    priority = undefined,
     createdAt = {
       from: undefined,
       to: undefined,
     },
   } = payload.filters;
+
+  console.log(priority);
 
   const sorters = payload.sorters;
 
@@ -69,7 +79,13 @@ export const get = async (
       active: { $in: active },
     };
   }
-  console.log(createdAt);
+
+  if (priority) {
+    query = {
+      ...query,
+      priority,
+    };
+  }
 
   if (createdAt.from && createdAt.to) {
     query = {
@@ -158,30 +174,110 @@ export const edit = async (
 };
 
 interface removeCurrencyResult {
-  currency: any;
+  currencies: number;
 }
 
 interface removeCurrencyParams {
-  _id: string;
+  _ids: string[];
 }
 
 export const remove = async (
   payload: removeCurrencyParams
 ): Promise<removeCurrencyResult> => {
-  const { _id } = payload;
+  const { _ids } = payload;
 
-  if (!_id) {
-    throw new Error("Need _ID");
+  if (!_ids) {
+    throw new Error("Need _IDS");
   }
 
-  let currency = await CurrencyModel.updateOne(
-    { _id },
+  let currencies = await CurrencyModel.updateMany(
+    { _id: { $in: _ids } },
     { $set: { removed: true } }
   );
 
-  if (!currency) {
+  if (!currencies) {
     throw new Error("currency not removed");
   }
 
-  return { currency };
+  return { currencies: currencies.modifiedCount };
+};
+
+interface batchCurrencyResult {
+  currencies: number;
+}
+
+interface batchCurrencyParams {
+  _ids: string[];
+  params: {
+    column: string;
+    value: string | number | boolean | Record<string, string>;
+  }[];
+}
+
+export const batch = async (
+  payload: batchCurrencyParams
+): Promise<batchCurrencyResult> => {
+  const { _ids, params } = payload;
+
+  if (!_ids) {
+    throw new Error("Need _IDS");
+  }
+
+  if (!params) {
+    throw new Error("Need params");
+  }
+
+  const allowedParams = ["names", "symbols", "priority", "active"];
+
+  const query = params.filter(
+    (item) => item.column && item.value && allowedParams.includes(item.column)
+  );
+
+  const batchQuery = query.map((item) => ({ [`${item.column}`]: item.value }));
+
+  const mergedBatchQuery = Object.assign({}, ...batchQuery);
+
+  let currencies = await CurrencyModel.updateMany(
+    { _id: { $in: _ids } },
+    { $set: mergedBatchQuery }
+  );
+
+  if (!currencies) {
+    throw new Error("currency not batch edited");
+  }
+
+  return { currencies: currencies.modifiedCount };
+};
+
+interface importCurrenciesResult {
+  status: string;
+}
+
+interface importCurrenciesParams {
+  file: {
+    fieldname: string;
+    originalname: string;
+    destination: string;
+    filename: string;
+    path: string;
+  };
+}
+
+export const importCurrencies = async (
+  payload: importCurrenciesParams
+): Promise<importCurrenciesResult> => {
+  const { file } = payload;
+
+  const storedFile = await parseCSV(file.path);
+
+  const parsedCurrencies = storedFile.map((row) => ({
+    names: extractLangMap(row, "name"),
+    symbols: extractLangMap(row, "symbol"),
+    priority: toNumber(row.priority),
+    active: toBoolean(row.active),
+  }));
+
+  await CurrencyModel.insertMany(parsedCurrencies);
+
+  return { status: "success" };
 };

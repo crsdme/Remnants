@@ -16,13 +16,7 @@ export function CurrenciesPage() {
         <meta name='description' content={t('description.page.currencies')} />
       </Helmet>
       <CurrencyProvider>
-        <div className='flex items-center justify-between flex-wrap'>
-          <div>
-            <h2 className='text-2xl font-bold tracking-tight'>{t('page.currencies.title')}</h2>
-            <p className='text-muted-foreground'>{t('page.currencies.description')}</p>
-          </div>
-          <ActionBar />
-        </div>
+        <ActionBar />
         <DataTable />
       </CurrencyProvider>
     </>

@@ -6,6 +6,7 @@ export type getCurrenciesParams = {
     symbols?: string;
     language: string;
     active?: boolean[];
+    priority?: number;
     createdAt?: {
       from?: Date;
       to?: Date;
@@ -38,8 +39,33 @@ export const editCurrency = async (params: editCurrencyParams) =>
   api.post<CurrenciesResponse>('currencies/edit', params);
 
 export type removeCurrencyParams = {
-  _id: string;
+  _ids: string[];
 };
 
 export const removeCurrency = async (params: removeCurrencyParams) =>
   api.post<CurrenciesResponse>('currencies/remove', params);
+
+type batchItem = {
+  id: string;
+  column: string;
+  value: string | number | boolean | Record<string, string>;
+};
+
+export type batchCurrencyParams = {
+  _ids: string[];
+  params: batchItem[];
+};
+
+export const batchCurrency = async (params: batchCurrencyParams) =>
+  api.post<CurrenciesResponse>('currencies/batch', params);
+
+export type importCurrenciesParams = {
+  file: File;
+};
+
+export const importCurrencies = async (params: importCurrenciesParams) =>
+  api.post<CurrenciesResponse>('currencies/import', params, {
+    headers: {
+      'Content-Type': 'multipart/form-data'
+    }
+  });

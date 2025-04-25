@@ -56,6 +56,8 @@
   "page.currencies.button.create": "Create Currency",
   "page.currencies.modal.title.create": "Create New Currency",
   "page.currencies.modal.description.create": "Add a new currency to the system",
+  "page.currencies.button.import": "Import",
+  "page.currencies.table.details": "Details",
 
   "layout.sidemenu.label.navigation": "Navigation",
   "layout.sidemenu.label.dashboard": "Dashboard",
@@ -123,5 +125,36 @@
   "component.tableSelection.selected": "{{count}} selected",
   "component.tableSelection.copyToClipboard": "Copy to clipboard",
   "component.tableSelection.downloadCSV": "Download CSV",
-  "component.tableSelection.delete": "Delete"
+  "component.tableSelection.delete": "Delete",
+
+  "component.batchEdit.button": "Batch Edit",
+  "component.batchEdit.title": "Batch Edit",
+  "component.batchEdit.description": "Select items to edit in bulk",
+  "component.batchEdit.selectColumn": "Select column",
+  "component.batchEdit.newValue": "New value",
+  "component.batchEdit.addItem": "Add Item",
+  "component.batchEdit.cancel": "Cancel",
+  "component.batchEdit.apply": "Apply Changes",
+
+  "component.advancedFilters.button": "Advanced Filters",
+  "component.advancedFilters.title": "Advanced Filters",
+  "component.advancedFilters.description": "Add filters to refine your search",
+  "component.advancedFilters.selectColumn": "Select column",
+  "component.advancedFilters.valuePlaceholder": "Enter value",
+  "component.advancedFilters.selectValue": "Select value",
+  "component.advancedFilters.true": "True",
+  "component.advancedFilters.false": "False",
+  "component.advancedFilters.addFilter": "Add Filter",
+  "component.advancedFilters.clear": "Clear",
+  "component.advancedFilters.apply": "Apply",
+
+  "component.import.dialog.button": "Import Data",
+  "component.import.dialog.title": "Import Data",
+  "component.import.dialog.description": "Upload your data file or download our template to get started.",
+  "component.import.dialog.uploadLabel": "Upload File",
+  "component.import.dialog.supportedFormats": "Supported formats: CSV, Excel (.xlsx, .xls)",
+  "component.import.dialog.or": "OR",
+  "component.import.dialog.downloadTemplate": "Download Template",
+  "component.import.dialog.cancel": "Cancel",
+  "component.import.dialog.import": "Import"
 }

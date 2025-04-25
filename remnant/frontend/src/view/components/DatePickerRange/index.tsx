@@ -62,8 +62,9 @@ export function DatePickerRange({ className, onSelect, value }: DatePickerRangeP
             id='date'
             variant={'outline'}
             className={cn(
-              'w-[250px] justify-start text-left font-normal',
-              !date && 'text-muted-foreground'
+              'w-[240px] justify-start text-left font-normal',
+              !date && 'text-muted-foreground',
+              'w-full'
             )}
           >
             <CalendarIcon />

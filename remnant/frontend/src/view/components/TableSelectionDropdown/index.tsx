@@ -11,14 +11,14 @@ import { Button } from '@/view/components/ui';
 
 interface SelectionDropdownProps {
   selectedCount: number;
-  onDelete?: () => void;
+  onRemove?: () => void;
   onCopy?: () => void;
   onExport?: () => void;
 }
 
-export default function SelectionDropdown({
+export default function TableSelectionDropdown({
   selectedCount,
-  onDelete,
+  onRemove,
   onCopy,
   onExport
 }: SelectionDropdownProps) {
@@ -47,8 +47,12 @@ export default function SelectionDropdown({
             {t('component.tableSelection.downloadCSV')}
           </DropdownMenuItem>
         )}
-        {onDelete && (
-          <DropdownMenuItem onClick={onDelete} className='flex items-center gap-2 text-red-500'>
+        {onRemove && (
+          <DropdownMenuItem
+            onClick={onRemove}
+            variant='destructive'
+            className='flex items-center gap-2'
+          >
             <Trash className='w-4 h-4' />
             {t('component.tableSelection.delete')}
           </DropdownMenuItem>

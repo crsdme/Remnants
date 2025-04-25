@@ -56,6 +56,8 @@
   "page.currencies.button.create": "Создать валюту",
   "page.currencies.modal.title.create": "Создание новой валюты",
   "page.currencies.modal.description.create": "Добавить новую валюту в систему",
+  "page.currencies.button.import": "Импортировать",
+  "page.currencies.table.details": "Детали",
 
   "layout.sidemenu.label.navigation": "Навигация",
   "layout.sidemenu.label.dashboard": "Панель управления",
@@ -123,5 +125,36 @@
   "component.tableSelection.selected": "{{count}} выбрано",
   "component.tableSelection.copyToClipboard": "Скопировать в буфер обмена",
   "component.tableSelection.downloadCSV": "Скачать CSV",
-  "component.tableSelection.delete": "Удалить"
+  "component.tableSelection.delete": "Удалить",
+
+  "component.batchEdit.button": "Пакетное редактирование",
+  "component.batchEdit.title": "Пакетное редактирование",
+  "component.batchEdit.description": "Выберите элементы для массового редактирования",
+  "component.batchEdit.selectColumn": "Выберите колонку",
+  "component.batchEdit.newValue": "Новое значение",
+  "component.batchEdit.addItem": "Добавить элемент",
+  "component.batchEdit.cancel": "Отмена",
+  "component.batchEdit.apply": "Применить изменения",
+
+  "component.advancedFilters.button": "Расширенные фильтры",
+  "component.advancedFilters.title": "Расширенные фильтры",
+  "component.advancedFilters.description": "Добавьте фильтры для уточнения поиска",
+  "component.advancedFilters.selectColumn": "Выберите колонку",
+  "component.advancedFilters.valuePlaceholder": "Введите значение",
+  "component.advancedFilters.selectValue": "Выберите значение",
+  "component.advancedFilters.true": "Да",
+  "component.advancedFilters.false": "Нет",
+  "component.advancedFilters.addFilter": "Добавить фильтр",
+  "component.advancedFilters.clear": "Очистить",
+  "component.advancedFilters.apply": "Применить",
+
+  "component.import.dialog.button": "Импортировать данные",
+  "component.import.dialog.title": "Импорт данных",
+  "component.import.dialog.description": "Загрузите файл с данными или скачайте наш шаблон для начала работы.",
+  "component.import.dialog.uploadLabel": "Загрузить файл",
+  "component.import.dialog.supportedFormats": "Поддерживаемые форматы: CSV, Excel (.xlsx, .xls)",
+  "component.import.dialog.or": "ИЛИ",
+  "component.import.dialog.downloadTemplate": "Скачать шаблон",
+  "component.import.dialog.cancel": "Отмена",
+  "component.import.dialog.import": "Импортировать"
 }

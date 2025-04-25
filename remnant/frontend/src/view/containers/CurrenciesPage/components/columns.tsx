@@ -1,27 +1,34 @@
 import { ColumnDef } from '@tanstack/react-table';
 
 import { useTranslation } from 'react-i18next';
-import { ArrowDown, ArrowUp, ChevronsUpDown, MoreHorizontal } from 'lucide-react';
+import {
+  ArrowDown,
+  ArrowUp,
+  ChevronsUpDown,
+  MoreHorizontal,
+  ChevronDown,
+  ChevronRight
+} from 'lucide-react';
 
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger
 } from '@/view/components/ui/dropdown-menu';
 import { Button, Checkbox, Badge } from '@/view/components/ui';
 import formatDate from '@/utils/helpers/formatDate';
 import { useCurrencyContext } from '@/utils/contexts';
 
-export function useColumns({ setSorters }): ColumnDef<Currency>[] {
+export function useColumns({ setSorters, expandedRows, setExpandedRows }): ColumnDef<Currency>[] {
   const { t, i18n } = useTranslation();
   const currencyContext = useCurrencyContext();
 
   return [
     {
       id: 'select',
+      size: 35,
       meta: { title: t('component.columnMenu.columns.select') },
       header: ({ table }) => {
         const isChecked = table.getIsAllPageRowsSelected()
@@ -50,7 +57,14 @@ export function useColumns({ setSorters }): ColumnDef<Currency>[] {
     },
     {
       id: 'names',
-      meta: { title: t('page.currencies.table.names') },
+      size: 150,
+      meta: {
+        title: t('page.currencies.table.names'),
+        batchEdit: true,
+        batchEditType: 'textMultiLanguage',
+        filterable: true,
+        filterType: 'text'
+      },
       header: ({ column }) => {
         const sortOrder = column.getIsSorted() || 'none';
         const icons = { asc: ArrowUp, desc: ArrowDown, none: ChevronsUpDown };
@@ -92,7 +106,14 @@ export function useColumns({ setSorters }): ColumnDef<Currency>[] {
     },
     {
       id: 'symbols',
-      meta: { title: t('page.currencies.table.symbols') },
+      size: 100,
+      meta: {
+        title: t('page.currencies.table.symbols'),
+        batchEdit: true,
+        batchEditType: 'textMultiLanguage',
+        filterable: true,
+        filterType: 'text'
+      },
       header: () => t('page.currencies.table.symbols'),
       accessorFn: (row) => row.symbols?.[i18n.language] || row.symbols?.['en'],
       cell: ({ row }) => (
@@ -102,8 +123,15 @@ export function useColumns({ setSorters }): ColumnDef<Currency>[] {
       )
     },
     {
+      id: 'priority',
       accessorKey: 'priority',
-      meta: { title: t('page.currencies.table.priority') },
+      meta: {
+        title: t('page.currencies.table.priority'),
+        batchEdit: true,
+        batchEditType: 'number',
+        filterable: true,
+        filterType: 'number'
+      },
       header: ({ column }) => {
         const sortOrder = column.getIsSorted() || 'none';
         const icons = { asc: ArrowUp, desc: ArrowDown, none: ChevronsUpDown };
@@ -144,14 +172,26 @@ export function useColumns({ setSorters }): ColumnDef<Currency>[] {
       cell: ({ row }) => <Badge variant='outline'>{row.original.priority}</Badge>
     },
     {
+      id: 'active',
       accessorKey: 'active',
-      meta: { title: t('page.currencies.table.active') },
+      meta: {
+        title: t('page.currencies.table.active'),
+        batchEdit: true,
+        batchEditType: 'boolean',
+        filterable: true,
+        filterType: 'boolean'
+      },
       header: t('page.currencies.table.active'),
       cell: ({ row }) => <Badge variant='outline'>{row.original.active.toString()}</Badge>
     },
     {
+      id: 'createdAt',
       accessorKey: 'createdAt',
-      meta: { title: t('page.currencies.table.createdAt') },
+      meta: {
+        title: t('page.currencies.table.createdAt'),
+        filterable: true,
+        filterType: 'date'
+      },
       header: ({ column }) => {
         const sortOrder = column.getIsSorted() || 'none';
         const icons = { asc: ArrowUp, desc: ArrowDown, none: ChevronsUpDown };
@@ -192,8 +232,13 @@ export function useColumns({ setSorters }): ColumnDef<Currency>[] {
       cell: ({ row }) => formatDate(row.getValue('createdAt'), 'MMMM dd, yyyy', i18n.language)
     },
     {
+      id: 'updatedAt',
       accessorKey: 'updatedAt',
-      meta: { title: t('page.currencies.table.updatedAt') },
+      meta: {
+        title: t('page.currencies.table.updatedAt'),
+        filterable: true,
+        filterType: 'date'
+      },
       header: ({ column }) => {
         const sortOrder = column.getIsSorted() || 'none';
         const icons = { asc: ArrowUp, desc: ArrowDown, none: ChevronsUpDown };
@@ -235,39 +280,56 @@ export function useColumns({ setSorters }): ColumnDef<Currency>[] {
     },
     {
       id: 'action',
+      size: 85,
       meta: {
-        title: t('page.currencies.table.actions'),
-        width: '70px'
+        title: t('page.currencies.table.actions')
       },
       enableHiding: false,
       cell: ({ row }) => {
         const currency = row.original;
 
         return (
-          <DropdownMenu>
-            <DropdownMenuTrigger>
-              <Button variant='ghost' className='h-8 w-8 p-0'>
-                <MoreHorizontal className='h-4 w-4' />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent>
-              <DropdownMenuLabel>{t('page.currencies.table.actions')}</DropdownMenuLabel>
-              <DropdownMenuItem onClick={() => navigator.clipboard.writeText(currency._id)}>
-                {t('page.currencies.table.copy')}
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => currencyContext.toggleModal(currency)}>
-                {t('page.currencies.table.edit')}
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => currencyContext.removeCurrency({ _id: currency._id })}
-                variant='destructive'
-              >
-                {t('page.currencies.table.delete')}
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem>{t('page.currencies.table.test')}</DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <div className='flex items-center gap-2'>
+            <Button
+              variant='ghost'
+              size='icon'
+              onClick={() =>
+                setExpandedRows((prev) => ({
+                  ...prev,
+                  [row.id]: !prev[row.id]
+                }))
+              }
+              className='h-8 w-8 p-0'
+            >
+              {expandedRows[row.id] ? (
+                <ChevronDown className='h-4 w-4' />
+              ) : (
+                <ChevronRight className='h-4 w-4' />
+              )}
+            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger>
+                <Button variant='ghost' className='h-8 w-8 p-0'>
+                  <MoreHorizontal className='h-4 w-4' />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align='end'>
+                <DropdownMenuLabel>{t('page.currencies.table.actions')}</DropdownMenuLabel>
+                <DropdownMenuItem onClick={() => navigator.clipboard.writeText(currency._id)}>
+                  {t('page.currencies.table.copy')}
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => currencyContext.toggleModal(currency)}>
+                  {t('page.currencies.table.edit')}
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => currencyContext.removeCurrency({ _ids: [currency._id] })}
+                  variant='destructive'
+                >
+                  {t('page.currencies.table.delete')}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         );
       }
     }

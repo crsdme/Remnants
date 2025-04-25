@@ -2,8 +2,16 @@ import { createContext, ReactNode, useContext, useState } from 'react';
 
 import { useQueryClient } from '@tanstack/react-query';
 
-import { useEditCurrency, useRemoveCurrency } from '@/api/hooks/';
-import { useCreateCurrency } from '@/api/hooks';
+import { toast } from 'sonner';
+import { useTranslation } from 'react-i18next';
+
+import {
+  useEditCurrency,
+  useRemoveCurrency,
+  useCreateCurrency,
+  useBatchCurrency,
+  useImportCurrencies
+} from '@/api/hooks/';
 
 interface CurrencyContextType {
   selectedCurrency: Currency;
@@ -13,7 +21,9 @@ interface CurrencyContextType {
   openModal: (currency?: Currency) => void;
   closeModal: () => void;
   submitCurrencyForm: (params) => void;
-  removeCurrency: (params: { _id: string }) => void;
+  batchCurrency: (params) => void;
+  removeCurrency: (params: { _ids: string[] }) => void;
+  importCurrencies: (params) => void;
 }
 
 const CurrencyContext = createContext<CurrencyContextType | undefined>(undefined);
@@ -26,6 +36,8 @@ export const CurrencyProvider = ({ children }: CurrencyProviderProps) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [selectedCurrency, setSelectedCurrency] = useState(null);
+
+  const { t } = useTranslation();
 
   const queryClient = useQueryClient();
 
@@ -59,6 +71,26 @@ export const CurrencyProvider = ({ children }: CurrencyProviderProps) => {
     }
   });
 
+  const useMutateImportCurrencies = useImportCurrencies({
+    options: {
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ['currencies'] });
+      }
+    }
+  });
+
+  const useMutateBatchCurrency = useBatchCurrency({
+    options: {
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ['currencies'] });
+        toast.success(t('page.currencies.toast.batchCurrency.success'));
+      },
+      onError: () => {
+        toast.error(t('page.currencies.toast.batchCurrency.error'));
+      }
+    }
+  });
+
   const openModal = (currency) => {
     setIsModalOpen(true);
     if (currency) setSelectedCurrency(currency);
@@ -85,6 +117,14 @@ export const CurrencyProvider = ({ children }: CurrencyProviderProps) => {
     useMutateRemoveCurrency.mutate(params);
   };
 
+  const batchCurrency = (params) => {
+    useMutateBatchCurrency.mutate(params);
+  };
+
+  const importCurrencies = (params) => {
+    useMutateImportCurrencies.mutate(params);
+  };
+
   const value: CurrencyContextType = {
     selectedCurrency,
     isModalOpen,
@@ -93,7 +133,9 @@ export const CurrencyProvider = ({ children }: CurrencyProviderProps) => {
     openModal,
     closeModal,
     submitCurrencyForm,
-    removeCurrency
+    removeCurrency,
+    batchCurrency,
+    importCurrencies
   };
 
   return <CurrencyContext.Provider value={value}>{children}</CurrencyContext.Provider>;

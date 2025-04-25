@@ -5,5 +5,14 @@
   "component.tableSelection.selected": "{{count}} вибрано",
   "component.tableSelection.copyToClipboard": "Копіювати в буфер обміну",
   "component.tableSelection.downloadCSV": "Завантажити CSV",
-  "component.tableSelection.delete": "Видалити"
+  "component.tableSelection.delete": "Видалити",
+
+  "component.batchEdit.button": "Пакетне редагування",
+  "component.batchEdit.title": "Пакетне редагування",
+  "component.batchEdit.description": "Виберіть елементи для масового редагування",
+  "component.batchEdit.selectColumn": "Виберіть колонку",
+  "component.batchEdit.newValue": "Нове значення",
+  "component.batchEdit.addItem": "Додати елемент",
+  "component.batchEdit.cancel": "Скасувати",
+  "component.batchEdit.apply": "Застосувати зміни"
 }

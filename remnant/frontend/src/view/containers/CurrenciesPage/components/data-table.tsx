@@ -1,20 +1,10 @@
-import { useCallback, useState } from 'react';
+import { useState } from 'react';
 
-import {
-  ColumnFiltersState,
-  SortingState,
-  VisibilityState,
-  flexRender,
-  getCoreRowModel,
-  getFilteredRowModel,
-  getPaginationRowModel,
-  getSortedRowModel,
-  useReactTable
-} from '@tanstack/react-table';
+import { flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table';
 
 import { useTranslation } from 'react-i18next';
 import Papa from 'papaparse';
-import debounce from 'lodash.debounce';
+import { useDebounceCallback } from '@siberiacancode/reactuse';
 
 import { DataTableFilters } from './data-table-filters';
 import { useColumns } from './columns';
@@ -28,59 +18,57 @@ import {
   TableRow
 } from '@/view/components/ui/table';
 import { Skeleton } from '@/view/components/ui/skeleton';
+import { Separator } from '@/view/components/ui/separator';
 import TableSelectionDropdown from '@/view/components/TableSelectionDropdown';
 import TablePagination from '@/view/components/TablePagination';
 import { ColumnVisibilityMenu } from '@/view/components/ColumnVisibilityMenu';
-import { useRequestCurrencies } from '@/api/hooks';
+import { BatchEdit } from '@/view/components/BatchEdit';
+import { AdvancedFilters } from '@/view/components/AdvancedFilters';
+import { useCurrencyContext } from '@/utils/contexts/currency/CurrencyContext';
+import { useRequestCurrencies, useRequestLanguages } from '@/api/hooks';
 
 export function DataTable() {
   const { t, i18n } = useTranslation();
+  const currencyContext = useCurrencyContext();
 
-  const [sorting, setSorting] = useState<SortingState>([]);
-  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
-  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
+  const filtersInitialState = {
+    names: '',
+    symbols: '',
+    priority: undefined,
+    active: [],
+    createdAt: { from: undefined, to: undefined },
+    language: i18n.language
+  };
+
+  const [columnVisibility, setColumnVisibility] = useState({});
   const [rowSelection, setRowSelection] = useState({});
   const [sorters, setSorters] = useState({});
-  const columns = useColumns({ setSorters });
-
+  const [expandedRows, setExpandedRows] = useState({});
   const [pagination, setPagination] = useState({
     current: 1,
     pageSize: 10
   });
-
-  const [filters, setFilters] = useState({
-    names: '',
-    symbols: '',
-    active: [],
-    createdAt: { from: undefined, to: undefined },
-    language: i18n.language
-  });
+  const [filters, setFilters] = useState(filtersInitialState);
 
   const requestCurrencies = useRequestCurrencies(
     { pagination, filters, sorters },
     { options: { placeholderData: (prevData) => prevData } }
   );
 
-  const isLoading = requestCurrencies.isLoading || requestCurrencies.isFetching;
+  const columns = useColumns({ setSorters, expandedRows, setExpandedRows });
   const currencies = requestCurrencies?.data?.data?.currencies || [];
   const currenciesCount = requestCurrencies?.data?.data?.currenciesCount || 0;
-  const totalPages = Math.ceil(currenciesCount / pagination.pageSize);
+
+  const requestLanguages = useRequestLanguages({ pagination: { full: true } });
+  const languages = requestLanguages.data?.data?.languages || [];
 
   const table = useReactTable({
     data: currencies,
     columns,
-    onSortingChange: setSorting,
-    manualPagination: true,
-    onColumnFiltersChange: setColumnFilters,
     getCoreRowModel: getCoreRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
-    getSortedRowModel: getSortedRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
     onColumnVisibilityChange: setColumnVisibility,
     onRowSelectionChange: setRowSelection,
     state: {
-      sorting,
-      columnFilters,
       columnVisibility,
       rowSelection,
       pagination: {
@@ -89,13 +77,6 @@ export function DataTable() {
       }
     }
   });
-
-  const changePagination = useCallback(
-    debounce((value) => {
-      setPagination((state) => ({ ...state, ...value }));
-    }, 300),
-    []
-  );
 
   const handleBatchExport = () => {
     const filteredData = currencies.filter((_, index) => rowSelection[index]);
@@ -121,6 +102,18 @@ export function DataTable() {
     setRowSelection({});
   };
 
+  const advancedFiltersSubmit = (filters) => {
+    const filterValues = Object.fromEntries(filters.map(({ column, value }) => [column, value]));
+    setFilters((state) => ({
+      ...state,
+      ...filterValues
+    }));
+  };
+
+  const advancedFiltersCancel = () => {
+    setFilters(filtersInitialState);
+  };
+
   const renderSkeletonRows = () => {
     const visibleColumns = table.getVisibleFlatColumns();
 
@@ -130,7 +123,7 @@ export function DataTable() {
         <TableRow key={`skeleton-${index}`} className='animate-pulse'>
           {visibleColumns.map((column) => (
             <TableCell key={`skeleton-cell-${column.id}`}>
-              <Skeleton className={`h-8 'w-full`} />
+              <Skeleton className={`h-8 w-full`} />
             </TableCell>
           ))}
         </TableRow>
@@ -138,17 +131,48 @@ export function DataTable() {
   };
 
   const renderTableBody = () => {
-    if (isLoading) return renderSkeletonRows();
+    if (requestCurrencies.isLoading || requestCurrencies.isFetching) return renderSkeletonRows();
 
     if (table.getRowModel().rows?.length) {
       return table.getRowModel().rows.map((row) => (
-        <TableRow key={row.id} data-state={row.getIsSelected() && 'selected'}>
-          {row.getVisibleCells().map((cell) => (
-            <TableCell key={cell.id}>
-              {flexRender(cell.column.columnDef.cell, cell.getContext())}
-            </TableCell>
-          ))}
-        </TableRow>
+        <>
+          <TableRow key={row.id} data-state={row.getIsSelected() && 'selected'}>
+            {row.getVisibleCells().map((cell) => (
+              <TableCell
+                key={cell.id}
+                style={{
+                  minWidth: cell.column.columnDef.size,
+                  maxWidth: cell.column.columnDef.size
+                }}
+              >
+                {flexRender(cell.column.columnDef.cell, cell.getContext())}
+              </TableCell>
+            ))}
+          </TableRow>
+          {expandedRows[row.id] && (
+            <TableRow>
+              <TableCell colSpan={columns.length} className='bg-muted/50'>
+                <div className='p-4'>
+                  <h4 className='font-semibold mb-2'>{t('page.currencies.table.details')}</h4>
+                  <div className='grid grid-cols-2 gap-4'>
+                    <div>
+                      <p className='text-sm text-muted-foreground'>
+                        {t('page.currencies.table.createdAt')}
+                      </p>
+                      <p>{row.original.createdAt.toString()}</p>
+                    </div>
+                    <div>
+                      <p className='text-sm text-muted-foreground'>
+                        {t('page.currencies.table.updatedAt')}
+                      </p>
+                      <p>{row.original.updatedAt.toString()}</p>
+                    </div>
+                  </div>
+                </div>
+              </TableCell>
+            </TableRow>
+          )}
+        </>
       ));
     }
 
@@ -161,19 +185,50 @@ export function DataTable() {
     );
   };
 
+  const handleBatchSubmit = (data) => {
+    const selectedCurrencies = currencies
+      .filter((_, index) => rowSelection[index])
+      .map((item) => item._id);
+
+    const params = data.items.map((item) => ({
+      column: item.column,
+      value: item.value
+    }));
+
+    currencyContext.batchCurrency({ _ids: selectedCurrencies, params });
+    setRowSelection({});
+  };
+
+  const handleBatchRemove = () => {
+    const _ids = currencies.filter((_, index) => rowSelection[index]).map((item) => item._id);
+    currencyContext.removeCurrency({ _ids });
+    setRowSelection({});
+  };
+
+  const changePagination = useDebounceCallback((value: Pagination) => {
+    setPagination((state) => ({ ...state, ...value }));
+  }, 50);
+
   return (
     <>
-      <div className='w-full'>
-        <div className='flex justify-between items-center max-md:flex-col gap-2'>
+      <div className='w-full flex justify-between items-start max-md:flex-col gap-2 py-2'>
+        <div className='flex flex-wrap gap-2 items-center'>
+          <AdvancedFilters
+            columns={columns}
+            onSubmit={advancedFiltersSubmit}
+            onCancel={advancedFiltersCancel}
+          />
+          <BatchEdit columns={columns} languages={languages} onSubmit={handleBatchSubmit} />
+          <Separator orientation='vertical' className='min-h-6 max-md:hidden' />
           <DataTableFilters filters={filters} setFilters={setFilters} />
-
-          <div className='flex gap-2'>
-            <TableSelectionDropdown
-              selectedCount={Object.keys(rowSelection).length}
-              onExport={handleBatchExport}
-            />
-            <ColumnVisibilityMenu table={table} tableId='currency' />
-          </div>
+        </div>
+        <div className='flex gap-2'>
+          <TableSelectionDropdown
+            selectedCount={Object.keys(rowSelection).length}
+            onExport={handleBatchExport}
+            onRemove={handleBatchRemove}
+          />
+          <ColumnVisibilityMenu table={table} tableId='currency' />
         </div>
       </div>
       <div className='border rounded-sm'>
@@ -183,10 +238,14 @@ export function DataTable() {
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => {
                   return (
-                    <TableHead key={header.id}>
-                      {header.isPlaceholder
-                        ? null
-                        : flexRender(header.column.columnDef.header, header.getContext())}
+                    <TableHead
+                      key={header.id}
+                      style={{
+                        minWidth: header.column.columnDef.size,
+                        maxWidth: header.column.columnDef.size
+                      }}
+                    >
+                      {flexRender(header.column.columnDef.header, header.getContext())}
                     </TableHead>
                   );
                 })}
@@ -198,7 +257,7 @@ export function DataTable() {
       </div>
       <TablePagination
         pagination={pagination}
-        totalPages={totalPages}
+        totalPages={Math.ceil(currenciesCount / pagination.pageSize)}
         changePagination={changePagination}
         selectedCount={Object.keys(rowSelection).length}
         totalCount={currenciesCount}

@@ -55,11 +55,125 @@ export const validateGetCurrencies = (
   next: NextFunction
 ) => {
   try {
-    console.log(req.query);
     const result = getCurrencySchema.safeParse(req.query);
     req.body = result.data;
     next();
   } catch (error) {
-    res.status(400).json({ error: "Invalid get language data" });
+    res.status(400).json({ error: "Invalid get currency data" });
+  }
+};
+
+const createCurrencySchema = z.object({
+  names: z.object({
+    ru: z.string(),
+    en: z.string(),
+  }),
+  symbols: z.object({
+    ru: z.string(),
+    en: z.string(),
+  }),
+  priority: z.number(),
+  active: z.boolean().optional(),
+});
+
+export const validateCreateCurrency = (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const result = createCurrencySchema.safeParse(req.body);
+    req.body = result.data;
+    next();
+  } catch (error) {
+    res.status(400).json({ error: "Invalid create currency data" });
+  }
+};
+
+const editCurrencySchema = z.object({
+  _id: z.string(),
+  names: z.object({
+    ru: z.string(),
+    en: z.string(),
+  }),
+  symbols: z.object({
+    ru: z.string(),
+    en: z.string(),
+  }),
+  priority: z.number(),
+  active: z.boolean().optional(),
+});
+
+export const validateEditCurrency = (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const result = editCurrencySchema.safeParse(req.body);
+    req.body = result.data;
+    next();
+  } catch (error) {
+    res.status(400).json({ error: "Invalid edit currency data" });
+  }
+};
+
+const removeCurrencySchema = z.object({
+  _ids: z.array(z.string()),
+});
+
+export const validateRemoveCurrency = (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const result = removeCurrencySchema.safeParse(req.body);
+    req.body = result.data;
+    next();
+  } catch (error) {
+    res.status(400).json({ error: "Invalid remove currency data" });
+  }
+};
+
+const batchCurrencySchema = z.object({
+  _ids: z.array(z.string()).min(1, "At least one currency ID is required"),
+  params: z.array(
+    z.object({
+      column: z.string(),
+      value: z.any(),
+    })
+  ),
+});
+
+export const validateBatchCurrency = (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const result = batchCurrencySchema.safeParse(req.body);
+    req.body = result.data;
+    next();
+  } catch (error) {
+    res.status(400).json({ error: "Invalid batch currency data" });
+  }
+};
+
+const importCurrenciesSchema = z.object({
+  file: z.instanceof(File),
+});
+
+export const validateImportCurrencies = (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const result = importCurrenciesSchema.safeParse(req.body);
+    req.body = result.data;
+    next();
+  } catch (error) {
+    res.status(400).json({ error: "Invalid import currencies data" });
   }
 };
