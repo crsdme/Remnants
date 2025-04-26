@@ -1,0 +1,21 @@
+{
+  "devDependencies": {
+    "husky": "^9.1.7",
+    "lint-staged": "^15.5.1",
+    "@commitlint/cli": "^19.8.0",
+    "@commitlint/config-conventional": "^19.8.0"
+  },
+  "lint-staged": {
+    "frontend/**/*.{js,ts,tsx,jsx}": [
+      "eslint --fix",
+      "git add"
+    ],
+    "backend/**/*.{js,ts}": [
+      "eslint --fix",
+      "git add"
+    ]
+  },
+  "scripts": {
+    "prepare": "husky"
+  }
+}
