@@ -1,8 +1,7 @@
-import type { IUser } from '../models/user'
 import bcrypt from 'bcrypt'
 import dotenv from 'dotenv'
 import jwt from 'jsonwebtoken'
-import User from '../models/user'
+import { UserModel } from '../models/'
 
 dotenv.config()
 
@@ -30,7 +29,7 @@ interface loginResult {
 export async function login(payload: loginParams): Promise<loginResult> {
   const { login, password } = payload
 
-  const user = await User.findOne({ login })
+  const user = await UserModel.findOne({ login })
 
   if (!user) {
     throw new Error('User not found')
@@ -62,11 +61,4 @@ interface refreshResult {
 export async function refresh(payload: refreshParams): Promise<refreshResult> {
   const accessToken = generateAccessToken({ id: payload.refreshToken })
   return { accessToken }
-}
-
-export async function register(email: string, password: string): Promise<IUser> {
-  const hashedPassword = await bcrypt.hash(password, 10)
-  const newUser = new User({ email, password: hashedPassword })
-  await newUser.save()
-  return newUser
 }

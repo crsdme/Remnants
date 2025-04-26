@@ -1,13 +1,11 @@
 import type { NextFunction, Request, Response } from 'express'
-import * as ProductService from '../services/product.service'
+import * as LanguageService from '../services/language.service'
 
 export async function get(req: Request, res: Response, next: NextFunction) {
   try {
-    const { filters } = req.body
+    const serviceResponse = await LanguageService.get(req.body)
 
-    const products = await ProductService.get({ filters })
-
-    res.status(200).json(products)
+    res.status(200).json(serviceResponse)
   }
   catch (err) {
     next(err)

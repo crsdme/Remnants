@@ -1,7 +1,6 @@
 import { z } from 'zod'
-import { validateBodyRequest, validateQueryRequest } from '../validation.middleware'
 
-const getCurrencySchema = z.object({
+export const getCurrencySchema = z.object({
   pagination: z
     .object({
       current: z.preprocess(val => Number(val), z.number()).optional(),
@@ -48,9 +47,7 @@ const getCurrencySchema = z.object({
     .optional(),
 })
 
-export const validateGetCurrencies = validateQueryRequest(getCurrencySchema)
-
-const createCurrencySchema = z.object({
+export const createCurrencySchema = z.object({
   names: z.object({
     ru: z.string(),
     en: z.string(),
@@ -63,9 +60,7 @@ const createCurrencySchema = z.object({
   active: z.boolean().optional(),
 })
 
-export const validateCreateCurrency = validateBodyRequest(createCurrencySchema)
-
-const editCurrencySchema = z.object({
+export const editCurrencySchema = z.object({
   _id: z.string(),
   names: z.object({
     ru: z.string(),
@@ -79,15 +74,11 @@ const editCurrencySchema = z.object({
   active: z.boolean().optional(),
 })
 
-export const validateEditCurrency = validateBodyRequest(editCurrencySchema)
-
-const removeCurrencySchema = z.object({
+export const removeCurrencySchema = z.object({
   _ids: z.array(z.string()),
 })
 
-export const validateRemoveCurrency = validateBodyRequest(removeCurrencySchema)
-
-const batchCurrencySchema = z.object({
+export const batchCurrencySchema = z.object({
   _ids: z.array(z.string()).min(1, 'At least one currency ID is required'),
   params: z.array(
     z.object({
@@ -97,10 +88,6 @@ const batchCurrencySchema = z.object({
   ),
 })
 
-export const validateBatchCurrency = validateBodyRequest(batchCurrencySchema)
-
-const importCurrenciesSchema = z.object({
+export const importCurrenciesSchema = z.object({
   file: z.instanceof(File),
 })
-
-export const validateImportCurrencies = validateBodyRequest(importCurrenciesSchema)

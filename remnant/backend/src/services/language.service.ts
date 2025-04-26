@@ -1,5 +1,4 @@
-import mongoose, { ObjectId, Schema } from 'mongoose'
-import LanguageModel, { LanguageInterface } from '../models/language'
+import { LanguageModel } from '../models/'
 
 interface getLanguagesResult {
   languages: any[]
@@ -18,19 +17,19 @@ interface getLanguagesParams {
 export async function get(payload: getLanguagesParams): Promise<getLanguagesResult> {
   const { current = 1, pageSize = 10 } = payload.pagination
 
-  let query = { removed: false }
+  const query = { removed: false }
 
-  let pipeline = [
+  const pipeline = [
     {
       $match: query,
     },
   ]
 
-  let languagesCount = await LanguageModel.countDocuments(query)
+  const languagesCount = await LanguageModel.countDocuments(query)
 
-  let languagesQuery = LanguageModel.aggregate(pipeline)
+  const languagesQuery = LanguageModel.aggregate(pipeline)
 
-  languagesQuery = languagesQuery
+  languagesQuery
     .skip((current - 1) * pageSize)
     .limit(pageSize)
 
@@ -55,7 +54,7 @@ interface createLanguageParams {
 }
 
 export async function create(payload: createLanguageParams): Promise<createLanguagesResult> {
-  let language = await LanguageModel.create(payload)
+  const language = await LanguageModel.create(payload)
 
   if (!language) {
     throw new Error('Language not created')
@@ -83,7 +82,7 @@ export async function edit(payload: editLanguageParams): Promise<editLanguagesRe
     throw new Error('Need _ID')
   }
 
-  let language = await LanguageModel.updateOne({ _id }, payload)
+  const language = await LanguageModel.updateOne({ _id }, payload)
 
   if (!language) {
     throw new Error('Language not edited')
@@ -107,7 +106,7 @@ export async function remove(payload: removeLanguageParams): Promise<editLanguag
     throw new Error('Need _ID')
   }
 
-  let language = await LanguageModel.updateOne(
+  const language = await LanguageModel.updateOne(
     { _id },
     { $set: { removed: true } },
   )

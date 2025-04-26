@@ -34,4 +34,6 @@ const LanguageSchema: Schema = new Schema(
   { timestamps: true },
 )
 
-export default mongoose.model<LanguageInterface>('Language', LanguageSchema)
+const LanguageModel = mongoose.model<LanguageInterface>('Language', LanguageSchema)
+
+export { LanguageModel }

@@ -4,7 +4,8 @@ import express from 'express'
 import helmet from 'helmet'
 import { errorHandler } from './middleware/error.middleware'
 import { requestLogger } from './middleware/logger.middleware'
-import routes from './routes/'
+import apiRoutes from './routes/api'
+import healthRoutes from './routes/health'
 
 const app = express()
 
@@ -21,10 +22,7 @@ app.use(helmet())
 app.use(requestLogger)
 app.use(errorHandler)
 
-app.use('/api', routes)
-
-app.get('/health', (req, res) => {
-  res.status(200).send('OK')
-})
+app.use('/api', apiRoutes)
+app.use('/health', healthRoutes)
 
 export default app

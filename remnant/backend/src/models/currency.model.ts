@@ -1,6 +1,6 @@
 import mongoose, { Schema } from 'mongoose'
 
-export interface UnitInterface {
+export interface CurrencyInterface {
   names: string
   symbols: string
   main: string
@@ -8,7 +8,7 @@ export interface UnitInterface {
   removed: string
 }
 
-const UnitSchema: Schema = new Schema(
+const CurrencySchema: Schema = new Schema(
   {
     names: {
       type: Map,
@@ -54,4 +54,15 @@ const UnitSchema: Schema = new Schema(
   { timestamps: true },
 )
 
-export default mongoose.model<UnitInterface>('Unit', UnitSchema)
+CurrencySchema.index({ 'names.ru': 1 })
+CurrencySchema.index({ 'names.en': 1 })
+CurrencySchema.index({ 'symbols.ru': 1 })
+CurrencySchema.index({ 'symbols.en': 1 })
+CurrencySchema.index({ active: 1 })
+CurrencySchema.index({ priority: 1 })
+CurrencySchema.index({ removed: 1 })
+CurrencySchema.index({ createdAt: 1 })
+
+const CurrencyModel = mongoose.model<CurrencyInterface>('Currency', CurrencySchema)
+
+export { CurrencyModel }
