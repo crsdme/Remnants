@@ -1,9 +1,8 @@
 import type { ColumnDef } from '@tanstack/react-table'
 
-import { Button } from '@/view/components/ui/button'
+import { Button, Input } from '@/view/components/ui/'
 
 import { Form, FormField, FormItem, FormMessage } from '@/view/components/ui/form'
-import { Input } from '@/view/components/ui/input'
 import { Popover, PopoverContent, PopoverTrigger } from '@/view/components/ui/popover'
 import {
   Select,
@@ -12,9 +11,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/view/components/ui/select'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/view/components/ui/tooltip'
 import { zodResolver } from '@hookform/resolvers/zod'
 
-import { Check, Pencil, Plus, X, XCircle } from 'lucide-react'
+import { Check, Filter, MousePointerClick, Pencil, Plus, X, XCircle } from 'lucide-react'
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
@@ -32,6 +32,7 @@ interface BatchEditProps {
   columns: ColumnDef<Currency>[]
   languages: Language[]
   onSubmit: (data: FormValues) => void
+  onToggle: (status: 'filter' | 'select') => void
 }
 
 interface ColumnMeta {
@@ -59,10 +60,11 @@ export function BatchEdit({
   columns,
   languages,
   onSubmit,
+  onToggle,
 }: BatchEditProps) {
   const { t } = useTranslation()
   const [isOpen, setIsOpen] = useState(false)
-
+  const [toggleFilterMode, setToggleFilterMode] = useState<'filter' | 'select'>('select')
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -110,6 +112,13 @@ export function BatchEdit({
   const handleDecline = () => {
     form.reset()
     setIsOpen(false)
+  }
+
+  const handleToggleFilterMode = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault()
+    const status = toggleFilterMode === 'filter' ? 'select' : 'filter'
+    setToggleFilterMode(status)
+    onToggle(status)
   }
 
   const renderInput = (item: FormItemType, index: number) => {
@@ -194,7 +203,6 @@ export function BatchEdit({
       <PopoverTrigger asChild>
         <Button variant="outline" disabled={isLoading}>
           <Pencil className="mr-2 h-4 w-4" />
-          {' '}
           {buttonLabel || t('component.batchEdit.button')}
         </Button>
       </PopoverTrigger>
@@ -252,6 +260,20 @@ export function BatchEdit({
             </div>
 
             <div className="flex justify-end gap-2 mt-4">
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    size="icon"
+                    variant="outline"
+                    onClick={handleToggleFilterMode}
+                  >
+                    {toggleFilterMode === 'filter' ? <Filter /> : <MousePointerClick />}
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  {toggleFilterMode === 'filter' ? t('component.batchEdit.filterMode') : t('component.batchEdit.selectMode')}
+                </TooltipContent>
+              </Tooltip>
               <Button variant="outline" onClick={handleDecline} type="button">
                 <XCircle className="mr-2 h-4 w-4" />
                 {t('component.batchEdit.cancel')}

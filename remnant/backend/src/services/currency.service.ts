@@ -202,7 +202,18 @@ interface batchCurrencyResult {
 }
 
 interface batchCurrencyParams {
-  _ids: string[]
+  _ids?: string[]
+  filters?: {
+    names?: string
+    symbols?: string
+    language: string
+    active?: boolean[]
+    priority?: number
+    createdAt?: {
+      from?: Date
+      to?: Date
+    }
+  }
   params: {
     column: string
     value: string | number | boolean | Record<string, string>
@@ -210,11 +221,19 @@ interface batchCurrencyParams {
 }
 
 export async function batch(payload: batchCurrencyParams): Promise<batchCurrencyResult> {
-  const { _ids, params } = payload
+  const { _ids, filters, params } = payload
 
-  if (!_ids) {
-    throw new Error('Need _IDS')
-  }
+  const {
+    names = '',
+    symbols = '',
+    language = 'en',
+    active = undefined,
+    priority = undefined,
+    createdAt = {
+      from: undefined,
+      to: undefined,
+    },
+  } = filters || {}
 
   if (!params) {
     throw new Error('Need params')
@@ -222,17 +241,65 @@ export async function batch(payload: batchCurrencyParams): Promise<batchCurrency
 
   const allowedParams = ['names', 'symbols', 'priority', 'active']
 
-  const query = params.filter(
+  const filteredParams = params.filter(
     item => item.column && item.value && allowedParams.includes(item.column),
   )
 
-  const batchQuery = query.map(item => ({ [`${item.column}`]: item.value }))
+  const batchParams = filteredParams.map(item => ({ [`${item.column}`]: item.value }))
 
-  const mergedBatchQuery = Object.assign({}, ...batchQuery)
+  const mergedBatchParams = Object.assign({}, ...batchParams)
+
+  let query: Record<string, any> = { removed: false }
+
+  if (names.trim()) {
+    query = {
+      ...query,
+      [`names.${language}`]: { $regex: `^${names}`, $options: 'i' },
+    }
+  }
+
+  if (symbols.trim()) {
+    query = {
+      ...query,
+      [`symbols.${language}`]: { $regex: `^${symbols}`, $options: 'i' },
+    }
+  }
+
+  if (Array.isArray(active) && active.length > 0) {
+    query = {
+      ...query,
+      active: { $in: active },
+    }
+  }
+
+  if (priority) {
+    query = {
+      ...query,
+      priority,
+    }
+  }
+
+  if (createdAt.from && createdAt.to) {
+    query = {
+      ...query,
+      createdAt: { $gte: createdAt.from, $lte: createdAt.to },
+    }
+  }
+
+  if (filters) {
+    query = {
+      $or: [query, { _id: { $in: _ids } }],
+    }
+  }
+  else {
+    query = {
+      _id: { $in: _ids },
+    }
+  }
 
   const currencies = await CurrencyModel.updateMany(
-    { _id: { $in: _ids } },
-    { $set: mergedBatchQuery },
+    query,
+    { $set: mergedBatchParams },
   )
 
   if (!currencies) {

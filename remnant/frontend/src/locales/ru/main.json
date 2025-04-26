@@ -129,12 +129,14 @@
 
   "component.batchEdit.button": "Пакетное редактирование",
   "component.batchEdit.title": "Пакетное редактирование",
-  "component.batchEdit.description": "Выберите элементы для массового редактирования",
+  "component.batchEdit.description": "Выберите параметры для массового редактирования",
   "component.batchEdit.selectColumn": "Выберите колонку",
   "component.batchEdit.newValue": "Новое значение",
   "component.batchEdit.addItem": "Добавить элемент",
   "component.batchEdit.cancel": "Отмена",
   "component.batchEdit.apply": "Применить изменения",
+  "component.batchEdit.filterMode": "Применить фильтры к выбранным элементам",
+  "component.batchEdit.selectMode": "Ручной выбор элементов для пакетного редактирования",
 
   "component.advancedFilters.button": "Расширенные фильтры",
   "component.advancedFilters.title": "Расширенные фильтры",

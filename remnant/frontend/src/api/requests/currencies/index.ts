@@ -55,9 +55,24 @@ interface batchItem {
   value: string | number | boolean | Record<string, string>
 }
 
+interface batchFilterItem {
+  filters?: {
+    names?: string
+    symbols?: string
+    language: string
+    active?: boolean[]
+    priority?: number
+    createdAt?: {
+      from?: Date
+      to?: Date
+    }
+  }
+}
+
 export interface batchCurrencyParams {
   _ids: string[]
   params: batchItem[]
+  filters: batchFilterItem[]
 }
 
 export async function batchCurrency(params: batchCurrencyParams) {

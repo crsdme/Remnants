@@ -44,6 +44,7 @@ export function DataTable() {
   const [rowSelection, setRowSelection] = useState({})
   const [sorters, setSorters] = useState({})
   const [expandedRows, setExpandedRows] = useState({})
+  const [batchEditMode, setBatchEditMode] = useState<'filter' | 'select'>('select')
   const [pagination, setPagination] = useState({
     current: 1,
     pageSize: 10,
@@ -191,7 +192,13 @@ export function DataTable() {
       value: item.value,
     }))
 
-    currencyContext.batchCurrency({ _ids: selectedCurrencies, params })
+    if (batchEditMode === 'filter') {
+      currencyContext.batchCurrency({ _ids: selectedCurrencies, filters, params })
+    }
+    else {
+      currencyContext.batchCurrency({ _ids: selectedCurrencies, params })
+    }
+
     setRowSelection({})
   }
 
@@ -199,6 +206,10 @@ export function DataTable() {
     const _ids = currencies.filter((_, index) => rowSelection[index]).map(item => item._id)
     currencyContext.removeCurrency({ _ids })
     setRowSelection({})
+  }
+
+  const handleBatchToggle = (status: 'filter' | 'select') => {
+    setBatchEditMode(status)
   }
 
   const changePagination = useDebounceCallback((value: Pagination) => {
@@ -214,7 +225,12 @@ export function DataTable() {
             onSubmit={advancedFiltersSubmit}
             onCancel={advancedFiltersCancel}
           />
-          <BatchEdit columns={columns} languages={languages} onSubmit={handleBatchSubmit} />
+          <BatchEdit
+            columns={columns}
+            languages={languages}
+            onSubmit={handleBatchSubmit}
+            onToggle={handleBatchToggle}
+          />
           <Separator orientation="vertical" className="min-h-6 max-md:hidden" />
           <DataTableFilters filters={filters} setFilters={setFilters} />
         </div>

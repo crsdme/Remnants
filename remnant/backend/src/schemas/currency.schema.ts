@@ -16,6 +16,7 @@ export const getCurrencySchema = z.object({
       names: z.string().optional(),
       symbols: z.string().optional(),
       language: z.string(),
+      priority: z.preprocess(val => Number(val), z.number()).optional(),
       createdAt: z
         .object({
           from: z.preprocess((val) => {
@@ -82,14 +83,38 @@ export const removeCurrencySchema = z.object({
 })
 
 export const batchCurrencySchema = z.object({
-  _ids: z.array(z.string()).min(1, 'At least one currency ID is required'),
+  _ids: z.array(z.string()).optional(),
+  filters: z.object({
+    names: z.string().optional(),
+    symbols: z.string().optional(),
+    language: z.string(),
+    active: z
+      .preprocess((val) => {
+        if (Array.isArray(val)) {
+          return val.map(item => item === 'true')
+        }
+        return val === 'true'
+      }, z.array(z.boolean()))
+      .optional(),
+    priority: z.preprocess(val => Number(val), z.number()).optional(),
+    createdAt: z.object({
+      from: z.date().optional(),
+      to: z.date().optional(),
+    }).optional(),
+  }).optional(),
   params: z.array(
     z.object({
       column: z.string(),
       value: z.any(),
     }),
   ),
-})
+}).refine(
+  data => data._ids !== undefined || data.filters !== undefined,
+  {
+    message: 'Either \'_ids\' or \'filters\' must be provided.',
+    path: ['_ids'],
+  },
+)
 
 export const importCurrenciesSchema = z.object({
   file: z.instanceof(File),
