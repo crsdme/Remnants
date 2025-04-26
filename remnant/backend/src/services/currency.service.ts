@@ -51,8 +51,6 @@ export async function get(payload: getCurrenciesParams): Promise<getCurrenciesRe
     },
   } = payload.filters
 
-  console.log(priority)
-
   const sorters = payload.sorters
 
   let query: Record<string, any> = { removed: false }
@@ -60,14 +58,14 @@ export async function get(payload: getCurrenciesParams): Promise<getCurrenciesRe
   if (names.trim()) {
     query = {
       ...query,
-      [`names.${language}`]: { $regex: names, $options: 'i' },
+      [`names.${language}`]: { $regex: `^${names}`, $options: 'i' },
     }
   }
 
   if (symbols.trim()) {
     query = {
       ...query,
-      [`symbols.${language}`]: { $regex: symbols, $options: 'i' },
+      [`symbols.${language}`]: { $regex: `^${symbols}`, $options: 'i' },
     }
   }
 
@@ -99,17 +97,23 @@ export async function get(payload: getCurrenciesParams): Promise<getCurrenciesRe
     ...(sorters && Object.keys(sorters).length > 0
       ? [{ $sort: sorters as Record<string, 1 | -1> }]
       : []),
+    {
+      $facet: {
+        currencies: [
+          { $skip: (current - 1) * pageSize },
+          { $limit: pageSize },
+        ],
+        totalCount: [
+          { $count: 'count' },
+        ],
+      },
+    },
   ]
 
-  const currenciesCount = await CurrencyModel.countDocuments(query)
+  const currenciesResult = await CurrencyModel.aggregate(pipeline).exec()
 
-  let currenciesQuery = CurrencyModel.aggregate(pipeline)
-
-  currenciesQuery = currenciesQuery
-    .skip((current - 1) * pageSize)
-    .limit(pageSize)
-
-  const currencies = await currenciesQuery.exec()
+  const currencies = currenciesResult[0].currencies
+  const currenciesCount = currenciesResult[0].totalCount[0]?.count || 0
 
   if (!currencies) {
     throw new Error('Currencies not found')

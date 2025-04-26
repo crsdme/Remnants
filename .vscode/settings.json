@@ -6,10 +6,4 @@
     "source.fixAll.eslint": "explicit"
   },
   "eslint.validate": ["typescript", "javascript", "json"],
-  "[javascript]": {
-    "editor.defaultFormatter": "vscode.typescript-language-features"
-  },
-  "[typescript]": {
-    "editor.defaultFormatter": "vscode.typescript-language-features"
-  }
 }

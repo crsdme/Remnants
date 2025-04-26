@@ -54,4 +54,13 @@ const CurrencySchema: Schema = new Schema(
   { timestamps: true },
 )
 
+CurrencySchema.index({ 'names.ru': 1 })
+CurrencySchema.index({ 'names.en': 1 })
+CurrencySchema.index({ 'symbols.ru': 1 })
+CurrencySchema.index({ 'symbols.en': 1 })
+CurrencySchema.index({ active: 1 })
+CurrencySchema.index({ priority: 1 })
+CurrencySchema.index({ removed: 1 })
+CurrencySchema.index({ createdAt: 1 })
+
 export default mongoose.model<CurrencyInterface>('Currency', CurrencySchema)

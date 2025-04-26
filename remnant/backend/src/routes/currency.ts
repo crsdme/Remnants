@@ -1,12 +1,12 @@
 import { Router } from 'express'
 import * as CurrencyController from '../controllers/currency'
 import { uploadSingle } from '../middleware/upload.middleware'
+import { validateUpload } from '../middleware/validation.middleware'
 import {
   validateBatchCurrency,
   validateCreateCurrency,
   validateEditCurrency,
   validateGetCurrencies,
-  validateImportCurrencies,
   validateRemoveCurrency,
 } from '../middleware/validation/'
 
@@ -20,6 +20,7 @@ router.post('/batch', validateBatchCurrency, CurrencyController.batch)
 router.post(
   '/import',
   uploadSingle('file'),
+  validateUpload('file'),
   CurrencyController.importCurrencies,
 )
 

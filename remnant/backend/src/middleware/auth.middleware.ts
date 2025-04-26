@@ -35,3 +35,20 @@ export function refreshJWT(req: Request, res: Response, next: NextFunction) {
     next()
   })
 }
+
+export function fakeAuthenticateJWT(req: Request, res: Response, next: NextFunction) {
+  (req as any).user = {
+    id: 'test-user-id',
+    email: 'test@example.com',
+    role: 'admin',
+  }
+
+  next()
+}
+
+export function getAuthMiddleware() {
+  if (process.env.NODE_ENV === 'test')
+    return fakeAuthenticateJWT
+
+  return authenticateJWT
+}

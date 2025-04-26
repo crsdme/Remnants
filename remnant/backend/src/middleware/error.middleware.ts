@@ -1,7 +1,8 @@
 import type { NextFunction, Request, Response } from 'express'
+import logger from '../utils/logger'
 
 export function errorHandler(err: any, req: Request, res: Response, next: NextFunction): void {
-  console.error(err)
+  logger.error(err)
 
   if (res.headersSent) {
     return next(err)

@@ -1,5 +1,5 @@
-import type { NextFunction, Request, Response } from 'express'
 import { z } from 'zod'
+import { validateBodyRequest, validateQueryRequest } from '../validation.middleware'
 
 const getCurrencySchema = z.object({
   pagination: z
@@ -48,17 +48,7 @@ const getCurrencySchema = z.object({
     .optional(),
 })
 
-export function validateGetCurrencies(req: Request, res: Response, next: NextFunction) {
-  try {
-    const result = getCurrencySchema.safeParse(req.query)
-    req.body = result.data
-    next()
-  }
-  catch (error) {
-    console.log(error)
-    res.status(400).json({ error: 'Invalid get currency data' })
-  }
-}
+export const validateGetCurrencies = validateQueryRequest(getCurrencySchema)
 
 const createCurrencySchema = z.object({
   names: z.object({
@@ -73,17 +63,7 @@ const createCurrencySchema = z.object({
   active: z.boolean().optional(),
 })
 
-export function validateCreateCurrency(req: Request, res: Response, next: NextFunction) {
-  try {
-    const result = createCurrencySchema.safeParse(req.body)
-    req.body = result.data
-    next()
-  }
-  catch (error) {
-    console.log(error)
-    res.status(400).json({ error: 'Invalid create currency data' })
-  }
-}
+export const validateCreateCurrency = validateBodyRequest(createCurrencySchema)
 
 const editCurrencySchema = z.object({
   _id: z.string(),
@@ -99,33 +79,13 @@ const editCurrencySchema = z.object({
   active: z.boolean().optional(),
 })
 
-export function validateEditCurrency(req: Request, res: Response, next: NextFunction) {
-  try {
-    const result = editCurrencySchema.safeParse(req.body)
-    req.body = result.data
-    next()
-  }
-  catch (error) {
-    console.log(error)
-    res.status(400).json({ error: 'Invalid edit currency data' })
-  }
-}
+export const validateEditCurrency = validateBodyRequest(editCurrencySchema)
 
 const removeCurrencySchema = z.object({
   _ids: z.array(z.string()),
 })
 
-export function validateRemoveCurrency(req: Request, res: Response, next: NextFunction) {
-  try {
-    const result = removeCurrencySchema.safeParse(req.body)
-    req.body = result.data
-    next()
-  }
-  catch (error) {
-    console.log(error)
-    res.status(400).json({ error: 'Invalid remove currency data' })
-  }
-}
+export const validateRemoveCurrency = validateBodyRequest(removeCurrencySchema)
 
 const batchCurrencySchema = z.object({
   _ids: z.array(z.string()).min(1, 'At least one currency ID is required'),
@@ -137,30 +97,10 @@ const batchCurrencySchema = z.object({
   ),
 })
 
-export function validateBatchCurrency(req: Request, res: Response, next: NextFunction) {
-  try {
-    const result = batchCurrencySchema.safeParse(req.body)
-    req.body = result.data
-    next()
-  }
-  catch (error) {
-    console.log(error)
-    res.status(400).json({ error: 'Invalid batch currency data' })
-  }
-}
+export const validateBatchCurrency = validateBodyRequest(batchCurrencySchema)
 
 const importCurrenciesSchema = z.object({
   file: z.instanceof(File),
 })
 
-export function validateImportCurrencies(req: Request, res: Response, next: NextFunction) {
-  try {
-    const result = importCurrenciesSchema.safeParse(req.body)
-    req.body = result.data
-    next()
-  }
-  catch (error) {
-    console.log(error)
-    res.status(400).json({ error: 'Invalid import currencies data' })
-  }
-}
+export const validateImportCurrencies = validateBodyRequest(importCurrenciesSchema)

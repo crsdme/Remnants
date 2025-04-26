@@ -2,16 +2,16 @@
   "name": "backendts",
   "version": "1.0.0",
   "description": "",
+  "author": "",
+  "license": "ISC",
+  "keywords": [],
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "vitest",
     "start": "node dist/index.js",
     "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
     "lint": "eslint src --ext .ts --fix"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
   "dependencies": {
     "@types/multer": "^1.4.12",
     "@types/uuid": "^10.0.0",
@@ -23,12 +23,11 @@
     "helmet": "^8.0.0",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.9.6",
-    "morgan": "^1.10.0",
     "multer": "^1.4.5-lts.2",
-    "redis": "^4.7.0",
     "socket.io": "^4.8.1",
     "uuid": "^11.1.0",
     "winston": "^3.17.0",
+    "winston-daily-rotate-file": "^5.0.0",
     "zod": "^3.24.1"
   },
   "devDependencies": {
@@ -40,11 +39,14 @@
     "@types/jsonwebtoken": "^9.0.8",
     "@types/morgan": "^1.9.9",
     "@types/node": "^22.13.0",
+    "@types/supertest": "^6.0.3",
     "eslint": "^9.25.1",
     "nodemon": "^3.1.9",
     "prettier": "^3.5.3",
+    "supertest": "^7.1.0",
     "ts-node": "^10.9.2",
     "ts-node-dev": "^2.0.0",
-    "typescript": "^5.7.3"
+    "typescript": "^5.7.3",
+    "vitest": "^3.1.2"
   }
 }

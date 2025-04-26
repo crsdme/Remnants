@@ -2,8 +2,8 @@ import cookieParser from 'cookie-parser'
 import cors from 'cors'
 import express from 'express'
 import helmet from 'helmet'
-import morgan from 'morgan'
 import { errorHandler } from './middleware/error.middleware'
+import { requestLogger } from './middleware/logger.middleware'
 import routes from './routes/'
 
 const app = express()
@@ -18,10 +18,13 @@ app.use(
   }),
 )
 app.use(helmet())
-app.use(morgan('dev'))
+app.use(requestLogger)
+app.use(errorHandler)
 
 app.use('/api', routes)
 
-app.use(errorHandler)
+app.get('/health', (req, res) => {
+  res.status(200).send('OK')
+})
 
 export default app

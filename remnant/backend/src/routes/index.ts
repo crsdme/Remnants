@@ -1,5 +1,5 @@
 import { Router } from 'express'
-import { authenticateJWT } from '../middleware/auth.middleware'
+import { getAuthMiddleware } from '../middleware/auth.middleware'
 import authRoutes from './auth'
 import categoriesRoutes from './category'
 import currencyRoutes from './currency'
@@ -8,6 +8,7 @@ import productRoutes from './product'
 import unitsRoutes from './unit'
 
 const router = Router()
+const authenticateJWT = getAuthMiddleware()
 
 router.use('/auth', authRoutes)
 router.use('/products', productRoutes)

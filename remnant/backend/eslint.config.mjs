@@ -8,6 +8,7 @@ export default (async () => {
     rules: {
       'no-console': 'off',
       'node/prefer-global/process': 'off',
+      'test/prefer-lowercase-title': 'off',
       // 'node/prefer-global/buffer': 'off',
 
       // "eqeqeq": "warn",
