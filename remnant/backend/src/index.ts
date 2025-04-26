@@ -1,15 +1,19 @@
 import cookieParser from 'cookie-parser'
 import cors from 'cors'
 import express from 'express'
-import helmet from 'helmet'
+import { helmetConfig } from './config/helmet'
+import { scalar } from './config/scalar'
+
 import { errorHandler } from './middleware/error.middleware'
 import { requestLogger } from './middleware/logger.middleware'
+
 import apiRoutes from './routes/api'
 import healthRoutes from './routes/health'
 
 const app = express()
 
 app.use(express.json())
+
 app.use(express.urlencoded({ extended: true }))
 app.use(cookieParser())
 app.use(
@@ -18,11 +22,13 @@ app.use(
     credentials: true,
   }),
 )
-app.use(helmet())
+app.use(helmetConfig)
 app.use(requestLogger)
-app.use(errorHandler)
 
+app.use('/docs', scalar)
 app.use('/api', apiRoutes)
 app.use('/health', healthRoutes)
+
+app.use(errorHandler)
 
 export default app
