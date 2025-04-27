@@ -3,12 +3,13 @@ import type { ColumnDef } from '@tanstack/react-table'
 import type { DateRange } from 'react-day-picker'
 
 import { DatePickerRange } from '@/view/components/DatePickerRange'
+import { MultiSelect } from '@/view/components/MultiSelect'
 import { Badge } from '@/view/components/ui/badge'
 import { Button } from '@/view/components/ui/button'
 import { Form, FormField, FormItem, FormMessage } from '@/view/components/ui/form'
 import { Input } from '@/view/components/ui/input'
-import { Popover, PopoverContent, PopoverTrigger } from '@/view/components/ui/popover'
 
+import { Popover, PopoverContent, PopoverTrigger } from '@/view/components/ui/popover'
 import {
   Select,
   SelectContent,
@@ -26,7 +27,7 @@ import { z } from 'zod'
 interface FilterItem {
   id: string
   column: string
-  value: string | number | boolean | DateRange
+  value: string | number | boolean | DateRange | string[]
 }
 
 interface AdvancedFiltersProps {
@@ -44,7 +45,7 @@ interface ColumnMeta {
 const filterItemSchema = z.object({
   id: z.string(),
   column: z.string().min(1, 'Column is required'),
-  value: z.union([z.string(), z.number(), z.boolean(), z.object({ from: z.date(), to: z.date() })]),
+  value: z.union([z.string(), z.number(), z.boolean(), z.object({ from: z.date(), to: z.date() }), z.array(z.string())]),
 })
 
 const formSchema = z.object({
@@ -145,22 +146,15 @@ export function AdvancedFilters({ columns, onSubmit, onCancel }: AdvancedFilters
         )
       case 'boolean':
         return (
-          <Select
-            value={item.value as string}
-            onValueChange={(value) => {
+          <MultiSelect
+            value={item.value as string[]}
+            onChange={(value) => {
               const currentItems = form.getValues('items')
-              currentItems[index].value = value === 'true'
+              currentItems[index].value = value
               form.setValue('items', currentItems)
             }}
-          >
-            <SelectTrigger className="w-full">
-              <SelectValue placeholder={t('component.advancedFilters.selectValue')} />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="true">{t('component.advancedFilters.true')}</SelectItem>
-              <SelectItem value="false">{t('component.advancedFilters.false')}</SelectItem>
-            </SelectContent>
-          </Select>
+            options={[{ label: t('component.advancedFilters.true'), value: 'true' }, { label: t('component.advancedFilters.false'), value: 'false' }]}
+          />
         )
       case 'date':
         return (

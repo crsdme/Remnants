@@ -137,6 +137,9 @@
   "component.batchEdit.apply": "Применить изменения",
   "component.batchEdit.filterMode": "Применить фильтры к выбранным элементам",
   "component.batchEdit.selectMode": "Ручной выбор элементов для пакетного редактирования",
+  "component.batchEdit.selectValue": "Выберите значение",
+  "component.batchEdit.false": "Нет",
+  "component.batchEdit.true": "Да",
 
   "component.advancedFilters.button": "Расширенные фильтры",
   "component.advancedFilters.title": "Расширенные фильтры",

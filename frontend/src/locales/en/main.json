@@ -137,6 +137,9 @@
   "component.batchEdit.apply": "Apply Changes",
   "component.batchEdit.filterMode": "Apply filters to selected items",
   "component.batchEdit.selectMode": "Manual selection of items for batch editing",
+  "component.batchEdit.selectValue": "Select value",
+  "component.batchEdit.false": "No",
+  "component.batchEdit.true": "Yes",
 
   "component.advancedFilters.button": "Advanced Filters",
   "component.advancedFilters.title": "Advanced Filters",

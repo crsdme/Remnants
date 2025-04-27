@@ -7,12 +7,10 @@
   },
   "lint-staged": {
     "frontend/**/*.{js,ts,tsx,jsx}": [
-      "eslint --fix",
-      "git add"
+      "eslint --fix"
     ],
     "backend/**/*.{js,ts}": [
-      "eslint --fix",
-      "git add"
+      "eslint --fix"
     ]
   },
   "scripts": {

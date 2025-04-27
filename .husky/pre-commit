@@ -1,9 +1,5 @@
-#!/bin/sh
-. "$(dirname "$0")/_/husky.sh"
-
 npx lint-staged
 
-# После успешного lint-staged запускаем тесты бэкенда
 cd backend && npm run test
 BACK_TEST_RESULT=$?
 cd ..
