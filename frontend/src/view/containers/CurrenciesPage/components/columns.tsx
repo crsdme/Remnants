@@ -9,6 +9,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/view/components/ui/dropdown-menu'
 import {
@@ -332,11 +333,17 @@ export function useColumns({ setSorters, expandedRows, setExpandedRows }): Colum
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
                 <DropdownMenuLabel>{t('page.currencies.table.actions')}</DropdownMenuLabel>
+                <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={() => navigator.clipboard.writeText(currency._id)}>
                   {t('page.currencies.table.copy')}
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => currencyContext.toggleModal(currency)}>
                   {t('page.currencies.table.edit')}
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => currencyContext.duplicateCurrencies({ _ids: [currency._id] })}
+                >
+                  {t('page.currencies.table.duplicate')}
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   onClick={() => currencyContext.removeCurrency({ _ids: [currency._id] })}

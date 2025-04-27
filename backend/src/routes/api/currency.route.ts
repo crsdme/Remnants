@@ -1,7 +1,7 @@
 import { Router } from 'express'
 import * as CurrencyController from '../../controllers/currency.controller'
 import { uploadSingle, validateBodyRequest, validateQueryRequest, validateUpload } from '../../middleware'
-import { batchCurrencySchema, createCurrencySchema, editCurrencySchema, getCurrencySchema, removeCurrencySchema } from '../../schemas/currency.schema'
+import { batchCurrencySchema, createCurrencySchema, duplicateCurrencySchema, editCurrencySchema, getCurrencySchema, removeCurrencySchema } from '../../schemas/currency.schema'
 
 const router = Router()
 
@@ -16,5 +16,6 @@ router.post(
   validateUpload('file'),
   CurrencyController.importCurrencies,
 )
+router.post('/duplicate', validateBodyRequest(duplicateCurrencySchema), CurrencyController.duplicate)
 
 export default router

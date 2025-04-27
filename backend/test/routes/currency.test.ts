@@ -46,6 +46,18 @@ describe('currency API', () => {
     })
   })
 
+  describe('Duplicate Currency', () => {
+    it('should duplicate a currency', async () => {
+      const res = await request(app).post('/api/currencies/duplicate').send({
+        _ids: [createdCurrencyId],
+      })
+
+      expect(res.status).toBe(200)
+      expect(res.body).toHaveProperty('status')
+      expect(res.body.status).toBe('success')
+    })
+  })
+
   describe('Edit Currency', () => {
     it('should edit a currency', async () => {
       const res = await request(app).post('/api/currencies/edit').send({

@@ -339,3 +339,30 @@ export async function importCurrencies(payload: importCurrenciesParams): Promise
 
   return { status: 'success' }
 }
+
+interface duplicateCurrencyResult {
+  status: string
+}
+
+interface duplicateCurrencyParams {
+  _ids: string[]
+}
+
+export async function duplicate(payload: duplicateCurrencyParams): Promise<duplicateCurrencyResult> {
+  const { _ids } = payload
+
+  const currencies = await CurrencyModel.find({ _id: { $in: _ids } })
+
+  const parsedCurrencies = currencies.map(currency => ({
+    names: currency.names,
+    symbols: currency.symbols,
+    priority: currency.priority,
+    active: currency.active,
+  }))
+
+  const newCurrencies = await CurrencyModel.insertMany(parsedCurrencies)
+
+  console.log(newCurrencies)
+
+  return { status: 'success' }
+}

@@ -3,9 +3,9 @@ import mongoose, { Schema } from 'mongoose'
 export interface CurrencyInterface {
   names: string
   symbols: string
-  main: string
-  active: string
-  removed: string
+  priority: number
+  active: boolean
+  removed: boolean
 }
 
 const CurrencySchema: Schema = new Schema(

@@ -6,13 +6,14 @@ import {
   DropdownMenuTrigger,
 } from '@/view/components/ui/dropdown-menu'
 
-import { Copy, Download, MoreVertical, Trash } from 'lucide-react'
+import { ClipboardList, Copy, Download, MoreVertical, Trash } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 
 interface SelectionDropdownProps {
   selectedCount: number
   onRemove?: () => void
   onCopy?: () => void
+  onDuplicate?: () => void
   onExport?: () => void
 }
 
@@ -20,6 +21,7 @@ export default function TableSelectionDropdown({
   selectedCount,
   onRemove,
   onCopy,
+  onDuplicate,
   onExport,
 }: SelectionDropdownProps) {
   const { t } = useTranslation()
@@ -40,6 +42,12 @@ export default function TableSelectionDropdown({
           <DropdownMenuItem onClick={onCopy} className="flex items-center gap-2">
             <Copy className="w-4 h-4" />
             {t('component.tableSelection.copyToClipboard')}
+          </DropdownMenuItem>
+        )}
+        {onDuplicate && (
+          <DropdownMenuItem onClick={onDuplicate} className="flex items-center gap-2">
+            <ClipboardList className="w-4 h-4" />
+            {t('component.tableSelection.duplicate')}
           </DropdownMenuItem>
         )}
         {onExport && (

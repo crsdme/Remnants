@@ -42,6 +42,7 @@
   "page.currencies.table.actions": "Actions",
   "page.currencies.table.copy": "Copy ID",
   "page.currencies.table.edit": "Edit",
+  "page.currencies.table.duplicate": "Duplicate",
   "page.currencies.table.delete": "Delete",
   "page.currencies.table.test": "View Details",
   "page.currencies.table.noResults": "No results found",
@@ -126,6 +127,7 @@
   "component.tableSelection.copyToClipboard": "Copy to clipboard",
   "component.tableSelection.downloadCSV": "Download CSV",
   "component.tableSelection.delete": "Delete",
+  "component.tableSelection.duplicate": "Duplicate",
 
   "component.batchEdit.button": "Batch Edit",
   "component.batchEdit.title": "Batch Edit",

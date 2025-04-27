@@ -59,6 +59,17 @@ export async function batch(req: Request, res: Response, next: NextFunction) {
   }
 }
 
+export async function duplicate(req: Request, res: Response, next: NextFunction) {
+  try {
+    const serviceResponse = await CurrencyService.duplicate(req.body)
+
+    res.status(200).json(serviceResponse)
+  }
+  catch (err) {
+    next(err)
+  }
+}
+
 export async function importCurrencies(req: Request, res: Response, next: NextFunction) {
   try {
     if (!req.file) {

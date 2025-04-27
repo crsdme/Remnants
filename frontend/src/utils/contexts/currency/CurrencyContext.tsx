@@ -2,6 +2,7 @@ import type { ReactNode } from 'react'
 import {
   useBatchCurrency,
   useCreateCurrency,
+  useDuplicateCurrencies,
   useEditCurrency,
   useImportCurrencies,
   useRemoveCurrency,
@@ -25,6 +26,7 @@ interface CurrencyContextType {
   batchCurrency: (params) => void
   removeCurrency: (params: { _ids: string[] }) => void
   importCurrencies: (params) => void
+  duplicateCurrencies: (params: { _ids: string[] }) => void
 }
 
 const CurrencyContext = createContext<CurrencyContextType | undefined>(undefined)
@@ -49,6 +51,18 @@ export function CurrencyProvider({ children }: CurrencyProviderProps) {
         setIsLoading(false)
         setSelectedCurrency(null)
         queryClient.invalidateQueries({ queryKey: ['currencies'] })
+      },
+    },
+  })
+
+  const useMutateDuplicateCurrencies = useDuplicateCurrencies({
+    options: {
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ['currencies'] })
+        toast.success(t('page.currencies.toast.duplicateCurrencies.success'))
+      },
+      onError: () => {
+        toast.error(t('page.currencies.toast.duplicateCurrencies.error'))
       },
     },
   })
@@ -128,6 +142,10 @@ export function CurrencyProvider({ children }: CurrencyProviderProps) {
     useMutateImportCurrencies.mutate(params)
   }
 
+  const duplicateCurrencies = (params) => {
+    useMutateDuplicateCurrencies.mutate(params)
+  }
+
   const value: CurrencyContextType = {
     selectedCurrency,
     isModalOpen,
@@ -139,6 +157,7 @@ export function CurrencyProvider({ children }: CurrencyProviderProps) {
     removeCurrency,
     batchCurrency,
     importCurrencies,
+    duplicateCurrencies,
   }
 
   return <CurrencyContext.Provider value={value}>{children}</CurrencyContext.Provider>

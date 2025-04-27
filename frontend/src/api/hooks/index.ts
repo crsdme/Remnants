@@ -10,21 +10,22 @@ export * from './categories/useSearchCategories'
 
 export * from './currencies/useBatchCurrency'
 export * from './currencies/useCreateCurrency'
+export * from './currencies/useDuplicateCurrencies'
 export * from './currencies/useEditCurrency'
-
 export * from './currencies/useImportCurrencies'
 export * from './currencies/useRemoveCurrency'
 export * from './currencies/useRequestCurrencies'
-export * from './languages/useCreateLanguage'
 
+export * from './languages/useCreateLanguage'
 export * from './languages/useEditLanguage'
 export * from './languages/useRemoveLanguage'
 export * from './languages/useRequestLanguages'
 export * from './products/useCreateProduct'
-export * from './products/useEditProduct'
 
+export * from './products/useEditProduct'
 export * from './products/useRemoveProduct'
 export * from './products/useRequestProducts'
+
 export * from './units/useCreateUnit'
 export * from './units/useEditUnit'
 export * from './units/useRemoveUnit'

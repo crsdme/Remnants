@@ -82,6 +82,10 @@ export const removeCurrencySchema = z.object({
   _ids: z.array(z.string()),
 })
 
+export const duplicateCurrencySchema = z.object({
+  _ids: z.array(z.string()),
+})
+
 export const batchCurrencySchema = z.object({
   _ids: z.array(z.string()).optional(),
   filters: z.object({

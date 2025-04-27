@@ -216,6 +216,12 @@ export function DataTable() {
     setPagination(state => ({ ...state, ...value }))
   }, 50)
 
+  const handleBatchDuplicate = () => {
+    const _ids = currencies.filter((_, index) => rowSelection[index]).map(item => item._id)
+    currencyContext.duplicateCurrencies({ _ids })
+    setRowSelection({})
+  }
+
   return (
     <>
       <div className="w-full flex justify-between items-start max-md:flex-col gap-2 py-2">
@@ -239,6 +245,7 @@ export function DataTable() {
             selectedCount={Object.keys(rowSelection).length}
             onExport={handleBatchExport}
             onRemove={handleBatchRemove}
+            onDuplicate={handleBatchDuplicate}
           />
           <ColumnVisibilityMenu table={table} tableId="currency" />
         </div>

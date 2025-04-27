@@ -90,3 +90,11 @@ export async function importCurrencies(params: importCurrenciesParams) {
     },
   })
 }
+
+export interface duplicateCurrencyParams {
+  _ids: string[]
+}
+
+export async function duplicateCurrency(params: duplicateCurrencyParams) {
+  return api.post<CurrenciesResponse>('currencies/duplicate', params)
+}
