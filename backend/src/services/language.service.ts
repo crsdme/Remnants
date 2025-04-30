@@ -265,7 +265,7 @@ export async function batch(payload: LanguageTypes.batchLanguagesParams): Promis
 
 export async function upload(payload: LanguageTypes.importLanguagesParams): Promise<LanguageTypes.importLanguagesResult> {
   const { file } = payload
-  console.log(payload)
+
   const storedFile = await parseCSV(file.path)
 
   const parsedLanguages = storedFile.map(row => ({
@@ -275,6 +275,8 @@ export async function upload(payload: LanguageTypes.importLanguagesParams): Prom
     active: toBoolean(row.active),
     main: toBoolean(row.main),
   }))
+
+  console.log(parsedLanguages)
 
   await LanguageModel.insertMany(parsedLanguages)
 

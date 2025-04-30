@@ -14,6 +14,11 @@ describe('currency API', () => {
       priority: 1,
       active: true,
     })
+
+    expect(res.status).toBe(200)
+    expect(res.body).toHaveProperty('status')
+    expect(res.body.status).toBe('success')
+
     createdCurrencyId = res.body.currency._id
   })
 
@@ -59,9 +64,24 @@ describe('currency API', () => {
   })
 
   describe('Edit Currency', () => {
+    let createdCurrencyIdEdit = ''
+    it('should create a currency', async () => {
+      const res = await request(app).post('/api/currencies/create').send({
+        names: { ru: 'Доллар', en: 'Dollar' },
+        symbols: { ru: '$', en: '$' },
+        priority: 1,
+        active: true,
+      })
+
+      expect(res.status).toBe(200)
+      expect(res.body).toHaveProperty('status')
+      expect(res.body.status).toBe('success')
+
+      createdCurrencyIdEdit = res.body.currency._id
+    })
     it('should edit a currency', async () => {
       const res = await request(app).post('/api/currencies/edit').send({
-        _id: createdCurrencyId,
+        _id: createdCurrencyIdEdit,
         names: { ru: 'Доллар Edited', en: 'Dollar Edited' },
         symbols: { ru: '$ Edited', en: '$ Edited' },
         priority: 2,
@@ -169,7 +189,6 @@ describe('currency API', () => {
     describe('Import Currency Errors', () => {
       it('should fail if no file is uploaded', async () => {
         const res = await request(app).post('/api/currencies/import')
-        console.log('!!@@', res.error)
         expect(res.status).toBe(400)
         expect(res.body).toHaveProperty('error')
       })
@@ -209,7 +228,7 @@ describe('currency API', () => {
 
       it('should fail if trying to edit non-existing currency', async () => {
         const res = await request(app).post('/api/currencies/edit').send({
-          _id: '6623b0b8f8b6909b5a1e5abc', // FAKE ID
+          _id: '6623b0b8f8b6909b5a1e5abc',
           names: { ru: 'Тест', en: 'Test' },
         })
 

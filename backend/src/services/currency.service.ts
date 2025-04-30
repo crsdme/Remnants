@@ -106,10 +106,6 @@ export async function create(payload: CurrencyTypes.createCurrencyParams): Promi
 export async function edit(payload: CurrencyTypes.editCurrencyParams): Promise<CurrencyTypes.editCurrencyResult> {
   const { _id } = payload
 
-  if (!_id) {
-    throw new Error('Need _ID')
-  }
-
   const currency = await CurrencyModel.findOneAndUpdate({ _id }, payload)
 
   if (!currency) {
@@ -256,9 +252,7 @@ export async function duplicate(payload: CurrencyTypes.duplicateCurrencyParams):
     active: currency.active,
   }))
 
-  const newCurrencies = await CurrencyModel.insertMany(parsedCurrencies)
-
-  console.log(newCurrencies)
+  await CurrencyModel.insertMany(parsedCurrencies)
 
   return { status: 'success', message: 'Currencies duplicated' }
 }
