@@ -1,0 +1,105 @@
+import type { SUPPORTED_LANGUAGES_TYPE } from '../config/constants'
+import type { Currency } from '../models/currency.model'
+import type { DateRange, IdType, LanguageString, Message, Pagination, Status } from './common.type'
+
+export interface getCurrenciesResult {
+  status: Status
+  message: Message
+  currencies: Currency[]
+  currenciesCount: number
+}
+
+export interface getCurrenciesParams {
+  filters: {
+    names: LanguageString
+    symbols: LanguageString
+    language: SUPPORTED_LANGUAGES_TYPE
+    active: boolean[]
+    priority: number
+    createdAt: DateRange
+    updatedAt: DateRange
+  }
+  sorters: {
+    names: number
+    priority: number
+    updatedAt: number
+    createdAt: number
+  }
+  pagination: Pagination
+}
+
+export interface createCurrenciesResult {
+  status: Status
+  message: Message
+  currency: Currency
+}
+
+export interface createCurrencyParams {
+  names: LanguageString
+  symbols: LanguageString
+  priority: number
+  active?: boolean
+}
+
+export interface editCurrencyResult {
+  status: Status
+  message: Message
+  currency: Currency
+}
+
+export interface editCurrencyParams {
+  _id: IdType
+  names: LanguageString
+  symbols: LanguageString
+  priority: number
+  active?: boolean
+}
+
+export interface removeCurrenciesResult {
+  status: Status
+  message: Message
+}
+
+export interface removeCurrencyParams {
+  _ids: IdType[]
+}
+
+export interface batchCurrenciesResult {
+  status: Status
+  message: Message
+}
+
+export interface batchCurrenciesParams {
+  _ids: IdType[]
+  filters: {
+    names: LanguageString
+    symbols: LanguageString
+    language: SUPPORTED_LANGUAGES_TYPE
+    active: boolean[]
+    priority: number
+    createdAt: DateRange
+    updatedAt: DateRange
+  }
+  params: {
+    column: string
+    value: string | number | boolean | Record<string, string>
+  }[]
+}
+
+export interface importCurrenciesResult {
+  status: Status
+  message: Message
+}
+
+export interface importCurrenciesParams {
+  file: Express.Multer.File
+}
+
+export interface duplicateCurrencyResult {
+  status: Status
+  message: Message
+}
+
+export interface duplicateCurrencyParams {
+  _ids: IdType[]
+}

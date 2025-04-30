@@ -1,3 +1,4 @@
+import type * as CurrencyTypes from '../types/currency.type'
 import { CurrencyModel } from '../models/'
 import {
   extractLangMap,
@@ -6,36 +7,7 @@ import {
   toNumber,
 } from '../utils/parseTools'
 
-interface getCurrenciesResult {
-  currencies: any[]
-  currenciesCount: number
-}
-
-interface getCurrenciesParams {
-  filters: {
-    names: string
-    symbols: string
-    language: string
-    active: boolean[]
-    priority: number
-    createdAt: {
-      from: Date
-      to: Date
-    }
-  }
-  sorters: {
-    names: number
-    priority: number
-    updatedAt: number
-    createdAt: number
-  }
-  pagination: {
-    current: number
-    pageSize: number
-  }
-}
-
-export async function get(payload: getCurrenciesParams): Promise<getCurrenciesResult> {
+export async function get(payload: CurrencyTypes.getCurrenciesParams): Promise<CurrencyTypes.getCurrenciesResult> {
   const { current = 1, pageSize = 10 } = payload.pagination
 
   const {
@@ -54,14 +26,14 @@ export async function get(payload: getCurrenciesParams): Promise<getCurrenciesRe
 
   let query: Record<string, any> = { removed: false }
 
-  if (names.trim()) {
+  if (names) {
     query = {
       ...query,
       [`names.${language}`]: { $regex: `^${names}`, $options: 'i' },
     }
   }
 
-  if (symbols.trim()) {
+  if (symbols) {
     query = {
       ...query,
       [`symbols.${language}`]: { $regex: `^${symbols}`, $options: 'i' },
@@ -118,67 +90,36 @@ export async function get(payload: getCurrenciesParams): Promise<getCurrenciesRe
     throw new Error('Currencies not found')
   }
 
-  return { currencies, currenciesCount }
+  return { status: 'success', message: 'Currencies fetched', currencies, currenciesCount }
 }
 
-interface createCurrencyResult {
-  currency: any
-}
-
-interface createCurrencyParams {
-  names: object
-  symbols: object
-  priority: number
-  active?: boolean
-}
-
-export async function create(payload: createCurrencyParams): Promise<createCurrencyResult> {
+export async function create(payload: CurrencyTypes.createCurrencyParams): Promise<CurrencyTypes.createCurrenciesResult> {
   const currency = await CurrencyModel.create(payload)
 
   if (!currency) {
     throw new Error('Currency not created')
   }
 
-  return { currency }
+  return { status: 'success', message: 'Currency created', currency }
 }
 
-interface editCurrenciesResult {
-  currency: any
-}
-
-interface editCurrencyParams {
-  _id: string
-  name: string
-  code: string
-  main?: boolean
-  active?: boolean
-}
-
-export async function edit(payload: editCurrencyParams): Promise<editCurrenciesResult> {
+export async function edit(payload: CurrencyTypes.editCurrencyParams): Promise<CurrencyTypes.editCurrencyResult> {
   const { _id } = payload
 
   if (!_id) {
     throw new Error('Need _ID')
   }
 
-  const currency = await CurrencyModel.updateOne({ _id }, payload)
+  const currency = await CurrencyModel.findOneAndUpdate({ _id }, payload)
 
   if (!currency) {
     throw new Error('currency not edited')
   }
 
-  return { currency }
+  return { status: 'success', message: 'Currency edited', currency }
 }
 
-interface removeCurrencyResult {
-  currencies: number
-}
-
-interface removeCurrencyParams {
-  _ids: string[]
-}
-
-export async function remove(payload: removeCurrencyParams): Promise<removeCurrencyResult> {
+export async function remove(payload: CurrencyTypes.removeCurrencyParams): Promise<CurrencyTypes.removeCurrenciesResult> {
   const { _ids } = payload
 
   if (!_ids) {
@@ -194,33 +135,10 @@ export async function remove(payload: removeCurrencyParams): Promise<removeCurre
     throw new Error('currency not removed')
   }
 
-  return { currencies: currencies.modifiedCount }
+  return { status: 'success', message: 'Currencies removed' }
 }
 
-interface batchCurrencyResult {
-  currencies: number
-}
-
-interface batchCurrencyParams {
-  _ids?: string[]
-  filters?: {
-    names?: string
-    symbols?: string
-    language: string
-    active?: boolean[]
-    priority?: number
-    createdAt?: {
-      from?: Date
-      to?: Date
-    }
-  }
-  params: {
-    column: string
-    value: string | number | boolean | Record<string, string>
-  }[]
-}
-
-export async function batch(payload: batchCurrencyParams): Promise<batchCurrencyResult> {
+export async function batch(payload: CurrencyTypes.batchCurrenciesParams): Promise<CurrencyTypes.batchCurrenciesResult> {
   const { _ids, filters, params } = payload
 
   const {
@@ -251,14 +169,14 @@ export async function batch(payload: batchCurrencyParams): Promise<batchCurrency
 
   let query: Record<string, any> = { removed: false }
 
-  if (names.trim()) {
+  if (names) {
     query = {
       ...query,
       [`names.${language}`]: { $regex: `^${names}`, $options: 'i' },
     }
   }
 
-  if (symbols.trim()) {
+  if (symbols) {
     query = {
       ...query,
       [`symbols.${language}`]: { $regex: `^${symbols}`, $options: 'i' },
@@ -306,24 +224,10 @@ export async function batch(payload: batchCurrencyParams): Promise<batchCurrency
     throw new Error('currency not batch edited')
   }
 
-  return { currencies: currencies.modifiedCount }
+  return { status: 'success', message: 'Currencies batch edited' }
 }
 
-interface importCurrenciesResult {
-  status: string
-}
-
-interface importCurrenciesParams {
-  file: {
-    fieldname: string
-    originalname: string
-    destination: string
-    filename: string
-    path: string
-  }
-}
-
-export async function upload(payload: importCurrenciesParams): Promise<importCurrenciesResult> {
+export async function upload(payload: CurrencyTypes.importCurrenciesParams): Promise<CurrencyTypes.importCurrenciesResult> {
   const { file } = payload
 
   const storedFile = await parseCSV(file.path)
@@ -337,18 +241,10 @@ export async function upload(payload: importCurrenciesParams): Promise<importCur
 
   await CurrencyModel.insertMany(parsedCurrencies)
 
-  return { status: 'success' }
+  return { status: 'success', message: 'Currencies imported' }
 }
 
-interface duplicateCurrencyResult {
-  status: string
-}
-
-interface duplicateCurrencyParams {
-  _ids: string[]
-}
-
-export async function duplicate(payload: duplicateCurrencyParams): Promise<duplicateCurrencyResult> {
+export async function duplicate(payload: CurrencyTypes.duplicateCurrencyParams): Promise<CurrencyTypes.duplicateCurrencyResult> {
   const { _ids } = payload
 
   const currencies = await CurrencyModel.find({ _id: { $in: _ids } })
@@ -364,5 +260,5 @@ export async function duplicate(payload: duplicateCurrencyParams): Promise<dupli
 
   console.log(newCurrencies)
 
-  return { status: 'success' }
+  return { status: 'success', message: 'Currencies duplicated' }
 }

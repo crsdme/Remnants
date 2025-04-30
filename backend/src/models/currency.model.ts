@@ -1,7 +1,7 @@
 import mongoose, { Schema } from 'mongoose'
 import { SUPPORTED_LANGUAGES } from '../config/constants'
 
-export interface CurrencyInterface {
+export interface Currency {
   names: string
   symbols: string
   priority: number
@@ -62,6 +62,6 @@ CurrencySchema.index({ priority: 1 })
 CurrencySchema.index({ removed: 1 })
 CurrencySchema.index({ createdAt: 1 })
 
-const CurrencyModel = mongoose.model<CurrencyInterface>('Currency', CurrencySchema)
+const CurrencyModel = mongoose.model<Currency>('Currency', CurrencySchema)
 
 export { CurrencyModel }

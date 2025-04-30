@@ -69,9 +69,8 @@ describe('currency API', () => {
       })
 
       expect(res.status).toBe(200)
-      expect(res.body).toHaveProperty('currency')
-      expect(res.body.currency).toHaveProperty('modifiedCount')
-      expect(res.body.currency.modifiedCount).toBe(1)
+      expect(res.body).toHaveProperty('status')
+      expect(res.body.status).toBe('success')
     })
   })
 
@@ -121,8 +120,7 @@ describe('currency API', () => {
       })
 
       expect(res.status).toBe(200)
-      expect(res.body).toHaveProperty('currencies')
-      expect(res.body.currencies).toBe(createdImportedCurrencyIds.length)
+      expect(res.body.status).toBe('success')
     })
   })
 
