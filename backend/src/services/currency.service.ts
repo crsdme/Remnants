@@ -20,6 +20,10 @@ export async function get(payload: CurrencyTypes.getCurrenciesParams): Promise<C
       from: undefined,
       to: undefined,
     },
+    updatedAt = {
+      from: undefined,
+      to: undefined,
+    },
   } = payload.filters
 
   const sorters = payload.sorters
@@ -61,6 +65,12 @@ export async function get(payload: CurrencyTypes.getCurrenciesParams): Promise<C
     }
   }
 
+  if (updatedAt.from && updatedAt.to) {
+    query = {
+      ...query,
+      updatedAt: { $gte: updatedAt.from, $lte: updatedAt.to },
+    }
+  }
   const pipeline = [
     {
       $match: query,
@@ -147,6 +157,10 @@ export async function batch(payload: CurrencyTypes.batchCurrenciesParams): Promi
       from: undefined,
       to: undefined,
     },
+    updatedAt = {
+      from: undefined,
+      to: undefined,
+    },
   } = filters || {}
 
   if (!params) {
@@ -200,6 +214,12 @@ export async function batch(payload: CurrencyTypes.batchCurrenciesParams): Promi
     }
   }
 
+  if (updatedAt.from && updatedAt.to) {
+    query = {
+      ...query,
+      updatedAt: { $gte: updatedAt.from, $lte: updatedAt.to },
+    }
+  }
   if (filters) {
     query = {
       $or: [query, { _id: { $in: _ids } }],
