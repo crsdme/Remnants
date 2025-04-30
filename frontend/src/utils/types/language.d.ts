@@ -3,7 +3,8 @@ interface Language {
   name: string
   code: string
   main: boolean
-  disabled: boolean
+  priority: number
+  active: boolean
   createdAt: Date
   updatedAt: Date
 }

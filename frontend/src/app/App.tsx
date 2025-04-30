@@ -4,7 +4,7 @@ import LogoIcon from '@/view/components/ui/icons/logoIcon'
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
 
 import Layout from '../view/components/Layout'
-import { CurrenciesPage, DashboardPage, LoginPage, TestPage } from '../view/containers/'
+import { CurrenciesPage, DashboardPage, LanguagesPage, LoginPage, TestPage } from '../view/containers/'
 import '@/app/App.css'
 
 function AppMain() {
@@ -31,6 +31,7 @@ function AppMain() {
           <Route path="/test" element={<TestPage />} />
 
           <Route path="/settings/currencies" element={<CurrenciesPage />} />
+          <Route path="/settings/languages" element={<LanguagesPage />} />
           <Route path="*" element={<DashboardPage />} />
         </Route>
         <Route path="/login" element={<LoginPage />} />

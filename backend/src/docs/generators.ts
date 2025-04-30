@@ -1,6 +1,7 @@
 import { OpenApiGeneratorV31 } from '@asteasolutions/zod-to-openapi'
 import { registry } from './registry'
 import '../docs/modules/currencies.openapi'
+import '../docs/modules/languages.openapi'
 
 const generator = new OpenApiGeneratorV31(registry.definitions)
 

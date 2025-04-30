@@ -16,38 +16,38 @@ interface ImageItem {
 
 interface Category {
   _id: string
-  names: Names
+  names: LanguageString
 }
 
 interface CustomFields {
   [key: string]: string | string[]
 }
 
-interface Product {
-  _id: string
-  names: Names
-  price: number
-  currency: Currency
-  discount: number
-  wholesalePrice: number
-  wholesaleCurrency: Currency
-  disabled: boolean
-  attributes: Record<string, string>[]
-  images: ImageItem[]
-  reserve: string[]
-  barcode: string[]
-  category: string[]
-  createdAt: string
-  updatedAt: string
-  categories: Category[]
-  customFields: CustomFields
-  customFieldsGroup: string
-  unit: Unit
-  removed: boolean
-}
+// interface Product {
+//   _id: string
+//   names: LanguageString
+//   price: number
+//   currency: Currency
+//   discount: number
+//   wholesalePrice: number
+//   wholesaleCurrency: Currency
+//   disabled: boolean
+//   attributes: Record<string, string>[]
+//   images: ImageItem[]
+//   reserve: string[]
+//   barcode: string[]
+//   category: string[]
+//   createdAt: string
+//   updatedAt: string
+//   categories: Category[]
+//   customFields: CustomFields
+//   customFieldsGroup: string
+//   unit: Unit
+//   removed: boolean
+// }
 
-interface ProductsResponse {
-  status: string
-  products: Product[]
-  productsCount: number
-}
+// interface ProductsResponse {
+//   status: string
+//   products: Product[]
+//   productsCount: number
+// }

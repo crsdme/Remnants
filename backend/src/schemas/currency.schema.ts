@@ -1,110 +1,68 @@
 import { extendZodWithOpenApi } from '@asteasolutions/zod-to-openapi'
 import { z } from 'zod'
+import { booleanArraySchema, dateRangeSchema, idSchema, languageStringSchema, numberFromStringSchema, paginationSchema } from './common'
 
 extendZodWithOpenApi(z)
 
+function hasIdsOrFilters(data: {
+  _ids?: unknown
+  filters?: unknown
+}) {
+  return !!data._ids || !!data.filters
+}
+
 export const getCurrencySchema = z.object({
-  pagination: z
-    .object({
-      current: z.preprocess(val => Number(val), z.number()).optional(),
-      pageSize: z.preprocess(val => Number(val), z.number()).optional(),
-      full: z.preprocess(val => Boolean(val), z.boolean()).optional(),
-    })
-    .optional(),
-  filters: z
-    .object({
-      names: z.string().optional(),
-      symbols: z.string().optional(),
-      language: z.string(),
-      priority: z.preprocess(val => Number(val), z.number()).optional(),
-      createdAt: z
-        .object({
-          from: z.preprocess((val) => {
-            if (!val || (typeof val !== 'string' && typeof val !== 'number'))
-              return undefined
-            return new Date(val)
-          }, z.date().optional()),
-          to: z.preprocess((val) => {
-            if (!val || (typeof val !== 'string' && typeof val !== 'number'))
-              return undefined
-            return new Date(val)
-          }, z.date().optional()),
-        })
-        .optional(),
-      active: z
-        .preprocess((val) => {
-          if (Array.isArray(val)) {
-            return val.map(item => item === 'true')
-          }
-          return val === 'true'
-        }, z.array(z.boolean()))
-        .optional(),
-    })
-    .optional(),
-  sorters: z
-    .object({
-      names: z.preprocess(val => Number(val), z.number()).optional(),
-      priority: z.preprocess(val => Number(val), z.number()).optional(),
-      updatedAt: z.preprocess(val => Number(val), z.number()).optional(),
-      createdAt: z.preprocess(val => Number(val), z.number()).optional(),
-    })
-    .optional(),
+  pagination: paginationSchema.optional(),
+  filters: z.object({
+    names: z.string().optional(),
+    symbols: z.string().optional(),
+    language: z.string(),
+    priority: numberFromStringSchema.optional(),
+    createdAt: dateRangeSchema.optional(),
+    updatedAt: dateRangeSchema.optional(),
+    active: booleanArraySchema.optional(),
+  }).optional().default({ language: 'en' }),
+  sorters: z.object({
+    names: numberFromStringSchema.optional(),
+    priority: numberFromStringSchema.optional(),
+    updatedAt: numberFromStringSchema.optional(),
+    createdAt: numberFromStringSchema.optional(),
+  }).optional().default({}),
 })
 
 export const createCurrencySchema = z.object({
-  names: z.object({
-    ru: z.string(),
-    en: z.string(),
-  }),
-  symbols: z.object({
-    ru: z.string(),
-    en: z.string(),
-  }),
+  names: languageStringSchema,
+  symbols: languageStringSchema,
   priority: z.number(),
   active: z.boolean().optional(),
 })
 
 export const editCurrencySchema = z.object({
-  _id: z.string(),
-  names: z.object({
-    ru: z.string(),
-    en: z.string(),
-  }),
-  symbols: z.object({
-    ru: z.string(),
-    en: z.string(),
-  }),
-  priority: z.number(),
+  _id: idSchema,
+  names: languageStringSchema,
+  symbols: languageStringSchema,
+  priority: numberFromStringSchema,
   active: z.boolean().optional(),
 })
 
 export const removeCurrencySchema = z.object({
-  _ids: z.array(z.string()),
+  _ids: z.array(idSchema),
 })
 
 export const duplicateCurrencySchema = z.object({
-  _ids: z.array(z.string()),
+  _ids: z.array(idSchema),
 })
 
 export const batchCurrencySchema = z.object({
-  _ids: z.array(z.string()).optional(),
+  _ids: z.array(idSchema).optional(),
   filters: z.object({
     names: z.string().optional(),
     symbols: z.string().optional(),
     language: z.string(),
-    active: z
-      .preprocess((val) => {
-        if (Array.isArray(val)) {
-          return val.map(item => item === 'true')
-        }
-        return val === 'true'
-      }, z.array(z.boolean()))
-      .optional(),
-    priority: z.preprocess(val => Number(val), z.number()).optional(),
-    createdAt: z.object({
-      from: z.date().optional(),
-      to: z.date().optional(),
-    }).optional(),
+    active: booleanArraySchema.optional(),
+    priority: numberFromStringSchema.optional(),
+    createdAt: dateRangeSchema.optional(),
+    updatedAt: dateRangeSchema.optional(),
   }).optional(),
   params: z.array(
     z.object({
@@ -112,13 +70,9 @@ export const batchCurrencySchema = z.object({
       value: z.any(),
     }),
   ),
-}).refine(
-  data => data._ids !== undefined || data.filters !== undefined,
-  {
-    message: 'Either \'_ids\' or \'filters\' must be provided.',
-    path: ['_ids'],
-  },
-)
+}).refine(hasIdsOrFilters, {
+  message: 'Either _ids or filters are required.',
+})
 
 export const importCurrenciesSchema = z.object({
   file: z.instanceof(File),

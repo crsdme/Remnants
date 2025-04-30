@@ -10,12 +10,7 @@ router.post('/create', validateBodyRequest(createCurrencySchema), CurrencyContro
 router.post('/edit', validateBodyRequest(editCurrencySchema), CurrencyController.edit)
 router.post('/remove', validateBodyRequest(removeCurrencySchema), CurrencyController.remove)
 router.post('/batch', validateBodyRequest(batchCurrencySchema), CurrencyController.batch)
-router.post(
-  '/import',
-  uploadSingle('file'),
-  validateUpload('file'),
-  CurrencyController.importCurrencies,
-)
+router.post('/import', uploadSingle('file'), validateUpload('file'), CurrencyController.upload)
 router.post('/duplicate', validateBodyRequest(duplicateCurrencySchema), CurrencyController.duplicate)
 
 export default router

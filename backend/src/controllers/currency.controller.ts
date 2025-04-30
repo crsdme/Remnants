@@ -70,14 +70,13 @@ export async function duplicate(req: Request, res: Response, next: NextFunction)
   }
 }
 
-export async function importCurrencies(req: Request, res: Response, next: NextFunction) {
+export async function upload(req: Request, res: Response, next: NextFunction) {
   try {
     if (!req.file) {
       throw new Error('No file uploaded')
     }
-    const serviceResponse = await CurrencyService.importCurrencies({
-      file: req.file,
-    })
+
+    const serviceResponse = await CurrencyService.upload({ file: req.file })
 
     res.status(200).json(serviceResponse)
   }

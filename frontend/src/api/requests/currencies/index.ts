@@ -1,13 +1,17 @@
 import { api } from '@/api/instance'
 
 export interface getCurrenciesParams {
-  filters?: {
+  filters: {
     names?: string
     symbols?: string
     language: string
     active?: boolean[]
     priority?: number
     createdAt?: {
+      from?: Date
+      to?: Date
+    }
+    updatedAt?: {
       from?: Date
       to?: Date
     }
@@ -18,7 +22,7 @@ export interface getCurrenciesParams {
     createdAt?: number
     updatedAt?: number
   }
-  pagination: {
+  pagination?: {
     full?: boolean
     current?: number
     pageSize?: number
@@ -29,13 +33,24 @@ export async function getCurrencies(params: getCurrenciesParams) {
   return api.get<CurrenciesResponse>('currencies/get', { params })
 }
 
-export type createCurrenciesParams = Currency
+export interface createCurrenciesParams {
+  names: LanguageString
+  symbols: LanguageString
+  priority: number
+  active?: boolean
+}
 
 export async function createCurrency(params: createCurrenciesParams) {
   return api.post<CurrenciesResponse>('currencies/create', { ...params })
 }
 
-export type editCurrencyParams = Currency
+export interface editCurrencyParams {
+  _id: string
+  names: LanguageString
+  symbols: LanguageString
+  priority: number
+  active?: boolean
+}
 
 export async function editCurrency(params: editCurrencyParams) {
   return api.post<CurrenciesResponse>('currencies/edit', params)

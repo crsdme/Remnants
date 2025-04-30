@@ -1,119 +1,306 @@
+import type * as LanguageTypes from '../types/language.type'
 import { LanguageModel } from '../models/'
+import { parseCSV, toBoolean, toNumber } from '../utils/parseTools'
 
-interface getLanguagesResult {
-  languages: any[]
-  languagesCount: number
-}
-
-interface getLanguagesParams {
-  filters: any[]
-  sorters: any[]
-  pagination: {
-    current: number
-    pageSize: number
-  }
-}
-
-export async function get(payload: getLanguagesParams): Promise<getLanguagesResult> {
+export async function get(payload: LanguageTypes.getLanguagesParams): Promise<LanguageTypes.getLanguagesResult> {
   const { current = 1, pageSize = 10 } = payload.pagination
 
-  const query = { removed: false }
+  const {
+    name = '',
+    code = '',
+    active = undefined,
+    priority = undefined,
+    main = undefined,
+    createdAt = {
+      from: undefined,
+      to: undefined,
+    },
+    updatedAt = {
+      from: undefined,
+      to: undefined,
+    },
+  } = payload.filters
+
+  const sorters = payload.sorters
+
+  let query: Record<string, any> = { removed: false }
+
+  if (name.trim()) {
+    query = {
+      ...query,
+      name: { $regex: `^${name}`, $options: 'i' },
+    }
+  }
+
+  if (code.trim()) {
+    query = {
+      ...query,
+      code: { $regex: `^${code}`, $options: 'i' },
+    }
+  }
+
+  if (Array.isArray(active) && active.length > 0) {
+    query = {
+      ...query,
+      active: { $in: active },
+    }
+  }
+
+  if (Array.isArray(main) && main.length > 0) {
+    query = {
+      ...query,
+      main: { $in: main },
+    }
+  }
+
+  if (priority) {
+    query = {
+      ...query,
+      priority,
+    }
+  }
+
+  if (createdAt.from && createdAt.to) {
+    query = {
+      ...query,
+      createdAt: { $gte: createdAt.from, $lte: createdAt.to },
+    }
+  }
+
+  if (updatedAt.from && updatedAt.to) {
+    query = {
+      ...query,
+      updatedAt: { $gte: updatedAt.from, $lte: updatedAt.to },
+    }
+  }
 
   const pipeline = [
     {
       $match: query,
     },
+    ...(sorters && Object.keys(sorters).length > 0
+      ? [{ $sort: sorters as Record<string, 1 | -1> }]
+      : []),
+    {
+      $facet: {
+        languages: [
+          { $skip: (current - 1) * pageSize },
+          { $limit: pageSize },
+        ],
+        totalCount: [
+          { $count: 'count' },
+        ],
+      },
+    },
   ]
 
-  const languagesCount = await LanguageModel.countDocuments(query)
+  const languagesResult = await LanguageModel.aggregate(pipeline).exec()
 
-  const languagesQuery = LanguageModel.aggregate(pipeline)
-
-  languagesQuery
-    .skip((current - 1) * pageSize)
-    .limit(pageSize)
-
-  const languages = await languagesQuery.exec()
+  const languages = languagesResult[0].languages
+  const languagesCount = languagesResult[0].totalCount[0]?.count || 0
 
   if (!languages) {
-    throw new Error('Products not found')
+    throw new Error('Languages not found')
   }
 
-  return { languages, languagesCount }
+  return {
+    status: 'success',
+    message: 'Languages fetched successfully',
+    languages,
+    languagesCount,
+  }
 }
 
-interface createLanguagesResult {
-  language: any
-}
-
-interface createLanguageParams {
-  name: string
-  code: string
-  main?: boolean
-  active?: boolean
-}
-
-export async function create(payload: createLanguageParams): Promise<createLanguagesResult> {
+export async function create(payload: LanguageTypes.createLanguageParams): Promise<LanguageTypes.createLanguagesResult> {
   const language = await LanguageModel.create(payload)
 
   if (!language) {
     throw new Error('Language not created')
   }
 
-  return { language }
+  return {
+    status: 'success',
+    message: 'Language created successfully',
+    language,
+  }
 }
 
-interface editLanguagesResult {
-  language: any
-}
-
-interface editLanguageParams {
-  _id: string
-  name: string
-  code: string
-  main?: boolean
-  active?: boolean
-}
-
-export async function edit(payload: editLanguageParams): Promise<editLanguagesResult> {
+export async function edit(payload: LanguageTypes.editLanguageParams): Promise<LanguageTypes.editLanguagesResult> {
   const { _id } = payload
 
-  if (!_id) {
-    throw new Error('Need _ID')
-  }
-
-  const language = await LanguageModel.updateOne({ _id }, payload)
+  const language = await LanguageModel.findOneAndUpdate({ _id }, payload)
 
   if (!language) {
     throw new Error('Language not edited')
   }
 
-  return { language }
-}
-
-interface editLanguagesResult {
-  language: any
-}
-
-interface removeLanguageParams {
-  _id: string
-}
-
-export async function remove(payload: removeLanguageParams): Promise<editLanguagesResult> {
-  const { _id } = payload
-
-  if (!_id) {
-    throw new Error('Need _ID')
+  return {
+    status: 'success',
+    message: 'Language edited successfully',
+    language,
   }
+}
 
-  const language = await LanguageModel.updateOne(
-    { _id },
+export async function remove(payload: LanguageTypes.removeLanguageParams): Promise<LanguageTypes.removeLanguagesResult> {
+  const { _ids } = payload
+
+  const languages = await LanguageModel.updateMany(
+    { _id: { $in: _ids } },
     { $set: { removed: true } },
   )
 
-  if (!language) {
+  if (!languages) {
     throw new Error('Language not removed')
   }
 
-  return { language }
+  return {
+    status: 'success',
+    message: 'Languages removed successfully',
+  }
+}
+
+export async function batch(payload: LanguageTypes.batchLanguagesParams): Promise<LanguageTypes.batchLanguagesResult> {
+  const { _ids, filters, params } = payload
+
+  const {
+    name = '',
+    code = '',
+    active = undefined,
+    priority = undefined,
+    main = undefined,
+    createdAt = {
+      from: undefined,
+      to: undefined,
+    },
+    updatedAt = {
+      from: undefined,
+      to: undefined,
+    },
+  } = filters || {}
+
+  const allowedParams = ['name', 'code', 'priority', 'main', 'active']
+
+  const filteredParams = params.filter(item => item.column && item.value && allowedParams.includes(item.column))
+
+  const batchParams = filteredParams.map(item => ({ [`${item.column}`]: item.value }))
+
+  const mergedBatchParams = Object.assign({}, ...batchParams)
+
+  let query: Record<string, any> = { removed: false }
+
+  if (name) {
+    query = {
+      ...query,
+      name,
+    }
+  }
+
+  if (code) {
+    query = {
+      ...query,
+      code,
+    }
+  }
+
+  if (Array.isArray(active) && active.length > 0) {
+    query = {
+      ...query,
+      active: { $in: active },
+    }
+  }
+
+  if (Array.isArray(main) && main.length > 0) {
+    query = {
+      ...query,
+      main: { $in: main },
+    }
+  }
+
+  if (priority) {
+    query = {
+      ...query,
+      priority,
+    }
+  }
+
+  if (createdAt.from && createdAt.to) {
+    query = {
+      ...query,
+      createdAt: { $gte: createdAt.from, $lte: createdAt.to },
+    }
+  }
+
+  if (updatedAt.from && updatedAt.to) {
+    query = {
+      ...query,
+      updatedAt: { $gte: updatedAt.from, $lte: updatedAt.to },
+    }
+  }
+
+  if (filters) {
+    query = {
+      $or: [query, { _id: { $in: _ids } }],
+    }
+  }
+  else {
+    query = {
+      _id: { $in: _ids },
+    }
+  }
+
+  const languages = await LanguageModel.updateMany(
+    query,
+    { $set: mergedBatchParams },
+  )
+
+  if (!languages) {
+    throw new Error('Language not batch edited')
+  }
+
+  return {
+    status: 'success',
+    message: 'Languages batch edited successfully',
+  }
+}
+
+export async function upload(payload: LanguageTypes.importLanguagesParams): Promise<LanguageTypes.importLanguagesResult> {
+  const { file } = payload
+  console.log(payload)
+  const storedFile = await parseCSV(file.path)
+
+  const parsedLanguages = storedFile.map(row => ({
+    name: row.name,
+    code: row.code,
+    priority: toNumber(row.priority),
+    active: toBoolean(row.active),
+    main: toBoolean(row.main),
+  }))
+
+  await LanguageModel.insertMany(parsedLanguages)
+
+  return {
+    status: 'success',
+    message: 'Languages imported successfully',
+  }
+}
+
+export async function duplicate(payload: LanguageTypes.duplicateLanguageParams): Promise<LanguageTypes.duplicateLanguageResult> {
+  const { _ids } = payload
+
+  const languages = await LanguageModel.find({ _id: { $in: _ids } })
+
+  const parsedLanguages = languages.map(language => ({
+    name: language.name,
+    code: language.code,
+    priority: language.priority,
+    active: language.active,
+    main: language.main,
+  }))
+
+  await LanguageModel.insertMany(parsedLanguages)
+
+  return {
+    status: 'success',
+    message: 'Languages duplicated successfully',
+  }
 }

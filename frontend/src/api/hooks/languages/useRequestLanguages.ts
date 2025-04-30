@@ -5,7 +5,13 @@ import { useSuspenseQuery } from '@tanstack/react-query'
 
 export function useRequestLanguages(params: getLanguagesParams) {
   return useSuspenseQuery({
-    queryKey: ['languages', 'get', params.pagination.current],
+    queryKey: [
+      'languages',
+      'get',
+      JSON.stringify(params.pagination),
+      JSON.stringify(params.filters),
+      JSON.stringify(params.sorters),
+    ],
     queryFn: () => getLanguages(params),
     staleTime: 60000,
   })

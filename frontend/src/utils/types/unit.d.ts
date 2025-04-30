@@ -1,7 +1,7 @@
 interface Unit {
   _id: string
-  names: Names
-  symbols: Names
+  names: LanguageString
+  symbols: LanguageString
   active: boolean
   createdAt: string
   updatedAt: string

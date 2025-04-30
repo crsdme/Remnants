@@ -31,7 +31,7 @@ interface FilterItem {
 }
 
 interface AdvancedFiltersProps {
-  columns: ColumnDef<Currency>[]
+  columns: ColumnDef<any>[]
   onSubmit: (filters: FilterItem[]) => void
   onCancel: () => void
 }

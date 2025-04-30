@@ -1,14 +1,16 @@
-interface Names {
-  ru: string
-  en: string
+import type { SupportedLanguage } from '../constants'
+
+type LanguageFields = {
+  [key in SupportedLanguage]: string
 }
 
-interface Pagination {
-  current: number
-  pageSize: number
+declare global {
+  interface LanguageString extends LanguageFields {}
+
+  interface Pagination {
+    current: number
+    pageSize: number
+  }
 }
 
-declare module '*.png';
-declare module '*.svg';
-declare module '*.jpeg';
-declare module '*.jpg';
+export {}

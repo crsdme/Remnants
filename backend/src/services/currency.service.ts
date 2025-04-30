@@ -323,7 +323,7 @@ interface importCurrenciesParams {
   }
 }
 
-export async function importCurrencies(payload: importCurrenciesParams): Promise<importCurrenciesResult> {
+export async function upload(payload: importCurrenciesParams): Promise<importCurrenciesResult> {
   const { file } = payload
 
   const storedFile = await parseCSV(file.path)

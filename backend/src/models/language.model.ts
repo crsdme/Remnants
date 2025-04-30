@@ -1,11 +1,14 @@
 import mongoose, { Schema } from 'mongoose'
 
-export interface LanguageInterface {
+export interface Language {
   name: string
   code: string
-  main: string
-  active: string
-  removed: string
+  priority: number
+  main: boolean
+  active: boolean
+  removed: boolean
+  createdAt: Date
+  updatedAt: Date
 }
 
 const LanguageSchema: Schema = new Schema(
@@ -22,6 +25,10 @@ const LanguageSchema: Schema = new Schema(
       type: Schema.Types.Boolean,
       required: true,
     },
+    priority: {
+      type: Schema.Types.Number,
+      default: 0,
+    },
     active: {
       type: Schema.Types.Boolean,
       default: true,
@@ -34,6 +41,6 @@ const LanguageSchema: Schema = new Schema(
   { timestamps: true },
 )
 
-const LanguageModel = mongoose.model<LanguageInterface>('Language', LanguageSchema)
+const LanguageModel = mongoose.model<Language>('Language', LanguageSchema)
 
 export { LanguageModel }

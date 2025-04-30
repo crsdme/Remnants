@@ -1,7 +1,7 @@
 interface Currency {
   _id: string
-  names: Names
-  symbols: Names
+  names: LanguageString
+  symbols: LanguageString
   active: boolean
   priority: number
   disabled: boolean

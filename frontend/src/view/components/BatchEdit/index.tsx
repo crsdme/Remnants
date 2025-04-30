@@ -29,7 +29,7 @@ interface BatchEditItem {
 interface BatchEditProps {
   isLoading?: boolean
   buttonLabel?: string
-  columns: ColumnDef<Currency>[]
+  columns: ColumnDef<any>[]
   languages: Language[]
   onSubmit: (data: FormValues) => void
   onToggle: (status: 'filter' | 'select') => void

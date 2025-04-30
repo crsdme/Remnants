@@ -1,4 +1,5 @@
 import mongoose, { Schema } from 'mongoose'
+import { SUPPORTED_LANGUAGES } from '../config/constants'
 
 export interface CurrencyInterface {
   names: string
@@ -16,9 +17,8 @@ const CurrencySchema: Schema = new Schema(
       required: true,
       validate: {
         validator(value: Map<string, string>) {
-          const allowedLanguages = ['ru', 'en']
           return Array.from(value.keys()).every(key =>
-            allowedLanguages.includes(key),
+            SUPPORTED_LANGUAGES.includes(key as any),
           )
         },
         message: 'ru en keys only',
@@ -30,9 +30,8 @@ const CurrencySchema: Schema = new Schema(
       required: true,
       validate: {
         validator(value: Map<string, string>) {
-          const allowedLanguages = ['ru', 'en']
           return Array.from(value.keys()).every(key =>
-            allowedLanguages.includes(key),
+            SUPPORTED_LANGUAGES.includes(key as any),
           )
         },
         message: 'ru en keys only',
