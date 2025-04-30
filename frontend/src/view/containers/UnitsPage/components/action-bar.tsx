@@ -1,6 +1,6 @@
 import { useRequestLanguages } from '@/api/hooks'
 
-import { useCurrencyContext } from '@/utils/contexts'
+import { useUnitContext } from '@/utils/contexts'
 import { ImportButton } from '@/view/components/ImportButton'
 import {
   Button,
@@ -38,7 +38,7 @@ const formSchema = z.object({
 
 export function ActionBar() {
   const { t } = useTranslation()
-  const currencyContext = useCurrencyContext()
+  const unitContext = useUnitContext()
   const [file, setFile] = useState<File | null>(null)
 
   const requestLanguages = useRequestLanguages({ pagination: { full: true } })
@@ -55,7 +55,7 @@ export function ActionBar() {
   })
 
   const onSubmit = (values) => {
-    currencyContext.submitCurrencyForm(values)
+    unitContext.submitUnitForm(values)
   }
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -85,7 +85,7 @@ export function ActionBar() {
 
     const link = Object.assign(document.createElement('a'), {
       href: URL.createObjectURL(blob),
-      download: 'currencies-template.csv',
+      download: 'units-template.csv',
     })
 
     link.click()
@@ -95,32 +95,32 @@ export function ActionBar() {
   const onImport = async () => {
     const formData = new FormData()
     formData.append('file', file)
-    currencyContext.importCurrencies(formData)
+    unitContext.importUnits(formData)
     setFile(null)
   }
 
   useEffect(() => {
-    const currency = currencyContext.selectedCurrency
-    let currencyValues = {}
-    if (currency) {
-      currencyValues = {
-        names: { ...currency.names },
-        symbols: { ...currency.symbols },
-        priority: currency.priority,
-        active: currency.active,
+    const unit = unitContext.selectedUnit
+    let unitValues = {}
+    if (unit) {
+      unitValues = {
+        names: { ...unit.names },
+        symbols: { ...unit.symbols },
+        priority: unit.priority,
+        active: unit.active,
       }
     }
 
-    form.reset(currencyValues)
-  }, [currencyContext.selectedCurrency, form, currencyContext.isModalOpen])
+    form.reset(unitValues)
+  }, [unitContext.selectedUnit, form, unitContext.isModalOpen])
 
-  const isLoading = currencyContext.isLoading
+  const isLoading = unitContext.isLoading
 
   return (
     <div className="flex items-center justify-between flex-wrap gap-2">
       <div>
-        <h2 className="text-2xl font-bold tracking-tight">{t('page.currencies.title')}</h2>
-        <p className="text-muted-foreground">{t('page.currencies.description')}</p>
+        <h2 className="text-2xl font-bold tracking-tight">{t('page.units.title')}</h2>
+        <p className="text-muted-foreground">{t('page.units.description')}</p>
       </div>
       <div className="flex items-center flex-wrap gap-2">
         <ImportButton
@@ -131,20 +131,20 @@ export function ActionBar() {
           onSubmit={onImport}
         />
         <Dialog
-          open={currencyContext.isModalOpen}
-          onOpenChange={() => !isLoading && currencyContext.toggleModal()}
+          open={unitContext.isModalOpen}
+          onOpenChange={() => !isLoading && unitContext.toggleModal()}
         >
           <DialogTrigger asChild>
-            <Button onClick={() => currencyContext.toggleModal()} disabled={isLoading}>
+            <Button onClick={() => unitContext.toggleModal()} disabled={isLoading}>
               <Plus />
               {' '}
-              {t('page.currencies.button.create')}
+              {t('page.units.button.create')}
             </Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>{t('page.currencies.modal.title.create')}</DialogTitle>
-              <DialogDescription>{t('page.currencies.modal.description.create')}</DialogDescription>
+              <DialogTitle>{t('page.units.modal.title.create')}</DialogTitle>
+              <DialogDescription>{t('page.units.modal.description.create')}</DialogDescription>
             </DialogHeader>
             <Form {...form}>
               <form className="w-full space-y-4" onSubmit={form.handleSubmit(onSubmit)}>
@@ -156,13 +156,13 @@ export function ActionBar() {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>
-                          {t('page.currencies.form.names', {
+                          {t('page.units.form.names', {
                             language: t(`language.${language.code}`),
                           })}
                         </FormLabel>
                         <FormControl>
                           <Input
-                            placeholder={t('page.currencies.form.names', {
+                            placeholder={t('page.units.form.names', {
                               language: t(`language.${language.code}`),
                             })}
                             className="w-full"
@@ -183,13 +183,13 @@ export function ActionBar() {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>
-                          {t('page.currencies.form.symbols', {
+                          {t('page.units.form.symbols', {
                             language: t(`language.${language.code}`),
                           })}
                         </FormLabel>
                         <FormControl>
                           <Input
-                            placeholder={t('page.currencies.form.symbols', {
+                            placeholder={t('page.units.form.symbols', {
                               language: t(`language.${language.code}`),
                             })}
                             className="w-full"
@@ -207,11 +207,11 @@ export function ActionBar() {
                   name="priority"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>{t('page.currencies.form.priority')}</FormLabel>
+                      <FormLabel>{t('page.units.form.priority')}</FormLabel>
                       <FormControl>
                         <Input
                           type="number"
-                          placeholder={t('page.currencies.form.priority')}
+                          placeholder={t('page.units.form.priority')}
                           className="w-full"
                           {...field}
                           disabled={isLoading}
@@ -234,20 +234,20 @@ export function ActionBar() {
                           disabled={isLoading}
                         />
                       </FormControl>
-                      <FormLabel>{t('page.currencies.form.active')}</FormLabel>
+                      <FormLabel>{t('page.units.form.active')}</FormLabel>
                     </FormItem>
                   )}
                 />
                 <div className="flex gap-2">
                   <Button
                     variant="secondary"
-                    onClick={() => currencyContext.toggleModal()}
+                    onClick={() => unitContext.toggleModal()}
                     disabled={isLoading}
                   >
-                    {t('page.currencies.button.cancel')}
+                    {t('page.units.button.cancel')}
                   </Button>
                   <Button type="submit" disabled={isLoading} loading={isLoading}>
-                    {t('page.currencies.button.submit')}
+                    {t('page.units.button.submit')}
                   </Button>
                 </div>
               </form>

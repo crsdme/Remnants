@@ -3,8 +3,9 @@ interface Unit {
   names: LanguageString
   symbols: LanguageString
   active: boolean
-  createdAt: string
-  updatedAt: string
+  priority: number
+  createdAt: Date
+  updatedAt: Date
 }
 
 interface UnitsResponse {

@@ -1,18 +1,32 @@
 import type { ReactNode } from 'react'
-import { useCreateUnit, useEditUnit, useRemoveUnit } from '@/api/hooks/'
+import {
+  useBatchUnit,
+  useCreateUnit,
+  useDuplicateUnits,
+  useEditUnit,
+  useImportUnits,
+  useRemoveUnits,
+} from '@/api/hooks/'
 
 import { useQueryClient } from '@tanstack/react-query'
 
 import { createContext, useContext, useState } from 'react'
+import { useTranslation } from 'react-i18next'
+
+import { toast } from 'sonner'
 
 interface UnitContextType {
   selectedUnit: Unit
   isModalOpen: boolean
   isLoading: boolean
-  openModal: (item?: Unit) => void
+  toggleModal: (unit?: Unit) => void
+  openModal: (unit?: Unit) => void
   closeModal: () => void
-  submitUnitForm: (params: Unit) => void
-  removeUnit: (params: { _id: string }) => void
+  submitUnitForm: (params) => void
+  batchUnit: (params) => void
+  removeUnit: (params: { _ids: string[] }) => void
+  importUnits: (params) => void
+  duplicateUnits: (params: { _ids: string[] }) => void
 }
 
 const UnitContext = createContext<UnitContextType | undefined>(undefined)
@@ -26,6 +40,8 @@ export function UnitProvider({ children }: UnitProviderProps) {
   const [isLoading, setIsLoading] = useState(false)
   const [selectedUnit, setSelectedUnit] = useState(null)
 
+  const { t } = useTranslation()
+
   const queryClient = useQueryClient()
 
   const useMutateCreateUnit = useCreateUnit({
@@ -35,6 +51,18 @@ export function UnitProvider({ children }: UnitProviderProps) {
         setIsLoading(false)
         setSelectedUnit(null)
         queryClient.invalidateQueries({ queryKey: ['units'] })
+      },
+    },
+  })
+
+  const useMutateDuplicateUnits = useDuplicateUnits({
+    options: {
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ['units'] })
+        toast.success(t('page.units.toast.duplicateUnits.success'))
+      },
+      onError: () => {
+        toast.error(t('page.units.toast.duplicateUnits.error'))
       },
     },
   })
@@ -50,10 +78,30 @@ export function UnitProvider({ children }: UnitProviderProps) {
     },
   })
 
-  const useMutateRemoveUnit = useRemoveUnit({
+  const useMutateRemoveUnit = useRemoveUnits({
     options: {
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: ['units'] })
+      },
+    },
+  })
+
+  const useMutateImportUnits = useImportUnits({
+    options: {
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ['units'] })
+      },
+    },
+  })
+
+  const useMutateBatchUnit = useBatchUnit({
+    options: {
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ['units'] })
+        toast.success(t('page.units.toast.batchUnit.success'))
+      },
+      onError: () => {
+        toast.error(t('page.units.toast.batchUnit.error'))
       },
     },
   })
@@ -70,6 +118,8 @@ export function UnitProvider({ children }: UnitProviderProps) {
     setSelectedUnit(null)
   }
 
+  const toggleModal = unit => (isModalOpen ? closeModal() : openModal(unit))
+
   const submitUnitForm = (params) => {
     setIsLoading(true)
     if (!selectedUnit) {
@@ -84,14 +134,30 @@ export function UnitProvider({ children }: UnitProviderProps) {
     useMutateRemoveUnit.mutate(params)
   }
 
+  const batchUnit = (params) => {
+    useMutateBatchUnit.mutate(params)
+  }
+
+  const importUnits = (params) => {
+    useMutateImportUnits.mutate(params)
+  }
+
+  const duplicateUnits = (params) => {
+    useMutateDuplicateUnits.mutate(params)
+  }
+
   const value: UnitContextType = {
     selectedUnit,
     isModalOpen,
     isLoading,
+    toggleModal,
     openModal,
     closeModal,
     submitUnitForm,
     removeUnit,
+    batchUnit,
+    importUnits,
+    duplicateUnits,
   }
 
   return <UnitContext.Provider value={value}>{children}</UnitContext.Provider>
