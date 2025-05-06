@@ -1,4 +1,4 @@
-import type { ColumnDef } from '@tanstack/react-table'
+import type { Column, ColumnDef } from '@tanstack/react-table'
 
 import { useCurrencyContext } from '@/utils/contexts'
 import formatDate from '@/utils/helpers/formatDate'
@@ -22,9 +22,42 @@ import {
 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 
+const sortIcons = { asc: ArrowUp, desc: ArrowDown }
+
 export function useColumns({ setSorters, expandedRows, setExpandedRows }): ColumnDef<Currency>[] {
   const { t, i18n } = useTranslation()
   const currencyContext = useCurrencyContext()
+
+  const sortHeader = (column: Column<any>, label: string) => {
+    const sortOrder = column.getIsSorted() || undefined
+    const Icon = (sortIcons[sortOrder] || ChevronsUpDown)
+
+    const handleSort = () => {
+      if (sortOrder === 'asc') {
+        column.toggleSorting(true)
+      }
+      else if (sortOrder === 'desc') {
+        column.clearSorting()
+      }
+      else if (!sortOrder) {
+        column.toggleSorting(false)
+      }
+
+      setSorters({ [`${column.id}`]: sortOrder })
+    }
+
+    return (
+      <Button
+        disabled={currencyContext.isLoading}
+        variant="ghost"
+        onClick={handleSort}
+        className="my-2 flex items-center gap-2"
+      >
+        {label}
+        <Icon className="w-4 h-4" />
+      </Button>
+    )
+  }
 
   return [
     {
@@ -66,47 +99,7 @@ export function useColumns({ setSorters, expandedRows, setExpandedRows }): Colum
         filterable: true,
         filterType: 'text',
       },
-      header: ({ column }) => {
-        const sortOrder = column.getIsSorted() || 'none'
-        const icons = { asc: ArrowUp, desc: ArrowDown, none: ChevronsUpDown }
-        const Icon = icons[sortOrder]
-
-        const handleSort = () => {
-          let nextSortOrder
-          if (sortOrder === 'asc') {
-            column.toggleSorting(true)
-            nextSortOrder = 'desc'
-          }
-          else if (sortOrder === 'desc') {
-            column.clearSorting()
-            nextSortOrder = 'none'
-          }
-          else if (sortOrder === 'none') {
-            column.toggleSorting(false)
-            nextSortOrder = 'asc'
-          }
-          const sortFormat = {
-            asc: 1,
-            desc: -1,
-            none: undefined,
-          }
-
-          setSorters({ names: sortFormat[nextSortOrder] })
-        }
-
-        return (
-          <Button
-            disabled={currencyContext.isLoading}
-            variant="ghost"
-            onClick={handleSort}
-            className="my-2 flex items-center gap-2"
-          >
-            {t('page.currencies.table.names')}
-            {' '}
-            <Icon className="w-4 h-4" />
-          </Button>
-        )
-      },
+      header: ({ column }) => sortHeader(column, t('page.currencies.table.names')),
       accessorFn: row => row.names?.[i18n.language] || row.names?.en,
     },
     {
@@ -137,47 +130,7 @@ export function useColumns({ setSorters, expandedRows, setExpandedRows }): Colum
         filterable: true,
         filterType: 'number',
       },
-      header: ({ column }) => {
-        const sortOrder = column.getIsSorted() || 'none'
-        const icons = { asc: ArrowUp, desc: ArrowDown, none: ChevronsUpDown }
-        const Icon = icons[sortOrder]
-
-        const handleSort = () => {
-          let nextSortOrder
-          if (sortOrder === 'asc') {
-            column.toggleSorting(true)
-            nextSortOrder = 'desc'
-          }
-          else if (sortOrder === 'desc') {
-            column.clearSorting()
-            nextSortOrder = 'none'
-          }
-          else if (sortOrder === 'none') {
-            column.toggleSorting(false)
-            nextSortOrder = 'asc'
-          }
-          const sortFormat = {
-            asc: 1,
-            desc: -1,
-            none: undefined,
-          }
-
-          setSorters({ priority: sortFormat[nextSortOrder] })
-        }
-
-        return (
-          <Button
-            disabled={currencyContext.isLoading}
-            variant="ghost"
-            onClick={handleSort}
-            className="my-2 flex items-center gap-2"
-          >
-            {t('page.currencies.table.priority')}
-            {' '}
-            <Icon className="w-4 h-4" />
-          </Button>
-        )
-      },
+      header: ({ column }) => sortHeader(column, t('page.currencies.table.priority')),
       cell: ({ row }) => <Badge variant="outline">{row.original.priority}</Badge>,
     },
     {
@@ -201,47 +154,7 @@ export function useColumns({ setSorters, expandedRows, setExpandedRows }): Colum
         filterable: true,
         filterType: 'date',
       },
-      header: ({ column }) => {
-        const sortOrder = column.getIsSorted() || 'none'
-        const icons = { asc: ArrowUp, desc: ArrowDown, none: ChevronsUpDown }
-        const Icon = icons[sortOrder]
-
-        const handleSort = () => {
-          let nextSortOrder
-          if (sortOrder === 'asc') {
-            column.toggleSorting(true)
-            nextSortOrder = 'desc'
-          }
-          else if (sortOrder === 'desc') {
-            column.clearSorting()
-            nextSortOrder = 'none'
-          }
-          else if (sortOrder === 'none') {
-            column.toggleSorting(false)
-            nextSortOrder = 'asc'
-          }
-          const sortFormat = {
-            asc: 1,
-            desc: -1,
-            none: undefined,
-          }
-
-          setSorters({ createdAt: sortFormat[nextSortOrder] })
-        }
-
-        return (
-          <Button
-            disabled={currencyContext.isLoading}
-            variant="ghost"
-            onClick={handleSort}
-            className="my-2 flex items-center gap-2"
-          >
-            {t('page.currencies.table.createdAt')}
-            {' '}
-            <Icon className="w-4 h-4" />
-          </Button>
-        )
-      },
+      header: ({ column }) => sortHeader(column, t('page.currencies.table.createdAt')),
       cell: ({ row }) => formatDate(row.getValue('createdAt'), 'MMMM dd, yyyy', i18n.language),
     },
     {
@@ -252,47 +165,7 @@ export function useColumns({ setSorters, expandedRows, setExpandedRows }): Colum
         filterable: true,
         filterType: 'date',
       },
-      header: ({ column }) => {
-        const sortOrder = column.getIsSorted() || 'none'
-        const icons = { asc: ArrowUp, desc: ArrowDown, none: ChevronsUpDown }
-        const Icon = icons[sortOrder]
-
-        const handleSort = () => {
-          let nextSortOrder
-          if (sortOrder === 'asc') {
-            column.toggleSorting(true)
-            nextSortOrder = 'desc'
-          }
-          else if (sortOrder === 'desc') {
-            column.clearSorting()
-            nextSortOrder = 'none'
-          }
-          else if (sortOrder === 'none') {
-            column.toggleSorting(false)
-            nextSortOrder = 'asc'
-          }
-          const sortFormat = {
-            asc: 1,
-            desc: -1,
-            none: undefined,
-          }
-
-          setSorters({ updatedAt: sortFormat[nextSortOrder] })
-        }
-
-        return (
-          <Button
-            disabled={currencyContext.isLoading}
-            variant="ghost"
-            onClick={handleSort}
-            className="my-2 flex items-center gap-2"
-          >
-            {t('page.currencies.table.updatedAt')}
-            {' '}
-            <Icon className="w-4 h-4" />
-          </Button>
-        )
-      },
+      header: ({ column }) => sortHeader(column, t('page.currencies.table.updatedAt')),
       cell: ({ row }) => formatDate(row.getValue('updatedAt'), 'MMMM dd, yyyy', i18n.language),
     },
     {

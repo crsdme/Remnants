@@ -25,6 +25,17 @@ export async function get(payload: LanguageTypes.getLanguagesParams): Promise<La
 
   let query: Record<string, any> = { removed: false }
 
+  let sortersQuery: Record<string, any> = { _id: 1 }
+
+  if (Object.entries(sorters).length > 0) {
+    sortersQuery = Object.fromEntries(
+      Object.entries(sorters).map(([key, value]) => [
+        key,
+        value === 'asc' ? 1 : -1,
+      ]),
+    )
+  }
+
   if (name.trim()) {
     query = {
       ...query,
@@ -78,9 +89,9 @@ export async function get(payload: LanguageTypes.getLanguagesParams): Promise<La
     {
       $match: query,
     },
-    ...(sorters && Object.keys(sorters).length > 0
-      ? [{ $sort: sorters as Record<string, 1 | -1> }]
-      : []),
+    {
+      $sort: sortersQuery,
+    },
     {
       $facet: {
         languages: [

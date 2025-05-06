@@ -83,8 +83,6 @@ export async function get(payload: UnitTypes.getUnitsParams): Promise<UnitTypes.
     }
   }
 
-  console.log({ $sort: sortersQuery })
-
   const pipeline = [
     {
       $match: query,

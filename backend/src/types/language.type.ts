@@ -19,13 +19,13 @@ export interface getLanguagesParams {
     updatedAt: DateRange
   }
   sorters: {
-    name: number
-    code: number
-    priority: number
-    main: number
-    active: number
-    createdAt: number
-    updatedAt: number
+    name: string
+    code: string
+    priority: string
+    main: string
+    active: string
+    createdAt: string
+    updatedAt: string
   }
   pagination: Pagination
 }

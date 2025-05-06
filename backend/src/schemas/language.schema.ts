@@ -1,6 +1,6 @@
 import { extendZodWithOpenApi } from '@asteasolutions/zod-to-openapi'
 import { z } from 'zod'
-import { booleanArraySchema, dateRangeSchema, idSchema, numberFromStringSchema, paginationSchema } from './common'
+import { booleanArraySchema, dateRangeSchema, idSchema, numberFromStringSchema, paginationSchema, sorterParamsSchema } from './common'
 
 extendZodWithOpenApi(z)
 
@@ -23,13 +23,13 @@ export const getLanguageSchema = z.object({
     main: booleanArraySchema.optional(),
   }).optional().default({}),
   sorters: z.object({
-    name: numberFromStringSchema.optional(),
-    code: numberFromStringSchema.optional(),
-    priority: numberFromStringSchema.optional(),
-    main: numberFromStringSchema.optional(),
-    active: numberFromStringSchema.optional(),
-    updatedAt: numberFromStringSchema.optional(),
-    createdAt: numberFromStringSchema.optional(),
+    name: sorterParamsSchema.optional(),
+    code: sorterParamsSchema.optional(),
+    priority: sorterParamsSchema.optional(),
+    main: sorterParamsSchema.optional(),
+    active: sorterParamsSchema.optional(),
+    updatedAt: sorterParamsSchema.optional(),
+    createdAt: sorterParamsSchema.optional(),
   }).optional().default({}),
 })
 

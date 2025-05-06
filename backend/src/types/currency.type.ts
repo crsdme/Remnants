@@ -20,10 +20,12 @@ export interface getCurrenciesParams {
     updatedAt: DateRange
   }
   sorters: {
-    names: number
-    priority: number
-    updatedAt: number
-    createdAt: number
+    names: string
+    symbols: string
+    active: string
+    priority: string
+    updatedAt: string
+    createdAt: string
   }
   pagination: Pagination
 }
