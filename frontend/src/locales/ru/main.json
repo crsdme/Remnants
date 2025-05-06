@@ -245,5 +245,15 @@
   "component.import.dialog.or": "ИЛИ",
   "component.import.dialog.downloadTemplate": "Скачать шаблон",
   "component.import.dialog.cancel": "Отмена",
-  "component.import.dialog.import": "Импортировать"
+  "component.import.dialog.import": "Импортировать",
+
+  "component.advancedSorters.button": "Расширенная сортировка",
+  "component.advancedSorters.title": "Расширенная сортировка",
+  "component.advancedSorters.description": "Добавьте сортировку для организации данных",
+  "component.advancedSorters.selectColumn": "Выберите колонку",
+  "component.advancedSorters.asc": "По возрастанию",
+  "component.advancedSorters.desc": "По убыванию",
+  "component.advancedSorters.addSorter": "Добавить сортировку",
+  "component.advancedSorters.clear": "Очистить",
+  "component.advancedSorters.apply": "Применить"
 }

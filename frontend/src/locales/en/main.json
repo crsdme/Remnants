@@ -242,5 +242,15 @@
   "component.import.dialog.or": "OR",
   "component.import.dialog.downloadTemplate": "Download Template",
   "component.import.dialog.cancel": "Cancel",
-  "component.import.dialog.import": "Import"
+  "component.import.dialog.import": "Import",
+
+  "component.advancedSorters.button": "Advanced Sorters",
+  "component.advancedSorters.title": "Advanced Sorters",
+  "component.advancedSorters.description": "Add sorters to organize your data",
+  "component.advancedSorters.selectColumn": "Select column",
+  "component.advancedSorters.asc": "Ascending",
+  "component.advancedSorters.desc": "Descending",
+  "component.advancedSorters.addSorter": "Add Sorter",
+  "component.advancedSorters.clear": "Clear",
+  "component.advancedSorters.apply": "Apply"
 }

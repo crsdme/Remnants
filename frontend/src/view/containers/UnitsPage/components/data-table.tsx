@@ -4,11 +4,12 @@ import { useUnitContext } from '@/utils/contexts/unit/UnitContext'
 
 import { useDebounceCallback } from '@/utils/hooks'
 import { AdvancedFilters } from '@/view/components/AdvancedFilters'
+import { AdvancedSorters } from '@/view/components/AdvancedSorters'
+
 import { BatchEdit } from '@/view/components/BatchEdit'
-
 import { ColumnVisibilityMenu } from '@/view/components/ColumnVisibilityMenu'
-import TablePagination from '@/view/components/TablePagination'
 
+import TablePagination from '@/view/components/TablePagination'
 import TableSelectionDropdown from '@/view/components/TableSelectionDropdown'
 import { Separator } from '@/view/components/ui/separator'
 import { Skeleton } from '@/view/components/ui/skeleton'
@@ -222,6 +223,23 @@ export function DataTable() {
     setRowSelection({})
   }
 
+  const advancedSortersSubmit = (sorters) => {
+    const sorterValues = Object.fromEntries(sorters.map(({ column, value }) => [column, value]))
+    setSorters(state => ({ ...state, ...sorterValues }))
+  }
+
+  // const advancedFiltersSubmit = (filters) => {
+  //   const filterValues = Object.fromEntries(filters.map(({ column, value }) => [column, value]))
+  //   setFilters(state => ({
+  //     ...state,
+  //     ...filterValues,
+  //   }))
+  // }
+
+  const advancedSortersCancel = () => {
+    setSorters({})
+  }
+
   return (
     <>
       <div className="w-full flex justify-between items-start max-md:flex-col gap-2 py-2">
@@ -236,6 +254,11 @@ export function DataTable() {
             languages={languages}
             onSubmit={handleBatchSubmit}
             onToggle={handleBatchToggle}
+          />
+          <AdvancedSorters
+            columns={columns}
+            onSubmit={advancedSortersSubmit}
+            onCancel={advancedSortersCancel}
           />
           <Separator orientation="vertical" className="min-h-6 max-md:hidden" />
           <DataTableFilters filters={filters} setFilters={setFilters} />

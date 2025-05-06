@@ -1,4 +1,4 @@
-import type { ColumnDef } from '@tanstack/react-table'
+import type { Column, ColumnDef } from '@tanstack/react-table'
 
 import { useUnitContext } from '@/utils/contexts'
 import formatDate from '@/utils/helpers/formatDate'
@@ -22,9 +22,42 @@ import {
 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 
+const sortIcons = { asc: ArrowUp, desc: ArrowDown }
+
 export function useColumns({ setSorters, expandedRows, setExpandedRows }): ColumnDef<Currency>[] {
   const { t, i18n } = useTranslation()
   const unitContext = useUnitContext()
+
+  const sortHeader = (column: Column<any>, label: string) => {
+    const sortOrder = column.getIsSorted() || undefined
+    const Icon = (sortIcons[sortOrder] || ChevronsUpDown)
+
+    const handleSort = () => {
+      if (sortOrder === 'asc') {
+        column.toggleSorting(true)
+      }
+      else if (sortOrder === 'desc') {
+        column.clearSorting()
+      }
+      else if (!sortOrder) {
+        column.toggleSorting(false)
+      }
+
+      setSorters({ [`${column.id}`]: sortOrder })
+    }
+
+    return (
+      <Button
+        disabled={unitContext.isLoading}
+        variant="ghost"
+        onClick={handleSort}
+        className="my-2 flex items-center gap-2"
+      >
+        {label}
+        <Icon className="w-4 h-4" />
+      </Button>
+    )
+  }
 
   return [
     {
@@ -65,48 +98,9 @@ export function useColumns({ setSorters, expandedRows, setExpandedRows }): Colum
         batchEditType: 'textMultiLanguage',
         filterable: true,
         filterType: 'text',
+        sortable: true,
       },
-      header: ({ column }) => {
-        const sortOrder = column.getIsSorted() || 'none'
-        const icons = { asc: ArrowUp, desc: ArrowDown, none: ChevronsUpDown }
-        const Icon = icons[sortOrder]
-
-        const handleSort = () => {
-          let nextSortOrder
-          if (sortOrder === 'asc') {
-            column.toggleSorting(true)
-            nextSortOrder = 'desc'
-          }
-          else if (sortOrder === 'desc') {
-            column.clearSorting()
-            nextSortOrder = 'none'
-          }
-          else if (sortOrder === 'none') {
-            column.toggleSorting(false)
-            nextSortOrder = 'asc'
-          }
-          const sortFormat = {
-            asc: 1,
-            desc: -1,
-            none: undefined,
-          }
-
-          setSorters({ names: sortFormat[nextSortOrder] })
-        }
-
-        return (
-          <Button
-            disabled={unitContext.isLoading}
-            variant="ghost"
-            onClick={handleSort}
-            className="my-2 flex items-center gap-2"
-          >
-            {t('page.units.table.names')}
-            {' '}
-            <Icon className="w-4 h-4" />
-          </Button>
-        )
-      },
+      header: ({ column }) => sortHeader(column, t('page.units.table.names')),
       accessorFn: row => row.names?.[i18n.language] || row.names?.en,
     },
     {
@@ -118,6 +112,7 @@ export function useColumns({ setSorters, expandedRows, setExpandedRows }): Colum
         batchEditType: 'textMultiLanguage',
         filterable: true,
         filterType: 'text',
+        sortable: true,
       },
       header: () => t('page.units.table.symbols'),
       accessorFn: row => row.symbols?.[i18n.language] || row.symbols?.en,
@@ -136,48 +131,9 @@ export function useColumns({ setSorters, expandedRows, setExpandedRows }): Colum
         batchEditType: 'number',
         filterable: true,
         filterType: 'number',
+        sortable: true,
       },
-      header: ({ column }) => {
-        const sortOrder = column.getIsSorted() || 'none'
-        const icons = { asc: ArrowUp, desc: ArrowDown, none: ChevronsUpDown }
-        const Icon = icons[sortOrder]
-
-        const handleSort = () => {
-          let nextSortOrder
-          if (sortOrder === 'asc') {
-            column.toggleSorting(true)
-            nextSortOrder = 'desc'
-          }
-          else if (sortOrder === 'desc') {
-            column.clearSorting()
-            nextSortOrder = 'none'
-          }
-          else if (sortOrder === 'none') {
-            column.toggleSorting(false)
-            nextSortOrder = 'asc'
-          }
-          const sortFormat = {
-            asc: 1,
-            desc: -1,
-            none: undefined,
-          }
-
-          setSorters({ priority: sortFormat[nextSortOrder] })
-        }
-
-        return (
-          <Button
-            disabled={unitContext.isLoading}
-            variant="ghost"
-            onClick={handleSort}
-            className="my-2 flex items-center gap-2"
-          >
-            {t('page.units.table.priority')}
-            {' '}
-            <Icon className="w-4 h-4" />
-          </Button>
-        )
-      },
+      header: ({ column }) => sortHeader(column, t('page.units.table.priority')),
       cell: ({ row }) => <Badge variant="outline">{row.original.priority}</Badge>,
     },
     {
@@ -189,6 +145,7 @@ export function useColumns({ setSorters, expandedRows, setExpandedRows }): Colum
         batchEditType: 'boolean',
         filterable: true,
         filterType: 'boolean',
+        sortable: true,
       },
       header: t('page.units.table.active'),
       cell: ({ row }) => <Badge variant="outline">{row.original.active.toString()}</Badge>,
@@ -200,48 +157,9 @@ export function useColumns({ setSorters, expandedRows, setExpandedRows }): Colum
         title: t('page.units.table.createdAt'),
         filterable: true,
         filterType: 'date',
+        sortable: true,
       },
-      header: ({ column }) => {
-        const sortOrder = column.getIsSorted() || 'none'
-        const icons = { asc: ArrowUp, desc: ArrowDown, none: ChevronsUpDown }
-        const Icon = icons[sortOrder]
-
-        const handleSort = () => {
-          let nextSortOrder
-          if (sortOrder === 'asc') {
-            column.toggleSorting(true)
-            nextSortOrder = 'desc'
-          }
-          else if (sortOrder === 'desc') {
-            column.clearSorting()
-            nextSortOrder = 'none'
-          }
-          else if (sortOrder === 'none') {
-            column.toggleSorting(false)
-            nextSortOrder = 'asc'
-          }
-          const sortFormat = {
-            asc: 1,
-            desc: -1,
-            none: undefined,
-          }
-
-          setSorters({ createdAt: sortFormat[nextSortOrder] })
-        }
-
-        return (
-          <Button
-            disabled={unitContext.isLoading}
-            variant="ghost"
-            onClick={handleSort}
-            className="my-2 flex items-center gap-2"
-          >
-            {t('page.units.table.createdAt')}
-            {' '}
-            <Icon className="w-4 h-4" />
-          </Button>
-        )
-      },
+      header: ({ column }) => sortHeader(column, t('page.units.table.createdAt')),
       cell: ({ row }) => formatDate(row.getValue('createdAt'), 'MMMM dd, yyyy', i18n.language),
     },
     {
@@ -251,48 +169,9 @@ export function useColumns({ setSorters, expandedRows, setExpandedRows }): Colum
         title: t('page.units.table.updatedAt'),
         filterable: true,
         filterType: 'date',
+        sortable: true,
       },
-      header: ({ column }) => {
-        const sortOrder = column.getIsSorted() || 'none'
-        const icons = { asc: ArrowUp, desc: ArrowDown, none: ChevronsUpDown }
-        const Icon = icons[sortOrder]
-
-        const handleSort = () => {
-          let nextSortOrder
-          if (sortOrder === 'asc') {
-            column.toggleSorting(true)
-            nextSortOrder = 'desc'
-          }
-          else if (sortOrder === 'desc') {
-            column.clearSorting()
-            nextSortOrder = 'none'
-          }
-          else if (sortOrder === 'none') {
-            column.toggleSorting(false)
-            nextSortOrder = 'asc'
-          }
-          const sortFormat = {
-            asc: 1,
-            desc: -1,
-            none: undefined,
-          }
-
-          setSorters({ updatedAt: sortFormat[nextSortOrder] })
-        }
-
-        return (
-          <Button
-            disabled={unitContext.isLoading}
-            variant="ghost"
-            onClick={handleSort}
-            className="my-2 flex items-center gap-2"
-          >
-            {t('page.units.table.updatedAt')}
-            {' '}
-            <Icon className="w-4 h-4" />
-          </Button>
-        )
-      },
+      header: ({ column }) => sortHeader(column, t('page.units.table.updatedAt')),
       cell: ({ row }) => formatDate(row.getValue('updatedAt'), 'MMMM dd, yyyy', i18n.language),
     },
     {
