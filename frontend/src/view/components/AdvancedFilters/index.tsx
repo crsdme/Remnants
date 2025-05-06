@@ -2,7 +2,7 @@ import type { ColumnDef } from '@tanstack/react-table'
 
 import type { DateRange } from 'react-day-picker'
 
-import { DatePickerRange } from '@/view/components/DatePickerRange'
+import { DateRangePicker } from '@/view/components/DateRangePicker'
 import { MultiSelect } from '@/view/components/MultiSelect'
 import { Badge } from '@/view/components/ui/badge'
 import { Button } from '@/view/components/ui/button'
@@ -158,7 +158,7 @@ export function AdvancedFilters({ columns, onSubmit, onCancel }: AdvancedFilters
         )
       case 'date':
         return (
-          <DatePickerRange
+          <DateRangePicker
             value={item.value as DateRange}
             onSelect={(selectedValues) => {
               const currentItems = form.getValues('items')

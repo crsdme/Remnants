@@ -35,7 +35,7 @@
     "papaparse": "^5.5.2",
     "path": "^0.12.7",
     "react": "^19.1.0",
-    "react-day-picker": "^9.6.7",
+    "react-day-picker": "^9.4.3",
     "react-dom": "^19.1.0",
     "react-helmet": "^6.1.0",
     "react-hook-form": "^7.56.1",

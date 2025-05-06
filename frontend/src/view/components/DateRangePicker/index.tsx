@@ -9,15 +9,15 @@ import { endOfDay, format, startOfDay } from 'date-fns'
 
 import { enUS, ru } from 'date-fns/locale'
 import { CalendarIcon } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
-type DatePickerRangeProps = Omit<HTMLAttributes<HTMLDivElement>, 'onChange'> & {
+type DateRangePickerProps = Omit<HTMLAttributes<HTMLDivElement>, 'onChange'> & {
   onSelect?: (date: DateRange | undefined) => void
   value?: DateRange | undefined
 }
 
-export function DatePickerRange({ className, onSelect, value }: DatePickerRangeProps) {
+export function DateRangePicker({ className, onSelect, value }: DateRangePickerProps) {
   const { t, i18n } = useTranslation()
   const [date, setDate] = useState<DateRange | undefined>(
     value || {
@@ -25,12 +25,6 @@ export function DatePickerRange({ className, onSelect, value }: DatePickerRangeP
       to: undefined,
     },
   )
-
-  useEffect(() => {
-    if (value !== undefined) {
-      setDate(value)
-    }
-  }, [value])
 
   const handleSelect = (selectedDate: DateRange | undefined) => {
     setDate(selectedDate)
@@ -91,7 +85,6 @@ export function DatePickerRange({ className, onSelect, value }: DatePickerRangeP
         </PopoverTrigger>
         <PopoverContent className="w-auto p-0" align="start">
           <Calendar
-            initialFocus
             mode="range"
             defaultMonth={date?.from}
             selected={date}
