@@ -3,7 +3,7 @@ import { useCreateCategory, useEditCategory, useRemoveCategory } from '@/api/hoo
 
 import { useQueryClient } from '@tanstack/react-query'
 
-import { createContext, useContext, useState } from 'react'
+import { createContext, useContext, useMemo, useState } from 'react'
 
 interface CategoryContextType {
   selectedCategory: Category
@@ -84,19 +84,23 @@ export function CategoryProvider({ children }: CategoryProviderProps) {
     useMutateRemoveCategory.mutate(params)
   }
 
-  const value: CategoryContextType = {
-    selectedCategory,
-    isModalOpen,
-    isLoading,
-    openModal,
-    closeModal,
-    submitCategoryForm,
-    removeCategory,
-  }
+  const value: CategoryContextType = useMemo(
+    () => ({
+      selectedCategory,
+      isModalOpen,
+      isLoading,
+      openModal,
+      closeModal,
+      submitCategoryForm,
+      removeCategory,
+    }),
+    [selectedCategory, isModalOpen, isLoading, openModal, closeModal, submitCategoryForm, removeCategory],
+  )
 
   return <CategoryContext.Provider value={value}>{children}</CategoryContext.Provider>
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useCategoryContext(): CategoryContextType {
   const context = useContext(CategoryContext)
   if (!context) {

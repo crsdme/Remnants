@@ -3,7 +3,7 @@ import { useAuthLogin, useAuthLogout, useRefreshToken } from '@/api/hooks'
 
 import { setupAxiosInterceptors } from '@/api/instance'
 
-import { createContext, useContext, useEffect, useReducer } from 'react'
+import { createContext, useContext, useEffect, useMemo, useReducer } from 'react'
 import { toast } from 'sonner'
 
 interface AuthState {
@@ -112,17 +112,21 @@ export function AuthProvider({ children }: AuthProviderProps) {
     refresh()
   }, [])
 
-  const value: AuthContextType = {
-    state,
-    dispatch,
-    login,
-    logout,
-    refresh,
-  }
+  const value: AuthContextType = useMemo(
+    () => ({
+      state,
+      dispatch,
+      login,
+      logout,
+      refresh,
+    }),
+    [state, dispatch, login, logout, refresh],
+  )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useAuthContext(): AuthContextType {
   const context = useContext(AuthContext)
   if (!context) {

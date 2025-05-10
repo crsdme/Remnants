@@ -23,7 +23,7 @@ import {
 } from '@/view/components/ui/dialog'
 import { zodResolver } from '@hookform/resolvers/zod'
 
-import { Loader2, Plus } from 'lucide-react'
+import { Plus } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
@@ -137,7 +137,6 @@ export function ActionBar() {
           <DialogTrigger asChild>
             <Button onClick={() => currencyContext.toggleModal()} disabled={isLoading}>
               <Plus />
-              {' '}
               {t('page.currencies.button.create')}
             </Button>
           </DialogTrigger>

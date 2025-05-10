@@ -51,12 +51,6 @@ export type CalendarProps = DayPickerProps & {
 
 type NavView = 'days' | 'years'
 
-/**
- * A custom calendar component built on top of react-day-picker.
- * @param props The props for the calendar.
- * @default
- * @returns
- */
 function Calendar({
   className,
   showOutsideDays = true,
@@ -196,11 +190,13 @@ function Calendar({
         hidden: _hiddenClassName,
       }}
       components={{
+
         // eslint-disable-next-line react/no-nested-component-definitions
         Chevron: ({ orientation }) => {
           const Icon = orientation === 'left' ? ChevronLeft : ChevronRight
           return <Icon className="h-4 w-4" />
         },
+
         // eslint-disable-next-line react/no-nested-component-definitions
         Nav: ({ className }) => (
           <Nav
@@ -214,6 +210,7 @@ function Calendar({
             onNextClick={onNextClick}
           />
         ),
+
         // eslint-disable-next-line react/no-nested-component-definitions
         CaptionLabel: props => (
           <CaptionLabel
@@ -224,6 +221,7 @@ function Calendar({
             {...props}
           />
         ),
+
         // eslint-disable-next-line react/no-nested-component-definitions
         MonthGrid: ({ className, children, ...props }) => (
           <MonthGrid

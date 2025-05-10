@@ -32,6 +32,7 @@ function FormField<
   ...props
 }: ControllerProps<TFieldValues, TName>) {
   return (
+    // eslint-disable-next-line react/no-unstable-context-value
     <FormFieldContext value={{ name: props.name }}>
       <Controller {...props} />
     </FormFieldContext>
@@ -71,6 +72,7 @@ function FormItem({ className, ...props }: React.ComponentProps<'div'>) {
   const id = React.useId()
 
   return (
+    // eslint-disable-next-line react/no-unstable-context-value
     <FormItemContext value={{ id }}>
       <div data-slot="form-item" className={cn('grid gap-2', className)} {...props} />
     </FormItemContext>
@@ -146,5 +148,6 @@ export {
   FormItem,
   FormLabel,
   FormMessage,
+  // eslint-disable-next-line react-refresh/only-export-components
   useFormField,
 }

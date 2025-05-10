@@ -10,7 +10,7 @@ import {
 
 import { useQueryClient } from '@tanstack/react-query'
 
-import { createContext, useContext, useState } from 'react'
+import { createContext, useContext, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { toast } from 'sonner'
@@ -146,23 +146,27 @@ export function CurrencyProvider({ children }: CurrencyProviderProps) {
     useMutateDuplicateCurrencies.mutate(params)
   }
 
-  const value: CurrencyContextType = {
-    selectedCurrency,
-    isModalOpen,
-    isLoading,
-    toggleModal,
-    openModal,
-    closeModal,
-    submitCurrencyForm,
-    removeCurrency,
-    batchCurrency,
-    importCurrencies,
-    duplicateCurrencies,
-  }
+  const value: CurrencyContextType = useMemo(
+    () => ({
+      selectedCurrency,
+      isModalOpen,
+      isLoading,
+      toggleModal,
+      openModal,
+      closeModal,
+      submitCurrencyForm,
+      removeCurrency,
+      batchCurrency,
+      importCurrencies,
+      duplicateCurrencies,
+    }),
+    [selectedCurrency, isModalOpen, isLoading, openModal, closeModal, submitCurrencyForm, removeCurrency, batchCurrency, importCurrencies, duplicateCurrencies],
+  )
 
   return <CurrencyContext.Provider value={value}>{children}</CurrencyContext.Provider>
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useCurrencyContext(): CurrencyContextType {
   const context = useContext(CurrencyContext)
   if (!context) {

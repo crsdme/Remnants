@@ -7,5 +7,6 @@ export default antfu({
   rules: {
     'react/no-use-context': 'off',
     'react/no-context-provider': 'off',
+    'react-hooks/exhaustive-deps': 'off',
   },
 })

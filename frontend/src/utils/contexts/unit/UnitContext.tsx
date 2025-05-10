@@ -10,7 +10,7 @@ import {
 
 import { useQueryClient } from '@tanstack/react-query'
 
-import { createContext, useContext, useState } from 'react'
+import { createContext, useContext, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { toast } from 'sonner'
@@ -146,23 +146,27 @@ export function UnitProvider({ children }: UnitProviderProps) {
     useMutateDuplicateUnits.mutate(params)
   }
 
-  const value: UnitContextType = {
-    selectedUnit,
-    isModalOpen,
-    isLoading,
-    toggleModal,
-    openModal,
-    closeModal,
-    submitUnitForm,
-    removeUnit,
-    batchUnit,
-    importUnits,
-    duplicateUnits,
-  }
+  const value: UnitContextType = useMemo(
+    () => ({
+      selectedUnit,
+      isModalOpen,
+      isLoading,
+      toggleModal,
+      openModal,
+      closeModal,
+      submitUnitForm,
+      removeUnit,
+      batchUnit,
+      importUnits,
+      duplicateUnits,
+    }),
+    [selectedUnit, isModalOpen, isLoading, openModal, closeModal, submitUnitForm, removeUnit, batchUnit, importUnits, duplicateUnits],
+  )
 
   return <UnitContext.Provider value={value}>{children}</UnitContext.Provider>
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useUnitContext(): UnitContextType {
   const context = useContext(UnitContext)
   if (!context) {

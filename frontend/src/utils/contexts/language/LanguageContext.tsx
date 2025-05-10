@@ -2,7 +2,7 @@ import type { ReactNode } from 'react'
 import { useBatchLanguages, useCreateLanguage, useDuplicateLanguages, useEditLanguage, useImportLanguages, useRemoveLanguages } from '@/api/hooks'
 
 import { useQueryClient } from '@tanstack/react-query'
-import { createContext, useContext, useState } from 'react'
+import { createContext, useContext, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 
@@ -137,23 +137,27 @@ export function LanguageProvider({ children }: LanguageProviderProps) {
     useMutateDuplicateLanguages.mutate(params)
   }
 
-  const value: LanguageContextType = {
-    selectedLanguage,
-    isModalOpen,
-    isLoading,
-    toggleModal,
-    openModal,
-    closeModal,
-    submitLanguageForm,
-    removeLanguage,
-    batchLanguage,
-    importLanguages,
-    duplicateLanguages,
-  }
+  const value: LanguageContextType = useMemo(
+    () => ({
+      selectedLanguage,
+      isModalOpen,
+      isLoading,
+      toggleModal,
+      openModal,
+      closeModal,
+      submitLanguageForm,
+      removeLanguage,
+      batchLanguage,
+      importLanguages,
+      duplicateLanguages,
+    }),
+    [selectedLanguage, isModalOpen, isLoading, openModal, closeModal, submitLanguageForm, removeLanguage, batchLanguage, importLanguages, duplicateLanguages],
+  )
 
   return <LanguageContext.Provider value={value}>{children}</LanguageContext.Provider>
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useLanguageContext(): LanguageContextType {
   const context = useContext(LanguageContext)
   if (!context) {

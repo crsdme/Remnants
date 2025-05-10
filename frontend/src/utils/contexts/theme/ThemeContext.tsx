@@ -29,6 +29,7 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
   const { i18n } = useTranslation()
 
   const updateTheme = ({ language, layoutTheme }) => {
+    // eslint-disable-next-line react-hooks-extra/no-direct-set-state-in-use-effect
     setTheme(state => ({ ...state, language, layoutTheme }))
     if (language)
       i18n.changeLanguage(language)
@@ -36,6 +37,7 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
       document.documentElement.classList.toggle('dark', layoutTheme === 'dark')
   }
 
+  // eslint-disable-next-line react/no-unstable-context-value
   const value: ThemeContextType = {
     theme,
     updateTheme,
@@ -59,6 +61,7 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
   )
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useThemeContext(): ThemeContextType {
   const context = useContext(ThemeContext)
   if (!context) {

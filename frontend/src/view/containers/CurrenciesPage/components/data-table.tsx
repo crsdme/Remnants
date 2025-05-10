@@ -119,6 +119,7 @@ export function DataTable() {
     const visibleColumns = table.getVisibleFlatColumns()
 
     return Array.from({ length: pagination.pageSize }).map((_, index) => (
+      // eslint-disable-next-line react/no-array-index-key
       <TableRow key={`skeleton-${index}`} className="animate-pulse">
         {visibleColumns.map(column => (
           <TableCell key={`skeleton-cell-${column.id}`}>

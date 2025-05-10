@@ -66,4 +66,5 @@ function Button({ ref, className, variant, size, asChild = false, loading = fals
 
 Button.displayName = 'Button'
 
+// eslint-disable-next-line react-refresh/only-export-components
 export { Button, buttonVariants }

@@ -69,7 +69,6 @@ export function DateRangePicker({ className, onSelect, value }: DateRangePickerP
                     ? (
                         <>
                           {formatDate(date.from)}
-                          {' '}
                           -
                           {formatDate(date.to)}
                         </>

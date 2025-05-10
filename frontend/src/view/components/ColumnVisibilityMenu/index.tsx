@@ -21,6 +21,7 @@ export function ColumnVisibilityMenu({ table, tableId }) {
 
   useEffect(() => {
     const savedVisibility = JSON.parse(localStorage.getItem(`${tableId}-columnVisibility`)) || {}
+    // eslint-disable-next-line react-hooks-extra/no-direct-set-state-in-use-effect
     setColumnVisibility(savedVisibility)
     table.setColumnVisibility(savedVisibility)
   }, [tableId, table])
@@ -29,9 +30,7 @@ export function ColumnVisibilityMenu({ table, tableId }) {
     localStorage.setItem(`${tableId}-columnVisibility`, JSON.stringify(columnVisibility))
   }, [columnVisibility, tableId])
 
-  // Function to get column display name
   const getColumnDisplayName = (column) => {
-    // Use meta.title if available, otherwise use column.id
     return column.columnDef.meta?.title || column.id
   }
 
@@ -40,9 +39,7 @@ export function ColumnVisibilityMenu({ table, tableId }) {
       <DropdownMenuTrigger asChild>
         <Button variant="outline">
           <Columns3 />
-          {' '}
           {t('component.columnMenu.title')}
-          {' '}
           <ChevronDown className="ml-3" />
         </Button>
       </DropdownMenuTrigger>
@@ -98,7 +95,6 @@ export function ColumnVisibilityMenu({ table, tableId }) {
           }}
         >
           <RefreshCcw />
-          {' '}
           {t('component.columnMenu.reset')}
         </DropdownMenuItem>
       </DropdownMenuContent>
