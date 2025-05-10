@@ -1,9 +1,9 @@
+import LogoIcon from '@/components/ui/icons/logoIcon'
 import { useAuthContext } from '@/utils/contexts'
-import LogoIcon from '@/view/components/ui/icons/logoIcon'
 
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
 
-import Layout from '../view/components/Layout'
+import Layout from '../components/Layout'
 import {
   CurrenciesPage,
   DashboardPage,
@@ -11,7 +11,7 @@ import {
   LoginPage,
   TestPage,
   UnitsPage,
-} from '../view/containers/'
+} from '../containers'
 import '@/app/App.css'
 
 function AppMain() {

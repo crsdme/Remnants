@@ -4,10 +4,10 @@
   },
   "lint-staged": {
     "frontend/*.{js,ts,tsx,jsx}": [
-      "npm run lint"
+      "npx eslint frontend --config frontend/eslint.config.js --fix"
     ],
     "backend/*.{js,ts}": [
-      "npm run lint"
+      "npx eslint backend --config backend/eslint.config.js --fix"
     ]
   },
   "devDependencies": {
