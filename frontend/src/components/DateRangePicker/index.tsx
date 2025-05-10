@@ -1,10 +1,10 @@
 import type { HTMLAttributes } from 'react'
 import type { DateRange } from 'react-day-picker'
 
-import { cn } from '@/utils/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Calendar } from '@/components/ui/calendar'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { cn } from '@/utils/lib/utils'
 import { endOfDay, format, startOfDay } from 'date-fns'
 
 import { enUS, ru } from 'date-fns/locale'

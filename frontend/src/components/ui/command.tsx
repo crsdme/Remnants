@@ -1,5 +1,3 @@
-import { cn } from '@/utils/lib/utils'
-
 import {
   Dialog,
   DialogContent,
@@ -7,6 +5,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
+
+import { cn } from '@/utils/lib/utils'
 import { Command as CommandPrimitive } from 'cmdk'
 
 import { SearchIcon } from 'lucide-react'

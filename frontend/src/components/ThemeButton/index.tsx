@@ -1,6 +1,6 @@
-import { useThemeContext } from '@/utils/contexts'
-
 import { Button } from '@/components/ui'
+
+import { useThemeContext } from '@/utils/contexts'
 import { Moon, Sun } from 'lucide-react'
 
 export default function ThemeButton() {

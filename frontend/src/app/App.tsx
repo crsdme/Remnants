@@ -14,7 +14,7 @@ import {
 } from '../containers'
 import '@/app/App.css'
 
-function AppMain() {
+export default function App() {
   const authContenxt = useAuthContext()
 
   if (!authContenxt.state.isAuthChecked) {
@@ -48,5 +48,3 @@ function AppMain() {
     </BrowserRouter>
   )
 }
-
-export default AppMain

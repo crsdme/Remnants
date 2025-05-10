@@ -1,11 +1,9 @@
 import type { VariantProps } from 'class-variance-authority'
 
-import { useIsMobile } from '@/utils/hooks/'
-import { cn } from '@/utils/lib/utils'
 import { Button } from '@/components/ui/button'
-
 import { Input } from '@/components/ui/input'
 import { Separator } from '@/components/ui/separator'
+
 import {
   Sheet,
   SheetContent,
@@ -20,6 +18,8 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
+import { useIsMobile } from '@/utils/hooks/'
+import { cn } from '@/utils/lib/utils'
 import { Slot } from '@radix-ui/react-slot'
 import { cva } from 'class-variance-authority'
 import { PanelLeftIcon } from 'lucide-react'

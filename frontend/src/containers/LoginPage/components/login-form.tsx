@@ -1,5 +1,3 @@
-import { useAuthContext } from '@/utils/contexts'
-import { cn } from '@/utils/lib/utils'
 import {
   Button,
   Form,
@@ -17,7 +15,6 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
-
 import {
   Select,
   SelectContent,
@@ -25,6 +22,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { useAuthContext } from '@/utils/contexts'
+
+import { cn } from '@/utils/lib/utils'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
