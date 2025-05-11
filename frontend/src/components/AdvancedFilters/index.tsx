@@ -44,7 +44,7 @@ interface ColumnMeta {
 
 const filterItemSchema = z.object({
   id: z.string(),
-  column: z.string().min(1, 'Column is required'),
+  column: z.string(),
   value: z.union([z.string(), z.number(), z.boolean(), z.object({ from: z.date(), to: z.date() }), z.array(z.string())]),
 })
 

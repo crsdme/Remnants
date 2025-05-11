@@ -31,14 +31,8 @@ interface BatchEditProps {
   buttonLabel?: string
   columns: ColumnDef<any>[]
   languages: Language[]
-  onSubmit: (data: FormValues) => void
+  onSubmit: (data) => void
   onToggle: (status: 'filter' | 'select') => void
-}
-
-interface ColumnMeta {
-  title: string
-  batchEdit: boolean
-  batchEditType: 'textMultiLanguage' | 'number' | 'boolean' | 'text'
 }
 
 const batchEditItemSchema = z.object({
@@ -54,6 +48,12 @@ const formSchema = z.object({
 type FormValues = z.infer<typeof formSchema>
 type FormItemType = z.infer<typeof batchEditItemSchema>
 
+interface ColumnMeta {
+  title: string
+  batchEdit: boolean
+  batchEditType: 'textMultiLanguage' | 'number' | 'boolean' | 'text'
+}
+
 export function BatchEdit({
   isLoading = false,
   buttonLabel,
@@ -65,6 +65,7 @@ export function BatchEdit({
   const { t } = useTranslation()
   const [isOpen, setIsOpen] = useState(false)
   const [toggleFilterMode, setToggleFilterMode] = useState<'filter' | 'select'>('select')
+
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {

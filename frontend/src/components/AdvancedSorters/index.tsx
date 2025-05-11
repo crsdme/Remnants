@@ -38,7 +38,7 @@ interface ColumnMeta {
 
 const sorterItemSchema = z.object({
   id: z.string(),
-  column: z.string().min(1, 'Column is required'),
+  column: z.string(),
   value: z.string(),
 })
 
