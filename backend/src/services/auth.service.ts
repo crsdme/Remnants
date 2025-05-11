@@ -47,7 +47,15 @@ export async function login(payload: loginParams): Promise<loginResult> {
     login: user.login,
   })
 
-  return { accessToken, refreshToken, user }
+  const userData = {
+    id: user._id,
+    login: user.login,
+    name: user.name,
+    createdAt: user.createdAt,
+    updatedAt: user.updatedAt,
+  }
+
+  return { accessToken, refreshToken, user: userData }
 }
 
 interface refreshParams {

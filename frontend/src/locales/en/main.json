@@ -229,6 +229,7 @@
   "layout.sidemenu.label.settings": "Settings",
   "layout.sidemenu.label.logs": "Logs",
   "layout.sidemenu.label.documents": "Documents",
+  "layout.sidemenu.label.logout": "Logout",
 
   "component.columnMenu.title": "Columns",
   "component.columnMenu.searchPlaceholder": "Search columns",

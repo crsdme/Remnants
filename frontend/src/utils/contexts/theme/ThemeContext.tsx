@@ -5,7 +5,7 @@ import { createContext, useContext, useEffect, useState } from 'react'
 
 import { useTranslation } from 'react-i18next'
 
-const LOCAL_STORAGE_KEY = 'appTheme'
+const LOCAL_STORAGE_KEY = 'theme'
 
 interface Theme {
   language: string

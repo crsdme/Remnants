@@ -1,14 +1,19 @@
+import LogoIcon from '@/components/ui/icons/logoIcon'
+
 import {
   Sidebar,
   SidebarContent,
-  // SidebarHeader,
   SidebarFooter,
+  SidebarHeader,
+  SidebarMenuButton,
   SidebarRail,
 } from '@/components/ui/sidebar'
+import { useAuthContext } from '@/utils/contexts'
 
 import {
   Banknote,
   BarChart3,
+  ChevronsUpDown,
   FileText,
   Globe,
   LayoutDashboard,
@@ -21,9 +26,10 @@ import {
   Users,
   Warehouse,
 } from 'lucide-react'
-import * as React from 'react'
 
+import * as React from 'react'
 import { useTranslation } from 'react-i18next'
+
 import { NavMain } from './navMain'
 
 import { NavUser } from './navUser'
@@ -31,11 +37,17 @@ import { NavUser } from './navUser'
 export function LayoutSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { t } = useTranslation()
 
+  const authContext = useAuthContext()
+
+  const user = authContext.user || {
+    name: '',
+    login: '',
+  }
+
   const data = {
     user: {
-      name: 'shadcn',
-      email: 'm@example.com',
-      avatar: '/avatars/shadcn.jpg',
+      name: user.name,
+      login: user.login,
     },
     navMain: [
       {
@@ -164,7 +176,21 @@ export function LayoutSidebar({ ...props }: React.ComponentProps<typeof Sidebar>
 
   return (
     <Sidebar collapsible="icon" {...props}>
-      {/* <SidebarHeader></SidebarHeader> */}
+      <SidebarHeader>
+        <SidebarMenuButton
+          size="lg"
+          className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+        >
+          <div className="flex aspect-square size-8 items-center justify-center rounded-sm bg-sidebar-primary text-sidebar-primary-foreground">
+            <LogoIcon className="size-5" />
+          </div>
+          <div className="grid flex-1 text-left text-sm leading-tight">
+            <span className="truncate font-semibold">Remnants</span>
+            <span className="truncate text-xs">ERP</span>
+          </div>
+          <ChevronsUpDown className="ml-auto" />
+        </SidebarMenuButton>
+      </SidebarHeader>
       <SidebarContent>
         <NavMain items={data.navMain} />
       </SidebarContent>

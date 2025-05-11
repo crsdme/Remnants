@@ -232,7 +232,7 @@
   "layout.sidemenu.label.settings": "Настройки",
   "layout.sidemenu.label.logs": "Логи",
   "layout.sidemenu.label.documents": "Документы",
-
+  "layout.sidemenu.label.logout": "Выйти",
   "component.columnMenu.title": "Колонки",
   "component.columnMenu.searchPlaceholder": "Поиск колонок",
   "component.columnMenu.reset": "Сбросить",

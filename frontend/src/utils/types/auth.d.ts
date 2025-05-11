@@ -1,7 +1,7 @@
 interface authLoginResponse {
   status: string
   accessToken: string
-  user: object
+  user: User
 }
 
 interface refreshTokenResponse {

@@ -3,7 +3,6 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
@@ -15,23 +14,16 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from '@/components/ui/sidebar'
-import { useAuthContext, useThemeContext } from '@/utils/contexts'
-import { BadgeCheck, Bell, ChevronsUpDown, CreditCard, LogOut, Sparkles } from 'lucide-react'
+import { useAuthContext } from '@/utils/contexts'
+import { ChevronsUpDown, LogOut } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 
-export function NavUser({
-  user,
-}: {
-  user: {
-    name: string
-    email: string
-    avatar: string
-  }
-}) {
+export function NavUser({ user }) {
   const { isMobile } = useSidebar()
 
   const authContext = useAuthContext()
 
-  const themeContext = useThemeContext()
+  const { t } = useTranslation()
 
   return (
     <SidebarMenu>
@@ -48,7 +40,7 @@ export function NavUser({
               </Avatar>
               <div className="grid flex-1 text-left text-sm leading-tight">
                 <span className="truncate font-semibold">{user.name}</span>
-                <span className="truncate text-xs">{user.email}</span>
+                <span className="truncate text-xs">{user.login}</span>
               </div>
               <ChevronsUpDown className="ml-auto size-4" />
             </SidebarMenuButton>
@@ -72,31 +64,9 @@ export function NavUser({
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuGroup>
-              <DropdownMenuItem>
-                <Sparkles />
-                Upgrade to Pro
-              </DropdownMenuItem>
-            </DropdownMenuGroup>
-            <DropdownMenuSeparator />
-            <DropdownMenuGroup>
-              <DropdownMenuItem>
-                <BadgeCheck />
-                Account
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => themeContext.updateTheme({ language: 'en' })}>
-                <CreditCard />
-                EN
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => themeContext.updateTheme({ language: 'ru' })}>
-                <Bell />
-                RU
-              </DropdownMenuItem>
-            </DropdownMenuGroup>
-            <DropdownMenuSeparator />
             <DropdownMenuItem onClick={() => authContext.logout()}>
               <LogOut />
-              Log out
+              {t('layout.sidemenu.label.logout')}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

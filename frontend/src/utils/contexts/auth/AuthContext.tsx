@@ -3,7 +3,7 @@ import { useAuthLogin, useAuthLogout, useRefreshToken } from '@/api/hooks'
 
 import { setupAxiosInterceptors } from '@/api/instance'
 
-import { createContext, useContext, useEffect, useMemo, useReducer } from 'react'
+import { createContext, useContext, useEffect, useMemo, useReducer, useState } from 'react'
 import { toast } from 'sonner'
 
 interface AuthState {
@@ -12,13 +12,9 @@ interface AuthState {
   user: User | null
 }
 
-interface User {
-  id: number
-  username: string
-}
-
 interface AuthContextType {
   state: AuthState
+  user: User | null
   dispatch: (state) => void
   login: (state) => void
   logout: () => void
@@ -26,6 +22,8 @@ interface AuthContextType {
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
+
+const LOCAL_STORAGE_KEY = 'profile'
 
 function authReducer(state, action) {
   switch (action.type) {
@@ -57,8 +55,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [state, dispatch] = useReducer(authReducer, {
     isAuthenticated: false,
     isAuthChecked: false,
-    user: null,
   })
+
+  const [user, setUser] = useState<User | null>(null)
 
   const useQueryRefreshToken = useRefreshToken({
     options: {
@@ -70,7 +69,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const useMutateAuthLogin = useAuthLogin({
     options: {
-      onSuccess: () => {
+      onSuccess: ({ data }) => {
+        setUser(data.user)
         dispatch({ type: 'LOGIN' })
       },
     },
@@ -112,9 +112,21 @@ export function AuthProvider({ children }: AuthProviderProps) {
     refresh()
   }, [])
 
+  useEffect(() => {
+    const storedUser = localStorage.getItem(LOCAL_STORAGE_KEY)
+    if (storedUser)
+      // eslint-disable-next-line react-hooks-extra/no-direct-set-state-in-use-effect
+      setUser(JSON.parse(storedUser))
+  }, [])
+
+  useEffect(() => {
+    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(user))
+  }, [user])
+
   const value: AuthContextType = useMemo(
     () => ({
       state,
+      user,
       dispatch,
       login,
       logout,

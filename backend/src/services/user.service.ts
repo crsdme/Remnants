@@ -120,9 +120,14 @@ export async function create(payload: UserTypes.createUserParams): Promise<UserT
 export async function edit(payload: UserTypes.editUserParams): Promise<UserTypes.editUserResult> {
   const { _id, name, login, password, active } = payload
 
-  const hashedPassword = await bcrypt.hash(password, 10)
+  let query: Record<string, any> = { name, login, active }
 
-  const user = await UserModel.findOneAndUpdate({ _id }, { name, login, password: hashedPassword, active })
+  if (password) {
+    const hashedPassword = await bcrypt.hash(password, 10)
+    query = { ...query, password: hashedPassword }
+  }
+
+  const user = await UserModel.findOneAndUpdate({ _id }, query)
 
   if (!user) {
     throw new Error('User not edited')

@@ -30,7 +30,7 @@ import { z } from 'zod'
 const formSchema = z.object({
   name: z.string(),
   login: z.string(),
-  password: z.string(),
+  password: z.string().optional(),
   active: z.boolean().default(true),
 })
 

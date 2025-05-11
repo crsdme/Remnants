@@ -33,7 +33,7 @@ export const editUserSchema = z.object({
   _id: idSchema,
   name: z.string(),
   login: z.string(),
-  password: z.string(),
+  password: z.string().optional(),
   active: z.boolean().optional(),
 })
 
