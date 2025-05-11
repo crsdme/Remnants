@@ -93,9 +93,11 @@ export function AdvancedSorters({ columns, onSubmit, onCancel }: AdvancedSorters
 
   const handleSubmit = (values) => {
     const validItems = values.items.filter(
-      (item): item is SortItem =>
-        item.id !== undefined && item.column !== undefined && item.value !== undefined,
+      item =>
+        item.column !== '' && item.value !== '',
     )
+    if (validItems.length === 0)
+      return
     onSubmit(validItems)
     setIsOpen(false)
   }

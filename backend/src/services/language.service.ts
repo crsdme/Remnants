@@ -84,7 +84,7 @@ export async function get(payload: LanguageTypes.getLanguagesParams): Promise<La
       updatedAt: { $gte: updatedAt.from, $lte: updatedAt.to },
     }
   }
-
+  console.log(sortersQuery)
   const pipeline = [
     {
       $match: query,

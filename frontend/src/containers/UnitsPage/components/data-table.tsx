@@ -229,14 +229,6 @@ export function DataTable() {
     setSorters(state => ({ ...state, ...sorterValues }))
   }
 
-  // const advancedFiltersSubmit = (filters) => {
-  //   const filterValues = Object.fromEntries(filters.map(({ column, value }) => [column, value]))
-  //   setFilters(state => ({
-  //     ...state,
-  //     ...filterValues,
-  //   }))
-  // }
-
   const advancedSortersCancel = () => {
     setSorters({})
   }

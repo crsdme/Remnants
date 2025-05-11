@@ -2,13 +2,14 @@ import { useRequestCurrencies, useRequestLanguages } from '@/api/hooks'
 
 import { AdvancedFilters } from '@/components/AdvancedFilters'
 
+import { AdvancedSorters } from '@/components/AdvancedSorters'
 import { BatchEdit } from '@/components/BatchEdit'
 import { ColumnVisibilityMenu } from '@/components/ColumnVisibilityMenu'
+
 import TablePagination from '@/components/TablePagination'
-
 import TableSelectionDropdown from '@/components/TableSelectionDropdown'
-import { Separator } from '@/components/ui/separator'
 
+import { Separator } from '@/components/ui/separator'
 import { Skeleton } from '@/components/ui/skeleton'
 import {
   Table,
@@ -223,6 +224,15 @@ export function DataTable() {
     setRowSelection({})
   }
 
+  const advancedSortersSubmit = (sorters) => {
+    const sorterValues = Object.fromEntries(sorters.map(({ column, value }) => [column, value]))
+    setSorters(state => ({ ...state, ...sorterValues }))
+  }
+
+  const advancedSortersCancel = () => {
+    setSorters({})
+  }
+
   return (
     <>
       <div className="w-full flex justify-between items-start max-md:flex-col gap-2 py-2">
@@ -237,6 +247,11 @@ export function DataTable() {
             languages={languages}
             onSubmit={handleBatchSubmit}
             onToggle={handleBatchToggle}
+          />
+          <AdvancedSorters
+            columns={columns}
+            onSubmit={advancedSortersSubmit}
+            onCancel={advancedSortersCancel}
           />
           <Separator orientation="vertical" className="min-h-6 max-md:hidden" />
           <DataTableFilters filters={filters} setFilters={setFilters} />

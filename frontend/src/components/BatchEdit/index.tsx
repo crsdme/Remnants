@@ -104,8 +104,15 @@ export function BatchEdit({
     )
   }
 
-  const handleAccept = (values: FormValues) => {
-    onSubmit(values)
+  const handleAccept = (values) => {
+    const validItems = values.items.filter(
+      item =>
+        item.id !== undefined && item.column !== '' && item.value !== '',
+    )
+
+    if (validItems.length === 0)
+      return
+    onSubmit(validItems)
     setIsOpen(false)
   }
 

@@ -100,9 +100,11 @@ export function AdvancedFilters({ columns, onSubmit, onCancel }: AdvancedFilters
 
   const handleSubmit = (values) => {
     const validItems = values.items.filter(
-      (item): item is FilterItem =>
-        item.id !== undefined && item.column !== undefined && item.value !== undefined,
+      item =>
+        item.id !== undefined && item.column !== '' && item.value !== '',
     )
+    if (validItems.length === 0)
+      return
     onSubmit(validItems)
     setIsOpen(false)
   }
