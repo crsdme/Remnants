@@ -11,6 +11,7 @@ import {
   LoginPage,
   TestPage,
   UnitsPage,
+  UsersPage,
 } from '../containers'
 import '@/app/App.css'
 
@@ -37,9 +38,12 @@ export default function App() {
           <Route path="/" element={<DashboardPage />} />
           <Route path="/test" element={<TestPage />} />
 
+          <Route path="/users" element={<UsersPage />} />
+
           <Route path="/settings/currencies" element={<CurrenciesPage />} />
           <Route path="/settings/languages" element={<LanguagesPage />} />
           <Route path="/settings/units" element={<UnitsPage />} />
+
           <Route path="*" element={<DashboardPage />} />
         </Route>
         <Route path="/login" element={<LoginPage />} />
