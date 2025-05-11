@@ -104,10 +104,10 @@ export async function get(payload: UnitTypes.getUnitsParams): Promise<UnitTypes.
     },
   ]
 
-  const unitsResult = await UnitModel.aggregate(pipeline).exec()
+  const unitsRaw = await UnitModel.aggregate(pipeline).exec()
 
-  const units = unitsResult[0].units
-  const unitsCount = unitsResult[0].totalCount[0]?.count || 0
+  const units = unitsRaw[0].units.map((doc: any) => UnitModel.hydrate(doc))
+  const unitsCount = unitsRaw[0].totalCount[0]?.count || 0
 
   return { status: 'success', code: 'UNITS_FETCHED', message: 'Units fetched', units, unitsCount }
 }
@@ -119,9 +119,9 @@ export async function create(payload: UnitTypes.createUnitParams): Promise<UnitT
 }
 
 export async function edit(payload: UnitTypes.editUnitParams): Promise<UnitTypes.editUnitResult> {
-  const { _id } = payload
+  const { id } = payload
 
-  const unit = await UnitModel.findOneAndUpdate({ _id }, payload)
+  const unit = await UnitModel.findOneAndUpdate({ _id: id }, payload)
 
   if (!unit) {
     throw new HttpError(400, 'Unit not edited', 'UNIT_NOT_EDITED')
@@ -130,11 +130,11 @@ export async function edit(payload: UnitTypes.editUnitParams): Promise<UnitTypes
   return { status: 'success', code: 'UNIT_EDITED', message: 'Unit edited', unit }
 }
 
-export async function remove(payload: UnitTypes.removeUnitParams): Promise<UnitTypes.removeUnitsResult> {
-  const { _ids } = payload
+export async function remove(payload: UnitTypes.removeUnitsParams): Promise<UnitTypes.removeUnitsResult> {
+  const { ids } = payload
 
   const units = await UnitModel.updateMany(
-    { _id: { $in: _ids } },
+    { _id: { $in: ids } },
     { $set: { removed: true } },
   )
 
@@ -146,7 +146,7 @@ export async function remove(payload: UnitTypes.removeUnitParams): Promise<UnitT
 }
 
 export async function batch(payload: UnitTypes.batchUnitsParams): Promise<UnitTypes.batchUnitsResult> {
-  const { _ids, filters, params } = payload
+  const { ids, filters, params } = payload
 
   const {
     names = '',
@@ -219,12 +219,12 @@ export async function batch(payload: UnitTypes.batchUnitsParams): Promise<UnitTy
   }
   if (filters) {
     query = {
-      $or: [query, { _id: { $in: _ids } }],
+      $or: [query, { _id: { $in: ids } }],
     }
   }
   else {
     query = {
-      _id: { $in: _ids },
+      _id: { $in: ids },
     }
   }
 
@@ -252,15 +252,15 @@ export async function upload(payload: UnitTypes.importUnitsParams): Promise<Unit
     active: toBoolean(row.active),
   }))
 
-  await UnitModel.insertMany(parsedUnits)
+  await UnitModel.create(parsedUnits)
 
   return { status: 'success', code: 'UNITS_IMPORTED', message: 'Units imported' }
 }
 
 export async function duplicate(payload: UnitTypes.duplicateUnitParams): Promise<UnitTypes.duplicateUnitResult> {
-  const { _ids } = payload
+  const { ids } = payload
 
-  const units = await UnitModel.find({ _id: { $in: _ids } })
+  const units = await UnitModel.find({ _id: { $in: ids } })
 
   const parsedUnits = units.map(unit => ({
     names: unit.names,
@@ -269,7 +269,7 @@ export async function duplicate(payload: UnitTypes.duplicateUnitParams): Promise
     active: unit.active,
   }))
 
-  await UnitModel.insertMany(parsedUnits)
+  await UnitModel.create(parsedUnits)
 
   return { status: 'success', code: 'UNITS_DUPLICATED', message: 'Units duplicated' }
 }

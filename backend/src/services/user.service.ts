@@ -92,10 +92,10 @@ export async function get(payload: UserTypes.getUsersParams): Promise<UserTypes.
     },
   ]
 
-  const usersResult = await UserModel.aggregate(pipeline).exec()
+  const usersRaw = await UserModel.aggregate(pipeline).exec()
 
-  const users = usersResult[0].users
-  const usersCount = usersResult[0].totalCount[0]?.count || 0
+  const users = usersRaw[0].users.map((doc: any) => UserModel.hydrate(doc))
+  const usersCount = usersRaw[0].totalCount[0]?.count || 0
 
   return { status: 'success', code: 'USERS_FETCHED', message: 'Users fetched', users, usersCount }
 }
@@ -117,11 +117,11 @@ export async function create(payload: UserTypes.createUserParams): Promise<UserT
     throw new HttpError(400, 'User not created', 'USER_NOT_CREATED')
   }
 
-  return { status: 'success', code: 'USER_CREATED', message: 'User created', user }
+  return { status: 'success', code: 'USER_CREATED', message: 'User created', user: user.removeSensitiveData({ exclude: ['password'] }) }
 }
 
 export async function edit(payload: UserTypes.editUserParams): Promise<UserTypes.editUserResult> {
-  const { _id, name, login, password, active } = payload
+  const { id, name, login, password, active } = payload
 
   let query: Record<string, any> = { name, login, active }
 
@@ -130,20 +130,20 @@ export async function edit(payload: UserTypes.editUserParams): Promise<UserTypes
     query = { ...query, password: hashedPassword }
   }
 
-  const user = await UserModel.findOneAndUpdate({ _id }, query)
+  const user = await UserModel.findOneAndUpdate({ _id: id }, query)
 
   if (!user) {
     throw new HttpError(400, 'User not edited', 'USER_NOT_EDITED')
   }
 
-  return { status: 'success', code: 'USER_EDITED', message: 'User edited', user }
+  return { status: 'success', code: 'USER_EDITED', message: 'User edited', user: user.removeSensitiveData({ exclude: ['password'] }) }
 }
 
 export async function remove(payload: UserTypes.removeUsersParams): Promise<UserTypes.removeUsersResult> {
-  const { _ids } = payload
+  const { ids } = payload
 
   const users = await UserModel.updateMany(
-    { _id: { $in: _ids } },
+    { _id: { $in: ids } },
     { $set: { removed: true } },
   )
 
@@ -177,15 +177,15 @@ export async function upload(payload: UserTypes.importUsersParams): Promise<User
     throw new HttpError(409, 'Users with these logins already exist', 'USER_ALREADY_EXISTS', existingLogins.join(', '))
   }
 
-  await UserModel.insertMany(parsedUsers)
+  await UserModel.create(parsedUsers)
 
   return { status: 'success', code: 'USERS_IMPORTED', message: 'Users imported' }
 }
 
 export async function duplicate(payload: UserTypes.duplicateUsersParams): Promise<UserTypes.duplicateUsersResult> {
-  const { _ids } = payload
+  const { ids } = payload
 
-  const users = await UserModel.find({ _id: { $in: _ids } })
+  const users = await UserModel.find({ _id: { $in: ids } })
 
   const usersCount = await UserModel.countDocuments()
 
@@ -196,7 +196,7 @@ export async function duplicate(payload: UserTypes.duplicateUsersParams): Promis
     active: user.active,
   }))
 
-  await UserModel.insertMany(parsedUsers)
+  await UserModel.create(parsedUsers)
 
   return { status: 'success', code: 'USERS_DUPLICATED', message: 'Users duplicated' }
 }

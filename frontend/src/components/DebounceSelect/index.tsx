@@ -47,7 +47,7 @@ export default function Component({
         ? mapPattern(option, i18n)
         : {
             label: option.names[i18n.language],
-            value: option._id,
+            value: option.id,
           }
 
     return mapped

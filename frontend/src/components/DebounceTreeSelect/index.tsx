@@ -46,7 +46,7 @@ export default function DebounceTreeSelect({
         ? mapPattern(option, i18n)
         : {
             title: option.names[i18n.language],
-            value: option._id,
+            value: option.id,
           }
 
     return {

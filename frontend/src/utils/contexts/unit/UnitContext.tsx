@@ -24,9 +24,9 @@ interface UnitContextType {
   closeModal: () => void
   submitUnitForm: (params) => void
   batchUnit: (params) => void
-  removeUnit: (params: { _ids: string[] }) => void
+  removeUnit: (params: { ids: string[] }) => void
   importUnits: (params) => void
-  duplicateUnits: (params: { _ids: string[] }) => void
+  duplicateUnits: (params: { ids: string[] }) => void
 }
 
 const UnitContext = createContext<UnitContextType | undefined>(undefined)
@@ -154,7 +154,7 @@ export function UnitProvider({ children }: UnitProviderProps) {
       useMutateCreateUnit.mutate(params)
     }
     else {
-      useMutateEditUnit.mutate({ ...params, _id: selectedUnit._id })
+      useMutateEditUnit.mutate({ ...params, id: selectedUnit.id })
     }
   }
 

@@ -1,5 +1,6 @@
 import mongoose, { Schema } from 'mongoose'
 import { v4 as uuidv4 } from 'uuid'
+import { CounterModel } from './counter.model'
 
 export interface Language {
   name: string
@@ -17,6 +18,10 @@ const LanguageSchema: Schema = new Schema(
     _id: {
       type: String,
       default: uuidv4,
+    },
+    seq: {
+      type: Number,
+      default: 0,
     },
     name: {
       type: Schema.Types.String,
@@ -45,6 +50,31 @@ const LanguageSchema: Schema = new Schema(
   },
   { timestamps: true },
 )
+
+LanguageSchema.set('toJSON', {
+  virtuals: true,
+  versionKey: false,
+  transform: (_, ret) => {
+    ret.id = ret._id
+    delete ret._id
+    delete ret.removed
+  },
+})
+
+LanguageSchema.pre('save', async function (next) {
+  const doc = this as any
+
+  if (doc.isNew && !doc.seq) {
+    const counter = await CounterModel.findByIdAndUpdate(
+      'languages',
+      { $inc: { seq: 1 } },
+      { new: true, upsert: true },
+    )
+    doc.seq = counter.seq
+  }
+
+  next()
+})
 
 const LanguageModel = mongoose.model<Language>('Language', LanguageSchema)
 

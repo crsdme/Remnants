@@ -12,7 +12,7 @@ interface CategoryContextType {
   openModal: (item?: Category) => void
   closeModal: () => void
   submitCategoryForm: (params: Category) => void
-  removeCategory: (params: { _id: string }) => void
+  removeCategory: (params: { id: string }) => void
 }
 
 const CategoryContext = createContext<CategoryContextType | undefined>(undefined)
@@ -76,7 +76,7 @@ export function CategoryProvider({ children }: CategoryProviderProps) {
       useMutateCreateCategory.mutate(value)
     }
     else {
-      useMutateEditCategory.mutate({ ...value, _id: selectedCategory._id })
+      useMutateEditCategory.mutate({ ...value, id: selectedCategory.id })
     }
   }
 

@@ -185,7 +185,7 @@ export function DataTable() {
   const handleBatchSubmit = (data) => {
     const selectedLanguages = languages
       .filter((_, index) => rowSelection[index])
-      .map(item => item._id)
+      .map(item => item.id)
 
     const params = data.items.map(item => ({
       column: item.column,
@@ -193,18 +193,18 @@ export function DataTable() {
     }))
 
     if (batchEditMode === 'filter') {
-      languageContext.batchLanguage({ _ids: selectedLanguages, filters, params })
+      languageContext.batchLanguage({ ids: selectedLanguages, filters, params })
     }
     else {
-      languageContext.batchLanguage({ _ids: selectedLanguages, params })
+      languageContext.batchLanguage({ ids: selectedLanguages, params })
     }
 
     setRowSelection({})
   }
 
   const handleBatchRemove = () => {
-    const _ids = languages.filter((_, index) => rowSelection[index]).map(item => item._id)
-    languageContext.removeLanguage({ _ids })
+    const ids = languages.filter((_, index) => rowSelection[index]).map(item => item.id)
+    languageContext.removeLanguage({ ids })
     setRowSelection({})
   }
 
@@ -217,8 +217,8 @@ export function DataTable() {
   }, 50)
 
   const handleBatchDuplicate = () => {
-    const _ids = languages.filter((_, index) => rowSelection[index]).map(item => item._id)
-    languageContext.duplicateLanguages({ _ids })
+    const ids = languages.filter((_, index) => rowSelection[index]).map(item => item.id)
+    languageContext.duplicateLanguages({ ids })
     setRowSelection({})
   }
 

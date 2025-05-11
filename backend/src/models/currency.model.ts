@@ -2,6 +2,7 @@ import mongoose, { Schema } from 'mongoose'
 import { v4 as uuidv4 } from 'uuid'
 
 import { SUPPORTED_LANGUAGES } from '../config/constants'
+import { CounterModel } from './counter.model'
 
 export interface Currency {
   names: string
@@ -16,6 +17,10 @@ const CurrencySchema: Schema = new Schema(
     _id: {
       type: String,
       default: uuidv4,
+    },
+    seq: {
+      type: Number,
+      default: 0,
     },
     names: {
       type: Map,
@@ -67,6 +72,31 @@ CurrencySchema.index({ active: 1 })
 CurrencySchema.index({ priority: 1 })
 CurrencySchema.index({ removed: 1 })
 CurrencySchema.index({ createdAt: 1 })
+
+CurrencySchema.set('toJSON', {
+  virtuals: true,
+  versionKey: false,
+  transform: (_, ret) => {
+    ret.id = ret._id
+    delete ret._id
+    delete ret.removed
+  },
+})
+
+CurrencySchema.pre('save', async function (next) {
+  const doc = this as any
+
+  if (doc.isNew && !doc.seq) {
+    const counter = await CounterModel.findByIdAndUpdate(
+      'currencies',
+      { $inc: { seq: 1 } },
+      { new: true, upsert: true },
+    )
+    doc.seq = counter.seq
+  }
+
+  next()
+})
 
 const CurrencyModel = mongoose.model<Currency>('Currency', CurrencySchema)
 

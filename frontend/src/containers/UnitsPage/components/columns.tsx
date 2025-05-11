@@ -213,19 +213,19 @@ export function useColumns({ setSorters, expandedRows, setExpandedRows }): Colum
               <DropdownMenuContent align="end">
                 <DropdownMenuLabel>{t('page.units.table.actions')}</DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => navigator.clipboard.writeText(unit._id)}>
+                <DropdownMenuItem onClick={() => navigator.clipboard.writeText(unit.id)}>
                   {t('page.units.table.copy')}
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => unitContext.toggleModal(unit)}>
                   {t('page.units.table.edit')}
                 </DropdownMenuItem>
                 <DropdownMenuItem
-                  onClick={() => unitContext.duplicateUnits({ _ids: [unit._id] })}
+                  onClick={() => unitContext.duplicateUnits({ ids: [unit.id] })}
                 >
                   {t('page.units.table.duplicate')}
                 </DropdownMenuItem>
                 <DropdownMenuItem
-                  onClick={() => unitContext.removeUnit({ _ids: [unit._id] })}
+                  onClick={() => unitContext.removeUnit({ ids: [unit.id] })}
                   variant="destructive"
                 >
                   {t('page.units.table.delete')}

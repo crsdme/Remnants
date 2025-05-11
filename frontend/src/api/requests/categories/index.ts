@@ -33,7 +33,7 @@ export async function editCategory(params: editCategoryParams) {
 }
 
 export interface removeCategoryParams {
-  _id: string
+  id: string
 }
 
 export async function removeCategory(params: removeCategoryParams) {

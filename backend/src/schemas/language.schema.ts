@@ -5,10 +5,10 @@ import { booleanArraySchema, dateRangeSchema, idSchema, numberFromStringSchema, 
 extendZodWithOpenApi(z)
 
 function hasIdsOrFilters(data: {
-  _ids?: unknown
+  ids?: unknown
   filters?: unknown
 }) {
-  return !!data._ids || !!data.filters
+  return !!data.ids || !!data.filters
 }
 
 export const getLanguageSchema = z.object({
@@ -42,7 +42,7 @@ export const createLanguageSchema = z.object({
 })
 
 export const editLanguageSchema = z.object({
-  _id: idSchema,
+  id: idSchema,
   name: z.string(),
   code: z.string(),
   priority: numberFromStringSchema,
@@ -51,15 +51,15 @@ export const editLanguageSchema = z.object({
 })
 
 export const removeLanguageSchema = z.object({
-  _ids: z.array(idSchema),
+  ids: z.array(idSchema),
 })
 
 export const duplicateLanguageSchema = z.object({
-  _ids: z.array(idSchema),
+  ids: z.array(idSchema),
 })
 
 export const batchLanguageSchema = z.object({
-  _ids: z.array(idSchema).optional(),
+  ids: z.array(idSchema).optional(),
   filters: z.object({
     name: z.string().optional(),
     code: z.string().optional(),
@@ -76,7 +76,7 @@ export const batchLanguageSchema = z.object({
     }),
   ),
 }).refine(hasIdsOrFilters, {
-  message: 'Either _ids or filters are required.',
+  message: 'Either ids or filters are required.',
 })
 
 export const importLanguagesSchema = z.object({

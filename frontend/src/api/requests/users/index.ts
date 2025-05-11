@@ -44,7 +44,7 @@ export async function createUser(params: createUsersParams) {
 }
 
 export interface editUserParams {
-  _id: string
+  id: string
   name: string
   login: string
   password: string
@@ -56,7 +56,7 @@ export async function editUser(params: editUserParams) {
 }
 
 export interface removeUserParams {
-  _ids: string[]
+  ids: string[]
 }
 
 export async function removeUser(params: removeUserParams) {
@@ -76,7 +76,7 @@ export async function importUsers(params: importUsersParams) {
 }
 
 export interface duplicateUserParams {
-  _ids: string[]
+  ids: string[]
 }
 
 export async function duplicateUser(params: duplicateUserParams) {

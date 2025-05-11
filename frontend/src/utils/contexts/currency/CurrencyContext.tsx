@@ -24,9 +24,9 @@ interface CurrencyContextType {
   closeModal: () => void
   submitCurrencyForm: (params) => void
   batchCurrency: (params) => void
-  removeCurrency: (params: { _ids: string[] }) => void
+  removeCurrency: (params: { ids: string[] }) => void
   importCurrencies: (params) => void
-  duplicateCurrencies: (params: { _ids: string[] }) => void
+  duplicateCurrencies: (params: { ids: string[] }) => void
 }
 
 const CurrencyContext = createContext<CurrencyContextType | undefined>(undefined)
@@ -151,7 +151,7 @@ export function CurrencyProvider({ children }: CurrencyProviderProps) {
       useMutateCreateCurrency.mutate(params)
     }
     else {
-      useMutateEditCurrency.mutate({ ...params, _id: selectedCurrency._id })
+      useMutateEditCurrency.mutate({ ...params, id: selectedCurrency.id })
     }
   }
 

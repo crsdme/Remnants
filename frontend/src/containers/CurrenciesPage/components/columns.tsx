@@ -213,19 +213,19 @@ export function useColumns({ setSorters, expandedRows, setExpandedRows }): Colum
               <DropdownMenuContent align="end">
                 <DropdownMenuLabel>{t('page.currencies.table.actions')}</DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => navigator.clipboard.writeText(currency._id)}>
+                <DropdownMenuItem onClick={() => navigator.clipboard.writeText(currency.id)}>
                   {t('page.currencies.table.copy')}
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => currencyContext.toggleModal(currency)}>
                   {t('page.currencies.table.edit')}
                 </DropdownMenuItem>
                 <DropdownMenuItem
-                  onClick={() => currencyContext.duplicateCurrencies({ _ids: [currency._id] })}
+                  onClick={() => currencyContext.duplicateCurrencies({ ids: [currency.id] })}
                 >
                   {t('page.currencies.table.duplicate')}
                 </DropdownMenuItem>
                 <DropdownMenuItem
-                  onClick={() => currencyContext.removeCurrency({ _ids: [currency._id] })}
+                  onClick={() => currencyContext.removeCurrency({ ids: [currency.id] })}
                   variant="destructive"
                 >
                   {t('page.currencies.table.delete')}

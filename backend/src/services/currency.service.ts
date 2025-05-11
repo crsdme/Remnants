@@ -103,10 +103,10 @@ export async function get(payload: CurrencyTypes.getCurrenciesParams): Promise<C
     },
   ]
 
-  const currenciesResult = await CurrencyModel.aggregate(pipeline).exec()
+  const currenciesRaw = await CurrencyModel.aggregate(pipeline).exec()
 
-  const currencies = currenciesResult[0].currencies
-  const currenciesCount = currenciesResult[0].totalCount[0]?.count || 0
+  const currencies = currenciesRaw[0].currencies.map((doc: any) => CurrencyModel.hydrate(doc))
+  const currenciesCount = currenciesRaw[0].totalCount[0]?.count || 0
 
   return { status: 'success', code: 'CURRENCIES_FETCHED', message: 'Currencies fetched', currencies, currenciesCount }
 }
@@ -118,9 +118,9 @@ export async function create(payload: CurrencyTypes.createCurrencyParams): Promi
 }
 
 export async function edit(payload: CurrencyTypes.editCurrencyParams): Promise<CurrencyTypes.editCurrencyResult> {
-  const { _id } = payload
+  const { id } = payload
 
-  const currency = await CurrencyModel.findOneAndUpdate({ _id }, payload)
+  const currency = await CurrencyModel.findOneAndUpdate({ _id: id }, payload)
 
   if (!currency) {
     throw new HttpError(400, 'Currency not edited', 'CURRENCY_NOT_EDITED')
@@ -129,11 +129,11 @@ export async function edit(payload: CurrencyTypes.editCurrencyParams): Promise<C
   return { status: 'success', code: 'CURRENCY_EDITED', message: 'Currency edited', currency }
 }
 
-export async function remove(payload: CurrencyTypes.removeCurrencyParams): Promise<CurrencyTypes.removeCurrenciesResult> {
-  const { _ids } = payload
+export async function remove(payload: CurrencyTypes.removeCurrenciesParams): Promise<CurrencyTypes.removeCurrenciesResult> {
+  const { ids } = payload
 
   const currencies = await CurrencyModel.updateMany(
-    { _id: { $in: _ids } },
+    { _id: { $in: ids } },
     { $set: { removed: true } },
   )
 
@@ -145,7 +145,7 @@ export async function remove(payload: CurrencyTypes.removeCurrencyParams): Promi
 }
 
 export async function batch(payload: CurrencyTypes.batchCurrenciesParams): Promise<CurrencyTypes.batchCurrenciesResult> {
-  const { _ids, filters, params } = payload
+  const { ids, filters, params } = payload
 
   const {
     names = '',
@@ -218,12 +218,12 @@ export async function batch(payload: CurrencyTypes.batchCurrenciesParams): Promi
   }
   if (filters) {
     query = {
-      $or: [query, { _id: { $in: _ids } }],
+      $or: [query, { _id: { $in: ids } }],
     }
   }
   else {
     query = {
-      _id: { $in: _ids },
+      _id: { $in: ids },
     }
   }
 
@@ -251,15 +251,15 @@ export async function upload(payload: CurrencyTypes.importCurrenciesParams): Pro
     active: toBoolean(row.active),
   }))
 
-  await CurrencyModel.insertMany(parsedCurrencies)
+  await CurrencyModel.create(parsedCurrencies)
 
   return { status: 'success', code: 'CURRENCIES_IMPORTED', message: 'Currencies imported' }
 }
 
 export async function duplicate(payload: CurrencyTypes.duplicateCurrencyParams): Promise<CurrencyTypes.duplicateCurrencyResult> {
-  const { _ids } = payload
+  const { ids } = payload
 
-  const currencies = await CurrencyModel.find({ _id: { $in: _ids } })
+  const currencies = await CurrencyModel.find({ _id: { $in: ids } })
 
   const parsedCurrencies = currencies.map(currency => ({
     names: currency.names,
@@ -268,7 +268,7 @@ export async function duplicate(payload: CurrencyTypes.duplicateCurrencyParams):
     active: currency.active,
   }))
 
-  await CurrencyModel.insertMany(parsedCurrencies)
+  await CurrencyModel.create(parsedCurrencies)
 
   return { status: 'success', code: 'CURRENCIES_DUPLICATED', message: 'Currencies duplicated' }
 }

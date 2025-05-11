@@ -33,7 +33,7 @@ export async function editProduct(params: editProductParams) {
 }
 
 export interface removeProductParams {
-  _id: string
+  id: string
 }
 
 export async function removeProduct(params: removeProductParams) {

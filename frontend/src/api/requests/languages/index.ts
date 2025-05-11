@@ -49,7 +49,7 @@ export async function createLanguage(params: createLanguagesParams) {
 }
 
 export interface editLanguageParams {
-  _id: string
+  id: string
   name: string
   code: string
   main?: boolean
@@ -62,7 +62,7 @@ export async function editLanguage(params: editLanguageParams) {
 }
 
 export interface removeLanguageParams {
-  _ids: string[]
+  ids: string[]
 }
 
 export async function removeLanguage(params: removeLanguageParams) {
@@ -94,7 +94,7 @@ interface batchFilterItem {
 }
 
 export interface batchLanguageParams {
-  _ids: string[]
+  ids: string[]
   params: batchItem[]
   filters: batchFilterItem[]
 }
@@ -116,7 +116,7 @@ export async function importLanguages(params: importLanguagesParams) {
 }
 
 export interface duplicateLanguageParams {
-  _ids: string[]
+  ids: string[]
 }
 
 export async function duplicateLanguage(params: duplicateLanguageParams) {

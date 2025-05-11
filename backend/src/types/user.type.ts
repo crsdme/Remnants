@@ -49,7 +49,7 @@ export interface editUserResult {
 }
 
 export interface editUserParams {
-  _id: IdType
+  id: IdType
   name: string
   login: string
   password: string
@@ -63,7 +63,7 @@ export interface removeUsersResult {
 }
 
 export interface removeUsersParams {
-  _ids: IdType[]
+  ids: IdType[]
 }
 
 export interface importUsersResult {
@@ -83,5 +83,5 @@ export interface duplicateUsersResult {
 }
 
 export interface duplicateUsersParams {
-  _ids: IdType[]
+  ids: IdType[]
 }

@@ -15,7 +15,7 @@ describe('currency API', () => {
       active: true,
     })
 
-    expect(res.status).toBe(200)
+    expect(res.status).toBe(201)
     expect(res.body).toHaveProperty('status')
     expect(res.body.status).toBe('success')
 
@@ -73,7 +73,7 @@ describe('currency API', () => {
         active: true,
       })
 
-      expect(res.status).toBe(200)
+      expect(res.status).toBe(201)
       expect(res.body).toHaveProperty('status')
       expect(res.body.status).toBe('success')
 

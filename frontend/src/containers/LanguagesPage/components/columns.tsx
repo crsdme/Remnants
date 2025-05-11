@@ -227,19 +227,19 @@ export function useColumns({ setSorters, expandedRows, setExpandedRows }): Colum
               <DropdownMenuContent align="end">
                 <DropdownMenuLabel>{t('page.languages.table.actions')}</DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => navigator.clipboard.writeText(language._id)}>
+                <DropdownMenuItem onClick={() => navigator.clipboard.writeText(language.id)}>
                   {t('page.languages.table.copy')}
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => languageContext.toggleModal(language)}>
                   {t('page.languages.table.edit')}
                 </DropdownMenuItem>
                 <DropdownMenuItem
-                  onClick={() => languageContext.duplicateLanguages({ _ids: [language._id] })}
+                  onClick={() => languageContext.duplicateLanguages({ ids: [language.id] })}
                 >
                   {t('page.languages.table.duplicate')}
                 </DropdownMenuItem>
                 <DropdownMenuItem
-                  onClick={() => languageContext.removeLanguage({ _ids: [language._id] })}
+                  onClick={() => languageContext.removeLanguage({ ids: [language.id] })}
                   variant="destructive"
                 >
                   {t('page.languages.table.delete')}

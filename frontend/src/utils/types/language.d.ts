@@ -1,5 +1,5 @@
 interface Language {
-  _id: string
+  id: string
   name: string
   code: string
   main: boolean

@@ -85,7 +85,7 @@ export async function get(payload: LanguageTypes.getLanguagesParams): Promise<La
       updatedAt: { $gte: updatedAt.from, $lte: updatedAt.to },
     }
   }
-  console.log(sortersQuery)
+
   const pipeline = [
     {
       $match: query,
@@ -106,10 +106,10 @@ export async function get(payload: LanguageTypes.getLanguagesParams): Promise<La
     },
   ]
 
-  const languagesResult = await LanguageModel.aggregate(pipeline).exec()
+  const languagesRaw = await LanguageModel.aggregate(pipeline).exec()
 
-  const languages = languagesResult[0].languages
-  const languagesCount = languagesResult[0].totalCount[0]?.count || 0
+  const languages = languagesRaw[0].languages.map((doc: any) => LanguageModel.hydrate(doc))
+  const languagesCount = languagesRaw[0].totalCount[0]?.count || 0
 
   return {
     status: 'success',
@@ -132,9 +132,9 @@ export async function create(payload: LanguageTypes.createLanguageParams): Promi
 }
 
 export async function edit(payload: LanguageTypes.editLanguageParams): Promise<LanguageTypes.editLanguagesResult> {
-  const { _id } = payload
+  const { id } = payload
 
-  const language = await LanguageModel.findOneAndUpdate({ _id }, payload)
+  const language = await LanguageModel.findOneAndUpdate({ _id: id }, payload)
 
   if (!language) {
     throw new HttpError(400, 'Language not edited', 'LANGUAGE_NOT_EDITED')
@@ -149,10 +149,10 @@ export async function edit(payload: LanguageTypes.editLanguageParams): Promise<L
 }
 
 export async function remove(payload: LanguageTypes.removeLanguageParams): Promise<LanguageTypes.removeLanguagesResult> {
-  const { _ids } = payload
+  const { ids } = payload
 
   const languages = await LanguageModel.updateMany(
-    { _id: { $in: _ids } },
+    { _id: { $in: ids } },
     { $set: { removed: true } },
   )
 
@@ -168,7 +168,7 @@ export async function remove(payload: LanguageTypes.removeLanguageParams): Promi
 }
 
 export async function batch(payload: LanguageTypes.batchLanguagesParams): Promise<LanguageTypes.batchLanguagesResult> {
-  const { _ids, filters, params } = payload
+  const { ids, filters, params } = payload
 
   const {
     name = '',
@@ -247,12 +247,12 @@ export async function batch(payload: LanguageTypes.batchLanguagesParams): Promis
 
   if (filters) {
     query = {
-      $or: [query, { _id: { $in: _ids } }],
+      $or: [query, { _id: { $in: ids } }],
     }
   }
   else {
     query = {
-      _id: { $in: _ids },
+      _id: { $in: ids },
     }
   }
 
@@ -285,7 +285,7 @@ export async function upload(payload: LanguageTypes.importLanguagesParams): Prom
     main: toBoolean(row.main),
   }))
 
-  await LanguageModel.insertMany(parsedLanguages)
+  await LanguageModel.create(parsedLanguages)
 
   return {
     status: 'success',
@@ -295,9 +295,9 @@ export async function upload(payload: LanguageTypes.importLanguagesParams): Prom
 }
 
 export async function duplicate(payload: LanguageTypes.duplicateLanguageParams): Promise<LanguageTypes.duplicateLanguageResult> {
-  const { _ids } = payload
+  const { ids } = payload
 
-  const languages = await LanguageModel.find({ _id: { $in: _ids } })
+  const languages = await LanguageModel.find({ _id: { $in: ids } })
 
   const parsedLanguages = languages.map(language => ({
     name: language.name,
@@ -307,7 +307,7 @@ export async function duplicate(payload: LanguageTypes.duplicateLanguageParams):
     main: language.main,
   }))
 
-  await LanguageModel.insertMany(parsedLanguages)
+  await LanguageModel.create(parsedLanguages)
 
   return {
     status: 'success',

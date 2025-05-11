@@ -45,7 +45,7 @@ export async function createCurrency(params: createCurrenciesParams) {
 }
 
 export interface editCurrencyParams {
-  _id: string
+  id: string
   names: LanguageString
   symbols: LanguageString
   priority: number
@@ -57,7 +57,7 @@ export async function editCurrency(params: editCurrencyParams) {
 }
 
 export interface removeCurrencyParams {
-  _ids: string[]
+  ids: string[]
 }
 
 export async function removeCurrency(params: removeCurrencyParams) {
@@ -85,7 +85,7 @@ interface batchFilterItem {
 }
 
 export interface batchCurrencyParams {
-  _ids: string[]
+  ids: string[]
   params: batchItem[]
   filters: batchFilterItem[]
 }
@@ -107,7 +107,7 @@ export async function importCurrencies(params: importCurrenciesParams) {
 }
 
 export interface duplicateCurrencyParams {
-  _ids: string[]
+  ids: string[]
 }
 
 export async function duplicateCurrency(params: duplicateCurrencyParams) {

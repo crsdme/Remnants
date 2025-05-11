@@ -53,7 +53,7 @@ export interface editUnitResult {
 }
 
 export interface editUnitParams {
-  _id: IdType
+  id: IdType
   names: LanguageString
   symbols: LanguageString
   priority: number
@@ -66,8 +66,8 @@ export interface removeUnitsResult {
   message: Message
 }
 
-export interface removeUnitParams {
-  _ids: IdType[]
+export interface removeUnitsParams {
+  ids: IdType[]
 }
 
 export interface batchUnitsResult {
@@ -77,7 +77,7 @@ export interface batchUnitsResult {
 }
 
 export interface batchUnitsParams {
-  _ids: IdType[]
+  ids: IdType[]
   filters: {
     names: LanguageString
     symbols: LanguageString
@@ -110,5 +110,5 @@ export interface duplicateUnitResult {
 }
 
 export interface duplicateUnitParams {
-  _ids: IdType[]
+  ids: IdType[]
 }

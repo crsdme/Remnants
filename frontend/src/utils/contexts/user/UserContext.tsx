@@ -22,9 +22,9 @@ interface UserContextType {
   openModal: (user?: User) => void
   closeModal: () => void
   submitUserForm: (params) => void
-  removeUsers: (params: { _ids: string[] }) => void
+  removeUsers: (params: { ids: string[] }) => void
   importUsers: (params) => void
-  duplicateUsers: (params: { _ids: string[] }) => void
+  duplicateUsers: (params: { ids: string[] }) => void
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined)
@@ -139,7 +139,7 @@ export function UserProvider({ children }: UserProviderProps) {
       useMutateCreateUser.mutate(params)
     }
     else {
-      useMutateEditUser.mutate({ ...params, _id: selectedUser._id })
+      useMutateEditUser.mutate({ ...params, id: selectedUser.id })
     }
   }
 

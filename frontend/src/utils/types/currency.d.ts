@@ -1,5 +1,5 @@
 interface Currency {
-  _id: string
+  id: string
   names: LanguageString
   symbols: LanguageString
   active: boolean

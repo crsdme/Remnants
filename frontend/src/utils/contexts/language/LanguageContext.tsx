@@ -14,10 +14,10 @@ interface LanguageContextType {
   openModal: (language?: Language) => void
   closeModal: () => void
   submitLanguageForm: (params: Language) => void
-  batchLanguage: (params: { _ids?: string[], filters?: any, params: any }) => void
-  removeLanguage: (params: { _ids: string[] }) => void
+  batchLanguage: (params: { ids?: string[], filters?: any, params: any }) => void
+  removeLanguage: (params: { ids: string[] }) => void
   importLanguages: (params) => void
-  duplicateLanguages: (params: { _ids: string[] }) => void
+  duplicateLanguages: (params: { ids: string[] }) => void
 }
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined)
@@ -145,7 +145,7 @@ export function LanguageProvider({ children }: LanguageProviderProps) {
       useMutateCreateLanguage.mutate(params)
     }
     else {
-      useMutateEditLanguage.mutate({ ...params, _id: selectedLanguage._id })
+      useMutateEditLanguage.mutate({ ...params, id: selectedLanguage.id })
     }
   }
 

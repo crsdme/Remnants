@@ -187,7 +187,7 @@ export function DataTable() {
   const handleBatchSubmit = (data) => {
     const selectedUnits = units
       .filter((_, index) => rowSelection[index])
-      .map(item => item._id)
+      .map(item => item.id)
 
     const params = data.items.map(item => ({
       column: item.column,
@@ -195,18 +195,18 @@ export function DataTable() {
     }))
 
     if (batchEditMode === 'filter') {
-      unitContext.batchUnit({ _ids: selectedUnits, filters, params })
+      unitContext.batchUnit({ ids: selectedUnits, filters, params })
     }
     else {
-      unitContext.batchUnit({ _ids: selectedUnits, params })
+      unitContext.batchUnit({ ids: selectedUnits, params })
     }
 
     setRowSelection({})
   }
 
   const handleBatchRemove = () => {
-    const _ids = units.filter((_, index) => rowSelection[index]).map(item => item._id)
-    unitContext.removeUnit({ _ids })
+    const ids = units.filter((_, index) => rowSelection[index]).map(item => item.id)
+    unitContext.removeUnit({ ids })
     setRowSelection({})
   }
 
@@ -219,8 +219,8 @@ export function DataTable() {
   }, 50)
 
   const handleBatchDuplicate = () => {
-    const _ids = units.filter((_, index) => rowSelection[index]).map(item => item._id)
-    unitContext.duplicateUnits({ _ids })
+    const ids = units.filter((_, index) => rowSelection[index]).map(item => item.id)
+    unitContext.duplicateUnits({ ids })
     setRowSelection({})
   }
 

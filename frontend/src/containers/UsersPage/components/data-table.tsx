@@ -178,8 +178,8 @@ export function DataTable() {
   }
 
   const handleBatchRemove = () => {
-    const _ids = users.filter((_, index) => rowSelection[index]).map(item => item._id)
-    userContext.removeUsers({ _ids })
+    const ids = users.filter((_, index) => rowSelection[index]).map(item => item.id)
+    userContext.removeUsers({ ids })
     setRowSelection({})
   }
 
@@ -188,8 +188,8 @@ export function DataTable() {
   }, 50)
 
   const handleBatchDuplicate = () => {
-    const _ids = users.filter((_, index) => rowSelection[index]).map(item => item._id)
-    userContext.duplicateUsers({ _ids })
+    const ids = users.filter((_, index) => rowSelection[index]).map(item => item.id)
+    userContext.duplicateUsers({ ids })
     setRowSelection({})
   }
 

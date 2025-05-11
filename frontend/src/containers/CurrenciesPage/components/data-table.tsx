@@ -187,7 +187,7 @@ export function DataTable() {
   const handleBatchSubmit = (data) => {
     const selectedCurrencies = currencies
       .filter((_, index) => rowSelection[index])
-      .map(item => item._id)
+      .map(item => item.id)
 
     const params = data.items.map(item => ({
       column: item.column,
@@ -195,18 +195,18 @@ export function DataTable() {
     }))
 
     if (batchEditMode === 'filter') {
-      currencyContext.batchCurrency({ _ids: selectedCurrencies, filters, params })
+      currencyContext.batchCurrency({ ids: selectedCurrencies, filters, params })
     }
     else {
-      currencyContext.batchCurrency({ _ids: selectedCurrencies, params })
+      currencyContext.batchCurrency({ ids: selectedCurrencies, params })
     }
 
     setRowSelection({})
   }
 
   const handleBatchRemove = () => {
-    const _ids = currencies.filter((_, index) => rowSelection[index]).map(item => item._id)
-    currencyContext.removeCurrency({ _ids })
+    const ids = currencies.filter((_, index) => rowSelection[index]).map(item => item.id)
+    currencyContext.removeCurrency({ ids })
     setRowSelection({})
   }
 
@@ -219,8 +219,8 @@ export function DataTable() {
   }, 50)
 
   const handleBatchDuplicate = () => {
-    const _ids = currencies.filter((_, index) => rowSelection[index]).map(item => item._id)
-    currencyContext.duplicateCurrencies({ _ids })
+    const ids = currencies.filter((_, index) => rowSelection[index]).map(item => item.id)
+    currencyContext.duplicateCurrencies({ ids })
     setRowSelection({})
   }
 

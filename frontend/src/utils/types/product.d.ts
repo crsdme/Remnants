@@ -1,5 +1,5 @@
 interface Currency {
-  _id: string
+  id: string
   symbol: string
 }
 
@@ -11,11 +11,11 @@ interface ImageFile {
 interface ImageItem {
   main: ImageFile
   preview: ImageFile
-  _id: string
+  id: string
 }
 
 interface Category {
-  _id: string
+  id: string
   names: LanguageString
 }
 
@@ -24,7 +24,7 @@ interface CustomFields {
 }
 
 // interface Product {
-//   _id: string
+//   id: string
 //   names: LanguageString
 //   price: number
 //   currency: Currency

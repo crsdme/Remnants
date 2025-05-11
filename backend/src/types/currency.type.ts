@@ -53,7 +53,7 @@ export interface editCurrencyResult {
 }
 
 export interface editCurrencyParams {
-  _id: IdType
+  id: IdType
   names: LanguageString
   symbols: LanguageString
   priority: number
@@ -66,8 +66,8 @@ export interface removeCurrenciesResult {
   message: Message
 }
 
-export interface removeCurrencyParams {
-  _ids: IdType[]
+export interface removeCurrenciesParams {
+  ids: IdType[]
 }
 
 export interface batchCurrenciesResult {
@@ -77,7 +77,7 @@ export interface batchCurrenciesResult {
 }
 
 export interface batchCurrenciesParams {
-  _ids: IdType[]
+  ids: IdType[]
   filters: {
     names: LanguageString
     symbols: LanguageString
@@ -110,5 +110,5 @@ export interface duplicateCurrencyResult {
 }
 
 export interface duplicateCurrencyParams {
-  _ids: IdType[]
+  ids: IdType[]
 }

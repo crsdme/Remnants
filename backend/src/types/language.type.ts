@@ -54,7 +54,7 @@ export interface editLanguagesResult {
 }
 
 export interface editLanguageParams {
-  _id: IdType
+  id: IdType
   name: string
   code: string
   priority: number
@@ -69,7 +69,7 @@ export interface removeLanguagesResult {
 }
 
 export interface removeLanguageParams {
-  _ids: IdType[]
+  ids: IdType[]
 }
 
 export interface batchLanguagesResult {
@@ -79,7 +79,7 @@ export interface batchLanguagesResult {
 }
 
 export interface batchLanguagesParams {
-  _ids: IdType[]
+  ids: IdType[]
   filters: {
     name: string
     code: string
@@ -112,5 +112,5 @@ export interface duplicateLanguageResult {
 }
 
 export interface duplicateLanguageParams {
-  _ids: IdType[]
+  ids: IdType[]
 }

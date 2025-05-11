@@ -5,10 +5,10 @@ import { booleanArraySchema, dateRangeSchema, idSchema, languageStringSchema, nu
 extendZodWithOpenApi(z)
 
 function hasIdsOrFilters(data: {
-  _ids?: unknown
+  ids?: unknown
   filters?: unknown
 }) {
-  return !!data._ids || !!data.filters
+  return !!data.ids || !!data.filters
 }
 
 export const getCurrencySchema = z.object({
@@ -40,7 +40,7 @@ export const createCurrencySchema = z.object({
 })
 
 export const editCurrencySchema = z.object({
-  _id: idSchema,
+  id: idSchema,
   names: languageStringSchema,
   symbols: languageStringSchema,
   priority: numberFromStringSchema,
@@ -48,15 +48,15 @@ export const editCurrencySchema = z.object({
 })
 
 export const removeCurrencySchema = z.object({
-  _ids: z.array(idSchema),
+  ids: z.array(idSchema),
 })
 
 export const duplicateCurrencySchema = z.object({
-  _ids: z.array(idSchema),
+  ids: z.array(idSchema),
 })
 
 export const batchCurrencySchema = z.object({
-  _ids: z.array(idSchema).optional(),
+  ids: z.array(idSchema).optional(),
   filters: z.object({
     names: z.string().optional(),
     symbols: z.string().optional(),
@@ -73,7 +73,7 @@ export const batchCurrencySchema = z.object({
     }),
   ),
 }).refine(hasIdsOrFilters, {
-  message: 'Either _ids or filters are required.',
+  message: 'Either ids or filters are required.',
 })
 
 export const importCurrenciesSchema = z.object({

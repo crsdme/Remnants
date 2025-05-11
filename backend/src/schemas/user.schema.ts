@@ -30,7 +30,7 @@ export const createUserSchema = z.object({
 })
 
 export const editUserSchema = z.object({
-  _id: idSchema,
+  id: idSchema,
   name: z.string(),
   login: z.string(),
   password: z.string().optional(),
@@ -38,11 +38,11 @@ export const editUserSchema = z.object({
 })
 
 export const removeUserSchema = z.object({
-  _ids: z.array(idSchema),
+  ids: z.array(idSchema),
 })
 
 export const duplicateUserSchema = z.object({
-  _ids: z.array(idSchema),
+  ids: z.array(idSchema),
 })
 
 export const importUsersSchema = z.object({

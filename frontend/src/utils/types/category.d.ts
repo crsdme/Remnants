@@ -1,5 +1,5 @@
 interface Category {
-  _id: string
+  id: string
   names: LanguageString
   active: boolean
   parent: Category

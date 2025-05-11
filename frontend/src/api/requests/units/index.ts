@@ -45,7 +45,7 @@ export async function createUnit(params: createUnitsParams) {
 }
 
 export interface editUnitParams {
-  _id: string
+  id: string
   names: LanguageString
   symbols: LanguageString
   priority: number
@@ -57,7 +57,7 @@ export async function editUnit(params: editUnitParams) {
 }
 
 export interface removeUnitParams {
-  _ids: string[]
+  ids: string[]
 }
 
 export async function removeUnit(params: removeUnitParams) {
@@ -85,7 +85,7 @@ interface batchFilterItem {
 }
 
 export interface batchUnitParams {
-  _ids: string[]
+  ids: string[]
   params: batchItem[]
   filters: batchFilterItem[]
 }
@@ -107,7 +107,7 @@ export async function importUnits(params: importUnitsParams) {
 }
 
 export interface duplicateUnitParams {
-  _ids: string[]
+  ids: string[]
 }
 
 export async function duplicateUnit(params: duplicateUnitParams) {

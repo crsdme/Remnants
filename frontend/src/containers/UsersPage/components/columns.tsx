@@ -195,19 +195,19 @@ export function useColumns({ setSorters, expandedRows, setExpandedRows }): Colum
               <DropdownMenuContent align="end">
                 <DropdownMenuLabel>{t('page.users.table.actions')}</DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => navigator.clipboard.writeText(user._id)}>
+                <DropdownMenuItem onClick={() => navigator.clipboard.writeText(user.id)}>
                   {t('page.users.table.copy')}
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => userContext.toggleModal(user)}>
                   {t('page.users.table.edit')}
                 </DropdownMenuItem>
                 <DropdownMenuItem
-                  onClick={() => userContext.duplicateUsers({ _ids: [user._id] })}
+                  onClick={() => userContext.duplicateUsers({ ids: [user.id] })}
                 >
                   {t('page.users.table.duplicate')}
                 </DropdownMenuItem>
                 <DropdownMenuItem
-                  onClick={() => userContext.removeUsers({ _ids: [user._id] })}
+                  onClick={() => userContext.removeUsers({ ids: [user.id] })}
                   variant="destructive"
                 >
                   {t('page.users.table.delete')}

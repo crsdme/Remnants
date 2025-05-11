@@ -36,7 +36,7 @@ export async function login(payload: loginParams): Promise<loginResult> {
     throw new HttpError(404, 'User not found', 'USER_NOT_FOUND')
   }
 
-  const isMatch = await bcrypt.compare(password, user.password)
+  const isMatch = await bcrypt.compare(password, user.password || '')
 
   if (!isMatch) {
     throw new HttpError(401, 'Invalid password', 'INVALID_PASSWORD')
