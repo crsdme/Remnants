@@ -2,6 +2,7 @@ import bcrypt from 'bcrypt'
 import dotenv from 'dotenv'
 import jwt from 'jsonwebtoken'
 import { UserModel } from '../models/'
+import { HttpError } from '../utils/httpError'
 
 dotenv.config()
 
@@ -32,13 +33,13 @@ export async function login(payload: loginParams): Promise<loginResult> {
   const user = await UserModel.findOne({ login })
 
   if (!user) {
-    throw new Error('User not found')
+    throw new HttpError(404, 'User not found', 'USER_NOT_FOUND')
   }
 
   const isMatch = await bcrypt.compare(password, user.password)
 
   if (!isMatch) {
-    throw new Error('Invalid password')
+    throw new HttpError(401, 'Invalid password', 'INVALID_PASSWORD')
   }
 
   const accessToken = generateAccessToken({ id: user._id, login: user.login })

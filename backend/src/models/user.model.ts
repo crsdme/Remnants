@@ -21,7 +21,6 @@ const UserSchema: Schema = new Schema(
     login: {
       type: String,
       required: true,
-      unique: true,
     },
     password: {
       type: String,
@@ -42,6 +41,11 @@ const UserSchema: Schema = new Schema(
     },
   },
   { timestamps: true },
+)
+
+UserSchema.index(
+  { login: 1 },
+  { unique: true, partialFilterExpression: { removed: false } },
 )
 
 const UserModel = mongoose.model<User>('User', UserSchema)

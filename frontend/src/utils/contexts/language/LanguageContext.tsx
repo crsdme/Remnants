@@ -37,78 +37,90 @@ export function LanguageProvider({ children }: LanguageProviderProps) {
 
   const useMutateCreateLanguage = useCreateLanguage({
     options: {
-      onSuccess: () => {
+      onSuccess: ({ data }) => {
         setIsModalOpen(false)
         setIsLoading(false)
         setSelectedLanguage(null)
         queryClient.invalidateQueries({ queryKey: ['languages'] })
-        toast.success(t('page.languages.toast.createLanguage.success'))
+        toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description}` })
       },
-      onError: () => {
-        toast.error(t('page.languages.toast.createLanguage.error'))
+      onError: ({ response }) => {
+        const error = response.data.error
+        setIsModalOpen(false)
+        setIsLoading(false)
+        setSelectedLanguage(null)
+        toast.error(t(`error.title.${error.code}`), { description: `${t(`error.description.${error.code}`)} ${error.description}` })
       },
     },
   })
 
   const useMutateDuplicateLanguages = useDuplicateLanguages({
     options: {
-      onSuccess: () => {
+      onSuccess: ({ data }) => {
         queryClient.invalidateQueries({ queryKey: ['languages'] })
-        toast.success(t('page.languages.toast.duplicateLanguages.success'))
+        toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description}` })
       },
-      onError: () => {
-        toast.error(t('page.languages.toast.duplicateLanguages.error'))
+      onError: ({ response }) => {
+        const error = response.data.error
+        toast.error(t(`error.title.${error.code}`), { description: `${t(`error.description.${error.code}`)} ${error.description}` })
       },
     },
   })
 
   const useMutateEditLanguage = useEditLanguage({
     options: {
-      onSuccess: () => {
+      onSuccess: ({ data }) => {
         setIsModalOpen(false)
         setIsLoading(false)
         setSelectedLanguage(null)
         queryClient.invalidateQueries({ queryKey: ['languages'] })
-        toast.success(t('page.languages.toast.editLanguage.success'))
+        toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description}` })
       },
-      onError: () => {
-        toast.error(t('page.languages.toast.editLanguage.error'))
+      onError: ({ response }) => {
+        const error = response.data.error
+        setIsModalOpen(false)
+        setIsLoading(false)
+        setSelectedLanguage(null)
+        toast.error(t(`error.title.${error.code}`), { description: `${t(`error.description.${error.code}`)} ${error.description}` })
       },
     },
   })
 
   const useMutateRemoveLanguage = useRemoveLanguages({
     options: {
-      onSuccess: () => {
+      onSuccess: ({ data }) => {
         queryClient.invalidateQueries({ queryKey: ['languages'] })
-        toast.success(t('page.languages.toast.removeLanguages.success'))
+        toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description}` })
       },
-      onError: () => {
-        toast.error(t('page.languages.toast.removeLanguages.error'))
+      onError: ({ response }) => {
+        const error = response.data.error
+        toast.error(t(`error.title.${error.code}`), { description: `${t(`error.description.${error.code}`)} ${error.description}` })
       },
     },
   })
 
   const useMutateImportLanguages = useImportLanguages({
     options: {
-      onSuccess: () => {
+      onSuccess: ({ data }) => {
         queryClient.invalidateQueries({ queryKey: ['languages'] })
-        toast.success(t('page.languages.toast.importLanguages.success'))
+        toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description}` })
       },
-      onError: () => {
-        toast.error(t('page.languages.toast.importLanguages.error'))
+      onError: ({ response }) => {
+        const error = response.data.error
+        toast.error(t(`error.title.${error.code}`), { description: `${t(`error.description.${error.code}`)} ${error.description}` })
       },
     },
   })
 
   const useMutateBatchLanguage = useBatchLanguages({
     options: {
-      onSuccess: () => {
+      onSuccess: ({ data }) => {
         queryClient.invalidateQueries({ queryKey: ['languages'] })
-        toast.success(t('page.languages.toast.batchLanguage.success'))
+        toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description}` })
       },
-      onError: () => {
-        toast.error(t('page.languages.toast.batchLanguage.error'))
+      onError: ({ response }) => {
+        const error = response.data.error
+        toast.error(t(`error.title.${error.code}`), { description: `${t(`error.description.${error.code}`)} ${error.description}` })
       },
     },
   })

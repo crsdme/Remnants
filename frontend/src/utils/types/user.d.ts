@@ -10,6 +10,9 @@ interface User {
 
 interface UsersResponse {
   status: string
+  code: string
+  message: string
+  description: string
   users: User[]
   usersCount: number
 }

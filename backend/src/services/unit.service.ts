@@ -1,8 +1,9 @@
 import type * as UnitTypes from '../types/unit.type'
 import { UnitModel } from '../models/'
+import { HttpError } from '../utils/httpError'
 import {
   extractLangMap,
-  parseCSV,
+  parseFile,
   toBoolean,
   toNumber,
 } from '../utils/parseTools'
@@ -108,21 +109,13 @@ export async function get(payload: UnitTypes.getUnitsParams): Promise<UnitTypes.
   const units = unitsResult[0].units
   const unitsCount = unitsResult[0].totalCount[0]?.count || 0
 
-  if (!units) {
-    throw new Error('Units not found')
-  }
-
-  return { status: 'success', message: 'Units fetched', units, unitsCount }
+  return { status: 'success', code: 'UNITS_FETCHED', message: 'Units fetched', units, unitsCount }
 }
 
 export async function create(payload: UnitTypes.createUnitParams): Promise<UnitTypes.createUnitsResult> {
   const unit = await UnitModel.create(payload)
 
-  if (!unit) {
-    throw new Error('Unit not created')
-  }
-
-  return { status: 'success', message: 'Unit created', unit }
+  return { status: 'success', code: 'UNIT_CREATED', message: 'Unit created', unit }
 }
 
 export async function edit(payload: UnitTypes.editUnitParams): Promise<UnitTypes.editUnitResult> {
@@ -131,18 +124,14 @@ export async function edit(payload: UnitTypes.editUnitParams): Promise<UnitTypes
   const unit = await UnitModel.findOneAndUpdate({ _id }, payload)
 
   if (!unit) {
-    throw new Error('Unit not edited')
+    throw new HttpError(400, 'Unit not edited', 'UNIT_NOT_EDITED')
   }
 
-  return { status: 'success', message: 'Unit edited', unit }
+  return { status: 'success', code: 'UNIT_EDITED', message: 'Unit edited', unit }
 }
 
 export async function remove(payload: UnitTypes.removeUnitParams): Promise<UnitTypes.removeUnitsResult> {
   const { _ids } = payload
-
-  if (!_ids) {
-    throw new Error('Need _IDS')
-  }
 
   const units = await UnitModel.updateMany(
     { _id: { $in: _ids } },
@@ -150,10 +139,10 @@ export async function remove(payload: UnitTypes.removeUnitParams): Promise<UnitT
   )
 
   if (!units) {
-    throw new Error('Units not removed')
+    throw new HttpError(400, 'Units not removed', 'UNITS_NOT_REMOVED')
   }
 
-  return { status: 'success', message: 'Units removed' }
+  return { status: 'success', code: 'UNITS_REMOVED', message: 'Units removed' }
 }
 
 export async function batch(payload: UnitTypes.batchUnitsParams): Promise<UnitTypes.batchUnitsResult> {
@@ -174,10 +163,6 @@ export async function batch(payload: UnitTypes.batchUnitsParams): Promise<UnitTy
       to: undefined,
     },
   } = filters || {}
-
-  if (!params) {
-    throw new Error('Need params')
-  }
 
   const allowedParams = ['names', 'symbols', 'priority', 'active']
 
@@ -249,16 +234,16 @@ export async function batch(payload: UnitTypes.batchUnitsParams): Promise<UnitTy
   )
 
   if (!units) {
-    throw new Error('Units not batch edited')
+    throw new HttpError(400, 'Units not batch edited', 'UNITS_NOT_BATCH_EDITED')
   }
 
-  return { status: 'success', message: 'Units batch edited' }
+  return { status: 'success', code: 'UNITS_BATCH_EDITED', message: 'Units batch edited' }
 }
 
 export async function upload(payload: UnitTypes.importUnitsParams): Promise<UnitTypes.importUnitsResult> {
   const { file } = payload
 
-  const storedFile = await parseCSV(file.path)
+  const storedFile = await parseFile(file.path)
 
   const parsedUnits = storedFile.map(row => ({
     names: extractLangMap(row, 'name'),
@@ -269,7 +254,7 @@ export async function upload(payload: UnitTypes.importUnitsParams): Promise<Unit
 
   await UnitModel.insertMany(parsedUnits)
 
-  return { status: 'success', message: 'Units imported' }
+  return { status: 'success', code: 'UNITS_IMPORTED', message: 'Units imported' }
 }
 
 export async function duplicate(payload: UnitTypes.duplicateUnitParams): Promise<UnitTypes.duplicateUnitResult> {
@@ -286,5 +271,5 @@ export async function duplicate(payload: UnitTypes.duplicateUnitParams): Promise
 
   await UnitModel.insertMany(parsedUnits)
 
-  return { status: 'success', message: 'Units duplicated' }
+  return { status: 'success', code: 'UNITS_DUPLICATED', message: 'Units duplicated' }
 }

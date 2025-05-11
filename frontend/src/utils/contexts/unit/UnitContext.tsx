@@ -46,80 +46,90 @@ export function UnitProvider({ children }: UnitProviderProps) {
 
   const useMutateCreateUnit = useCreateUnit({
     options: {
-      onSuccess: () => {
+      onSuccess: ({ data }) => {
         setIsModalOpen(false)
         setIsLoading(false)
         setSelectedUnit(null)
         queryClient.invalidateQueries({ queryKey: ['units'] })
+        toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description}` })
       },
-      onError: () => {
+      onError: ({ response }) => {
+        const error = response.data.error
         setIsModalOpen(false)
         setIsLoading(false)
         setSelectedUnit(null)
-        toast.error(t('page.units.toast.createUnit.error'))
+        toast.error(t(`error.title.${error.code}`), { description: `${t(`error.description.${error.code}`)} ${error.description}` })
       },
     },
   })
 
   const useMutateDuplicateUnits = useDuplicateUnits({
     options: {
-      onSuccess: () => {
+      onSuccess: ({ data }) => {
         queryClient.invalidateQueries({ queryKey: ['units'] })
-        toast.success(t('page.units.toast.duplicateUnits.success'))
+        toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description}` })
       },
-      onError: () => {
-        toast.error(t('page.units.toast.duplicateUnits.error'))
+      onError: ({ response }) => {
+        const error = response.data.error
+        toast.error(t(`error.title.${error.code}`), { description: `${t(`error.description.${error.code}`)} ${error.description}` })
       },
     },
   })
 
   const useMutateEditUnit = useEditUnit({
     options: {
-      onSuccess: () => {
+      onSuccess: ({ data }) => {
         setIsModalOpen(false)
         setIsLoading(false)
         setSelectedUnit(null)
         queryClient.invalidateQueries({ queryKey: ['units'] })
+        toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description}` })
       },
-      onError: () => {
+      onError: ({ response }) => {
+        const error = response.data.error
         setIsModalOpen(false)
         setIsLoading(false)
         setSelectedUnit(null)
-        toast.error(t('page.units.toast.editUnit.error'))
+        toast.error(t(`error.title.${error.code}`), { description: `${t(`error.description.${error.code}`)} ${error.description}` })
       },
     },
   })
 
   const useMutateRemoveUnit = useRemoveUnits({
     options: {
-      onSuccess: () => {
+      onSuccess: ({ data }) => {
         queryClient.invalidateQueries({ queryKey: ['units'] })
+        toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description}` })
       },
-      onError: () => {
-        toast.error(t('page.units.toast.removeUnit.error'))
+      onError: ({ response }) => {
+        const error = response.data.error
+        toast.error(t(`error.title.${error.code}`), { description: `${t(`error.description.${error.code}`)} ${error.description}` })
       },
     },
   })
 
   const useMutateImportUnits = useImportUnits({
     options: {
-      onSuccess: () => {
+      onSuccess: ({ data }) => {
         queryClient.invalidateQueries({ queryKey: ['units'] })
+        toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description}` })
       },
-      onError: () => {
-        toast.error(t('page.units.toast.importUnits.error'))
+      onError: ({ response }) => {
+        const error = response.data.error
+        toast.error(t(`error.title.${error.code}`), { description: `${t(`error.description.${error.code}`)} ${error.description}` })
       },
     },
   })
 
   const useMutateBatchUnit = useBatchUnit({
     options: {
-      onSuccess: () => {
+      onSuccess: ({ data }) => {
         queryClient.invalidateQueries({ queryKey: ['units'] })
-        toast.success(t('page.units.toast.batchUnit.success'))
+        toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description}` })
       },
-      onError: () => {
-        toast.error(t('page.units.toast.batchUnit.error'))
+      onError: ({ response }) => {
+        const error = response.data.error
+        toast.error(t(`error.title.${error.code}`), { description: `${t(`error.description.${error.code}`)} ${error.description}` })
       },
     },
   })

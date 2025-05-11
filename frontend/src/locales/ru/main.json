@@ -20,6 +20,12 @@
   "language.en": "Английский",
   "language.ru": "Русский",
 
+  "error.title.USER_ALREADY_EXISTS": "Пользователь уже существует",
+  "error.description.USER_ALREADY_EXISTS": "Пользователь с таким логином уже существует",
+
+  "error.title.USER_NOT_CREATED": "Пользователь не создан",
+  "error.description.USER_NOT_CREATED": "Пользователь не создан",
+
   "page.login.button.signIn": "Войти",
   "page.login.form.label.login": "Логин",
   "page.login.form.label.password": "Пароль",
@@ -282,7 +288,7 @@
   "component.import.dialog.title": "Импорт данных",
   "component.import.dialog.description": "Загрузите файл с данными или скачайте наш шаблон для начала работы.",
   "component.import.dialog.uploadLabel": "Загрузить файл",
-  "component.import.dialog.supportedFormats": "Поддерживаемые форматы: CSV, Excel (.xlsx, .xls)",
+  "component.import.dialog.supportedFormats": "Поддерживаемые форматы: CSV, Excel (.xlsx, .xls), JSON",
   "component.import.dialog.or": "ИЛИ",
   "component.import.dialog.downloadTemplate": "Скачать шаблон",
   "component.import.dialog.cancel": "Отмена",

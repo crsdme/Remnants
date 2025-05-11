@@ -44,68 +44,77 @@ export function UserProvider({ children }: UserProviderProps) {
 
   const useMutateCreateUser = useCreateUser({
     options: {
-      onSuccess: () => {
+      onSuccess: ({ data }) => {
         setIsModalOpen(false)
         setIsLoading(false)
         setSelectedUser(null)
         queryClient.invalidateQueries({ queryKey: ['users'] })
+        toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description}` })
       },
-      onError: () => {
+      onError: ({ response }) => {
+        const error = response.data.error
         setIsModalOpen(false)
         setIsLoading(false)
         setSelectedUser(null)
-        toast.error(t('page.users.toast.createUser.error'))
+        toast.error(t(`error.title.${error.code}`), { description: `${t(`error.description.${error.code}`)} ${error.description}` })
       },
     },
   })
 
   const useMutateDuplicateUsers = useDuplicateUsers({
     options: {
-      onSuccess: () => {
+      onSuccess: ({ data }) => {
         queryClient.invalidateQueries({ queryKey: ['users'] })
-        toast.success(t('page.users.toast.duplicateUsers.success'))
+        toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description}` })
       },
-      onError: () => {
-        toast.error(t('page.users.toast.duplicateUsers.error'))
+      onError: ({ response }) => {
+        const error = response.data.error
+        toast.error(t(`error.title.${error.code}`), { description: `${t(`error.description.${error.code}`)} ${error.description}` })
       },
     },
   })
 
   const useMutateEditUser = useEditUser({
     options: {
-      onSuccess: () => {
+      onSuccess: ({ data }) => {
         setIsModalOpen(false)
         setIsLoading(false)
         setSelectedUser(null)
         queryClient.invalidateQueries({ queryKey: ['users'] })
+        toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description}` })
       },
-      onError: () => {
+      onError: ({ response }) => {
+        const error = response.data.error
         setIsModalOpen(false)
         setIsLoading(false)
         setSelectedUser(null)
-        toast.error(t('page.users.toast.editUser.error'))
+        toast.error(t(`error.title.${error.code}`), { description: `${t(`error.description.${error.code}`)} ${error.description}` })
       },
     },
   })
 
   const useMutateRemoveUsers = useRemoveUsers({
     options: {
-      onSuccess: () => {
+      onSuccess: ({ data }) => {
         queryClient.invalidateQueries({ queryKey: ['users'] })
+        toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description}` })
       },
-      onError: () => {
-        toast.error(t('page.users.toast.removeUsers.error'))
+      onError: ({ response }) => {
+        const error = response.data.error
+        toast.error(t(`error.title.${error.code}`), { description: `${t(`error.description.${error.code}`)} ${error.description}` })
       },
     },
   })
 
   const useMutateImportUsers = useImportUsers({
     options: {
-      onSuccess: () => {
+      onSuccess: ({ data }) => {
         queryClient.invalidateQueries({ queryKey: ['users'] })
+        toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description}` })
       },
-      onError: () => {
-        toast.error(t('page.users.toast.importUsers.error'))
+      onError: ({ response }) => {
+        const error = response.data.error
+        toast.error(t(`error.title.${error.code}`), { description: `${t(`error.description.${error.code}`)} ${error.description}` })
       },
     },
   })

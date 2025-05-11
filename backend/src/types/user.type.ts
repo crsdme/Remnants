@@ -1,8 +1,9 @@
 import type { User } from '../models/user.model'
-import type { DateRange, IdType, Message, Pagination, Status } from './common.type'
+import type { Code, DateRange, IdType, Message, Pagination, Status } from './common.type'
 
 export interface getUsersResult {
   status: Status
+  code: Code
   message: Message
   users: User[]
   usersCount: number
@@ -28,6 +29,7 @@ export interface getUsersParams {
 
 export interface createUserResult {
   status: Status
+  code: Code
   message: Message
   user: User
 }
@@ -41,6 +43,7 @@ export interface createUserParams {
 
 export interface editUserResult {
   status: Status
+  code: Code
   message: Message
   user: User
 }
@@ -55,6 +58,7 @@ export interface editUserParams {
 
 export interface removeUsersResult {
   status: Status
+  code: Code
   message: Message
 }
 
@@ -64,6 +68,7 @@ export interface removeUsersParams {
 
 export interface importUsersResult {
   status: Status
+  code: Code
   message: Message
 }
 
@@ -73,6 +78,7 @@ export interface importUsersParams {
 
 export interface duplicateUsersResult {
   status: Status
+  code: Code
   message: Message
 }
 

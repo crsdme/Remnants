@@ -7,6 +7,8 @@ export type LanguageString = {
 
 export type Status = 'success' | 'error'
 
+export type Code = string
+
 export type Message = string
 
 export interface Pagination {

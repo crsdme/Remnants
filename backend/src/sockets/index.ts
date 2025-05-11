@@ -1,5 +1,6 @@
 import type { Server } from 'node:http'
 import { Server as SocketIOServer } from 'socket.io'
+import { HttpError } from '../utils/httpError'
 import logger from '../utils/logger'
 
 let io: SocketIOServer
@@ -28,7 +29,7 @@ export function initSocket(server: Server): void {
 export function getIO(): SocketIOServer {
   if (!io) {
     logger.error('Socket.io not initialized')
-    throw new Error('Socket.io not initialized')
+    throw new HttpError(500, 'Socket.io not initialized', 'SOCKET_IO_NOT_INITIALIZED')
   }
   return io
 }

@@ -76,14 +76,3 @@ export async function refresh(req: Request, res: Response, next: NextFunction) {
     next(err)
   }
 }
-
-export async function register(req: Request, res: Response, next: NextFunction) {
-  try {
-    const { email, password } = req.body
-    const user = await AuthService.register(email, password)
-    res.status(201).json(user)
-  }
-  catch (err) {
-    next(err)
-  }
-}

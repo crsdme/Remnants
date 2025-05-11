@@ -46,78 +46,87 @@ export function CurrencyProvider({ children }: CurrencyProviderProps) {
 
   const useMutateCreateCurrency = useCreateCurrency({
     options: {
-      onSuccess: () => {
+      onSuccess: ({ data }) => {
         setIsModalOpen(false)
         setIsLoading(false)
         setSelectedCurrency(null)
         queryClient.invalidateQueries({ queryKey: ['currencies'] })
-        toast.success(t('page.currencies.toast.createCurrency.success'))
+        toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description}` })
       },
-      onError: () => {
-        toast.error(t('page.currencies.toast.createCurrency.error'))
+      onError: ({ response }) => {
+        const error = response.data.error
+        toast.error(t(`error.title.${error.code}`), { description: `${t(`error.description.${error.code}`)} ${error.description}` })
       },
     },
   })
 
   const useMutateDuplicateCurrencies = useDuplicateCurrencies({
     options: {
-      onSuccess: () => {
+      onSuccess: ({ data }) => {
         queryClient.invalidateQueries({ queryKey: ['currencies'] })
-        toast.success(t('page.currencies.toast.duplicateCurrencies.success'))
+        toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description}` })
       },
-      onError: () => {
-        toast.error(t('page.currencies.toast.duplicateCurrencies.error'))
+      onError: ({ response }) => {
+        const error = response.data.error
+        toast.error(t(`error.title.${error.code}`), { description: `${t(`error.description.${error.code}`)} ${error.description}` })
       },
     },
   })
 
   const useMutateEditCurrency = useEditCurrency({
     options: {
-      onSuccess: () => {
+      onSuccess: ({ data }) => {
         setIsModalOpen(false)
         setIsLoading(false)
         setSelectedCurrency(null)
         queryClient.invalidateQueries({ queryKey: ['currencies'] })
-        toast.success(t('page.currencies.toast.editCurrency.success'))
+        toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description}` })
       },
-      onError: () => {
-        toast.error(t('page.currencies.toast.editCurrency.error'))
+      onError: ({ response }) => {
+        const error = response.data.error
+        setIsModalOpen(false)
+        setIsLoading(false)
+        setSelectedCurrency(null)
+        toast.error(t(`error.title.${error.code}`), { description: `${t(`error.description.${error.code}`)} ${error.description}` })
       },
     },
   })
 
   const useMutateRemoveCurrency = useRemoveCurrency({
     options: {
-      onSuccess: () => {
+      onSuccess: ({ data }) => {
         queryClient.invalidateQueries({ queryKey: ['currencies'] })
-        toast.success(t('page.currencies.toast.removeCurrency.success'))
+        toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description}` })
       },
-      onError: () => {
-        toast.error(t('page.currencies.toast.removeCurrency.error'))
+      onError: ({ response }) => {
+        const error = response.data.error
+        toast.error(t(`error.title.${error.code}`), { description: `${t(`error.description.${error.code}`)} ${error.description}` })
       },
     },
   })
 
   const useMutateImportCurrencies = useImportCurrencies({
     options: {
-      onSuccess: () => {
+      onSuccess: ({ data }) => {
         queryClient.invalidateQueries({ queryKey: ['currencies'] })
-        toast.success(t('page.currencies.toast.importCurrencies.success'))
+        toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description}` })
       },
-      onError: () => {
-        toast.error(t('page.currencies.toast.importCurrencies.error'))
+      onError: ({ response }) => {
+        const error = response.data.error
+        toast.error(t(`error.title.${error.code}`), { description: `${t(`error.description.${error.code}`)} ${error.description}` })
       },
     },
   })
 
   const useMutateBatchCurrency = useBatchCurrency({
     options: {
-      onSuccess: () => {
+      onSuccess: ({ data }) => {
         queryClient.invalidateQueries({ queryKey: ['currencies'] })
-        toast.success(t('page.currencies.toast.batchCurrency.success'))
+        toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description}` })
       },
-      onError: () => {
-        toast.error(t('page.currencies.toast.batchCurrency.error'))
+      onError: ({ response }) => {
+        const error = response.data.error
+        toast.error(t(`error.title.${error.code}`), { description: `${t(`error.description.${error.code}`)} ${error.description}` })
       },
     },
   })

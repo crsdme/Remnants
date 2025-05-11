@@ -4,6 +4,7 @@ import { useAuthLogin, useAuthLogout, useRefreshToken } from '@/api/hooks'
 import { setupAxiosInterceptors } from '@/api/instance'
 
 import { createContext, useContext, useEffect, useMemo, useReducer, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 
 interface AuthState {
@@ -57,6 +58,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
     isAuthChecked: false,
   })
 
+  const { t } = useTranslation()
+
   const [user, setUser] = useState<User | null>(null)
 
   const useQueryRefreshToken = useRefreshToken({
@@ -99,17 +102,16 @@ export function AuthProvider({ children }: AuthProviderProps) {
   }
 
   const sendToast = (data) => {
-    toast.error(data.title, { description: data.description })
+    toast.error(t(`error.title.${data.code}`), { description: `${t(`error.description.${data.code}`)} ${data.description}` })
   }
-
-  setupAxiosInterceptors({
-    logout,
-    refresh,
-    sendToast,
-  })
 
   useEffect(() => {
     refresh()
+    setupAxiosInterceptors({
+      logout,
+      refresh,
+      sendToast,
+    })
   }, [])
 
   useEffect(() => {

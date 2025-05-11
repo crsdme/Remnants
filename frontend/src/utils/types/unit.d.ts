@@ -10,6 +10,9 @@ interface Unit {
 
 interface UnitsResponse {
   status: string
+  code: string
+  message: string
+  description: string
   units: Unit[]
   unitsCount: number
 }

@@ -17,6 +17,12 @@
   "language.en": "English",
   "language.ru": "Russian",
 
+  "error.title.USER_ALREADY_EXISTS": "User already exists",
+  "error.description.USER_ALREADY_EXISTS": "User with this login already exists",
+
+  "error.title.USER_NOT_CREATED": "User not created",
+  "error.description.USER_NOT_CREATED": "User not created",
+
   "page.login.button.signIn": "Sign In",
   "page.login.form.label.login": "Login",
   "page.login.form.label.password": "Password",
@@ -279,7 +285,7 @@
   "component.import.dialog.title": "Import Data",
   "component.import.dialog.description": "Upload your data file or download our template to get started.",
   "component.import.dialog.uploadLabel": "Upload File",
-  "component.import.dialog.supportedFormats": "Supported formats: CSV, Excel (.xlsx, .xls)",
+  "component.import.dialog.supportedFormats": "Supported formats: CSV, Excel (.xlsx, .xls), JSON",
   "component.import.dialog.or": "OR",
   "component.import.dialog.downloadTemplate": "Download Template",
   "component.import.dialog.cancel": "Cancel",

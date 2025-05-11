@@ -11,6 +11,9 @@ interface Language {
 
 interface LanguagesResponse {
   status: string
+  code: string
+  message: string
+  description: string
   languages: Language[]
   languagesCount: number
 }

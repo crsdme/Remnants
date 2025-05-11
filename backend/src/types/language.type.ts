@@ -1,8 +1,9 @@
 import type { Language } from '../models/language.model'
-import type { DateRange, IdType, Message, Pagination, Status } from './common.type'
+import type { Code, DateRange, IdType, Message, Pagination, Status } from './common.type'
 
 export interface getLanguagesResult {
   status: Status
+  code: Code
   message: Message
   languages: Language[]
   languagesCount: number
@@ -32,6 +33,7 @@ export interface getLanguagesParams {
 
 export interface createLanguagesResult {
   status: Status
+  code: Code
   message: Message
   language: Language
 }
@@ -46,6 +48,7 @@ export interface createLanguageParams {
 
 export interface editLanguagesResult {
   status: Status
+  code: Code
   message: Message
   language: Language
 }
@@ -61,6 +64,7 @@ export interface editLanguageParams {
 
 export interface removeLanguagesResult {
   status: Status
+  code: Code
   message: Message
 }
 
@@ -70,6 +74,7 @@ export interface removeLanguageParams {
 
 export interface batchLanguagesResult {
   status: Status
+  code: Code
   message: Message
 }
 
@@ -92,6 +97,7 @@ export interface batchLanguagesParams {
 
 export interface importLanguagesResult {
   status: Status
+  code: Code
   message: Message
 }
 
@@ -101,6 +107,7 @@ export interface importLanguagesParams {
 
 export interface duplicateLanguageResult {
   status: Status
+  code: Code
   message: Message
 }
 

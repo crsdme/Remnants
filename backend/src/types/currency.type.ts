@@ -1,9 +1,10 @@
 import type { SUPPORTED_LANGUAGES_TYPE } from '../config/constants'
 import type { Currency } from '../models/currency.model'
-import type { DateRange, IdType, LanguageString, Message, Pagination, Status } from './common.type'
+import type { Code, DateRange, IdType, LanguageString, Message, Pagination, Status } from './common.type'
 
 export interface getCurrenciesResult {
   status: Status
+  code: Code
   message: Message
   currencies: Currency[]
   currenciesCount: number
@@ -32,6 +33,7 @@ export interface getCurrenciesParams {
 
 export interface createCurrenciesResult {
   status: Status
+  code: Code
   message: Message
   currency: Currency
 }
@@ -45,6 +47,7 @@ export interface createCurrencyParams {
 
 export interface editCurrencyResult {
   status: Status
+  code: Code
   message: Message
   currency: Currency
 }
@@ -59,6 +62,7 @@ export interface editCurrencyParams {
 
 export interface removeCurrenciesResult {
   status: Status
+  code: Code
   message: Message
 }
 
@@ -68,6 +72,7 @@ export interface removeCurrencyParams {
 
 export interface batchCurrenciesResult {
   status: Status
+  code: Code
   message: Message
 }
 
@@ -90,6 +95,7 @@ export interface batchCurrenciesParams {
 
 export interface importCurrenciesResult {
   status: Status
+  code: Code
   message: Message
 }
 
@@ -99,6 +105,7 @@ export interface importCurrenciesParams {
 
 export interface duplicateCurrencyResult {
   status: Status
+  code: Code
   message: Message
 }
 

@@ -18,7 +18,7 @@ export function setupAxiosInterceptors({
 }: {
   logout: () => void
   refresh: () => void
-  sendToast: ({ title, description }: { title: string, description: string }) => void
+  sendToast: ({ message, code, description }: { message: string, code: string, description: string }) => void
 }) {
   if (requestInterceptor)
     api.interceptors.request.eject(requestInterceptor)
@@ -34,11 +34,11 @@ export function setupAxiosInterceptors({
     response => response,
     async (error) => {
       const originalRequest = error.config
-
-      sendToast({
-        title: `Error: ${error.response?.data?.message || 'Request failed'}`,
-        description: error.toString(),
-      })
+      // sendToast({
+      //   message: error.response?.data?.error?.message || 'Request failed',
+      //   code: error.response?.data?.error?.code || 'INTERNAL_ERROR',
+      //   description: error.response?.data?.error?.description || '',
+      // })
 
       if (error.response?.status === 401 && !originalRequest._retry) {
         originalRequest._retry = true
@@ -55,8 +55,9 @@ export function setupAxiosInterceptors({
       if (error.response?.status === 403) {
         logout()
         sendToast({
-          title: `Error: ${error.response?.data?.message || 'Request failed'}`,
-          description: error.toString(),
+          message: error.response?.data?.error?.message || 'Request failed',
+          code: error.response?.data?.error?.code || 'INTERNAL_ERROR',
+          description: error.response?.data?.error?.description || '',
         })
 
         return Promise.reject(error)

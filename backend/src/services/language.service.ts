@@ -1,6 +1,7 @@
 import type * as LanguageTypes from '../types/language.type'
 import { LanguageModel } from '../models/'
-import { parseCSV, toBoolean, toNumber } from '../utils/parseTools'
+import { HttpError } from '../utils/httpError'
+import { parseFile, toBoolean, toNumber } from '../utils/parseTools'
 
 export async function get(payload: LanguageTypes.getLanguagesParams): Promise<LanguageTypes.getLanguagesResult> {
   const { current = 1, pageSize = 10 } = payload.pagination
@@ -110,12 +111,9 @@ export async function get(payload: LanguageTypes.getLanguagesParams): Promise<La
   const languages = languagesResult[0].languages
   const languagesCount = languagesResult[0].totalCount[0]?.count || 0
 
-  if (!languages) {
-    throw new Error('Languages not found')
-  }
-
   return {
     status: 'success',
+    code: 'LANGUAGES_FETCHED',
     message: 'Languages fetched successfully',
     languages,
     languagesCount,
@@ -125,12 +123,9 @@ export async function get(payload: LanguageTypes.getLanguagesParams): Promise<La
 export async function create(payload: LanguageTypes.createLanguageParams): Promise<LanguageTypes.createLanguagesResult> {
   const language = await LanguageModel.create(payload)
 
-  if (!language) {
-    throw new Error('Language not created')
-  }
-
   return {
     status: 'success',
+    code: 'LANGUAGE_CREATED',
     message: 'Language created successfully',
     language,
   }
@@ -142,11 +137,12 @@ export async function edit(payload: LanguageTypes.editLanguageParams): Promise<L
   const language = await LanguageModel.findOneAndUpdate({ _id }, payload)
 
   if (!language) {
-    throw new Error('Language not edited')
+    throw new HttpError(400, 'Language not edited', 'LANGUAGE_NOT_EDITED')
   }
 
   return {
     status: 'success',
+    code: 'LANGUAGE_EDITED',
     message: 'Language edited successfully',
     language,
   }
@@ -161,11 +157,12 @@ export async function remove(payload: LanguageTypes.removeLanguageParams): Promi
   )
 
   if (!languages) {
-    throw new Error('Language not removed')
+    throw new HttpError(400, 'Language not removed', 'LANGUAGE_NOT_REMOVED')
   }
 
   return {
     status: 'success',
+    code: 'LANGUAGES_REMOVED',
     message: 'Languages removed successfully',
   }
 }
@@ -265,11 +262,12 @@ export async function batch(payload: LanguageTypes.batchLanguagesParams): Promis
   )
 
   if (!languages) {
-    throw new Error('Language not batch edited')
+    throw new HttpError(400, 'Language not batch edited', 'LANGUAGE_NOT_BATCH_EDITED')
   }
 
   return {
     status: 'success',
+    code: 'LANGUAGES_BATCH_EDITED',
     message: 'Languages batch edited successfully',
   }
 }
@@ -277,7 +275,7 @@ export async function batch(payload: LanguageTypes.batchLanguagesParams): Promis
 export async function upload(payload: LanguageTypes.importLanguagesParams): Promise<LanguageTypes.importLanguagesResult> {
   const { file } = payload
 
-  const storedFile = await parseCSV(file.path)
+  const storedFile = await parseFile(file.path)
 
   const parsedLanguages = storedFile.map(row => ({
     name: row.name,
@@ -287,12 +285,11 @@ export async function upload(payload: LanguageTypes.importLanguagesParams): Prom
     main: toBoolean(row.main),
   }))
 
-  console.log(parsedLanguages)
-
   await LanguageModel.insertMany(parsedLanguages)
 
   return {
     status: 'success',
+    code: 'LANGUAGES_IMPORTED',
     message: 'Languages imported successfully',
   }
 }
@@ -314,6 +311,7 @@ export async function duplicate(payload: LanguageTypes.duplicateLanguageParams):
 
   return {
     status: 'success',
+    code: 'LANGUAGES_DUPLICATED',
     message: 'Languages duplicated successfully',
   }
 }

@@ -23,7 +23,11 @@ function fileFilter(req: Request, file: Express.Multer.File, cb: multer.FileFilt
     'text/csv',
     'text/xlsx',
     'text/xls',
+    'application/json',
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
   ]
+
+  console.log(file.mimetype)
 
   if (allowedTypes.includes(file.mimetype)) {
     cb(null, true)
@@ -31,7 +35,7 @@ function fileFilter(req: Request, file: Express.Multer.File, cb: multer.FileFilt
   else {
     cb(
       new Error(
-        'Invalid file type. Only JPEG, PNG, GIF and PDF files are allowed.',
+        'Invalid file type. Only JPEG, PNG, GIF, PDF, CSV, XLSX, XLS and JSON files are allowed.',
       ),
     )
   }

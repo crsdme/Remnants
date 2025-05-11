@@ -1,8 +1,9 @@
 import type * as CurrencyTypes from '../types/currency.type'
 import { CurrencyModel } from '../models/'
+import { HttpError } from '../utils/httpError'
 import {
   extractLangMap,
-  parseCSV,
+  parseFile,
   toBoolean,
   toNumber,
 } from '../utils/parseTools'
@@ -107,21 +108,13 @@ export async function get(payload: CurrencyTypes.getCurrenciesParams): Promise<C
   const currencies = currenciesResult[0].currencies
   const currenciesCount = currenciesResult[0].totalCount[0]?.count || 0
 
-  if (!currencies) {
-    throw new Error('Currencies not found')
-  }
-
-  return { status: 'success', message: 'Currencies fetched', currencies, currenciesCount }
+  return { status: 'success', code: 'CURRENCIES_FETCHED', message: 'Currencies fetched', currencies, currenciesCount }
 }
 
 export async function create(payload: CurrencyTypes.createCurrencyParams): Promise<CurrencyTypes.createCurrenciesResult> {
   const currency = await CurrencyModel.create(payload)
 
-  if (!currency) {
-    throw new Error('Currency not created')
-  }
-
-  return { status: 'success', message: 'Currency created', currency }
+  return { status: 'success', code: 'CURRENCY_CREATED', message: 'Currency created', currency }
 }
 
 export async function edit(payload: CurrencyTypes.editCurrencyParams): Promise<CurrencyTypes.editCurrencyResult> {
@@ -130,18 +123,14 @@ export async function edit(payload: CurrencyTypes.editCurrencyParams): Promise<C
   const currency = await CurrencyModel.findOneAndUpdate({ _id }, payload)
 
   if (!currency) {
-    throw new Error('currency not edited')
+    throw new HttpError(400, 'Currency not edited', 'CURRENCY_NOT_EDITED')
   }
 
-  return { status: 'success', message: 'Currency edited', currency }
+  return { status: 'success', code: 'CURRENCY_EDITED', message: 'Currency edited', currency }
 }
 
 export async function remove(payload: CurrencyTypes.removeCurrencyParams): Promise<CurrencyTypes.removeCurrenciesResult> {
   const { _ids } = payload
-
-  if (!_ids) {
-    throw new Error('Need _IDS')
-  }
 
   const currencies = await CurrencyModel.updateMany(
     { _id: { $in: _ids } },
@@ -149,10 +138,10 @@ export async function remove(payload: CurrencyTypes.removeCurrencyParams): Promi
   )
 
   if (!currencies) {
-    throw new Error('currency not removed')
+    throw new HttpError(400, 'Currencies not removed', 'CURRENCIES_NOT_REMOVED')
   }
 
-  return { status: 'success', message: 'Currencies removed' }
+  return { status: 'success', code: 'CURRENCIES_REMOVED', message: 'Currencies removed' }
 }
 
 export async function batch(payload: CurrencyTypes.batchCurrenciesParams): Promise<CurrencyTypes.batchCurrenciesResult> {
@@ -173,10 +162,6 @@ export async function batch(payload: CurrencyTypes.batchCurrenciesParams): Promi
       to: undefined,
     },
   } = filters || {}
-
-  if (!params) {
-    throw new Error('Need params')
-  }
 
   const allowedParams = ['names', 'symbols', 'priority', 'active']
 
@@ -248,16 +233,16 @@ export async function batch(payload: CurrencyTypes.batchCurrenciesParams): Promi
   )
 
   if (!currencies) {
-    throw new Error('currency not batch edited')
+    throw new HttpError(400, 'Currencies not batch edited', 'CURRENCIES_NOT_BATCH_EDITED')
   }
 
-  return { status: 'success', message: 'Currencies batch edited' }
+  return { status: 'success', code: 'CURRENCIES_BATCH_EDITED', message: 'Currencies batch edited' }
 }
 
 export async function upload(payload: CurrencyTypes.importCurrenciesParams): Promise<CurrencyTypes.importCurrenciesResult> {
   const { file } = payload
 
-  const storedFile = await parseCSV(file.path)
+  const storedFile = await parseFile(file.path)
 
   const parsedCurrencies = storedFile.map(row => ({
     names: extractLangMap(row, 'name'),
@@ -268,7 +253,7 @@ export async function upload(payload: CurrencyTypes.importCurrenciesParams): Pro
 
   await CurrencyModel.insertMany(parsedCurrencies)
 
-  return { status: 'success', message: 'Currencies imported' }
+  return { status: 'success', code: 'CURRENCIES_IMPORTED', message: 'Currencies imported' }
 }
 
 export async function duplicate(payload: CurrencyTypes.duplicateCurrencyParams): Promise<CurrencyTypes.duplicateCurrencyResult> {
@@ -285,5 +270,5 @@ export async function duplicate(payload: CurrencyTypes.duplicateCurrencyParams):
 
   await CurrencyModel.insertMany(parsedCurrencies)
 
-  return { status: 'success', message: 'Currencies duplicated' }
+  return { status: 'success', code: 'CURRENCIES_DUPLICATED', message: 'Currencies duplicated' }
 }

@@ -1,9 +1,10 @@
 import type { SUPPORTED_LANGUAGES_TYPE } from '../config/constants'
 import type { Unit } from '../models/unit.model'
-import type { DateRange, IdType, LanguageString, Message, Pagination, Status } from './common.type'
+import type { Code, DateRange, IdType, LanguageString, Message, Pagination, Status } from './common.type'
 
 export interface getUnitsResult {
   status: Status
+  code: Code
   message: Message
   units: Unit[]
   unitsCount: number
@@ -32,6 +33,7 @@ export interface getUnitsParams {
 
 export interface createUnitsResult {
   status: Status
+  code: Code
   message: Message
   unit: Unit
 }
@@ -45,6 +47,7 @@ export interface createUnitParams {
 
 export interface editUnitResult {
   status: Status
+  code: Code
   message: Message
   unit: Unit
 }
@@ -59,6 +62,7 @@ export interface editUnitParams {
 
 export interface removeUnitsResult {
   status: Status
+  code: Code
   message: Message
 }
 
@@ -68,6 +72,7 @@ export interface removeUnitParams {
 
 export interface batchUnitsResult {
   status: Status
+  code: Code
   message: Message
 }
 
@@ -90,6 +95,7 @@ export interface batchUnitsParams {
 
 export interface importUnitsResult {
   status: Status
+  code: Code
   message: Message
 }
 
@@ -99,6 +105,7 @@ export interface importUnitsParams {
 
 export interface duplicateUnitResult {
   status: Status
+  code: Code
   message: Message
 }
 

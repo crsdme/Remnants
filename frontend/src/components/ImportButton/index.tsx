@@ -57,7 +57,7 @@ export function ImportButton({
         <div className="grid gap-4 py-4">
           <div className="grid gap-2">
             <Label htmlFor="file">{t('component.import.dialog.uploadLabel')}</Label>
-            <Input id="file" type="file" accept=".csv,.xlsx,.xls" onChange={handleFileChange} />
+            <Input id="file" type="file" accept=".csv,.xlsx,.xls,.json" onChange={handleFileChange} />
             <p className="text-sm text-muted-foreground">
               {t('component.import.dialog.supportedFormats')}
             </p>

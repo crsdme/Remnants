@@ -11,6 +11,9 @@ interface Currency {
 
 interface CurrenciesResponse {
   status: string
+  code: string
+  message: string
+  description: string
   currencies: Currency[]
   currenciesCount: number
 }

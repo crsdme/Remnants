@@ -1,7 +1,8 @@
 import type * as UserTypes from '../types/user.type'
 import bcrypt from 'bcrypt'
 import { UserModel } from '../models/user.model'
-import { parseCSV, toBoolean } from '../utils/parseTools'
+import { HttpError } from '../utils/httpError'
+import { parseFile, toBoolean } from '../utils/parseTools'
 
 export async function get(payload: UserTypes.getUsersParams): Promise<UserTypes.getUsersResult> {
   const { current = 1, pageSize = 10 } = payload.pagination
@@ -96,11 +97,7 @@ export async function get(payload: UserTypes.getUsersParams): Promise<UserTypes.
   const users = usersResult[0].users
   const usersCount = usersResult[0].totalCount[0]?.count || 0
 
-  if (!users) {
-    throw new Error('Users not found')
-  }
-
-  return { status: 'success', message: 'Users fetched', users, usersCount }
+  return { status: 'success', code: 'USERS_FETCHED', message: 'Users fetched', users, usersCount }
 }
 
 export async function create(payload: UserTypes.createUserParams): Promise<UserTypes.createUserResult> {
@@ -108,13 +105,19 @@ export async function create(payload: UserTypes.createUserParams): Promise<UserT
 
   const hashedPassword = await bcrypt.hash(password, 10)
 
+  const sameLogin = await UserModel.findOne({ login, removed: false })
+
+  if (sameLogin) {
+    throw new HttpError(409, 'User with this login already exists', 'USER_ALREADY_EXISTS')
+  }
+
   const user = await UserModel.create({ name, login, password: hashedPassword, active })
 
   if (!user) {
-    throw new Error('User not created')
+    throw new HttpError(400, 'User not created', 'USER_NOT_CREATED')
   }
 
-  return { status: 'success', message: 'User created', user }
+  return { status: 'success', code: 'USER_CREATED', message: 'User created', user }
 }
 
 export async function edit(payload: UserTypes.editUserParams): Promise<UserTypes.editUserResult> {
@@ -130,18 +133,14 @@ export async function edit(payload: UserTypes.editUserParams): Promise<UserTypes
   const user = await UserModel.findOneAndUpdate({ _id }, query)
 
   if (!user) {
-    throw new Error('User not edited')
+    throw new HttpError(400, 'User not edited', 'USER_NOT_EDITED')
   }
 
-  return { status: 'success', message: 'User edited', user }
+  return { status: 'success', code: 'USER_EDITED', message: 'User edited', user }
 }
 
 export async function remove(payload: UserTypes.removeUsersParams): Promise<UserTypes.removeUsersResult> {
   const { _ids } = payload
-
-  if (!_ids) {
-    throw new Error('Need _IDS')
-  }
 
   const users = await UserModel.updateMany(
     { _id: { $in: _ids } },
@@ -149,16 +148,16 @@ export async function remove(payload: UserTypes.removeUsersParams): Promise<User
   )
 
   if (!users) {
-    throw new Error('Users not removed')
+    throw new HttpError(400, 'Users not removed', 'USERS_NOT_REMOVED')
   }
 
-  return { status: 'success', message: 'Users removed' }
+  return { status: 'success', code: 'USERS_REMOVED', message: 'Users removed' }
 }
 
 export async function upload(payload: UserTypes.importUsersParams): Promise<UserTypes.importUsersResult> {
   const { file } = payload
 
-  const storedFile = await parseCSV(file.path)
+  const storedFile = await parseFile(file.path)
 
   const parsedUsers = storedFile.map(row => ({
     name: row.name,
@@ -167,9 +166,20 @@ export async function upload(payload: UserTypes.importUsersParams): Promise<User
     active: toBoolean(row.active),
   }))
 
+  const logins = parsedUsers.map(user => user.login)
+  const existingUsers = await UserModel.find({
+    login: { $in: logins },
+    removed: false,
+  }).select('login')
+
+  if (existingUsers.length > 0) {
+    const existingLogins = existingUsers.map(u => u.login)
+    throw new HttpError(409, 'Users with these logins already exist', 'USER_ALREADY_EXISTS', existingLogins.join(', '))
+  }
+
   await UserModel.insertMany(parsedUsers)
 
-  return { status: 'success', message: 'Users imported' }
+  return { status: 'success', code: 'USERS_IMPORTED', message: 'Users imported' }
 }
 
 export async function duplicate(payload: UserTypes.duplicateUsersParams): Promise<UserTypes.duplicateUsersResult> {
@@ -188,5 +198,5 @@ export async function duplicate(payload: UserTypes.duplicateUsersParams): Promis
 
   await UserModel.insertMany(parsedUsers)
 
-  return { status: 'success', message: 'Users duplicated' }
+  return { status: 'success', code: 'USERS_DUPLICATED', message: 'Users duplicated' }
 }
