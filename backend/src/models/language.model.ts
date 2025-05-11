@@ -1,4 +1,5 @@
 import mongoose, { Schema } from 'mongoose'
+import { v4 as uuidv4 } from 'uuid'
 
 export interface Language {
   name: string
@@ -13,6 +14,10 @@ export interface Language {
 
 const LanguageSchema: Schema = new Schema(
   {
+    _id: {
+      type: String,
+      default: uuidv4,
+    },
     name: {
       type: Schema.Types.String,
       required: true,

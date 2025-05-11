@@ -1,4 +1,6 @@
 import mongoose, { Schema } from 'mongoose'
+import { v4 as uuidv4 } from 'uuid'
+
 import { SUPPORTED_LANGUAGES } from '../config/constants'
 
 export interface Currency {
@@ -11,6 +13,10 @@ export interface Currency {
 
 const CurrencySchema: Schema = new Schema(
   {
+    _id: {
+      type: String,
+      default: uuidv4,
+    },
     names: {
       type: Map,
       of: String,
