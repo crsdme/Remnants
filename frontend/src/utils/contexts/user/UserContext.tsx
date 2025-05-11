@@ -50,6 +50,12 @@ export function UserProvider({ children }: UserProviderProps) {
         setSelectedUser(null)
         queryClient.invalidateQueries({ queryKey: ['users'] })
       },
+      onError: () => {
+        setIsModalOpen(false)
+        setIsLoading(false)
+        setSelectedUser(null)
+        toast.error(t('page.users.toast.createUser.error'))
+      },
     },
   })
 
@@ -73,6 +79,12 @@ export function UserProvider({ children }: UserProviderProps) {
         setSelectedUser(null)
         queryClient.invalidateQueries({ queryKey: ['users'] })
       },
+      onError: () => {
+        setIsModalOpen(false)
+        setIsLoading(false)
+        setSelectedUser(null)
+        toast.error(t('page.users.toast.editUser.error'))
+      },
     },
   })
 
@@ -81,6 +93,9 @@ export function UserProvider({ children }: UserProviderProps) {
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: ['users'] })
       },
+      onError: () => {
+        toast.error(t('page.users.toast.removeUsers.error'))
+      },
     },
   })
 
@@ -88,6 +103,9 @@ export function UserProvider({ children }: UserProviderProps) {
     options: {
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: ['users'] })
+      },
+      onError: () => {
+        toast.error(t('page.users.toast.importUsers.error'))
       },
     },
   })

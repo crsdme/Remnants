@@ -42,6 +42,10 @@ export function LanguageProvider({ children }: LanguageProviderProps) {
         setIsLoading(false)
         setSelectedLanguage(null)
         queryClient.invalidateQueries({ queryKey: ['languages'] })
+        toast.success(t('page.languages.toast.createLanguage.success'))
+      },
+      onError: () => {
+        toast.error(t('page.languages.toast.createLanguage.error'))
       },
     },
   })
@@ -65,6 +69,10 @@ export function LanguageProvider({ children }: LanguageProviderProps) {
         setIsLoading(false)
         setSelectedLanguage(null)
         queryClient.invalidateQueries({ queryKey: ['languages'] })
+        toast.success(t('page.languages.toast.editLanguage.success'))
+      },
+      onError: () => {
+        toast.error(t('page.languages.toast.editLanguage.error'))
       },
     },
   })
@@ -73,6 +81,10 @@ export function LanguageProvider({ children }: LanguageProviderProps) {
     options: {
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: ['languages'] })
+        toast.success(t('page.languages.toast.removeLanguages.success'))
+      },
+      onError: () => {
+        toast.error(t('page.languages.toast.removeLanguages.error'))
       },
     },
   })
@@ -81,6 +93,10 @@ export function LanguageProvider({ children }: LanguageProviderProps) {
     options: {
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: ['languages'] })
+        toast.success(t('page.languages.toast.importLanguages.success'))
+      },
+      onError: () => {
+        toast.error(t('page.languages.toast.importLanguages.error'))
       },
     },
   })

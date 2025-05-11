@@ -51,6 +51,10 @@ export function CurrencyProvider({ children }: CurrencyProviderProps) {
         setIsLoading(false)
         setSelectedCurrency(null)
         queryClient.invalidateQueries({ queryKey: ['currencies'] })
+        toast.success(t('page.currencies.toast.createCurrency.success'))
+      },
+      onError: () => {
+        toast.error(t('page.currencies.toast.createCurrency.error'))
       },
     },
   })
@@ -74,6 +78,10 @@ export function CurrencyProvider({ children }: CurrencyProviderProps) {
         setIsLoading(false)
         setSelectedCurrency(null)
         queryClient.invalidateQueries({ queryKey: ['currencies'] })
+        toast.success(t('page.currencies.toast.editCurrency.success'))
+      },
+      onError: () => {
+        toast.error(t('page.currencies.toast.editCurrency.error'))
       },
     },
   })
@@ -82,6 +90,10 @@ export function CurrencyProvider({ children }: CurrencyProviderProps) {
     options: {
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: ['currencies'] })
+        toast.success(t('page.currencies.toast.removeCurrency.success'))
+      },
+      onError: () => {
+        toast.error(t('page.currencies.toast.removeCurrency.error'))
       },
     },
   })
@@ -90,6 +102,10 @@ export function CurrencyProvider({ children }: CurrencyProviderProps) {
     options: {
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: ['currencies'] })
+        toast.success(t('page.currencies.toast.importCurrencies.success'))
+      },
+      onError: () => {
+        toast.error(t('page.currencies.toast.importCurrencies.error'))
       },
     },
   })

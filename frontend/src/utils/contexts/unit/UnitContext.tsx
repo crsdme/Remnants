@@ -52,6 +52,12 @@ export function UnitProvider({ children }: UnitProviderProps) {
         setSelectedUnit(null)
         queryClient.invalidateQueries({ queryKey: ['units'] })
       },
+      onError: () => {
+        setIsModalOpen(false)
+        setIsLoading(false)
+        setSelectedUnit(null)
+        toast.error(t('page.units.toast.createUnit.error'))
+      },
     },
   })
 
@@ -75,6 +81,12 @@ export function UnitProvider({ children }: UnitProviderProps) {
         setSelectedUnit(null)
         queryClient.invalidateQueries({ queryKey: ['units'] })
       },
+      onError: () => {
+        setIsModalOpen(false)
+        setIsLoading(false)
+        setSelectedUnit(null)
+        toast.error(t('page.units.toast.editUnit.error'))
+      },
     },
   })
 
@@ -83,6 +95,9 @@ export function UnitProvider({ children }: UnitProviderProps) {
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: ['units'] })
       },
+      onError: () => {
+        toast.error(t('page.units.toast.removeUnit.error'))
+      },
     },
   })
 
@@ -90,6 +105,9 @@ export function UnitProvider({ children }: UnitProviderProps) {
     options: {
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: ['units'] })
+      },
+      onError: () => {
+        toast.error(t('page.units.toast.importUnits.error'))
       },
     },
   })
