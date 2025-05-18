@@ -1,4 +1,6 @@
 import type { ReactNode } from 'react'
+import type { UseFormReturn } from 'react-hook-form'
+
 import {
   useCreateUser,
   useDuplicateUsers,
@@ -7,17 +9,20 @@ import {
   useRemoveUsers,
 } from '@/api/hooks/'
 
+import { zodResolver } from '@hookform/resolvers/zod'
 import { useQueryClient } from '@tanstack/react-query'
 
 import { createContext, useContext, useMemo, useState } from 'react'
+import { useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
-
 import { toast } from 'sonner'
+import { z } from 'zod'
 
 interface UserContextType {
   selectedUser: User
   isModalOpen: boolean
   isLoading: boolean
+  form: UseFormReturn
   toggleModal: (user?: User) => void
   openModal: (user?: User) => void
   closeModal: () => void
@@ -39,6 +44,24 @@ export function UserProvider({ children }: UserProviderProps) {
   const [selectedUser, setSelectedUser] = useState(null)
 
   const { t } = useTranslation()
+
+  const formSchema = useMemo(() =>
+    z.object({
+      name: z.string({ required_error: t('form.errors.required') }).min(3, { message: t('form.errors.min_length', { count: 3 }) }),
+      login: z.string({ required_error: t('form.errors.required') }).min(3, { message: t('form.errors.min_length', { count: 3 }) }),
+      password: z.string().optional(),
+      active: z.boolean().default(true),
+    }), [t])
+
+  const form = useForm({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      name: '',
+      login: '',
+      password: '',
+      active: true,
+    },
+  })
 
   const queryClient = useQueryClient()
 
@@ -121,14 +144,23 @@ export function UserProvider({ children }: UserProviderProps) {
 
   const openModal = (user) => {
     setIsModalOpen(true)
-    if (user)
+    if (user) {
       setSelectedUser(user)
+      const userValues = {
+        name: user.name,
+        login: user.login,
+        password: user.password,
+        active: user.active,
+      }
+      form.reset(userValues)
+    }
   }
 
   const closeModal = () => {
     setIsModalOpen(false)
     setIsLoading(false)
     setSelectedUser(null)
+    form.reset()
   }
 
   const toggleModal = user => (isModalOpen ? closeModal() : openModal(user))
@@ -160,6 +192,7 @@ export function UserProvider({ children }: UserProviderProps) {
       selectedUser,
       isModalOpen,
       isLoading,
+      form,
       toggleModal,
       openModal,
       closeModal,
@@ -168,7 +201,7 @@ export function UserProvider({ children }: UserProviderProps) {
       importUsers,
       duplicateUsers,
     }),
-    [selectedUser, isModalOpen, isLoading, openModal, closeModal, submitUserForm, removeUsers, importUsers, duplicateUsers],
+    [selectedUser, isModalOpen, isLoading, form, openModal, closeModal, submitUserForm, removeUsers, importUsers, duplicateUsers],
   )
 
   return <UserContext.Provider value={value}>{children}</UserContext.Provider>

@@ -20,9 +20,9 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { useLanguageContext } from '@/utils/contexts/language/LanguageContext'
+import { downloadCsv } from '@/utils/helpers/downloadCsv'
 import { useDebounceCallback } from '@/utils/hooks'
 import { flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table'
-import Papa from 'papaparse'
 import { Fragment, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useColumns } from './columns'
@@ -76,41 +76,21 @@ export function DataTable() {
     },
   })
 
-  const handleBatchExport = () => {
-    const filteredData = languages.filter((_, index) => rowSelection[index])
-    const formatedItems = filteredData.map(item => ({
-      name: item.name,
-      code: item.code,
-      priority: item.priority,
-      active: item.active,
-      main: item.main,
-      updatedAt: item.updatedAt,
-      createdAt: item.createdAt,
-    }))
-
-    const csv = Papa.unparse(formatedItems)
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
-    const url = URL.createObjectURL(blob)
-
-    const link = document.createElement('a')
-    link.href = url
-    link.setAttribute('download', 'data.csv')
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
-    setRowSelection({})
-  }
-
-  const advancedFiltersSubmit = (filters) => {
-    const filterValues = Object.fromEntries(filters.map(({ column, value }) => [column, value]))
-    setFilters(state => ({
-      ...state,
-      ...filterValues,
-    }))
-  }
-
-  const advancedFiltersCancel = () => {
-    setFilters(filtersInitialState)
+  const renderTableHeader = () => {
+    return table.getHeaderGroups().map(headerGroup => (
+      <TableRow key={headerGroup.id}>
+        {headerGroup.headers.map((header) => {
+          return (
+            <TableHead
+              key={header.id}
+              className={`max-w-[${header.column.columnDef.size}px]`}
+            >
+              {flexRender(header.column.columnDef.header, header.getContext())}
+            </TableHead>
+          )
+        })}
+      </TableRow>
+    ))
   }
 
   const renderSkeletonRows = () => {
@@ -152,10 +132,38 @@ export function DataTable() {
     return (
       <TableRow>
         <TableCell colSpan={columns.length} className="h-24 text-center">
-          {t('page.languages.table.noResults')}
+          {t('table.noResults')}
         </TableCell>
       </TableRow>
     )
+  }
+
+  const handleBatchExport = () => {
+    const filteredData = languages.filter((_, index) => rowSelection[index])
+    const formatedItems = filteredData.map(item => ({
+      name: item.name,
+      code: item.code,
+      priority: item.priority,
+      active: item.active,
+      main: item.main,
+      updatedAt: item.updatedAt,
+      createdAt: item.createdAt,
+    }))
+
+    downloadCsv(formatedItems, 'language-selected.csv', true)
+    setRowSelection({})
+  }
+
+  const advancedFiltersSubmit = (filters) => {
+    const filterValues = Object.fromEntries(filters.map(({ column, value }) => [column, value]))
+    setFilters(state => ({
+      ...state,
+      ...filterValues,
+    }))
+  }
+
+  const advancedFiltersCancel = () => {
+    setFilters(filtersInitialState)
   }
 
   const handleBatchSubmit = (data) => {
@@ -168,12 +176,11 @@ export function DataTable() {
       value: item.value,
     }))
 
-    if (batchEditMode === 'filter') {
-      languageContext.batchLanguage({ ids: selectedLanguages, filters, params })
-    }
-    else {
-      languageContext.batchLanguage({ ids: selectedLanguages, params })
-    }
+    languageContext.batchLanguage({
+      ids: selectedLanguages,
+      params,
+      ...(batchEditMode === 'filter' && { filters }),
+    })
 
     setRowSelection({})
   }
@@ -242,22 +249,7 @@ export function DataTable() {
       </div>
       <div className="border rounded-sm">
         <Table>
-          <TableHeader>
-            {table.getHeaderGroups().map(headerGroup => (
-              <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => {
-                  return (
-                    <TableHead
-                      key={header.id}
-                      className={`max-w-[${header.column.columnDef.size}px]`}
-                    >
-                      {flexRender(header.column.columnDef.header, header.getContext())}
-                    </TableHead>
-                  )
-                })}
-              </TableRow>
-            ))}
-          </TableHeader>
+          <TableHeader>{renderTableHeader()}</TableHeader>
           <TableBody>{renderTableBody()}</TableBody>
         </Table>
       </div>

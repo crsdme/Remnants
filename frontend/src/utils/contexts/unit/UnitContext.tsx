@@ -1,4 +1,6 @@
 import type { ReactNode } from 'react'
+import type { UseFormReturn } from 'react-hook-form'
+
 import {
   useBatchUnit,
   useCreateUnit,
@@ -8,17 +10,20 @@ import {
   useRemoveUnits,
 } from '@/api/hooks/'
 
+import { zodResolver } from '@hookform/resolvers/zod'
 import { useQueryClient } from '@tanstack/react-query'
 
 import { createContext, useContext, useMemo, useState } from 'react'
+import { useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
-
 import { toast } from 'sonner'
+import { z } from 'zod'
 
 interface UnitContextType {
   selectedUnit: Unit
   isModalOpen: boolean
   isLoading: boolean
+  form: UseFormReturn
   toggleModal: (unit?: Unit) => void
   openModal: (unit?: Unit) => void
   closeModal: () => void
@@ -41,6 +46,24 @@ export function UnitProvider({ children }: UnitProviderProps) {
   const [selectedUnit, setSelectedUnit] = useState(null)
 
   const { t } = useTranslation()
+
+  const formSchema = useMemo(() =>
+    z.object({
+      names: z.record(z.string({ required_error: t('form.errors.required') }).min(3, { message: t('form.errors.min_length', { count: 3 }) })),
+      symbols: z.record(z.string({ required_error: t('form.errors.required') }).min(3, { message: t('form.errors.min_length', { count: 3 }) })),
+      priority: z.number().default(0),
+      active: z.boolean().default(true),
+    }), [t])
+
+  const form = useForm({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      names: {},
+      symbols: {},
+      priority: 0,
+      active: true,
+    },
+  })
 
   const queryClient = useQueryClient()
 
@@ -136,14 +159,23 @@ export function UnitProvider({ children }: UnitProviderProps) {
 
   const openModal = (unit) => {
     setIsModalOpen(true)
-    if (unit)
+    if (unit) {
       setSelectedUnit(unit)
+      const unitValues = {
+        names: { ...unit.names },
+        symbols: { ...unit.symbols },
+        priority: unit.priority,
+        active: unit.active,
+      }
+      form.reset(unitValues)
+    }
   }
 
   const closeModal = () => {
     setIsModalOpen(false)
     setIsLoading(false)
     setSelectedUnit(null)
+    form.reset()
   }
 
   const toggleModal = unit => (isModalOpen ? closeModal() : openModal(unit))
@@ -179,6 +211,7 @@ export function UnitProvider({ children }: UnitProviderProps) {
       selectedUnit,
       isModalOpen,
       isLoading,
+      form,
       toggleModal,
       openModal,
       closeModal,

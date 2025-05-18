@@ -14,13 +14,10 @@ import {
 } from '@/components/ui'
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
 import { useUnitContext } from '@/utils/contexts'
-import { zodResolver } from '@hookform/resolvers/zod'
-
+import { downloadCsv } from '@/utils/helpers/downloadCsv'
 import { Plus } from 'lucide-react'
-import { useEffect, useMemo, useState } from 'react'
-import { useForm } from 'react-hook-form'
+import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { z } from 'zod'
 
 export function ActionBar() {
   const { t } = useTranslation()
@@ -29,24 +26,6 @@ export function ActionBar() {
 
   const requestLanguages = useRequestLanguages({ pagination: { full: true } })
   const languages = requestLanguages.data.data.languages
-
-  const formSchema = useMemo(() =>
-    z.object({
-      names: z.record(z.string({ required_error: t('form.errors.required') }).min(3, { message: t('form.errors.min_length', { count: 3 }) })),
-      symbols: z.record(z.string({ required_error: t('form.errors.required') }).min(3, { message: t('form.errors.min_length', { count: 3 }) })),
-      priority: z.number().default(0),
-      active: z.boolean().default(true),
-    }), [t])
-
-  const form = useForm({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      names: {},
-      symbols: {},
-      priority: 0,
-      active: true,
-    },
-  })
 
   const onSubmit = (values) => {
     unitContext.submitUnitForm(values)
@@ -75,15 +54,7 @@ export function ActionBar() {
     ]
 
     const csv = [headers, row].map(r => r.join(',')).join('\n')
-    const blob = new Blob([csv], { type: 'text/csv' })
-
-    const link = Object.assign(document.createElement('a'), {
-      href: URL.createObjectURL(blob),
-      download: 'units-template.csv',
-    })
-
-    link.click()
-    URL.revokeObjectURL(link.href)
+    downloadCsv(csv, 'units-template.csv', false)
   }
 
   const onImport = async () => {
@@ -92,21 +63,6 @@ export function ActionBar() {
     unitContext.importUnits(formData)
     setFile(null)
   }
-
-  useEffect(() => {
-    const unit = unitContext.selectedUnit
-    let unitValues = {}
-    if (unit) {
-      unitValues = {
-        names: { ...unit.names },
-        symbols: { ...unit.symbols },
-        priority: unit.priority,
-        active: unit.active,
-      }
-    }
-
-    form.reset(unitValues)
-  }, [unitContext.selectedUnit, form, unitContext.isModalOpen])
 
   const isLoading = unitContext.isLoading
 
@@ -139,11 +95,11 @@ export function ActionBar() {
               </SheetDescription>
             </SheetHeader>
             <div className="w-full px-4">
-              <Form {...form}>
-                <form className="w-full space-y-4" onSubmit={form.handleSubmit(onSubmit)}>
+              <Form {...unitContext.form}>
+                <form className="w-full space-y-4" onSubmit={unitContext.form.handleSubmit(onSubmit)}>
                   {languages.map(language => (
                     <FormField
-                      control={form.control}
+                      control={unitContext.form.control}
                       key={language.code}
                       name={`names.${language.code}`}
                       render={({ field }) => (
@@ -170,7 +126,7 @@ export function ActionBar() {
                   ))}
                   {languages.map(language => (
                     <FormField
-                      control={form.control}
+                      control={unitContext.form.control}
                       key={language.code}
                       name={`symbols.${language.code}`}
                       render={({ field }) => (
@@ -196,7 +152,7 @@ export function ActionBar() {
                     />
                   ))}
                   <FormField
-                    control={form.control}
+                    control={unitContext.form.control}
                     name="priority"
                     render={({ field }) => (
                       <FormItem>
@@ -216,7 +172,7 @@ export function ActionBar() {
                     )}
                   />
                   <FormField
-                    control={form.control}
+                    control={unitContext.form.control}
                     name="active"
                     render={({ field }) => (
                       <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">

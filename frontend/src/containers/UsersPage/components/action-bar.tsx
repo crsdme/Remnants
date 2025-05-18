@@ -12,36 +12,16 @@ import {
 } from '@/components/ui'
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
 import { useUserContext } from '@/utils/contexts'
-import { zodResolver } from '@hookform/resolvers/zod'
+import { downloadCsv } from '@/utils/helpers/downloadCsv'
 
 import { Plus } from 'lucide-react'
-import { useEffect, useMemo, useState } from 'react'
-import { useForm } from 'react-hook-form'
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { z } from 'zod'
 
 export function ActionBar() {
   const { t } = useTranslation()
   const userContext = useUserContext()
   const [file, setFile] = useState<File | null>(null)
-
-  const formSchema = useMemo(() =>
-    z.object({
-      name: z.string({ required_error: t('form.errors.required') }).min(3, { message: t('form.errors.min_length', { count: 3 }) }),
-      login: z.string({ required_error: t('form.errors.required') }).min(3, { message: t('form.errors.min_length', { count: 3 }) }),
-      password: z.string().optional(),
-      active: z.boolean().default(true),
-    }), [t])
-
-  const form = useForm({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      name: '',
-      login: '',
-      password: '',
-      active: true,
-    },
-  })
 
   const onSubmit = (values) => {
     userContext.submitUserForm(values)
@@ -70,15 +50,7 @@ export function ActionBar() {
     ]
 
     const csv = [headers, row].map(r => r.join(',')).join('\n')
-    const blob = new Blob([csv], { type: 'text/csv' })
-
-    const link = Object.assign(document.createElement('a'), {
-      href: URL.createObjectURL(blob),
-      download: 'users-template.csv',
-    })
-
-    link.click()
-    URL.revokeObjectURL(link.href)
+    downloadCsv(csv, 'users-template.csv', false)
   }
 
   const onImport = async () => {
@@ -87,21 +59,6 @@ export function ActionBar() {
     userContext.importUsers(formData)
     setFile(null)
   }
-
-  useEffect(() => {
-    const user = userContext.selectedUser
-    let userValues = {}
-    if (user) {
-      userValues = {
-        name: user.name,
-        login: user.login,
-        password: user.password,
-        active: user.active,
-      }
-    }
-
-    form.reset(userValues)
-  }, [userContext.selectedUser, form, userContext.isModalOpen])
 
   const isLoading = userContext.isLoading
 
@@ -134,10 +91,10 @@ export function ActionBar() {
               </SheetDescription>
             </SheetHeader>
             <div className="w-full px-4">
-              <Form {...form}>
-                <form className="w-full space-y-4" onSubmit={form.handleSubmit(onSubmit)}>
+              <Form {...userContext.form}>
+                <form className="w-full space-y-4" onSubmit={userContext.form.handleSubmit(onSubmit)}>
                   <FormField
-                    control={form.control}
+                    control={userContext.form.control}
                     name="name"
                     render={({ field }) => (
                       <FormItem>
@@ -157,7 +114,7 @@ export function ActionBar() {
                     )}
                   />
                   <FormField
-                    control={form.control}
+                    control={userContext.form.control}
                     name="login"
                     render={({ field }) => (
                       <FormItem>
@@ -177,7 +134,7 @@ export function ActionBar() {
                     )}
                   />
                   <FormField
-                    control={form.control}
+                    control={userContext.form.control}
                     name="password"
                     render={({ field }) => (
                       <FormItem>
@@ -196,7 +153,7 @@ export function ActionBar() {
                     )}
                   />
                   <FormField
-                    control={form.control}
+                    control={userContext.form.control}
                     name="active"
                     render={({ field }) => (
                       <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">

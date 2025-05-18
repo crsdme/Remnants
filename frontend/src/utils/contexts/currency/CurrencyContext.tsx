@@ -1,4 +1,6 @@
 import type { ReactNode } from 'react'
+import type { UseFormReturn } from 'react-hook-form'
+
 import {
   useBatchCurrency,
   useCreateCurrency,
@@ -8,17 +10,20 @@ import {
   useRemoveCurrency,
 } from '@/api/hooks/'
 
+import { zodResolver } from '@hookform/resolvers/zod'
 import { useQueryClient } from '@tanstack/react-query'
 
 import { createContext, useContext, useMemo, useState } from 'react'
+import { useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
-
 import { toast } from 'sonner'
+import { z } from 'zod'
 
 interface CurrencyContextType {
   selectedCurrency: Currency
   isModalOpen: boolean
   isLoading: boolean
+  form: UseFormReturn
   toggleModal: (currency?: Currency) => void
   openModal: (currency?: Currency) => void
   closeModal: () => void
@@ -41,6 +46,30 @@ export function CurrencyProvider({ children }: CurrencyProviderProps) {
   const [selectedCurrency, setSelectedCurrency] = useState(null)
 
   const { t } = useTranslation()
+
+  const formSchema = useMemo(() =>
+    z.object({
+      names: z.record(
+        z.string({ required_error: t('form.errors.required') })
+          .min(3, { message: t('form.errors.min_length', { count: 3 }) }),
+      ),
+      symbols: z.record(
+        z.string({ required_error: t('form.errors.required') })
+          .min(3, { message: t('form.errors.min_length', { count: 3 }) }),
+      ),
+      priority: z.number().default(0),
+      active: z.boolean().default(true),
+    }), [t])
+
+  const form = useForm({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      names: {},
+      symbols: {},
+      priority: 0,
+      active: true,
+    },
+  })
 
   const queryClient = useQueryClient()
 
@@ -133,14 +162,24 @@ export function CurrencyProvider({ children }: CurrencyProviderProps) {
 
   const openModal = (currency) => {
     setIsModalOpen(true)
-    if (currency)
+    if (currency) {
       setSelectedCurrency(currency)
+      const currencyValues = {
+        names: { ...currency.names },
+        symbols: { ...currency.symbols },
+        priority: currency.priority,
+        active: currency.active,
+      }
+
+      form.reset(currencyValues)
+    }
   }
 
   const closeModal = () => {
     setIsModalOpen(false)
     setIsLoading(false)
     setSelectedCurrency(null)
+    form.reset({})
   }
 
   const toggleModal = currency => (isModalOpen ? closeModal() : openModal(currency))
@@ -176,6 +215,7 @@ export function CurrencyProvider({ children }: CurrencyProviderProps) {
       selectedCurrency,
       isModalOpen,
       isLoading,
+      form,
       toggleModal,
       openModal,
       closeModal,

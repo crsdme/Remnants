@@ -19,9 +19,9 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { useUserContext } from '@/utils/contexts/user/UserContext'
+import { downloadCsv } from '@/utils/helpers/downloadCsv'
 import { useDebounceCallback } from '@/utils/hooks'
 import { flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table'
-import Papa from 'papaparse'
 import { Fragment, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useColumns } from './columns'
@@ -74,39 +74,21 @@ export function DataTable() {
     },
   })
 
-  const handleBatchExport = () => {
-    const filteredData = users.filter((_, index) => rowSelection[index])
-    const formatedUsers = filteredData.map(item => ({
-      name: item.name,
-      login: item.login,
-      active: item.active,
-      updatedAt: item.updatedAt,
-      createdAt: item.createdAt,
-    }))
-
-    const csv = Papa.unparse(formatedUsers)
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
-    const url = URL.createObjectURL(blob)
-
-    const link = document.createElement('a')
-    link.href = url
-    link.setAttribute('download', 'data.csv')
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
-    setRowSelection({})
-  }
-
-  const advancedFiltersSubmit = (filters) => {
-    const filterValues = Object.fromEntries(filters.map(({ column, value }) => [column, value]))
-    setFilters(state => ({
-      ...state,
-      ...filterValues,
-    }))
-  }
-
-  const advancedFiltersCancel = () => {
-    setFilters(filtersInitialState)
+  const renderTableHeader = () => {
+    return table.getHeaderGroups().map(headerGroup => (
+      <TableRow key={headerGroup.id}>
+        {headerGroup.headers.map((header) => {
+          return (
+            <TableHead
+              key={header.id}
+              className={`max-w-[${header.column.columnDef.size}px]`}
+            >
+              {flexRender(header.column.columnDef.header, header.getContext())}
+            </TableHead>
+          )
+        })}
+      </TableRow>
+    ))
   }
 
   const renderSkeletonRows = () => {
@@ -122,6 +104,32 @@ export function DataTable() {
         ))}
       </TableRow>
     ))
+  }
+
+  const renderTableExpandedRow = (row) => {
+    return (
+      <TableRow>
+        <TableCell colSpan={columns.length} className="bg-muted/50">
+          <div className="p-4">
+            <h4 className="font-semibold mb-2">{t('table.details')}</h4>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <p className="text-sm text-muted-foreground">
+                  {t('table.createdAt')}
+                </p>
+                <p>{row.original.createdAt.toString()}</p>
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">
+                  {t('table.updatedAt')}
+                </p>
+                <p>{row.original.updatedAt.toString()}</p>
+              </div>
+            </div>
+          </div>
+        </TableCell>
+      </TableRow>
+    )
   }
 
   const renderTableBody = () => {
@@ -141,29 +149,7 @@ export function DataTable() {
               </TableCell>
             ))}
           </TableRow>
-          {expandedRows[row.id] && (
-            <TableRow>
-              <TableCell colSpan={columns.length} className="bg-muted/50">
-                <div className="p-4">
-                  <h4 className="font-semibold mb-2">{t('page.users.table.details')}</h4>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <p className="text-sm text-muted-foreground">
-                        {t('table.createdAt')}
-                      </p>
-                      <p>{row.original.createdAt.toString()}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-muted-foreground">
-                        {t('table.updatedAt')}
-                      </p>
-                      <p>{row.original.updatedAt.toString()}</p>
-                    </div>
-                  </div>
-                </div>
-              </TableCell>
-            </TableRow>
-          )}
+          {expandedRows[row.id] && renderTableExpandedRow(row)}
         </Fragment>
       ))
     }
@@ -171,10 +157,36 @@ export function DataTable() {
     return (
       <TableRow>
         <TableCell colSpan={columns.length} className="h-24 text-center">
-          {t('page.users.table.noResults')}
+          {t('table.noResults')}
         </TableCell>
       </TableRow>
     )
+  }
+
+  const handleBatchExport = () => {
+    const filteredData = users.filter((_, index) => rowSelection[index])
+    const formatedUsers = filteredData.map(item => ({
+      name: item.name,
+      login: item.login,
+      active: item.active,
+      updatedAt: item.updatedAt,
+      createdAt: item.createdAt,
+    }))
+
+    downloadCsv(formatedUsers, 'users-selected.csv', true)
+    setRowSelection({})
+  }
+
+  const advancedFiltersSubmit = (filters) => {
+    const filterValues = Object.fromEntries(filters.map(({ column, value }) => [column, value]))
+    setFilters(state => ({
+      ...state,
+      ...filterValues,
+    }))
+  }
+
+  const advancedFiltersCancel = () => {
+    setFilters(filtersInitialState)
   }
 
   const handleBatchRemove = () => {
@@ -231,22 +243,7 @@ export function DataTable() {
       </div>
       <div className="border rounded-sm">
         <Table>
-          <TableHeader>
-            {table.getHeaderGroups().map(headerGroup => (
-              <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => {
-                  return (
-                    <TableHead
-                      key={header.id}
-                      className={`max-w-[${header.column.columnDef.size}px]`}
-                    >
-                      {flexRender(header.column.columnDef.header, header.getContext())}
-                    </TableHead>
-                  )
-                })}
-              </TableRow>
-            ))}
-          </TableHeader>
+          <TableHeader>{renderTableHeader()}</TableHeader>
           <TableBody>{renderTableBody()}</TableBody>
         </Table>
       </div>

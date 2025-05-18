@@ -20,9 +20,9 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { useCurrencyContext } from '@/utils/contexts/currency/CurrencyContext'
+import { downloadCsv } from '@/utils/helpers/downloadCsv'
 import { useDebounceCallback } from '@/utils/hooks'
 import { flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table'
-import Papa from 'papaparse'
 import { Fragment, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useColumns } from './columns'
@@ -44,7 +44,6 @@ export function DataTable() {
   const [columnVisibility, setColumnVisibility] = useState({})
   const [rowSelection, setRowSelection] = useState({})
   const [sorters, setSorters] = useState({})
-  const [expandedRows, setExpandedRows] = useState({})
   const [batchEditMode, setBatchEditMode] = useState<'filter' | 'select'>('select')
   const [pagination, setPagination] = useState({
     current: 1,
@@ -57,7 +56,7 @@ export function DataTable() {
     { options: { placeholderData: prevData => prevData } },
   )
 
-  const columns = useColumns({ setSorters, expandedRows, setExpandedRows })
+  const columns = useColumns({ setSorters })
   const currencies = requestCurrencies?.data?.data?.currencies || []
   const currenciesCount = requestCurrencies?.data?.data?.currenciesCount || 0
 
@@ -80,40 +79,21 @@ export function DataTable() {
     },
   })
 
-  const handleBatchExport = () => {
-    const filteredData = currencies.filter((_, index) => rowSelection[index])
-    const formatedCurrencies = filteredData.map(item => ({
-      names: item.names[i18n.language],
-      symbols: item.symbols[i18n.language],
-      priority: item.priority,
-      active: item.active,
-      updatedAt: item.updatedAt,
-      createdAt: item.createdAt,
-    }))
-
-    const csv = Papa.unparse(formatedCurrencies)
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
-    const url = URL.createObjectURL(blob)
-
-    const link = document.createElement('a')
-    link.href = url
-    link.setAttribute('download', 'data.csv')
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
-    setRowSelection({})
-  }
-
-  const advancedFiltersSubmit = (filters) => {
-    const filterValues = Object.fromEntries(filters.map(({ column, value }) => [column, value]))
-    setFilters(state => ({
-      ...state,
-      ...filterValues,
-    }))
-  }
-
-  const advancedFiltersCancel = () => {
-    setFilters(filtersInitialState)
+  const renderTableHeader = () => {
+    return table.getHeaderGroups().map(headerGroup => (
+      <TableRow key={headerGroup.id}>
+        {headerGroup.headers.map((header) => {
+          return (
+            <TableHead
+              key={header.id}
+              className={`max-w-[${header.column.columnDef.size}px]`}
+            >
+              {flexRender(header.column.columnDef.header, header.getContext())}
+            </TableHead>
+          )
+        })}
+      </TableRow>
+    ))
   }
 
   const renderSkeletonRows = () => {
@@ -148,29 +128,6 @@ export function DataTable() {
               </TableCell>
             ))}
           </TableRow>
-          {expandedRows[row.id] && (
-            <TableRow>
-              <TableCell colSpan={columns.length} className="bg-muted/50">
-                <div className="p-4">
-                  <h4 className="font-semibold mb-2">{t('page.currencies.table.details')}</h4>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <p className="text-sm text-muted-foreground">
-                        {t('table.createdAt')}
-                      </p>
-                      <p>{row.original.createdAt.toString()}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-muted-foreground">
-                        {t('table.updatedAt')}
-                      </p>
-                      <p>{row.original.updatedAt.toString()}</p>
-                    </div>
-                  </div>
-                </div>
-              </TableCell>
-            </TableRow>
-          )}
         </Fragment>
       ))
     }
@@ -178,10 +135,37 @@ export function DataTable() {
     return (
       <TableRow>
         <TableCell colSpan={columns.length} className="h-24 text-center">
-          {t('page.currencies.table.noResults')}
+          {t('table.noResults')}
         </TableCell>
       </TableRow>
     )
+  }
+
+  const handleBatchExport = () => {
+    const filteredData = currencies.filter((_, index) => rowSelection[index])
+    const formatedCurrencies = filteredData.map(item => ({
+      names: item.names[i18n.language],
+      symbols: item.symbols[i18n.language],
+      priority: item.priority,
+      active: item.active,
+      updatedAt: item.updatedAt,
+      createdAt: item.createdAt,
+    }))
+
+    downloadCsv(formatedCurrencies, 'currency-selected.csv', true)
+    setRowSelection({})
+  }
+
+  const advancedFiltersSubmit = (filters) => {
+    const filterValues = Object.fromEntries(filters.map(({ column, value }) => [column, value]))
+    setFilters(state => ({
+      ...state,
+      ...filterValues,
+    }))
+  }
+
+  const advancedFiltersCancel = () => {
+    setFilters(filtersInitialState)
   }
 
   const handleBatchSubmit = (data) => {
@@ -194,12 +178,11 @@ export function DataTable() {
       value: item.value,
     }))
 
-    if (batchEditMode === 'filter') {
-      currencyContext.batchCurrency({ ids: selectedCurrencies, filters, params })
-    }
-    else {
-      currencyContext.batchCurrency({ ids: selectedCurrencies, params })
-    }
+    currencyContext.batchCurrency({
+      ids: selectedCurrencies,
+      params,
+      ...(batchEditMode === 'filter' && { filters }),
+    })
 
     setRowSelection({})
   }
@@ -268,22 +251,7 @@ export function DataTable() {
       </div>
       <div className="border rounded-sm">
         <Table>
-          <TableHeader>
-            {table.getHeaderGroups().map(headerGroup => (
-              <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => {
-                  return (
-                    <TableHead
-                      key={header.id}
-                      className={`max-w-[${header.column.columnDef.size}px]`}
-                    >
-                      {flexRender(header.column.columnDef.header, header.getContext())}
-                    </TableHead>
-                  )
-                })}
-              </TableRow>
-            ))}
-          </TableHeader>
+          <TableHeader>{renderTableHeader()}</TableHeader>
           <TableBody>{renderTableBody()}</TableBody>
         </Table>
       </div>

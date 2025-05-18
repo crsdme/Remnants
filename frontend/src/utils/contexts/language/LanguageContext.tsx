@@ -1,15 +1,20 @@
 import type { ReactNode } from 'react'
-import { useBatchLanguages, useCreateLanguage, useDuplicateLanguages, useEditLanguage, useImportLanguages, useRemoveLanguages } from '@/api/hooks'
+import type { UseFormReturn } from 'react-hook-form'
 
+import { useBatchLanguages, useCreateLanguage, useDuplicateLanguages, useEditLanguage, useImportLanguages, useRemoveLanguages } from '@/api/hooks'
+import { zodResolver } from '@hookform/resolvers/zod'
 import { useQueryClient } from '@tanstack/react-query'
 import { createContext, useContext, useMemo, useState } from 'react'
+import { useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
+import { z } from 'zod'
 
 interface LanguageContextType {
   selectedLanguage: Language
   isModalOpen: boolean
   isLoading: boolean
+  form: UseFormReturn
   toggleModal: (language?: Language) => void
   openModal: (language?: Language) => void
   closeModal: () => void
@@ -32,6 +37,26 @@ export function LanguageProvider({ children }: LanguageProviderProps) {
   const [selectedLanguage, setSelectedLanguage] = useState(null)
 
   const { t } = useTranslation()
+
+  const formSchema = useMemo(() =>
+    z.object({
+      name: z.string({ required_error: t('form.errors.required') }).min(3, { message: t('form.errors.min_length', { count: 3 }) }),
+      code: z.string({ required_error: t('form.errors.required') }).min(3, { message: t('form.errors.min_length', { count: 3 }) }),
+      priority: z.number().default(0),
+      active: z.boolean().default(true),
+      main: z.boolean().default(false),
+    }), [t])
+
+  const form = useForm({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      name: '',
+      code: '',
+      priority: 0,
+      active: true,
+      main: false,
+    },
+  })
 
   const queryClient = useQueryClient()
 
@@ -127,14 +152,25 @@ export function LanguageProvider({ children }: LanguageProviderProps) {
 
   const openModal = (language) => {
     setIsModalOpen(true)
-    if (language)
+    if (language) {
       setSelectedLanguage(language)
+      const languageValues = {
+        name: language.name,
+        code: language.code,
+        priority: language.priority,
+        active: language.active,
+        main: language.main,
+      }
+
+      form.reset(languageValues)
+    }
   }
 
   const closeModal = () => {
     setIsModalOpen(false)
     setIsLoading(false)
     setSelectedLanguage(null)
+    form.reset({})
   }
 
   const toggleModal = language => (isModalOpen ? closeModal() : openModal(language))
@@ -170,6 +206,7 @@ export function LanguageProvider({ children }: LanguageProviderProps) {
       selectedLanguage,
       isModalOpen,
       isLoading,
+      form,
       toggleModal,
       openModal,
       closeModal,

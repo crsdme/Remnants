@@ -15,8 +15,6 @@ import formatDate from '@/utils/helpers/formatDate'
 import {
   ArrowDown,
   ArrowUp,
-  ChevronDown,
-  ChevronRight,
   ChevronsUpDown,
   MoreHorizontal,
 } from 'lucide-react'
@@ -24,7 +22,7 @@ import { useTranslation } from 'react-i18next'
 
 const sortIcons = { asc: ArrowUp, desc: ArrowDown }
 
-export function useColumns({ setSorters, expandedRows, setExpandedRows }): ColumnDef<Currency>[] {
+export function useColumns({ setSorters }): ColumnDef<Currency>[] {
   const { t, i18n } = useTranslation()
   const unitContext = useUnitContext()
 
@@ -186,24 +184,6 @@ export function useColumns({ setSorters, expandedRows, setExpandedRows }): Colum
 
         return (
           <div className="flex items-center gap-2">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() =>
-                setExpandedRows(prev => ({
-                  ...prev,
-                  [row.id]: !prev[row.id],
-                }))}
-              className="h-8 w-8 p-0"
-            >
-              {expandedRows[row.id]
-                ? (
-                    <ChevronDown className="h-4 w-4" />
-                  )
-                : (
-                    <ChevronRight className="h-4 w-4" />
-                  )}
-            </Button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="h-8 w-8 p-0">

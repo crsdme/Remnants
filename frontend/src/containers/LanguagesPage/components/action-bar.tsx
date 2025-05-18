@@ -12,44 +12,22 @@ import {
 } from '@/components/ui'
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
 import { useLanguageContext } from '@/utils/contexts'
-import { zodResolver } from '@hookform/resolvers/zod'
+import { downloadCsv } from '@/utils/helpers/downloadCsv'
 import { Plus } from 'lucide-react'
 
-import { useEffect, useMemo, useState } from 'react'
-import { useForm } from 'react-hook-form'
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { z } from 'zod'
 
 export function ActionBar() {
   const { t } = useTranslation()
   const languageContext = useLanguageContext()
   const [file, setFile] = useState<File | null>(null)
 
-  const formSchema = useMemo(() =>
-    z.object({
-      name: z.string({ required_error: t('form.errors.required') }).min(3, { message: t('form.errors.min_length', { count: 3 }) }),
-      code: z.string({ required_error: t('form.errors.required') }).min(3, { message: t('form.errors.min_length', { count: 3 }) }),
-      priority: z.number().default(0),
-      active: z.boolean().default(true),
-      main: z.boolean().default(false),
-    }), [t])
-
-  const form = useForm({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      name: '',
-      code: '',
-      priority: 0,
-      active: true,
-      main: false,
-    },
-  })
-
   const onSubmit = (values) => {
     languageContext.submitLanguageForm(values)
   }
 
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = (event) => {
     const file = event.target.files?.[0]
     if (file) {
       setFile(file)
@@ -74,15 +52,8 @@ export function ActionBar() {
     ]
 
     const csv = [headers, row].map(r => r.join(',')).join('\n')
-    const blob = new Blob([csv], { type: 'text/csv' })
 
-    const link = Object.assign(document.createElement('a'), {
-      href: URL.createObjectURL(blob),
-      download: 'languages-template.csv',
-    })
-
-    link.click()
-    URL.revokeObjectURL(link.href)
+    downloadCsv(csv, 'languages-template.csv', false)
   }
 
   const onImport = async () => {
@@ -91,22 +62,6 @@ export function ActionBar() {
     languageContext.importLanguages(formData)
     setFile(null)
   }
-
-  useEffect(() => {
-    const language = languageContext.selectedLanguage
-    let languageValues = {}
-    if (language) {
-      languageValues = {
-        name: language.name,
-        code: language.code,
-        priority: language.priority,
-        active: language.active,
-        main: language.main,
-      }
-    }
-
-    form.reset(languageValues)
-  }, [languageContext.isModalOpen])
 
   const isLoading = languageContext.isLoading
 
@@ -139,10 +94,10 @@ export function ActionBar() {
               </SheetDescription>
             </SheetHeader>
             <div className="w-full px-4">
-              <Form {...form}>
-                <form className="w-full space-y-4" onSubmit={form.handleSubmit(onSubmit)}>
+              <Form {...languageContext.form}>
+                <form className="w-full space-y-4" onSubmit={languageContext.form.handleSubmit(onSubmit)}>
                   <FormField
-                    control={form.control}
+                    control={languageContext.form.control}
                     name="name"
                     render={({ field }) => (
                       <FormItem>
@@ -162,7 +117,7 @@ export function ActionBar() {
                     )}
                   />
                   <FormField
-                    control={form.control}
+                    control={languageContext.form.control}
                     name="code"
                     render={({ field }) => (
                       <FormItem>
@@ -182,7 +137,7 @@ export function ActionBar() {
                     )}
                   />
                   <FormField
-                    control={form.control}
+                    control={languageContext.form.control}
                     name="priority"
                     render={({ field }) => (
                       <FormItem>
@@ -202,7 +157,7 @@ export function ActionBar() {
                     )}
                   />
                   <FormField
-                    control={form.control}
+                    control={languageContext.form.control}
                     name="active"
                     render={({ field }) => (
                       <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
@@ -218,7 +173,7 @@ export function ActionBar() {
                     )}
                   />
                   <FormField
-                    control={form.control}
+                    control={languageContext.form.control}
                     name="main"
                     render={({ field }) => (
                       <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
