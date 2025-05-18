@@ -6,9 +6,6 @@ export async function get(req: Request, res: Response, next: NextFunction) {
   try {
     const serviceResponse = await UserService.get(req.body)
 
-    const sleep = (ms: number) => new Promise(r => setTimeout(r, ms))
-    await sleep(1000)
-
     res.status(200).json(serviceResponse)
   }
   catch (err) {

@@ -76,5 +76,5 @@
   "page.users.form.name": "Name",
   "page.users.form.login": "Login",
   "page.users.form.password": "Password",
-  "page.users.form.status": "Status"
+  "page.users.form.active": "Status"
 }

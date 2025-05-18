@@ -1,5 +1,3 @@
-'use client'
-
 import { Badge, Button, Separator } from '@/components/ui'
 
 import {

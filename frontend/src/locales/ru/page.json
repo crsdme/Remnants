@@ -76,5 +76,5 @@
   "page.users.form.name": "Имя",
   "page.users.form.login": "Логин",
   "page.users.form.password": "Пароль",
-  "page.users.form.status": "Статус"
+  "page.users.form.active": "Статус"
 }

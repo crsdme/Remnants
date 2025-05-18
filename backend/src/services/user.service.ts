@@ -3,6 +3,7 @@ import bcrypt from 'bcrypt'
 import { UserModel } from '../models/user.model'
 import { HttpError } from '../utils/httpError'
 import { parseFile, toBoolean } from '../utils/parseTools'
+import { buildQuery, buildSortQuery } from '../utils/queryBuilder'
 
 export async function get(payload: UserTypes.getUsersParams): Promise<UserTypes.getUsersResult> {
   const { current = 1, pageSize = 10 } = payload.pagination
@@ -21,62 +22,27 @@ export async function get(payload: UserTypes.getUsersParams): Promise<UserTypes.
     },
   } = payload.filters
 
-  const sorters = payload.sorters || {}
+  const sorters = buildSortQuery(payload.sorters)
 
-  let query: Record<string, any> = { removed: false }
+  const filterRules = {
+    name: { type: 'string' },
+    login: { type: 'string' },
+    active: { type: 'array' },
+    createdAt: { type: 'dateRange' },
+    updatedAt: { type: 'dateRange' },
+  } as const
 
-  let sortersQuery: Record<string, any> = { _id: 1 }
-
-  if (Object.entries(sorters).length > 0) {
-    sortersQuery = Object.fromEntries(
-      Object.entries(sorters).map(([key, value]) => [
-        key,
-        value === 'asc' ? 1 : -1,
-      ]),
-    )
-  }
-
-  if (name) {
-    query = {
-      ...query,
-      name: { $regex: `^${name}`, $options: 'i' },
-    }
-  }
-
-  if (login) {
-    query = {
-      ...query,
-      login: { $regex: `^${login}`, $options: 'i' },
-    }
-  }
-
-  if (Array.isArray(active) && active.length > 0) {
-    query = {
-      ...query,
-      active: { $in: active },
-    }
-  }
-
-  if (createdAt.from && createdAt.to) {
-    query = {
-      ...query,
-      createdAt: { $gte: createdAt.from, $lte: createdAt.to },
-    }
-  }
-
-  if (updatedAt.from && updatedAt.to) {
-    query = {
-      ...query,
-      updatedAt: { $gte: updatedAt.from, $lte: updatedAt.to },
-    }
-  }
+  const query = buildQuery({
+    filters: { name, login, active, createdAt, updatedAt },
+    rules: filterRules,
+  })
 
   const pipeline = [
     {
       $match: query,
     },
     {
-      $sort: sortersQuery,
+      $sort: sorters,
     },
     {
       $facet: {

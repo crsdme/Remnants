@@ -2,6 +2,7 @@ import type * as LanguageTypes from '../types/language.type'
 import { LanguageModel } from '../models/'
 import { HttpError } from '../utils/httpError'
 import { parseFile, toBoolean, toNumber } from '../utils/parseTools'
+import { buildQuery, buildSortQuery } from '../utils/queryBuilder'
 
 export async function get(payload: LanguageTypes.getLanguagesParams): Promise<LanguageTypes.getLanguagesResult> {
   const { current = 1, pageSize = 10 } = payload.pagination
@@ -22,76 +23,27 @@ export async function get(payload: LanguageTypes.getLanguagesParams): Promise<La
     },
   } = payload.filters
 
-  const sorters = payload.sorters
+  const sorters = buildSortQuery(payload.sorters)
 
-  let query: Record<string, any> = { removed: false }
+  const filterRules = {
+    name: { type: 'string' },
+    code: { type: 'string' },
+    active: { type: 'array' },
+    priority: { type: 'exact' },
+    main: { type: 'array' },
+  } as const
 
-  let sortersQuery: Record<string, any> = { _id: 1 }
-
-  if (Object.entries(sorters).length > 0) {
-    sortersQuery = Object.fromEntries(
-      Object.entries(sorters).map(([key, value]) => [
-        key,
-        value === 'asc' ? 1 : -1,
-      ]),
-    )
-  }
-
-  if (name.trim()) {
-    query = {
-      ...query,
-      name: { $regex: `^${name}`, $options: 'i' },
-    }
-  }
-
-  if (code.trim()) {
-    query = {
-      ...query,
-      code: { $regex: `^${code}`, $options: 'i' },
-    }
-  }
-
-  if (Array.isArray(active) && active.length > 0) {
-    query = {
-      ...query,
-      active: { $in: active },
-    }
-  }
-
-  if (Array.isArray(main) && main.length > 0) {
-    query = {
-      ...query,
-      main: { $in: main },
-    }
-  }
-
-  if (priority) {
-    query = {
-      ...query,
-      priority,
-    }
-  }
-
-  if (createdAt.from && createdAt.to) {
-    query = {
-      ...query,
-      createdAt: { $gte: createdAt.from, $lte: createdAt.to },
-    }
-  }
-
-  if (updatedAt.from && updatedAt.to) {
-    query = {
-      ...query,
-      updatedAt: { $gte: updatedAt.from, $lte: updatedAt.to },
-    }
-  }
+  const query = buildQuery({
+    filters: { name, code, active, priority, main, createdAt, updatedAt },
+    rules: filterRules,
+  })
 
   const pipeline = [
     {
       $match: query,
     },
     {
-      $sort: sortersQuery,
+      $sort: sorters,
     },
     {
       $facet: {
@@ -188,73 +140,25 @@ export async function batch(payload: LanguageTypes.batchLanguagesParams): Promis
 
   const allowedParams = ['name', 'code', 'priority', 'main', 'active']
 
-  const filteredParams = params.filter(item => item.column && item.value && allowedParams.includes(item.column))
-
-  const batchParams = filteredParams.map(item => ({ [`${item.column}`]: item.value }))
+  const batchParams = params
+    .filter(item => item.column && item.value && allowedParams.includes(item.column))
+    .map(item => ({ [`${item.column}`]: item.value }))
 
   const mergedBatchParams = Object.assign({}, ...batchParams)
 
-  let query: Record<string, any> = { removed: false }
+  const filterRules = {
+    name: { type: 'string' },
+    code: { type: 'string' },
+    active: { type: 'array' },
+    priority: { type: 'exact' },
+    main: { type: 'array' },
+  } as const
 
-  if (name) {
-    query = {
-      ...query,
-      name,
-    }
-  }
-
-  if (code) {
-    query = {
-      ...query,
-      code,
-    }
-  }
-
-  if (Array.isArray(active) && active.length > 0) {
-    query = {
-      ...query,
-      active: { $in: active },
-    }
-  }
-
-  if (Array.isArray(main) && main.length > 0) {
-    query = {
-      ...query,
-      main: { $in: main },
-    }
-  }
-
-  if (priority) {
-    query = {
-      ...query,
-      priority,
-    }
-  }
-
-  if (createdAt.from && createdAt.to) {
-    query = {
-      ...query,
-      createdAt: { $gte: createdAt.from, $lte: createdAt.to },
-    }
-  }
-
-  if (updatedAt.from && updatedAt.to) {
-    query = {
-      ...query,
-      updatedAt: { $gte: updatedAt.from, $lte: updatedAt.to },
-    }
-  }
-
-  if (filters) {
-    query = {
-      $or: [query, { _id: { $in: ids } }],
-    }
-  }
-  else {
-    query = {
-      _id: { $in: ids },
-    }
-  }
+  const query = buildQuery({
+    filters: { name, code, active, priority, main, createdAt, updatedAt },
+    rules: filterRules,
+    batch: { ids: ids.map(id => id.toString()) },
+  })
 
   const languages = await LanguageModel.updateMany(
     query,
