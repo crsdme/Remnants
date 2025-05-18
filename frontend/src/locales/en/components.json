@@ -50,6 +50,7 @@
   "component.import.dialog.title": "Import Data",
   "component.import.dialog.description": "Upload your data file or download our template to get started.",
   "component.import.dialog.uploadLabel": "Upload File",
+  "component.import.dialog.chooseFile": "Choose File",
   "component.import.dialog.supportedFormats": "Supported formats: CSV, Excel (.xlsx, .xls), JSON",
   "component.import.dialog.or": "OR",
   "component.import.dialog.downloadTemplate": "Download Template",

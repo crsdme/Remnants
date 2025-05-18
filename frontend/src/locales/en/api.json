@@ -135,5 +135,8 @@
   "error.description.UNSUPPORTED_FILE_FORMAT": "The uploaded file format is not supported",
 
   "error.title.INVALID_CREDENTIALS": "Invalid credentials",
-  "error.description.INVALID_CREDENTIALS": "Invalid email or password"
+  "error.description.INVALID_CREDENTIALS": "Invalid email or password",
+
+  "error.title.INTERNAL_ERROR": "Internal error",
+  "error.description.INTERNAL_ERROR": "An internal server error occurred"
 }

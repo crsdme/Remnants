@@ -1,4 +1,4 @@
-import { Button, Input, Label } from '@/components/ui'
+import { Button, Label } from '@/components/ui'
 
 import {
   Dialog,
@@ -13,6 +13,7 @@ import { Download, Upload } from 'lucide-react'
 
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { FileUpload } from '../FileUpload'
 
 interface ImportButtonProps {
   isLoading?: boolean
@@ -56,8 +57,8 @@ export function ImportButton({
         </DialogHeader>
         <div className="grid gap-4 py-4">
           <div className="grid gap-2">
-            <Label htmlFor="file">{t('component.import.dialog.uploadLabel')}</Label>
-            <Input id="file" type="file" accept=".csv,.xlsx,.xls,.json" onChange={handleFileChange} />
+            <Label>{t('component.import.dialog.uploadLabel')}</Label>
+            <FileUpload handleFileChange={handleFileChange} accept=".csv,.xlsx,.xls,.json" />
             <p className="text-sm text-muted-foreground">
               {t('component.import.dialog.supportedFormats')}
             </p>

@@ -50,6 +50,7 @@
   "component.import.dialog.title": "Импортировать данные",
   "component.import.dialog.description": "Загрузите ваш файл данных или скачайте наш шаблон для начала работы.",
   "component.import.dialog.uploadLabel": "Загрузить файл",
+  "component.import.dialog.chooseFile": "Выберите файл",
   "component.import.dialog.supportedFormats": "Поддерживаемые форматы: CSV, Excel (.xlsx, .xls), JSON",
   "component.import.dialog.or": "ИЛИ",
   "component.import.dialog.downloadTemplate": "Скачать шаблон",

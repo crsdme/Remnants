@@ -167,8 +167,8 @@ export async function upload(payload: CurrencyTypes.importCurrenciesParams): Pro
   const storedFile = await parseFile(file.path)
 
   const parsedCurrencies = storedFile.map(row => ({
-    names: extractLangMap(row, 'name'),
-    symbols: extractLangMap(row, 'symbol'),
+    names: extractLangMap(row, 'names'),
+    symbols: extractLangMap(row, 'symbols'),
     priority: toNumber(row.priority),
     active: toBoolean(row.active),
   }))

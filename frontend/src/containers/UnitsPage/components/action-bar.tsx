@@ -40,8 +40,8 @@ export function ActionBar() {
 
   const handleDownloadTemplate = () => {
     const headers = [
-      ...languages.map(l => `name_${l.code}`),
-      ...languages.map(l => `symbol_${l.code}`),
+      ...languages.map(l => `names_${l.code}`),
+      ...languages.map(l => `symbols_${l.code}`),
       'priority',
       'active',
     ]
