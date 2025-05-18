@@ -33,13 +33,13 @@ export async function login(payload: loginParams): Promise<loginResult> {
   const user = await UserModel.findOne({ login })
 
   if (!user) {
-    throw new HttpError(404, 'User not found', 'USER_NOT_FOUND')
+    throw new HttpError(400, 'User not found', 'INVALID_CREDENTIALS')
   }
 
   const isMatch = await bcrypt.compare(password, user.password || '')
 
   if (!isMatch) {
-    throw new HttpError(401, 'Invalid password', 'INVALID_PASSWORD')
+    throw new HttpError(400, 'Invalid password', 'INVALID_CREDENTIALS')
   }
 
   const accessToken = generateAccessToken({ id: user._id, login: user.login })

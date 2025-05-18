@@ -15,24 +15,25 @@ import { useUserContext } from '@/utils/contexts'
 import { zodResolver } from '@hookform/resolvers/zod'
 
 import { Plus } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { z } from 'zod'
-
-const formSchema = z.object({
-  name: z.string(),
-  login: z.string(),
-  password: z.string().optional(),
-  active: z.boolean().default(true),
-})
 
 export function ActionBar() {
   const { t } = useTranslation()
   const userContext = useUserContext()
   const [file, setFile] = useState<File | null>(null)
 
-  const form = useForm<z.infer<typeof formSchema>>({
+  const formSchema = useMemo(() =>
+    z.object({
+      name: z.string({ required_error: t('form.errors.required') }).min(3, { message: t('form.errors.min_length', { count: 3 }) }),
+      login: z.string({ required_error: t('form.errors.required') }).min(3, { message: t('form.errors.min_length', { count: 3 }) }),
+      password: z.string().optional(),
+      active: z.boolean().default(true),
+    }), [t])
+
+  const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: '',

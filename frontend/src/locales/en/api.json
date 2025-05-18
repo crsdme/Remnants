@@ -132,5 +132,8 @@
   "error.description.SOCKET_IO_NOT_INITIALIZED": "Socket.IO instance was not initialized",
 
   "error.title.UNSUPPORTED_FILE_FORMAT": "Unsupported file format",
-  "error.description.UNSUPPORTED_FILE_FORMAT": "The uploaded file format is not supported"
+  "error.description.UNSUPPORTED_FILE_FORMAT": "The uploaded file format is not supported",
+
+  "error.title.INVALID_CREDENTIALS": "Invalid credentials",
+  "error.description.INVALID_CREDENTIALS": "Invalid email or password"
 }

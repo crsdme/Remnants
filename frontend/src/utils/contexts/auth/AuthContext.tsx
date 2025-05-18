@@ -76,6 +76,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
         setUser(data.user)
         dispatch({ type: 'LOGIN' })
       },
+      onError: ({ response }) => {
+        const error = response.data.error
+        toast.error(t(`error.title.${error.code}`), { description: `${t(`error.description.${error.code}`)} ${error.description}` })
+      },
     },
   })
 

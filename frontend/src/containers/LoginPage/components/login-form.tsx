@@ -26,25 +26,28 @@ import { useAuthContext } from '@/utils/contexts'
 
 import { cn } from '@/utils/lib/utils'
 import { zodResolver } from '@hookform/resolvers/zod'
+import { useMemo } from 'react'
 import { useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { z } from 'zod'
-
-const formSchema = z.object({
-  login: z.string().min(2).max(50),
-  password: z.string().min(2).max(50),
-  type: z.string().min(2).max(50),
-})
 
 export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRef<'div'>) {
   const authContenxt = useAuthContext()
   const { t } = useTranslation()
 
-  const form = useForm<z.infer<typeof formSchema>>({
+  const formSchema = useMemo(() =>
+    z.object({
+      login: z.string({ required_error: t('form.errors.required') }).min(5, { message: t('form.errors.min_length', { count: 5 }) }).max(20, { message: t('form.errors.max_length', { count: 20 }) }),
+      password: z.string({ required_error: t('form.errors.required') }).min(5, { message: t('form.errors.min_length', { count: 5 }) }).max(20, { message: t('form.errors.max_length', { count: 20 }) }),
+      type: z.string({ required_error: t('form.errors.required') }).min(5, { message: t('form.errors.min_length', { count: 5 }) }).max(20, { message: t('form.errors.max_length', { count: 20 }) }),
+    }), [t])
+
+  const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
       login: '',
       password: '',
+      type: 'guest',
     },
   })
 

@@ -132,5 +132,8 @@
   "error.description.SOCKET_IO_NOT_INITIALIZED": "Socket.IO не инициализирован",
 
   "error.title.UNSUPPORTED_FILE_FORMAT": "Неподдерживаемый формат файла",
-  "error.description.UNSUPPORTED_FILE_FORMAT": "Формат загруженного файла не поддерживается"
+  "error.description.UNSUPPORTED_FILE_FORMAT": "Формат загруженного файла не поддерживается",
+
+  "error.title.INVALID_CREDENTIALS": "Неверные учетные данные",
+  "error.description.INVALID_CREDENTIALS": "Неверный логин или пароль"
 }

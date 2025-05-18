@@ -20,13 +20,13 @@ module.exports = {
         '4xl': '36px',
         '5xl': '42px',
       },
-      colors: {
-        'border': 'var(--color-border)',
-        'background': 'var(--color-background)',
-        'foreground': 'var(--color-foreground)',
-        'primary': 'var(--color-primary)',
-        'primary-foreground': 'var(--color-primary-foreground)',
-      },
+      // colors: {
+      //   'border': 'var(--color-border)',
+      //   'background': 'var(--color-background)',
+      //   'foreground': 'var(--color-foreground)',
+      //   'primary': 'var(--color-primary)',
+      //   'primary-foreground': 'var(--color-primary-foreground)',
+      // },
       borderRadius: {
         sm: 'var(--radius-sm)',
         md: 'var(--radius-md)',

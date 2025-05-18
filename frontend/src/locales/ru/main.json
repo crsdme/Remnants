@@ -18,5 +18,9 @@
 
   "button.cancel": "Отмена",
   "button.submit": "Сохранить",
-  "button.import": "Импортировать"
+  "button.import": "Импортировать",
+
+  "form.errors.required": "Обязательное поле",
+  "form.errors.min_length": "Минимальная длина {{count}} символов",
+  "form.errors.max_length": "Максимальная длина {{count}} символов"
 }
