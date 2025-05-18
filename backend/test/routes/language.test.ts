@@ -1,225 +1,158 @@
-import path from 'node:path'
-import request from 'supertest'
-import { afterAll, beforeAll, describe, expect, it } from 'vitest'
-import app from '../../src/'
+import { afterEach, describe, expect, it } from 'vitest'
+import * as LanguageFactory from '../factories/language.factory'
+import { expectValidationError } from '../helpers/expectValidationError'
 
 describe('language API', () => {
-  let createdLanguageId: string
-  // let createdImportedLanguageIds: string[] = []
-
-  beforeAll(async () => {
-    const res = await request(app).post('/api/languages/create').send({
-      name: 'English',
-      code: 'en',
-      priority: 1,
-      main: true,
-      active: true,
-    })
-    createdLanguageId = res.body.language._id
-  })
-
-  afterAll(async () => {
-    await request(app).post('/api/languages/remove').send({
-      _ids: [createdLanguageId],
-    })
+  afterEach(async () => {
+    await LanguageFactory.removeAll()
   })
 
   describe('Create Language', () => {
     it('should create a language', async () => {
-      expect(true).toBe(true)
+      const res = await LanguageFactory.create()
+      expect(res.status).toBe(201)
+      expect(res.body).toHaveProperty('language')
     })
   })
 
-  // describe('Get Languages', () => {
-  //   it('should return list of languages', async () => {
-  //     const res = await request(app).get('/api/languages/get').query({
-  //       'pagination[current]': 1,
-  //       'pagination[pageSize]': 10,
-  //       'filters[name]': '',
-  //       'filters[code]': '',
-  //       'filters[priority]': '',
-  //       'filters[main]': '',
-  //       'filters[active]': '',
-  //     })
+  describe('Get Languages', () => {
+    it('should return list of languages', async () => {
+      await LanguageFactory.create()
+      const res = await LanguageFactory.get()
 
-  //     expect(res.status).toBe(200)
-  //     expect(res.body).toHaveProperty('languages')
-  //     expect(res.body).toHaveProperty('languagesCount')
-  //     expect(Array.isArray(res.body.languages)).toBe(true)
-  //   })
-  // })
+      expect(res.status).toBe(200)
+      expect(res.body).toHaveProperty('languages')
+      expect(res.body).toHaveProperty('languagesCount')
 
-  // describe('Duplicate Language', () => {
-  //   it('should duplicate a language', async () => {
-  //     const res = await request(app).post('/api/languages/duplicate').send({
-  //       _ids: [createdLanguageId],
-  //     })
+      const { languages, languagesCount } = res.body
 
-  //     expect(res.status).toBe(200)
-  //     expect(res.body).toHaveProperty('status')
-  //     expect(res.body.status).toBe('success')
-  //   })
-  // })
+      expect(Array.isArray(languages)).toBe(true)
+      expect(languages.length).toBeGreaterThan(0)
 
-  // describe('Edit Language', () => {
-  //   it('should edit a language', async () => {
-  //     const res = await request(app).post('/api/languages/edit').send({
-  //       _id: createdLanguageId,
-  //       name: 'English Edited',
-  //       code: 'en',
-  //       priority: 2,
-  //       main: false,
-  //       active: false,
-  //     })
+      const found = languages.find((lang: any) => lang.code === 'en')
+      expect(found).toBeDefined()
+      expect(languagesCount).toBeGreaterThan(0)
+    })
+  })
 
-  //     expect(res.status).toBe(200)
-  //     expect(res.body).toHaveProperty('status')
-  //     expect(res.body.status).toBe('success')
-  //   })
-  // })
+  describe('Edit Language', () => {
+    it('should edit a language', async () => {
+      const params = {
+        id: null,
+        name: 'English Edited',
+        code: 'en',
+        priority: 2,
+        main: false,
+        active: false,
+      }
 
-  // describe('Import Languages', () => {
-  //   it('should import languages from file', async () => {
-  //     const filePath = path.join(__dirname, '../files/test-import-languages.csv')
+      const createdLanguage = await LanguageFactory.create(params)
+      params.id = createdLanguage.body.language.id
 
-  //     const res = await request(app).post('/api/languages/import').attach('file', filePath)
+      const res = await LanguageFactory.edit(params)
 
-  //     expect(res.status).toBe(200)
-  //     expect(res.body).toHaveProperty('status')
-  //     expect(res.body.status).toBe('success')
-  //   })
-  // })
+      expect(res.status).toBe(200)
+      expect(res.body.language).toMatchObject(params)
+    })
+  })
 
-  // describe('Get Imported Languages', () => {
-  //   it('should return list of imported languages', async () => {
-  //     const res = await request(app).get('/api/languages/get').query({
-  //       'pagination[current]': 1,
-  //       'pagination[pageSize]': 10,
-  //       'filters[name]': '',
-  //       'filters[code]': '',
-  //       'filters[priority]': '',
-  //       'filters[main]': '',
-  //       'filters[active]': '',
-  //     })
+  describe('Remove Language', () => {
+    it('should remove a language', async () => {
+      const createdLanguage = await LanguageFactory.create()
+      const createdLanguageId = createdLanguage.body.language.id
 
-  //     expect(res.status).toBe(200)
-  //     expect(res.body).toHaveProperty('languages')
-  //     expect(res.body).toHaveProperty('languagesCount')
-  //     expect(Array.isArray(res.body.languages)).toBe(true)
+      const res = await LanguageFactory.remove([createdLanguageId])
 
-  //     createdImportedLanguageIds = res.body.languages
-  //       .filter((language: any) => language._id !== createdLanguageId)
-  //       .map((language: any) => language._id)
-  //   })
-  // })
+      expect(res.status).toBe(200)
+      expect(res.body.status).toBe('success')
+    })
+  })
 
-  // describe('Batch Update Imported Languages', () => {
-  //   it('should batch update imported languages', async () => {
-  //     const res = await request(app).post('/api/languages/batch').send({
-  //       _ids: createdImportedLanguageIds,
-  //       params: [
-  //         { column: 'name', value: 'English Batch' },
-  //         { column: 'code', value: 'en-batch' },
-  //         { column: 'priority', value: 11 },
-  //         { column: 'main', value: true },
-  //         { column: 'active', value: false },
-  //       ],
-  //     })
+  describe('Duplicate Language', () => {
+    it('should duplicate a language', async () => {
+      const createdLanguage = await LanguageFactory.create()
+      const createdLanguageId = createdLanguage.body.language.id
 
-  //     expect(res.status).toBe(200)
-  //     expect(res.body.status).toBe('success')
-  //   })
-  // })
+      const res = await LanguageFactory.duplicate([createdLanguageId])
 
-  // describe('Get Batched Languages', () => {
-  //   it('should return list of batched languages', async () => {
-  //     const res = await request(app).get('/api/languages/get').query({
-  //       'pagination[current]': 1,
-  //       'pagination[pageSize]': 10,
-  //       'filters[name]': '',
-  //       'filters[code]': '',
-  //       'filters[priority]': '',
-  //       'filters[main]': '',
-  //       'filters[active]': '',
-  //     })
+      expect(res.status).toBe(200)
+    })
+  })
 
-  //     expect(res.status).toBe(200)
-  //     expect(res.body).toHaveProperty('languages')
-  //     expect(res.body).toHaveProperty('languagesCount')
-  //     expect(Array.isArray(res.body.languages)).toBe(true)
-  //   })
-  // })
+  describe('Import Languages', () => {
+    it('should import languages from file', async () => {
+      const res = await LanguageFactory.upload()
 
-  // describe('Language API Error Handling', () => {
-  //   describe('Create Language Errors', () => {
-  //     it('should fail if name is missing', async () => {
-  //       const res = await request(app).post('/api/languages/create').send({
-  //         code: 'en',
-  //         priority: 1,
-  //         main: true,
-  //         active: true,
-  //       })
+      expect(res.status).toBe(200)
+      expect(res.body.languageIds).toBeDefined()
+      expect(Array.isArray(res.body.languageIds)).toBe(true)
+    })
+  })
 
-  //       expect(res.status).toBe(400)
-  //       expect(res.body).toHaveProperty('error')
-  //     })
+  describe('Batch Update Imported Languages', () => {
+    it('should batch update imported languages', async () => {
+      const resImport = await LanguageFactory.upload()
+      const createdImportedLanguageIds = resImport.body.languageIds
 
-  //     it('should fail if code is missing', async () => {
-  //       const res = await request(app).post('/api/languages/create').send({
-  //         name: 'English',
-  //         priority: 1,
-  //         main: true,
-  //         active: true,
-  //       })
+      const resBatch = await LanguageFactory.batch({
+        ids: createdImportedLanguageIds,
+        params: [
+          { column: 'name', value: 'English Batch' },
+        ],
+      })
 
-  //       expect(res.status).toBe(400)
-  //       expect(res.body).toHaveProperty('error')
-  //     })
-  //   })
+      expect(resBatch.status).toBe(200)
+      expect(resBatch.body.status).toBe('success')
+    })
+  })
 
-  //   describe('Import Language Errors', () => {
-  //     it('should fail if no file is uploaded', async () => {
-  //       const res = await request(app).post('/api/languages/import')
-  //       expect(res.status).toBe(400)
-  //       expect(res.body).toHaveProperty('error')
-  //     })
-  //   })
+  describe('Language Flow | Create -> Edit -> Remove', () => {
+    it('should test currency flow', async () => {
+      const resCreate = await LanguageFactory.create()
+      const createdLanguageId = resCreate.body.language.id
 
-  //   describe('Batch Language Errors', () => {
-  //     it('should fail if _ids array is missing', async () => {
-  //       const res = await request(app).post('/api/languages/batch').send({
-  //         params: [
-  //           { column: 'priority', value: 111 },
-  //         ],
-  //       })
+      const resEdit = await LanguageFactory.edit({
+        id: createdLanguageId,
+        name: 'English Batch',
+        code: 'enBatch',
+        priority: 333,
+      })
 
-  //       expect(res.status).toBe(400)
-  //       expect(res.body).toHaveProperty('error')
-  //     })
+      const resRemove = await LanguageFactory.remove([createdLanguageId])
 
-  //     it('should fail if params array is missing', async () => {
-  //       const res = await request(app).post('/api/languages/batch').send({
-  //         _ids: ['some-random-id'],
-  //       })
+      expect(resCreate.status).toBe(201)
+      expect(resEdit.status).toBe(200)
+      expect(resRemove.status).toBe(200)
+    })
+  })
 
-  //       expect(res.status).toBe(400)
-  //       expect(res.body).toHaveProperty('error')
-  //     })
-  //   })
+  describe('Language Flow | Import -> Batch -> Remove', () => {
+    it('should test currency flow', async () => {
+      const resImport = await LanguageFactory.upload()
+      const createdImportedLanguageIds = resImport.body.languageIds
 
-  //   describe('Edit Language Errors', () => {
-  //     it('should fail if _id is missing', async () => {
-  //       const res = await request(app).post('/api/languages/edit').send({
-  //         name: 'English',
-  //         code: 'en',
-  //         priority: 1,
-  //         main: true,
-  //         active: true,
-  //       })
+      const resBatch = await LanguageFactory.batch({
+        ids: createdImportedLanguageIds,
+        params: [{ column: 'name', value: 'English Batch' }],
+      })
 
-  //       expect(res.status).toBe(400)
-  //       expect(res.body).toHaveProperty('error')
-  //     })
-  //   })
-  // })
+      const resRemove = await LanguageFactory.remove(createdImportedLanguageIds)
+
+      expect(resImport.status).toBe(200)
+      expect(resBatch.status).toBe(200)
+      expect(resRemove.status).toBe(200)
+    })
+  })
+
+  describe('Error Handling', () => {
+    it('without name', async () => {
+      await expectValidationError('/api/languages/create', { code: 'en', priority: 1, main: false, active: true })
+    })
+    it('without code', async () => {
+      await expectValidationError('/api/languages/create', { name: 'test', priority: 1, main: false, active: true })
+    })
+    it('without priority', async () => {
+      await expectValidationError('/api/languages/create', { name: 'test', code: 'en', main: false, active: true })
+    })
+  })
 })

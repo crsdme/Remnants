@@ -1,3 +1,3 @@
-name_en,name_ru,symbol_en,symbol_ru,priority,active,removed
-UAH,UAH,uah,uah,22,TRUE,FALSE
-DOL,DOL,dol,dol,11,FALSE,TRUE
+name_en,name_ru,symbol_en,symbol_ru,priority,active
+UAH,UAH,uah,uah,22,TRUE
+DOL,DOL,dol,dol,11,FALSE

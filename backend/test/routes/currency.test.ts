@@ -1,240 +1,166 @@
-import path from 'node:path'
-import request from 'supertest'
-import { afterAll, beforeAll, describe, expect, it } from 'vitest'
-import app from '../../src/'
+import { afterEach, describe, expect, it } from 'vitest'
+import * as CurrencyFactory from '../factories/currency.factory'
+import { expectValidationError } from '../helpers/expectValidationError'
 
 describe('currency API', () => {
-  let createdCurrencyId: string
-  // let createdImportedCurrencyIds: string[] = []
-
-  beforeAll(async () => {
-    const res = await request(app).post('/api/currencies/create').send({
-      names: { ru: 'Доллар', en: 'Dollar' },
-      symbols: { ru: '$', en: '$' },
-      priority: 1,
-      active: true,
-    })
-
-    expect(res.status).toBe(201)
-    expect(res.body).toHaveProperty('status')
-    expect(res.body.status).toBe('success')
-
-    createdCurrencyId = res.body.currency._id
-  })
-
-  afterAll(async () => {
-    await request(app).post('/api/currencies/remove').send({
-      _ids: [createdCurrencyId],
-    })
+  afterEach(async () => {
+    await CurrencyFactory.removeAll()
   })
 
   describe('Create Currency', () => {
     it('should create a currency', async () => {
-      expect(true).toBe(true)
+      const res = await CurrencyFactory.create()
+      expect(res.status).toBe(201)
+      expect(res.body).toHaveProperty('currency')
     })
   })
 
-  // describe('Get Currencies', () => {
-  //   it('should return list of currencies', async () => {
-  //     const res = await request(app).get('/api/currencies/get').query({
-  //       'pagination[current]': 1,
-  //       'pagination[pageSize]': 10,
-  //       'filters[names]': '',
-  //       'filters[symbols]': '',
-  //       'filters[language]': 'en',
-  //     })
+  describe('Get Currencies', () => {
+    it('should return list of currencies', async () => {
+      await CurrencyFactory.create()
+      const res = await CurrencyFactory.get()
 
-  //     expect(res.status).toBe(200)
-  //     expect(res.body).toHaveProperty('currencies')
-  //     expect(res.body).toHaveProperty('currenciesCount')
-  //     expect(Array.isArray(res.body.currencies)).toBe(true)
-  //   })
-  // })
+      expect(res.status).toBe(200)
+      expect(res.body).toHaveProperty('currencies')
+      expect(res.body).toHaveProperty('currenciesCount')
 
-  // describe('Duplicate Currency', () => {
-  //   it('should duplicate a currency', async () => {
-  //     const res = await request(app).post('/api/currencies/duplicate').send({
-  //       _ids: [createdCurrencyId],
-  //     })
+      const { currencies, currenciesCount } = res.body
 
-  //     expect(res.status).toBe(200)
-  //     expect(res.body).toHaveProperty('status')
-  //     expect(res.body.status).toBe('success')
-  //   })
-  // })
+      expect(Array.isArray(currencies)).toBe(true)
+      expect(currencies.length).toBeGreaterThan(0)
 
-  // describe('Edit Currency', () => {
-  //   let createdCurrencyIdEdit = ''
-  //   it('should create a currency', async () => {
-  //     const res = await request(app).post('/api/currencies/create').send({
-  //       names: { ru: 'Доллар', en: 'Dollar' },
-  //       symbols: { ru: '$', en: '$' },
-  //       priority: 1,
-  //       active: true,
-  //     })
+      const found = currencies.find((currency: any) => currency.names.en === 'Dollar')
+      expect(found).toBeDefined()
+      expect(currenciesCount).toBeGreaterThan(0)
+    })
+  })
 
-  //     expect(res.status).toBe(201)
-  //     expect(res.body).toHaveProperty('status')
-  //     expect(res.body.status).toBe('success')
+  describe('Edit Currency', () => {
+    it('should edit a currency', async () => {
+      const params = {
+        id: null,
+        names: {
+          en: 'Dollar Edited',
+          ru: 'Доллар Изменен',
+        },
+        symbols: {
+          en: 'USDE',
+          ru: 'USDE',
+        },
+        priority: 2,
+        active: false,
+      }
 
-  //     createdCurrencyIdEdit = res.body.currency._id
-  //   })
-  //   it('should edit a currency', async () => {
-  //     const res = await request(app).post('/api/currencies/edit').send({
-  //       _id: createdCurrencyIdEdit,
-  //       names: { ru: 'Доллар Edited', en: 'Dollar Edited' },
-  //       symbols: { ru: '$ Edited', en: '$ Edited' },
-  //       priority: 2,
-  //       active: false,
-  //     })
+      const createdCurrency = await CurrencyFactory.create(params)
+      params.id = createdCurrency.body.currency.id
 
-  //     expect(res.status).toBe(200)
-  //     expect(res.body).toHaveProperty('status')
-  //     expect(res.body.status).toBe('success')
-  //   })
-  // })
+      const res = await CurrencyFactory.edit(params)
 
-  // describe('Import Currencies', () => {
-  //   it('should import currencies from file', async () => {
-  //     const filePath = path.join(__dirname, '../files/test-import-currencies.csv')
+      expect(res.status).toBe(200)
+      expect(res.body.currency).toMatchObject(params)
+    })
+  })
 
-  //     const res = await request(app).post('/api/currencies/import').attach('file', filePath)
+  describe('Remove Currency', () => {
+    it('should remove a currency', async () => {
+      const createdCurrency = await CurrencyFactory.create()
+      const createdCurrencyId = createdCurrency.body.currency.id
 
-  //     expect(res.status).toBe(200)
-  //     expect(res.body).toHaveProperty('status')
-  //     expect(res.body.status).toBe('success')
-  //   })
-  // })
+      const res = await CurrencyFactory.remove([createdCurrencyId])
 
-  // describe('Get Imported Currencies', () => {
-  //   it('should return list of imported currencies', async () => {
-  //     const res = await request(app).get('/api/currencies/get').query({
-  //       'pagination[current]': 1,
-  //       'pagination[pageSize]': 10,
-  //       'filters[names]': '',
-  //       'filters[symbols]': '',
-  //       'filters[language]': 'en',
-  //     })
+      expect(res.status).toBe(200)
+      expect(res.body.status).toBe('success')
+    })
+  })
 
-  //     expect(res.status).toBe(200)
-  //     expect(res.body).toHaveProperty('currencies')
-  //     expect(res.body).toHaveProperty('currenciesCount')
-  //     expect(Array.isArray(res.body.currencies)).toBe(true)
+  describe('Duplicate Currency', () => {
+    it('should duplicate a currency', async () => {
+      const createdCurrency = await CurrencyFactory.create()
+      const createdCurrencyId = createdCurrency.body.currency.id
 
-  //     createdImportedCurrencyIds = res.body.currencies
-  //       .filter((currency: any) => currency._id !== createdCurrencyId) // Отфильтруем базовую валюту
-  //       .map((currency: any) => currency._id)
-  //   })
-  // })
+      const res = await CurrencyFactory.duplicate([createdCurrencyId])
 
-  // describe('Batch Update Imported Currencies', () => {
-  //   it('should batch update imported currencies', async () => {
-  //     const res = await request(app).post('/api/currencies/batch').send({
-  //       _ids: createdImportedCurrencyIds,
-  //       params: [
-  //         { column: 'names', value: { ru: 'Доллар Batch', en: 'Dollar Batch' } },
-  //         { column: 'symbols', value: { ru: '$ Batch', en: '$ Batch' } },
-  //         { column: 'priority', value: 1 },
-  //         { column: 'active', value: true },
-  //       ],
-  //     })
+      expect(res.status).toBe(200)
+    })
+  })
 
-  //     expect(res.status).toBe(200)
-  //     expect(res.body.status).toBe('success')
-  //   })
-  // })
+  describe('Import Currencies', () => {
+    it('should import currencies from file', async () => {
+      const res = await CurrencyFactory.upload()
 
-  // describe('Get Batched Currencies', () => {
-  //   it('should return list of batched currencies', async () => {
-  //     const res = await request(app).get('/api/currencies/get').query({
-  //       'pagination[current]': 1,
-  //       'pagination[pageSize]': 10,
-  //       'filters[names]': '',
-  //       'filters[symbols]': '',
-  //       'filters[language]': 'en',
-  //     })
+      expect(res.status).toBe(200)
+      expect(res.body.currencyIds).toBeDefined()
+      expect(Array.isArray(res.body.currencyIds)).toBe(true)
+    })
+  })
 
-  //     expect(res.status).toBe(200)
-  //     expect(res.body).toHaveProperty('currencies')
-  //     expect(res.body).toHaveProperty('currenciesCount')
-  //     expect(Array.isArray(res.body.currencies)).toBe(true)
-  //   })
-  // })
+  describe('Batch Update Imported Currencies', () => {
+    it('should batch update imported currencies', async () => {
+      const resImport = await CurrencyFactory.upload()
+      const createdImportedCurrencyIds = resImport.body.currencyIds
 
-  // describe('Currency API Error Handling', () => {
-  //   describe('Create Currency Errors', () => {
-  //     it('should fail if names are missing', async () => {
-  //       const res = await request(app).post('/api/currencies/create').send({
-  //         symbols: { ru: '$', en: '$' },
-  //         priority: 1,
-  //         active: true,
-  //       })
+      const resBatch = await CurrencyFactory.batch({
+        ids: createdImportedCurrencyIds,
+        params: [
+          { column: 'names', value: { en: 'Dollar Edited', ru: 'Доллар Изменен' } },
+        ],
+      })
 
-  //       expect(res.status).toBe(400)
-  //       expect(res.body).toHaveProperty('error')
-  //     })
+      expect(resBatch.status).toBe(200)
+      expect(resBatch.body.status).toBe('success')
+    })
+  })
 
-  //     it('should fail if symbols are missing', async () => {
-  //       const res = await request(app).post('/api/currencies/create').send({
-  //         names: { ru: 'Евро', en: 'Euro' },
-  //         priority: 1,
-  //         active: true,
-  //       })
+  describe('Currency Flow | Create -> Edit -> Remove', () => {
+    it('should test currency flow', async () => {
+      const resCreate = await CurrencyFactory.create()
+      const createdCurrencyId = resCreate.body.currency.id
 
-  //       expect(res.status).toBe(400)
-  //       expect(res.body).toHaveProperty('error')
-  //     })
-  //   })
+      const resEdit = await CurrencyFactory.edit({
+        id: createdCurrencyId,
+        names: {
+          en: 'Dollar Edited',
+          ru: 'Доллар Изменен',
+        },
+        symbols: {
+          en: 'USDE',
+          ru: 'USDE',
+        },
+        priority: 333,
+      })
 
-  //   describe('Import Currency Errors', () => {
-  //     it('should fail if no file is uploaded', async () => {
-  //       const res = await request(app).post('/api/currencies/import')
-  //       expect(res.status).toBe(400)
-  //       expect(res.body).toHaveProperty('error')
-  //     })
-  //   })
+      const resRemove = await CurrencyFactory.remove([createdCurrencyId])
 
-  //   describe('Batch Currency Errors', () => {
-  //     it('should fail if _ids array is missing', async () => {
-  //       const res = await request(app).post('/api/currencies/batch').send({
-  //         params: [
-  //           { column: 'priority', value: 1 },
-  //         ],
-  //       })
+      expect(resCreate.status).toBe(201)
+      expect(resEdit.status).toBe(200)
+      expect(resRemove.status).toBe(200)
+    })
+  })
 
-  //       expect(res.status).toBe(400)
-  //       expect(res.body).toHaveProperty('error')
-  //     })
+  describe('Currency Flow | Import -> Batch -> Remove', () => {
+    it('should test currency flow', async () => {
+      const resImport = await CurrencyFactory.upload()
+      const createdImportedCurrencyIds = resImport.body.currencyIds
 
-  //     it('should fail if params array is missing', async () => {
-  //       const res = await request(app).post('/api/currencies/batch').send({
-  //         _ids: ['some-random-id'],
-  //       })
+      const resBatch = await CurrencyFactory.batch({
+        ids: createdImportedCurrencyIds,
+        params: [{ column: 'names', value: { en: 'Dollar Edited', ru: 'Доллар Изменен' } }],
+      })
 
-  //       expect(res.status).toBe(400)
-  //       expect(res.body).toHaveProperty('error')
-  //     })
-  //   })
+      const resRemove = await CurrencyFactory.remove(createdImportedCurrencyIds)
 
-  //   describe('Edit Currency Errors', () => {
-  //     it('should fail if _id is missing', async () => {
-  //       const res = await request(app).post('/api/currencies/edit').send({
-  //         names: { ru: 'Тест', en: 'Test' },
-  //       })
+      expect(resImport.status).toBe(200)
+      expect(resBatch.status).toBe(200)
+      expect(resRemove.status).toBe(200)
+    })
+  })
 
-  //       expect(res.status).toBe(400)
-  //       expect(res.body).toHaveProperty('error')
-  //     })
-
-  //     it('should fail if trying to edit non-existing currency', async () => {
-  //       const res = await request(app).post('/api/currencies/edit').send({
-  //         _id: '6623b0b8f8b6909b5a1e5abc',
-  //         names: { ru: 'Тест', en: 'Test' },
-  //       })
-
-  //       expect(res.status === 404 || res.status === 400).toBeTruthy()
-  //       expect(res.body).toHaveProperty('error')
-  //     })
-  //   })
-  // })
+  describe('Error Handling', () => {
+    it('without name', async () => {
+      await expectValidationError('/api/currencies/create', { names: { en: 'Dollar', ru: 'Доллар' }, priority: 1, main: false, active: true })
+    })
+    it('without symbols', async () => {
+      await expectValidationError('/api/currencies/create', { symbols: { en: '$', ru: '$' }, priority: 1, main: false, active: true })
+    })
+  })
 })

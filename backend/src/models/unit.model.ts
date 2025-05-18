@@ -1,15 +1,8 @@
+import type { Unit } from '../types/unit.type'
 import mongoose, { Schema } from 'mongoose'
 import { v4 as uuidv4 } from 'uuid'
 import { SUPPORTED_LANGUAGES } from '../config/constants'
 import { CounterModel } from './counter.model'
-
-export interface Unit {
-  names: string
-  symbols: string
-  priority: number
-  active: boolean
-  removed: boolean
-}
 
 const UnitSchema: Schema = new Schema(
   {

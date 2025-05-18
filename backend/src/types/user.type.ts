@@ -1,6 +1,16 @@
-import type { User } from '../models/user.model'
 import type { Code, DateRange, IdType, Message, Pagination, Status } from './common.type'
 
+export interface User extends Document {
+  _id: string
+  login: string
+  password?: string
+  name: string
+  active: boolean
+  createdAt: Date
+  updatedAt: Date
+
+  removeSensitiveData: (options: { exclude?: string[] }) => any
+}
 export interface getUsersResult {
   status: Status
   code: Code

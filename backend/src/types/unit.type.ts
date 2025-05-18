@@ -1,6 +1,15 @@
 import type { SUPPORTED_LANGUAGES_TYPE } from '../config/constants'
-import type { Unit } from '../models/unit.model'
 import type { Code, DateRange, IdType, LanguageString, Message, Pagination, Status } from './common.type'
+
+export interface Unit {
+  names: string
+  symbols: string
+  priority: number
+  active: boolean
+  removed: boolean
+  createdAt: Date
+  updatedAt: Date
+}
 
 export interface getUnitsResult {
   status: Status
@@ -97,6 +106,7 @@ export interface importUnitsResult {
   status: Status
   code: Code
   message: Message
+  unitIds: IdType[]
 }
 
 export interface importUnitsParams {

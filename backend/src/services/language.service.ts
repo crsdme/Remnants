@@ -189,12 +189,15 @@ export async function upload(payload: LanguageTypes.importLanguagesParams): Prom
     main: toBoolean(row.main),
   }))
 
-  await LanguageModel.create(parsedLanguages)
+  const languages = await LanguageModel.create(parsedLanguages)
+
+  const languageIds = languages.map(language => language._id)
 
   return {
     status: 'success',
     code: 'LANGUAGES_IMPORTED',
     message: 'Languages imported successfully',
+    languageIds,
   }
 }
 

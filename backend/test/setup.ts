@@ -6,10 +6,10 @@ beforeAll(async () => {
 })
 
 // afterEach(async () => {
-//   // await dropDB()
+//   await dropDB()
 // })
 
 afterAll(async () => {
-  // await dropDB()
+  await dropDB()
   await disconnectDB()
 })

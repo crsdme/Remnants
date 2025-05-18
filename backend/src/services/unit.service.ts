@@ -173,9 +173,11 @@ export async function upload(payload: UnitTypes.importUnitsParams): Promise<Unit
     active: toBoolean(row.active),
   }))
 
-  await UnitModel.create(parsedUnits)
+  const units = await UnitModel.create(parsedUnits)
 
-  return { status: 'success', code: 'UNITS_IMPORTED', message: 'Units imported' }
+  const unitIds = units.map(unit => unit._id)
+
+  return { status: 'success', code: 'UNITS_IMPORTED', message: 'Units imported', unitIds }
 }
 
 export async function duplicate(payload: UnitTypes.duplicateUnitParams): Promise<UnitTypes.duplicateUnitResult> {

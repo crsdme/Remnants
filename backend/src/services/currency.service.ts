@@ -173,9 +173,11 @@ export async function upload(payload: CurrencyTypes.importCurrenciesParams): Pro
     active: toBoolean(row.active),
   }))
 
-  await CurrencyModel.create(parsedCurrencies)
+  const currencies = await CurrencyModel.create(parsedCurrencies)
 
-  return { status: 'success', code: 'CURRENCIES_IMPORTED', message: 'Currencies imported' }
+  const currencyIds = currencies.map(currency => currency._id)
+
+  return { status: 'success', code: 'CURRENCIES_IMPORTED', message: 'Currencies imported', currencyIds }
 }
 
 export async function duplicate(payload: CurrencyTypes.duplicateCurrencyParams): Promise<CurrencyTypes.duplicateCurrencyResult> {

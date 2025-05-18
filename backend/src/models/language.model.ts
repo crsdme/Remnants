@@ -1,17 +1,7 @@
+import type { Language } from '../types/language.type'
 import mongoose, { Schema } from 'mongoose'
 import { v4 as uuidv4 } from 'uuid'
 import { CounterModel } from './counter.model'
-
-export interface Language {
-  name: string
-  code: string
-  priority: number
-  main: boolean
-  active: boolean
-  removed: boolean
-  createdAt: Date
-  updatedAt: Date
-}
 
 const LanguageSchema: Schema = new Schema(
   {

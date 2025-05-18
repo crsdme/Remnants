@@ -1,19 +1,7 @@
-import type { Document } from 'mongoose'
+import type { User } from '../types/user.type'
 import mongoose, { Schema } from 'mongoose'
 import { v4 as uuidv4 } from 'uuid'
 import { CounterModel } from './counter.model'
-
-export interface User extends Document {
-  _id: string
-  login: string
-  password?: string
-  name: string
-  active: boolean
-  createdAt: Date
-  updatedAt: Date
-
-  removeSensitiveData: (options: { exclude?: string[] }) => any
-}
 
 const UserSchema: Schema = new Schema(
   {

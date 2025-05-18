@@ -1,6 +1,15 @@
 import type { SUPPORTED_LANGUAGES_TYPE } from '../config/constants'
-import type { Currency } from '../models/currency.model'
 import type { Code, DateRange, IdType, LanguageString, Message, Pagination, Status } from './common.type'
+
+export interface Currency {
+  names: string
+  symbols: string
+  priority: number
+  active: boolean
+  removed: boolean
+  createdAt: Date
+  updatedAt: Date
+}
 
 export interface getCurrenciesResult {
   status: Status
@@ -97,6 +106,7 @@ export interface importCurrenciesResult {
   status: Status
   code: Code
   message: Message
+  currencyIds: IdType[]
 }
 
 export interface importCurrenciesParams {

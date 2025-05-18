@@ -1,5 +1,15 @@
-import type { Language } from '../models/language.model'
 import type { Code, DateRange, IdType, Message, Pagination, Status } from './common.type'
+
+export interface Language {
+  name: string
+  code: string
+  priority: number
+  main: boolean
+  active: boolean
+  removed: boolean
+  createdAt: Date
+  updatedAt: Date
+}
 
 export interface getLanguagesResult {
   status: Status
@@ -99,6 +109,7 @@ export interface importLanguagesResult {
   status: Status
   code: Code
   message: Message
+  languageIds: IdType[]
 }
 
 export interface importLanguagesParams {

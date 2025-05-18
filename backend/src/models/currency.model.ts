@@ -1,16 +1,9 @@
+import type { Currency } from '../types/currency.type'
 import mongoose, { Schema } from 'mongoose'
-import { v4 as uuidv4 } from 'uuid'
 
+import { v4 as uuidv4 } from 'uuid'
 import { SUPPORTED_LANGUAGES } from '../config/constants'
 import { CounterModel } from './counter.model'
-
-export interface Currency {
-  names: string
-  symbols: string
-  priority: number
-  active: boolean
-  removed: boolean
-}
 
 const CurrencySchema: Schema = new Schema(
   {
