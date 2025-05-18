@@ -219,7 +219,16 @@ export function AdvancedFilters({ columns, onSubmit, onCancel }: AdvancedFilters
                     name={`items.${index}.column`}
                     render={({ field }) => (
                       <FormItem>
-                        <Select value={field.value} onValueChange={field.onChange}>
+                        <Select
+                          value={field.value}
+                          onValueChange={(v) => {
+                            field.onChange(v)
+                            const items = form.getValues('items')
+                            items[index].column = v
+                            items[index].value = ''
+                            form.setValue('items', items)
+                          }}
+                        >
                           <SelectTrigger className="w-[180px]">
                             <SelectValue
                               placeholder={t('component.advancedFilters.selectColumn')}

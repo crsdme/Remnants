@@ -9,5 +9,8 @@
   "description.page.units": "Управление единицами измерения в Remnant",
 
   "title.page.users": "Пользователи - Remnant",
-  "description.page.users": "Управление пользователями в Remnant"
+  "description.page.users": "Управление пользователями в Remnant",
+
+  "title.page.languages": "Языки - Remnant",
+  "description.page.languages": "Управление языками в Remnant"
 }

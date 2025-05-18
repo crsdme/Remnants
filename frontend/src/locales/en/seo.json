@@ -9,5 +9,8 @@
   "description.page.units": "Manage units in Remnant application",
 
   "title.page.users": "Users - Remnant",
-  "description.page.users": "Manage users in Remnant application"
+  "description.page.users": "Manage users in Remnant application",
+
+  "title.page.languages": "Languages - Remnant",
+  "description.page.languages": "Manage languages in Remnant application"
 }

@@ -173,7 +173,7 @@ export function DataTable() {
       .filter((_, index) => rowSelection[index])
       .map(item => item.id)
 
-    const params = data.items.map(item => ({
+    const params = data.map(item => ({
       column: item.column,
       value: item.value,
     }))

@@ -225,14 +225,23 @@ export function BatchEdit({
             </div>
 
             <div className="space-y-4">
-              {form.watch('items').map((item, index) => (
+              {form.getValues('items').map((item, index) => (
                 <div key={item.id} className="flex gap-2 items-center">
                   <FormField
                     control={form.control}
                     name={`items.${index}.column`}
                     render={({ field }) => (
                       <FormItem>
-                        <Select value={field.value} onValueChange={field.onChange}>
+                        <Select
+                          value={field.value}
+                          onValueChange={(v) => {
+                            field.onChange(v)
+                            const items = form.getValues('items')
+                            items[index].column = v
+                            items[index].value = ''
+                            form.setValue('items', items)
+                          }}
+                        >
                           <SelectTrigger className="w-[180px]">
                             <SelectValue placeholder={t('component.batchEdit.selectColumn')} />
                           </SelectTrigger>
