@@ -21,14 +21,14 @@ export default function TablePagination({
   return (
     <div className="flex justify-between items-center mt-3 max-md:flex-col gap-4">
       <span className="text-sm text-muted-foreground">
-        {t('page.common.pagination.selected', {
+        {t('component.pagination.selected', {
           selected: selectedCount,
           total: totalCount,
         })}
       </span>
       <div className="flex justify-end items-center gap-2 max-md:flex-col-reverse min-md:w-lg">
         <span className="text-sm text-muted-foreground w-56 text-center">
-          {t('page.common.pagination.current', {
+          {t('component.pagination.current', {
             current: pagination.current,
             total: totalPages,
           })}

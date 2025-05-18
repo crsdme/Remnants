@@ -154,24 +154,24 @@ export function useColumns({ setSorters, expandedRows, setExpandedRows }): Colum
       id: 'createdAt',
       accessorKey: 'createdAt',
       meta: {
-        title: t('page.currencies.table.createdAt'),
+        title: t('table.createdAt'),
         filterable: true,
         filterType: 'date',
         sortable: true,
       },
-      header: ({ column }) => sortHeader(column, t('page.currencies.table.createdAt')),
+      header: ({ column }) => sortHeader(column, t('table.createdAt')),
       cell: ({ row }) => formatDate(row.getValue('createdAt'), 'MMMM dd, yyyy', i18n.language),
     },
     {
       id: 'updatedAt',
       accessorKey: 'updatedAt',
       meta: {
-        title: t('page.currencies.table.updatedAt'),
+        title: t('table.updatedAt'),
         filterable: true,
         filterType: 'date',
         sortable: true,
       },
-      header: ({ column }) => sortHeader(column, t('page.currencies.table.updatedAt')),
+      header: ({ column }) => sortHeader(column, t('table.updatedAt')),
       cell: ({ row }) => formatDate(row.getValue('updatedAt'), 'MMMM dd, yyyy', i18n.language),
     },
     {
@@ -211,24 +211,24 @@ export function useColumns({ setSorters, expandedRows, setExpandedRows }): Colum
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuLabel>{t('page.currencies.table.actions')}</DropdownMenuLabel>
+                <DropdownMenuLabel>{t('table.actions')}</DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={() => navigator.clipboard.writeText(currency.id)}>
-                  {t('page.currencies.table.copy')}
+                  {t('table.copy')}
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => currencyContext.toggleModal(currency)}>
-                  {t('page.currencies.table.edit')}
+                  {t('table.edit')}
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   onClick={() => currencyContext.duplicateCurrencies({ ids: [currency.id] })}
                 >
-                  {t('page.currencies.table.duplicate')}
+                  {t('table.duplicate')}
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   onClick={() => currencyContext.removeCurrency({ ids: [currency.id] })}
                   variant="destructive"
                 >
-                  {t('page.currencies.table.delete')}
+                  {t('table.delete')}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>

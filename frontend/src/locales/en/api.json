@@ -1,0 +1,136 @@
+{
+  "response.title.LANGUAGES_FETCHED": "Languages fetched",
+  "response.description.LANGUAGES_FETCHED": "Languages list successfully fetched",
+
+  "response.title.LANGUAGE_CREATED": "Language created",
+  "response.description.LANGUAGE_CREATED": "New language has been created",
+
+  "response.title.LANGUAGE_EDITED": "Language edited",
+  "response.description.LANGUAGE_EDITED": "Language has been updated",
+
+  "response.title.LANGUAGES_REMOVED": "Languages removed",
+  "response.description.LANGUAGES_REMOVED": "Selected languages have been deleted",
+
+  "response.title.LANGUAGES_BATCH_EDITED": "Languages edited",
+  "response.description.LANGUAGES_BATCH_EDITED": "Batch language update completed",
+
+  "response.title.LANGUAGES_IMPORTED": "Languages imported",
+  "response.description.LANGUAGES_IMPORTED": "Languages have been imported successfully",
+
+  "response.title.LANGUAGES_DUPLICATED": "Languages duplicated",
+  "response.description.LANGUAGES_DUPLICATED": "Languages have been duplicated",
+
+  "response.title.CURRENCIES_FETCHED": "Currencies fetched",
+  "response.description.CURRENCIES_FETCHED": "Currency list successfully fetched",
+
+  "response.title.CURRENCY_CREATED": "Currency created",
+  "response.description.CURRENCY_CREATED": "New currency has been created",
+
+  "response.title.CURRENCY_EDITED": "Currency edited",
+  "response.description.CURRENCY_EDITED": "Currency has been updated",
+
+  "response.title.CURRENCIES_REMOVED": "Currencies removed",
+  "response.description.CURRENCIES_REMOVED": "Selected currencies have been deleted",
+
+  "response.title.CURRENCIES_BATCH_EDITED": "Currencies edited",
+  "response.description.CURRENCIES_BATCH_EDITED": "Batch currency update completed",
+
+  "response.title.CURRENCIES_IMPORTED": "Currencies imported",
+  "response.description.CURRENCIES_IMPORTED": "Currencies have been imported successfully",
+
+  "response.title.CURRENCIES_DUPLICATED": "Currencies duplicated",
+  "response.description.CURRENCIES_DUPLICATED": "Currencies have been duplicated",
+
+  "response.title.UNITS_FETCHED": "Units fetched",
+  "response.description.UNITS_FETCHED": "Units list successfully fetched",
+
+  "response.title.UNIT_CREATED": "Unit created",
+  "response.description.UNIT_CREATED": "New unit has been created",
+
+  "response.title.UNIT_EDITED": "Unit edited",
+  "response.description.UNIT_EDITED": "Unit has been updated",
+
+  "response.title.UNITS_REMOVED": "Units removed",
+  "response.description.UNITS_REMOVED": "Selected units have been deleted",
+
+  "response.title.UNITS_BATCH_EDITED": "Units edited",
+  "response.description.UNITS_BATCH_EDITED": "Batch unit update completed",
+
+  "response.title.UNITS_IMPORTED": "Units imported",
+  "response.description.UNITS_IMPORTED": "Units have been imported successfully",
+
+  "response.title.UNITS_DUPLICATED": "Units duplicated",
+  "response.description.UNITS_DUPLICATED": "Units have been duplicated",
+
+  "response.title.USERS_FETCHED": "Users fetched",
+  "response.description.USERS_FETCHED": "Users list successfully fetched",
+
+  "response.title.USER_CREATED": "User created",
+  "response.description.USER_CREATED": "New user has been created",
+
+  "response.title.USER_EDITED": "User edited",
+  "response.description.USER_EDITED": "User has been updated",
+
+  "response.title.USERS_REMOVED": "Users removed",
+  "response.description.USERS_REMOVED": "Selected users have been deleted",
+
+  "response.title.USERS_IMPORTED": "Users imported",
+  "response.description.USERS_IMPORTED": "Users have been imported successfully",
+
+  "response.title.USERS_DUPLICATED": "Users duplicated",
+  "response.description.USERS_DUPLICATED": "Users have been duplicated",
+
+  "error.title.NO_FILE_UPLOADED": "No file uploaded",
+  "error.description.NO_FILE_UPLOADED": "Please upload a valid file",
+
+  "error.title.USER_NOT_FOUND": "User not found",
+  "error.description.USER_NOT_FOUND": "User with this ID does not exist",
+
+  "error.title.INVALID_PASSWORD": "Invalid password",
+  "error.description.INVALID_PASSWORD": "The provided password is incorrect",
+
+  "error.title.CURRENCY_NOT_EDITED": "Currency not edited",
+  "error.description.CURRENCY_NOT_EDITED": "Unable to edit currency",
+
+  "error.title.CURRENCIES_NOT_REMOVED": "Currencies not removed",
+  "error.description.CURRENCIES_NOT_REMOVED": "Unable to delete selected currencies",
+
+  "error.title.CURRENCIES_NOT_BATCH_EDITED": "Batch edit failed",
+  "error.description.CURRENCIES_NOT_BATCH_EDITED": "Unable to batch edit currencies",
+
+  "error.title.LANGUAGE_NOT_EDITED": "Language not edited",
+  "error.description.LANGUAGE_NOT_EDITED": "Unable to edit language",
+
+  "error.title.LANGUAGE_NOT_REMOVED": "Language not removed",
+  "error.description.LANGUAGE_NOT_REMOVED": "Unable to remove selected language(s)",
+
+  "error.title.LANGUAGE_NOT_BATCH_EDITED": "Batch edit failed",
+  "error.description.LANGUAGE_NOT_BATCH_EDITED": "Unable to batch edit languages",
+
+  "error.title.UNIT_NOT_EDITED": "Unit not edited",
+  "error.description.UNIT_NOT_EDITED": "Unable to edit unit",
+
+  "error.title.UNITS_NOT_REMOVED": "Units not removed",
+  "error.description.UNITS_NOT_REMOVED": "Unable to remove selected units",
+
+  "error.title.UNITS_NOT_BATCH_EDITED": "Batch edit failed",
+  "error.description.UNITS_NOT_BATCH_EDITED": "Unable to batch edit units",
+
+  "error.title.USER_ALREADY_EXISTS": "User already exists",
+  "error.description.USER_ALREADY_EXISTS": "A user with this login already exists",
+
+  "error.title.USER_NOT_CREATED": "User not created",
+  "error.description.USER_NOT_CREATED": "Unable to create new user",
+
+  "error.title.USER_NOT_EDITED": "User not edited",
+  "error.description.USER_NOT_EDITED": "Unable to edit user",
+
+  "error.title.USERS_NOT_REMOVED": "Users not removed",
+  "error.description.USERS_NOT_REMOVED": "Unable to remove selected users",
+
+  "error.title.SOCKET_IO_NOT_INITIALIZED": "Socket not initialized",
+  "error.description.SOCKET_IO_NOT_INITIALIZED": "Socket.IO instance was not initialized",
+
+  "error.title.UNSUPPORTED_FILE_FORMAT": "Unsupported file format",
+  "error.description.UNSUPPORTED_FILE_FORMAT": "The uploaded file format is not supported"
+}

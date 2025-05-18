@@ -154,24 +154,24 @@ export function useColumns({ setSorters, expandedRows, setExpandedRows }): Colum
       id: 'createdAt',
       accessorKey: 'createdAt',
       meta: {
-        title: t('page.units.table.createdAt'),
+        title: t('table.createdAt'),
         filterable: true,
         filterType: 'date',
         sortable: true,
       },
-      header: ({ column }) => sortHeader(column, t('page.units.table.createdAt')),
+      header: ({ column }) => sortHeader(column, t('table.createdAt')),
       cell: ({ row }) => formatDate(row.getValue('createdAt'), 'MMMM dd, yyyy', i18n.language),
     },
     {
       id: 'updatedAt',
       accessorKey: 'updatedAt',
       meta: {
-        title: t('page.units.table.updatedAt'),
+        title: t('table.updatedAt'),
         filterable: true,
         filterType: 'date',
         sortable: true,
       },
-      header: ({ column }) => sortHeader(column, t('page.units.table.updatedAt')),
+      header: ({ column }) => sortHeader(column, t('table.updatedAt')),
       cell: ({ row }) => formatDate(row.getValue('updatedAt'), 'MMMM dd, yyyy', i18n.language),
     },
     {
@@ -211,24 +211,24 @@ export function useColumns({ setSorters, expandedRows, setExpandedRows }): Colum
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuLabel>{t('page.units.table.actions')}</DropdownMenuLabel>
+                <DropdownMenuLabel>{t('table.actions')}</DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={() => navigator.clipboard.writeText(unit.id)}>
-                  {t('page.units.table.copy')}
+                  {t('table.copy')}
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => unitContext.toggleModal(unit)}>
-                  {t('page.units.table.edit')}
+                  {t('table.edit')}
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   onClick={() => unitContext.duplicateUnits({ ids: [unit.id] })}
                 >
-                  {t('page.units.table.duplicate')}
+                  {t('table.duplicate')}
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   onClick={() => unitContext.removeUnit({ ids: [unit.id] })}
                   variant="destructive"
                 >
-                  {t('page.units.table.delete')}
+                  {t('table.delete')}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>

@@ -1,0 +1,80 @@
+{
+  "page.login.button.signIn": "Вход",
+  "page.login.form.label.login": "Логин",
+  "page.login.form.label.password": "Пароль",
+  "page.login.select.label.type": "Тип пользователя",
+  "page.login.select.value.typeGuest": "Гость",
+  "page.login.select.value.typeWork": "Сотрудник",
+  "page.login.button.submit": "Вход",
+  "page.login.form.description": "Введите свои учетные данные для доступа к своему аккаунту",
+
+  "page.languages.title": "Языки",
+  "page.languages.description": "Управление языками здесь",
+  "page.languages.filter.names": "Фильтр по названию",
+  "page.languages.button.create": "Создать язык",
+
+  "page.languages.table.name": "Название",
+  "page.languages.table.code": "Код",
+  "page.languages.table.priority": "Приоритет",
+  "page.languages.table.active": "Активный",
+  "page.languages.table.main": "Основной",
+
+  "page.languages.form.title.create": "Создание нового языка",
+  "page.languages.form.description.create": "Добавить новый язык в систему",
+  "page.languages.form.name": "Название",
+  "page.languages.form.code": "Код",
+  "page.languages.form.priority": "Приоритет",
+  "page.languages.form.active": "Активный",
+  "page.languages.form.main": "Основной",
+
+  "page.units.title": "Единицы измерения",
+  "page.units.description": "Управление единицами измерения",
+  "page.units.filter.names": "Фильтр по названию",
+  "page.units.button.create": "Создать единицу измерения",
+
+  "page.units.table.names": "Название",
+  "page.units.table.symbols": "Символ",
+  "page.units.table.priority": "Приоритет",
+  "page.units.table.active": "Активность",
+
+  "page.units.form.title.create": "Создание новой единицы измерения",
+  "page.units.form.description.create": "Добавить новую единицу измерения в систему",
+  "page.units.form.names": "Название ({{language}})",
+  "page.units.form.symbols": "Символ ({{language}})",
+  "page.units.form.priority": "Приоритет",
+  "page.units.form.active": "Активная",
+
+  "page.currencies.title": "Валюты",
+  "page.currencies.description": "Управление валютами",
+  "page.currencies.filter.names": "Фильтр по названию",
+  "page.currencies.button.create": "Создать валюту",
+
+  "page.currencies.table.names": "Название",
+  "page.currencies.table.symbols": "Символ",
+  "page.currencies.table.priority": "Приоритет",
+  "page.currencies.table.active": "Активность",
+
+  "page.currencies.form.title.create": "Создание новой валюты",
+  "page.currencies.form.description.create": "Добавить новую валюту в систему",
+  "page.currencies.form.names": "Название ({{language}})",
+  "page.currencies.form.symbols": "Символ ({{language}})",
+  "page.currencies.form.priority": "Приоритет",
+  "page.currencies.form.active": "Активная",
+
+  "page.users.title": "Пользователи",
+  "page.users.description": "Управление пользователями",
+  "page.users.filter.name": "Фильтр по имени",
+  "page.users.button.create": "Создать пользователя",
+
+  "page.users.table.name": "Имя",
+  "page.users.table.login": "Логин",
+  "page.users.table.password": "Пароль",
+  "page.users.table.active": "Статус",
+
+  "page.users.form.title.create": "Создание нового пользователя",
+  "page.users.form.description.create": "Добавить нового пользователя в систему",
+  "page.users.form.name": "Имя",
+  "page.users.form.login": "Логин",
+  "page.users.form.password": "Пароль",
+  "page.users.form.status": "Статус"
+}

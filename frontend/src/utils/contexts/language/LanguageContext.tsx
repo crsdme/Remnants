@@ -42,14 +42,14 @@ export function LanguageProvider({ children }: LanguageProviderProps) {
         setIsLoading(false)
         setSelectedLanguage(null)
         queryClient.invalidateQueries({ queryKey: ['languages'] })
-        toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description}` })
+        toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description || ''}` })
       },
       onError: ({ response }) => {
         const error = response.data.error
         setIsModalOpen(false)
         setIsLoading(false)
         setSelectedLanguage(null)
-        toast.error(t(`error.title.${error.code}`), { description: `${t(`error.description.${error.code}`)} ${error.description}` })
+        toast.error(t(`error.title.${error.code}`), { description: `${t(`error.description.${error.code}`)} ${error.description || ''}` })
       },
     },
   })
@@ -58,11 +58,11 @@ export function LanguageProvider({ children }: LanguageProviderProps) {
     options: {
       onSuccess: ({ data }) => {
         queryClient.invalidateQueries({ queryKey: ['languages'] })
-        toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description}` })
+        toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description || ''}` })
       },
       onError: ({ response }) => {
         const error = response.data.error
-        toast.error(t(`error.title.${error.code}`), { description: `${t(`error.description.${error.code}`)} ${error.description}` })
+        toast.error(t(`error.title.${error.code}`), { description: `${t(`error.description.${error.code}`)} ${error.description || ''}` })
       },
     },
   })
@@ -74,14 +74,14 @@ export function LanguageProvider({ children }: LanguageProviderProps) {
         setIsLoading(false)
         setSelectedLanguage(null)
         queryClient.invalidateQueries({ queryKey: ['languages'] })
-        toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description}` })
+        toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description || ''}` })
       },
       onError: ({ response }) => {
         const error = response.data.error
         setIsModalOpen(false)
         setIsLoading(false)
         setSelectedLanguage(null)
-        toast.error(t(`error.title.${error.code}`), { description: `${t(`error.description.${error.code}`)} ${error.description}` })
+        toast.error(t(`error.title.${error.code}`), { description: `${t(`error.description.${error.code}`)} ${error.description || ''}` })
       },
     },
   })
@@ -90,11 +90,11 @@ export function LanguageProvider({ children }: LanguageProviderProps) {
     options: {
       onSuccess: ({ data }) => {
         queryClient.invalidateQueries({ queryKey: ['languages'] })
-        toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description}` })
+        toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description || ''}` })
       },
       onError: ({ response }) => {
         const error = response.data.error
-        toast.error(t(`error.title.${error.code}`), { description: `${t(`error.description.${error.code}`)} ${error.description}` })
+        toast.error(t(`error.title.${error.code}`), { description: `${t(`error.description.${error.code}`)} ${error.description || ''}` })
       },
     },
   })
@@ -103,11 +103,11 @@ export function LanguageProvider({ children }: LanguageProviderProps) {
     options: {
       onSuccess: ({ data }) => {
         queryClient.invalidateQueries({ queryKey: ['languages'] })
-        toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description}` })
+        toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description || ''}` })
       },
       onError: ({ response }) => {
         const error = response.data.error
-        toast.error(t(`error.title.${error.code}`), { description: `${t(`error.description.${error.code}`)} ${error.description}` })
+        toast.error(t(`error.title.${error.code}`), { description: `${t(`error.description.${error.code}`)} ${error.description || ''}` })
       },
     },
   })
@@ -116,11 +116,11 @@ export function LanguageProvider({ children }: LanguageProviderProps) {
     options: {
       onSuccess: ({ data }) => {
         queryClient.invalidateQueries({ queryKey: ['languages'] })
-        toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description}` })
+        toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description || ''}` })
       },
       onError: ({ response }) => {
         const error = response.data.error
-        toast.error(t(`error.title.${error.code}`), { description: `${t(`error.description.${error.code}`)} ${error.description}` })
+        toast.error(t(`error.title.${error.code}`), { description: `${t(`error.description.${error.code}`)} ${error.description || ''}` })
       },
     },
   })

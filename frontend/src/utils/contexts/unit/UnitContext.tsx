@@ -51,14 +51,14 @@ export function UnitProvider({ children }: UnitProviderProps) {
         setIsLoading(false)
         setSelectedUnit(null)
         queryClient.invalidateQueries({ queryKey: ['units'] })
-        toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description}` })
+        toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description || ''}` })
       },
       onError: ({ response }) => {
         const error = response.data.error
         setIsModalOpen(false)
         setIsLoading(false)
         setSelectedUnit(null)
-        toast.error(t(`error.title.${error.code}`), { description: `${t(`error.description.${error.code}`)} ${error.description}` })
+        toast.error(t(`error.title.${error.code}`), { description: `${t(`error.description.${error.code}`)} ${error.description || ''}` })
       },
     },
   })
@@ -67,11 +67,11 @@ export function UnitProvider({ children }: UnitProviderProps) {
     options: {
       onSuccess: ({ data }) => {
         queryClient.invalidateQueries({ queryKey: ['units'] })
-        toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description}` })
+        toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description || ''}` })
       },
       onError: ({ response }) => {
         const error = response.data.error
-        toast.error(t(`error.title.${error.code}`), { description: `${t(`error.description.${error.code}`)} ${error.description}` })
+        toast.error(t(`error.title.${error.code}`), { description: `${t(`error.description.${error.code}`)} ${error.description || ''}` })
       },
     },
   })
@@ -83,14 +83,14 @@ export function UnitProvider({ children }: UnitProviderProps) {
         setIsLoading(false)
         setSelectedUnit(null)
         queryClient.invalidateQueries({ queryKey: ['units'] })
-        toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description}` })
+        toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description || ''}` })
       },
       onError: ({ response }) => {
         const error = response.data.error
         setIsModalOpen(false)
         setIsLoading(false)
         setSelectedUnit(null)
-        toast.error(t(`error.title.${error.code}`), { description: `${t(`error.description.${error.code}`)} ${error.description}` })
+        toast.error(t(`error.title.${error.code}`), { description: `${t(`error.description.${error.code}`)} ${error.description || ''}` })
       },
     },
   })
@@ -99,11 +99,11 @@ export function UnitProvider({ children }: UnitProviderProps) {
     options: {
       onSuccess: ({ data }) => {
         queryClient.invalidateQueries({ queryKey: ['units'] })
-        toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description}` })
+        toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description || ''}` })
       },
       onError: ({ response }) => {
         const error = response.data.error
-        toast.error(t(`error.title.${error.code}`), { description: `${t(`error.description.${error.code}`)} ${error.description}` })
+        toast.error(t(`error.title.${error.code}`), { description: `${t(`error.description.${error.code}`)} ${error.description || ''}` })
       },
     },
   })
@@ -112,11 +112,11 @@ export function UnitProvider({ children }: UnitProviderProps) {
     options: {
       onSuccess: ({ data }) => {
         queryClient.invalidateQueries({ queryKey: ['units'] })
-        toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description}` })
+        toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description || ''}` })
       },
       onError: ({ response }) => {
         const error = response.data.error
-        toast.error(t(`error.title.${error.code}`), { description: `${t(`error.description.${error.code}`)} ${error.description}` })
+        toast.error(t(`error.title.${error.code}`), { description: `${t(`error.description.${error.code}`)} ${error.description || ''}` })
       },
     },
   })
@@ -125,11 +125,11 @@ export function UnitProvider({ children }: UnitProviderProps) {
     options: {
       onSuccess: ({ data }) => {
         queryClient.invalidateQueries({ queryKey: ['units'] })
-        toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description}` })
+        toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description || ''}` })
       },
       onError: ({ response }) => {
         const error = response.data.error
-        toast.error(t(`error.title.${error.code}`), { description: `${t(`error.description.${error.code}`)} ${error.description}` })
+        toast.error(t(`error.title.${error.code}`), { description: `${t(`error.description.${error.code}`)} ${error.description || ''}` })
       },
     },
   })

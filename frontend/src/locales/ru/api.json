@@ -1,0 +1,136 @@
+{
+  "response.title.LANGUAGES_FETCHED": "Языки получены",
+  "response.description.LANGUAGES_FETCHED": "Список языков успешно получен",
+
+  "response.title.LANGUAGE_CREATED": "Язык создан",
+  "response.description.LANGUAGE_CREATED": "Новый язык был создан",
+
+  "response.title.LANGUAGE_EDITED": "Язык обновлен",
+  "response.description.LANGUAGE_EDITED": "Язык был обновлен",
+
+  "response.title.LANGUAGES_REMOVED": "Языки удалены",
+  "response.description.LANGUAGES_REMOVED": "Выбранные языки были удалены",
+
+  "response.title.LANGUAGES_BATCH_EDITED": "Языки обновлены",
+  "response.description.LANGUAGES_BATCH_EDITED": "Обновление языков завершено",
+
+  "response.title.LANGUAGES_IMPORTED": "Языки импортированы",
+  "response.description.LANGUAGES_IMPORTED": "Языки были импортированы успешно",
+
+  "response.title.LANGUAGES_DUPLICATED": "Языки дублированы",
+  "response.description.LANGUAGES_DUPLICATED": "Языки были дублированы",
+
+  "response.title.CURRENCIES_FETCHED": "Валюты получены",
+  "response.description.CURRENCIES_FETCHED": "Список валют успешно получен",
+
+  "response.title.CURRENCY_CREATED": "Валюта создана",
+  "response.description.CURRENCY_CREATED": "Новая валюта была создана",
+
+  "response.title.CURRENCY_EDITED": "Валюта обновлена",
+  "response.description.CURRENCY_EDITED": "Валюта была обновлена",
+
+  "response.title.CURRENCIES_REMOVED": "Валюты удалены",
+  "response.description.CURRENCIES_REMOVED": "Выбранные валюты были удалены",
+
+  "response.title.CURRENCIES_BATCH_EDITED": "Валюты обновлены",
+  "response.description.CURRENCIES_BATCH_EDITED": "Обновление валют завершено",
+
+  "response.title.CURRENCIES_IMPORTED": "Валюты импортированы",
+  "response.description.CURRENCIES_IMPORTED": "Валюты были импортированы успешно",
+
+  "response.title.CURRENCIES_DUPLICATED": "Валюты дублированы",
+  "response.description.CURRENCIES_DUPLICATED": "Валюты были дублированы",
+
+  "response.title.UNITS_FETCHED": "Единицы измерения получены",
+  "response.description.UNITS_FETCHED": "Список единиц измерения успешно получен",
+
+  "response.title.UNIT_CREATED": "Единица измерения создана",
+  "response.description.UNIT_CREATED": "Новая единица измерения была создана",
+
+  "response.title.UNIT_EDITED": "Единица измерения обновлена",
+  "response.description.UNIT_EDITED": "Единица измерения была обновлена",
+
+  "response.title.UNITS_REMOVED": "Единицы измерения удалены",
+  "response.description.UNITS_REMOVED": "Выбранные единицы измерения были удалены",
+
+  "response.title.UNITS_BATCH_EDITED": "Единицы измерения обновлены",
+  "response.description.UNITS_BATCH_EDITED": "Обновление единиц измерения завершено",
+
+  "response.title.UNITS_IMPORTED": "Единицы измерения импортированы",
+  "response.description.UNITS_IMPORTED": "Единицы измерения были импортированы успешно",
+
+  "response.title.UNITS_DUPLICATED": "Единицы измерения дублированы",
+  "response.description.UNITS_DUPLICATED": "Единицы измерения были дублированы",
+
+  "response.title.USERS_FETCHED": "Пользователи получены",
+  "response.description.USERS_FETCHED": "Список пользователей успешно получен",
+
+  "response.title.USER_CREATED": "Пользователь создан",
+  "response.description.USER_CREATED": "Новый пользователь был создан",
+
+  "response.title.USER_EDITED": "Пользователь обновлен",
+  "response.description.USER_EDITED": "Пользователь был обновлен",
+
+  "response.title.USERS_REMOVED": "Пользователи удалены",
+  "response.description.USERS_REMOVED": "Выбранные пользователи были удалены",
+
+  "response.title.USERS_IMPORTED": "Пользователи импортированы",
+  "response.description.USERS_IMPORTED": "Пользователи были импортированы успешно",
+
+  "response.title.USERS_DUPLICATED": "Пользователи дублированы",
+  "response.description.USERS_DUPLICATED": "Пользователи были дублированы",
+
+  "error.title.NO_FILE_UPLOADED": "Файл не загружен",
+  "error.description.NO_FILE_UPLOADED": "Пожалуйста, загрузите допустимый файл",
+
+  "error.title.USER_NOT_FOUND": "Пользователь не найден",
+  "error.description.USER_NOT_FOUND": "Пользователь с этим ID не существует",
+
+  "error.title.INVALID_PASSWORD": "Неверный пароль",
+  "error.description.INVALID_PASSWORD": "Указанный пароль некорректен",
+
+  "error.title.CURRENCY_NOT_EDITED": "Валюта не обновлена",
+  "error.description.CURRENCY_NOT_EDITED": "Не удалось обновить валюту",
+
+  "error.title.CURRENCIES_NOT_REMOVED": "Валюты не удалены",
+  "error.description.CURRENCIES_NOT_REMOVED": "Не удалось удалить выбранные валюты",
+
+  "error.title.CURRENCIES_NOT_BATCH_EDITED": "Обновление валют не завершено",
+  "error.description.CURRENCIES_NOT_BATCH_EDITED": "Не удалось обновить валюты",
+
+  "error.title.LANGUAGE_NOT_EDITED": "Язык не обновлен",
+  "error.description.LANGUAGE_NOT_EDITED": "Не удалось обновить язык",
+
+  "error.title.LANGUAGE_NOT_REMOVED": "Язык не удален",
+  "error.description.LANGUAGE_NOT_REMOVED": "Не удалось удалить выбранный язык",
+
+  "error.title.LANGUAGE_NOT_BATCH_EDITED": "Обновление языков не завершено",
+  "error.description.LANGUAGE_NOT_BATCH_EDITED": "Не удалось обновить языки",
+
+  "error.title.UNIT_NOT_EDITED": "Единица измерения не обновлена",
+  "error.description.UNIT_NOT_EDITED": "Не удалось обновить единицу измерения",
+
+  "error.title.UNITS_NOT_REMOVED": "Единицы измерения не удалены",
+  "error.description.UNITS_NOT_REMOVED": "Не удалось удалить выбранные единицы измерения",
+
+  "error.title.UNITS_NOT_BATCH_EDITED": "Обновление единиц измерения не завершено",
+  "error.description.UNITS_NOT_BATCH_EDITED": "Не удалось обновить единицы измерения",
+
+  "error.title.USER_ALREADY_EXISTS": "Пользователь уже существует",
+  "error.description.USER_ALREADY_EXISTS": "Пользователь с таким логином уже существует",
+
+  "error.title.USER_NOT_CREATED": "Пользователь не создан",
+  "error.description.USER_NOT_CREATED": "Не удалось создать нового пользователя",
+
+  "error.title.USER_NOT_EDITED": "Пользователь не обновлен",
+  "error.description.USER_NOT_EDITED": "Не удалось обновить пользователя",
+
+  "error.title.USERS_NOT_REMOVED": "Пользователи не удалены",
+  "error.description.USERS_NOT_REMOVED": "Не удалось удалить выбранных пользователей",
+
+  "error.title.SOCKET_IO_NOT_INITIALIZED": "Socket не инициализирован",
+  "error.description.SOCKET_IO_NOT_INITIALIZED": "Socket.IO не инициализирован",
+
+  "error.title.UNSUPPORTED_FILE_FORMAT": "Неподдерживаемый формат файла",
+  "error.description.UNSUPPORTED_FILE_FORMAT": "Формат загруженного файла не поддерживается"
+}

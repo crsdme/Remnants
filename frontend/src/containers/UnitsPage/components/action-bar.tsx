@@ -12,14 +12,7 @@ import {
   FormMessage,
   Input,
 } from '@/components/ui'
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog'
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
 import { useUnitContext } from '@/utils/contexts'
 import { zodResolver } from '@hookform/resolvers/zod'
 
@@ -130,129 +123,130 @@ export function ActionBar() {
           isLoading={isLoading}
           onSubmit={onImport}
         />
-        <Dialog
-          open={unitContext.isModalOpen}
-          onOpenChange={() => !isLoading && unitContext.toggleModal()}
-        >
-          <DialogTrigger asChild>
+        <Sheet open={unitContext.isModalOpen} onOpenChange={() => !isLoading && unitContext.toggleModal()}>
+          <SheetTrigger asChild>
             <Button onClick={() => unitContext.toggleModal()} disabled={isLoading}>
               <Plus />
               {t('page.units.button.create')}
             </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>{t('page.units.modal.title.create')}</DialogTitle>
-              <DialogDescription>{t('page.units.modal.description.create')}</DialogDescription>
-            </DialogHeader>
-            <Form {...form}>
-              <form className="w-full space-y-4" onSubmit={form.handleSubmit(onSubmit)}>
-                {languages.map(language => (
-                  <FormField
-                    control={form.control}
-                    key={language.code}
-                    name={`names.${language.code}`}
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>
-                          {t('page.units.form.names', {
-                            language: t(`language.${language.code}`),
-                          })}
-                        </FormLabel>
-                        <FormControl>
-                          <Input
-                            placeholder={t('page.units.form.names', {
+          </SheetTrigger>
+          <SheetContent className="sm:max-w-xl w-full overflow-y-auto" side="right">
+            <SheetHeader>
+              <SheetTitle>{t('page.units.form.title.create')}</SheetTitle>
+              <SheetDescription>
+                {t('page.units.form.description.create')}
+              </SheetDescription>
+            </SheetHeader>
+            <div className="w-full px-4">
+              <Form {...form}>
+                <form className="w-full space-y-4" onSubmit={form.handleSubmit(onSubmit)}>
+                  {languages.map(language => (
+                    <FormField
+                      control={form.control}
+                      key={language.code}
+                      name={`names.${language.code}`}
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>
+                            {t('page.units.form.names', {
                               language: t(`language.${language.code}`),
                             })}
+                          </FormLabel>
+                          <FormControl>
+                            <Input
+                              placeholder={t('page.units.form.names', {
+                                language: t(`language.${language.code}`),
+                              })}
+                              className="w-full"
+                              {...field}
+                              disabled={isLoading}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  ))}
+                  {languages.map(language => (
+                    <FormField
+                      control={form.control}
+                      key={language.code}
+                      name={`symbols.${language.code}`}
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>
+                            {t('page.units.form.symbols', {
+                              language: t(`language.${language.code}`),
+                            })}
+                          </FormLabel>
+                          <FormControl>
+                            <Input
+                              placeholder={t('page.units.form.symbols', {
+                                language: t(`language.${language.code}`),
+                              })}
+                              className="w-full"
+                              {...field}
+                              disabled={isLoading}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  ))}
+                  <FormField
+                    control={form.control}
+                    name="priority"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>{t('page.units.form.priority')}</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            placeholder={t('page.units.form.priority')}
                             className="w-full"
                             {...field}
                             disabled={isLoading}
+                            onChange={e => field.onChange(Number(e.target.value))}
                           />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
-                ))}
-                {languages.map(language => (
                   <FormField
                     control={form.control}
-                    key={language.code}
-                    name={`symbols.${language.code}`}
+                    name="active"
                     render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>
-                          {t('page.units.form.symbols', {
-                            language: t(`language.${language.code}`),
-                          })}
-                        </FormLabel>
+                      <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
                         <FormControl>
-                          <Input
-                            placeholder={t('page.units.form.symbols', {
-                              language: t(`language.${language.code}`),
-                            })}
-                            className="w-full"
-                            {...field}
+                          <Checkbox
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
                             disabled={isLoading}
                           />
                         </FormControl>
-                        <FormMessage />
+                        <FormLabel>{t('page.units.form.active')}</FormLabel>
                       </FormItem>
                     )}
                   />
-                ))}
-                <FormField
-                  control={form.control}
-                  name="priority"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{t('page.units.form.priority')}</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="number"
-                          placeholder={t('page.units.form.priority')}
-                          className="w-full"
-                          {...field}
-                          disabled={isLoading}
-                          onChange={e => field.onChange(Number(e.target.value))}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="active"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
-                      <FormControl>
-                        <Checkbox
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
-                          disabled={isLoading}
-                        />
-                      </FormControl>
-                      <FormLabel>{t('page.units.form.active')}</FormLabel>
-                    </FormItem>
-                  )}
-                />
-                <div className="flex gap-2">
-                  <Button
-                    variant="secondary"
-                    onClick={() => unitContext.toggleModal()}
-                    disabled={isLoading}
-                  >
-                    {t('page.units.button.cancel')}
-                  </Button>
-                  <Button type="submit" disabled={isLoading} loading={isLoading}>
-                    {t('page.units.button.submit')}
-                  </Button>
-                </div>
-              </form>
-            </Form>
-          </DialogContent>
-        </Dialog>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="secondary"
+                      onClick={() => unitContext.toggleModal()}
+                      disabled={isLoading}
+                    >
+                      {t('button.cancel')}
+                    </Button>
+                    <Button type="submit" disabled={isLoading} loading={isLoading}>
+                      {t('button.submit')}
+                    </Button>
+                  </div>
+                </form>
+              </Form>
+            </div>
+          </SheetContent>
+        </Sheet>
       </div>
     </div>
   )

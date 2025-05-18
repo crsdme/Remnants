@@ -33,7 +33,7 @@ export function NavMain({
 
   return (
     <SidebarGroup>
-      <SidebarGroupLabel>{t('layout.sidemenu.label.navigation')}</SidebarGroupLabel>
+      <SidebarGroupLabel>{t('component.sidemenu.label.navigation')}</SidebarGroupLabel>
       <SidebarMenu>
         {items.map((item) => {
           if (!item?.items) {

@@ -1,15 +1,15 @@
 import i18n from 'i18next'
 import { initReactI18next } from 'react-i18next'
 
-import en from './en/main.json'
-import ru from './ru/main.json'
+import { apiEn, componentsEn, mainEn, pageEn, seoEn } from './en/index'
+import { apiRu, componentsRu, mainRu, pageRu, seoRu } from './ru/index'
 
 const resources = {
   en: {
-    translation: en,
+    translation: Object.assign({}, mainEn, seoEn, apiEn, componentsEn, pageEn),
   },
   ru: {
-    translation: ru,
+    translation: Object.assign({}, mainRu, seoRu, apiRu, componentsRu, pageRu),
   },
 }
 

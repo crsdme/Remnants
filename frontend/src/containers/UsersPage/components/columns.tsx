@@ -90,6 +90,15 @@ export function useColumns({ setSorters, expandedRows, setExpandedRows }): Colum
       enableHiding: false,
     },
     {
+      id: 'seq',
+      size: 50,
+      meta: {
+        title: t('table.seq'),
+      },
+      header: t('table.seq'),
+      accessorFn: row => row.seq,
+    },
+    {
       id: 'name',
       size: 150,
       meta: {
@@ -122,38 +131,38 @@ export function useColumns({ setSorters, expandedRows, setExpandedRows }): Colum
       id: 'active',
       accessorKey: 'active',
       meta: {
-        title: t('page.units.table.active'),
+        title: t('page.users.table.active'),
         batchEdit: true,
         batchEditType: 'boolean',
         filterable: true,
         filterType: 'boolean',
         sortable: true,
       },
-      header: t('page.units.table.active'),
+      header: t('page.users.table.active'),
       cell: ({ row }) => <Badge variant="outline">{row.original.active.toString()}</Badge>,
     },
     {
       id: 'createdAt',
       accessorKey: 'createdAt',
       meta: {
-        title: t('page.users.table.createdAt'),
+        title: t('table.createdAt'),
         filterable: true,
         filterType: 'date',
         sortable: true,
       },
-      header: ({ column }) => sortHeader(column, t('page.users.table.createdAt')),
+      header: ({ column }) => sortHeader(column, t('table.createdAt')),
       cell: ({ row }) => formatDate(row.getValue('createdAt'), 'MMMM dd, yyyy', i18n.language),
     },
     {
       id: 'updatedAt',
       accessorKey: 'updatedAt',
       meta: {
-        title: t('page.users.table.updatedAt'),
+        title: t('table.updatedAt'),
         filterable: true,
         filterType: 'date',
         sortable: true,
       },
-      header: ({ column }) => sortHeader(column, t('page.users.table.updatedAt')),
+      header: ({ column }) => sortHeader(column, t('table.updatedAt')),
       cell: ({ row }) => formatDate(row.getValue('updatedAt'), 'MMMM dd, yyyy', i18n.language),
     },
     {
@@ -193,24 +202,24 @@ export function useColumns({ setSorters, expandedRows, setExpandedRows }): Colum
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuLabel>{t('page.users.table.actions')}</DropdownMenuLabel>
+                <DropdownMenuLabel>{t('table.actions')}</DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={() => navigator.clipboard.writeText(user.id)}>
-                  {t('page.users.table.copy')}
+                  {t('table.copy')}
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => userContext.toggleModal(user)}>
-                  {t('page.users.table.edit')}
+                  {t('table.edit')}
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   onClick={() => userContext.duplicateUsers({ ids: [user.id] })}
                 >
-                  {t('page.users.table.duplicate')}
+                  {t('table.duplicate')}
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   onClick={() => userContext.removeUsers({ ids: [user.id] })}
                   variant="destructive"
                 >
-                  {t('page.users.table.delete')}
+                  {t('table.delete')}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>

@@ -94,7 +94,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const refresh = () => {
     useQueryRefreshToken
       .refetch()
-      .then(({ status }) => status === 'success' && dispatch({ type: 'REFRESH' }))
+      .then(({ status }) => {
+        if (status === 'success')
+          dispatch({ type: 'REFRESH' })
+        else
+          dispatch({ type: 'LOGOUT' })
+      })
   }
 
   const logout = () => {

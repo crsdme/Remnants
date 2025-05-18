@@ -66,7 +66,7 @@ export function NavUser({ user }) {
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={() => authContext.logout()}>
               <LogOut />
-              {t('layout.sidemenu.label.logout')}
+              {t('component.sidemenu.label.logout')}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

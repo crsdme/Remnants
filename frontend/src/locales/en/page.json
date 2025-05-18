@@ -1,0 +1,80 @@
+{
+  "page.login.button.signIn": "Sign In",
+  "page.login.form.label.login": "Login",
+  "page.login.form.label.password": "Password",
+  "page.login.select.label.type": "User Type",
+  "page.login.select.value.typeGuest": "Guest",
+  "page.login.select.value.typeWork": "Employee",
+  "page.login.button.submit": "Submit",
+  "page.login.form.description": "Enter your credentials to access your account",
+
+  "page.languages.title": "Languages",
+  "page.languages.description": "Manage languages here",
+  "page.languages.filter.names": "Filter by name",
+  "page.languages.button.create": "Create Language",
+
+  "page.languages.table.name": "Name",
+  "page.languages.table.code": "Code",
+  "page.languages.table.priority": "Priority",
+  "page.languages.table.active": "Active",
+  "page.languages.table.main": "Main",
+
+  "page.languages.form.title.create": "Create New Language",
+  "page.languages.form.description.create": "Add a new language to the system",
+  "page.languages.form.name": "Name",
+  "page.languages.form.code": "Code",
+  "page.languages.form.priority": "Priority",
+  "page.languages.form.active": "Active",
+  "page.languages.form.main": "Main",
+
+  "page.units.title": "Units",
+  "page.units.description": "Manage units of measurement here",
+  "page.units.filter.names": "Filter by name",
+  "page.units.button.create": "Create Unit",
+
+  "page.units.table.names": "Name",
+  "page.units.table.symbols": "Symbol",
+  "page.units.table.priority": "Priority",
+  "page.units.table.active": "Active",
+
+  "page.units.form.title.create": "Create New Unit",
+  "page.units.form.description.create": "Add a new unit of measurement to the system",
+  "page.units.form.names": "Name ({{language}})",
+  "page.units.form.symbols": "Symbol ({{language}})",
+  "page.units.form.priority": "Priority",
+  "page.units.form.active": "Active",
+
+  "page.currencies.title": "Currencies",
+  "page.currencies.description": "Manage your currencies here",
+  "page.currencies.filter.names": "Filter by name",
+  "page.currencies.button.create": "Create Currency",
+
+  "page.currencies.table.names": "Name",
+  "page.currencies.table.symbols": "Symbol",
+  "page.currencies.table.priority": "Priority",
+  "page.currencies.table.active": "Active",
+
+  "page.currencies.form.title.create": "Create New Currency",
+  "page.currencies.form.description.create": "Add a new currency to the system",
+  "page.currencies.form.names": "Name ({{language}})",
+  "page.currencies.form.symbols": "Symbol ({{language}})",
+  "page.currencies.form.priority": "Priority",
+  "page.currencies.form.active": "Active",
+
+  "page.users.title": "Users",
+  "page.users.description": "Manage users here",
+  "page.users.filter.name": "Filter by name",
+  "page.users.button.create": "Create User",
+
+  "page.users.table.name": "Name",
+  "page.users.table.login": "Login",
+  "page.users.table.password": "Password",
+  "page.users.table.active": "Status",
+
+  "page.users.form.title.create": "Create New User",
+  "page.users.form.description.create": "Add a new user to the system",
+  "page.users.form.name": "Name",
+  "page.users.form.login": "Login",
+  "page.users.form.password": "Password",
+  "page.users.form.status": "Status"
+}

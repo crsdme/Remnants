@@ -1,0 +1,13 @@
+{
+  "title.page.login": "Вход в Remnant",
+  "description.page.login": "Вход в Remnant",
+
+  "title.page.currencies": "Валюты - Remnant",
+  "description.page.currencies": "Управление валютами в Remnant",
+
+  "title.page.units": "Единицы измерения - Remnant",
+  "description.page.units": "Управление единицами измерения в Remnant",
+
+  "title.page.users": "Пользователи - Remnant",
+  "description.page.users": "Управление пользователями в Remnant"
+}

@@ -34,11 +34,6 @@ export function setupAxiosInterceptors({
     response => response,
     async (error) => {
       const originalRequest = error.config
-      // sendToast({
-      //   message: error.response?.data?.error?.message || 'Request failed',
-      //   code: error.response?.data?.error?.code || 'INTERNAL_ERROR',
-      //   description: error.response?.data?.error?.description || '',
-      // })
 
       if (error.response?.status === 401 && !originalRequest._retry) {
         originalRequest._retry = true

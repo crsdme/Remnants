@@ -45,7 +45,6 @@ export function DataTable() {
   const [columnVisibility, setColumnVisibility] = useState({})
   const [rowSelection, setRowSelection] = useState({})
   const [sorters, setSorters] = useState({})
-  const [expandedRows, setExpandedRows] = useState({})
   const [batchEditMode, setBatchEditMode] = useState<'filter' | 'select'>('select')
   const [pagination, setPagination] = useState({
     current: 1,
@@ -57,7 +56,7 @@ export function DataTable() {
     { pagination, filters, sorters },
   )
 
-  const columns = useColumns({ setSorters, expandedRows, setExpandedRows })
+  const columns = useColumns({ setSorters })
   const languages = requestLanguages?.data?.data?.languages || []
   const languagesCount = requestLanguages?.data?.data?.languagesCount || 0
 
@@ -146,29 +145,6 @@ export function DataTable() {
               </TableCell>
             ))}
           </TableRow>
-          {expandedRows[row.id] && (
-            <TableRow>
-              <TableCell colSpan={columns.length} className="bg-muted/50">
-                <div className="p-4">
-                  <h4 className="font-semibold mb-2">{t('page.languages.table.details')}</h4>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <p className="text-sm text-muted-foreground">
-                        {t('page.languages.table.createdAt')}
-                      </p>
-                      <p>{row.original.createdAt.toString()}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-muted-foreground">
-                        {t('page.languages.table.updatedAt')}
-                      </p>
-                      <p>{row.original.updatedAt.toString()}</p>
-                    </div>
-                  </div>
-                </div>
-              </TableCell>
-            </TableRow>
-          )}
         </Fragment>
       ))
     }

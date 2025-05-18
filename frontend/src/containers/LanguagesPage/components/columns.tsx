@@ -15,8 +15,6 @@ import formatDate from '@/utils/helpers/formatDate'
 import {
   ArrowDown,
   ArrowUp,
-  ChevronDown,
-  ChevronRight,
   ChevronsUpDown,
   MoreHorizontal,
 } from 'lucide-react'
@@ -24,7 +22,7 @@ import { useTranslation } from 'react-i18next'
 
 const sortIcons = { asc: ArrowUp, desc: ArrowDown }
 
-export function useColumns({ setSorters, expandedRows, setExpandedRows }): ColumnDef<Language>[] {
+export function useColumns({ setSorters }): ColumnDef<Language>[] {
   const { t, i18n } = useTranslation()
   const languageContext = useLanguageContext()
 
@@ -168,31 +166,31 @@ export function useColumns({ setSorters, expandedRows, setExpandedRows }): Colum
       id: 'createdAt',
       accessorKey: 'createdAt',
       meta: {
-        title: t('page.languages.table.createdAt'),
+        title: t('table.createdAt'),
         filterable: true,
         filterType: 'date',
         sortable: true,
       },
-      header: ({ column }) => sortHeader(column, t('page.languages.table.createdAt')),
+      header: ({ column }) => sortHeader(column, t('table.createdAt')),
       cell: ({ row }) => formatDate(row.getValue('createdAt'), 'MMMM dd, yyyy', i18n.language),
     },
     {
       id: 'updatedAt',
       accessorKey: 'updatedAt',
       meta: {
-        title: t('page.languages.table.updatedAt'),
+        title: t('table.updatedAt'),
         filterable: true,
         filterType: 'date',
         sortable: true,
       },
-      header: ({ column }) => sortHeader(column, t('page.languages.table.updatedAt')),
+      header: ({ column }) => sortHeader(column, t('table.updatedAt')),
       cell: ({ row }) => formatDate(row.getValue('updatedAt'), 'MMMM dd, yyyy', i18n.language),
     },
     {
       id: 'action',
       size: 85,
       meta: {
-        title: t('page.languages.table.actions'),
+        title: t('table.actions'),
       },
       enableHiding: false,
       cell: ({ row }) => {
@@ -200,24 +198,6 @@ export function useColumns({ setSorters, expandedRows, setExpandedRows }): Colum
 
         return (
           <div className="flex items-center gap-2">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() =>
-                setExpandedRows(prev => ({
-                  ...prev,
-                  [row.id]: !prev[row.id],
-                }))}
-              className="h-8 w-8 p-0"
-            >
-              {expandedRows[row.id]
-                ? (
-                    <ChevronDown className="h-4 w-4" />
-                  )
-                : (
-                    <ChevronRight className="h-4 w-4" />
-                  )}
-            </Button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="h-8 w-8 p-0">
@@ -225,24 +205,24 @@ export function useColumns({ setSorters, expandedRows, setExpandedRows }): Colum
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuLabel>{t('page.languages.table.actions')}</DropdownMenuLabel>
+                <DropdownMenuLabel>{t('table.actions')}</DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={() => navigator.clipboard.writeText(language.id)}>
-                  {t('page.languages.table.copy')}
+                  {t('table.copy')}
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => languageContext.toggleModal(language)}>
-                  {t('page.languages.table.edit')}
+                  {t('table.edit')}
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   onClick={() => languageContext.duplicateLanguages({ ids: [language.id] })}
                 >
-                  {t('page.languages.table.duplicate')}
+                  {t('table.duplicate')}
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   onClick={() => languageContext.removeLanguage({ ids: [language.id] })}
                   variant="destructive"
                 >
-                  {t('page.languages.table.delete')}
+                  {t('table.delete')}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>

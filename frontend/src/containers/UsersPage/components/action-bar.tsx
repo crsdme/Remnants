@@ -10,14 +10,7 @@ import {
   FormMessage,
   Input,
 } from '@/components/ui'
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog'
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
 import { useUserContext } from '@/utils/contexts'
 import { zodResolver } from '@hookform/resolvers/zod'
 
@@ -125,114 +118,115 @@ export function ActionBar() {
           isLoading={isLoading}
           onSubmit={onImport}
         />
-        <Dialog
-          open={userContext.isModalOpen}
-          onOpenChange={() => !isLoading && userContext.toggleModal()}
-        >
-          <DialogTrigger asChild>
+        <Sheet open={userContext.isModalOpen} onOpenChange={() => !isLoading && userContext.toggleModal()}>
+          <SheetTrigger asChild>
             <Button onClick={() => userContext.toggleModal()} disabled={isLoading}>
               <Plus />
               {t('page.users.button.create')}
             </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>{t('page.users.modal.title.create')}</DialogTitle>
-              <DialogDescription>{t('page.users.modal.description.create')}</DialogDescription>
-            </DialogHeader>
-            <Form {...form}>
-              <form className="w-full space-y-4" onSubmit={form.handleSubmit(onSubmit)}>
-                <FormField
-                  control={form.control}
-                  name="name"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>
-                        {t('page.users.form.name')}
-                      </FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder={t('page.users.form.name')}
-                          className="w-full"
-                          {...field}
-                          disabled={isLoading}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="login"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>
-                        {t('page.users.form.login')}
-                      </FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder={t('page.users.form.login')}
-                          className="w-full"
-                          {...field}
-                          disabled={isLoading}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="password"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{t('page.users.form.password')}</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="password"
-                          placeholder={t('page.users.form.password')}
-                          className="w-full"
-                          {...field}
-                          disabled={isLoading}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="active"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
-                      <FormControl>
-                        <Checkbox
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
-                          disabled={isLoading}
-                        />
-                      </FormControl>
-                      <FormLabel>{t('page.users.form.active')}</FormLabel>
-                    </FormItem>
-                  )}
-                />
-                <div className="flex gap-2">
-                  <Button
-                    variant="secondary"
-                    onClick={() => userContext.toggleModal()}
-                    disabled={isLoading}
-                  >
-                    {t('page.users.button.cancel')}
-                  </Button>
-                  <Button type="submit" disabled={isLoading} loading={isLoading}>
-                    {t('page.users.button.submit')}
-                  </Button>
-                </div>
-              </form>
-            </Form>
-          </DialogContent>
-        </Dialog>
+          </SheetTrigger>
+          <SheetContent className="sm:max-w-xl w-full overflow-y-auto" side="right">
+            <SheetHeader>
+              <SheetTitle>{t('page.users.form.title.create')}</SheetTitle>
+              <SheetDescription>
+                {t('page.users.form.description.create')}
+              </SheetDescription>
+            </SheetHeader>
+            <div className="w-full px-4">
+              <Form {...form}>
+                <form className="w-full space-y-4" onSubmit={form.handleSubmit(onSubmit)}>
+                  <FormField
+                    control={form.control}
+                    name="name"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>
+                          {t('page.users.form.name')}
+                        </FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder={t('page.users.form.name')}
+                            className="w-full"
+                            {...field}
+                            disabled={isLoading}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="login"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>
+                          {t('page.users.form.login')}
+                        </FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder={t('page.users.form.login')}
+                            className="w-full"
+                            {...field}
+                            disabled={isLoading}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="password"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>{t('page.users.form.password')}</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="password"
+                            placeholder={t('page.users.form.password')}
+                            className="w-full"
+                            {...field}
+                            disabled={isLoading}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="active"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                        <FormControl>
+                          <Checkbox
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                            disabled={isLoading}
+                          />
+                        </FormControl>
+                        <FormLabel>{t('page.users.form.active')}</FormLabel>
+                      </FormItem>
+                    )}
+                  />
+                  <div className="flex gap-2">
+                    <Button
+                      variant="secondary"
+                      onClick={() => userContext.toggleModal()}
+                      disabled={isLoading}
+                    >
+                      {t('button.cancel')}
+                    </Button>
+                    <Button type="submit" disabled={isLoading} loading={isLoading}>
+                      {t('button.submit')}
+                    </Button>
+                  </div>
+                </form>
+              </Form>
+            </div>
+          </SheetContent>
+        </Sheet>
       </div>
     </div>
   )

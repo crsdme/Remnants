@@ -4,6 +4,7 @@ interface User {
   login: string
   password?: string
   active: boolean
+  seq: number
   createdAt: Date
   updatedAt: Date
 }

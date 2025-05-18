@@ -1,0 +1,13 @@
+{
+  "title.page.login": "Login - Remnant",
+  "description.page.login": "Login to Remnant application",
+
+  "title.page.currencies": "Currencies - Remnant",
+  "description.page.currencies": "Manage currencies in Remnant application",
+
+  "title.page.units": "Units - Remnant",
+  "description.page.units": "Manage units in Remnant application",
+
+  "title.page.users": "Users - Remnant",
+  "description.page.users": "Manage users in Remnant application"
+}
