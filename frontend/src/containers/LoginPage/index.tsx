@@ -1,7 +1,7 @@
+import LanguageButton from '@/components/LanguageButton'
+
+import ThemeButton from '@/components/ThemeButton'
 import LogoIcon from '@/components/ui/icons/logoIcon'
-
-import PlaceholderIcon from '@/components/ui/icons/placeholder'
-
 import { Helmet } from 'react-helmet'
 import { useTranslation } from 'react-i18next'
 import { LoginForm } from './components/login-form'
@@ -15,24 +15,27 @@ export function LoginPage() {
         <title>{t('title.page.login')}</title>
         <meta name="description" content={t('description.page.login')} />
       </Helmet>
-      <div className="grid min-h-svh lg:grid-cols-2">
-        <div className="flex flex-col gap-4 p-6 md:p-10">
-          <div className="flex justify-center gap-2 md:justify-start">
-            <a href="#" className="flex items-center gap-2 font-medium">
-              <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary text-primary-foreground">
-                <LogoIcon className="size-5" />
-              </div>
-              Remnant
-            </a>
+      {/* className="container relative hidden h-[100vh] flex-col items-center justify-center md:grid lg:max-w-none lg:grid-cols-2 lg:px-0" */}
+      <div className="relative flex h-[100vh] w-[100vw]">
+        <div className="relative hidden w-1/2 h-full flex-col bg-muted p-10 text-white dark:border-r lg:flex">
+          <div className="absolute inset-0 bg-zinc-900"></div>
+          <div className="relative z-20 flex items-center gap-4 text-lg font-medium">
+            <LogoIcon className="size-6" />
+            Remnant
           </div>
-          <div className="flex flex-1 items-center justify-center">
-            <div className="w-full max-w-xs">
-              <LoginForm />
-            </div>
+          <div className="relative z-20 mt-auto">
+            <blockquote className="space-y-2">
+              <p className="text-lg">{t('page.login.quote')}</p>
+              <footer className="text-sm">{t('page.login.quote.author')}</footer>
+            </blockquote>
           </div>
         </div>
-        <div className="relative hidden bg-muted lg:block">
-          <PlaceholderIcon className="absolute inset-0 h-full w-full object-cover dark:brightness-[0.2] dark:grayscale" />
+        <div className="flex items-center justify-center w-1/2 max-lg:w-full">
+          <LoginForm />
+          <div className="flex gap-2 absolute right-4 top-4 md:right-8 md:top-8">
+            <ThemeButton />
+            <LanguageButton />
+          </div>
         </div>
       </div>
     </>

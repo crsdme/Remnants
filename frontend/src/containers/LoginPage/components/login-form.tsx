@@ -26,6 +26,7 @@ import { useAuthContext } from '@/utils/contexts'
 
 import { cn } from '@/utils/lib/utils'
 import { zodResolver } from '@hookform/resolvers/zod'
+import { Barcode, QrCode } from 'lucide-react'
 import { useMemo } from 'react'
 import { useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
@@ -55,10 +56,10 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
     authContenxt.login(values)
   }
   return (
-    <div className={cn('flex flex-col gap-4', className)} {...props}>
+    <div className={cn('flex flex-col justify-center mx-auto gap-4 max-w-[360px] w-full px-4', className)} {...props}>
       <div className="flex flex-col items-center gap-2">
-        <h1 className="text-2xl font-bold text-center">Login to your account</h1>
-        <p className="text-balance text-sm text-muted-foreground text-center">Enter your email below to login to your account</p>
+        <h1 className="text-2xl font-bold text-center">{t('page.login.form.title')}</h1>
+        <p className="text-balance text-sm text-muted-foreground text-center">{t('page.login.form.description')}</p>
       </div>
       <Form {...form}>
         <form className="w-full space-y-4" onSubmit={form.handleSubmit(onSubmit)}>
@@ -67,7 +68,6 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
             name="login"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>{t('page.login.form.label.login')}</FormLabel>
                 <FormControl>
                   <Input
                     placeholder={t('page.login.form.label.login')}
@@ -85,7 +85,6 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
             name="password"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>{t('page.login.form.label.password')}</FormLabel>
                 <FormControl>
                   <Input
                     type="password"
@@ -104,11 +103,10 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
             name="type"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>{t('page.login.select.label.type')}</FormLabel>
                 <Select onValueChange={field.onChange} defaultValue={field.value}>
                   <FormControl className="w-full">
                     <SelectTrigger>
-                      <SelectValue placeholder={t('page.login.select.label.type')} />
+                      <SelectValue />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
@@ -129,6 +127,21 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
           </Button>
         </form>
       </Form>
+      <div className="relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t after:border-border">
+        <span className="relative z-10 bg-background px-2 text-muted-foreground">
+          {t('page.login.or')}
+        </span>
+      </div>
+      <div className="flex gap-2">
+        <Button variant="outline" className="w-[50%]">
+          <Barcode className="mr-2 h-4 w-4" />
+          {t('page.login.button.barcode.login')}
+        </Button>
+        <Button variant="outline" className="w-[50%]">
+          <QrCode className="mr-2 h-4 w-4" />
+          {t('page.login.button.qrcode.login')}
+        </Button>
+      </div>
     </div>
   )
 }

@@ -167,8 +167,8 @@ export async function upload(payload: UnitTypes.importUnitsParams): Promise<Unit
   const storedFile = await parseFile(file.path)
 
   const parsedUnits = storedFile.map(row => ({
-    names: extractLangMap(row, 'names'),
-    symbols: extractLangMap(row, 'symbols'),
+    names: extractLangMap(row, 'name'),
+    symbols: extractLangMap(row, 'symbol'),
     priority: toNumber(row.priority),
     active: toBoolean(row.active),
   }))
