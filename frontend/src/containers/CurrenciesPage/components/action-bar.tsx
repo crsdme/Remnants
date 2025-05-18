@@ -232,6 +232,7 @@ export function ActionBar() {
                   />
                   <div className="flex gap-2">
                     <Button
+                      type="button"
                       variant="secondary"
                       onClick={() => currencyContext.toggleModal()}
                       disabled={isLoading}

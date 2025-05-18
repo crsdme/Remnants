@@ -234,6 +234,7 @@ export function ActionBar() {
                   />
                   <div className="flex gap-2">
                     <Button
+                      type="button"
                       variant="secondary"
                       onClick={() => languageContext.toggleModal()}
                       disabled={isLoading}
