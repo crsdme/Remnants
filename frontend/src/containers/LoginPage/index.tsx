@@ -1,8 +1,9 @@
 import LogoIcon from '@/components/ui/icons/logoIcon'
+
+import PlaceholderIcon from '@/components/ui/icons/placeholder'
+
 import { Helmet } from 'react-helmet'
-
 import { useTranslation } from 'react-i18next'
-
 import { LoginForm } from './components/login-form'
 
 export function LoginPage() {
@@ -14,14 +15,25 @@ export function LoginPage() {
         <title>{t('title.page.login')}</title>
         <meta name="description" content={t('description.page.login')} />
       </Helmet>
-      <div className="flex min-h-svh flex-col items-center justify-center gap-6 bg-muted p-6 md:p-10">
-        <div className="flex items-center justify-center w-full max-w-sm gap-3">
-          <div className="flex h-10 w-10 items-center justify-center">
-            <LogoIcon />
+      <div className="grid min-h-svh lg:grid-cols-2">
+        <div className="flex flex-col gap-4 p-6 md:p-10">
+          <div className="flex justify-center gap-2 md:justify-start">
+            <a href="#" className="flex items-center gap-2 font-medium">
+              <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary text-primary-foreground">
+                <LogoIcon className="size-5" />
+              </div>
+              Remnant
+            </a>
           </div>
-          <p className="flex items-center gap-2 self-center font-medium text-2xl">Remnant</p>
+          <div className="flex flex-1 items-center justify-center">
+            <div className="w-full max-w-xs">
+              <LoginForm />
+            </div>
+          </div>
         </div>
-        <LoginForm />
+        <div className="relative hidden bg-muted lg:block">
+          <PlaceholderIcon className="absolute inset-0 h-full w-full object-cover dark:brightness-[0.2] dark:grayscale" />
+        </div>
       </div>
     </>
   )
