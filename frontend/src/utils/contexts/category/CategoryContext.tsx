@@ -167,7 +167,7 @@ export function CategoryProvider({ children }: CategoryProviderProps) {
     options: {
       onSuccess: ({ data }) => {
         downloadFile(data.fullPath, 'categories-template.xlsx')
-        toast.success(t(`response.title.ITEMS_EXPORTED`), { description: t(`response.description.ITEMS_EXPORTED`) })
+        toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description || ''}` })
       },
       onError: ({ response }) => {
         const error = response.data.error

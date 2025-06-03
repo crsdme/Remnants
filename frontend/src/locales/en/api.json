@@ -168,5 +168,8 @@
   "error.description.CATEGORIES_NOT_REMOVED": "Unable to remove selected categories",
 
   "error.title.CATEGORIES_NOT_BATCH_EDITED": "Batch edit failed",
-  "error.description.CATEGORIES_NOT_BATCH_EDITED": "Unable to batch edit categories"
+  "error.description.CATEGORIES_NOT_BATCH_EDITED": "Unable to batch edit categories",
+
+  "response.title.CATEGORIES_EXPORTED": "Categories exported",
+  "response.description.CATEGORIES_EXPORTED": "Categories have been exported successfully"
 }

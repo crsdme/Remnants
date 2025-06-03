@@ -168,5 +168,8 @@
   "error.description.CATEGORIES_NOT_REMOVED": "Не удалось удалить выбранные категории",
 
   "error.title.CATEGORIES_NOT_BATCH_EDITED": "Обновление категорий не завершено",
-  "error.description.CATEGORIES_NOT_BATCH_EDITED": "Не удалось обновить категории"
+  "error.description.CATEGORIES_NOT_BATCH_EDITED": "Не удалось обновить категории",
+
+  "response.title.CATEGORIES_EXPORTED": "Категории экспортированы",
+  "response.description.CATEGORIES_EXPORTED": "Категории были экспортированы успешно"
 }
