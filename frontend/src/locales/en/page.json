@@ -81,5 +81,22 @@
   "page.users.form.name": "Name",
   "page.users.form.login": "Login",
   "page.users.form.password": "Password",
-  "page.users.form.active": "Status"
+  "page.users.form.active": "Status",
+
+  "page.categories.title": "Categories",
+  "page.categories.description": "Manage categories here",
+  "page.categories.filter.names": "Filter by name",
+  "page.categories.button.create": "Create Category",
+
+  "page.categories.table.names": "Name",
+  "page.categories.table.priority": "Priority",
+  "page.categories.table.parent": "Parent",
+  "page.categories.table.active": "Active",
+
+  "page.categories.form.title.create": "Create New Category",
+  "page.categories.form.description.create": "Add a new category to the system",
+  "page.categories.form.names": "Name ({{language}})",
+  "page.categories.form.priority": "Priority",
+  "page.categories.form.active": "Active",
+  "page.categories.form.parent": "Parent"
 }

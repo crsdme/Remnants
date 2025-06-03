@@ -1,6 +1,6 @@
-import { postAuthLogout } from '@/api/requests'
-
 import { useMutation } from '@tanstack/react-query'
+
+import { postAuthLogout } from '@/api/requests'
 
 export function useAuthLogout(settings?: MutationSettings) {
   return useMutation({

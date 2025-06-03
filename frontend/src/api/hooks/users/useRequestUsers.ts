@@ -1,7 +1,7 @@
 import type { getUsersParams } from '@/api/requests'
 
-import { getUsers } from '@/api/requests'
 import { useQuery } from '@tanstack/react-query'
+import { getUsers } from '@/api/requests'
 
 export function useRequestUsers(params: getUsersParams, settings?: QuerySettings) {
   return useQuery({

@@ -1,5 +1,9 @@
-import { Button } from '@/components/ui/button'
+import { ChevronDown, Columns3, RefreshCcw, SearchIcon } from 'lucide-react'
 
+import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
+
+import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -10,10 +14,6 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Input } from '@/components/ui/input'
 
-import { ChevronDown, Columns3, RefreshCcw, SearchIcon } from 'lucide-react'
-import { useEffect, useState } from 'react'
-import { useTranslation } from 'react-i18next'
-
 export function ColumnVisibilityMenu({ table, tableId }) {
   const { t } = useTranslation()
   const [searchQuery, setSearchQuery] = useState('')
@@ -21,6 +21,10 @@ export function ColumnVisibilityMenu({ table, tableId }) {
 
   useEffect(() => {
     const savedVisibility = JSON.parse(localStorage.getItem(`${tableId}-columnVisibility`)) || {}
+    table.getAllColumns().forEach((column) => {
+      if (column.columnDef.meta?.alwaysHidden)
+        savedVisibility[column.id] = false
+    })
     // eslint-disable-next-line react-hooks-extra/no-direct-set-state-in-use-effect
     setColumnVisibility(savedVisibility)
     table.setColumnVisibility(savedVisibility)
@@ -29,10 +33,6 @@ export function ColumnVisibilityMenu({ table, tableId }) {
   useEffect(() => {
     localStorage.setItem(`${tableId}-columnVisibility`, JSON.stringify(columnVisibility))
   }, [columnVisibility, tableId])
-
-  const getColumnDisplayName = (column) => {
-    return column.columnDef.meta?.title || column.id
-  }
 
   return (
     <DropdownMenu>
@@ -59,7 +59,7 @@ export function ColumnVisibilityMenu({ table, tableId }) {
           .getAllColumns()
           .filter(column => column.getCanHide())
           .map((column) => {
-            const displayName = getColumnDisplayName(column)
+            const displayName = column.columnDef.meta?.title || column.id
 
             if (
               searchQuery

@@ -1,5 +1,7 @@
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { ChevronsUpDown, LogOut } from 'lucide-react'
 
+import { useTranslation } from 'react-i18next'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -15,8 +17,6 @@ import {
   useSidebar,
 } from '@/components/ui/sidebar'
 import { useAuthContext } from '@/utils/contexts'
-import { ChevronsUpDown, LogOut } from 'lucide-react'
-import { useTranslation } from 'react-i18next'
 
 export function NavUser({ user }) {
   const { isMobile } = useSidebar()

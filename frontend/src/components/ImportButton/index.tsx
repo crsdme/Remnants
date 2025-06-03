@@ -1,5 +1,9 @@
-import { Button, Label } from '@/components/ui'
+import { Download, Upload } from 'lucide-react'
 
+import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
+
+import { Button, Label } from '@/components/ui'
 import {
   Dialog,
   DialogContent,
@@ -9,10 +13,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog'
-import { Download, Upload } from 'lucide-react'
-
-import { useState } from 'react'
-import { useTranslation } from 'react-i18next'
 import { FileUpload } from '../FileUpload'
 
 interface ImportButtonProps {

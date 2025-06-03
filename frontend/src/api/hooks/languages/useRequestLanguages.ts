@@ -1,7 +1,7 @@
 import type { getLanguagesParams } from '@/api/requests'
 
-import { getLanguages } from '@/api/requests'
 import { useSuspenseQuery } from '@tanstack/react-query'
+import { getLanguages } from '@/api/requests'
 
 export function useRequestLanguages(params: getLanguagesParams) {
   return useSuspenseQuery({

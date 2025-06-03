@@ -16,7 +16,7 @@
 
   "component.tableSelection.selected": "{{count}} выбрано",
   "component.tableSelection.copyToClipboard": "Копировать в буфер обмена",
-  "component.tableSelection.downloadCSV": "Скачать CSV",
+  "component.tableSelection.downloadCSV": "Скачать таблицу",
   "component.tableSelection.delete": "Удалить",
   "component.tableSelection.duplicate": "Дублировать",
 
@@ -117,5 +117,9 @@
   "component.sidemenu.label.settings": "Настройки",
   "component.sidemenu.label.logs": "Логи",
   "component.sidemenu.label.documents": "Документы",
-  "component.sidemenu.label.logout": "Выйти"
+  "component.sidemenu.label.logout": "Выйти",
+
+  "component.asyncSelect.searchPlaceholder": "Поиск",
+  "component.asyncSelect.noResultsMessage": "Ничего не найдено",
+  "component.asyncSelect.placeholder": "Выберите"
 }

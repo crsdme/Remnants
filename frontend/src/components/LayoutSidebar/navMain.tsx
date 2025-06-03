@@ -1,4 +1,8 @@
 import type { LucideIcon } from 'lucide-react'
+import { ChevronRight } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
+import { Link } from 'react-router-dom'
+
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui'
 import {
   SidebarGroup,
@@ -10,10 +14,6 @@ import {
   SidebarMenuSubButton,
   SidebarMenuSubItem,
 } from '@/components/ui/sidebar'
-import { ChevronRight } from 'lucide-react'
-
-import { useTranslation } from 'react-i18next'
-import { Link } from 'react-router-dom'
 
 export function NavMain({
   items,

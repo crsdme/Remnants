@@ -14,7 +14,7 @@ interface BuildQueryOptions {
   }
 }
 
-export function buildQuery({ filters, rules, language = 'en', removed = true, batch = undefined }: BuildQueryOptions): Record<string, any> {
+export function buildQuery({ filters, rules, language = 'en', removed = true, batch = { ids: [] } }: BuildQueryOptions): Record<string, any> {
   let query: Record<string, any> = {}
 
   if (removed) {
@@ -54,17 +54,24 @@ export function buildQuery({ filters, rules, language = 'en', removed = true, ba
     }
   }
 
-  if (batch) {
+  if (batch.ids.length > 0) {
     query = {
-      $or: [query, { _id: { $in: batch.ids } }],
+      $and: [query, { _id: { $in: batch.ids } }],
     }
   }
 
   return query
 }
 
-export function buildSortQuery(sort: Record<string, string>): Record<string, any> {
+export function buildSortQuery(sort: Record<string, string>, isTree = false): Record<string, any> {
   let sortersQuery: Record<string, any> = { _id: 1 }
+
+  if (isTree) {
+    sortersQuery = { level: 1 }
+  }
+
+  if (!sort)
+    return sortersQuery
 
   if (Object.entries(sort).length > 0) {
     sortersQuery = Object.fromEntries(

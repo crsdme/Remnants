@@ -1,6 +1,7 @@
 import { Router } from 'express'
 import { getAuthMiddleware } from '../../middleware/auth.middleware'
 import authRoutes from './auth.route'
+import categoryRoutes from './category.route'
 import currencyRoutes from './currency.route'
 import languageRoutes from './language.route'
 import unitRoutes from './unit.route'
@@ -14,5 +15,6 @@ router.use('/currencies', authenticateJWT, currencyRoutes)
 router.use('/languages', authenticateJWT, languageRoutes)
 router.use('/units', authenticateJWT, unitRoutes)
 router.use('/users', authenticateJWT, userRoutes)
+router.use('/categories', authenticateJWT, categoryRoutes)
 
 export default router

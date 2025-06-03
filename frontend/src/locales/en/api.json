@@ -138,5 +138,35 @@
   "error.description.INVALID_CREDENTIALS": "Invalid email or password",
 
   "error.title.INTERNAL_ERROR": "Internal error",
-  "error.description.INTERNAL_ERROR": "An internal server error occurred"
+  "error.description.INTERNAL_ERROR": "An internal server error occurred",
+
+  "response.title.CATEGORIES_FETCHED": "Categories fetched",
+  "response.description.CATEGORIES_FETCHED": "Categories list successfully fetched",
+
+  "response.title.CATEGORY_CREATED": "Category created",
+  "response.description.CATEGORY_CREATED": "New category has been created",
+
+  "response.title.CATEGORY_EDITED": "Category edited",
+  "response.description.CATEGORY_EDITED": "Category has been updated",
+
+  "response.title.CATEGORIES_REMOVED": "Categories removed",
+  "response.description.CATEGORIES_REMOVED": "Selected categories have been deleted",
+
+  "response.title.CATEGORIES_BATCH_EDITED": "Categories edited",
+  "response.description.CATEGORIES_BATCH_EDITED": "Batch category update completed",
+
+  "response.title.CATEGORIES_IMPORTED": "Categories imported",
+  "response.description.CATEGORIES_IMPORTED": "Categories have been imported successfully",
+
+  "response.title.CATEGORIES_DUPLICATED": "Categories duplicated",
+  "response.description.CATEGORIES_DUPLICATED": "Categories have been duplicated",
+
+  "error.title.CATEGORY_NOT_EDITED": "Category not edited",
+  "error.description.CATEGORY_NOT_EDITED": "Unable to edit category",
+
+  "error.title.CATEGORIES_NOT_REMOVED": "Categories not removed",
+  "error.description.CATEGORIES_NOT_REMOVED": "Unable to remove selected categories",
+
+  "error.title.CATEGORIES_NOT_BATCH_EDITED": "Batch edit failed",
+  "error.description.CATEGORIES_NOT_BATCH_EDITED": "Unable to batch edit categories"
 }

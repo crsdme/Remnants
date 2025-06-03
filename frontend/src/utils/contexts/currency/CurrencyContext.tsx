@@ -1,6 +1,15 @@
 import type { ReactNode } from 'react'
 import type { UseFormReturn } from 'react-hook-form'
 
+import { zodResolver } from '@hookform/resolvers/zod'
+
+import { useQueryClient } from '@tanstack/react-query'
+import { createContext, useContext, useMemo, useState } from 'react'
+
+import { useForm } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
+import { toast } from 'sonner'
+import { z } from 'zod'
 import {
   useBatchCurrency,
   useCreateCurrency,
@@ -9,15 +18,6 @@ import {
   useImportCurrencies,
   useRemoveCurrency,
 } from '@/api/hooks/'
-
-import { zodResolver } from '@hookform/resolvers/zod'
-import { useQueryClient } from '@tanstack/react-query'
-
-import { createContext, useContext, useMemo, useState } from 'react'
-import { useForm } from 'react-hook-form'
-import { useTranslation } from 'react-i18next'
-import { toast } from 'sonner'
-import { z } from 'zod'
 
 interface CurrencyContextType {
   selectedCurrency: Currency
@@ -179,7 +179,7 @@ export function CurrencyProvider({ children }: CurrencyProviderProps) {
     setIsModalOpen(false)
     setIsLoading(false)
     setSelectedCurrency(null)
-    form.reset({})
+    form.reset()
   }
 
   const toggleModal = currency => (isModalOpen ? closeModal() : openModal(currency))

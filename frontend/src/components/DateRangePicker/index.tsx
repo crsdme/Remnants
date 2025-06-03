@@ -1,16 +1,16 @@
 import type { HTMLAttributes } from 'react'
 import type { DateRange } from 'react-day-picker'
 
-import { Button } from '@/components/ui/button'
-import { Calendar } from '@/components/ui/calendar'
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import { cn } from '@/utils/lib/utils'
 import { endOfDay, format, startOfDay } from 'date-fns'
-
 import { enUS, ru } from 'date-fns/locale'
 import { CalendarIcon } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
+
+import { Button } from '@/components/ui/button'
+import { Calendar } from '@/components/ui/calendar'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { cn } from '@/utils/lib/utils'
 
 type DateRangePickerProps = Omit<HTMLAttributes<HTMLDivElement>, 'onChange'> & {
   onSelect?: (date: DateRange | undefined) => void

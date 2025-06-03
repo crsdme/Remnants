@@ -1,9 +1,9 @@
-import LanguageButton from '@/components/LanguageButton'
+import { Helmet } from 'react-helmet'
 
+import { useTranslation } from 'react-i18next'
+import LanguageButton from '@/components/LanguageButton'
 import ThemeButton from '@/components/ThemeButton'
 import LogoIcon from '@/components/ui/icons/logoIcon'
-import { Helmet } from 'react-helmet'
-import { useTranslation } from 'react-i18next'
 import { LoginForm } from './components/login-form'
 
 export function LoginPage() {

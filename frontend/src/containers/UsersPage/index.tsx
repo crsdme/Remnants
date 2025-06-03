@@ -1,7 +1,7 @@
-import { UserProvider } from '@/utils/contexts'
 import { Helmet } from 'react-helmet'
-
 import { useTranslation } from 'react-i18next'
+
+import { UserProvider } from '@/utils/contexts'
 import { ActionBar } from './components/action-bar'
 
 import { DataTable } from './components/data-table'

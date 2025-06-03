@@ -16,7 +16,7 @@
 
   "component.tableSelection.selected": "{{count}} selected",
   "component.tableSelection.copyToClipboard": "Copy to clipboard",
-  "component.tableSelection.downloadCSV": "Download CSV",
+  "component.tableSelection.downloadCSV": "Download table",
   "component.tableSelection.delete": "Delete",
   "component.tableSelection.duplicate": "Duplicate",
 

@@ -1,7 +1,14 @@
 import type { ColumnDef } from '@tanstack/react-table'
 
-import { Button, Input } from '@/components/ui'
+import { zodResolver } from '@hookform/resolvers/zod'
 
+import { Check, Filter, MousePointerClick, Pencil, Plus, X, XCircle } from 'lucide-react'
+import { useState } from 'react'
+import { useForm } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
+import { z } from 'zod'
+import { AsyncSelect } from '@/components/AsyncSelect'
+import { Button, Input } from '@/components/ui'
 import { Form, FormField, FormItem, FormMessage } from '@/components/ui/form'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import {
@@ -12,18 +19,11 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
-import { zodResolver } from '@hookform/resolvers/zod'
-
-import { Check, Filter, MousePointerClick, Pencil, Plus, X, XCircle } from 'lucide-react'
-import { useState } from 'react'
-import { useForm } from 'react-hook-form'
-import { useTranslation } from 'react-i18next'
-import { z } from 'zod'
 
 interface BatchEditItem {
   id: string
   column: string
-  value: string | number | boolean | Record<string, string>
+  value: string | number | boolean | Record<string, string> | { value: string, label: string }
 }
 
 interface BatchEditProps {
@@ -38,7 +38,13 @@ interface BatchEditProps {
 const batchEditItemSchema = z.object({
   id: z.string(),
   column: z.string(),
-  value: z.union([z.string(), z.number(), z.boolean(), z.record(z.string())]),
+  value: z.union([
+    z.string(),
+    z.number(),
+    z.boolean(),
+    z.record(z.string()),
+    z.object({ value: z.string(), label: z.string() }),
+  ]),
 })
 
 const formSchema = z.object({
@@ -51,7 +57,8 @@ type FormItemType = z.infer<typeof batchEditItemSchema>
 interface ColumnMeta {
   title: string
   batchEdit: boolean
-  batchEditType: 'textMultiLanguage' | 'number' | 'boolean' | 'text'
+  batchEditType: 'textMultiLanguage' | 'number' | 'boolean' | 'text' | 'asyncValue'
+  loadOptions?: (inputValue: string) => Promise<Array<{ value: string, label: string }>>
 }
 
 export function BatchEdit({
@@ -83,6 +90,7 @@ export function BatchEdit({
         id: column.id,
         label: (column.meta as ColumnMeta)?.title || column.id,
         type: (column.meta as ColumnMeta)?.batchEditType,
+        loadOptions: (column.meta as ColumnMeta)?.loadOptions,
         disabled: isDisabled,
       }
     })
@@ -178,6 +186,23 @@ export function BatchEdit({
               <SelectItem value="false">{t('component.batchEdit.false')}</SelectItem>
             </SelectContent>
           </Select>
+        )
+      case 'asyncValue':
+        return (
+          <AsyncSelect
+            fetcher={column.loadOptions}
+            value={(item.value as { value: string, label: string })?.value}
+            onChange={(value) => {
+              const currentItems = form.getValues('items')
+              currentItems[index].value = value
+              form.setValue('items', currentItems)
+            }}
+            getOptionValue={option => option.value}
+            getDisplayValue={option => option.label}
+            renderOption={option => option.label}
+            placeholder={t('component.batchEdit.selectValue')}
+            width="100%"
+          />
         )
       case 'textMultiLanguage':
         return (

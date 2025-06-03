@@ -1,7 +1,7 @@
 import type { createCategoriesParams } from '@/api/requests'
 
-import { createCategory } from '@/api/requests'
 import { useMutation } from '@tanstack/react-query'
+import { createCategory } from '@/api/requests'
 
 export function useCreateCategory(settings?: MutationSettings<createCategoriesParams, typeof createCategory>) {
   return useMutation({

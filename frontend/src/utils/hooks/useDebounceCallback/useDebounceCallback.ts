@@ -1,6 +1,6 @@
-import { debounce } from '@/utils/lib'
-
 import { useMemo } from 'react'
+
+import { debounce } from '@/utils/lib'
 
 import { useEvent } from '../useEvent/useEvent'
 

@@ -1,20 +1,20 @@
+import { zodResolver } from '@hookform/resolvers/zod'
+import { Barcode, QrCode } from 'lucide-react'
+import { useMemo } from 'react'
+import { useForm } from 'react-hook-form'
+
+import { useTranslation } from 'react-i18next'
+import { z } from 'zod'
 import {
   Button,
   Form,
   FormControl,
   FormField,
   FormItem,
-  FormLabel,
   FormMessage,
   Input,
 } from '@/components/ui'
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card'
+
 import {
   Select,
   SelectContent,
@@ -23,14 +23,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { useAuthContext } from '@/utils/contexts'
-
 import { cn } from '@/utils/lib/utils'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { Barcode, QrCode } from 'lucide-react'
-import { useMemo } from 'react'
-import { useForm } from 'react-hook-form'
-import { useTranslation } from 'react-i18next'
-import { z } from 'zod'
 
 export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRef<'div'>) {
   const authContenxt = useAuthContext()

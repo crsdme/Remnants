@@ -1,5 +1,6 @@
-import { Button } from '@/components/ui/button'
+import { useTranslation } from 'react-i18next'
 
+import { Button } from '@/components/ui/button'
 import {
   Pagination,
   PaginationContent,
@@ -8,7 +9,6 @@ import {
   PaginationPrevious,
 } from '@/components/ui/pagination'
 import { Select, SelectContent, SelectItem, SelectTrigger } from '@/components/ui/select'
-import { useTranslation } from 'react-i18next'
 
 export default function TablePagination({
   pagination,

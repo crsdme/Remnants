@@ -81,5 +81,22 @@
   "page.users.form.name": "Имя",
   "page.users.form.login": "Логин",
   "page.users.form.password": "Пароль",
-  "page.users.form.active": "Статус"
+  "page.users.form.active": "Статус",
+
+  "page.categories.title": "Категории",
+  "page.categories.description": "Управление категориями",
+  "page.categories.filter.names": "Фильтр по названию",
+  "page.categories.button.create": "Создать категорию",
+
+  "page.categories.table.names": "Название",
+  "page.categories.table.priority": "Приоритет",
+  "page.categories.table.parent": "Родитель",
+  "page.categories.table.active": "Активность",
+
+  "page.categories.form.title.create": "Создание новой категории",
+  "page.categories.form.description.create": "Добавить новую категорию в систему",
+  "page.categories.form.names": "Название ({{language}})",
+  "page.categories.form.priority": "Приоритет",
+  "page.categories.form.active": "Активная",
+  "page.categories.form.parent": "Родитель"
 }

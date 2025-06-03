@@ -1,9 +1,15 @@
 import type { ColumnDef } from '@tanstack/react-table'
 
+import { zodResolver } from '@hookform/resolvers/zod'
+import { Check, Plus, SortAsc, X, XCircle } from 'lucide-react'
+import { useState } from 'react'
+
+import { useForm } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
+import { z } from 'zod'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Form, FormField, FormItem, FormMessage } from '@/components/ui/form'
-
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import {
   Select,
@@ -12,12 +18,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { Check, Plus, SortAsc, X, XCircle } from 'lucide-react'
-import { useState } from 'react'
-import { useForm } from 'react-hook-form'
-import { useTranslation } from 'react-i18next'
-import { z } from 'zod'
 
 interface SortItem {
   id: string

@@ -1,7 +1,7 @@
 import type { batchCurrencyParams } from '@/api/requests'
 
-import { batchCurrency } from '@/api/requests'
 import { useMutation } from '@tanstack/react-query'
+import { batchCurrency } from '@/api/requests'
 
 export function useBatchCurrency(settings?: MutationSettings<batchCurrencyParams, typeof batchCurrency>) {
   return useMutation({

@@ -12,5 +12,8 @@
   "description.page.users": "Управление пользователями в Remnant",
 
   "title.page.languages": "Языки - Remnant",
-  "description.page.languages": "Управление языками в Remnant"
+  "description.page.languages": "Управление языками в Remnant",
+
+  "title.page.categories": "Категории - Remnant",
+  "description.page.categories": "Управление категориями в Remnant"
 }

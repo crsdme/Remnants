@@ -83,6 +83,4 @@ UserSchema.methods.removeSensitiveData = function (options: { exclude?: string[]
   return user
 }
 
-const UserModel = mongoose.model<User>('User', UserSchema)
-
-export { UserModel }
+export const UserModel = mongoose.model<User>('User', UserSchema)

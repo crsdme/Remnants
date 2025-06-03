@@ -1,12 +1,12 @@
+import { useTranslation } from 'react-i18next'
+import { Outlet } from 'react-router-dom'
+
 import LanguageButton from '@/components/LanguageButton'
 import { LayoutSidebar } from '@/components/LayoutSidebar'
-
 import ThemeButton from '@/components/ThemeButton'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Separator } from '@/components/ui/separator'
 import { SidebarInset, SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar'
-import { useTranslation } from 'react-i18next'
-import { Outlet } from 'react-router-dom'
 
 export default function Layout() {
   const { t } = useTranslation()

@@ -1,7 +1,7 @@
 import type { getUnitsParams } from '@/api/requests'
 
-import { getUnits } from '@/api/requests'
 import { useQuery } from '@tanstack/react-query'
+import { getUnits } from '@/api/requests'
 
 export function useRequestUnits(params: getUnitsParams, settings?: QuerySettings) {
   return useQuery({

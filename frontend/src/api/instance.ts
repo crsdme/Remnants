@@ -1,6 +1,6 @@
-import { backendUrl } from '@/utils/constants'
-
 import axios from 'axios'
+
+import { backendUrl } from '@/utils/constants'
 
 export const api = axios.create({
   baseURL: `${backendUrl}api/`,

@@ -4,6 +4,7 @@ import '../docs/modules/currencies.openapi'
 import '../docs/modules/languages.openapi'
 import '../docs/modules/units.openapi'
 import '../docs/modules/users.openapi'
+import '../docs/modules/categories.openapi'
 
 const generator = new OpenApiGeneratorV31(registry.definitions)
 

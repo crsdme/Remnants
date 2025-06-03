@@ -1,9 +1,9 @@
 import type { ReactNode } from 'react'
-import { Toaster } from '@/components/ui/sonner'
-
 import { createContext, useContext, useEffect, useState } from 'react'
 
 import { useTranslation } from 'react-i18next'
+
+import { Toaster } from '@/components/ui/sonner'
 
 const LOCAL_STORAGE_KEY = 'theme'
 

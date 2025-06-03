@@ -1,10 +1,11 @@
-import LogoIcon from '@/components/ui/icons/logoIcon'
-import { useAuthContext } from '@/utils/contexts'
-
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
+import LogoIcon from '@/components/ui/icons/logoIcon'
+
+import { useAuthContext } from '@/utils/contexts'
 
 import Layout from '../components/Layout'
 import {
+  CategoriesPage,
   CurrenciesPage,
   DashboardPage,
   LanguagesPage,
@@ -37,6 +38,8 @@ export default function App() {
         <Route path="/" element={authContenxt.state.isAuthenticated ? <Layout /> : <LoginPage />}>
           <Route path="/" element={<DashboardPage />} />
           <Route path="/test" element={<TestPage />} />
+
+          <Route path="/categories" element={<CategoriesPage />} />
 
           <Route path="/users" element={<UsersPage />} />
 

@@ -1,3 +1,6 @@
+import { ClipboardList, Copy, Download, MoreVertical, Trash } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
+
 import { Button } from '@/components/ui'
 import {
   DropdownMenu,
@@ -5,9 +8,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-
-import { ClipboardList, Copy, Download, MoreVertical, Trash } from 'lucide-react'
-import { useTranslation } from 'react-i18next'
 
 interface SelectionDropdownProps {
   selectedCount: number

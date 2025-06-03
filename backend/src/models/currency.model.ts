@@ -91,6 +91,4 @@ CurrencySchema.pre('save', async function (next) {
   next()
 })
 
-const CurrencyModel = mongoose.model<Currency>('Currency', CurrencySchema)
-
-export { CurrencyModel }
+export const CurrencyModel = mongoose.model<Currency>('Currency', CurrencySchema)

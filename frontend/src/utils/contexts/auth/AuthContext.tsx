@@ -1,11 +1,11 @@
 import type { ReactNode } from 'react'
-import { useAuthLogin, useAuthLogout, useRefreshToken } from '@/api/hooks'
-
-import { setupAxiosInterceptors } from '@/api/instance'
-
 import { createContext, useContext, useEffect, useMemo, useReducer, useState } from 'react'
+
 import { useTranslation } from 'react-i18next'
+
 import { toast } from 'sonner'
+import { useAuthLogin, useAuthLogout, useRefreshToken } from '@/api/hooks'
+import { setupAxiosInterceptors } from '@/api/instance'
 
 interface AuthState {
   isAuthenticated: boolean

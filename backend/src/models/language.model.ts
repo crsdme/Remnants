@@ -66,6 +66,4 @@ LanguageSchema.pre('save', async function (next) {
   next()
 })
 
-const LanguageModel = mongoose.model<Language>('Language', LanguageSchema)
-
-export { LanguageModel }
+export const LanguageModel = mongoose.model<Language>('Language', LanguageSchema)

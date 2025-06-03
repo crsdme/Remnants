@@ -90,6 +90,4 @@ UnitSchema.pre('save', async function (next) {
   next()
 })
 
-const UnitModel = mongoose.model<Unit>('Unit', UnitSchema)
-
-export { UnitModel }
+export const UnitModel = mongoose.model<Unit>('Unit', UnitSchema)

@@ -1,7 +1,7 @@
 import type { importUsersParams } from '@/api/requests'
 
-import { importUsers } from '@/api/requests'
 import { useMutation } from '@tanstack/react-query'
+import { importUsers } from '@/api/requests'
 
 export function useImportUsers(settings?: MutationSettings<importUsersParams, typeof importUsers>) {
   return useMutation({

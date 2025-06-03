@@ -1,5 +1,9 @@
-import { Badge, Button, Separator } from '@/components/ui'
+import { Check, ChevronDown, RefreshCcw, X } from 'lucide-react'
 
+import * as React from 'react'
+import { useTranslation } from 'react-i18next'
+
+import { Badge, Button, Separator } from '@/components/ui'
 import {
   Command,
   CommandEmpty,
@@ -9,11 +13,7 @@ import {
   CommandList,
 } from '@/components/ui/command'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-
 import { cn } from '@/utils/lib/utils'
-import { Check, ChevronDown, RefreshCcw, X } from 'lucide-react'
-import * as React from 'react'
-import { useTranslation } from 'react-i18next'
 
 export interface Option {
   value: string

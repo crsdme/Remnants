@@ -138,5 +138,35 @@
   "error.description.INVALID_CREDENTIALS": "Неверный логин или пароль",
 
   "error.title.INTERNAL_ERROR": "Внутренняя ошибка",
-  "error.description.INTERNAL_ERROR": "Произошла внутренняя ошибка сервера"
+  "error.description.INTERNAL_ERROR": "Произошла внутренняя ошибка сервера",
+
+  "response.title.CATEGORIES_FETCHED": "Категории получены",
+  "response.description.CATEGORIES_FETCHED": "Список категорий успешно получен",
+
+  "response.title.CATEGORY_CREATED": "Категория создана",
+  "response.description.CATEGORY_CREATED": "Новая категория была создана",
+
+  "response.title.CATEGORY_EDITED": "Категория обновлена",
+  "response.description.CATEGORY_EDITED": "Категория была обновлена",
+
+  "response.title.CATEGORIES_REMOVED": "Категории удалены",
+  "response.description.CATEGORIES_REMOVED": "Выбранные категории были удалены",
+
+  "response.title.CATEGORIES_BATCH_EDITED": "Категории обновлены",
+  "response.description.CATEGORIES_BATCH_EDITED": "Обновление категорий завершено",
+
+  "response.title.CATEGORIES_IMPORTED": "Категории импортированы",
+  "response.description.CATEGORIES_IMPORTED": "Категории были импортированы успешно",
+
+  "response.title.CATEGORIES_DUPLICATED": "Категории дублированы",
+  "response.description.CATEGORIES_DUPLICATED": "Категории были дублированы",
+
+  "error.title.CATEGORY_NOT_EDITED": "Категория не обновлена",
+  "error.description.CATEGORY_NOT_EDITED": "Не удалось обновить категорию",
+
+  "error.title.CATEGORIES_NOT_REMOVED": "Категории не удалены",
+  "error.description.CATEGORIES_NOT_REMOVED": "Не удалось удалить выбранные категории",
+
+  "error.title.CATEGORIES_NOT_BATCH_EDITED": "Обновление категорий не завершено",
+  "error.description.CATEGORIES_NOT_BATCH_EDITED": "Не удалось обновить категории"
 }

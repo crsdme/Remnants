@@ -1,17 +1,5 @@
 import type { Column, ColumnDef } from '@tanstack/react-table'
 
-import { Badge, Button, Checkbox } from '@/components/ui'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
-
-import { useUserContext } from '@/utils/contexts'
-import formatDate from '@/utils/helpers/formatDate'
 import {
   ArrowDown,
   ArrowUp,
@@ -21,6 +9,18 @@ import {
   MoreHorizontal,
 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
+
+import { Badge, Button, Checkbox } from '@/components/ui'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
+import { useUserContext } from '@/utils/contexts'
+import formatDate from '@/utils/helpers/formatDate'
 
 const sortIcons = { asc: ArrowUp, desc: ArrowDown }
 

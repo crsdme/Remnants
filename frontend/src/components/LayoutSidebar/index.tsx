@@ -1,15 +1,3 @@
-import LogoIcon from '@/components/ui/icons/logoIcon'
-
-import {
-  Sidebar,
-  SidebarContent,
-  SidebarFooter,
-  SidebarHeader,
-  SidebarMenuButton,
-  SidebarRail,
-} from '@/components/ui/sidebar'
-import { useAuthContext } from '@/utils/contexts'
-
 import {
   Banknote,
   BarChart3,
@@ -29,6 +17,18 @@ import {
 
 import * as React from 'react'
 import { useTranslation } from 'react-i18next'
+
+import LogoIcon from '@/components/ui/icons/logoIcon'
+
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarHeader,
+  SidebarMenuButton,
+  SidebarRail,
+} from '@/components/ui/sidebar'
+import { useAuthContext } from '@/utils/contexts'
 
 import { NavMain } from './navMain'
 

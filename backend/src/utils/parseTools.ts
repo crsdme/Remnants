@@ -55,10 +55,21 @@ function parseJSON(filePath: string): Promise<any[]> {
 }
 
 export function toBoolean(value?: string): boolean {
-  return value?.toLowerCase() === 'true'
+  if (!value)
+    return false
+
+  return value.toString().toLowerCase() === 'true'
 }
 
 export const toNumber = (value?: string): number => Number(value ?? 0) || 0
+
+export function getId(value?: string): string {
+  if (!value)
+    return ''
+
+  const match = value.match(/\(([\w-]{36})\)$/)
+  return match ? match[1] : ''
+}
 
 export function extractLangMap(row: Record<string, string>, prefix: string): Record<string, string> {
   const result: Record<string, string> = {}
