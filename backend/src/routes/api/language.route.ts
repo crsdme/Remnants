@@ -10,7 +10,7 @@ router.post('/create', validateBodyRequest(createLanguageSchema), LanguageContro
 router.post('/edit', validateBodyRequest(editLanguageSchema), LanguageController.edit)
 router.post('/remove', validateBodyRequest(removeLanguageSchema), LanguageController.remove)
 router.post('/batch', validateBodyRequest(batchLanguageSchema), LanguageController.batch)
-router.post('/import', createUploadMiddleware({ fieldName: 'file', storageKey: 'import' }), validateUpload('file'), LanguageController.upload)
+router.post('/import', createUploadMiddleware({ fieldName: 'file', storageKey: 'import' }), validateUpload('file'), LanguageController.importHandler)
 router.post('/duplicate', validateBodyRequest(duplicateLanguageSchema), LanguageController.duplicate)
 
 export default router

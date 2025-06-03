@@ -47,8 +47,8 @@ export function UserProvider({ children }: UserProviderProps) {
 
   const formSchema = useMemo(() =>
     z.object({
-      name: z.string({ required_error: t('form.errors.required') }).min(3, { message: t('form.errors.min_length', { count: 3 }) }),
-      login: z.string({ required_error: t('form.errors.required') }).min(3, { message: t('form.errors.min_length', { count: 3 }) }),
+      name: z.string({ required_error: t('form.errors.required') }).min(3, { message: t('form.errors.min_length', { count: 3 }) }).trim(),
+      login: z.string({ required_error: t('form.errors.required') }).min(3, { message: t('form.errors.min_length', { count: 3 }) }).trim(),
       password: z.string().optional(),
       active: z.boolean().default(true),
     }), [t])

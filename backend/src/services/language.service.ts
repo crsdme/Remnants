@@ -176,7 +176,7 @@ export async function batch(payload: LanguageTypes.batchLanguagesParams): Promis
   }
 }
 
-export async function upload(payload: LanguageTypes.importLanguagesParams): Promise<LanguageTypes.importLanguagesResult> {
+export async function importHandler(payload: LanguageTypes.importLanguagesParams): Promise<LanguageTypes.importLanguagesResult> {
   const { file } = payload
 
   const storedFile = await parseFile(file.path)

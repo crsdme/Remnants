@@ -138,7 +138,7 @@ export function DataTable() {
     )
   }
 
-  const handleBatchExport = () => {
+  const handleBulkExport = () => {
     const filteredData = languages.filter((_, index) => rowSelection[index])
     const formatedItems = filteredData.map(item => ({
       name: item.name,
@@ -185,7 +185,7 @@ export function DataTable() {
     setRowSelection({})
   }
 
-  const handleBatchRemove = () => {
+  const handleBulkRemove = () => {
     const ids = languages.filter((_, index) => rowSelection[index]).map(item => item.id)
     languageContext.removeLanguage({ ids })
     setRowSelection({})
@@ -199,7 +199,7 @@ export function DataTable() {
     setPagination(state => ({ ...state, ...value }))
   }, 50)
 
-  const handleBatchDuplicate = () => {
+  const handleBulkDuplicate = () => {
     const ids = languages.filter((_, index) => rowSelection[index]).map(item => item.id)
     languageContext.duplicateLanguages({ ids })
     setRowSelection({})
@@ -240,9 +240,9 @@ export function DataTable() {
         <div className="flex gap-2">
           <TableSelectionDropdown
             selectedCount={Object.keys(rowSelection).length}
-            onExport={handleBatchExport}
-            onRemove={handleBatchRemove}
-            onDuplicate={handleBatchDuplicate}
+            onExport={handleBulkExport}
+            onRemove={handleBulkRemove}
+            onDuplicate={handleBulkDuplicate}
           />
           <ColumnVisibilityMenu table={table} tableId="language" />
         </div>

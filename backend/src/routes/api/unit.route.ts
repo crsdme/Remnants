@@ -10,7 +10,7 @@ router.post('/create', validateBodyRequest(createUnitSchema), UnitController.cre
 router.post('/edit', validateBodyRequest(editUnitSchema), UnitController.edit)
 router.post('/remove', validateBodyRequest(removeUnitSchema), UnitController.remove)
 router.post('/batch', validateBodyRequest(batchUnitSchema), UnitController.batch)
-router.post('/import', createUploadMiddleware({ fieldName: 'file', storageKey: 'import' }), validateUpload('file'), UnitController.upload)
+router.post('/import', createUploadMiddleware({ fieldName: 'file', storageKey: 'import' }), validateUpload('file'), UnitController.importHandler)
 router.post('/duplicate', validateBodyRequest(duplicateUnitSchema), UnitController.duplicate)
 
 export default router

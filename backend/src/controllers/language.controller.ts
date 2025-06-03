@@ -57,13 +57,13 @@ export async function batch(req: Request, res: Response, next: NextFunction) {
   }
 }
 
-export async function upload(req: Request, res: Response, next: NextFunction) {
+export async function importHandler(req: Request, res: Response, next: NextFunction) {
   try {
     if (!req.file) {
       throw new HttpError(400, 'No file uploaded', 'NO_FILE_UPLOADED')
     }
 
-    const serviceResponse = await LanguageService.upload({ file: req.file })
+    const serviceResponse = await LanguageService.importHandler({ file: req.file })
 
     res.status(200).json(serviceResponse)
   }

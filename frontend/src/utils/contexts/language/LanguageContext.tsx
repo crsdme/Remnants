@@ -40,8 +40,8 @@ export function LanguageProvider({ children }: LanguageProviderProps) {
 
   const formSchema = useMemo(() =>
     z.object({
-      name: z.string({ required_error: t('form.errors.required') }).min(3, { message: t('form.errors.min_length', { count: 3 }) }),
-      code: z.string({ required_error: t('form.errors.required') }).min(3, { message: t('form.errors.min_length', { count: 3 }) }),
+      name: z.string({ required_error: t('form.errors.required') }).min(3, { message: t('form.errors.min_length', { count: 3 }) }).trim(),
+      code: z.string({ required_error: t('form.errors.required') }).min(3, { message: t('form.errors.min_length', { count: 3 }) }).trim(),
       priority: z.number().default(0),
       active: z.boolean().default(true),
       main: z.boolean().default(false),

@@ -68,13 +68,13 @@ export async function duplicate(req: Request, res: Response, next: NextFunction)
   }
 }
 
-export async function upload(req: Request, res: Response, next: NextFunction) {
+export async function importHandler(req: Request, res: Response, next: NextFunction) {
   try {
     if (!req.file) {
       throw new HttpError(400, 'No file uploaded', 'NO_FILE_UPLOADED')
     }
 
-    const serviceResponse = await CurrencyService.upload({ file: req.file })
+    const serviceResponse = await CurrencyService.importHandler({ file: req.file })
 
     res.status(200).json(serviceResponse)
   }

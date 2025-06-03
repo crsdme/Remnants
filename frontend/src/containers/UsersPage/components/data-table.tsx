@@ -51,7 +51,6 @@ export function DataTable() {
 
   const requestUsers = useRequestUsers(
     { pagination, filters, sorters },
-    { options: { placeholderData: prevData => prevData } },
   )
 
   const columns = useColumns({ setSorters, expandedRows, setExpandedRows })
@@ -163,7 +162,7 @@ export function DataTable() {
     )
   }
 
-  const handleBatchExport = () => {
+  const handleBulkExport = () => {
     const filteredData = users.filter((_, index) => rowSelection[index])
     const formatedUsers = filteredData.map(item => ({
       name: item.name,
@@ -189,7 +188,7 @@ export function DataTable() {
     setFilters(filtersInitialState)
   }
 
-  const handleBatchRemove = () => {
+  const handleBulkRemove = () => {
     const ids = users.filter((_, index) => rowSelection[index]).map(item => item.id)
     userContext.removeUsers({ ids })
     setRowSelection({})
@@ -199,7 +198,7 @@ export function DataTable() {
     setPagination(state => ({ ...state, ...value }))
   }, 50)
 
-  const handleBatchDuplicate = () => {
+  const handleBulkDuplicate = () => {
     const ids = users.filter((_, index) => rowSelection[index]).map(item => item.id)
     userContext.duplicateUsers({ ids })
     setRowSelection({})
@@ -234,9 +233,9 @@ export function DataTable() {
         <div className="flex gap-2">
           <TableSelectionDropdown
             selectedCount={Object.keys(rowSelection).length}
-            onExport={handleBatchExport}
-            onRemove={handleBatchRemove}
-            onDuplicate={handleBatchDuplicate}
+            onExport={handleBulkExport}
+            onRemove={handleBulkRemove}
+            onDuplicate={handleBulkDuplicate}
           />
           <ColumnVisibilityMenu table={table} tableId="user" />
         </div>

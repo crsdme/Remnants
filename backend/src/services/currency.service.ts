@@ -161,7 +161,7 @@ export async function batch(payload: CurrencyTypes.batchCurrenciesParams): Promi
   return { status: 'success', code: 'CURRENCIES_BATCH_EDITED', message: 'Currencies batch edited' }
 }
 
-export async function upload(payload: CurrencyTypes.importCurrenciesParams): Promise<CurrencyTypes.importCurrenciesResult> {
+export async function importHandler(payload: CurrencyTypes.importCurrenciesParams): Promise<CurrencyTypes.importCurrenciesResult> {
   const { file } = payload
 
   const storedFile = await parseFile(file.path)

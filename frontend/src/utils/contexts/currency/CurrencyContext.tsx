@@ -51,11 +51,13 @@ export function CurrencyProvider({ children }: CurrencyProviderProps) {
     z.object({
       names: z.record(
         z.string({ required_error: t('form.errors.required') })
-          .min(3, { message: t('form.errors.min_length', { count: 3 }) }),
+          .min(3, { message: t('form.errors.min_length', { count: 3 }) })
+          .trim(),
       ),
       symbols: z.record(
         z.string({ required_error: t('form.errors.required') })
-          .min(3, { message: t('form.errors.min_length', { count: 3 }) }),
+          .min(3, { message: t('form.errors.min_length', { count: 3 }) })
+          .trim(),
       ),
       priority: z.number().default(0),
       active: z.boolean().default(true),

@@ -161,7 +161,7 @@ export async function batch(payload: UnitTypes.batchUnitsParams): Promise<UnitTy
   return { status: 'success', code: 'UNITS_BATCH_EDITED', message: 'Units batch edited' }
 }
 
-export async function upload(payload: UnitTypes.importUnitsParams): Promise<UnitTypes.importUnitsResult> {
+export async function importHandler(payload: UnitTypes.importUnitsParams): Promise<UnitTypes.importUnitsResult> {
   const { file } = payload
 
   const storedFile = await parseFile(file.path)

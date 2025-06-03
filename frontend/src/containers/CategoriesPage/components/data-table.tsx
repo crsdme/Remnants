@@ -53,7 +53,6 @@ export function DataTable() {
 
   const requestCategories = useRequestCategories(
     { pagination, filters, sorters, isTree: true },
-    { options: { placeholderData: prevData => prevData } },
   )
 
   const columns = useColumns({ setSorters })
@@ -152,7 +151,7 @@ export function DataTable() {
     )
   }
 
-  const handleBatchExport = () => {
+  const handleBulkExport = () => {
     const ids = Object.keys(rowSelection)
     categoryContext.exportCategories({ ids })
     setRowSelection({})
@@ -187,7 +186,7 @@ export function DataTable() {
     setRowSelection({})
   }
 
-  const handleBatchRemove = () => {
+  const handleBulkRemove = () => {
     const ids = Object.keys(rowSelection)
     categoryContext.removeCategory({ ids })
     setRowSelection({})
@@ -201,7 +200,7 @@ export function DataTable() {
     setPagination(state => ({ ...state, ...value }))
   }, 50)
 
-  const handleBatchDuplicate = () => {
+  const handleBulkDuplicate = () => {
     const ids = Object.keys(rowSelection)
     categoryContext.duplicateCategories({ ids })
     setRowSelection({})
@@ -242,9 +241,9 @@ export function DataTable() {
         <div className="flex gap-2">
           <TableSelectionDropdown
             selectedCount={Object.keys(rowSelection).length}
-            onExport={handleBatchExport}
-            onRemove={handleBatchRemove}
-            onDuplicate={handleBatchDuplicate}
+            onExport={handleBulkExport}
+            onRemove={handleBulkRemove}
+            onDuplicate={handleBulkDuplicate}
           />
           <ColumnVisibilityMenu table={table} tableId="category" />
         </div>

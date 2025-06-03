@@ -31,9 +31,17 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
 
   const formSchema = useMemo(() =>
     z.object({
-      login: z.string({ required_error: t('form.errors.required') }).min(5, { message: t('form.errors.min_length', { count: 5 }) }).max(20, { message: t('form.errors.max_length', { count: 20 }) }),
-      password: z.string({ required_error: t('form.errors.required') }).min(5, { message: t('form.errors.min_length', { count: 5 }) }).max(20, { message: t('form.errors.max_length', { count: 20 }) }),
-      type: z.string({ required_error: t('form.errors.required') }).min(5, { message: t('form.errors.min_length', { count: 5 }) }).max(20, { message: t('form.errors.max_length', { count: 20 }) }),
+      login: z.string({ required_error: t('form.errors.required') })
+        .min(5, { message: t('form.errors.min_length', { count: 5 }) })
+        .max(20, { message: t('form.errors.max_length', { count: 20 }) })
+        .trim(),
+      password: z.string({ required_error: t('form.errors.required') })
+        .min(5, { message: t('form.errors.min_length', { count: 5 }) })
+        .max(20, { message: t('form.errors.max_length', { count: 20 }) })
+        .trim(),
+      type: z.string({ required_error: t('form.errors.required') })
+        .min(5, { message: t('form.errors.min_length', { count: 5 }) })
+        .max(20, { message: t('form.errors.max_length', { count: 20 }) }),
     }), [t])
 
   const form = useForm({

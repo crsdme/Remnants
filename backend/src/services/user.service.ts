@@ -120,7 +120,7 @@ export async function remove(payload: UserTypes.removeUsersParams): Promise<User
   return { status: 'success', code: 'USERS_REMOVED', message: 'Users removed' }
 }
 
-export async function upload(payload: UserTypes.importUsersParams): Promise<UserTypes.importUsersResult> {
+export async function importHandler(payload: UserTypes.importUsersParams): Promise<UserTypes.importUsersResult> {
   const { file } = payload
 
   const storedFile = await parseFile(file.path)
