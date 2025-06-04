@@ -1,16 +1,23 @@
 import type { Code, DateRange, IdType, Message, Pagination, Status } from './common.type'
+import type { UserRole } from './user-role.type'
 
 export interface User extends Document {
   _id: string
   login: string
   password?: string
   name: string
+  role: string
   active: boolean
   createdAt: Date
   updatedAt: Date
 
   removeSensitiveData: (options: { exclude?: string[] }) => any
 }
+
+export interface PopulatedUser extends Omit<User, 'role'> {
+  role: UserRole
+}
+
 export interface getUsersResult {
   status: Status
   code: Code
@@ -23,6 +30,7 @@ export interface getUsersParams {
   filters: {
     name: string
     login: string
+    role: string
     active: boolean[]
     createdAt: DateRange
     updatedAt: DateRange
@@ -30,6 +38,7 @@ export interface getUsersParams {
   sorters: {
     name: string
     login: string
+    role: string
     active: string
     updatedAt: string
     createdAt: string
@@ -48,6 +57,7 @@ export interface createUserParams {
   name: string
   login: string
   password: string
+  role: string
   active?: boolean
 }
 
@@ -63,6 +73,7 @@ export interface editUserParams {
   name: string
   login: string
   password: string
+  role: string
   active?: boolean
 }
 

@@ -60,7 +60,7 @@ export async function refresh(req: Request, res: Response, next: NextFunction) {
       return
     }
 
-    const { accessToken } = await AuthService.refresh({ refreshToken })
+    const { accessToken, permissions } = await AuthService.refresh({ refreshToken })
 
     res.cookie('accessToken', accessToken, {
       httpOnly: true,
@@ -70,7 +70,7 @@ export async function refresh(req: Request, res: Response, next: NextFunction) {
       path: '/',
     })
 
-    res.status(200).json({ status: 'success' })
+    res.status(200).json({ status: 'success', permissions })
   }
   catch (err) {
     next(err)

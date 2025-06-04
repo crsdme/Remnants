@@ -11,117 +11,83 @@ import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { z } from 'zod'
 import {
-  useCreateUser,
-  useDuplicateUsers,
-  useEditUser,
-  useImportUsers,
-  useRemoveUsers,
+  useCreateUserRole,
+  useDuplicateUserRoles,
+  useEditUserRole,
+  useImportUserRoles,
+  useRemoveUserRoles,
 } from '@/api/hooks/'
 
-interface UserContextType {
-  selectedUser: User
+interface UserRoleContextType {
+  selectedUserRole: UserRole
   isModalOpen: boolean
   isLoading: boolean
   form: UseFormReturn
-  toggleModal: (user?: User) => void
-  openModal: (user?: User) => void
+  toggleModal: (userRole?: UserRole) => void
+  openModal: (userRole?: UserRole) => void
   closeModal: () => void
-  submitUserForm: (params) => void
-  removeUsers: (params: { ids: string[] }) => void
-  importUsers: (params) => void
-  duplicateUsers: (params: { ids: string[] }) => void
+  submitUserRoleForm: (params) => void
+  removeUserRoles: (params: { ids: string[] }) => void
+  importUserRoles: (params) => void
+  duplicateUserRoles: (params: { ids: string[] }) => void
 }
 
-const UserContext = createContext<UserContextType | undefined>(undefined)
+const UserRoleContext = createContext<UserRoleContextType | undefined>(undefined)
 
-interface UserProviderProps {
+interface UserRoleProviderProps {
   children: ReactNode
 }
 
-export function UserProvider({ children }: UserProviderProps) {
+export function UserRoleProvider({ children }: UserRoleProviderProps) {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
-  const [selectedUser, setSelectedUser] = useState(null)
+  const [selectedUserRole, setSelectedUserRole] = useState(null)
 
   const { t } = useTranslation()
 
   const formSchema = useMemo(() =>
     z.object({
-      name: z.string({ required_error: t('form.errors.required') }).min(3, { message: t('form.errors.min_length', { count: 3 }) }).trim(),
-      login: z.string({ required_error: t('form.errors.required') }).min(3, { message: t('form.errors.min_length', { count: 3 }) }).trim(),
-      password: z.string().optional(),
-      role: z.string({ required_error: t('form.errors.required') }).min(3, { message: t('form.errors.min_length', { count: 3 }) }).trim(),
-      active: z.boolean().default(true),
+      names: z.record(z.string().min(1, { message: t('form.errors.required') })),
+      permissions: z.array(z.string()),
+      priority: z.preprocess(val => Number(val), z.number()).default(0).optional(),
+      active: z.boolean().default(true).optional(),
     }), [t])
 
   const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      name: '',
-      login: '',
-      password: '',
+      names: {},
+      permissions: [],
+      priority: 0,
       active: true,
-      role: '',
     },
   })
 
   const queryClient = useQueryClient()
 
-  const useMutateCreateUser = useCreateUser({
+  const useMutateCreateUserRole = useCreateUserRole({
     options: {
       onSuccess: ({ data }) => {
         setIsModalOpen(false)
         setIsLoading(false)
-        setSelectedUser(null)
-        queryClient.invalidateQueries({ queryKey: ['users'] })
-        toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description || ''}` })
-      },
-      onError: ({ response }) => {
-        const error = response.data.error
-        setIsModalOpen(false)
-        setIsLoading(false)
-        setSelectedUser(null)
-        toast.error(t(`error.title.${error.code}`), { description: `${t(`error.description.${error.code}`)} ${error.description || ''}` })
-      },
-    },
-  })
-
-  const useMutateDuplicateUsers = useDuplicateUsers({
-    options: {
-      onSuccess: ({ data }) => {
-        queryClient.invalidateQueries({ queryKey: ['users'] })
-        toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description || ''}` })
-      },
-      onError: ({ response }) => {
-        const error = response.data.error
-        toast.error(t(`error.title.${error.code}`), { description: `${t(`error.description.${error.code}`)} ${error.description || ''}` })
-      },
-    },
-  })
-
-  const useMutateEditUser = useEditUser({
-    options: {
-      onSuccess: ({ data }) => {
-        setIsModalOpen(false)
-        setIsLoading(false)
-        setSelectedUser(null)
-        queryClient.invalidateQueries({ queryKey: ['users'] })
+        setSelectedUserRole(null)
+        queryClient.invalidateQueries({ queryKey: ['user-roles'] })
         toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description || ''}` })
       },
       onError: ({ response }) => {
         const error = response.data.error
         setIsModalOpen(false)
         setIsLoading(false)
-        setSelectedUser(null)
+        setSelectedUserRole(null)
         toast.error(t(`error.title.${error.code}`), { description: `${t(`error.description.${error.code}`)} ${error.description || ''}` })
       },
     },
   })
 
-  const useMutateRemoveUsers = useRemoveUsers({
+  const useMutateDuplicateUserRoles = useDuplicateUserRoles({
     options: {
       onSuccess: ({ data }) => {
-        queryClient.invalidateQueries({ queryKey: ['users'] })
+        queryClient.invalidateQueries({ queryKey: ['user-roles'] })
         toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description || ''}` })
       },
       onError: ({ response }) => {
@@ -131,10 +97,29 @@ export function UserProvider({ children }: UserProviderProps) {
     },
   })
 
-  const useMutateImportUsers = useImportUsers({
+  const useMutateEditUserRole = useEditUserRole({
     options: {
       onSuccess: ({ data }) => {
-        queryClient.invalidateQueries({ queryKey: ['users'] })
+        setIsModalOpen(false)
+        setIsLoading(false)
+        setSelectedUserRole(null)
+        queryClient.invalidateQueries({ queryKey: ['user-roles'] })
+        toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description || ''}` })
+      },
+      onError: ({ response }) => {
+        const error = response.data.error
+        setIsModalOpen(false)
+        setIsLoading(false)
+        setSelectedUserRole(null)
+        toast.error(t(`error.title.${error.code}`), { description: `${t(`error.description.${error.code}`)} ${error.description || ''}` })
+      },
+    },
+  })
+
+  const useMutateRemoveUserRoles = useRemoveUserRoles({
+    options: {
+      onSuccess: ({ data }) => {
+        queryClient.invalidateQueries({ queryKey: ['user-roles'] })
         toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description || ''}` })
       },
       onError: ({ response }) => {
@@ -144,78 +129,90 @@ export function UserProvider({ children }: UserProviderProps) {
     },
   })
 
-  const openModal = (user) => {
+  const useMutateImportUserRoles = useImportUserRoles({
+    options: {
+      onSuccess: ({ data }) => {
+        queryClient.invalidateQueries({ queryKey: ['user-roles'] })
+        toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description || ''}` })
+      },
+      onError: ({ response }) => {
+        const error = response.data.error
+        toast.error(t(`error.title.${error.code}`), { description: `${t(`error.description.${error.code}`)} ${error.description || ''}` })
+      },
+    },
+  })
+
+  const openModal = (userRole) => {
     setIsModalOpen(true)
-    let userValues = {}
-    if (user) {
-      setSelectedUser(user)
-      userValues = {
-        name: user.name,
-        login: user.login,
-        password: user.password,
-        role: user.role.id,
-        active: user.active,
+    let userRoleValues = {}
+    if (userRole) {
+      setSelectedUserRole(userRole)
+      userRoleValues = {
+        names: userRole.names,
+        permissions: userRole.permissions,
+        priority: userRole.priority,
+        active: userRole.active,
       }
     }
-    form.reset(userValues)
+    form.reset(userRoleValues)
   }
 
   const closeModal = () => {
     setIsModalOpen(false)
     setIsLoading(false)
-    setSelectedUser(null)
+    setSelectedUserRole(null)
     form.reset()
   }
 
   const toggleModal = user => (isModalOpen ? closeModal() : openModal(user))
 
-  const submitUserForm = (params) => {
+  const submitUserRoleForm = (params) => {
     setIsLoading(true)
-    if (!selectedUser) {
-      useMutateCreateUser.mutate(params)
+    if (!selectedUserRole) {
+      useMutateCreateUserRole.mutate(params)
     }
     else {
-      useMutateEditUser.mutate({ ...params, id: selectedUser.id })
+      useMutateEditUserRole.mutate({ ...params, id: selectedUserRole.id })
     }
   }
 
-  const removeUsers = (params) => {
-    useMutateRemoveUsers.mutate(params)
+  const removeUserRoles = (params) => {
+    useMutateRemoveUserRoles.mutate(params)
   }
 
-  const importUsers = (params) => {
-    useMutateImportUsers.mutate(params)
+  const importUserRoles = (params) => {
+    useMutateImportUserRoles.mutate(params)
   }
 
-  const duplicateUsers = (params) => {
-    useMutateDuplicateUsers.mutate(params)
+  const duplicateUserRoles = (params) => {
+    useMutateDuplicateUserRoles.mutate(params)
   }
 
-  const value: UserContextType = useMemo(
+  const value: UserRoleContextType = useMemo(
     () => ({
-      selectedUser,
+      selectedUserRole,
       isModalOpen,
       isLoading,
       form,
       toggleModal,
       openModal,
       closeModal,
-      submitUserForm,
-      removeUsers,
-      importUsers,
-      duplicateUsers,
+      submitUserRoleForm,
+      removeUserRoles,
+      importUserRoles,
+      duplicateUserRoles,
     }),
-    [selectedUser, isModalOpen, isLoading, form, openModal, closeModal, submitUserForm, removeUsers, importUsers, duplicateUsers],
+    [selectedUserRole, isModalOpen, isLoading, form, openModal, closeModal, submitUserRoleForm, removeUserRoles, importUserRoles, duplicateUserRoles],
   )
 
-  return <UserContext.Provider value={value}>{children}</UserContext.Provider>
+  return <UserRoleContext.Provider value={value}>{children}</UserRoleContext.Provider>
 }
 
 // eslint-disable-next-line react-refresh/only-export-components
-export function useUserContext(): UserContextType {
-  const context = useContext(UserContext)
+export function useUserRoleContext(): UserRoleContextType {
+  const context = useContext(UserRoleContext)
   if (!context) {
-    throw new Error('useUserContext - UserContext')
+    throw new Error('useUserRoleContext - UserRoleContext')
   }
   return context
 }

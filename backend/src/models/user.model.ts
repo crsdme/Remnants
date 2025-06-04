@@ -25,6 +25,11 @@ const UserSchema: Schema = new Schema(
       type: String,
       required: true,
     },
+    role: {
+      type: String,
+      required: true,
+      ref: 'user-role',
+    },
     active: {
       type: Boolean,
       required: true,

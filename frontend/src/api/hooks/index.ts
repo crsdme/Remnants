@@ -40,6 +40,13 @@ export * from './units/useImportUnits'
 export * from './units/useRemoveUnits'
 export * from './units/useRequestUnits'
 
+export * from './userRoles/useCreateUserRole'
+export * from './userRoles/useDuplicateUserRoles'
+export * from './userRoles/useEditUserRole'
+export * from './userRoles/useImportUserRoles'
+export * from './userRoles/useRemoveUserRoles'
+export * from './userRoles/useRequestUserRoles'
+
 export * from './users/useCreateUser'
 export * from './users/useDuplicateUsers'
 export * from './users/useEditUser'

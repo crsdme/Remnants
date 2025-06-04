@@ -22,5 +22,56 @@
 
   "form.errors.required": "Required field",
   "form.errors.min_length": "Minimum length {{count}} characters",
-  "form.errors.max_length": "Maximum length {{count}} characters"
+  "form.errors.max_length": "Maximum length {{count}} characters",
+
+  "permission.category.create": "Create category",
+  "permission.category.read": "Read category",
+  "permission.category.update": "Update category",
+  "permission.category.delete": "Delete category",
+  "permission.category.import": "Import category",
+  "permission.category.export": "Export category",
+
+  "permission.product.create": "Create product",
+  "permission.product.read": "Read product",
+  "permission.product.update": "Update product",
+  "permission.product.delete": "Delete product",
+  "permission.product.import": "Import product",
+  "permission.product.export": "Export product",
+
+  "permission.user.create": "Create user",
+  "permission.user.read": "Read user",
+  "permission.user.update": "Update user",
+  "permission.user.delete": "Delete user",
+  "permission.user.import": "Import user",
+  "permission.user.export": "Export user",
+
+  "permission.unit.create": "Create unit",
+  "permission.unit.read": "Read unit",
+  "permission.unit.update": "Update unit",
+  "permission.unit.delete": "Delete unit",
+  "permission.unit.import": "Import unit",
+  "permission.unit.export": "Export unit",
+
+  "permission.userRole.create": "Create user role",
+  "permission.userRole.read": "Read user role",
+  "permission.userRole.update": "Update user role",
+  "permission.userRole.delete": "Delete user role",
+  "permission.userRole.import": "Import user role",
+  "permission.userRole.export": "Export user role",
+
+  "permission.language.create": "Create language",
+  "permission.language.read": "Read language",
+  "permission.language.update": "Update language",
+  "permission.language.delete": "Delete language",
+  "permission.language.import": "Import language",
+  "permission.language.export": "Export language",
+
+  "permission.currency.create": "Create currency",
+  "permission.currency.read": "Read currency",
+  "permission.currency.update": "Update currency",
+  "permission.currency.delete": "Delete currency",
+  "permission.currency.import": "Import currency",
+  "permission.currency.export": "Export currency",
+
+  "permission.other.admin": "Admin"
 }

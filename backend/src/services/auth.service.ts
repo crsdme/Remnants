@@ -1,3 +1,6 @@
+import type { JwtPayload } from 'jsonwebtoken'
+import type { UserRole } from '../types/user-role.type'
+import type { PopulatedUser } from '../types/user.type'
 import bcrypt from 'bcrypt'
 import dotenv from 'dotenv'
 import jwt from 'jsonwebtoken'
@@ -30,7 +33,7 @@ interface loginResult {
 export async function login(payload: loginParams): Promise<loginResult> {
   const { login, password } = payload
 
-  const user = await UserModel.findOne({ login })
+  const user = await UserModel.findOne({ login }).populate('role') as PopulatedUser | null
 
   if (!user) {
     throw new HttpError(400, 'User not found', 'INVALID_CREDENTIALS')
@@ -52,6 +55,7 @@ export async function login(payload: loginParams): Promise<loginResult> {
     id: user._id,
     login: user.login,
     name: user.name,
+    permissions: user.role.permissions,
     createdAt: user.createdAt,
     updatedAt: user.updatedAt,
   }
@@ -65,9 +69,17 @@ interface refreshParams {
 
 interface refreshResult {
   accessToken: string
+  permissions: string[]
+}
+
+interface TokenPayload extends JwtPayload {
+  id: string
 }
 
 export async function refresh(payload: refreshParams): Promise<refreshResult> {
   const accessToken = generateAccessToken({ id: payload.refreshToken })
-  return { accessToken }
+  const userData = jwt.verify(payload.refreshToken, JWT_SECRET) as TokenPayload
+  const user = await UserModel.findOne({ _id: userData.id }).populate('role') as PopulatedUser | null
+
+  return { accessToken, permissions: user?.role.permissions || [] }
 }

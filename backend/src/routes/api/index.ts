@@ -5,6 +5,7 @@ import categoryRoutes from './category.route'
 import currencyRoutes from './currency.route'
 import languageRoutes from './language.route'
 import unitRoutes from './unit.route'
+import userRoleRoutes from './user-role.route'
 import userRoutes from './user.route'
 
 const router = Router()
@@ -16,5 +17,6 @@ router.use('/languages', authenticateJWT, languageRoutes)
 router.use('/units', authenticateJWT, unitRoutes)
 router.use('/users', authenticateJWT, userRoutes)
 router.use('/categories', authenticateJWT, categoryRoutes)
+router.use('/user-roles', authenticateJWT, userRoleRoutes)
 
 export default router

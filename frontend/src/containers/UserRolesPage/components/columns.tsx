@@ -19,16 +19,16 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { useUserContext } from '@/contexts'
+import { useUserRoleContext } from '@/contexts'
 import formatDate from '@/utils/helpers/formatDate'
 
 const sortIcons = { asc: ArrowUp, desc: ArrowDown }
 
-export function useColumns({ setSorters, expandedRows, setExpandedRows }): ColumnDef<User>[] {
+export function useColumns({ setSorters, expandedRows, setExpandedRows }): ColumnDef<UserRole>[] {
   const { t, i18n } = useTranslation()
-  const userContext = useUserContext()
+  const userRoleContext = useUserRoleContext()
 
-  const sortHeader = (column: Column<User>, label: string) => {
+  const sortHeader = (column: Column<UserRole>, label: string) => {
     const sortOrder = column.getIsSorted() || undefined
     const Icon = (sortIcons[sortOrder] || ChevronsUpDown)
 
@@ -48,7 +48,7 @@ export function useColumns({ setSorters, expandedRows, setExpandedRows }): Colum
 
     return (
       <Button
-        disabled={userContext.isLoading}
+        disabled={userRoleContext.isLoading}
         variant="ghost"
         onClick={handleSort}
         className="my-2 flex items-center gap-2"
@@ -90,73 +90,65 @@ export function useColumns({ setSorters, expandedRows, setExpandedRows }): Colum
       enableHiding: false,
     },
     {
-      id: 'seq',
-      size: 50,
-      meta: {
-        title: t('table.seq'),
-      },
-      header: t('table.seq'),
-      accessorFn: row => row.seq,
-    },
-    {
-      id: 'name',
+      id: 'names',
       size: 150,
       meta: {
-        title: t('page.users.table.name'),
+        title: t('page.userRoles.table.names'),
         filterable: true,
         filterType: 'text',
         sortable: true,
       },
-      header: ({ column }) => sortHeader(column, t('page.users.table.name')),
-      accessorFn: row => row.name,
+      header: ({ column }) => sortHeader(column, t('page.userRoles.table.names')),
+      accessorFn: row => row.names?.[i18n.language] || row.names?.en,
     },
     {
-      id: 'login',
+      id: 'permissions',
       size: 100,
       meta: {
-        title: t('page.users.table.login'),
+        title: t('page.userRoles.table.permissions'),
         filterable: true,
         filterType: 'text',
         sortable: true,
       },
-      header: () => t('page.users.table.login'),
-      accessorFn: row => row.login,
+      header: () => t('page.userRoles.table.permissions'),
+      accessorFn: row => row.permissions,
       cell: ({ row }) => (
-        <Badge variant="outline">
-          {row.original.login}
-        </Badge>
-      ),
-    },
-    {
-      id: 'role',
-      size: 100,
-      meta: {
-        title: t('page.users.table.role'),
-        filterable: true,
-        filterType: 'text',
-        sortable: true,
-      },
-      header: () => t('page.users.table.role'),
-      accessorFn: row => row.role,
-      cell: ({ row }) => (
-        <Badge variant="outline">
-          {row.original.role.names[i18n.language]}
-        </Badge>
+        <div className="flex flex-wrap gap-1">
+          {row.original.permissions.map(permission => (
+            <Badge variant="outline" key={permission}>
+              {t(`permission.${permission}`)}
+            </Badge>
+          ))}
+        </div>
       ),
     },
     {
       id: 'active',
       accessorKey: 'active',
       meta: {
-        title: t('page.users.table.active'),
+        title: t('page.userRoles.table.active'),
         batchEdit: true,
         batchEditType: 'boolean',
         filterable: true,
         filterType: 'boolean',
         sortable: true,
       },
-      header: t('page.users.table.active'),
+      header: t('page.userRoles.table.active'),
       cell: ({ row }) => <Badge variant="outline">{row.original.active.toString()}</Badge>,
+    },
+    {
+      id: 'priority',
+      accessorKey: 'priority',
+      meta: {
+        title: t('page.userRoles.table.priority'),
+        batchEdit: true,
+        batchEditType: 'number',
+        filterable: true,
+        filterType: 'number',
+        sortable: true,
+      },
+      header: t('page.userRoles.table.priority'),
+      cell: ({ row }) => <Badge variant="outline">{row.original.priority}</Badge>,
     },
     {
       id: 'createdAt',
@@ -190,7 +182,7 @@ export function useColumns({ setSorters, expandedRows, setExpandedRows }): Colum
       },
       enableHiding: false,
       cell: ({ row }) => {
-        const user = row.original
+        const userRole = row.original
 
         return (
           <div className="flex items-center gap-2">
@@ -221,19 +213,19 @@ export function useColumns({ setSorters, expandedRows, setExpandedRows }): Colum
               <DropdownMenuContent align="end">
                 <DropdownMenuLabel>{t('table.actions')}</DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => navigator.clipboard.writeText(user.id)}>
+                <DropdownMenuItem onClick={() => navigator.clipboard.writeText(userRole.id)}>
                   {t('table.copy')}
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => userContext.toggleModal(user)}>
+                <DropdownMenuItem onClick={() => userRoleContext.toggleModal(userRole)}>
                   {t('table.edit')}
                 </DropdownMenuItem>
                 <DropdownMenuItem
-                  onClick={() => userContext.duplicateUsers({ ids: [user.id] })}
+                  onClick={() => userRoleContext.duplicateUserRoles({ ids: [userRole.id] })}
                 >
                   {t('table.duplicate')}
                 </DropdownMenuItem>
                 <DropdownMenuItem
-                  onClick={() => userContext.removeUsers({ ids: [user.id] })}
+                  onClick={() => userRoleContext.removeUserRoles({ ids: [userRole.id] })}
                   variant="destructive"
                 >
                   {t('table.delete')}

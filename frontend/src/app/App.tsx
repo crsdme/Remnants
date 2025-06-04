@@ -1,8 +1,9 @@
-import { BrowserRouter, Route, Routes } from 'react-router-dom'
+import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import LogoIcon from '@/components/ui/icons/logoIcon'
 
 import { useAuthContext } from '@/contexts'
 
+import { usePermission } from '@/utils/hooks/usePermission/usePermission'
 import Layout from '../components/Layout'
 import {
   CategoriesPage,
@@ -12,6 +13,7 @@ import {
   LoginPage,
   TestPage,
   UnitsPage,
+  UserRolesPage,
   UsersPage,
 } from '../containers'
 import '@/app/App.css'
@@ -37,15 +39,37 @@ export default function App() {
       <Routes>
         <Route path="/" element={authContenxt.state.isAuthenticated ? <Layout /> : <LoginPage />}>
           <Route path="/" element={<DashboardPage />} />
-          <Route path="/test" element={<TestPage />} />
+          <Route
+            path="/test"
+            element={(<ProtectedRoute children={<TestPage />} permissions={['user.read']} />)}
+          />
 
-          <Route path="/categories" element={<CategoriesPage />} />
+          <Route
+            path="/categories"
+            element={<ProtectedRoute children={<CategoriesPage />} permissions={['category.read']} />}
+          />
 
-          <Route path="/users" element={<UsersPage />} />
+          <Route
+            path="/users"
+            element={(<ProtectedRoute children={<UsersPage />} permissions={['user.read']} />)}
+          />
 
-          <Route path="/settings/currencies" element={<CurrenciesPage />} />
-          <Route path="/settings/languages" element={<LanguagesPage />} />
-          <Route path="/settings/units" element={<UnitsPage />} />
+          <Route
+            path="/settings/currencies"
+            element={<ProtectedRoute children={<CurrenciesPage />} permissions={['currency.read']} />}
+          />
+          <Route
+            path="/settings/languages"
+            element={<ProtectedRoute children={<LanguagesPage />} permissions={['language.read']} />}
+          />
+          <Route
+            path="/settings/units"
+            element={<ProtectedRoute children={<UnitsPage />} permissions={['unit.read']} />}
+          />
+          <Route
+            path="/settings/user-roles"
+            element={<ProtectedRoute children={<UserRolesPage />} permissions={['userRole.read']} />}
+          />
 
           <Route path="*" element={<DashboardPage />} />
         </Route>
@@ -54,4 +78,15 @@ export default function App() {
       </Routes>
     </BrowserRouter>
   )
+}
+
+export function ProtectedRoute({ children, permissions }) {
+  const hasAccess = usePermission(permissions)
+
+  if (!hasAccess) {
+    // return <Navigate to="/404" replace />
+    return <div>No access</div>
+  }
+
+  return children
 }

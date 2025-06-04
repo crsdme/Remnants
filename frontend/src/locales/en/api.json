@@ -171,5 +171,33 @@
   "error.description.CATEGORIES_NOT_BATCH_EDITED": "Unable to batch edit categories",
 
   "response.title.CATEGORIES_EXPORTED": "Categories exported",
-  "response.description.CATEGORIES_EXPORTED": "Categories have been exported successfully"
+  "response.description.CATEGORIES_EXPORTED": "Categories have been exported successfully",
+
+  "response.title.USER_ROLES_FETCHED": "User roles fetched",
+  "response.description.USER_ROLES_FETCHED": "User roles list successfully fetched",
+
+  "response.title.USER_ROLE_CREATED": "User role created",
+  "response.description.USER_ROLE_CREATED": "New user role has been created",
+
+  "response.title.USER_ROLE_NOT_CREATED": "User role not created",
+  "response.description.USER_ROLE_NOT_CREATED": "Unable to create new user role",
+
+  "response.title.USER_ROLE_NOT_EDITED": "User role not edited",
+  "response.description.USER_ROLE_NOT_EDITED": "Unable to edit user role",
+
+  "response.title.USER_ROLE_EDITED": "User role edited",
+  "response.description.USER_ROLE_EDITED": "User role has been updated",
+
+  "response.title.USER_ROLES_NOT_REMOVED": "User roles not removed",
+  "response.description.USER_ROLES_NOT_REMOVED": "Unable to remove selected user roles",
+
+  "response.title.USER_ROLES_REMOVED": "User roles removed",
+  "response.description.USER_ROLES_REMOVED": "Selected user roles have been deleted",
+
+  "response.title.USER_ROLES_IMPORTED": "User roles imported",
+  "response.description.USER_ROLES_IMPORTED": "User roles have been imported successfully",
+
+  "response.title.USER_ROLES_DUPLICATED": "User roles duplicated",
+  "response.description.USER_ROLES_DUPLICATED": "User roles have been duplicated"
+
 }

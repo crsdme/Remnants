@@ -1,6 +1,9 @@
 import { Plus } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useRequestUserRoles } from '@/api/hooks/userRoles/useRequestUserRoles'
+import { AsyncSelect } from '@/components/AsyncSelect'
+
 import { ImportButton } from '@/components/ImportButton'
 import {
   Button,
@@ -13,15 +16,19 @@ import {
   FormMessage,
   Input,
 } from '@/components/ui'
-
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
 import { useUserContext } from '@/contexts'
 import { downloadCsv } from '@/utils/helpers/download'
 
 export function ActionBar() {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const userContext = useUserContext()
   const [file, setFile] = useState<File | null>(null)
+  const [search, setSearch] = useState('')
+
+  const requestUserRoles = useRequestUserRoles(
+    { pagination: { full: true }, filters: { names: search, active: [true], language: i18n.language } },
+  )
 
   const onSubmit = (values) => {
     userContext.submitUserForm(values)
@@ -146,6 +153,32 @@ export function ActionBar() {
                             className="w-full"
                             {...field}
                             disabled={isLoading}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={userContext.form.control}
+                    name="role"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>{t('page.users.form.role')}</FormLabel>
+                        <FormControl>
+                          <AsyncSelect<UserRole>
+                            fetcher={async (searchValue) => {
+                              setSearch(searchValue)
+                              return requestUserRoles.data?.data?.userRoles || []
+                            }}
+                            renderOption={e => e.names[i18n.language]}
+                            getDisplayValue={e => e.names[i18n.language]}
+                            getOptionValue={e => e.id}
+                            width="100%"
+                            className="w-full"
+                            name="role"
+                            value={field.value}
+                            onChange={field.onChange}
                           />
                         </FormControl>
                         <FormMessage />

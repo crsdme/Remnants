@@ -16,6 +16,7 @@ interface AuthState {
 interface AuthContextType {
   state: AuthState
   user: User | null
+  permissions: Array<string>
   dispatch: (state) => void
   login: (state) => void
   logout: () => void
@@ -57,6 +58,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     isAuthenticated: false,
     isAuthChecked: false,
   })
+  const [permissions, setPermissions] = useState([])
 
   const { t } = useTranslation()
 
@@ -74,6 +76,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     options: {
       onSuccess: ({ data }) => {
         setUser(data.user)
+        setPermissions(data.user.permissions)
         dispatch({ type: 'LOGIN' })
       },
       onError: ({ response }) => {
@@ -98,11 +101,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const refresh = () => {
     useQueryRefreshToken
       .refetch()
-      .then(({ status }) => {
-        if (status === 'success')
+      .then(({ status, data }) => {
+        if (status === 'success') {
+          setPermissions(data.data.permissions)
           dispatch({ type: 'REFRESH' })
-        else
+        }
+        else {
           dispatch({ type: 'LOGOUT' })
+        }
       })
   }
 
@@ -138,12 +144,13 @@ export function AuthProvider({ children }: AuthProviderProps) {
     () => ({
       state,
       user,
+      permissions,
       dispatch,
       login,
       logout,
       refresh,
     }),
-    [state, dispatch, login, logout, refresh],
+    [state, dispatch, login, logout, refresh, permissions],
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

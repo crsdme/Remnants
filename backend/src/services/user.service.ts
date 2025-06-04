@@ -11,6 +11,7 @@ export async function get(payload: UserTypes.getUsersParams): Promise<UserTypes.
   const {
     name = '',
     login = '',
+    role = '',
     active = undefined,
     createdAt = {
       from: undefined,
@@ -27,13 +28,14 @@ export async function get(payload: UserTypes.getUsersParams): Promise<UserTypes.
   const filterRules = {
     name: { type: 'string' },
     login: { type: 'string' },
+    role: { type: 'string' },
     active: { type: 'array' },
     createdAt: { type: 'dateRange' },
     updatedAt: { type: 'dateRange' },
   } as const
 
   const query = buildQuery({
-    filters: { name, login, active, createdAt, updatedAt },
+    filters: { name, login, role, active, createdAt, updatedAt },
     rules: filterRules,
   })
 
@@ -43,6 +45,17 @@ export async function get(payload: UserTypes.getUsersParams): Promise<UserTypes.
     },
     {
       $sort: sorters,
+    },
+    {
+      $lookup: {
+        from: 'user-roles',
+        localField: 'role',
+        foreignField: '_id',
+        as: 'role',
+      },
+    },
+    {
+      $unwind: '$role',
     },
     {
       $facet: {
@@ -67,7 +80,7 @@ export async function get(payload: UserTypes.getUsersParams): Promise<UserTypes.
 }
 
 export async function create(payload: UserTypes.createUserParams): Promise<UserTypes.createUserResult> {
-  const { name, login, password, active } = payload
+  const { name, login, password, role, active } = payload
 
   const hashedPassword = await bcrypt.hash(password, 10)
 
@@ -77,7 +90,7 @@ export async function create(payload: UserTypes.createUserParams): Promise<UserT
     throw new HttpError(409, 'User with this login already exists', 'USER_ALREADY_EXISTS')
   }
 
-  const user = await UserModel.create({ name, login, password: hashedPassword, active })
+  const user = await UserModel.create({ name, login, password: hashedPassword, role, active })
 
   if (!user) {
     throw new HttpError(400, 'User not created', 'USER_NOT_CREATED')
@@ -87,9 +100,9 @@ export async function create(payload: UserTypes.createUserParams): Promise<UserT
 }
 
 export async function edit(payload: UserTypes.editUserParams): Promise<UserTypes.editUserResult> {
-  const { id, name, login, password, active } = payload
+  const { id, name, login, password, role, active } = payload
 
-  let query: Record<string, any> = { name, login, active }
+  let query: Record<string, any> = { name, login, role, active }
 
   if (password) {
     const hashedPassword = await bcrypt.hash(password, 10)
@@ -129,6 +142,7 @@ export async function importHandler(payload: UserTypes.importUsersParams): Promi
     name: row.name,
     login: row.login,
     password: row.password,
+    role: row.role,
     active: toBoolean(row.active),
   }))
 
@@ -159,6 +173,7 @@ export async function duplicate(payload: UserTypes.duplicateUsersParams): Promis
     name: `${user.name} ${usersCount + 1}`,
     login: `${user.login} ${usersCount + 1}`,
     password: user.password,
+    role: user.role,
     active: user.active,
   }))
 

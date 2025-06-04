@@ -15,5 +15,8 @@
   "description.page.languages": "Manage languages in Remnant application",
 
   "title.page.categories": "Categories - Remnant",
-  "description.page.categories": "Manage categories in Remnant application"
+  "description.page.categories": "Manage categories in Remnant application",
+
+  "title.page.userRoles": "User roles - Remnant",
+  "description.page.userRoles": "Manage user roles in Remnant application"
 }

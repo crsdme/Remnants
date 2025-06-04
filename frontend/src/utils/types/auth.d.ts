@@ -7,4 +7,5 @@ interface authLoginResponse {
 interface refreshTokenResponse {
   status: string
   accessToken: string
+  permissions: Array<string>
 }

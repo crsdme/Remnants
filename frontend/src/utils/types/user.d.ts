@@ -4,9 +4,11 @@ interface User {
   login: string
   password?: string
   active: boolean
+  role: any
   seq: number
   createdAt: Date
   updatedAt: Date
+  permissions: string[]
 }
 
 interface UsersResponse {

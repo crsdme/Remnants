@@ -171,5 +171,32 @@
   "error.description.CATEGORIES_NOT_BATCH_EDITED": "Не удалось обновить категории",
 
   "response.title.CATEGORIES_EXPORTED": "Категории экспортированы",
-  "response.description.CATEGORIES_EXPORTED": "Категории были экспортированы успешно"
+  "response.description.CATEGORIES_EXPORTED": "Категории были экспортированы успешно",
+
+  "response.title.USER_ROLES_FETCHED": "Роли пользователей получены",
+  "response.description.USER_ROLES_FETCHED": "Список ролей пользователей успешно получен",
+
+  "response.title.USER_ROLE_CREATED": "Роль пользователя создана",
+  "response.description.USER_ROLE_CREATED": "Новая роль пользователя была создана",
+
+  "response.title.USER_ROLE_NOT_CREATED": "Роль пользователя не создана",
+  "response.description.USER_ROLE_NOT_CREATED": "Не удалось создать новую роль пользователя",
+
+  "response.title.USER_ROLE_NOT_EDITED": "Роль пользователя не обновлена",
+  "response.description.USER_ROLE_NOT_EDITED": "Не удалось обновить роль пользователя",
+
+  "response.title.USER_ROLE_EDITED": "Роль пользователя обновлена",
+  "response.description.USER_ROLE_EDITED": "Роль пользователя была обновлена",
+
+  "response.title.USER_ROLES_NOT_REMOVED": "Роли пользователей не удалены",
+  "response.description.USER_ROLES_NOT_REMOVED": "Не удалось удалить выбранные роли пользователей",
+
+  "response.title.USER_ROLES_REMOVED": "Роли пользователей удалены",
+  "response.description.USER_ROLES_REMOVED": "Выбранные роли пользователей были удалены",
+
+  "response.title.USER_ROLES_IMPORTED": "Роли пользователей импортированы",
+  "response.description.USER_ROLES_IMPORTED": "Роли пользователей были импортированы успешно",
+
+  "response.title.USER_ROLES_DUPLICATED": "Роли пользователей дублированы",
+  "response.description.USER_ROLES_DUPLICATED": "Роли пользователей были дублированы"
 }

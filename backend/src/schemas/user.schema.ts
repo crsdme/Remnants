@@ -9,6 +9,7 @@ export const getUserSchema = z.object({
   filters: z.object({
     name: z.string().optional(),
     login: z.string().optional(),
+    role: z.string().optional(),
     createdAt: dateRangeSchema.optional(),
     updatedAt: dateRangeSchema.optional(),
     active: booleanArraySchema.optional(),
@@ -16,6 +17,7 @@ export const getUserSchema = z.object({
   sorters: z.object({
     name: sorterParamsSchema.optional(),
     login: sorterParamsSchema.optional(),
+    role: sorterParamsSchema.optional(),
     active: sorterParamsSchema.optional(),
     updatedAt: sorterParamsSchema.optional(),
     createdAt: sorterParamsSchema.optional(),
@@ -26,6 +28,7 @@ export const createUserSchema = z.object({
   name: z.string(),
   login: z.string(),
   password: z.string(),
+  role: z.string(),
   active: z.boolean().optional(),
 })
 
@@ -34,6 +37,7 @@ export const editUserSchema = z.object({
   name: z.string(),
   login: z.string(),
   password: z.string().optional(),
+  role: z.string(),
   active: z.boolean().optional(),
 })
 
