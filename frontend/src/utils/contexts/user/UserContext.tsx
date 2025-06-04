@@ -144,16 +144,17 @@ export function UserProvider({ children }: UserProviderProps) {
 
   const openModal = (user) => {
     setIsModalOpen(true)
+    let userValues = {}
     if (user) {
       setSelectedUser(user)
-      const userValues = {
+      userValues = {
         name: user.name,
         login: user.login,
         password: user.password,
         active: user.active,
       }
-      form.reset(userValues)
     }
+    form.reset(userValues)
   }
 
   const closeModal = () => {

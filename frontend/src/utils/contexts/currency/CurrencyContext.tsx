@@ -163,18 +163,18 @@ export function CurrencyProvider({ children }: CurrencyProviderProps) {
   })
 
   const openModal = (currency) => {
+    let currencyValues = {}
     setIsModalOpen(true)
     if (currency) {
       setSelectedCurrency(currency)
-      const currencyValues = {
+      currencyValues = {
         names: { ...currency.names },
         symbols: { ...currency.symbols },
         priority: currency.priority,
         active: currency.active,
       }
-
-      form.reset(currencyValues)
     }
+    form.reset(currencyValues)
   }
 
   const closeModal = () => {

@@ -31,7 +31,7 @@ export function useColumns({ setSorters }): ColumnDef<Category>[] {
   const categoryContext = useCategoryContext()
   const [search, setSearch] = useState('')
 
-  const sortHeader = (column: Column<any>, label: string) => {
+  const sortHeader = (column, label) => {
     const sortOrder = column.getIsSorted() || undefined
     const Icon = (sortIcons[sortOrder] || ChevronsUpDown)
 

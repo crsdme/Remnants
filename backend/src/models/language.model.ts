@@ -20,7 +20,6 @@ const LanguageSchema: Schema = new Schema(
     code: {
       type: Schema.Types.String,
       required: true,
-      unique: true,
     },
     main: {
       type: Schema.Types.Boolean,

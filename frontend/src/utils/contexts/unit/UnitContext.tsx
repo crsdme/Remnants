@@ -158,17 +158,18 @@ export function UnitProvider({ children }: UnitProviderProps) {
   })
 
   const openModal = (unit) => {
+    let unitValues = {}
     setIsModalOpen(true)
     if (unit) {
       setSelectedUnit(unit)
-      const unitValues = {
+      unitValues = {
         names: { ...unit.names },
         symbols: { ...unit.symbols },
         priority: unit.priority,
         active: unit.active,
       }
-      form.reset(unitValues)
     }
+    form.reset(unitValues)
   }
 
   const closeModal = () => {

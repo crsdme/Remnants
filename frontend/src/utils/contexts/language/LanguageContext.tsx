@@ -151,19 +151,19 @@ export function LanguageProvider({ children }: LanguageProviderProps) {
   })
 
   const openModal = (language) => {
+    let languageValues = {}
     setIsModalOpen(true)
     if (language) {
       setSelectedLanguage(language)
-      const languageValues = {
+      languageValues = {
         name: language.name,
         code: language.code,
         priority: language.priority,
         active: language.active,
         main: language.main,
       }
-
-      form.reset(languageValues)
     }
+    form.reset(languageValues)
   }
 
   const closeModal = () => {

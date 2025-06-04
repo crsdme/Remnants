@@ -151,9 +151,22 @@ export function DataTable() {
     )
   }
 
+  const changePagination = useDebounceCallback((value: Pagination) => {
+    setPagination(state => ({ ...state, ...value }))
+  }, 50)
+
   const handleBulkExport = () => {
-    const ids = Object.keys(rowSelection)
-    categoryContext.exportCategories({ ids })
+    categoryContext.exportCategories({ ids: Object.keys(rowSelection) })
+    setRowSelection({})
+  }
+
+  const handleBulkRemove = () => {
+    categoryContext.removeCategory({ ids: Object.keys(rowSelection) })
+    setRowSelection({})
+  }
+
+  const handleBulkDuplicate = () => {
+    categoryContext.duplicateCategories({ ids: Object.keys(rowSelection) })
     setRowSelection({})
   }
 
@@ -186,24 +199,8 @@ export function DataTable() {
     setRowSelection({})
   }
 
-  const handleBulkRemove = () => {
-    const ids = Object.keys(rowSelection)
-    categoryContext.removeCategory({ ids })
-    setRowSelection({})
-  }
-
   const handleBatchToggle = (status: 'filter' | 'select') => {
     setBatchEditMode(status)
-  }
-
-  const changePagination = useDebounceCallback((value: Pagination) => {
-    setPagination(state => ({ ...state, ...value }))
-  }, 50)
-
-  const handleBulkDuplicate = () => {
-    const ids = Object.keys(rowSelection)
-    categoryContext.duplicateCategories({ ids })
-    setRowSelection({})
   }
 
   const advancedSortersSubmit = (sorters) => {
