@@ -119,5 +119,7 @@ export interface exportCategoriesParams {
 }
 
 export async function exportCategories(params: exportCategoriesParams) {
-  return api.post<CategoriesResponse>('categories/export', params)
+  return api.post<Blob>('categories/export', params, {
+    responseType: 'blob',
+  })
 }

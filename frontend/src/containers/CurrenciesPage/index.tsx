@@ -1,7 +1,7 @@
 import { Helmet } from 'react-helmet'
 import { useTranslation } from 'react-i18next'
 
-import { CurrencyProvider } from '@/utils/contexts'
+import { CurrencyProvider } from '@/contexts'
 import { ActionBar } from './components/action-bar'
 
 import { DataTable } from './components/data-table'

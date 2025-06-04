@@ -21,7 +21,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { useCategoryContext } from '@/utils/contexts'
+import { useCategoryContext } from '@/contexts'
 import formatDate from '@/utils/helpers/formatDate'
 
 const sortIcons = { asc: ArrowUp, desc: ArrowDown }

@@ -117,5 +117,6 @@
   "component.sidemenu.label.settings": "Settings",
   "component.sidemenu.label.logs": "Logs",
   "component.sidemenu.label.documents": "Documents",
-  "component.sidemenu.label.logout": "Logout"
+  "component.sidemenu.label.logout": "Logout",
+  "component.sidemenu.label.userRoles": "User Roles"
 }

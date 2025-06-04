@@ -1,7 +1,7 @@
 import { Moon, Sun } from 'lucide-react'
 
 import { Button } from '@/components/ui'
-import { useThemeContext } from '@/utils/contexts'
+import { useThemeContext } from '@/contexts'
 
 export default function ThemeButton() {
   const themeContext = useThemeContext()

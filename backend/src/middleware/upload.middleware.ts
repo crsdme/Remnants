@@ -15,7 +15,7 @@ interface UploadOptions {
   allowedMimeTypes?: string[]
 }
 
-export function createUploadMiddleware({
+export function uploadMiddleware({
   fieldName,
   storageKey,
   mode = 'single',

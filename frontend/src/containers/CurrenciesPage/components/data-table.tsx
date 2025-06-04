@@ -22,7 +22,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { useCurrencyContext } from '@/utils/contexts/currency/CurrencyContext'
+import { useCurrencyContext } from '@/contexts/currency/CurrencyContext'
 import { downloadCsv } from '@/utils/helpers/download'
 import { useDebounceCallback } from '@/utils/hooks'
 import { useColumns } from './columns'

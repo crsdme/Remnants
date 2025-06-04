@@ -17,7 +17,7 @@ import {
   Input,
 } from '@/components/ui'
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
-import { useCategoryContext } from '@/utils/contexts'
+import { useCategoryContext } from '@/contexts'
 
 export function ActionBar() {
   const { t, i18n } = useTranslation()

@@ -7,7 +7,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { useThemeContext } from '@/utils/contexts'
+import { useThemeContext } from '@/contexts'
 
 export default function LanguageButton() {
   const themeContext = useThemeContext()

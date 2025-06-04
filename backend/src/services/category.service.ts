@@ -1,5 +1,5 @@
 import type * as CategoryTypes from '../types/category.type'
-import fs from 'node:fs'
+import { Buffer } from 'node:buffer'
 import path from 'node:path'
 import ExcelJS from 'exceljs'
 import { v4 as uuidv4 } from 'uuid'
@@ -239,7 +239,7 @@ export async function importHandler(payload: CategoryTypes.importCategoriesParam
           $set: {
             names: category.names,
             priority: category.priority,
-            parent: category.parent || null,
+            parent: category.parent || '',
             active: category.active,
           },
         },
@@ -283,8 +283,8 @@ export async function exportHandler(payload: CategoryTypes.exportCategoriesParam
     const selectedCategories = await CategoryModel.find({ _id: { $in: ids } })
     selectedCategories.forEach((cat) => {
       const row: Record<string, any> = {}
-
       row.id = cat._id
+
       for (const lang of languages) {
         row[`name_${lang.code}`] = (cat.names as Map<string, string>).get(lang.code) || ''
       }
@@ -293,8 +293,8 @@ export async function exportHandler(payload: CategoryTypes.exportCategoriesParam
       const parentName = parentCategory
         ? `${parentCategory.names.get(userLanguage) || 'NO_NAME'} (${parentCategory._id})`
         : ''
-      row.parent = parentName
 
+      row.parent = parentName
       row.priority = cat.priority
       row.active = cat.active
 
@@ -335,10 +335,9 @@ export async function exportHandler(payload: CategoryTypes.exportCategoriesParam
     }
   }
 
-  const fileName = `${uuidv4()}.xlsx`
-  const storagePath = path.join(STORAGE_PATHS.exportCategories, fileName)
-  await workbook.xlsx.writeFile(storagePath)
-  const publicPath = `${PUBLIC_PATHS.exportCategories}/${fileName}`
+  await workbook.xlsx.writeFile(path.join(STORAGE_PATHS.exportCategories, `${uuidv4()}.xlsx`))
 
-  return { status: 'success', code: 'CATEGORIES_EXPORTED', message: 'Categories exported', fullPath: publicPath }
+  const buffer = await workbook.xlsx.writeBuffer()
+
+  return { status: 'success', code: 'CATEGORIES_EXPORTED', message: 'Categories exported', buffer: Buffer.from(buffer) }
 }

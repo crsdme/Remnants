@@ -22,7 +22,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { useLanguageContext } from '@/utils/contexts/language/LanguageContext'
+import { useLanguageContext } from '@/contexts/language/LanguageContext'
 import { downloadCsv } from '@/utils/helpers/download'
 import { useDebounceCallback } from '@/utils/hooks'
 import { useColumns } from './columns'

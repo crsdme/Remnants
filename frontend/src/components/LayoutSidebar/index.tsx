@@ -28,7 +28,7 @@ import {
   SidebarMenuButton,
   SidebarRail,
 } from '@/components/ui/sidebar'
-import { useAuthContext } from '@/utils/contexts'
+import { useAuthContext } from '@/contexts'
 
 import { NavMain } from './navMain'
 
@@ -164,6 +164,7 @@ export function LayoutSidebar({ ...props }: React.ComponentProps<typeof Sidebar>
           { title: t('component.sidemenu.label.units'), url: '/settings/units' },
           { title: t('component.sidemenu.label.settings'), url: '/settings' },
           { title: t('component.sidemenu.label.logs'), url: '/settings/logs' },
+          { title: t('component.sidemenu.label.userRoles'), url: '/settings/users/roles' },
         ],
       },
       {

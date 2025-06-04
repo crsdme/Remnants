@@ -1,7 +1,7 @@
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import LogoIcon from '@/components/ui/icons/logoIcon'
 
-import { useAuthContext } from '@/utils/contexts'
+import { useAuthContext } from '@/contexts'
 
 import Layout from '../components/Layout'
 import {

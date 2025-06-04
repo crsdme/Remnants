@@ -22,7 +22,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { useAuthContext } from '@/utils/contexts'
+import { useAuthContext } from '@/contexts'
 import { cn } from '@/utils/lib/utils'
 
 export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRef<'div'>) {

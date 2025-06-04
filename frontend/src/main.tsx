@@ -2,7 +2,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 
 import { createRoot } from 'react-dom/client'
 
-import { AuthProvider, ThemeProvider } from '@/utils/contexts'
+import { AuthProvider, ThemeProvider } from '@/contexts'
 
 import App from './app/App'
 import '@/locales/i18n.ts'

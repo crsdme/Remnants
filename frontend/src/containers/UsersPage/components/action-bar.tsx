@@ -15,7 +15,7 @@ import {
 } from '@/components/ui'
 
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
-import { useUserContext } from '@/utils/contexts'
+import { useUserContext } from '@/contexts'
 import { downloadCsv } from '@/utils/helpers/download'
 
 export function ActionBar() {

@@ -19,7 +19,7 @@ import {
   useImportCategories,
   useRemoveCategories,
 } from '@/api/hooks/'
-import { downloadFile } from '@/utils/helpers/download'
+import { downloadBlob, downloadFile } from '@/utils/helpers/download'
 
 interface CategoryContextType {
   selectedCategory: Category
@@ -165,9 +165,9 @@ export function CategoryProvider({ children }: CategoryProviderProps) {
 
   const useMutateExportCategories = useExportCategories({
     options: {
-      onSuccess: ({ data }) => {
-        downloadFile(data.fullPath, 'categories-template.xlsx')
-        toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description || ''}` })
+      onSuccess: ({ data, headers }) => {
+        downloadBlob(data, 'categories-template.xlsx')
+        toast.success(t(`response.title.${headers['x-export-code']}`), { description: `${t(`response.description.${headers['x-export-code']}`)} ${headers['x-export-message'] || ''}` })
       },
       onError: ({ response }) => {
         const error = response.data.error

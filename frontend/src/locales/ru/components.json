@@ -118,6 +118,7 @@
   "component.sidemenu.label.logs": "Логи",
   "component.sidemenu.label.documents": "Документы",
   "component.sidemenu.label.logout": "Выйти",
+  "component.sidemenu.label.userRoles": "Роли пользователей",
 
   "component.asyncSelect.searchPlaceholder": "Поиск",
   "component.asyncSelect.noResultsMessage": "Ничего не найдено",

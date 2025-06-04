@@ -16,5 +16,4 @@ interface CategoriesResponse {
   description: string
   categories: Category[]
   categoriesCount: number
-  fullPath: string
 }

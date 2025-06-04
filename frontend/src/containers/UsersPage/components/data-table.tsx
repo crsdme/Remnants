@@ -21,7 +21,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { useUserContext } from '@/utils/contexts/user/UserContext'
+import { useUserContext } from '@/contexts/user/UserContext'
 import { downloadCsv } from '@/utils/helpers/download'
 import { useDebounceCallback } from '@/utils/hooks'
 import { useColumns } from './columns'

@@ -22,7 +22,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { useCategoryContext } from '@/utils/contexts/category/CategoryContext'
+import { useCategoryContext } from '@/contexts/category/CategoryContext'
 import { useDebounceCallback } from '@/utils/hooks'
 import { useColumns } from './columns'
 import { DataTableFilters } from './data-table-filters'

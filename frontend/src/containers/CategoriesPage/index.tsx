@@ -1,7 +1,7 @@
 import { Helmet } from 'react-helmet'
 import { useTranslation } from 'react-i18next'
 
-import { CategoryProvider } from '@/utils/contexts'
+import { CategoryProvider } from '@/contexts'
 import { ActionBar } from './components/action-bar'
 
 import { DataTable } from './components/data-table'

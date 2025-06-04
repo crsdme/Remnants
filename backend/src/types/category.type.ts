@@ -1,3 +1,4 @@
+import type { Buffer } from 'node:buffer'
 import type { SUPPORTED_LANGUAGES_TYPE } from '../config/constants'
 import type { Code, DateRange, IdType, LanguageString, Message, Pagination, Status } from './common.type'
 
@@ -125,7 +126,7 @@ export interface exportCategoriesResult {
   status: Status
   code: Code
   message: Message
-  fullPath: string
+  buffer: Buffer
 }
 
 export interface exportCategoriesParams {
