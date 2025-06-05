@@ -1,18 +1,19 @@
 import type { getLanguagesParams } from '@/api/requests'
 
-import { useSuspenseQuery } from '@tanstack/react-query'
+import { useQuery } from '@tanstack/react-query'
 import { getLanguages } from '@/api/requests'
 
-export function useRequestLanguages(params: getLanguagesParams) {
-  return useSuspenseQuery({
+export function useRequestLanguages(params: getLanguagesParams, settings?: QuerySettings) {
+  return useQuery({
     queryKey: [
       'languages',
       'get',
-      JSON.stringify(params.pagination),
-      JSON.stringify(params.filters),
-      JSON.stringify(params.sorters),
+      params.pagination,
+      params.filters,
+      params.sorters,
     ],
     queryFn: () => getLanguages(params),
+    ...settings?.options,
     staleTime: 60000,
   })
 }

@@ -8,9 +8,9 @@ export function useRequestCurrencies(params: getCurrenciesParams, settings?: Que
     queryKey: [
       'currencies',
       'get',
-      JSON.stringify(params.pagination),
-      JSON.stringify(params.filters),
-      JSON.stringify(params.sorters),
+      params.pagination,
+      params.filters,
+      params.sorters,
     ],
     queryFn: () => getCurrencies(params),
     ...settings?.options,

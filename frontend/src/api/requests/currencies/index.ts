@@ -17,10 +17,10 @@ export interface getCurrenciesParams {
     }
   }
   sorters?: {
-    names?: number
-    priority?: number
-    createdAt?: number
-    updatedAt?: number
+    names?: string
+    priority?: string
+    createdAt?: string
+    updatedAt?: string
   }
   pagination?: {
     full?: boolean

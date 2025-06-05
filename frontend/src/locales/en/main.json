@@ -7,7 +7,6 @@
 
   "table.createdAt": "Created At",
   "table.updatedAt": "Updated At",
-  "table.actions": "Actions",
   "table.copy": "Copy ID",
   "table.edit": "Edit",
   "table.delete": "Delete",

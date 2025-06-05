@@ -8,9 +8,9 @@ export function useRequestCategories(params: getCategoriesParams, settings?: Que
     queryKey: [
       'categories',
       'get',
-      JSON.stringify(params.pagination),
-      JSON.stringify(params.filters),
-      JSON.stringify(params.sorters),
+      params.pagination,
+      params.filters,
+      params.sorters,
     ],
     queryFn: () => getCategories(params),
     ...settings?.options,

@@ -7,7 +7,6 @@
 
   "table.createdAt": "Дата создания",
   "table.updatedAt": "Дата обновления",
-  "table.actions": "Действия",
   "table.copy": "Копировать ID",
   "table.edit": "Редактировать",
   "table.delete": "Удалить",

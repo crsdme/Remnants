@@ -1,9 +1,11 @@
+import type { ColumnSort } from '@tanstack/react-table'
 import { flexRender, getCoreRowModel, getExpandedRowModel, useReactTable } from '@tanstack/react-table'
 
-import { Fragment, useState } from 'react'
+import { Fragment, useCallback, useMemo, useState } from 'react'
 
 import { useTranslation } from 'react-i18next'
 import { useRequestCategories, useRequestLanguages } from '@/api/hooks'
+import { getCategories } from '@/api/requests/'
 import { AdvancedFilters } from '@/components/AdvancedFilters'
 
 import { AdvancedSorters } from '@/components/AdvancedSorters'
@@ -42,7 +44,7 @@ export function DataTable() {
 
   const [columnVisibility, setColumnVisibility] = useState({})
   const [rowSelection, setRowSelection] = useState({})
-  const [sorters, setSorters] = useState({})
+  const [sorting, setSorting] = useState<ColumnSort[]>([])
   const [batchEditMode, setBatchEditMode] = useState<'filter' | 'select'>('select')
   const [pagination, setPagination] = useState({
     current: 1,
@@ -51,16 +53,38 @@ export function DataTable() {
   const [filters, setFilters] = useState(filtersInitialState)
   const [expanded, setExpanded] = useState({})
 
+  const sorters = useMemo(() => (
+    Object.fromEntries(sorting.map(({ id, desc }) => [id, desc ? 'desc' : 'asc']))
+  ), [sorting])
+
   const requestCategories = useRequestCategories(
     { pagination, filters, sorters, isTree: true },
+    { options: { placeholderData: prevData => prevData } },
   )
-
-  const columns = useColumns({ setSorters })
   const categories = requestCategories?.data?.data?.categories || []
   const categoriesCount = requestCategories?.data?.data?.categoriesCount || 0
 
   const requestLanguages = useRequestLanguages({ pagination: { full: true } })
   const languages = requestLanguages.data?.data?.languages || []
+
+  const loadOptions = useCallback(async (inputValue: string) => {
+    const response = await getCategories({
+      pagination: { full: true },
+      filters: {
+        names: inputValue,
+        active: [true],
+        language: i18n.language,
+      },
+    })
+
+    const categories = response?.data?.categories || []
+    return categories.map(category => ({
+      value: category.id,
+      label: category.names[i18n.language],
+    }))
+  }, [i18n.language])
+
+  const columns = useColumns(loadOptions)
 
   const table = useReactTable({
     data: categories,
@@ -72,7 +96,11 @@ export function DataTable() {
     onExpandedChange: setExpanded,
     getSubRows: row => row.children,
     getRowId: row => row.id,
+    onSortingChange: setSorting,
+    manualSorting: true,
+    enableSortingRemoval: true,
     state: {
+      sorting,
       columnVisibility,
       rowSelection,
       expanded,
@@ -204,12 +232,16 @@ export function DataTable() {
   }
 
   const advancedSortersSubmit = (sorters) => {
-    const sorterValues = Object.fromEntries(sorters.map(({ column, value }) => [column, value]))
-    setSorters(state => ({ ...state, ...sorterValues }))
+    const mapedSorters = sorters.map(({ column, value }) => ({
+      id: column,
+      desc: value === 'desc',
+    }))
+
+    setSorting(mapedSorters)
   }
 
   const advancedSortersCancel = () => {
-    setSorters({})
+    setSorting([])
   }
 
   return (

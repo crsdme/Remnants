@@ -25,7 +25,7 @@ export function ActionBar() {
   const [file, setFile] = useState<File | null>(null)
 
   const requestLanguages = useRequestLanguages({ pagination: { full: true } })
-  const languages = requestLanguages.data.data.languages
+  const languages = requestLanguages?.data?.data?.languages || []
 
   const onSubmit = (values) => {
     currencyContext.submitCurrencyForm(values)

@@ -1,248 +1,233 @@
-import type { Column, ColumnDef } from '@tanstack/react-table'
-
 import {
   ArrowDown,
   ArrowUp,
   ChevronDown,
   ChevronRight,
   ChevronsUpDown,
-  MoreHorizontal,
 } from 'lucide-react'
-import { useTranslation } from 'react-i18next'
+import { useMemo } from 'react'
 
+import { useTranslation } from 'react-i18next'
+import { TableActionDropdown } from '@/components/TableActionDropdown/TableActionDropdown'
 import { Badge, Button, Checkbox } from '@/components/ui'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
 import { useUserContext } from '@/contexts'
 import formatDate from '@/utils/helpers/formatDate'
 
 const sortIcons = { asc: ArrowUp, desc: ArrowDown }
 
-export function useColumns({ setSorters, expandedRows, setExpandedRows }): ColumnDef<User>[] {
+export function useColumns() {
   const { t, i18n } = useTranslation()
   const userContext = useUserContext()
 
-  const sortHeader = (column: Column<User>, label: string) => {
-    const sortOrder = column.getIsSorted() || undefined
-    const Icon = (sortIcons[sortOrder] || ChevronsUpDown)
+  const columns = useMemo(() => {
+    function sortHeader(column, label) {
+      const isLoading = userContext.isLoading
+      const Icon = sortIcons[column.getIsSorted() || undefined] || ChevronsUpDown
 
-    const handleSort = () => {
-      if (sortOrder === 'asc') {
-        column.toggleSorting(true)
-      }
-      else if (sortOrder === 'desc') {
-        column.clearSorting()
-      }
-      else if (!sortOrder) {
-        column.toggleSorting(false)
-      }
-
-      setSorters({ [`${column.id}`]: sortOrder })
+      return (
+        <Button
+          disabled={isLoading}
+          variant="ghost"
+          onClick={() => column.toggleSorting()}
+          className="my-2 flex items-center gap-2"
+        >
+          {label}
+          <Icon className="w-4 h-4" />
+        </Button>
+      )
     }
 
-    return (
-      <Button
-        disabled={userContext.isLoading}
-        variant="ghost"
-        onClick={handleSort}
-        className="my-2 flex items-center gap-2"
-      >
-        {label}
-        <Icon className="w-4 h-4" />
-      </Button>
-    )
-  }
+    function selectColumn() {
+      return ({
+        id: 'select',
+        size: 35,
+        meta: { title: t('component.columnMenu.columns.select') },
+        header: ({ table }) => {
+          const isChecked = table.getIsAllPageRowsSelected()
+            ? true
+            : table.getIsSomePageRowsSelected()
+              ? 'indeterminate'
+              : false
 
-  return [
-    {
-      id: 'select',
-      size: 35,
-      meta: { title: t('component.columnMenu.columns.select') },
-      header: ({ table }) => {
-        const isChecked = table.getIsAllPageRowsSelected()
-          ? true
-          : table.getIsSomePageRowsSelected()
-            ? 'indeterminate'
-            : false
-
-        return (
+          return (
+            <Checkbox
+              checked={isChecked}
+              onCheckedChange={value => table.toggleAllPageRowsSelected(!!value)}
+              aria-label="Select all"
+            />
+          )
+        },
+        cell: ({ row }) => (
           <Checkbox
-            checked={isChecked}
-            onCheckedChange={value => table.toggleAllPageRowsSelected(!!value)}
-            aria-label="Select all"
+            checked={row.getIsSelected()}
+            onCheckedChange={value => row.toggleSelected(!!value)}
+            aria-label="Select row"
           />
-        )
-      },
-      cell: ({ row }) => (
-        <Checkbox
-          checked={row.getIsSelected()}
-          onCheckedChange={value => row.toggleSelected(!!value)}
-          aria-label="Select row"
-        />
-      ),
-      enableSorting: false,
-      enableHiding: false,
-    },
-    {
-      id: 'seq',
-      size: 50,
-      meta: {
-        title: t('table.seq'),
-      },
-      header: t('table.seq'),
-      accessorFn: row => row.seq,
-    },
-    {
-      id: 'name',
-      size: 150,
-      meta: {
-        title: t('page.users.table.name'),
-        filterable: true,
-        filterType: 'text',
-        sortable: true,
-      },
-      header: ({ column }) => sortHeader(column, t('page.users.table.name')),
-      accessorFn: row => row.name,
-    },
-    {
-      id: 'login',
-      size: 100,
-      meta: {
-        title: t('page.users.table.login'),
-        filterable: true,
-        filterType: 'text',
-        sortable: true,
-      },
-      header: () => t('page.users.table.login'),
-      accessorFn: row => row.login,
-      cell: ({ row }) => (
-        <Badge variant="outline">
-          {row.original.login}
-        </Badge>
-      ),
-    },
-    {
-      id: 'role',
-      size: 100,
-      meta: {
-        title: t('page.users.table.role'),
-        filterable: true,
-        filterType: 'text',
-        sortable: true,
-      },
-      header: () => t('page.users.table.role'),
-      accessorFn: row => row.role,
-      cell: ({ row }) => (
-        <Badge variant="outline">
-          {row.original.role.names[i18n.language]}
-        </Badge>
-      ),
-    },
-    {
-      id: 'active',
-      accessorKey: 'active',
-      meta: {
-        title: t('page.users.table.active'),
-        batchEdit: true,
-        batchEditType: 'boolean',
-        filterable: true,
-        filterType: 'boolean',
-        sortable: true,
-      },
-      header: t('page.users.table.active'),
-      cell: ({ row }) => <Badge variant="outline">{row.original.active.toString()}</Badge>,
-    },
-    {
-      id: 'createdAt',
-      accessorKey: 'createdAt',
-      meta: {
-        title: t('table.createdAt'),
-        filterable: true,
-        filterType: 'date',
-        sortable: true,
-      },
-      header: ({ column }) => sortHeader(column, t('table.createdAt')),
-      cell: ({ row }) => formatDate(row.getValue('createdAt'), 'MMMM dd, yyyy', i18n.language),
-    },
-    {
-      id: 'updatedAt',
-      accessorKey: 'updatedAt',
-      meta: {
-        title: t('table.updatedAt'),
-        filterable: true,
-        filterType: 'date',
-        sortable: true,
-      },
-      header: ({ column }) => sortHeader(column, t('table.updatedAt')),
-      cell: ({ row }) => formatDate(row.getValue('updatedAt'), 'MMMM dd, yyyy', i18n.language),
-    },
-    {
-      id: 'action',
-      size: 85,
-      meta: {
-        title: t('page.users.table.actions'),
-      },
-      enableHiding: false,
-      cell: ({ row }) => {
-        const user = row.original
+        ),
+        enableSorting: false,
+        enableHiding: false,
+      })
+    }
 
-        return (
-          <div className="flex items-center gap-2">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() =>
-                setExpandedRows(prev => ({
-                  ...prev,
-                  [row.id]: !prev[row.id],
-                }))}
-              className="h-8 w-8 p-0"
-            >
-              {expandedRows[row.id]
-                ? (
-                    <ChevronDown className="h-4 w-4" />
-                  )
-                : (
-                    <ChevronRight className="h-4 w-4" />
-                  )}
-            </Button>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="h-8 w-8 p-0">
-                  <MoreHorizontal className="h-4 w-4" />
+    function expanderColumn() {
+      return ({
+        id: 'expander',
+        header: '',
+        cell: ({ row }) => (
+          row.getCanExpand()
+            ? (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={row.getToggleExpandedHandler()}
+                  style={{ width: 24, height: 24, padding: 0 }}
+                >
+                  {row.getIsExpanded()
+                    ? <ChevronDown size={16} />
+                    : <ChevronRight size={16} />}
                 </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuLabel>{t('table.actions')}</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => navigator.clipboard.writeText(user.id)}>
-                  {t('table.copy')}
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => userContext.toggleModal(user)}>
-                  {t('table.edit')}
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={() => userContext.duplicateUsers({ ids: [user.id] })}
-                >
-                  {t('table.duplicate')}
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={() => userContext.removeUsers({ ids: [user.id] })}
-                  variant="destructive"
-                >
-                  {t('table.delete')}
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-        )
+              )
+            : null
+        ),
+        size: 24,
+        enableSorting: false,
+        enableHiding: false,
+      })
+    }
+
+    function actionColumn() {
+      return ({
+        id: 'action',
+        size: 85,
+        meta: {
+          title: t('table.actions'),
+        },
+        enableHiding: false,
+        cell: ({ row }) => {
+          const user = row.original
+
+          return (
+            <TableActionDropdown
+              copyAction={{
+                permission: 'category.copy',
+                onClick: () => navigator.clipboard.writeText(user.id),
+              }}
+              editAction={{
+                permission: 'category.edit',
+                onClick: () => userContext.toggleModal(user),
+              }}
+              duplicateAction={{
+                permission: 'category.duplicate',
+                onClick: () => userContext.duplicateUsers({ ids: [user.id] }),
+              }}
+              deleteAction={{
+                permission: 'category.delete',
+                onClick: () => userContext.removeUsers({ ids: [user.id] }),
+              }}
+            />
+          )
+        },
+      })
+    }
+
+    return [
+      selectColumn(),
+      expanderColumn(),
+      {
+        id: 'seq',
+        size: 50,
+        meta: {
+          title: t('table.seq'),
+        },
+        header: t('table.seq'),
+        accessorFn: row => row.seq,
       },
-    },
-  ]
+      {
+        id: 'name',
+        size: 150,
+        meta: {
+          title: t('page.users.table.name'),
+          filterable: true,
+          filterType: 'text',
+          sortable: true,
+        },
+        header: ({ column }) => sortHeader(column, t('page.users.table.name')),
+        accessorFn: row => row.name,
+      },
+      {
+        id: 'login',
+        size: 100,
+        meta: {
+          title: t('page.users.table.login'),
+          filterable: true,
+          filterType: 'text',
+          sortable: true,
+        },
+        header: () => t('page.users.table.login'),
+        accessorFn: row => row.login,
+        cell: ({ row }) => (
+          <Badge variant="outline">
+            {row.original.login}
+          </Badge>
+        ),
+      },
+      {
+        id: 'role',
+        size: 100,
+        meta: {
+          title: t('page.users.table.role'),
+          filterable: true,
+          filterType: 'text',
+          sortable: true,
+        },
+        header: () => t('page.users.table.role'),
+        accessorFn: row => row.role,
+        cell: ({ row }) => (
+          <Badge variant="outline">
+            {row.original.role.names[i18n.language]}
+          </Badge>
+        ),
+      },
+      {
+        id: 'active',
+        accessorKey: 'active',
+        meta: {
+          title: t('page.users.table.active'),
+          batchEdit: true,
+          batchEditType: 'boolean',
+          filterable: true,
+          filterType: 'boolean',
+          sortable: true,
+        },
+        header: t('page.users.table.active'),
+        cell: ({ row }) => <Badge variant="outline">{row.original.active.toString()}</Badge>,
+      },
+      {
+        id: 'createdAt',
+        accessorKey: 'createdAt',
+        meta: {
+          title: t('table.createdAt'),
+          filterable: true,
+          filterType: 'date',
+          sortable: true,
+        },
+        header: ({ column }) => sortHeader(column, t('table.createdAt')),
+        cell: ({ row }) => formatDate(row.getValue('createdAt'), 'MMMM dd, yyyy', i18n.language),
+      },
+      {
+        id: 'updatedAt',
+        accessorKey: 'updatedAt',
+        meta: {
+          title: t('table.updatedAt'),
+          filterable: true,
+          filterType: 'date',
+          sortable: true,
+        },
+        header: ({ column }) => sortHeader(column, t('table.updatedAt')),
+        cell: ({ row }) => formatDate(row.getValue('updatedAt'), 'MMMM dd, yyyy', i18n.language),
+      },
+      actionColumn(),
+    ]
+  }, [i18n.language])
+  return columns
 }

@@ -192,25 +192,6 @@ export function LayoutSidebar({ ...props }: React.ComponentProps<typeof Sidebar>
     ],
   }
 
-  // function filterByPermissions(items, userPermissions) {
-  //   return items
-  //     .map((item) => {
-  //       const hasPermission = item.permissions.every(p => userPermissions.includes(p))
-
-  //       if (item.items) {
-  //         const filteredChildren = filterByPermissions(item.items, userPermissions)
-  //         if (filteredChildren.length > 0 || hasPermission) {
-  //           return { ...item, items: filteredChildren }
-  //         }
-  //         return null
-  //       }
-
-  //       return hasPermission ? item : null
-  //     })
-  //     .filter(Boolean)
-  // }
-
-  // data.navMain = filterByPermissions(data.navMain, authContext.permissions)
   data.navMain = sidebarPermission(data.navMain, authContext.permissions)
 
   return (
@@ -246,8 +227,8 @@ function sidebarPermission(items, permissions) {
     .map((item) => {
       const hasAccess = hasPermission(permissions, item.permissions || [])
 
-      let children = item.items || []
-      if (children.length > 0) {
+      let children = item.items || undefined
+      if (children?.length > 0) {
         children = sidebarPermission(children, permissions)
       }
 

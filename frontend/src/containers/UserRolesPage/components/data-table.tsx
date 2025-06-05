@@ -1,9 +1,9 @@
 import { flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table'
 
-import { Fragment, useState } from 'react'
+import { Fragment, useMemo, useState } from 'react'
 
 import { useTranslation } from 'react-i18next'
-import { useRequestUserRoles, useRequestUsers } from '@/api/hooks'
+import { useRequestUserRoles } from '@/api/hooks'
 
 import { AdvancedFilters } from '@/components/AdvancedFilters'
 import { AdvancedSorters } from '@/components/AdvancedSorters'
@@ -42,19 +42,23 @@ export function DataTable() {
 
   const [columnVisibility, setColumnVisibility] = useState({})
   const [rowSelection, setRowSelection] = useState({})
-  const [sorters, setSorters] = useState({})
-  const [expandedRows, setExpandedRows] = useState({})
+  const [sorting, setSorting] = useState([])
   const [pagination, setPagination] = useState({
     current: 1,
     pageSize: 10,
   })
   const [filters, setFilters] = useState(filtersInitialState)
 
+  const sorters = useMemo(() => (
+    Object.fromEntries(sorting.map(({ id, desc }) => [id, desc ? 'desc' : 'asc']))
+  ), [sorting])
+
   const requestUserRoles = useRequestUserRoles(
     { pagination, filters, sorters },
+    { options: { placeholderData: prevData => prevData } },
   )
 
-  const columns = useColumns({ setSorters, expandedRows, setExpandedRows })
+  const columns = useColumns()
   const userRoles = requestUserRoles?.data?.data?.userRoles || []
   const userRolesCount = requestUserRoles?.data?.data?.userRolesCount || 0
 
@@ -64,7 +68,11 @@ export function DataTable() {
     getCoreRowModel: getCoreRowModel(),
     onColumnVisibilityChange: setColumnVisibility,
     onRowSelectionChange: setRowSelection,
+    onSortingChange: setSorting,
+    manualSorting: true,
+    enableSortingRemoval: true,
     state: {
+      sorting,
       columnVisibility,
       rowSelection,
       pagination: {
@@ -106,32 +114,6 @@ export function DataTable() {
     ))
   }
 
-  const renderTableExpandedRow = (row) => {
-    return (
-      <TableRow>
-        <TableCell colSpan={columns.length} className="bg-muted/50">
-          <div className="p-4">
-            <h4 className="font-semibold mb-2">{t('table.details')}</h4>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <p className="text-sm text-muted-foreground">
-                  {t('table.createdAt')}
-                </p>
-                <p>{row.original.createdAt.toString()}</p>
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">
-                  {t('table.updatedAt')}
-                </p>
-                <p>{row.original.updatedAt.toString()}</p>
-              </div>
-            </div>
-          </div>
-        </TableCell>
-      </TableRow>
-    )
-  }
-
   const renderTableBody = () => {
     if (requestUserRoles.isLoading || requestUserRoles.isFetching)
       return renderSkeletonRows()
@@ -149,7 +131,6 @@ export function DataTable() {
               </TableCell>
             ))}
           </TableRow>
-          {expandedRows[row.id] && renderTableExpandedRow(row)}
         </Fragment>
       ))
     }
@@ -207,12 +188,16 @@ export function DataTable() {
   }
 
   const advancedSortersSubmit = (sorters) => {
-    const sorterValues = Object.fromEntries(sorters.map(({ column, value }) => [column, value]))
-    setSorters(state => ({ ...state, ...sorterValues }))
+    const mapedSorters = sorters.map(({ column, value }) => ({
+      id: column,
+      desc: value === 'desc',
+    }))
+
+    setSorting(mapedSorters)
   }
 
   const advancedSortersCancel = () => {
-    setSorters({})
+    setSorting([])
   }
 
   return (

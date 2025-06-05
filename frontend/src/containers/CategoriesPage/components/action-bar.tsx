@@ -27,7 +27,7 @@ export function ActionBar() {
   const [search, setSearch] = useState('')
 
   const requestLanguages = useRequestLanguages({ pagination: { full: true } })
-  const languages = requestLanguages.data.data.languages
+  const languages = requestLanguages?.data?.data?.languages || []
 
   const requestCategories = useRequestCategories(
     { pagination: { full: true }, filters: { names: search, active: [true], language: i18n.language } },

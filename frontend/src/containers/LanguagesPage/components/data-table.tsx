@@ -1,6 +1,6 @@
 import { flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table'
 
-import { Fragment, useState } from 'react'
+import { Fragment, useMemo, useState } from 'react'
 
 import { useTranslation } from 'react-i18next'
 import { useRequestLanguages } from '@/api/hooks'
@@ -44,7 +44,7 @@ export function DataTable() {
 
   const [columnVisibility, setColumnVisibility] = useState({})
   const [rowSelection, setRowSelection] = useState({})
-  const [sorters, setSorters] = useState({})
+  const [sorting, setSorting] = useState([])
   const [batchEditMode, setBatchEditMode] = useState<'filter' | 'select'>('select')
   const [pagination, setPagination] = useState({
     current: 1,
@@ -52,11 +52,16 @@ export function DataTable() {
   })
   const [filters, setFilters] = useState(filtersInitialState)
 
+  const sorters = useMemo(() => (
+    Object.fromEntries(sorting.map(({ id, desc }) => [id, desc ? 'desc' : 'asc']))
+  ), [sorting])
+
   const requestLanguages = useRequestLanguages(
     { pagination, filters, sorters },
+    { options: { placeholderData: prevData => prevData } },
   )
 
-  const columns = useColumns({ setSorters })
+  const columns = useColumns()
   const languages = requestLanguages?.data?.data?.languages || []
   const languagesCount = requestLanguages?.data?.data?.languagesCount || 0
 
@@ -66,7 +71,11 @@ export function DataTable() {
     getCoreRowModel: getCoreRowModel(),
     onColumnVisibilityChange: setColumnVisibility,
     onRowSelectionChange: setRowSelection,
+    onSortingChange: setSorting,
+    manualSorting: true,
+    enableSortingRemoval: true,
     state: {
+      sorting,
       columnVisibility,
       rowSelection,
       pagination: {
@@ -206,12 +215,16 @@ export function DataTable() {
   }
 
   const advancedSortersSubmit = (sorters) => {
-    const sorterValues = Object.fromEntries(sorters.map(({ column, value }) => [column, value]))
-    setSorters(state => ({ ...state, ...sorterValues }))
+    const mapedSorters = sorters.map(({ column, value }) => ({
+      id: column,
+      desc: value === 'desc',
+    }))
+
+    setSorting(mapedSorters)
   }
 
   const advancedSortersCancel = () => {
-    setSorters({})
+    setSorting([])
   }
 
   return (
