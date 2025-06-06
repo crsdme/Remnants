@@ -5,6 +5,7 @@ import { useRequestUserRoles } from '@/api/hooks/userRoles/useRequestUserRoles'
 import { AsyncSelect } from '@/components/AsyncSelect'
 
 import { ImportButton } from '@/components/ImportButton'
+import { PermissionGate } from '@/components/PermissionGate/PermissionGate'
 import {
   Button,
   Checkbox,
@@ -76,149 +77,154 @@ export function ActionBar() {
         <p className="text-muted-foreground">{t('page.users.description')}</p>
       </div>
       <div className="flex items-center flex-wrap gap-2">
-        <ImportButton
-          handleFileChange={handleFileChange}
-          handleDownloadTemplate={handleDownloadTemplate}
-          isFileSelected={!!file}
-          isLoading={isLoading}
-          onSubmit={onImport}
-        />
-        <Sheet open={userContext.isModalOpen} onOpenChange={() => !isLoading && userContext.toggleModal()}>
-          <SheetTrigger asChild>
-            <Button onClick={() => userContext.toggleModal()} disabled={isLoading}>
-              <Plus />
-              {t('page.users.button.create')}
-            </Button>
-          </SheetTrigger>
-          <SheetContent className="sm:max-w-xl w-full overflow-y-auto" side="right">
-            <SheetHeader>
-              <SheetTitle>{t('page.users.form.title.create')}</SheetTitle>
-              <SheetDescription>
-                {t('page.users.form.description.create')}
-              </SheetDescription>
-            </SheetHeader>
-            <div className="w-full px-4">
-              <Form {...userContext.form}>
-                <form className="w-full space-y-4" onSubmit={userContext.form.handleSubmit(onSubmit)}>
-                  <FormField
-                    control={userContext.form.control}
-                    name="name"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>
-                          {t('page.users.form.name')}
-                        </FormLabel>
-                        <FormControl>
-                          <Input
-                            placeholder={t('page.users.form.name')}
-                            className="w-full"
-                            {...field}
-                            disabled={isLoading}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={userContext.form.control}
-                    name="login"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>
-                          {t('page.users.form.login')}
-                        </FormLabel>
-                        <FormControl>
-                          <Input
-                            placeholder={t('page.users.form.login')}
-                            className="w-full"
-                            {...field}
-                            disabled={isLoading}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={userContext.form.control}
-                    name="password"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>{t('page.users.form.password')}</FormLabel>
-                        <FormControl>
-                          <Input
-                            type="password"
-                            placeholder={t('page.users.form.password')}
-                            className="w-full"
-                            {...field}
-                            disabled={isLoading}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={userContext.form.control}
-                    name="role"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>{t('page.users.form.role')}</FormLabel>
-                        <FormControl>
-                          <AsyncSelect<UserRole>
-                            fetcher={async (searchValue) => {
-                              setSearch(searchValue)
-                              return requestUserRoles.data?.data?.userRoles || []
-                            }}
-                            renderOption={e => e.names[i18n.language]}
-                            getDisplayValue={e => e.names[i18n.language]}
-                            getOptionValue={e => e.id}
-                            width="100%"
-                            className="w-full"
-                            name="role"
-                            value={field.value}
-                            onChange={field.onChange}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={userContext.form.control}
-                    name="active"
-                    render={({ field }) => (
-                      <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
-                        <FormControl>
-                          <Checkbox
-                            checked={field.value}
-                            onCheckedChange={field.onChange}
-                            disabled={isLoading}
-                          />
-                        </FormControl>
-                        <FormLabel>{t('page.users.form.active')}</FormLabel>
-                      </FormItem>
-                    )}
-                  />
-                  <div className="flex gap-2">
-                    <Button
-                      type="button"
-                      variant="secondary"
-                      onClick={() => userContext.toggleModal()}
-                      disabled={isLoading}
-                    >
-                      {t('button.cancel')}
-                    </Button>
-                    <Button type="submit" disabled={isLoading} loading={isLoading}>
-                      {t('button.submit')}
-                    </Button>
-                  </div>
-                </form>
-              </Form>
-            </div>
-          </SheetContent>
-        </Sheet>
+        <PermissionGate permission="user.import">
+          <ImportButton
+            handleFileChange={handleFileChange}
+            handleDownloadTemplate={handleDownloadTemplate}
+            isFileSelected={!!file}
+            isLoading={isLoading}
+            onSubmit={onImport}
+          />
+        </PermissionGate>
+        <PermissionGate permission={['user.create']}>
+          <Sheet open={userContext.isModalOpen} onOpenChange={() => !isLoading && userContext.toggleModal()}>
+            <SheetTrigger asChild>
+              <Button onClick={() => userContext.toggleModal()} disabled={isLoading}>
+                <Plus />
+                {t('page.users.button.create')}
+              </Button>
+            </SheetTrigger>
+            <SheetContent className="sm:max-w-xl w-full overflow-y-auto" side="right">
+              <SheetHeader>
+                <SheetTitle>{t('page.users.form.title.create')}</SheetTitle>
+                <SheetDescription>
+                  {t('page.users.form.description.create')}
+                </SheetDescription>
+              </SheetHeader>
+              <div className="w-full px-4">
+                <Form {...userContext.form}>
+                  <form className="w-full space-y-4" onSubmit={userContext.form.handleSubmit(onSubmit)}>
+                    <FormField
+                      control={userContext.form.control}
+                      name="name"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>
+                            {t('page.users.form.name')}
+                          </FormLabel>
+                          <FormControl>
+                            <Input
+                              placeholder={t('page.users.form.name')}
+                              className="w-full"
+                              {...field}
+                              disabled={isLoading}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={userContext.form.control}
+                      name="login"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>
+                            {t('page.users.form.login')}
+                          </FormLabel>
+                          <FormControl>
+                            <Input
+                              placeholder={t('page.users.form.login')}
+                              className="w-full"
+                              {...field}
+                              disabled={isLoading}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={userContext.form.control}
+                      name="password"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>{t('page.users.form.password')}</FormLabel>
+                          <FormControl>
+                            <Input
+                              type="password"
+                              placeholder={t('page.users.form.password')}
+                              className="w-full"
+                              {...field}
+                              disabled={isLoading}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={userContext.form.control}
+                      name="role"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>{t('page.users.form.role')}</FormLabel>
+                          <FormControl>
+                            <AsyncSelect<UserRole>
+                              fetcher={async (searchValue) => {
+                                setSearch(searchValue)
+                                return requestUserRoles.data?.data?.userRoles || []
+                              }}
+                              renderOption={e => e.names[i18n.language]}
+                              getDisplayValue={e => e.names[i18n.language]}
+                              getOptionValue={e => e.id}
+                              width="100%"
+                              className="w-full"
+                              name="role"
+                              value={field.value}
+                              onChange={field.onChange}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={userContext.form.control}
+                      name="active"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                          <FormControl>
+                            <Checkbox
+                              checked={field.value}
+                              onCheckedChange={field.onChange}
+                              disabled={isLoading}
+                            />
+                          </FormControl>
+                          <FormLabel>{t('page.users.form.active')}</FormLabel>
+                        </FormItem>
+                      )}
+                    />
+                    <div className="flex gap-2">
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        onClick={() => userContext.toggleModal()}
+                        disabled={isLoading}
+                      >
+                        {t('button.cancel')}
+                      </Button>
+                      <Button type="submit" disabled={isLoading} loading={isLoading}>
+                        {t('button.submit')}
+                      </Button>
+                    </div>
+                  </form>
+                </Form>
+              </div>
+            </SheetContent>
+          </Sheet>
+        </PermissionGate>
+
       </div>
     </div>
   )

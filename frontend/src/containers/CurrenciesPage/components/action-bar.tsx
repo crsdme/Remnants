@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useRequestLanguages } from '@/api/hooks'
 import { ImportButton } from '@/components/ImportButton'
+import { PermissionGate } from '@/components/PermissionGate/PermissionGate'
 import {
   Button,
   Checkbox,
@@ -74,138 +75,142 @@ export function ActionBar() {
         <p className="text-muted-foreground">{t('page.currencies.description')}</p>
       </div>
       <div className="flex items-center flex-wrap gap-2">
-        <ImportButton
-          handleFileChange={handleFileChange}
-          handleDownloadTemplate={handleDownloadTemplate}
-          isFileSelected={!!file}
-          isLoading={isLoading}
-          onSubmit={onImport}
-        />
-        <Sheet open={currencyContext.isModalOpen} onOpenChange={() => !isLoading && currencyContext.toggleModal()}>
-          <SheetTrigger asChild>
-            <Button onClick={() => currencyContext.toggleModal()} disabled={isLoading}>
-              <Plus />
-              {t('page.currencies.button.create')}
-            </Button>
-          </SheetTrigger>
-          <SheetContent className="sm:max-w-xl w-full overflow-y-auto" side="right">
-            <SheetHeader>
-              <SheetTitle>{t('page.currencies.form.title.create')}</SheetTitle>
-              <SheetDescription>
-                {t('page.currencies.form.description.create')}
-              </SheetDescription>
-            </SheetHeader>
-            <div className="w-full px-4">
-              <Form {...currencyContext.form}>
-                <form className="w-full space-y-4" onSubmit={currencyContext.form.handleSubmit(onSubmit)}>
-                  {languages.map(language => (
-                    <FormField
-                      control={currencyContext.form.control}
-                      key={language.code}
-                      name={`names.${language.code}`}
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>
-                            {t('page.currencies.form.names', {
-                              language: t(`language.${language.code}`),
-                            })}
-                          </FormLabel>
-                          <FormControl>
-                            <Input
-                              placeholder={t('page.currencies.form.names', {
+        <PermissionGate permission="currency.import">
+          <ImportButton
+            handleFileChange={handleFileChange}
+            handleDownloadTemplate={handleDownloadTemplate}
+            isFileSelected={!!file}
+            isLoading={isLoading}
+            onSubmit={onImport}
+          />
+        </PermissionGate>
+        <PermissionGate permission={['currency.create']}>
+          <Sheet open={currencyContext.isModalOpen} onOpenChange={() => !isLoading && currencyContext.toggleModal()}>
+            <SheetTrigger asChild>
+              <Button onClick={() => currencyContext.toggleModal()} disabled={isLoading}>
+                <Plus />
+                {t('page.currencies.button.create')}
+              </Button>
+            </SheetTrigger>
+            <SheetContent className="sm:max-w-xl w-full overflow-y-auto" side="right">
+              <SheetHeader>
+                <SheetTitle>{t('page.currencies.form.title.create')}</SheetTitle>
+                <SheetDescription>
+                  {t('page.currencies.form.description.create')}
+                </SheetDescription>
+              </SheetHeader>
+              <div className="w-full px-4">
+                <Form {...currencyContext.form}>
+                  <form className="w-full space-y-4" onSubmit={currencyContext.form.handleSubmit(onSubmit)}>
+                    {languages.map(language => (
+                      <FormField
+                        control={currencyContext.form.control}
+                        key={language.code}
+                        name={`names.${language.code}`}
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>
+                              {t('page.currencies.form.names', {
                                 language: t(`language.${language.code}`),
                               })}
+                            </FormLabel>
+                            <FormControl>
+                              <Input
+                                placeholder={t('page.currencies.form.names', {
+                                  language: t(`language.${language.code}`),
+                                })}
+                                className="w-full"
+                                {...field}
+                                disabled={isLoading}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    ))}
+                    {languages.map(language => (
+                      <FormField
+                        control={currencyContext.form.control}
+                        key={language.code}
+                        name={`symbols.${language.code}`}
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>
+                              {t('page.currencies.form.symbols', {
+                                language: t(`language.${language.code}`),
+                              })}
+                            </FormLabel>
+                            <FormControl>
+                              <Input
+                                placeholder={t('page.currencies.form.symbols', {
+                                  language: t(`language.${language.code}`),
+                                })}
+                                className="w-full"
+                                {...field}
+                                disabled={isLoading}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    ))}
+                    <FormField
+                      control={currencyContext.form.control}
+                      name="priority"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>{t('page.currencies.form.priority')}</FormLabel>
+                          <FormControl>
+                            <Input
+                              type="number"
+                              placeholder={t('page.currencies.form.priority')}
                               className="w-full"
                               {...field}
                               disabled={isLoading}
+                              onChange={e => field.onChange(Number(e.target.value))}
                             />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
                       )}
                     />
-                  ))}
-                  {languages.map(language => (
                     <FormField
                       control={currencyContext.form.control}
-                      key={language.code}
-                      name={`symbols.${language.code}`}
+                      name="active"
                       render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>
-                            {t('page.currencies.form.symbols', {
-                              language: t(`language.${language.code}`),
-                            })}
-                          </FormLabel>
+                        <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
                           <FormControl>
-                            <Input
-                              placeholder={t('page.currencies.form.symbols', {
-                                language: t(`language.${language.code}`),
-                              })}
-                              className="w-full"
-                              {...field}
+                            <Checkbox
+                              checked={field.value}
+                              onCheckedChange={field.onChange}
                               disabled={isLoading}
                             />
                           </FormControl>
-                          <FormMessage />
+                          <FormLabel>{t('page.currencies.form.active')}</FormLabel>
                         </FormItem>
                       )}
                     />
-                  ))}
-                  <FormField
-                    control={currencyContext.form.control}
-                    name="priority"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>{t('page.currencies.form.priority')}</FormLabel>
-                        <FormControl>
-                          <Input
-                            type="number"
-                            placeholder={t('page.currencies.form.priority')}
-                            className="w-full"
-                            {...field}
-                            disabled={isLoading}
-                            onChange={e => field.onChange(Number(e.target.value))}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={currencyContext.form.control}
-                    name="active"
-                    render={({ field }) => (
-                      <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
-                        <FormControl>
-                          <Checkbox
-                            checked={field.value}
-                            onCheckedChange={field.onChange}
-                            disabled={isLoading}
-                          />
-                        </FormControl>
-                        <FormLabel>{t('page.currencies.form.active')}</FormLabel>
-                      </FormItem>
-                    )}
-                  />
-                  <div className="flex gap-2">
-                    <Button
-                      type="button"
-                      variant="secondary"
-                      onClick={() => currencyContext.toggleModal()}
-                      disabled={isLoading}
-                    >
-                      {t('button.cancel')}
-                    </Button>
-                    <Button type="submit" disabled={isLoading} loading={isLoading}>
-                      {t('button.submit')}
-                    </Button>
-                  </div>
-                </form>
-              </Form>
-            </div>
-          </SheetContent>
-        </Sheet>
+                    <div className="flex gap-2">
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        onClick={() => currencyContext.toggleModal()}
+                        disabled={isLoading}
+                      >
+                        {t('button.cancel')}
+                      </Button>
+                      <Button type="submit" disabled={isLoading} loading={isLoading}>
+                        {t('button.submit')}
+                      </Button>
+                    </div>
+                  </form>
+                </Form>
+              </div>
+            </SheetContent>
+          </Sheet>
+        </PermissionGate>
       </div>
     </div>
   )

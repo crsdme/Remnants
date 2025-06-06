@@ -64,13 +64,15 @@ export function ActionBar() {
         <p className="text-muted-foreground">{t('page.categories.description')}</p>
       </div>
       <div className="flex items-center flex-wrap gap-2">
-        <ImportButton
-          handleFileChange={handleFileChange}
-          handleDownloadTemplate={handleDownloadTemplate}
-          isFileSelected={!!file}
-          isLoading={isLoading}
-          onSubmit={onImport}
-        />
+        <PermissionGate permission="category.import">
+          <ImportButton
+            handleFileChange={handleFileChange}
+            handleDownloadTemplate={handleDownloadTemplate}
+            isFileSelected={!!file}
+            isLoading={isLoading}
+            onSubmit={onImport}
+          />
+        </PermissionGate>
         <PermissionGate permission={['category.create']}>
           <Sheet open={categoryContext.isModalOpen} onOpenChange={() => !isLoading && categoryContext.toggleModal()}>
             <SheetTrigger asChild>

@@ -10,6 +10,7 @@ import { AdvancedSorters } from '@/components/AdvancedSorters'
 import { BatchEdit } from '@/components/BatchEdit'
 
 import { ColumnVisibilityMenu } from '@/components/ColumnVisibilityMenu'
+import { PermissionGate } from '@/components/PermissionGate/PermissionGate'
 import TablePagination from '@/components/TablePagination'
 import TableSelectionDropdown from '@/components/TableSelectionDropdown'
 import { Separator } from '@/components/ui/separator'
@@ -236,17 +237,19 @@ export function DataTable() {
             onSubmit={advancedFiltersSubmit}
             onCancel={advancedFiltersCancel}
           />
-          <BatchEdit
-            columns={columns}
-            languages={languages}
-            onSubmit={handleBatchSubmit}
-            onToggle={handleBatchToggle}
-          />
           <AdvancedSorters
             columns={columns}
             onSubmit={advancedSortersSubmit}
             onCancel={advancedSortersCancel}
           />
+          <PermissionGate permission="language.batchEdit">
+            <BatchEdit
+              columns={columns}
+              languages={languages}
+              onSubmit={handleBatchSubmit}
+              onToggle={handleBatchToggle}
+            />
+          </PermissionGate>
           <Separator orientation="vertical" className="min-h-6 max-md:hidden" />
           <DataTableFilters filters={filters} setFilters={setFilters} />
         </div>
