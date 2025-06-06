@@ -1,4 +1,4 @@
-export function hasPermission(permissions: string[], required: string | string[]) {
+export function hasPermission(permissions: string[] = [], required: string | string[]) {
   if (permissions.includes('other.admin'))
     return true
 

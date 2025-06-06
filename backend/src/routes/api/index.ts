@@ -1,5 +1,5 @@
 import { Router } from 'express'
-import { getAuthMiddleware } from '../../middleware/auth.middleware'
+import { authMiddleware } from '../../middleware/auth.middleware'
 import authRoutes from './auth.route'
 import categoryRoutes from './category.route'
 import currencyRoutes from './currency.route'
@@ -9,7 +9,7 @@ import userRoleRoutes from './user-role.route'
 import userRoutes from './user.route'
 
 const router = Router()
-const authenticateJWT = getAuthMiddleware()
+const authenticateJWT = authMiddleware()
 
 router.use('/auth', authRoutes)
 router.use('/currencies', authenticateJWT, currencyRoutes)

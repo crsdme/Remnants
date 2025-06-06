@@ -44,7 +44,7 @@ export function fakeAuthenticateJWT(req: Request, res: Response, next: NextFunct
   next()
 }
 
-export function getAuthMiddleware() {
+export function authMiddleware() {
   if (process.env.NODE_ENV === 'test')
     return fakeAuthenticateJWT
 

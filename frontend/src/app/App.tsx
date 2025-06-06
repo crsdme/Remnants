@@ -9,6 +9,7 @@ import {
   CategoriesPage,
   CurrenciesPage,
   DashboardPage,
+  ErrorPage,
   LanguagesPage,
   LoginPage,
   TestPage,
@@ -41,34 +42,34 @@ export default function App() {
           <Route path="/" element={<DashboardPage />} />
           <Route
             path="/test"
-            element={(<ProtectedRoute children={<TestPage />} permissions={['user.read']} />)}
+            element={(<ProtectedRoute children={<TestPage />} permissions={['user.page']} />)}
           />
 
           <Route
             path="/categories"
-            element={<ProtectedRoute children={<CategoriesPage />} permissions={['category.read']} />}
+            element={<ProtectedRoute children={<CategoriesPage />} permissions={['category.page']} />}
           />
 
           <Route
             path="/users"
-            element={(<ProtectedRoute children={<UsersPage />} permissions={['user.read']} />)}
+            element={(<ProtectedRoute children={<UsersPage />} permissions={['user.page']} />)}
           />
 
           <Route
             path="/settings/currencies"
-            element={<ProtectedRoute children={<CurrenciesPage />} permissions={['currency.read']} />}
+            element={<ProtectedRoute children={<CurrenciesPage />} permissions={['currency.page']} />}
           />
           <Route
             path="/settings/languages"
-            element={<ProtectedRoute children={<LanguagesPage />} permissions={['language.read']} />}
+            element={<ProtectedRoute children={<LanguagesPage />} permissions={['language.page']} />}
           />
           <Route
             path="/settings/units"
-            element={<ProtectedRoute children={<UnitsPage />} permissions={['unit.read']} />}
+            element={<ProtectedRoute children={<UnitsPage />} permissions={['unit.page']} />}
           />
           <Route
             path="/settings/user-roles"
-            element={<ProtectedRoute children={<UserRolesPage />} permissions={['userRole.read']} />}
+            element={<ProtectedRoute children={<UserRolesPage />} permissions={['userRole.page']} />}
           />
 
           <Route path="*" element={<DashboardPage />} />
@@ -85,7 +86,7 @@ export function ProtectedRoute({ children, permissions }) {
 
   if (!hasAccess) {
     // return <Navigate to="/404" replace />
-    return <div>No access</div>
+    return <ErrorPage status={403} />
   }
 
   return children

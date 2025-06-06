@@ -18,6 +18,7 @@
   "button.cancel": "Cancel",
   "button.submit": "Submit",
   "button.import": "Import",
+  "button.back": "Back",
 
   "form.errors.required": "Required field",
   "form.errors.min_length": "Minimum length {{count}} characters",

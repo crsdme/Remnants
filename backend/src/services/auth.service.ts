@@ -1,5 +1,4 @@
 import type { JwtPayload } from 'jsonwebtoken'
-import type { UserRole } from '../types/user-role.type'
 import type { PopulatedUser } from '../types/user.type'
 import bcrypt from 'bcrypt'
 import dotenv from 'dotenv'
@@ -10,6 +9,8 @@ import { HttpError } from '../utils/httpError'
 dotenv.config()
 
 const JWT_SECRET = process.env.JWT_SECRET || 'secret'
+// const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '15m'
+// const JWT_REFRESH_EXPIRES_IN = process.env.JWT_REFRESH_EXPIRES_IN || '12h'
 
 function generateRefreshToken(data: any) {
   return jwt.sign(data, JWT_SECRET, { expiresIn: '12h' })
@@ -45,10 +46,15 @@ export async function login(payload: loginParams): Promise<loginResult> {
     throw new HttpError(400, 'Invalid password', 'INVALID_CREDENTIALS')
   }
 
-  const accessToken = generateAccessToken({ id: user._id, login: user.login })
+  const accessToken = generateAccessToken({
+    id: user._id,
+    login: user.login,
+    permissions: user.role.permissions,
+  })
   const refreshToken = generateRefreshToken({
     id: user._id,
     login: user.login,
+    permissions: user.role.permissions,
   })
 
   const userData = {
@@ -77,9 +83,8 @@ interface TokenPayload extends JwtPayload {
 }
 
 export async function refresh(payload: refreshParams): Promise<refreshResult> {
-  const accessToken = generateAccessToken({ id: payload.refreshToken })
   const userData = jwt.verify(payload.refreshToken, JWT_SECRET) as TokenPayload
-  const user = await UserModel.findOne({ _id: userData.id }).populate('role') as PopulatedUser | null
-
-  return { accessToken, permissions: user?.role.permissions || [] }
+  const accessToken = generateAccessToken({ id: userData.id, login: userData.login, permissions: userData.permissions })
+  console.log(userData)
+  return { accessToken, permissions: userData.permissions || [] }
 }

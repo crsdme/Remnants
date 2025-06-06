@@ -235,5 +235,11 @@
   "page.userRoles.permissions.description.other": "Управление другими параметрами",
 
   "page.userRoles.permissions.title.other.admin": "Полный доступ",
-  "page.userRoles.permissions.description.other.admin": "Управление всеми параметрами"
+  "page.userRoles.permissions.description.other.admin": "Управление всеми параметрами",
+
+  "page.error.title.403": "Запрещено",
+  "page.error.description.403": "У вас нет доступа к этой странице",
+
+  "page.error.title.404": "Не найдено",
+  "page.error.description.404": "Страница, которую вы ищете, не существует"
 }

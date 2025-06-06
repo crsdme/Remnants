@@ -235,5 +235,11 @@
   "page.userRoles.permissions.description.other": "Manage other parameters",
 
   "page.userRoles.permissions.title.other.admin": "Full access",
-  "page.userRoles.permissions.description.other.admin": "Manage all parameters"
+  "page.userRoles.permissions.description.other.admin": "Manage all parameters",
+
+  "page.error.title.403": "Forbidden",
+  "page.error.description.403": "You are not authorized to access this page",
+
+  "page.error.title.404": "Not Found",
+  "page.error.description.404": "The page you are looking for does not exist"
 }

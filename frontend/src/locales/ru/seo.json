@@ -18,5 +18,11 @@
   "description.page.categories": "Управление категориями в Remnant",
 
   "title.page.userRoles": "Роли пользователей - Remnant",
-  "description.page.userRoles": "Управление ролями пользователей в Remnant"
+  "description.page.userRoles": "Управление ролями пользователей в Remnant",
+
+  "title.page.error.403": "Запрещено - Remnant",
+  "description.page.error.403": "У вас нет доступа к этой странице",
+
+  "title.page.error.404": "Не найдено - Remnant",
+  "description.page.error.404": "Страница, которую вы ищете, не существует"
 }

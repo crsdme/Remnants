@@ -1,6 +1,7 @@
 export * from './CategoriesPage'
 export * from './CurrenciesPage'
 export * from './DashboardPage'
+export * from './ErrorPage'
 export * from './LanguagesPage'
 export * from './LoginPage'
 export * from './TestPage'
