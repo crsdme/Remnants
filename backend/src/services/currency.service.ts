@@ -146,7 +146,7 @@ export async function batch(payload: CurrencyTypes.batchCurrenciesParams): Promi
     filters: { names, symbols, active, priority, createdAt, updatedAt },
     rules: filterRules,
     language,
-    batch: { ids: ids.map(id => id.toString()) },
+    batch: { ids: ids && ids.map(id => id.toString()) },
   })
 
   const currencies = await CurrencyModel.updateMany(

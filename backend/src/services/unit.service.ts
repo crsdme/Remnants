@@ -146,7 +146,7 @@ export async function batch(payload: UnitTypes.batchUnitsParams): Promise<UnitTy
     filters: { names, symbols, active, priority, createdAt, updatedAt },
     rules: filterRules,
     language,
-    batch: { ids: ids.map(id => id.toString()) },
+    batch: { ids: ids && ids.map(id => id.toString()) },
   })
 
   const units = await UnitModel.updateMany(

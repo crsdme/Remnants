@@ -187,9 +187,8 @@ export function DataTable() {
     }))
 
     currencyContext.batchCurrency({
-      ids: selectedCurrencies,
+      ...(batchEditMode === 'filter' ? { filters } : { ids: selectedCurrencies }),
       params,
-      ...(batchEditMode === 'filter' && { filters }),
     })
 
     setRowSelection({})

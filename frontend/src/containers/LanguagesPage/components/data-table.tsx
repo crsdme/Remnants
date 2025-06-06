@@ -187,9 +187,8 @@ export function DataTable() {
     }))
 
     languageContext.batchLanguage({
-      ids: selectedLanguages,
+      ...(batchEditMode === 'filter' ? { filters } : { ids: selectedLanguages }),
       params,
-      ...(batchEditMode === 'filter' && { filters }),
     })
 
     setRowSelection({})

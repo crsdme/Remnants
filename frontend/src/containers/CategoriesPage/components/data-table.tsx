@@ -220,9 +220,8 @@ export function DataTable() {
     }))
 
     categoryContext.batchCategory({
-      ids: selectedCategories,
+      ...(batchEditMode === 'filter' ? { filters } : { ids: selectedCategories }),
       params,
-      ...(batchEditMode === 'filter' && { filters }),
     })
 
     setRowSelection({})

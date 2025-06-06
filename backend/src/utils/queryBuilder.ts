@@ -14,7 +14,7 @@ interface BuildQueryOptions {
   }
 }
 
-export function buildQuery({ filters, rules, language = 'en', removed = true, batch = { ids: [] } }: BuildQueryOptions): Record<string, any> {
+export function buildQuery({ filters, rules, language = 'en', removed = true, batch }: BuildQueryOptions): Record<string, any> {
   let query: Record<string, any> = {}
 
   if (removed) {
@@ -54,10 +54,8 @@ export function buildQuery({ filters, rules, language = 'en', removed = true, ba
     }
   }
 
-  if (batch.ids.length > 0) {
-    query = {
-      $and: [query, { _id: { $in: batch.ids } }],
-    }
+  if (batch?.ids) {
+    query = { _id: { $in: batch.ids } }
   }
 
   return query

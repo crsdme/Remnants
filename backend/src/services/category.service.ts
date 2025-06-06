@@ -183,7 +183,7 @@ export async function batch(payload: CategoryTypes.batchCategoriesParams): Promi
     filters: { names, active, priority, createdAt, updatedAt },
     rules: filterRules,
     language,
-    batch: { ids: ids.map(id => id.toString()) },
+    batch: { ids: ids && ids.map(id => id.toString()) },
   })
 
   const categories = await CategoryModel.updateMany(

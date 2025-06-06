@@ -188,9 +188,8 @@ export function DataTable() {
     }))
 
     unitContext.batchUnit({
-      ids: selectedUnits,
+      ...(batchEditMode === 'filter' ? { filters } : { ids: selectedUnits }),
       params,
-      ...(batchEditMode === 'filter' && { filters }),
     })
 
     setRowSelection({})

@@ -157,7 +157,7 @@ export async function batch(payload: LanguageTypes.batchLanguagesParams): Promis
   const query = buildQuery({
     filters: { name, code, active, priority, main, createdAt, updatedAt },
     rules: filterRules,
-    batch: { ids: ids.map(id => id.toString()) },
+    batch: { ids: ids && ids.map(id => id.toString()) },
   })
 
   const languages = await LanguageModel.updateMany(
