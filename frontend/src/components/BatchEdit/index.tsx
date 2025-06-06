@@ -191,7 +191,7 @@ export function BatchEdit({
         return (
           <AsyncSelect
             fetcher={column.loadOptions}
-            value={(item.value as { value: string, label: string })?.value}
+            value={item.value as string}
             onChange={(value) => {
               const currentItems = form.getValues('items')
               currentItems[index].value = value

@@ -53,6 +53,7 @@ export async function get(payload: CategoryTypes.getCategoriesParams): Promise<C
     names = '',
     language = 'en',
     active = undefined,
+    parent = undefined,
     priority = undefined,
     createdAt = {
       from: undefined,
@@ -70,12 +71,13 @@ export async function get(payload: CategoryTypes.getCategoriesParams): Promise<C
     names: { type: 'string', langAware: true },
     active: { type: 'array' },
     priority: { type: 'exact' },
+    parent: { type: 'exact' },
     createdAt: { type: 'dateRange' },
     updatedAt: { type: 'dateRange' },
   } as const
 
   const query = buildQuery({
-    filters: { names, active, priority, createdAt, updatedAt },
+    filters: { names, active, priority, createdAt, updatedAt, parent },
     rules: filterRules,
     language,
   })

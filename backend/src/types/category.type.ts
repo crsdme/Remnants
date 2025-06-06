@@ -26,6 +26,7 @@ export interface getCategoriesParams {
     language: SUPPORTED_LANGUAGES_TYPE
     active: boolean[]
     priority: number
+    parent: IdType
     createdAt: DateRange
     updatedAt: DateRange
   }
@@ -33,6 +34,7 @@ export interface getCategoriesParams {
     names: string
     active: string
     priority: string
+    parent: string
     updatedAt: string
     createdAt: string
   }

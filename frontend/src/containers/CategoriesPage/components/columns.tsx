@@ -182,6 +182,8 @@ export function useColumns(loadOptions) {
           title: t('page.categories.table.parent'),
           batchEdit: true,
           batchEditType: 'asyncValue',
+          filterable: true,
+          filterType: 'asyncValue',
           alwaysHidden: true,
           loadOptions,
         },

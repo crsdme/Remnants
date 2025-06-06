@@ -85,6 +85,6 @@ interface TokenPayload extends JwtPayload {
 export async function refresh(payload: refreshParams): Promise<refreshResult> {
   const userData = jwt.verify(payload.refreshToken, JWT_SECRET) as TokenPayload
   const accessToken = generateAccessToken({ id: userData.id, login: userData.login, permissions: userData.permissions })
-  console.log(userData)
+
   return { accessToken, permissions: userData.permissions || [] }
 }

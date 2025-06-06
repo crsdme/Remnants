@@ -23,6 +23,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { AsyncSelect } from '../AsyncSelect'
 
 interface FilterItem {
   id: string
@@ -39,7 +40,8 @@ interface AdvancedFiltersProps {
 interface ColumnMeta {
   title: string
   filterable: boolean
-  filterType: 'text' | 'number' | 'boolean' | 'date'
+  filterType: 'text' | 'number' | 'boolean' | 'date' | 'asyncValue'
+  loadOptions?: (inputValue: string) => Promise<Array<{ value: string, label: string }>>
 }
 
 const filterItemSchema = z.object({
@@ -76,6 +78,7 @@ export function AdvancedFilters({ columns, onSubmit, onCancel }: AdvancedFilters
         id: column.id,
         label: (column.meta as ColumnMeta)?.title || column.id,
         type: (column.meta as ColumnMeta)?.filterType,
+        loadOptions: (column.meta as ColumnMeta)?.loadOptions,
         disabled: isDisabled,
       }
     })
@@ -168,6 +171,23 @@ export function AdvancedFilters({ columns, onSubmit, onCancel }: AdvancedFilters
               form.setValue('items', currentItems)
             }}
             className="w-full"
+          />
+        )
+      case 'asyncValue':
+        return (
+          <AsyncSelect
+            fetcher={column.loadOptions}
+            value={item.value as string}
+            onChange={(value) => {
+              const currentItems = form.getValues('items')
+              currentItems[index].value = value
+              form.setValue('items', currentItems)
+            }}
+            getOptionValue={option => option.value}
+            getDisplayValue={option => option.label}
+            renderOption={option => option.label}
+            placeholder={t('component.batchEdit.selectValue')}
+            width="100%"
           />
         )
       default:

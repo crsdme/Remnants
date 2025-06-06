@@ -1,4 +1,4 @@
-import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
+import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import LogoIcon from '@/components/ui/icons/logoIcon'
 
 import { useAuthContext } from '@/contexts'
@@ -72,10 +72,10 @@ export default function App() {
             element={<ProtectedRoute children={<UserRolesPage />} permissions={['userRole.page']} />}
           />
 
-          <Route path="*" element={<DashboardPage />} />
+          <Route path="*" element={<ErrorPage status={404} />} />
         </Route>
         <Route path="/login" element={<LoginPage />} />
-        <Route path="*" element={<DashboardPage />} />
+        <Route path="*" element={<ErrorPage status={404} />} />
       </Routes>
     </BrowserRouter>
   )
@@ -84,10 +84,8 @@ export default function App() {
 export function ProtectedRoute({ children, permissions }) {
   const hasAccess = usePermission(permissions)
 
-  if (!hasAccess) {
-    // return <Navigate to="/404" replace />
+  if (!hasAccess)
     return <ErrorPage status={403} />
-  }
 
   return children
 }
