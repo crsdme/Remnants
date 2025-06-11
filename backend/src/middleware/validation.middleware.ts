@@ -1,9 +1,15 @@
 import type { NextFunction, Request, RequestHandler, Response } from 'express'
 import type { ZodSchema } from 'zod'
+import { parseFormData } from '../utils/parseTools'
 
-export function validateBodyRequest(schema: ZodSchema): RequestHandler {
+export function validateBodyRequest(schema: ZodSchema, options?: { formData?: boolean }): RequestHandler {
   return (req: Request, res: Response, next: NextFunction) => {
-    const result = schema.safeParse(req.body)
+    let body = req.body
+    if (options?.formData) {
+      body = parseFormData(req.body)
+    }
+
+    const result = schema.safeParse(body)
 
     if (!result.success) {
       res.status(400).json({

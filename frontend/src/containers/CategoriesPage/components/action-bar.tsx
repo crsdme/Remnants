@@ -88,7 +88,7 @@ export function ActionBar() {
                   {t('page.categories.form.description.create')}
                 </SheetDescription>
               </SheetHeader>
-              <div className="w-full px-4">
+              <div className="w-full p-4">
                 <Form {...categoryContext.form}>
                   <form className="w-full space-y-4" onSubmit={categoryContext.form.handleSubmit(onSubmit)}>
                     {languages.map(language => (
@@ -127,7 +127,7 @@ export function ActionBar() {
                           <FormControl>
                             <AsyncSelect<Category>
                               fetcher={async (searchValue) => {
-                                setSearch(searchValue)
+                                setSearch(searchValue as string)
                                 return requestCategories.data?.data?.categories || []
                               }}
                               renderOption={e => e.names[i18n.language]}
@@ -136,7 +136,7 @@ export function ActionBar() {
                               width="100%"
                               className="w-full"
                               name="parent"
-                              value={field.value}
+                              values={field.value}
                               onChange={field.onChange}
                             />
                           </FormControl>

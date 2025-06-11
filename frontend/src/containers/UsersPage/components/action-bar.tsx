@@ -101,7 +101,7 @@ export function ActionBar() {
                   {t('page.users.form.description.create')}
                 </SheetDescription>
               </SheetHeader>
-              <div className="w-full px-4">
+              <div className="w-full p-4">
                 <Form {...userContext.form}>
                   <form className="w-full space-y-4" onSubmit={userContext.form.handleSubmit(onSubmit)}>
                     <FormField
@@ -172,7 +172,7 @@ export function ActionBar() {
                           <FormControl>
                             <AsyncSelect<UserRole>
                               fetcher={async (searchValue) => {
-                                setSearch(searchValue)
+                                setSearch(searchValue as string)
                                 return requestUserRoles.data?.data?.userRoles || []
                               }}
                               renderOption={e => e.names[i18n.language]}
@@ -181,7 +181,7 @@ export function ActionBar() {
                               width="100%"
                               className="w-full"
                               name="role"
-                              value={field.value}
+                              values={field.value}
                               onChange={field.onChange}
                             />
                           </FormControl>

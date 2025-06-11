@@ -1,53 +1,77 @@
-interface Currency {
-  id: string
-  symbol: string
-}
-
-interface ImageFile {
-  name: string
-  path: string
-}
-
-interface ImageItem {
-  main: ImageFile
-  preview: ImageFile
-  id: string
-}
-
-interface Category {
+interface Product {
   id: string
   names: LanguageString
+  priority: number
+  parent: string
+  active: boolean
+  children: Product[]
+  createdAt: Date
+  updatedAt: Date
 }
 
-interface CustomFields {
-  [key: string]: string | string[]
+interface ProductsResponse {
+  status: string
+  code: string
+  message: string
+  description: string
+  products: Product[]
+  productsCount: number
 }
 
-// interface Product {
-//   id: string
-//   names: LanguageString
-//   price: number
-//   currency: Currency
-//   discount: number
-//   wholesalePrice: number
-//   wholesaleCurrency: Currency
-//   disabled: boolean
-//   attributes: Record<string, string>[]
-//   images: ImageItem[]
-//   reserve: string[]
-//   barcode: string[]
-//   category: string[]
-//   createdAt: string
-//   updatedAt: string
-//   categories: Category[]
-//   customFields: CustomFields
-//   customFieldsGroup: string
-//   unit: Unit
-//   removed: boolean
-// }
+interface ProductProperty {
+  id: string
+  names: LanguageString
+  priority: number
+  type: string
+  isMultiple: boolean
+  active: boolean
+  createdAt: Date
+  updatedAt: Date
+}
 
-// interface ProductsResponse {
-//   status: string
-//   products: Product[]
-//   productsCount: number
-// }
+interface ProductPropertiesResponse {
+  status: string
+  code: string
+  message: string
+  description: string
+  productProperties: ProductProperty[]
+  productPropertiesCount: number
+}
+
+interface ProductPropertyOption {
+  id: string
+  names: LanguageString
+  priority: number
+  active: boolean
+  color: string
+  createdAt: Date
+  updatedAt: Date
+}
+
+interface ProductPropertiesOptionsResponse {
+  status: string
+  code: string
+  message: string
+  description: string
+  productPropertiesOptions: ProductPropertyOption[]
+  productPropertiesOptionsCount: number
+}
+
+interface ProductPropertyGroup {
+  id: string
+  names: LanguageString
+  priority: number
+  productProperties: ProductProperty[]
+  active: boolean
+  createdAt: Date
+  updatedAt: Date
+}
+
+interface ProductPropertiesGroupsResponse {
+  status: string
+  code: string
+  message: string
+  description: string
+  productPropertyGroups: ProductPropertyGroup[]
+  productPropertyGroupsCount: number
+}

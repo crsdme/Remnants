@@ -88,8 +88,8 @@ export function LayoutSidebar({ ...props }: React.ComponentProps<typeof Sidebar>
         items: [
           { title: t('component.sidemenu.label.products'), url: '/products', permissions: ['product.page'] },
           { title: t('component.sidemenu.label.categories'), url: '/categories', permissions: ['category.page'] },
-          { title: t('component.sidemenu.label.attributes'), url: '/attributes', permissions: ['attribute.page'] },
-          { title: t('component.sidemenu.label.attributesGroup'), url: '/attributes-group', permissions: ['attributeGroup.page'] },
+          { title: t('component.sidemenu.label.productPropertiesGroups'), url: '/product-properties-groups', permissions: ['product-properties-groups.page'] },
+          { title: t('component.sidemenu.label.productProperties'), url: '/product-properties', permissions: ['product-property.page'] },
           { title: t('component.sidemenu.label.barcodes'), url: '/barcodes', permissions: ['barcode.page'] },
         ],
       },

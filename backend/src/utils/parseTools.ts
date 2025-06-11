@@ -83,3 +83,16 @@ export function extractLangMap(row: Record<string, string>, prefix: string): Rec
 
   return result
 }
+
+export function parseFormData(body: Record<string, any>) {
+  const obj: Record<string, any> = {}
+  for (const [key, value] of Object.entries(body)) {
+    try {
+      obj[key] = JSON.parse(value)
+    }
+    catch {
+      obj[key] = value
+    }
+  }
+  return obj
+}

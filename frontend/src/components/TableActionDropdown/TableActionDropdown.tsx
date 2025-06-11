@@ -10,8 +10,20 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { PermissionGate } from '../PermissionGate/PermissionGate'
 
-export function TableActionDropdown({ copyAction, editAction, duplicateAction, deleteAction }) {
+export function TableActionDropdown(
+  { copyAction, editAction, duplicateAction, deleteAction, actions }:
+  {
+    copyAction?: { permission: string, onClick: () => void }
+    editAction?: { permission: string, onClick: () => void }
+    duplicateAction?: { permission: string, onClick: () => void }
+    deleteAction?: { permission: string, onClick: () => void }
+    actions?: { permission: string, onClick: () => void, label: string, icon?: React.ReactNode }[]
+  },
+) {
   const { t } = useTranslation()
+
+  if (!copyAction && !editAction && !duplicateAction && !deleteAction)
+    return <></>
 
   return (
     <div className="flex items-center gap-2">
@@ -28,28 +40,43 @@ export function TableActionDropdown({ copyAction, editAction, duplicateAction, d
             <span>{t('table.view')}</span>
           </DropdownMenuItem> */}
 
-          <PermissionGate permission={editAction.permission}>
-            <DropdownMenuItem onClick={editAction.onClick} className="gap-2">
-              <Edit className="h-4 w-4" />
-              <span>{t('table.edit')}</span>
-            </DropdownMenuItem>
-          </PermissionGate>
+          {actions?.map(action => (
+            <PermissionGate key={action.permission} permission={action.permission}>
+              <DropdownMenuItem onClick={action.onClick} className="gap-2">
+                {action.icon}
+                <span>{action.label}</span>
+              </DropdownMenuItem>
+            </PermissionGate>
+          ))}
 
-          <PermissionGate permission={copyAction.permission}>
-            <DropdownMenuItem onClick={copyAction.onClick} className="gap-2">
-              <Copy className="h-4 w-4" />
-              <span>{t('table.copy')}</span>
-            </DropdownMenuItem>
-          </PermissionGate>
+          {editAction && (
+            <PermissionGate permission={editAction.permission}>
+              <DropdownMenuItem onClick={editAction.onClick} className="gap-2">
+                <Edit className="h-4 w-4" />
+                <span>{t('table.edit')}</span>
+              </DropdownMenuItem>
+            </PermissionGate>
+          )}
 
-          <PermissionGate permission={duplicateAction.permission}>
-            <DropdownMenuItem onClick={duplicateAction.onClick} className="gap-2">
-              <Files className="h-4 w-4" />
-              <span>{t('table.duplicate')}</span>
-            </DropdownMenuItem>
-          </PermissionGate>
+          {copyAction && (
+            <PermissionGate permission={copyAction.permission}>
+              <DropdownMenuItem onClick={copyAction.onClick} className="gap-2">
+                <Copy className="h-4 w-4" />
+                <span>{t('table.copy')}</span>
+              </DropdownMenuItem>
+            </PermissionGate>
+          )}
 
-          <DropdownMenuSeparator />
+          {duplicateAction && (
+            <PermissionGate permission={duplicateAction.permission}>
+              <DropdownMenuItem onClick={duplicateAction.onClick} className="gap-2">
+                <Files className="h-4 w-4" />
+                <span>{t('table.duplicate')}</span>
+              </DropdownMenuItem>
+            </PermissionGate>
+          )}
+
+          {(editAction || copyAction || duplicateAction) && <DropdownMenuSeparator />}
 
           {/* <DropdownMenuSub>
             <DropdownMenuSubTrigger className="gap-2">
@@ -105,47 +132,19 @@ export function TableActionDropdown({ copyAction, editAction, duplicateAction, d
             <span>{t('table.archive')}</span>
           </DropdownMenuItem> */}
 
-          <PermissionGate permission={deleteAction.permission}>
-            <DropdownMenuItem
-              onClick={deleteAction.onClick}
-              className="gap-2 text-destructive focus:text-destructive focus:bg-destructive/10"
-            >
-              <Trash2 className="h-4 w-4" />
-              <span>{t('table.delete')}</span>
-            </DropdownMenuItem>
-          </PermissionGate>
+          {deleteAction && (
+            <PermissionGate permission={deleteAction.permission}>
+              <DropdownMenuItem
+                onClick={deleteAction.onClick}
+                className="gap-2 text-destructive focus:text-destructive focus:bg-destructive/10"
+              >
+                <Trash2 className="h-4 w-4" />
+                <span>{t('table.delete')}</span>
+              </DropdownMenuItem>
+            </PermissionGate>
+          )}
         </DropdownMenuContent>
       </DropdownMenu>
     </div>
-    // <div className="flex items-center gap-2">
-    //   <DropdownMenu>
-    //     <DropdownMenuTrigger asChild>
-    //       <Button variant="ghost" className="h-8 w-8 p-0">
-    //         <MoreHorizontal className="h-4 w-4" />
-    //       </Button>
-    //     </DropdownMenuTrigger>
-    //     <DropdownMenuContent align="end">
-    //       <DropdownMenuLabel>{t('table.actions')}</DropdownMenuLabel>
-    //       <DropdownMenuSeparator />
-    //       <DropdownMenuItem onClick={onCopy}>
-    //         {t('table.copy')}
-    //       </DropdownMenuItem>
-    //       <DropdownMenuItem onClick={onEdit}>
-    //         {t('table.edit')}
-    //       </DropdownMenuItem>
-    //       <DropdownMenuItem
-    //         onClick={onDuplicate}
-    //       >
-    //         {t('table.duplicate')}
-    //       </DropdownMenuItem>
-    //       <DropdownMenuItem
-    //         onClick={onDelete}
-    //         variant="destructive"
-    //       >
-    //         {t('table.delete')}
-    //       </DropdownMenuItem>
-    //     </DropdownMenuContent>
-    //   </DropdownMenu>
-    // </div>
   )
 }

@@ -77,8 +77,8 @@
   "component.sidemenu.label.catalog": "Catalog",
   "component.sidemenu.label.products": "Products",
   "component.sidemenu.label.categories": "Categories",
-  "component.sidemenu.label.attributes": "Attributes",
-  "component.sidemenu.label.attributesGroup": "Attribute Groups",
+  "component.sidemenu.label.productProperties": "Product Properties",
+  "component.sidemenu.label.productPropertiesGroups": "Product Properties Groups",
   "component.sidemenu.label.barcodes": "Barcodes",
   "component.sidemenu.label.statistic": "Statistics",
   "component.sidemenu.label.orderStatistic": "Order Statistics",
@@ -118,5 +118,8 @@
   "component.sidemenu.label.logs": "Logs",
   "component.sidemenu.label.documents": "Documents",
   "component.sidemenu.label.logout": "Logout",
-  "component.sidemenu.label.userRoles": "User Roles"
+  "component.sidemenu.label.userRoles": "User Roles",
+
+  "component.fileUploadDnd.upload": "Upload file",
+  "component.fileUploadDnd.noFilesUploaded": "No files uploaded"
 }

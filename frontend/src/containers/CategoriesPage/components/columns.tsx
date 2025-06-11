@@ -73,22 +73,23 @@ export function useColumns(loadOptions) {
       return ({
         id: 'expander',
         header: '',
-        cell: ({ row }) => (
-          row.getCanExpand()
-            ? (
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={row.getToggleExpandedHandler()}
-                  style={{ width: 24, height: 24, padding: 0 }}
-                >
-                  {row.getIsExpanded()
-                    ? <ChevronDown size={16} />
-                    : <ChevronRight size={16} />}
-                </Button>
-              )
-            : null
-        ),
+        cell: ({ row }) => {
+          if (row.getCanExpand()) {
+            return (
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={row.getToggleExpandedHandler()}
+                style={{ width: 24, height: 24, padding: 0 }}
+              >
+                {row.getIsExpanded()
+                  ? <ChevronDown size={16} />
+                  : <ChevronRight size={16} />}
+              </Button>
+            )
+          }
+          return null
+        },
         size: 24,
         enableSorting: false,
         enableHiding: false,

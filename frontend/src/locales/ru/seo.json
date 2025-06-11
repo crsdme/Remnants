@@ -24,5 +24,14 @@
   "description.page.error.403": "У вас нет доступа к этой странице",
 
   "title.page.error.404": "Не найдено - Remnant",
-  "description.page.error.404": "Страница, которую вы ищете, не существует"
+  "description.page.error.404": "Страница, которую вы ищете, не существует",
+
+  "title.page.products": "Товары - Remnant",
+  "description.page.products": "Управление товарами в Remnant",
+
+  "title.page.product-properties": "Свойства товаров - Remnant",
+  "description.page.product-properties": "Управление свойствами товаров в Remnant",
+
+  "title.page.product-properties-groups": "Группы свойств товаров - Remnant",
+  "description.page.product-properties-groups": "Управление группами свойств товаров в Remnant"
 }

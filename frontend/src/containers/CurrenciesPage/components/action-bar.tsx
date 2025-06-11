@@ -99,7 +99,7 @@ export function ActionBar() {
                   {t('page.currencies.form.description.create')}
                 </SheetDescription>
               </SheetHeader>
-              <div className="w-full px-4">
+              <div className="w-full p-4">
                 <Form {...currencyContext.form}>
                   <form className="w-full space-y-4" onSubmit={currencyContext.form.handleSubmit(onSubmit)}>
                     {languages.map(language => (

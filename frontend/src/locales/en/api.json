@@ -198,6 +198,59 @@
   "response.description.USER_ROLES_IMPORTED": "User roles have been imported successfully",
 
   "response.title.USER_ROLES_DUPLICATED": "User roles duplicated",
-  "response.description.USER_ROLES_DUPLICATED": "User roles have been duplicated"
+  "response.description.USER_ROLES_DUPLICATED": "User roles have been duplicated",
 
+  "response.title.PRODUCT_PROPERTY_GROUPS_FETCHED": "Product properties groups fetched",
+  "response.description.PRODUCT_PROPERTY_GROUPS_FETCHED": "Product properties groups list successfully fetched",
+
+  "response.title.PRODUCT_PROPERTY_GROUP_CREATED": "Product property group created",
+  "response.description.PRODUCT_PROPERTY_GROUP_CREATED": "New product property group has been created",
+
+  "response.title.PRODUCT_PROPERTY_GROUP_NOT_EDITED": "Product property group not edited",
+  "response.description.PRODUCT_PROPERTY_GROUP_NOT_EDITED": "Unable to edit product property group",
+
+  "response.title.PRODUCT_PROPERTY_GROUP_EDITED": "Product property group edited",
+  "response.description.PRODUCT_PROPERTY_GROUP_EDITED": "Product property group has been updated",
+
+  "response.title.PRODUCT_PROPERTY_GROUPS_NOT_REMOVED": "Product properties groups not removed",
+  "response.description.PRODUCT_PROPERTY_GROUPS_NOT_REMOVED": "Unable to remove selected product properties groups",
+
+  "response.title.PRODUCT_PROPERTY_GROUPS_REMOVED": "Product properties groups removed",
+  "response.description.PRODUCT_PROPERTY_GROUPS_REMOVED": "Selected product properties groups have been deleted",
+
+  "response.title.PRODUCT_PROPERTY_OPTIONS_FETCHED": "Product properties options fetched",
+  "response.description.PRODUCT_PROPERTY_OPTIONS_FETCHED": "Product properties options list successfully fetched",
+
+  "response.title.PRODUCT_PROPERTY_OPTION_CREATED": "Опция свойств товаров создана",
+  "response.description.PRODUCT_PROPERTY_OPTION_CREATED": "Новая опция свойств товаров была создана",
+
+  "response.title.PRODUCT_PROPERTY_OPTION_NOT_EDITED": "Опция свойств товаров не обновлена",
+  "response.description.PRODUCT_PROPERTY_OPTION_NOT_EDITED": "Не удалось обновить опцию свойств товаров",
+
+  "response.title.PRODUCT_PROPERTY_OPTION_EDITED": "Опция свойств товаров обновлена",
+  "response.description.PRODUCT_PROPERTY_OPTION_EDITED": "Опция свойств товаров была обновлена",
+
+  "response.title.PRODUCT_PROPERTY_OPTIONS_NOT_REMOVED": "Опции свойств товаров не удалены",
+  "response.description.PRODUCT_PROPERTY_OPTIONS_NOT_REMOVED": "Не удалось удалить выбранные опции свойств товаров",
+
+  "response.title.PRODUCT_PROPERTY_OPTIONS_REMOVED": "Опции свойств товаров удалены",
+  "response.description.PRODUCT_PROPERTY_OPTIONS_REMOVED": "Выбранные опции свойств товаров были удалены",
+
+  "response.title.PRODUCT_PROPERTIES_FETCHED": "Product properties fetched",
+  "response.description.PRODUCT_PROPERTIES_FETCHED": "Product properties list successfully fetched",
+
+  "response.title.PRODUCT_PROPERTY_CREATED": "Product property created",
+  "response.description.PRODUCT_PROPERTY_CREATED": "New product property has been created",
+
+  "response.title.PRODUCT_PROPERTY_NOT_EDITED": "Product property not edited",
+  "response.description.PRODUCT_PROPERTY_NOT_EDITED": "Unable to edit product property",
+
+  "response.title.PRODUCT_PROPERTY_EDITED": "Product property edited",
+  "response.description.PRODUCT_PROPERTY_EDITED": "Product property has been updated",
+
+  "response.title.PRODUCT_PROPERTIES_NOT_REMOVED": "Product properties not removed",
+  "response.description.PRODUCT_PROPERTIES_NOT_REMOVED": "Unable to remove selected product properties",
+
+  "response.title.PRODUCT_PROPERTIES_REMOVED": "Product properties removed",
+  "response.description.PRODUCT_PROPERTIES_REMOVED": "Selected product properties have been deleted"
 }

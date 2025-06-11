@@ -77,8 +77,8 @@
   "component.sidemenu.label.catalog": "Каталог",
   "component.sidemenu.label.products": "Товары",
   "component.sidemenu.label.categories": "Категории",
-  "component.sidemenu.label.attributes": "Атрибуты",
-  "component.sidemenu.label.attributesGroup": "Группы атрибутов",
+  "component.sidemenu.label.productProperties": "Свойства товаров",
+  "component.sidemenu.label.productPropertiesGroups": "Группы свойств товаров",
   "component.sidemenu.label.barcodes": "Штрих-коды",
   "component.sidemenu.label.statistic": "Статистика",
   "component.sidemenu.label.orderStatistic": "Статистика заказов",
@@ -122,5 +122,8 @@
 
   "component.asyncSelect.searchPlaceholder": "Поиск",
   "component.asyncSelect.noResultsMessage": "Ничего не найдено",
-  "component.asyncSelect.placeholder": "Выберите"
+  "component.asyncSelect.placeholder": "Выберите",
+
+  "component.fileUploadDnd.upload": "Загрузить файл",
+  "component.fileUploadDnd.noFilesUploaded": "Файлы не загружены"
 }

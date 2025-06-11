@@ -12,6 +12,9 @@ import {
   ErrorPage,
   LanguagesPage,
   LoginPage,
+  ProductPropertiesGroupsPage,
+  ProductPropertiesPage,
+  ProductsPage,
   TestPage,
   UnitsPage,
   UserRolesPage,
@@ -48,6 +51,18 @@ export default function App() {
           <Route
             path="/categories"
             element={<ProtectedRoute children={<CategoriesPage />} permissions={['category.page']} />}
+          />
+          <Route
+            path="/products"
+            element={<ProtectedRoute children={<ProductsPage />} permissions={['product.page']} />}
+          />
+          <Route
+            path="/product-properties-groups"
+            element={<ProtectedRoute children={<ProductPropertiesGroupsPage />} permissions={['product-properties-groups.page']} />}
+          />
+          <Route
+            path="/product-properties"
+            element={<ProtectedRoute children={<ProductPropertiesPage />} permissions={['product-properties.page']} />}
           />
 
           <Route

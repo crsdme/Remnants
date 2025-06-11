@@ -97,7 +97,7 @@ export function ActionBar() {
                   {t('page.languages.form.description.create')}
                 </SheetDescription>
               </SheetHeader>
-              <div className="w-full px-4">
+              <div className="w-full p-4">
                 <Form {...languageContext.form}>
                   <form className="w-full space-y-4" onSubmit={languageContext.form.handleSubmit(onSubmit)}>
                     <FormField

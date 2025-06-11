@@ -102,7 +102,7 @@ export function ActionBar() {
                   {t('page.userRoles.form.description.create')}
                 </SheetDescription>
               </SheetHeader>
-              <div className="w-full px-4">
+              <div className="w-full p-4">
                 <Form {...userRoleContext.form}>
                   <form className="w-full space-y-4" onSubmit={userRoleContext.form.handleSubmit(onSubmit)}>
                     {languages.map(language => (

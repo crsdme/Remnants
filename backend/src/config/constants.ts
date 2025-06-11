@@ -4,22 +4,30 @@ export const SUPPORTED_LANGUAGES = ['ru', 'en'] as const
 
 export type SUPPORTED_LANGUAGES_TYPE = (typeof SUPPORTED_LANGUAGES)[number]
 
-export const STORAGE_ROOT = path.resolve('storage')
+export const BACKEND_URL = process.env.BACKEND_URL || 'http://127.0.0.1:3001'
+
+export const STORAGE_PATH = path.resolve('storage')
+
+export const STORAGE_URL = `${BACKEND_URL}/storage`
 
 export const STORAGE_PATHS = {
-  import: path.join(STORAGE_ROOT, 'import'),
-  export: path.join(STORAGE_ROOT, 'export'),
-  temp: path.join(STORAGE_ROOT, 'temp'),
-  importCategories: path.join(STORAGE_ROOT, 'import', 'categories'),
-  exportCategories: path.join(STORAGE_ROOT, 'export', 'categories'),
+  import: path.join(STORAGE_PATH, 'import'),
+  export: path.join(STORAGE_PATH, 'export'),
+  temp: path.join(STORAGE_PATH, 'temp'),
+  importCategories: path.join(STORAGE_PATH, 'import', 'categories'),
+  exportCategories: path.join(STORAGE_PATH, 'export', 'categories'),
+  importProducts: path.join(STORAGE_PATH, 'import', 'products'),
+  exportProducts: path.join(STORAGE_PATH, 'export', 'products'),
+  productImages: path.join(STORAGE_PATH, 'products', 'images'),
 }
 
-export const PUBLIC_URL = `${process.env.BASE_URL || 'http://localhost:3000'}/storage`
-
-export const PUBLIC_PATHS = {
-  import: `${PUBLIC_URL}/import`,
-  export: `${PUBLIC_URL}/export`,
-  temp: `${PUBLIC_URL}/temp`,
-  importCategories: `${PUBLIC_URL}/import/categories`,
-  exportCategories: `${PUBLIC_URL}/export/categories`,
+export const STORAGE_URLS = {
+  import: `${STORAGE_URL}/import`,
+  export: `${STORAGE_URL}/export`,
+  temp: `${STORAGE_URL}/temp`,
+  importCategories: `${STORAGE_URL}/import/categories`,
+  exportCategories: `${STORAGE_URL}/export/categories`,
+  importProducts: `${STORAGE_URL}/import/products`,
+  exportProducts: `${STORAGE_URL}/export/products`,
+  productImages: `${STORAGE_URL}/products/images`,
 }
