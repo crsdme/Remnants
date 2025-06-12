@@ -104,6 +104,7 @@ export function ActionBar() {
                     type="text"
                     value={field.value}
                     onChange={e => field.onChange(e.target.value)}
+                    disabled={isLoading}
                   />
                 </FormControl>
               </FormItem>
@@ -124,6 +125,7 @@ export function ActionBar() {
                     type="number"
                     value={field.value}
                     onChange={e => field.onChange(Number(e.target.value))}
+                    disabled={isLoading}
                   />
                 </FormControl>
               </FormItem>
@@ -143,6 +145,7 @@ export function ActionBar() {
                   <Switch
                     checked={field.value}
                     onCheckedChange={field.onChange}
+                    disabled={isLoading}
                   />
                 </FormControl>
               </FormItem>
@@ -180,6 +183,7 @@ export function ActionBar() {
                     name="categories"
                     value={field.value}
                     onChange={field.onChange}
+                    disabled={isLoading}
                   />
                 </FormControl>
                 <FormMessage />
@@ -219,6 +223,7 @@ export function ActionBar() {
                     value={field.value}
                     onChange={field.onChange}
                     multi
+                    disabled={isLoading}
                   />
                 </FormControl>
                 <FormMessage />
@@ -267,6 +272,7 @@ export function ActionBar() {
                     name="categories"
                     value={field.value}
                     onChange={field.onChange}
+                    disabled={isLoading}
                   />
                 </FormControl>
                 <FormMessage />
@@ -455,6 +461,7 @@ export function ActionBar() {
                               value={field.value}
                               onChange={field.onChange}
                               multi
+                              disabled={isLoading}
                             />
                           </FormControl>
                           <FormMessage />
@@ -479,6 +486,7 @@ export function ActionBar() {
                               name="unit"
                               value={field.value}
                               onChange={field.onChange}
+                              disabled={isLoading}
                             />
                           </FormControl>
                           <FormMessage />
@@ -537,7 +545,7 @@ export function ActionBar() {
                         <FormItem>
                           <FormLabel>{t('page.products.form.images')}</FormLabel>
                           <FormControl>
-                            <FileUploadDnd files={productContext.images} setFiles={productContext.setImages} />
+                            <FileUploadDnd disabled={isLoading} files={productContext.images} setFiles={productContext.setImages} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>

@@ -71,9 +71,10 @@ function SortableFileItem({ file, onDelete }: SortableFileItemProps) {
   )
 }
 
-export function FileUploadDnd({ files, setFiles }: {
+export function FileUploadDnd({ files, setFiles, disabled = false }: {
   files
   setFiles
+  disabled
 }) {
   const { t } = useTranslation()
 
@@ -134,7 +135,7 @@ export function FileUploadDnd({ files, setFiles }: {
       <div>
         <input type="file" multiple accept="image/*" onChange={handleFileUpload} className="hidden" id="file-upload" />
         <label htmlFor="file-upload">
-          <Button variant="outline" className="w-full cursor-pointer" asChild>
+          <Button variant="outline" className="w-full cursor-pointer" asChild disabled={disabled}>
             <div className="flex items-center gap-2">
               <Upload className="h-4 w-4" />
               {t('component.fileUploadDnd.upload')}

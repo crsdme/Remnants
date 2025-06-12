@@ -143,6 +143,7 @@ export function ActionBar() {
                               name="parent"
                               value={field.value}
                               onChange={field.onChange}
+                              disabled={isLoading}
                             />
                           </FormControl>
                           <FormMessage />

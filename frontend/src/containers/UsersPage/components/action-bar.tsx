@@ -183,6 +183,7 @@ export function ActionBar() {
                               name="role"
                               value={field.value}
                               onChange={field.onChange}
+                              disabled={isLoading}
                             />
                           </FormControl>
                           <FormMessage />
