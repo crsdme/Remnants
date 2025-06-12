@@ -1,6 +1,6 @@
 import type * as UserTypes from '../types/user.type'
 import bcrypt from 'bcrypt'
-import { UserModel } from '../models/user.model'
+import { UserModel } from '../models'
 import { HttpError } from '../utils/httpError'
 import { parseFile, toBoolean } from '../utils/parseTools'
 import { buildQuery, buildSortQuery } from '../utils/queryBuilder'

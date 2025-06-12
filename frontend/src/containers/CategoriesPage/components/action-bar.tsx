@@ -1,8 +1,9 @@
 import { Plus } from 'lucide-react'
 
-import { useState } from 'react'
+import { useCallback, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useRequestCategories, useRequestLanguages } from '@/api/hooks'
+import { useRequestLanguages } from '@/api/hooks'
+import { getCategories } from '@/api/requests'
 import { AsyncSelect } from '@/components/AsyncSelect'
 import { ImportButton } from '@/components/ImportButton'
 import { PermissionGate } from '@/components/PermissionGate/PermissionGate'
@@ -24,14 +25,9 @@ export function ActionBar() {
   const { t, i18n } = useTranslation()
   const categoryContext = useCategoryContext()
   const [file, setFile] = useState<File | null>(null)
-  const [search, setSearch] = useState('')
 
   const requestLanguages = useRequestLanguages({ pagination: { full: true } })
   const languages = requestLanguages?.data?.data?.languages || []
-
-  const requestCategories = useRequestCategories(
-    { pagination: { full: true }, filters: { names: search, active: [true], language: i18n.language } },
-  )
 
   const onSubmit = (values) => {
     categoryContext.submitCategoryForm(values)
@@ -54,6 +50,18 @@ export function ActionBar() {
     categoryContext.importCategories(formData)
     setFile(null)
   }
+
+  const loadCategoriesOptions = useCallback(async ({ query, selectedValue }) => {
+    const response = await getCategories({
+      pagination: { full: true },
+      filters: {
+        ...(selectedValue ? { ids: selectedValue } : { names: query }),
+        active: [true],
+        language: i18n.language,
+      },
+    })
+    return response?.data?.categories || []
+  }, [i18n.language])
 
   const isLoading = categoryContext.isLoading
 
@@ -83,12 +91,12 @@ export function ActionBar() {
             </SheetTrigger>
             <SheetContent className="sm:max-w-xl w-full overflow-y-auto" side="right">
               <SheetHeader>
-                <SheetTitle>{t('page.categories.form.title.create')}</SheetTitle>
+                <SheetTitle>{t(`page.categories.form.title.${categoryContext.selectedCategory ? 'edit' : 'create'}`)}</SheetTitle>
                 <SheetDescription>
-                  {t('page.categories.form.description.create')}
+                  {t(`page.categories.form.description.${categoryContext.selectedCategory ? 'edit' : 'create'}`)}
                 </SheetDescription>
               </SheetHeader>
-              <div className="w-full p-4">
+              <div className="w-full pb-4 px-4">
                 <Form {...categoryContext.form}>
                   <form className="w-full space-y-4" onSubmit={categoryContext.form.handleSubmit(onSubmit)}>
                     {languages.map(language => (
@@ -126,17 +134,14 @@ export function ActionBar() {
                           <FormLabel>{t('page.categories.form.parent')}</FormLabel>
                           <FormControl>
                             <AsyncSelect<Category>
-                              fetcher={async (searchValue) => {
-                                setSearch(searchValue as string)
-                                return requestCategories.data?.data?.categories || []
-                              }}
+                              fetcher={loadCategoriesOptions}
                               renderOption={e => e.names[i18n.language]}
                               getDisplayValue={e => e.names[i18n.language]}
                               getOptionValue={e => e.id}
                               width="100%"
                               className="w-full"
                               name="parent"
-                              values={field.value}
+                              value={field.value}
                               onChange={field.onChange}
                             />
                           </FormControl>

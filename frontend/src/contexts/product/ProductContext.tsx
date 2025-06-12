@@ -24,7 +24,7 @@ import { downloadBlob } from '@/utils/helpers/download'
 interface UploadedFile {
   id: string
   file: File
-  preview: string 
+  preview: string
   name: string
   type: string
 }
@@ -67,15 +67,26 @@ export function ProductProvider({ children }: ProductProviderProps) {
   const formSchema = useMemo(() =>
     z.object({
       names: z.record(z.string({ required_error: t('form.errors.required') }).min(3, { message: t('form.errors.min_length', { count: 3 }) }).trim()),
-      categories: z.array(z.string()).optional(),
-      price: z.number().optional(),
-      currency: z.string().optional(),
+      categories: z.array(z.string()),
+      price: z.number(),
+      currency: z.string(),
       purchasePrice: z.number().optional(),
       purchaseCurrency: z.string().optional(),
       productProperties: z.any().optional(),
       productPropertiesGroup: z.string().optional(),
-      // images: z.any().optional(),
-      unit: z.array(z.string()).optional(),
+      unit: z.array(z.string()),
+    }).superRefine((data, ctx) => {
+      if (
+        data.purchasePrice !== undefined
+        && data.purchasePrice !== null
+        && data.purchaseCurrency === undefined
+      ) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: t('form.errors.required'),
+          path: ['purchaseCurrency'],
+        })
+      }
     }), [t])
 
   const form = useForm({
@@ -258,7 +269,7 @@ export function ProductProvider({ children }: ProductProviderProps) {
     if (params.unit) {
       params.unit = params.unit[0]
     }
-    console.log(images)
+
     params.images = images.map(image => ({
       id: image.id,
       filename: image.filename,
@@ -267,7 +278,7 @@ export function ProductProvider({ children }: ProductProviderProps) {
       path: image.path,
       isNew: image.isNew,
     }))
-    
+
     params.uploadedImages = images.filter(image => typeof image.file !== 'string')
 
     const formData = new FormData()

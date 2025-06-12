@@ -48,12 +48,12 @@ export function ActionBar() {
           <Sheet open={productPropertiesContext.isOptionsModalOpen} onOpenChange={() => !isLoading && productPropertiesContext.toggleOptionsModal()}>
             <SheetContent className="sm:max-w-xl w-full overflow-y-auto" side="right">
               <SheetHeader>
-                <SheetTitle>{t('page.product-properties.form.title.createOption')}</SheetTitle>
+                <SheetTitle>{t(`page.product-properties.form.title.${productPropertiesContext.selectedProductProperty ? 'editOption' : 'createOption'}`)}</SheetTitle>
                 <SheetDescription>
-                  {t('page.product-properties.form.description.createOption')}
+                  {t(`page.product-properties.form.description.${productPropertiesContext.selectedProductProperty ? 'editOption' : 'createOption'}`)}
                 </SheetDescription>
               </SheetHeader>
-              <div className="w-full p-4">
+              <div className="w-full pb-4 px-4">
                 <Form {...productPropertiesContext.optionsForm}>
                   <form className="w-full space-y-4" onSubmit={productPropertiesContext.optionsForm.handleSubmit(onSubmitOptions)}>
                     {languages.map(language => (
@@ -172,12 +172,12 @@ export function ActionBar() {
             </SheetTrigger>
             <SheetContent className="sm:max-w-xl w-full overflow-y-auto" side="right">
               <SheetHeader>
-                <SheetTitle>{t('page.product-properties.form.title.create')}</SheetTitle>
+                <SheetTitle>{t(`page.product-properties.form.title.${productPropertiesContext.selectedProductProperty ? 'edit' : 'create'}`)}</SheetTitle>
                 <SheetDescription>
-                  {t('page.product-properties.form.description.create')}
+                  {t(`page.product-properties.form.description.${productPropertiesContext.selectedProductProperty ? 'edit' : 'create'}`)}
                 </SheetDescription>
               </SheetHeader>
-              <div className="w-full p-4">
+              <div className="w-full pb-4 px-4">
                 <Form {...productPropertiesContext.form}>
                   <form className="w-full space-y-4" onSubmit={productPropertiesContext.form.handleSubmit(onSubmit)}>
                     {languages.map(language => (

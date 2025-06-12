@@ -1,5 +1,5 @@
 import type * as UserRoleTypes from '../types/user-role.type'
-import { UserRoleModel } from '../models/user-role.model'
+import { UserRoleModel } from '../models'
 import { HttpError } from '../utils/httpError'
 import { parseFile, toBoolean } from '../utils/parseTools'
 import { buildQuery, buildSortQuery } from '../utils/queryBuilder'

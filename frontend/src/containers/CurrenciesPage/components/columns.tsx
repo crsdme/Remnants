@@ -4,6 +4,10 @@ import {
   ChevronDown,
   ChevronRight,
   ChevronsUpDown,
+  Copy,
+  CopyPlus,
+  Pencil,
+  Trash,
 } from 'lucide-react'
 import { useMemo } from 'react'
 
@@ -107,26 +111,35 @@ export function useColumns() {
         cell: ({ row }) => {
           const item = row.original
 
-          return (
-            <TableActionDropdown
-              copyAction={{
-                permission: 'currency.copy',
-                onClick: () => navigator.clipboard.writeText(item.id),
-              }}
-              editAction={{
-                permission: 'currency.edit',
-                onClick: () => currencyContext.toggleModal(item),
-              }}
-              duplicateAction={{
-                permission: 'currency.duplicate',
-                onClick: () => currencyContext.duplicateCurrencies({ ids: [item.id] }),
-              }}
-              deleteAction={{
-                permission: 'currency.delete',
-                onClick: () => currencyContext.removeCurrency({ ids: [item.id] }),
-              }}
-            />
-          )
+          const actions = [
+            {
+              permission: 'currency.copy',
+              onClick: () => navigator.clipboard.writeText(item.id),
+              label: t('table.copy'),
+              icon: <Copy className="h-4 w-4" />,
+            },
+            {
+              permission: 'currency.edit',
+              onClick: () => currencyContext.toggleModal(item),
+              label: t('table.edit'),
+              icon: <Pencil className="h-4 w-4" />,
+            },
+            {
+              permission: 'currency.duplicate',
+              onClick: () => currencyContext.duplicateCurrencies({ ids: [item.id] }),
+              label: t('table.duplicate'),
+              icon: <CopyPlus className="h-4 w-4" />,
+            },
+            {
+              permission: 'currency.delete',
+              onClick: () => currencyContext.removeCurrency({ ids: [item.id] }),
+              label: t('table.delete'),
+              icon: <Trash className="h-4 w-4" />,
+              isDestructive: true,
+            },
+          ]
+
+          return <TableActionDropdown actions={actions} />
         },
       })
     }
@@ -193,7 +206,7 @@ export function useColumns() {
           sortable: true,
         },
         header: t('page.currencies.table.active'),
-        cell: ({ row }) => <Badge variant="outline">{row.original.active.toString()}</Badge>,
+        cell: ({ row }) => <Badge variant={row.original.active ? 'success' : 'destructive'}>{t(`table.active.${row.original.active}`)}</Badge>,
       },
       {
         id: 'createdAt',

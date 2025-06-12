@@ -4,6 +4,10 @@ import {
   ChevronDown,
   ChevronRight,
   ChevronsUpDown,
+  Copy,
+  CopyPlus,
+  Pencil,
+  Trash,
 } from 'lucide-react'
 import { useMemo } from 'react'
 
@@ -107,26 +111,35 @@ export function useColumns(loadOptions) {
         cell: ({ row }) => {
           const item = row.original
 
-          return (
-            <TableActionDropdown
-              copyAction={{
-                permission: 'category.copy',
-                onClick: () => navigator.clipboard.writeText(item.id),
-              }}
-              editAction={{
-                permission: 'category.edit',
-                onClick: () => categoryContext.toggleModal(item),
-              }}
-              duplicateAction={{
-                permission: 'category.duplicate',
-                onClick: () => categoryContext.duplicateCategories({ ids: [item.id] }),
-              }}
-              deleteAction={{
-                permission: 'category.delete',
-                onClick: () => categoryContext.removeCategory({ ids: [item.id] }),
-              }}
-            />
-          )
+          const actions = [
+            {
+              permission: 'category.copy',
+              onClick: () => navigator.clipboard.writeText(item.id),
+              label: t('table.copy'),
+              icon: <Copy className="h-4 w-4" />,
+            },
+            {
+              permission: 'category.edit',
+              onClick: () => categoryContext.toggleModal(item),
+              label: t('table.edit'),
+              icon: <Pencil className="h-4 w-4" />,
+            },
+            {
+              permission: 'category.duplicate',
+              onClick: () => categoryContext.duplicateCategories({ ids: [item.id] }),
+              label: t('table.duplicate'),
+              icon: <CopyPlus className="h-4 w-4" />,
+            },
+            {
+              permission: 'category.delete',
+              onClick: () => categoryContext.removeCategory({ ids: [item.id] }),
+              label: t('table.delete'),
+              icon: <Trash className="h-4 w-4" />,
+              isDestructive: true,
+            },
+          ]
+
+          return <TableActionDropdown actions={actions} />
         },
       })
     }

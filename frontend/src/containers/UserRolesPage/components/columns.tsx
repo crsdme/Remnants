@@ -4,6 +4,10 @@ import {
   ChevronDown,
   ChevronRight,
   ChevronsUpDown,
+  Copy,
+  CopyPlus,
+  Pencil,
+  Trash,
 } from 'lucide-react'
 import { useMemo } from 'react'
 
@@ -107,26 +111,35 @@ export function useColumns() {
         cell: ({ row }) => {
           const item = row.original
 
-          return (
-            <TableActionDropdown
-              copyAction={{
-                permission: 'userRole.copy',
-                onClick: () => navigator.clipboard.writeText(item.id),
-              }}
-              editAction={{
-                permission: 'userRole.edit',
-                onClick: () => userRoleContext.toggleModal(item),
-              }}
-              duplicateAction={{
-                permission: 'userRole.duplicate',
-                onClick: () => userRoleContext.duplicateUserRoles({ ids: [item.id] }),
-              }}
-              deleteAction={{
-                permission: 'userRole.delete',
-                onClick: () => userRoleContext.removeUserRoles({ ids: [item.id] }),
-              }}
-            />
-          )
+          const actions = [
+            {
+              permission: 'user-role.copy',
+              onClick: () => navigator.clipboard.writeText(item.id),
+              label: t('table.copy'),
+              icon: <Copy className="h-4 w-4" />,
+            },
+            {
+              permission: 'user-role.edit',
+              onClick: () => userRoleContext.toggleModal(item),
+              label: t('table.edit'),
+              icon: <Pencil className="h-4 w-4" />,
+            },
+            {
+              permission: 'user-role.duplicate',
+              onClick: () => userRoleContext.duplicateUserRoles({ ids: [item.id] }),
+              label: t('table.duplicate'),
+              icon: <CopyPlus className="h-4 w-4" />,
+            },
+            {
+              permission: 'user-role.delete',
+              onClick: () => userRoleContext.removeUserRoles({ ids: [item.id] }),
+              label: t('table.delete'),
+              icon: <Trash className="h-4 w-4" />,
+              isDestructive: true,
+            },
+          ]
+
+          return <TableActionDropdown actions={actions} />
         },
       })
     }
@@ -179,7 +192,7 @@ export function useColumns() {
           sortable: true,
         },
         header: t('page.userRoles.table.active'),
-        cell: ({ row }) => <Badge variant="outline">{row.original.active.toString()}</Badge>,
+        cell: ({ row }) => <Badge variant={row.original.active ? 'success' : 'destructive'}>{t(`table.active.${row.original.active}`)}</Badge>,
       },
       {
         id: 'priority',

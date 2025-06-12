@@ -4,7 +4,11 @@ import {
   ChevronDown,
   ChevronRight,
   ChevronsUpDown,
+  Copy,
+  CopyPlus,
+  Pencil,
   SquarePlus,
+  Trash,
 } from 'lucide-react'
 import { useMemo } from 'react'
 
@@ -107,34 +111,37 @@ export function useColumns() {
         enableHiding: false,
         cell: ({ row }) => {
           const item = row.original
-          const actions = []
+          const actions = [
+            {
+              permission: 'product-properties.copy',
+              onClick: () => navigator.clipboard.writeText(item.id),
+              label: t('table.copy'),
+              icon: <Copy className="h-4 w-4" />,
+            },
+            {
+              permission: 'product-properties.edit',
+              onClick: () => productPropertiesContext.openModal(item),
+              label: t('table.edit'),
+              icon: <Pencil className="h-4 w-4" />,
+            },
+            ...((item.type === 'select' || item.type === 'multiSelect' || item.type === 'color')
+              ? [{
+                  permission: 'product-properties-options.create',
+                  onClick: () => productPropertiesContext.openOptionsModal({ option: undefined, property: item }),
+                  label: t('table.addOption'),
+                  icon: <SquarePlus className="h-4 w-4" />,
+                }]
+              : []),
+            {
+              permission: 'product-properties.delete',
+              onClick: () => productPropertiesContext.removeProductProperty({ ids: [item.id] }),
+              label: t('table.delete'),
+              icon: <Trash className="h-4 w-4" />,
+              isDestructive: true,
+            },
+          ]
 
-          if (item.type === 'select' || item.type === 'multiSelect' || item.type === 'color') {
-            actions.push({
-              permission: 'product-properties-options.create',
-              onClick: () => productPropertiesContext.openOptionsModal({ option: undefined, property: item }),
-              label: t('table.addOption'),
-              icon: <SquarePlus className="h-4 w-4" />,
-            })
-          }
-
-          return (
-            <TableActionDropdown
-              copyAction={{
-                permission: 'product-properties.copy',
-                onClick: () => navigator.clipboard.writeText(item.id),
-              }}
-              editAction={{
-                permission: 'product-properties.edit',
-                onClick: () => productPropertiesContext.openModal(item),
-              }}
-              deleteAction={{
-                permission: 'product-properties.delete',
-                onClick: () => productPropertiesContext.removeProductProperty({ ids: [item.id] }),
-              }}
-              actions={actions}
-            />
-          )
+          return <TableActionDropdown actions={actions} />
         },
       })
     }

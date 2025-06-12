@@ -26,6 +26,8 @@
 
   "page.languages.form.title.create": "Создание нового языка",
   "page.languages.form.description.create": "Добавить новый язык в систему",
+  "page.languages.form.title.edit": "Редактирование языка",
+  "page.languages.form.description.edit": "Редактирование существующего языка",
   "page.languages.form.name": "Название",
   "page.languages.form.code": "Код",
   "page.languages.form.priority": "Приоритет",
@@ -44,6 +46,8 @@
 
   "page.units.form.title.create": "Создание новой единицы измерения",
   "page.units.form.description.create": "Добавить новую единицу измерения в систему",
+  "page.units.form.title.edit": "Редактирование единицы измерения",
+  "page.units.form.description.edit": "Редактирование существующей единицы измерения",
   "page.units.form.names": "Название ({{language}})",
   "page.units.form.symbols": "Символ ({{language}})",
   "page.units.form.priority": "Приоритет",
@@ -61,6 +65,8 @@
 
   "page.currencies.form.title.create": "Создание новой валюты",
   "page.currencies.form.description.create": "Добавить новую валюту в систему",
+  "page.currencies.form.title.edit": "Редактирование валюты",
+  "page.currencies.form.description.edit": "Редактирование существующей валюты",
   "page.currencies.form.names": "Название ({{language}})",
   "page.currencies.form.symbols": "Символ ({{language}})",
   "page.currencies.form.priority": "Приоритет",
@@ -79,6 +85,8 @@
 
   "page.users.form.title.create": "Создание нового пользователя",
   "page.users.form.description.create": "Добавить нового пользователя в систему",
+  "page.users.form.title.edit": "Редактирование пользователя",
+  "page.users.form.description.edit": "Редактирование существующего пользователя",
   "page.users.form.name": "Имя",
   "page.users.form.login": "Логин",
   "page.users.form.password": "Пароль",
@@ -97,6 +105,8 @@
 
   "page.categories.form.title.create": "Создание новой категории",
   "page.categories.form.description.create": "Добавить новую категорию в систему",
+  "page.categories.form.title.edit": "Редактирование категории",
+  "page.categories.form.description.edit": "Редактирование существующей категории",
   "page.categories.form.names": "Название ({{language}})",
   "page.categories.form.priority": "Приоритет",
   "page.categories.form.active": "Активная",
@@ -121,6 +131,8 @@
 
   "page.products.form.title.create": "Создание нового товара",
   "page.products.form.description.create": "Добавить новый товар в систему",
+  "page.products.form.title.edit": "Редактирование товара",
+  "page.products.form.description.edit": "Редактирование существующего товара",
   "page.products.form.names": "Название ({{language}})",
   "page.products.form.priority": "Приоритет",
   "page.products.form.active": "Активная",
@@ -146,6 +158,8 @@
 
   "page.userRoles.form.title.create": "Создание новой роли пользователя",
   "page.userRoles.form.description.create": "Добавить новую роль пользователя в систему",
+  "page.userRoles.form.title.edit": "Редактирование роли пользователя",
+  "page.userRoles.form.description.edit": "Редактирование существующей роли пользователя",
   "page.userRoles.form.names": "Имя ({{language}})",
   "page.userRoles.form.priority": "Приоритет",
   "page.userRoles.form.permissions": "Права",
@@ -287,6 +301,8 @@
 
   "page.product-properties-groups.form.title.create": "Создание новой группы свойств товара",
   "page.product-properties-groups.form.description.create": "Добавить новую группу свойств товара в систему",
+  "page.product-properties-groups.form.title.edit": "Редактирование группы свойств товара",
+  "page.product-properties-groups.form.description.edit": "Редактирование существующей группы свойств товара",
   "page.product-properties-groups.form.names": "Название ({{language}})",
   "page.product-properties-groups.form.priority": "Приоритет",
   "page.product-properties-groups.form.active": "Активная",
@@ -314,6 +330,8 @@
 
   "page.product-properties.form.title.create": "Создание нового свойства товара",
   "page.product-properties.form.description.create": "Добавить новое свойство товара в систему",
+  "page.product-properties.form.title.edit": "Редактирование свойства товара",
+  "page.product-properties.form.description.edit": "Редактирование существующего свойства товара",
   "page.product-properties.form.names": "Название ({{language}})",
   "page.product-properties.form.priority": "Приоритет",
   "page.product-properties.form.isRequired": "Обязательное",
@@ -321,8 +339,11 @@
   "page.product-properties.form.showInTable": "Показывать в таблице",
   "page.product-properties.form.productProperties": "Свойства",
   "page.product-properties.form.type": "Тип",
+  "page.product-properties.form.color": "Цвет",
 
   "page.product-properties.form.title.createOption": "Создание новой опции свойства товара",
-  "page.product-properties.form.description.createOption": "Добавить новую опцию свойства товара в систему"
+  "page.product-properties.form.description.createOption": "Добавить новую опцию свойства товара в систему",
+  "page.product-properties.form.title.editOption": "Редактирование опции свойства товара",
+  "page.product-properties.form.description.editOption": "Редактирование существующей опции свойства товара"
 
 }

@@ -96,12 +96,12 @@ export function ActionBar() {
             </SheetTrigger>
             <SheetContent className="sm:max-w-xl w-full overflow-y-auto" side="right">
               <SheetHeader>
-                <SheetTitle>{t('page.users.form.title.create')}</SheetTitle>
+                <SheetTitle>{t(`page.users.form.title.${userContext.selectedUser ? 'edit' : 'create'}`)}</SheetTitle>
                 <SheetDescription>
-                  {t('page.users.form.description.create')}
+                  {t(`page.users.form.description.${userContext.selectedUser ? 'edit' : 'create'}`)}
                 </SheetDescription>
               </SheetHeader>
-              <div className="w-full p-4">
+              <div className="w-full pb-4 px-4">
                 <Form {...userContext.form}>
                   <form className="w-full space-y-4" onSubmit={userContext.form.handleSubmit(onSubmit)}>
                     <FormField
@@ -181,7 +181,7 @@ export function ActionBar() {
                               width="100%"
                               className="w-full"
                               name="role"
-                              values={field.value}
+                              value={field.value}
                               onChange={field.onChange}
                             />
                           </FormControl>

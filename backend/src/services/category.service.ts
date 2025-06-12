@@ -4,8 +4,7 @@ import path from 'node:path'
 import ExcelJS from 'exceljs'
 import { v4 as uuidv4 } from 'uuid'
 import { STORAGE_PATHS } from '../config/constants'
-import { LanguageModel } from '../models'
-import { CategoryModel } from '../models/category.model'
+import { CategoryModel, LanguageModel } from '../models'
 import { HttpError } from '../utils/httpError'
 import {
   extractLangMap,
@@ -65,7 +64,7 @@ export async function get(payload: CategoryTypes.getCategoriesParams): Promise<C
     },
   } = payload.filters
 
-  const sorters = buildSortQuery(payload.sorters)
+  const sorters = buildSortQuery({ ...payload.sorters, level: 'asc' })
 
   const filterRules = {
     names: { type: 'string', langAware: true },

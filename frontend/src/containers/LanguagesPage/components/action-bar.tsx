@@ -92,12 +92,12 @@ export function ActionBar() {
             </SheetTrigger>
             <SheetContent className="sm:max-w-xl w-full overflow-y-auto" side="right">
               <SheetHeader>
-                <SheetTitle>{t('page.languages.form.title.create')}</SheetTitle>
+                <SheetTitle>{t(`page.languages.form.title.${languageContext.selectedLanguage ? 'edit' : 'create'} `)}</SheetTitle>
                 <SheetDescription>
-                  {t('page.languages.form.description.create')}
+                  {t(`page.languages.form.description.${languageContext.selectedLanguage ? 'edit' : 'create'}`)}
                 </SheetDescription>
               </SheetHeader>
-              <div className="w-full p-4">
+              <div className="w-full pb-4 px-4">
                 <Form {...languageContext.form}>
                   <form className="w-full space-y-4" onSubmit={languageContext.form.handleSubmit(onSubmit)}>
                     <FormField

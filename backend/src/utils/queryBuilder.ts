@@ -61,12 +61,8 @@ export function buildQuery({ filters, rules, language = 'en', removed = true, ba
   return query
 }
 
-export function buildSortQuery(sort: Record<string, string>, isTree = false): Record<string, any> {
+export function buildSortQuery(sort: Record<string, string>): Record<string, any> {
   let sortersQuery: Record<string, any> = { _id: 1 }
-
-  if (isTree) {
-    sortersQuery = { level: 1 }
-  }
 
   if (!sort)
     return sortersQuery

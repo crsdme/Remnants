@@ -4,6 +4,10 @@ import {
   ChevronDown,
   ChevronRight,
   ChevronsUpDown,
+  Copy,
+  CopyPlus,
+  Pencil,
+  Trash,
 } from 'lucide-react'
 import { useMemo } from 'react'
 
@@ -112,26 +116,35 @@ export function useColumns() {
         cell: ({ row }) => {
           const item = row.original
 
-          return (
-            <TableActionDropdown
-              copyAction={{
-                permission: 'product.copy',
-                onClick: () => navigator.clipboard.writeText(item.id),
-              }}
-              editAction={{
-                permission: 'product.edit',
-                onClick: () => productContext.toggleModal(item),
-              }}
-              duplicateAction={{
-                permission: 'product.duplicate',
-                onClick: () => productContext.duplicateProducts({ ids: [item.id] }),
-              }}
-              deleteAction={{
-                permission: 'product.delete',
-                onClick: () => productContext.removeProduct({ ids: [item.id] }),
-              }}
-            />
-          )
+          const actions = [
+            {
+              permission: 'product.copy',
+              onClick: () => navigator.clipboard.writeText(item.id),
+              label: t('table.copy'),
+              icon: <Copy className="h-4 w-4" />,
+            },
+            {
+              permission: 'product.edit',
+              onClick: () => productContext.toggleModal(item),
+              label: t('table.edit'),
+              icon: <Pencil className="h-4 w-4" />,
+            },
+            {
+              permission: 'product.duplicate',
+              onClick: () => productContext.duplicateProducts({ ids: [item.id] }),
+              label: t('table.duplicate'),
+              icon: <CopyPlus className="h-4 w-4" />,
+            },
+            {
+              permission: 'product.delete',
+              onClick: () => productContext.removeProduct({ ids: [item.id] }),
+              label: t('table.delete'),
+              icon: <Trash className="h-4 w-4" />,
+              isDestructive: true,
+            },
+          ]
+
+          return <TableActionDropdown actions={actions} />
         },
       })
     }
@@ -194,7 +207,7 @@ export function useColumns() {
 
     return [
       selectColumn(),
-      // expanderColumn(),
+      expanderColumn(),
       {
         id: 'images',
         size: 100,
@@ -205,7 +218,7 @@ export function useColumns() {
           const images = row.original.images.map((image, index) => ({
             id: index,
             src: image.path,
-            alt: image.originalname
+            alt: image.originalname,
           }))
           return (<ImageGallery images={images} />)
         },

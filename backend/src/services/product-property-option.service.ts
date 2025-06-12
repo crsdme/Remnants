@@ -1,6 +1,5 @@
 import type * as ProductPropertyOptionTypes from '../types/product-property-option.type'
-import { ProductPropertyOptionModel } from '../models/product-property-option.model'
-import { ProductPropertyModel } from '../models/product-property.model'
+import { ProductPropertyModel, ProductPropertyOptionModel } from '../models'
 import { HttpError } from '../utils/httpError'
 import { buildQuery, buildSortQuery } from '../utils/queryBuilder'
 

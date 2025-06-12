@@ -4,8 +4,7 @@ import path from 'node:path'
 import ExcelJS from 'exceljs'
 import { v4 as uuidv4 } from 'uuid'
 import { STORAGE_PATHS, STORAGE_URLS } from '../config/constants'
-import { LanguageModel } from '../models'
-import { ProductModel } from '../models/product.model'
+import { LanguageModel, ProductModel } from '../models'
 import { HttpError } from '../utils/httpError'
 import {
   extractLangMap,

@@ -303,12 +303,12 @@ export function ActionBar() {
             </SheetTrigger>
             <SheetContent className="sm:max-w-xl w-full overflow-y-auto" side="right">
               <SheetHeader>
-                <SheetTitle>{t('page.products.form.title.create')}</SheetTitle>
+                <SheetTitle>{t(`page.products.form.title.${productContext.selectedProduct ? 'edit' : 'create'}`)}</SheetTitle>
                 <SheetDescription>
-                  {t('page.products.form.description.create')}
+                  {t(`page.products.form.description.${productContext.selectedProduct ? 'edit' : 'create'}`)}
                 </SheetDescription>
               </SheetHeader>
-              <div className="w-full p-4">
+              <div className="w-full pb-4 px-4">
                 <Form {...productContext.form}>
                   <form
                     className="w-full space-y-4"

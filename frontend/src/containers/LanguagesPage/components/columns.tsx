@@ -4,6 +4,10 @@ import {
   ChevronDown,
   ChevronRight,
   ChevronsUpDown,
+  Copy,
+  CopyPlus,
+  Pencil,
+  Trash,
 } from 'lucide-react'
 import { useMemo } from 'react'
 
@@ -107,26 +111,35 @@ export function useColumns() {
         cell: ({ row }) => {
           const item = row.original
 
-          return (
-            <TableActionDropdown
-              copyAction={{
-                permission: 'language.copy',
-                onClick: () => navigator.clipboard.writeText(item.id),
-              }}
-              editAction={{
-                permission: 'language.edit',
-                onClick: () => languageContext.toggleModal(item),
-              }}
-              duplicateAction={{
-                permission: 'language.duplicate',
-                onClick: () => languageContext.duplicateLanguages({ ids: [item.id] }),
-              }}
-              deleteAction={{
-                permission: 'language.delete',
-                onClick: () => languageContext.removeLanguage({ ids: [item.id] }),
-              }}
-            />
-          )
+          const actions = [
+            {
+              permission: 'language.copy',
+              onClick: () => navigator.clipboard.writeText(item.id),
+              label: t('table.copy'),
+              icon: <Copy className="h-4 w-4" />,
+            },
+            {
+              permission: 'language.edit',
+              onClick: () => languageContext.toggleModal(item),
+              label: t('table.edit'),
+              icon: <Pencil className="h-4 w-4" />,
+            },
+            {
+              permission: 'language.duplicate',
+              onClick: () => languageContext.duplicateLanguages({ ids: [item.id] }),
+              label: t('table.duplicate'),
+              icon: <CopyPlus className="h-4 w-4" />,
+            },
+            {
+              permission: 'language.delete',
+              onClick: () => languageContext.removeLanguage({ ids: [item.id] }),
+              label: t('table.delete'),
+              icon: <Trash className="h-4 w-4" />,
+              isDestructive: true,
+            },
+          ]
+
+          return <TableActionDropdown actions={actions} />
         },
       })
     }
@@ -193,7 +206,7 @@ export function useColumns() {
           sortable: true,
         },
         header: t('page.languages.table.active'),
-        cell: ({ row }) => <Badge variant="outline">{row.original.active.toString()}</Badge>,
+        cell: ({ row }) => <Badge variant={row.original.active ? 'success' : 'destructive'}>{t(`table.active.${row.original.active}`)}</Badge>,
       },
       {
         id: 'main',
@@ -207,7 +220,7 @@ export function useColumns() {
           sortable: true,
         },
         header: t('page.languages.table.main'),
-        cell: ({ row }) => <Badge variant="outline">{row.original.main.toString()}</Badge>,
+        cell: ({ row }) => <Badge variant={row.original.main ? 'success' : 'destructive'}>{t(`table.yesno.${row.original.main}`)}</Badge>,
       },
       {
         id: 'createdAt',

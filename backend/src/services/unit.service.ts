@@ -1,5 +1,5 @@
 import type * as UnitTypes from '../types/unit.type'
-import { UnitModel } from '../models/'
+import { UnitModel } from '../models'
 import { HttpError } from '../utils/httpError'
 import {
   extractLangMap,

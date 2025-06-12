@@ -72,8 +72,8 @@ function SortableFileItem({ file, onDelete }: SortableFileItemProps) {
 }
 
 export function FileUploadDnd({ files, setFiles }: {
-  files: UploadedFile[]
-  setFiles: React.Dispatch<React.SetStateAction<UploadedFile[]>>
+  files
+  setFiles
 }) {
   const { t } = useTranslation()
 

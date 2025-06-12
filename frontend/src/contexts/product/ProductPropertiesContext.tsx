@@ -97,7 +97,7 @@ export function ProductPropertiesProvider({ children }: ProductPropertiesProvide
       },
       priority: 0,
       active: true,
-      color: '#ffffff',
+      color: '',
     },
   })
 
@@ -179,7 +179,7 @@ export function ProductPropertiesProvider({ children }: ProductPropertiesProvide
         setIsOptionsModalOpen(false)
         setIsLoading(false)
         setSelectedProductPropertyOption(null)
-        queryClient.invalidateQueries({ queryKey: ['product-properties-options'] })
+        queryClient.invalidateQueries({ queryKey: ['product-properties-options', 'get'] })
         toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description || ''}` })
       },
       onError: ({ response }) => {

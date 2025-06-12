@@ -26,6 +26,8 @@
 
   "page.languages.form.title.create": "Create New Language",
   "page.languages.form.description.create": "Add a new language to the system",
+  "page.languages.form.title.edit": "Edit Language",
+  "page.languages.form.description.edit": "Edit existing language",
   "page.languages.form.name": "Name",
   "page.languages.form.code": "Code",
   "page.languages.form.priority": "Priority",
@@ -44,6 +46,8 @@
 
   "page.units.form.title.create": "Create New Unit",
   "page.units.form.description.create": "Add a new unit of measurement to the system",
+  "page.units.form.title.edit": "Edit Unit",
+  "page.units.form.description.edit": "Edit existing unit of measurement",
   "page.units.form.names": "Name ({{language}})",
   "page.units.form.symbols": "Symbol ({{language}})",
   "page.units.form.priority": "Priority",
@@ -61,6 +65,8 @@
 
   "page.currencies.form.title.create": "Create New Currency",
   "page.currencies.form.description.create": "Add a new currency to the system",
+  "page.currencies.form.title.edit": "Edit Currency",
+  "page.currencies.form.description.edit": "Edit existing currency",
   "page.currencies.form.names": "Name ({{language}})",
   "page.currencies.form.symbols": "Symbol ({{language}})",
   "page.currencies.form.priority": "Priority",
@@ -79,6 +85,8 @@
 
   "page.users.form.title.create": "Create New User",
   "page.users.form.description.create": "Add a new user to the system",
+  "page.users.form.title.edit": "Edit User",
+  "page.users.form.description.edit": "Edit existing user",
   "page.users.form.name": "Name",
   "page.users.form.login": "Login",
   "page.users.form.password": "Password",
@@ -97,6 +105,8 @@
 
   "page.categories.form.title.create": "Create New Category",
   "page.categories.form.description.create": "Add a new category to the system",
+  "page.categories.form.title.edit": "Edit Category",
+  "page.categories.form.description.edit": "Edit existing category",
   "page.categories.form.names": "Name ({{language}})",
   "page.categories.form.priority": "Priority",
   "page.categories.form.active": "Active",
@@ -121,6 +131,8 @@
 
   "page.products.form.title.create": "Create New Product",
   "page.products.form.description.create": "Add a new product to the system",
+  "page.products.form.title.edit": "Edit Product",
+  "page.products.form.description.edit": "Edit existing product",
   "page.products.form.names": "Name ({{language}})",
   "page.products.form.priority": "Priority",
   "page.products.form.active": "Active",
@@ -146,6 +158,8 @@
 
   "page.userRoles.form.title.create": "Create New User Role",
   "page.userRoles.form.description.create": "Add a new user role to the system",
+  "page.userRoles.form.title.edit": "Edit User Role",
+  "page.userRoles.form.description.edit": "Edit existing user role",
   "page.userRoles.form.names": "Name ({{language}})",
   "page.userRoles.form.priority": "Priority",
   "page.userRoles.form.permissions": "Permissions",
@@ -287,6 +301,8 @@
 
   "page.product-properties-groups.form.title.create": "Create New Product Properties Group",
   "page.product-properties-groups.form.description.create": "Add a new product properties group to the system",
+  "page.product-properties-groups.form.title.edit": "Edit Product Properties Group",
+  "page.product-properties-groups.form.description.edit": "Edit existing product properties group",
   "page.product-properties-groups.form.names": "Name ({{language}})",
   "page.product-properties-groups.form.priority": "Priority",
   "page.product-properties-groups.form.active": "Active",
@@ -314,6 +330,8 @@
 
   "page.product-properties.form.title.create": "Create New Product Property",
   "page.product-properties.form.description.create": "Add a new product property to the system",
+  "page.product-properties.form.title.edit": "Edit Product Property",
+  "page.product-properties.form.description.edit": "Edit existing product property",
   "page.product-properties.form.names": "Name ({{language}})",
   "page.product-properties.form.priority": "Priority",
   "page.product-properties.form.isRequired": "Required",
@@ -321,7 +339,10 @@
   "page.product-properties.form.showInTable": "Show in table",
   "page.product-properties.form.productProperties": "Product Properties",
   "page.product-properties.form.type": "Type",
+  "page.product-properties.form.color": "Color",
 
   "page.product-properties.form.title.createOption": "Create New Product Property Option",
-  "page.product-properties.form.description.createOption": "Add a new product property option to the system"
+  "page.product-properties.form.description.createOption": "Add a new product property option to the system",
+  "page.product-properties.form.title.editOption": "Edit Product Property Option",
+  "page.product-properties.form.description.editOption": "Edit existing product property option"
 }

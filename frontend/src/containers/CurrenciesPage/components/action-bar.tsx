@@ -94,12 +94,12 @@ export function ActionBar() {
             </SheetTrigger>
             <SheetContent className="sm:max-w-xl w-full overflow-y-auto" side="right">
               <SheetHeader>
-                <SheetTitle>{t('page.currencies.form.title.create')}</SheetTitle>
+                <SheetTitle>{t(`page.currencies.form.title.${currencyContext.selectedCurrency ? 'edit' : 'create'}`)}</SheetTitle>
                 <SheetDescription>
-                  {t('page.currencies.form.description.create')}
+                  {t(`page.currencies.form.description.${currencyContext.selectedCurrency ? 'edit' : 'create'}`)}
                 </SheetDescription>
               </SheetHeader>
-              <div className="w-full p-4">
+              <div className="w-full pb-4 px-4">
                 <Form {...currencyContext.form}>
                   <form className="w-full space-y-4" onSubmit={currencyContext.form.handleSubmit(onSubmit)}>
                     {languages.map(language => (

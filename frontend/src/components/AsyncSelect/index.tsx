@@ -139,6 +139,32 @@ export function AsyncSelect<T>({
       initializeOptions()
   }, [mounted, fetcher, value])
 
+  useEffect(() => {
+    let ignore = false
+    const fetchOptions = async () => {
+      try {
+        setLoading(true)
+        setError(null)
+        const data = await fetcher({ query: debouncedSearch })
+        if (!ignore)
+          setOptions(data)
+      }
+      catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to fetch options')
+      }
+      finally {
+        if (!ignore)
+          setLoading(false)
+      }
+    }
+    if (mounted)
+      fetchOptions()
+
+    return () => {
+      ignore = true
+    }
+  }, [fetcher, debouncedSearch])
+
   // useEffect(() => {
   //   if (value && options.length > 0) {
   //     const filteredOptions = options.filter(opt => getOptionValue(opt) === value)
@@ -172,30 +198,6 @@ export function AsyncSelect<T>({
   //     setOptions(options.filter(option => filterFn ? filterFn(option, debouncedSearch) : true))
   //   }
   // }, [fetcher, debouncedSearch, mounted, preload, filterFn])
-
-  useEffect(() => {
-    let ignore = false
-    const fetchOptions = async () => {
-      try {
-        setLoading(true)
-        setError(null)
-        const data = await fetcher({ query: debouncedSearch })
-        if (!ignore)
-          setOptions(data)
-      }
-      catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to fetch options')
-      }
-      finally {
-        if (!ignore)
-          setLoading(false)
-      }
-    }
-    fetchOptions()
-    return () => {
-      ignore = true
-    }
-  }, [fetcher, debouncedSearch])
 
   const handleSelect = useCallback((currentValue: string) => {
     if (multi) {
@@ -232,17 +234,17 @@ export function AsyncSelect<T>({
 
   const selectedOptionRender = () => {
     if (selectedOptions.length === 0)
-      return placeholder ?? t('component.asyncSelect.placeholder')
+      return placeholder ?? <p className="text-muted-foreground">{t('component.asyncSelect.placeholder')}</p>
 
     if (!multi)
       return getDisplayValue(selectedOptions[0])
 
     return (
-      <div className="flex flex-wrap items-center">
+      <div className="flex flex-wrap items-center gap-1">
         {selectedOptions.map(option => (
           <span
             key={option.id}
-            className="flex items-center bg-muted rounded px-2 py-1 text-xs mr-1"
+            className="flex items-center bg-muted rounded px-2 py-1 text-xs gap-1"
           >
             {getDisplayValue(option)}
             <span
@@ -270,8 +272,9 @@ export function AsyncSelect<T>({
             role="combobox"
             aria-expanded={open}
             className={cn(
-              'justify-between',
+              'justify-between min-h-9',
               disabled && 'opacity-50 cursor-not-allowed',
+              (multi && selectedOptions.length > 0) && 'h-auto p-1 has-[>svg]:pl-1',
               triggerClassName,
             )}
             style={{ width }}
