@@ -10,11 +10,10 @@ import {
   Trash,
 } from 'lucide-react'
 import { useMemo } from 'react'
-
 import { useTranslation } from 'react-i18next'
+
 import { useRequestProductProperties } from '@/api/hooks/product-properties/useRequestProductProperties'
-import ImageGallery from '@/components/ImageGallery'
-import { TableActionDropdown } from '@/components/TableActionDropdown/TableActionDropdown'
+import { ImageGallery, TableActionDropdown } from '@/components'
 import { Badge, Button, Checkbox } from '@/components/ui'
 import { useProductContext } from '@/contexts'
 import formatDate from '@/utils/helpers/formatDate'

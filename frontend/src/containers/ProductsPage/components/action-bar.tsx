@@ -1,13 +1,10 @@
 import { Plus } from 'lucide-react'
-
 import { useCallback, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+
 import { useRequestCurrencies, useRequestLanguages, useRequestProductPropertiesGroups } from '@/api/hooks'
 import { getCategories, getProductPropertiesOptions, getUnits } from '@/api/requests'
-import { AsyncSelect } from '@/components/AsyncSelect'
-import { FileUploadDnd } from '@/components/FileUploadDnd'
-import { ImportButton } from '@/components/ImportButton'
-import { PermissionGate } from '@/components/PermissionGate/PermissionGate'
+import { AsyncSelect, FileUploadDnd, ImportButton, PermissionGate } from '@/components'
 import {
   Button,
   Form,
@@ -17,11 +14,20 @@ import {
   FormLabel,
   FormMessage,
   Input,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
   Separator,
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
   Switch,
 } from '@/components/ui'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
 import { useProductContext } from '@/contexts'
 
 export function ActionBar() {

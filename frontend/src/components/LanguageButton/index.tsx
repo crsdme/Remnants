@@ -9,7 +9,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { useThemeContext } from '@/contexts'
 
-export default function LanguageButton() {
+export function LanguageButton() {
   const themeContext = useThemeContext()
 
   const selectLanguage = (language: string) => {

@@ -16,7 +16,7 @@ interface ImageGalleryProps {
   className?: string
 }
 
-export default function ImageGallery({ images, className }: ImageGalleryProps) {
+export function ImageGallery({ images, className }: ImageGalleryProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [currentIndex, setCurrentIndex] = useState(0)
   const [imageErrors, setImageErrors] = useState<Record<string, boolean>>({})
@@ -114,21 +114,21 @@ export default function ImageGallery({ images, className }: ImageGalleryProps) {
   return (
     <>
       <div className={cn('flex', className)}>
-          <div
-            key={images[0].src}
-            className="relative aspect-square cursor-pointer group overflow-hidden rounded-lg border"
-            onClick={() => openLightbox(0)}
-          >
-            <img
-              src={getImageSrc(images[0], 80) || '/placeholder.svg'}
-              alt={images[0].alt}
-              className="object-cover h-full transition-transform group-hover:scale-105"
-              onError={() => handleImageError(images[0].id)}
-              width={80}
-              height={80}
-            />
-            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center"></div>
-          </div>
+        <div
+          key={images[0].src}
+          className="relative aspect-square cursor-pointer group overflow-hidden rounded-lg border"
+          onClick={() => openLightbox(0)}
+        >
+          <img
+            src={getImageSrc(images[0], 80) || '/placeholder.svg'}
+            alt={images[0].alt}
+            className="object-cover h-full transition-transform group-hover:scale-105"
+            onError={() => handleImageError(images[0].id)}
+            width={80}
+            height={80}
+          />
+          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center"></div>
+        </div>
       </div>
 
       <Dialog open={isOpen} onOpenChange={setIsOpen}>

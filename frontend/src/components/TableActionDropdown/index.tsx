@@ -9,7 +9,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { cn } from '@/utils/lib/utils'
-import { PermissionGate } from '../PermissionGate/PermissionGate'
+import { PermissionGate } from '../PermissionGate'
 
 export function TableActionDropdown(
   { actions }:

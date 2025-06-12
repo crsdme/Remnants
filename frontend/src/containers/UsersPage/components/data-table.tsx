@@ -1,29 +1,14 @@
 import { flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table'
-
 import { Fragment, useMemo, useState } from 'react'
-
 import { useTranslation } from 'react-i18next'
+
 import { useRequestUsers } from '@/api/hooks'
-
-import { AdvancedFilters } from '@/components/AdvancedFilters'
-import { AdvancedSorters } from '@/components/AdvancedSorters'
-
-import { ColumnVisibilityMenu } from '@/components/ColumnVisibilityMenu'
-import TablePagination from '@/components/TablePagination'
-import TableSelectionDropdown from '@/components/TableSelectionDropdown'
-import { Separator } from '@/components/ui/separator'
-import { Skeleton } from '@/components/ui/skeleton'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
-import { useUserContext } from '@/contexts/user/UserContext'
+import { AdvancedFilters, AdvancedSorters, ColumnVisibilityMenu, TablePagination, TableSelectionDropdown } from '@/components'
+import { Separator, Skeleton, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui'
+import { useUserContext } from '@/contexts'
 import { downloadCsv } from '@/utils/helpers/download'
 import { useDebounceCallback } from '@/utils/hooks'
+
 import { useColumns } from './columns'
 import { DataTableFilters } from './data-table-filters'
 

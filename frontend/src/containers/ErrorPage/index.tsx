@@ -1,7 +1,8 @@
 import { Helmet } from 'react-helmet'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
-import { Button } from '@/components/ui/button'
+
+import { Button } from '@/components/ui'
 
 export function ErrorPage({ status }: { status: number }) {
   const { t } = useTranslation()

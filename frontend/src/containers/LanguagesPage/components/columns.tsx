@@ -10,9 +10,9 @@ import {
   Trash,
 } from 'lucide-react'
 import { useMemo } from 'react'
-
 import { useTranslation } from 'react-i18next'
-import { TableActionDropdown } from '@/components/TableActionDropdown/TableActionDropdown'
+
+import { TableActionDropdown } from '@/components'
 import { Badge, Button, Checkbox } from '@/components/ui'
 import { useLanguageContext } from '@/contexts'
 import formatDate from '@/utils/helpers/formatDate'

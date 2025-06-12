@@ -1,32 +1,17 @@
 import type { ColumnSort } from '@tanstack/react-table'
+
 import { flexRender, getCoreRowModel, getExpandedRowModel, useReactTable } from '@tanstack/react-table'
-
 import { Fragment, useCallback, useMemo, useState } from 'react'
-
 import { useTranslation } from 'react-i18next'
+
 import { useRequestCategories, useRequestLanguages } from '@/api/hooks'
-import { getCategories } from '@/api/requests/'
-import { AdvancedFilters } from '@/components/AdvancedFilters'
+import { getCategories } from '@/api/requests'
+import { AdvancedFilters, AdvancedSorters, BatchEdit, ColumnVisibilityMenu, PermissionGate, TablePagination, TableSelectionDropdown } from '@/components'
+import { Separator, Skeleton, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui'
 
-import { AdvancedSorters } from '@/components/AdvancedSorters'
-import { BatchEdit } from '@/components/BatchEdit'
-
-import { ColumnVisibilityMenu } from '@/components/ColumnVisibilityMenu'
-import { PermissionGate } from '@/components/PermissionGate/PermissionGate'
-import TablePagination from '@/components/TablePagination'
-import TableSelectionDropdown from '@/components/TableSelectionDropdown'
-import { Separator } from '@/components/ui/separator'
-import { Skeleton } from '@/components/ui/skeleton'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
 import { useCategoryContext } from '@/contexts/category/CategoryContext'
 import { useDebounceCallback } from '@/utils/hooks'
+
 import { useColumns } from './columns'
 import { DataTableFilters } from './data-table-filters'
 

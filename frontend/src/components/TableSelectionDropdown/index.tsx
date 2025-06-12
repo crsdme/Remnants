@@ -17,7 +17,7 @@ interface SelectionDropdownProps {
   onExport?: () => void
 }
 
-export default function TableSelectionDropdown({
+export function TableSelectionDropdown({
   selectedCount,
   onRemove,
   onCopy,

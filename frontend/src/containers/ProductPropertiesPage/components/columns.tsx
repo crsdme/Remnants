@@ -5,15 +5,14 @@ import {
   ChevronRight,
   ChevronsUpDown,
   Copy,
-  CopyPlus,
   Pencil,
   SquarePlus,
   Trash,
 } from 'lucide-react'
 import { useMemo } from 'react'
-
 import { useTranslation } from 'react-i18next'
-import { TableActionDropdown } from '@/components/TableActionDropdown/TableActionDropdown'
+
+import { TableActionDropdown } from '@/components'
 import { Badge, Button, Checkbox } from '@/components/ui'
 import { useProductPropertiesContext } from '@/contexts'
 import formatDate from '@/utils/helpers/formatDate'

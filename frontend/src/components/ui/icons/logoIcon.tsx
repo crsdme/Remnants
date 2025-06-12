@@ -1,4 +1,4 @@
-export default function LogoIcon({ className }: { className?: string }) {
+export function LogoIcon({ className }: { className?: string }) {
   return (
     <svg width="16" height="16" className={className} viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
       <path d="M11.623 2.93531L8.30403 0.114769C8.12651 -0.0361175 7.86696 -0.0384738 7.68674 0.109164L6.73091 0.892101C6.61625 0.986006 6.55088 1.12748 6.55349 1.27596L6.79705 15.0799C6.79966 15.2295 6.87111 15.3696 6.99056 15.4592L7.58197 15.9032C7.8532 16.1068 8.24364 15.9741 8.33575 15.647L11.7755 3.43676C11.827 3.25405 11.7673 3.05802 11.623 2.93531Z" fill="white" />

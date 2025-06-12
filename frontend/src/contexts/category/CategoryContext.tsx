@@ -19,12 +19,13 @@ import {
   useImportCategories,
   useRemoveCategories,
 } from '@/api/hooks/'
-import { downloadBlob, downloadFile } from '@/utils/helpers/download'
+import { downloadBlob } from '@/utils/helpers/download'
 
 interface CategoryContextType {
   selectedCategory: Category
   isModalOpen: boolean
   isLoading: boolean
+  isEdit: boolean
   form: UseFormReturn
   toggleModal: (category?: Category) => void
   openModal: (category?: Category) => void
@@ -46,6 +47,7 @@ interface CategoryProviderProps {
 export function CategoryProvider({ children }: CategoryProviderProps) {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  const [isEdit, setIsEdit] = useState(false)
   const [selectedCategory, setSelectedCategory] = useState(null)
 
   const { t } = useTranslation()
@@ -78,6 +80,7 @@ export function CategoryProvider({ children }: CategoryProviderProps) {
       onSuccess: ({ data }) => {
         setIsModalOpen(false)
         setIsLoading(false)
+        setIsEdit(false)
         setSelectedCategory(null)
         queryClient.invalidateQueries({ queryKey: ['categories'] })
         toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description || ''}` })
@@ -86,6 +89,7 @@ export function CategoryProvider({ children }: CategoryProviderProps) {
         const error = response.data.error
         setIsModalOpen(false)
         setIsLoading(false)
+        setIsEdit(false)
         setSelectedCategory(null)
         toast.error(t(`error.title.${error.code}`), { description: `${t(`error.description.${error.code}`)} ${error.description || ''}` })
       },
@@ -110,6 +114,7 @@ export function CategoryProvider({ children }: CategoryProviderProps) {
       onSuccess: ({ data }) => {
         setIsModalOpen(false)
         setIsLoading(false)
+        setIsEdit(false)
         setSelectedCategory(null)
         queryClient.invalidateQueries({ queryKey: ['categories'] })
         toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description || ''}` })
@@ -118,6 +123,7 @@ export function CategoryProvider({ children }: CategoryProviderProps) {
         const error = response.data.error
         setIsModalOpen(false)
         setIsLoading(false)
+        setIsEdit(false)
         setSelectedCategory(null)
         toast.error(t(`error.title.${error.code}`), { description: `${t(`error.description.${error.code}`)} ${error.description || ''}` })
       },
@@ -194,6 +200,7 @@ export function CategoryProvider({ children }: CategoryProviderProps) {
   const closeModal = () => {
     setIsModalOpen(false)
     setIsLoading(false)
+    setIsEdit(false)
     setSelectedCategory(null)
     form.reset()
   }
@@ -237,6 +244,7 @@ export function CategoryProvider({ children }: CategoryProviderProps) {
       selectedCategory,
       isModalOpen,
       isLoading,
+      isEdit,
       form,
       toggleModal,
       openModal,

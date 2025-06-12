@@ -1,32 +1,15 @@
 import type { ColumnSort } from '@tanstack/react-table'
 import { flexRender, getCoreRowModel, getExpandedRowModel, useReactTable } from '@tanstack/react-table'
-
 import { Pencil, Trash2 } from 'lucide-react'
-
 import { Fragment, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { useRequestProductProperties, useRequestProductPropertiesOptions } from '@/api/hooks'
-
-import { AdvancedFilters } from '@/components/AdvancedFilters'
-import { AdvancedSorters } from '@/components/AdvancedSorters'
-import { ColumnVisibilityMenu } from '@/components/ColumnVisibilityMenu'
-import TablePagination from '@/components/TablePagination'
-import TableSelectionDropdown from '@/components/TableSelectionDropdown'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import { Separator } from '@/components/ui/separator'
-import { Skeleton } from '@/components/ui/skeleton'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
+import { AdvancedFilters, AdvancedSorters, ColumnVisibilityMenu, TablePagination, TableSelectionDropdown } from '@/components'
+import { Badge, Button, Separator, Skeleton, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui'
 import { useProductPropertiesContext } from '@/contexts'
 import { useDebounceCallback } from '@/utils/hooks'
+
 import { useColumns } from './columns'
 import { DataTableFilters } from './data-table-filters'
 

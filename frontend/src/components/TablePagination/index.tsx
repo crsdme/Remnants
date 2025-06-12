@@ -10,7 +10,7 @@ import {
 } from '@/components/ui/pagination'
 import { Select, SelectContent, SelectItem, SelectTrigger } from '@/components/ui/select'
 
-export default function TablePagination({
+export function TablePagination({
   pagination,
   totalPages,
   changePagination,

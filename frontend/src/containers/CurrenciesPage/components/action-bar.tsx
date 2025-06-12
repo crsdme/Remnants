@@ -3,8 +3,7 @@ import { Plus } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useRequestLanguages } from '@/api/hooks'
-import { ImportButton } from '@/components/ImportButton'
-import { PermissionGate } from '@/components/PermissionGate/PermissionGate'
+import { ImportButton, PermissionGate } from '@/components'
 import {
   Button,
   Checkbox,
@@ -15,8 +14,13 @@ import {
   FormLabel,
   FormMessage,
   Input,
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
 } from '@/components/ui'
-import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
 import { useCurrencyContext } from '@/contexts'
 import { downloadCsv } from '@/utils/helpers/download'
 

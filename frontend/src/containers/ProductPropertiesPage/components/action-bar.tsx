@@ -1,9 +1,8 @@
 import { Plus } from 'lucide-react'
-
 import { useTranslation } from 'react-i18next'
+
 import { useRequestLanguages } from '@/api/hooks'
-import { ColorPicker } from '@/components/ColorPicker'
-import { PermissionGate } from '@/components/PermissionGate/PermissionGate'
+import { ColorPicker, PermissionGate } from '@/components'
 import {
   Button,
   Checkbox,
@@ -14,9 +13,18 @@ import {
   FormLabel,
   FormMessage,
   Input,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
 } from '@/components/ui'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
 import { useProductPropertiesContext } from '@/contexts'
 
 export function ActionBar() {

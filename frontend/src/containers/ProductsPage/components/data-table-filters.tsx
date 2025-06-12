@@ -2,8 +2,8 @@ import { Filter } from 'lucide-react'
 
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Input } from '@/components/ui'
 
+import { Input } from '@/components/ui'
 import { useDebounceCallback } from '@/utils/hooks'
 
 export function DataTableFilters({ filters, setFilters }) {
