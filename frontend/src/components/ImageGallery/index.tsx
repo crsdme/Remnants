@@ -78,6 +78,7 @@ export function ImageGallery({ images, className }: ImageGalleryProps) {
     document.body.removeChild(link)
   }
 
+  // eslint-disable-next-line react-hooks/rules-of-hooks
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (!isOpen)

@@ -14,12 +14,10 @@ import {
   Users,
   Warehouse,
 } from 'lucide-react'
-
 import * as React from 'react'
 import { useTranslation } from 'react-i18next'
 
-import LogoIcon from '@/components/ui/icons/logoIcon'
-
+import { LogoIcon } from '@/components/ui'
 import {
   Sidebar,
   SidebarContent,
@@ -27,9 +25,8 @@ import {
   SidebarHeader,
   SidebarMenuButton,
   SidebarRail,
-} from '@/components/ui/sidebar'
+} from '@/components/ui'
 import { useAuthContext } from '@/contexts'
-
 import { hasPermission } from '@/utils/helpers/permission'
 
 import { NavMain } from './navMain'

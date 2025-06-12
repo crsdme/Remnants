@@ -1,10 +1,10 @@
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
-import LogoIcon from '@/components/ui/icons/logoIcon'
 
+import Layout from '@/components/Layout'
+import { LogoIcon } from '@/components/ui'
 import { useAuthContext } from '@/contexts'
-
 import { usePermission } from '@/utils/hooks/usePermission/usePermission'
-import Layout from '../components/Layout'
+
 import {
   CategoriesPage,
   CurrenciesPage,
@@ -20,6 +20,7 @@ import {
   UserRolesPage,
   UsersPage,
 } from '../containers'
+
 import '@/app/App.css'
 
 export default function App() {

@@ -229,7 +229,7 @@ export function DataTable() {
   )
 }
 
-function SubRowOptions({ optionIds = [], language, columnsLength, editOption, removeOption }) {
+function SubRowOptions({ optionIds, language, columnsLength, editOption, removeOption }) {
   const enabled = !!optionIds.length
 
   const { data, isLoading, isFetching, error } = useRequestProductPropertiesOptions(
