@@ -1,14 +1,17 @@
 import { useTranslation } from 'react-i18next'
 
-import { Button } from '@/components/ui/button'
 import {
+  Button,
   Pagination,
   PaginationContent,
   PaginationItem,
   PaginationNext,
   PaginationPrevious,
-} from '@/components/ui/pagination'
-import { Select, SelectContent, SelectItem, SelectTrigger } from '@/components/ui/select'
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+} from '@/components/ui'
 
 export function TablePagination({
   pagination,

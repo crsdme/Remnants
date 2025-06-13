@@ -28,10 +28,27 @@ export function CategoryForm() {
     categoryContext.submitCategoryForm(values)
   }
 
-  if (isEdit)
-    return <EditForm form={form} languages={languages} isLoading={isLoading} onSubmit={onSubmit} categoryContext={categoryContext} />
+  if (isEdit) {
+    return (
+      <EditForm
+        form={form}
+        languages={languages}
+        isLoading={isLoading}
+        onSubmit={onSubmit}
+        categoryContext={categoryContext}
+      />
+    )
+  }
 
-  return <CreateForm form={form} languages={languages} isLoading={isLoading} onSubmit={onSubmit} categoryContext={categoryContext} />
+  return (
+    <CreateForm
+      form={form}
+      languages={languages}
+      isLoading={isLoading}
+      onSubmit={onSubmit}
+      categoryContext={categoryContext}
+    />
+  )
 }
 
 function CreateForm({ form, languages, isLoading, onSubmit, categoryContext }) {
@@ -143,7 +160,7 @@ function CreateForm({ form, languages, isLoading, onSubmit, categoryContext }) {
           <Button
             type="button"
             variant="secondary"
-            onClick={() => categoryContext.toggleModal()}
+            onClick={() => categoryContext.closeModal()}
             disabled={isLoading}
           >
             {t('button.cancel')}
@@ -266,7 +283,7 @@ function EditForm({ form, languages, isLoading, onSubmit, categoryContext }) {
           <Button
             type="button"
             variant="secondary"
-            onClick={() => categoryContext.toggleModal()}
+            onClick={() => categoryContext.closeModal()}
             disabled={isLoading}
           >
             {t('button.cancel')}

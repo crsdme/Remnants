@@ -1,21 +1,22 @@
 import type { DragEndEvent } from '@dnd-kit/core'
 import type React from 'react'
+
 import {
   closestCenter,
   DndContext,
-
   KeyboardSensor,
   PointerSensor,
   useSensor,
   useSensors,
 } from '@dnd-kit/core'
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable'
-
 import { CSS } from '@dnd-kit/utilities'
+
 import { GripVertical, Upload, X } from 'lucide-react'
 import { useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Button } from '@/components/ui/button'
+
+import { Button } from '@/components/ui'
 
 interface UploadedFile {
   id: string

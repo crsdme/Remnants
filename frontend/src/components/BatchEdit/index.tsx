@@ -1,24 +1,32 @@
 import type { ColumnDef } from '@tanstack/react-table'
 
 import { zodResolver } from '@hookform/resolvers/zod'
-
 import { Check, Filter, MousePointerClick, Pencil, Plus, X, XCircle } from 'lucide-react'
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { z } from 'zod'
-import { AsyncSelect } from '@/components/AsyncSelect'
-import { Button, Input } from '@/components/ui'
-import { Form, FormField, FormItem, FormMessage } from '@/components/ui/form'
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+
+import { AsyncSelect } from '@/components'
 import {
+  Button,
+  Form,
+  FormField,
+  FormItem,
+  FormMessage,
+  Input,
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select'
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui'
 
 interface BatchEditItem {
   id: string
@@ -191,10 +199,10 @@ export function BatchEdit({
         return (
           <AsyncSelect
             fetcher={column.loadOptions}
-            value={item.value as string}
+            value={item.value as string[]}
             onChange={(value) => {
               const currentItems = form.getValues('items')
-              currentItems[index].value = value
+              currentItems[index].value = value as string[]
               form.setValue('items', currentItems)
             }}
             getOptionValue={option => option.value}

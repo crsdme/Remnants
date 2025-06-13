@@ -53,24 +53,7 @@ export function DataTable() {
   const requestLanguages = useRequestLanguages({ pagination: { full: true } })
   const languages = requestLanguages.data?.data?.languages || []
 
-  const loadOptions = useCallback(async (inputValue: string) => {
-    const response = await getCategories({
-      pagination: { full: true },
-      filters: {
-        names: inputValue,
-        active: [true],
-        language: i18n.language,
-      },
-    })
-
-    const categories = response?.data?.categories || []
-    return categories.map(category => ({
-      value: category.id,
-      label: category.names[i18n.language],
-    }))
-  }, [i18n.language])
-
-  const columns = useColumns(loadOptions)
+  const columns = useColumns()
 
   const table = useReactTable({
     data: categories,
@@ -175,7 +158,7 @@ export function DataTable() {
   }
 
   const handleBulkRemove = () => {
-    categoryContext.removeCategory({ ids: Object.keys(rowSelection) })
+    categoryContext.removeCategories({ ids: Object.keys(rowSelection) })
     setRowSelection({})
   }
 
@@ -204,7 +187,7 @@ export function DataTable() {
       value: item.value,
     }))
 
-    categoryContext.batchCategory({
+    categoryContext.batchCategories({
       ...(batchEditMode === 'filter' ? { filters } : { ids: selectedCategories }),
       params,
     })

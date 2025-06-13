@@ -15,14 +15,16 @@ import { useTranslation } from 'react-i18next'
 import { useRequestProductProperties } from '@/api/hooks/product-properties/useRequestProductProperties'
 import { ImageGallery, TableActionDropdown } from '@/components'
 import { Badge, Button, Checkbox } from '@/components/ui'
-import { useProductContext } from '@/contexts'
-import formatDate from '@/utils/helpers/formatDate'
+import { useAuthContext, useProductContext } from '@/contexts'
+import { formatDate } from '@/utils/helpers'
+import { hasPermission } from '@/utils/helpers/permission'
 
 const sortIcons = { asc: ArrowUp, desc: ArrowDown }
 
 export function useColumns() {
   const { t, i18n } = useTranslation()
   const productContext = useProductContext()
+  const { permissions } = useAuthContext()
 
   const requestProductProperties = useRequestProductProperties({ filters: { active: [true], language: i18n.language, showInTable: true }, pagination: { full: true } })
   const productProperties = requestProductProperties.data?.data.productProperties || []
@@ -204,6 +206,26 @@ export function useColumns() {
       }))
     }
 
+    function permissionColumns() {
+      if (!hasPermission(permissions, 'product.purchasePrice')) return []
+      return [
+        {
+          id: 'purchasePrice',
+          size: 150,
+          meta: {
+            title: t('page.products.table.purchasePrice'),
+            batchEdit: true,
+            batchEditType: 'number',
+            filterable: true,
+            filterType: 'number',
+            sortable: true,
+          },
+          header: ({ column }) => sortHeader(column, t('page.products.table.purchasePrice')),
+          accessorFn: row => `${row.purchasePrice} ${row.purchaseCurrency.symbols[i18n.language]}`,
+        },
+      ]
+    }
+
     return [
       selectColumn(),
       expanderColumn(),
@@ -250,20 +272,7 @@ export function useColumns() {
         header: ({ column }) => sortHeader(column, t('page.products.table.price')),
         accessorFn: row => `${row.price} ${row.currency.symbols[i18n.language]}`,
       },
-      {
-        id: 'purchasePrice',
-        size: 150,
-        meta: {
-          title: t('page.products.table.purchasePrice'),
-          batchEdit: true,
-          batchEditType: 'number',
-          filterable: true,
-          filterType: 'number',
-          sortable: true,
-        },
-        header: ({ column }) => sortHeader(column, t('page.products.table.purchasePrice')),
-        accessorFn: row => `${row.purchasePrice} ${row.purchaseCurrency.symbols[i18n.language]}`,
-      },
+      ...permissionColumns(),
       {
         id: 'unit',
         size: 150,

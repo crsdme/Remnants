@@ -50,10 +50,10 @@ export function ActionBar() {
           />
         </PermissionGate>
         <PermissionGate permission={['category.create', 'category.edit']}>
-          <Sheet open={categoryContext.isModalOpen} onOpenChange={() => !isLoading && categoryContext.toggleModal()}>
+          <Sheet open={categoryContext.isModalOpen} onOpenChange={categoryContext.closeModal}>
             <SheetTrigger asChild>
               <Button
-                onClick={() => categoryContext.toggleModal()}
+                onClick={() => categoryContext.openModal()}
                 disabled={isLoading}
               >
                 <Plus />
@@ -69,7 +69,9 @@ export function ActionBar() {
                   {t(`page.categories.form.description.${isEdit ? 'edit' : 'create'}`)}
                 </SheetDescription>
               </SheetHeader>
-              <CategoryForm />
+              <div className="w-full px-4">
+                <CategoryForm />
+              </div>
             </SheetContent>
           </Sheet>
         </PermissionGate>

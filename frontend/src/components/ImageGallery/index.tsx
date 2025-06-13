@@ -1,8 +1,8 @@
 import { ChevronLeft, ChevronRight, Download, RotateCw, X, ZoomIn, ZoomOut } from 'lucide-react'
 import { useEffect, useState } from 'react'
-import { Button } from '@/components/ui/button'
-import { Dialog, DialogContent } from '@/components/ui/dialog'
-import { cn } from '@/utils/lib/utils'
+
+import { Button, Dialog, DialogContent } from '@/components/ui'
+import { cn } from '@/utils/lib'
 
 interface GalleryImage {
   id: string

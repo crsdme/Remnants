@@ -15,7 +15,7 @@ import { useTranslation } from 'react-i18next'
 import { TableActionDropdown } from '@/components'
 import { Badge, Button, Checkbox } from '@/components/ui'
 import { useLanguageContext } from '@/contexts'
-import formatDate from '@/utils/helpers/formatDate'
+import { formatDate } from '@/utils/helpers'
 
 const sortIcons = { asc: ArrowUp, desc: ArrowDown }
 
@@ -272,7 +272,7 @@ export function useColumns() {
 //   DropdownMenuTrigger,
 // } from '@/components/ui/dropdown-menu'
 // import { useLanguageContext } from '@/contexts'
-// import formatDate from '@/utils/helpers/formatDate'
+// import { formatDate } from '@/utils/helpers'
 
 // const sortIcons = { asc: ArrowUp, desc: ArrowDown }
 

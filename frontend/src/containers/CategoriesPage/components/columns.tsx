@@ -9,18 +9,37 @@ import {
   Pencil,
   Trash,
 } from 'lucide-react'
-import { useMemo } from 'react'
+import { useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
+
+import { getCategories } from '@/api/requests'
 import { TableActionDropdown } from '@/components'
 import { Badge, Button, Checkbox } from '@/components/ui'
 import { useCategoryContext } from '@/contexts'
-import formatDate from '@/utils/helpers/formatDate'
+import { formatDate } from '@/utils/helpers'
 
 const sortIcons = { asc: ArrowUp, desc: ArrowDown }
 
-export function useColumns(loadOptions) {
+export function useColumns() {
   const { t, i18n } = useTranslation()
   const categoryContext = useCategoryContext()
+
+  const loadOptions = useCallback(async (inputValue: string) => {
+    const response = await getCategories({
+      pagination: { full: true },
+      filters: {
+        names: inputValue,
+        active: [true],
+        language: i18n.language,
+      },
+    })
+
+    const categories = response?.data?.categories || []
+    return categories.map(category => ({
+      value: category.id,
+      label: category.names[i18n.language],
+    }))
+  }, [i18n.language])
 
   const columns = useMemo(() => {
     function sortHeader(column, label) {
@@ -119,7 +138,7 @@ export function useColumns(loadOptions) {
             },
             {
               permission: 'category.edit',
-              onClick: () => categoryContext.toggleModal(item),
+              onClick: () => categoryContext.openModal(item),
               label: t('table.edit'),
               icon: <Pencil className="h-4 w-4" />,
             },
@@ -131,7 +150,7 @@ export function useColumns(loadOptions) {
             },
             {
               permission: 'category.delete',
-              onClick: () => categoryContext.removeCategory({ ids: [item.id] }),
+              onClick: () => categoryContext.removeCategories({ ids: [item.id] }),
               label: t('table.delete'),
               icon: <Trash className="h-4 w-4" />,
               isDestructive: true,
@@ -186,7 +205,7 @@ export function useColumns(loadOptions) {
           sortable: true,
         },
         header: t('page.categories.table.active'),
-        cell: ({ row }) => <Badge variant="outline">{row.original.active.toString()}</Badge>,
+        cell: ({ row }) => <Badge variant={row.original.active ? 'success' : 'destructive'}>{t(`table.active.${row.original.active}`)}</Badge>,
       },
       {
         id: 'parent',

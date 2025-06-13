@@ -1,4 +1,4 @@
-export default function (func, delay = 300) {
+export function debounce(func, delay = 300) {
   let timeout
   return (...args) => {
     if (timeout) {

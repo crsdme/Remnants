@@ -3,19 +3,23 @@ import { Check, ChevronDown, RefreshCcw, X } from 'lucide-react'
 import * as React from 'react'
 import { useTranslation } from 'react-i18next'
 
-import { Badge, Button, Separator } from '@/components/ui'
 import {
+  Badge,
+  Button,
   Command,
   CommandEmpty,
   CommandGroup,
   CommandInput,
   CommandItem,
   CommandList,
-} from '@/components/ui/command'
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import { cn } from '@/utils/lib/utils'
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+  Separator,
+} from '@/components/ui'
+import { cn } from '@/utils/lib'
 
-export interface Option {
+interface Option {
   value: string
   label: string
 }

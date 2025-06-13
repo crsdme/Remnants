@@ -3,8 +3,10 @@ import { ChevronRight } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui'
 import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
   SidebarGroup,
   SidebarGroupLabel,
   SidebarMenu,
@@ -13,7 +15,7 @@ import {
   SidebarMenuSub,
   SidebarMenuSubButton,
   SidebarMenuSubItem,
-} from '@/components/ui/sidebar'
+} from '@/components/ui'
 
 export function NavMain({
   items,

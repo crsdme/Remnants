@@ -7,9 +7,7 @@ import { CalendarIcon } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import { Button } from '@/components/ui/button'
-import { Calendar } from '@/components/ui/calendar'
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { Button, Calendar, Popover, PopoverContent, PopoverTrigger } from '@/components/ui'
 import { cn } from '@/utils/lib/utils'
 
 type DateRangePickerProps = Omit<HTMLAttributes<HTMLDivElement>, 'onChange'> & {

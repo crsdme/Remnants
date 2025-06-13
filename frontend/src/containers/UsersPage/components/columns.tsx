@@ -15,7 +15,7 @@ import { useTranslation } from 'react-i18next'
 import { TableActionDropdown } from '@/components'
 import { Badge, Button, Checkbox } from '@/components/ui'
 import { useUserContext } from '@/contexts'
-import formatDate from '@/utils/helpers/formatDate'
+import { formatDate } from '@/utils/helpers'
 
 const sortIcons = { asc: ArrowUp, desc: ArrowDown }
 

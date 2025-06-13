@@ -1,14 +1,16 @@
 import { MoreHorizontal } from 'lucide-react'
 import { Fragment } from 'react'
-import { Button } from '@/components/ui'
+
 import {
+  Button,
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
-import { cn } from '@/utils/lib/utils'
+} from '@/components/ui'
+import { cn } from '@/utils/lib'
+
 import { PermissionGate } from '../PermissionGate'
 
 export function TableActionDropdown(

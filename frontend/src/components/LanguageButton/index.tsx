@@ -1,12 +1,6 @@
 import { Languages } from 'lucide-react'
 
-import { Button } from '@/components/ui'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
+import { Button, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui'
 import { useThemeContext } from '@/contexts'
 
 export function LanguageButton() {
