@@ -344,6 +344,23 @@
   "page.product-properties.form.title.createOption": "Создание новой опции свойства товара",
   "page.product-properties.form.description.createOption": "Добавить новую опцию свойства товара в систему",
   "page.product-properties.form.title.editOption": "Редактирование опции свойства товара",
-  "page.product-properties.form.description.editOption": "Редактирование существующей опции свойства товара"
+  "page.product-properties.form.description.editOption": "Редактирование существующей опции свойства товара",
+
+  "page.warehouses.title": "Склады",
+  "page.warehouses.description": "Управление складами",
+  "page.warehouses.filter.names": "Фильтр по названию",
+  "page.warehouses.button.create": "Создать склад",
+
+  "page.warehouses.table.names": "Название",
+  "page.warehouses.table.priority": "Приоритет",
+  "page.warehouses.table.active": "Активность",
+
+  "page.warehouses.form.title.create": "Создание нового склада",
+  "page.warehouses.form.description.create": "Добавить новый склад в систему",
+  "page.warehouses.form.title.edit": "Редактирование склада",
+  "page.warehouses.form.description.edit": "Редактирование существующего склада",
+  "page.warehouses.form.names": "Название ({{language}})",
+  "page.warehouses.form.priority": "Приоритет",
+  "page.warehouses.form.active": "Активная"
 
 }

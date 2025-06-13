@@ -33,5 +33,8 @@
   "description.page.product-properties": "Управление свойствами товаров в Remnant",
 
   "title.page.product-properties-groups": "Группы свойств товаров - Remnant",
-  "description.page.product-properties-groups": "Управление группами свойств товаров в Remnant"
+  "description.page.product-properties-groups": "Управление группами свойств товаров в Remnant",
+
+  "title.page.warehouses": "Склады - Remnant",
+  "description.page.warehouses": "Управление складами в Remnant"
 }

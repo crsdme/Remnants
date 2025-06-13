@@ -11,6 +11,7 @@ import productRoutes from './product.route'
 import unitRoutes from './unit.route'
 import userRoleRoutes from './user-role.route'
 import userRoutes from './user.route'
+import warehouseRoutes from './warehouse.route'
 
 const router = Router()
 const authenticateJWT = authMiddleware()
@@ -26,5 +27,6 @@ router.use('/products', authenticateJWT, productRoutes)
 router.use('/product-properties-groups', authenticateJWT, productPropertyGroupRoutes)
 router.use('/product-properties', authenticateJWT, productPropertyRoutes)
 router.use('/product-properties-options', authenticateJWT, productPropertyOptionRoutes)
+router.use('/warehouses', authenticateJWT, warehouseRoutes)
 
 export default router

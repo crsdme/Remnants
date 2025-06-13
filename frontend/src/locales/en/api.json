@@ -252,5 +252,23 @@
   "response.description.PRODUCT_PROPERTIES_NOT_REMOVED": "Unable to remove selected product properties",
 
   "response.title.PRODUCT_PROPERTIES_REMOVED": "Product properties removed",
-  "response.description.PRODUCT_PROPERTIES_REMOVED": "Selected product properties have been deleted"
+  "response.description.PRODUCT_PROPERTIES_REMOVED": "Selected product properties have been deleted",
+
+  "response.title.WAREHOUSES_FETCHED": "Warehouses fetched",
+  "response.description.WAREHOUSES_FETCHED": "Warehouses list successfully fetched",
+
+  "response.title.WAREHOUSE_CREATED": "Warehouse created",
+  "response.description.WAREHOUSE_CREATED": "New warehouse has been created",
+
+  "response.title.WAREHOUSE_EDITED": "Warehouse edited",
+  "response.description.WAREHOUSE_EDITED": "Warehouse has been updated",
+
+  "response.title.WAREHOUSES_REMOVED": "Warehouses removed",
+  "response.description.WAREHOUSES_REMOVED": "Selected warehouses have been deleted",
+
+  "response.title.WAREHOUSE_NOT_EDITED": "Warehouse not edited",
+  "response.description.WAREHOUSE_NOT_EDITED": "Unable to edit warehouse",
+
+  "response.title.WAREHOUSES_NOT_REMOVED": "Warehouses not removed",
+  "response.description.WAREHOUSES_NOT_REMOVED": "Unable to remove selected warehouses"
 }

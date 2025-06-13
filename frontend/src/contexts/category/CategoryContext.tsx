@@ -227,11 +227,10 @@ export function CategoryProvider({ children }: CategoryProviderProps) {
     if (!selectedCategory) {
       if (params.parent === '')
         params.parent = undefined
-      useMutateCreateCategory.mutate(params)
+      return useMutateCreateCategory.mutate(params)
     }
-    else {
-      useMutateEditCategory.mutate({ ...params, id: selectedCategory.id })
-    }
+
+    return useMutateEditCategory.mutate({ ...params, id: selectedCategory.id })
   }
 
   const value: CategoryContextType = useMemo(

@@ -106,11 +106,11 @@ export function LayoutSidebar({ ...props }: React.ComponentProps<typeof Sidebar>
         ],
       },
       {
-        title: t('component.sidemenu.label.stocks'),
+        title: t('component.sidemenu.label.warehouses'),
         icon: Warehouse,
-        permissions: ['stock.page', 'purchase.page', 'procurement.page', 'production.page', 'inventory.page'],
+        permissions: ['warehouse.page', 'purchase.page', 'procurement.page', 'production.page', 'inventory.page'],
         items: [
-          { title: t('component.sidemenu.label.stocks'), url: '/stocks', permissions: ['stock.page'] },
+          { title: t('component.sidemenu.label.warehouses'), url: '/warehouses', permissions: ['warehouses.page'] },
           { title: t('component.sidemenu.label.purchases'), url: '/purchases', permissions: ['purchase.page'] },
           { title: t('component.sidemenu.label.procurements'), url: '/procurements', permissions: ['procurement.page'] },
           { title: t('component.sidemenu.label.production'), url: '/production', permissions: ['production.page'] },

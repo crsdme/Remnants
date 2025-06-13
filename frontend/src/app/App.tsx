@@ -19,6 +19,7 @@ import {
   UnitsPage,
   UserRolesPage,
   UsersPage,
+  WarehousesPage,
 } from '../containers'
 
 import '@/app/App.css'
@@ -86,6 +87,11 @@ export default function App() {
           <Route
             path="/settings/user-roles"
             element={<ProtectedRoute children={<UserRolesPage />} permissions={['userRole.page']} />}
+          />
+
+          <Route
+            path="/warehouses"
+            element={<ProtectedRoute children={<WarehousesPage />} permissions={['warehouse.page']} />}
           />
 
           <Route path="*" element={<ErrorPage status={404} />} />

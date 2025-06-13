@@ -252,5 +252,23 @@
   "response.description.PRODUCT_PROPERTIES_NOT_REMOVED": "Не удалось удалить выбранные свойства товаров",
 
   "response.title.PRODUCT_PROPERTIES_REMOVED": "Свойства товаров удалены",
-  "response.description.PRODUCT_PROPERTIES_REMOVED": "Выбранные свойства товаров были удалены"
+  "response.description.PRODUCT_PROPERTIES_REMOVED": "Выбранные свойства товаров были удалены",
+
+  "response.title.WAREHOUSES_FETCHED": "Склады получены",
+  "response.description.WAREHOUSES_FETCHED": "Список складов успешно получен",
+
+  "response.title.WAREHOUSE_CREATED": "Склад создан",
+  "response.description.WAREHOUSE_CREATED": "Новый склад был создан",
+
+  "response.title.WAREHOUSE_EDITED": "Склад обновлен",
+  "response.description.WAREHOUSE_EDITED": "Склад был обновлен",
+
+  "response.title.WAREHOUSES_REMOVED": "Склады удалены",
+  "response.description.WAREHOUSES_REMOVED": "Выбранные склады были удалены",
+
+  "response.title.WAREHOUSE_NOT_EDITED": "Склад не обновлен",
+  "response.description.WAREHOUSE_NOT_EDITED": "Не удалось обновить склад",
+
+  "response.title.WAREHOUSES_NOT_REMOVED": "Склады не удалены",
+  "response.description.WAREHOUSES_NOT_REMOVED": "Не удалось удалить выбранные склады"
 }

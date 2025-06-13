@@ -344,5 +344,22 @@
   "page.product-properties.form.title.createOption": "Create New Product Property Option",
   "page.product-properties.form.description.createOption": "Add a new product property option to the system",
   "page.product-properties.form.title.editOption": "Edit Product Property Option",
-  "page.product-properties.form.description.editOption": "Edit existing product property option"
+  "page.product-properties.form.description.editOption": "Edit existing product property option",
+
+  "page.warehouses.title": "Warehouses",
+  "page.warehouses.description": "Manage warehouses here",
+  "page.warehouses.filter.names": "Filter by name",
+  "page.warehouses.button.create": "Create Warehouse",
+
+  "page.warehouses.table.names": "Name",
+  "page.warehouses.table.priority": "Priority",
+  "page.warehouses.table.active": "Active",
+
+  "page.warehouses.form.title.create": "Create New Warehouse",
+  "page.warehouses.form.description.create": "Add a new warehouse to the system",
+  "page.warehouses.form.title.edit": "Edit Warehouse",
+  "page.warehouses.form.description.edit": "Edit existing warehouse",
+  "page.warehouses.form.names": "Name ({{language}})",
+  "page.warehouses.form.priority": "Priority",
+  "page.warehouses.form.active": "Active"
 }

@@ -73,3 +73,8 @@ export * from './users/useEditUser'
 export * from './users/useImportUsers'
 export * from './users/useRemoveUsers'
 export * from './users/useRequestUsers'
+
+export * from './warehouses/useCreateWarehouse'
+export * from './warehouses/useEditWarehouse'
+export * from './warehouses/useRemoveWarehouses'
+export * from './warehouses/useRequestWarehouses'
