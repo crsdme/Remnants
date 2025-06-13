@@ -87,6 +87,10 @@ const ProductSchema: Schema = new Schema(
         type: Schema.Types.Mixed,
       },
     }],
+    quantity: [{
+      type: String,
+      ref: 'Quantity',
+    }],
     removed: {
       type: Boolean,
       default: false,

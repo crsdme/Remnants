@@ -207,7 +207,8 @@ export function useColumns() {
     }
 
     function permissionColumns() {
-      if (!hasPermission(permissions, 'product.purchasePrice')) return []
+      if (!hasPermission(permissions, 'product.purchasePrice'))
+        return []
       return [
         {
           id: 'purchasePrice',
@@ -273,6 +274,25 @@ export function useColumns() {
         accessorFn: row => `${row.price} ${row.currency.symbols[i18n.language]}`,
       },
       ...permissionColumns(),
+      {
+        id: 'quantity',
+        size: 150,
+        meta: {
+          title: t('page.products.table.quantity'),
+          batchEdit: true,
+          batchEditType: 'number',
+          filterable: true,
+          filterType: 'number',
+          sortable: true,
+        },
+        header: ({ column }) => sortHeader(column, t('page.products.table.quantity')),
+        cell: ({ row }) => {
+          const quantity = row.original.quantity.find(q => q.warehouse === '622b4c21-4937-4afe-b9df-d63b250c4555')
+          const unit = row.original.unit.symbols[i18n.language]
+
+          return quantity ? `${quantity.count} ${unit}` : `0 ${unit}`
+        },
+      },
       {
         id: 'unit',
         size: 150,

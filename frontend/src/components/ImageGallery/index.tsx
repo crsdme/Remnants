@@ -123,7 +123,7 @@ export function ImageGallery({ images, className }: ImageGalleryProps) {
           <img
             src={getImageSrc(images[0], 80) || '/placeholder.svg'}
             alt={images[0].alt}
-            className="object-cover h-full transition-transform group-hover:scale-105"
+            className="object-cover h-full transition-transform group-hover:scale-105 min-w-[80px] min-h-[80px]"
             onError={() => handleImageError(images[0].id)}
             width={80}
             height={80}
@@ -137,7 +137,7 @@ export function ImageGallery({ images, className }: ImageGalleryProps) {
           <div className="relative w-full h-full flex flex-col">
             {/* Header Controls */}
             <div className="absolute top-4 left-4 right-4 z-50 flex justify-between items-center">
-              <div className="text-white/80 text-sm font-medium px-3 py-1 rounded-full">
+              <div className="text-white/80 bg-black/70 text-sm font-medium px-3 py-1 rounded-full">
                 {currentIndex + 1}
                 /
                 {images.length}
@@ -146,7 +146,7 @@ export function ImageGallery({ images, className }: ImageGalleryProps) {
                 variant="ghost"
                 size="icon"
                 onClick={closeLightbox}
-                className="text-white hover:bg-white/20 rounded-full"
+                className="text-white bg-black/70 hover:bg-black/60 rounded-full"
               >
                 <X className="w-6 h-6" />
               </Button>
@@ -179,7 +179,7 @@ export function ImageGallery({ images, className }: ImageGalleryProps) {
                   variant="ghost"
                   size="icon"
                   onClick={goToPrevious}
-                  className="absolute left-4 top-1/2 -translate-y-1/2 text-white hover:bg-white/20 rounded-full w-12 h-12"
+                  className="absolute left-4 top-1/2 -translate-y-1/2 text-white bg-black/70 hover:bg-black/60 rounded-full w-12 h-12"
                 >
                   <ChevronLeft className="w-8 h-8" />
                 </Button>
@@ -187,7 +187,7 @@ export function ImageGallery({ images, className }: ImageGalleryProps) {
                   variant="ghost"
                   size="icon"
                   onClick={goToNext}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-white hover:bg-white/20 rounded-full w-12 h-12"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-white bg-black/70 hover:bg-black/60 rounded-full w-12 h-12"
                 >
                   <ChevronRight className="w-8 h-8" />
                 </Button>

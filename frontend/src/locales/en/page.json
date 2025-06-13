@@ -127,6 +127,7 @@
   "page.products.table.unit": "Unit",
   "page.products.table.price": "Price",
   "page.products.table.purchasePrice": "Purchase Price",
+  "page.products.table.quantity": "Quantity",
   "page.products.table.productPropertyGroup": "Product Properties Group",
 
   "page.products.form.title.create": "Create New Product",

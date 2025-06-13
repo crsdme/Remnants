@@ -43,7 +43,18 @@ export interface createQuantitiesParams {
   count: number
   product: string
   warehouse: string
-  status: 'available' | 'reserved' | 'sold'
+}
+
+export interface countQuantitiesResult {
+  status: Status
+  code: Code
+  message: Message
+}
+
+export interface countQuantitiesParams {
+  count: number
+  product: string
+  warehouse: string
 }
 
 export interface editQuantitiesResult {
@@ -58,7 +69,6 @@ export interface editQuantitiesParams {
   count: number
   product: string
   warehouse: string
-  status: 'available' | 'reserved' | 'sold'
 }
 
 export interface removeQuantitiesResult {

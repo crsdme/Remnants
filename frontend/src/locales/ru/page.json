@@ -127,6 +127,7 @@
   "page.products.table.unit": "Единица измерения",
   "page.products.table.price": "Цена",
   "page.products.table.purchasePrice": "Цена закупки",
+  "page.products.table.quantity": "Количество",
   "page.products.table.productPropertyGroup": "Группа свойств",
 
   "page.products.form.title.create": "Создание нового товара",

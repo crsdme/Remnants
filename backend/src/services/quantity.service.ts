@@ -1,5 +1,5 @@
 import type * as QuantityTypes from '../types/quantity.type'
-import { QuantityModel } from '../models'
+import { ProductModel, QuantityModel } from '../models'
 import { HttpError } from '../utils/httpError'
 import { buildQuery, buildSortQuery } from '../utils/queryBuilder'
 
@@ -60,17 +60,33 @@ export async function create(payload: QuantityTypes.createQuantitiesParams): Pro
     count,
     product,
     warehouse,
-    status,
   } = payload
 
   const quantity = await QuantityModel.create({
     count,
     product,
     warehouse,
-    status,
   })
 
+  await ProductModel.updateOne({ _id: product }, { $push: { quantity: quantity._id } })
+
   return { status: 'success', code: 'QUANTITY_CREATED', message: 'Quantity created', quantity }
+}
+
+export async function count(payload: QuantityTypes.countQuantitiesParams): Promise<QuantityTypes.countQuantitiesResult> {
+  const {
+    count,
+    product,
+    warehouse,
+  } = payload
+
+  const quantity = await QuantityModel.findOneAndUpdate({ product, warehouse }, { $inc: { count } }, { new: true })
+
+  if (!quantity) {
+    await create({ count, product, warehouse })
+  }
+
+  return { status: 'success', code: 'QUANTITY_COUNTED', message: 'Quantity counted' }
 }
 
 export async function edit(payload: QuantityTypes.editQuantitiesParams): Promise<QuantityTypes.editQuantitiesResult> {
@@ -79,14 +95,12 @@ export async function edit(payload: QuantityTypes.editQuantitiesParams): Promise
     count,
     product,
     warehouse,
-    status,
   } = payload
 
   const quantity = await QuantityModel.findOneAndUpdate({ _id: id }, {
     count,
     product,
     warehouse,
-    status,
   })
 
   if (!quantity) {

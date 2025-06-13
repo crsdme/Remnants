@@ -24,14 +24,17 @@ const QuantitySchema: Schema = new Schema(
       ref: 'Warehouse',
       required: true,
     },
-    status: {
-      type: String,
-      enum: ['available', 'reserved', 'sold'],
-      default: 'available',
-    },
   },
   { timestamps: true },
 )
+
+QuantitySchema.virtual('autoStatus').get(function (this: any) {
+  if (this.count > 0)
+    return 'available'
+  if (this.count === 0)
+    return 'sold'
+  return 'reserved'
+})
 
 QuantitySchema.set('toJSON', {
   virtuals: true,

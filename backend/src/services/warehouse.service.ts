@@ -1,7 +1,8 @@
 import type * as WarehouseTypes from '../types/warehouse.type'
-import { WarehouseModel } from '../models/'
+import { WarehouseModel } from '../models'
 import { HttpError } from '../utils/httpError'
 import { buildQuery, buildSortQuery } from '../utils/queryBuilder'
+import * as quantityService from './quantity.service'
 
 export async function get(payload: WarehouseTypes.getWarehousesParams): Promise<WarehouseTypes.getWarehousesResult> {
   const { current = 1, pageSize = 10 } = payload.pagination
@@ -51,6 +52,8 @@ export async function get(payload: WarehouseTypes.getWarehousesParams): Promise<
 
   const warehouses = warehousesRaw[0].warehouses.map((doc: any) => WarehouseModel.hydrate(doc))
   const warehousesCount = warehousesRaw[0].totalCount[0]?.count || 0
+
+  await quantityService.count({ count: 1, product: '8470ed2d-7b79-49f3-b49d-284d9a162a88', warehouse: '622b4c21-4937-4afe-b9df-d63b250c4555' })
 
   return { status: 'success', code: 'WAREHOUSES_FETCHED', message: 'Warehouses fetched', warehouses, warehousesCount }
 }

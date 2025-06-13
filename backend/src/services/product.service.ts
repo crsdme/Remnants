@@ -158,6 +158,14 @@ export async function get(payload: ProductTypes.getProductsParams): Promise<Prod
     },
     {
       $lookup: {
+        from: 'quantities',
+        localField: 'quantity',
+        foreignField: '_id',
+        as: 'quantity',
+      },
+    },
+    {
+      $lookup: {
         from: 'product-property-groups',
         localField: 'productPropertiesGroup',
         foreignField: '_id',
@@ -228,6 +236,7 @@ export async function get(payload: ProductTypes.getProductsParams): Promise<Prod
         barcodes: 1,
         categories: { id: 1, names: 1 },
         unit: { id: '$unit._id', names: 1, symbols: 1 },
+        quantity: { count: 1, warehouse: 1, status: 1 },
         images: 1,
         productProperties: { id: 1, value: 1, data: { names: 1, type: 1, isRequired: 1, showInTable: 1 }, optionData: { id: 1, names: 1, color: 1 } },
         productPropertiesGroup: { id: '$productPropertiesGroup._id', names: 1 },
