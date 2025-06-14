@@ -270,5 +270,26 @@
   "response.description.WAREHOUSE_NOT_EDITED": "Не удалось обновить склад",
 
   "response.title.WAREHOUSES_NOT_REMOVED": "Склады не удалены",
-  "response.description.WAREHOUSES_NOT_REMOVED": "Не удалось удалить выбранные склады"
+  "response.description.WAREHOUSES_NOT_REMOVED": "Не удалось удалить выбранные склады",
+
+  "response.title.BARCODES_FETCHED": "Штрих-коды получены",
+  "response.description.BARCODES_FETCHED": "Список штрих-кодов успешно получен",
+
+  "response.title.BARCODE_CREATED": "Штрих-код создан",
+  "response.description.BARCODE_CREATED": "Новый штрих-код был создан",
+
+  "response.title.BARCODE_EDITED": "Штрих-код обновлен",
+  "response.description.BARCODE_EDITED": "Штрих-код был обновлен",
+
+  "response.title.BARCODES_REMOVED": "Штрих-коды удалены",
+  "response.description.BARCODES_REMOVED": "Выбранные штрих-коды были удалены",
+
+  "response.title.BARCODE_NOT_EDITED": "Штрих-код не обновлен",
+  "response.description.BARCODE_NOT_EDITED": "Не удалось обновить штрих-код",
+
+  "response.title.BARCODES_NOT_REMOVED": "Штрих-коды не удалены",
+  "response.description.BARCODES_NOT_REMOVED": "Не удалось удалить выбранные штрих-коды",
+
+  "error.title.BARCODES_FETCHED_EMPTY": "Штрих-коды не найдены",
+  "error.description.BARCODES_FETCHED_EMPTY": "Не удалось найти штрих-коды"
 }

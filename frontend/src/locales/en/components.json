@@ -121,5 +121,19 @@
   "component.sidemenu.label.userRoles": "User Roles",
 
   "component.fileUploadDnd.upload": "Upload file",
-  "component.fileUploadDnd.noFilesUploaded": "No files uploaded"
+  "component.fileUploadDnd.noFilesUploaded": "No files uploaded",
+
+  "component.productSelectTable.filter.placeholder": "Search products",
+
+  "component.productTable.table.selectedProducts": "Selected Products",
+  "component.productTable.table.images": "Images",
+  "component.productTable.table.names": "Names",
+  "component.productTable.table.categories": "Categories",
+  "component.productTable.table.price": "Price",
+  "component.productTable.table.purchasePrice": "Purchase Price",
+  "component.productTable.table.productPropertyGroup": "Product Property Group",
+  "component.productTable.table.productProperties": "Product Properties",
+  "component.productTable.table.quantity": "Quantity",
+  "component.productTable.table.selectedQuantity": "Selected Quantity",
+  "component.productTable.table.unit": "Unit"
 }

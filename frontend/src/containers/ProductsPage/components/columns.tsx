@@ -333,6 +333,25 @@ export function useColumns() {
         header: ({ column }) => sortHeader(column, t('page.products.table.productPropertyGroup')),
         accessorFn: row => `${row.productPropertiesGroup.names[i18n.language]}`,
       },
+      {
+        id: 'barcodes',
+        size: 150,
+        meta: {
+          title: t('page.products.table.barcodes'),
+          filterable: true,
+          filterType: 'text',
+          sortable: true,
+        },
+        header: ({ column }) => sortHeader(column, t('page.products.table.barcodes')),
+        cell: ({ row }) => {
+          const barcodes = row.original.barcodes.map(barcode => barcode.code)
+          return (
+            <div className="flex flex-wrap gap-2">
+              {barcodes.map(barcode => <Badge key={barcode}>{barcode}</Badge>)}
+            </div>
+          )
+        },
+      },
       ...productPropertyColumn(),
       {
         id: 'createdAt',

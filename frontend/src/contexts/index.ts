@@ -1,4 +1,5 @@
 export * from './auth/AuthContext'
+export * from './barcode/BarcodeContext'
 export * from './category/CategoryContext'
 export * from './currency/CurrencyContext'
 export * from './language/LanguageContext'

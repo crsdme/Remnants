@@ -6,6 +6,7 @@ import { useAuthContext } from '@/contexts'
 import { usePermission } from '@/utils/hooks/usePermission/usePermission'
 
 import {
+  BarcodesPage,
   CategoriesPage,
   CurrenciesPage,
   DashboardPage,
@@ -92,6 +93,10 @@ export default function App() {
           <Route
             path="/warehouses"
             element={<ProtectedRoute children={<WarehousesPage />} permissions={['warehouse.page']} />}
+          />
+          <Route
+            path="/barcodes"
+            element={<ProtectedRoute children={<BarcodesPage />} permissions={['barcode.page']} />}
           />
 
           <Route path="*" element={<ErrorPage status={404} />} />

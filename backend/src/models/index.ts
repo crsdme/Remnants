@@ -1,3 +1,4 @@
+export * from './barcode.model'
 export * from './category.model'
 export * from './counter.model'
 export * from './currency.model'

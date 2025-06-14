@@ -1,3 +1,4 @@
+export * from './BarcodesPage'
 export * from './CategoriesPage'
 export * from './CurrenciesPage'
 export * from './DashboardPage'

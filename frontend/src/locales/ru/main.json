@@ -24,6 +24,7 @@
   "button.submit": "Сохранить",
   "button.import": "Импортировать",
   "button.back": "Назад",
+  "button.generate": "Сгенерировать",
 
   "form.errors.required": "Обязательное поле",
   "form.errors.min_length": "Минимальная длина {{count}} символов",

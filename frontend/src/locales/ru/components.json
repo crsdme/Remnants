@@ -125,5 +125,19 @@
   "component.asyncSelect.placeholder": "Выберите",
 
   "component.fileUploadDnd.upload": "Загрузить файл",
-  "component.fileUploadDnd.noFilesUploaded": "Файлы не загружены"
+  "component.fileUploadDnd.noFilesUploaded": "Файлы не загружены",
+
+  "component.productSelectTable.filter.placeholder": "Поиск товаров",
+
+  "component.productTable.table.selectedProducts": "Выбранные товары",
+  "component.productTable.table.images": "Изображения",
+  "component.productTable.table.names": "Названия",
+  "component.productTable.table.categories": "Категории",
+  "component.productTable.table.price": "Цена",
+  "component.productTable.table.purchasePrice": "Цена закупки",
+  "component.productTable.table.productPropertyGroup": "Группа свойств",
+  "component.productTable.table.productProperties": "Свойства",
+  "component.productTable.table.quantity": "Количество",
+  "component.productTable.table.selectedQuantity": "Выбранное количество",
+  "component.productTable.table.unit": "Единица измерения"
 }

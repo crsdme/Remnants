@@ -270,5 +270,26 @@
   "response.description.WAREHOUSE_NOT_EDITED": "Unable to edit warehouse",
 
   "response.title.WAREHOUSES_NOT_REMOVED": "Warehouses not removed",
-  "response.description.WAREHOUSES_NOT_REMOVED": "Unable to remove selected warehouses"
+  "response.description.WAREHOUSES_NOT_REMOVED": "Unable to remove selected warehouses",
+
+  "response.title.BARCODES_FETCHED": "Barcodes fetched",
+  "response.description.BARCODES_FETCHED": "Barcodes list successfully fetched",
+
+  "response.title.BARCODE_CREATED": "Barcode created",
+  "response.description.BARCODE_CREATED": "New barcode has been created",
+
+  "response.title.BARCODE_EDITED": "Barcode edited",
+  "response.description.BARCODE_EDITED": "Barcode has been updated",
+
+  "response.title.BARCODES_REMOVED": "Barcodes removed",
+  "response.description.BARCODES_REMOVED": "Selected barcodes have been deleted",
+
+  "response.title.BARCODE_NOT_EDITED": "Barcode not edited",
+  "response.description.BARCODE_NOT_EDITED": "Unable to edit barcode",
+
+  "response.title.BARCODES_NOT_REMOVED": "Barcodes not removed",
+  "response.description.BARCODES_NOT_REMOVED": "Unable to remove selected barcodes",
+
+  "error.title.BARCODES_FETCHED_EMPTY": "Barcodes not found",
+  "error.description.BARCODES_FETCHED_EMPTY": "Unable to find barcodes"
 }

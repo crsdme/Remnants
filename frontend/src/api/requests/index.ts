@@ -1,4 +1,5 @@
 export * from './auth'
+export * from './barcodes'
 export * from './categories'
 export * from './currencies'
 export * from './languages'

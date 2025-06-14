@@ -36,5 +36,8 @@
   "description.page.product-properties-groups": "Manage product properties groups in Remnant",
 
   "title.page.warehouses": "Warehouses - Remnant",
-  "description.page.warehouses": "Manage warehouses in Remnant"
+  "description.page.warehouses": "Manage warehouses in Remnant",
+
+  "title.page.barcodes": "Barcodes - Remnant",
+  "description.page.barcodes": "Manage barcodes in Remnant"
 }

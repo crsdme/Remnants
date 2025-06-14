@@ -12,9 +12,9 @@ export type Code = string
 export type Message = string
 
 export interface Pagination {
-  current: number
-  pageSize: number
-  full: boolean
+  current?: number
+  pageSize?: number
+  full?: boolean
 }
 
 export type IdType = mongoose.Types.ObjectId

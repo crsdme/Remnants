@@ -2,6 +2,8 @@ import { ChevronLeft, ChevronRight, Download, RotateCw, X, ZoomIn, ZoomOut } fro
 import { useEffect, useState } from 'react'
 
 import { Button, Dialog, DialogContent } from '@/components/ui'
+import { PlaceholderIcon } from '@/components/ui/icons/placeholder'
+
 import { cn } from '@/utils/lib'
 
 interface GalleryImage {
@@ -23,10 +25,11 @@ export function ImageGallery({ images, className }: ImageGalleryProps) {
   const [zoom, setZoom] = useState(1)
   const [rotation, setRotation] = useState(0)
 
-  if (!images || images.length === 0)
-    return null
-
-  const currentImage = images[currentIndex]
+  const currentImage = images[currentIndex] || {
+    id: '',
+    alt: '',
+    src: null,
+  }
 
   const handleImageError = (imageId: string) => {
     setImageErrors(prev => ({ ...prev, [imageId]: true }))
@@ -78,7 +81,6 @@ export function ImageGallery({ images, className }: ImageGalleryProps) {
     document.body.removeChild(link)
   }
 
-  // eslint-disable-next-line react-hooks/rules-of-hooks
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (!isOpen)
@@ -109,6 +111,9 @@ export function ImageGallery({ images, className }: ImageGalleryProps) {
   }, [isOpen])
 
   const getImageSrc = (image: GalleryImage, size?: number) => {
+    if (!image)
+      return null
+
     return imageErrors[image.src] && image.fallback ? image.fallback : `${image.src}${size ? `?width=${size}&height=${size}` : ''}`
   }
 
@@ -116,18 +121,26 @@ export function ImageGallery({ images, className }: ImageGalleryProps) {
     <>
       <div className={cn('flex', className)}>
         <div
-          key={images[0].src}
+          key={images[0]?.src}
           className="relative aspect-square cursor-pointer group overflow-hidden rounded-lg border"
           onClick={() => openLightbox(0)}
         >
-          <img
-            src={getImageSrc(images[0], 80) || '/placeholder.svg'}
-            alt={images[0].alt}
-            className="object-cover h-full transition-transform group-hover:scale-105 min-w-[80px] min-h-[80px]"
-            onError={() => handleImageError(images[0].id)}
-            width={80}
-            height={80}
-          />
+          {!images[0]
+            ? (
+                <div className="flex items-center justify-center min-w-[80px] min-h-[80px] bg-muted">
+                </div>
+              )
+            : (
+                <img
+                  src={getImageSrc(images[0], 80)}
+                  alt={images[0]?.alt || ''}
+                  className="object-cover h-full transition-transform group-hover:scale-105 min-w-[80px] min-h-[80px]"
+                  onError={() => handleImageError(images[0].id)}
+                  width={80}
+                  height={80}
+                />
+              )}
+
           <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center"></div>
         </div>
       </div>
@@ -161,18 +174,23 @@ export function ImageGallery({ images, className }: ImageGalleryProps) {
                   transformOrigin: 'center',
                 }}
               >
-                <img
-                  src={getImageSrc(currentImage) || '/placeholder.svg'}
-                  alt={currentImage.alt}
-                  width={800}
-                  height={600}
-                  className="max-w-full max-h-full object-contain"
-                  onError={() => handleImageError(currentImage.id)}
-                />
+                {!currentImage.src
+                  ? (
+                      <div className="flex items-center justify-center w-[600px] h-[800px] bg-muted"></div>
+                    )
+                  : (
+                      <img
+                        src={getImageSrc(currentImage)}
+                        alt={currentImage.alt}
+                        width={800}
+                        height={600}
+                        className="max-w-full max-h-full object-contain"
+                        onError={() => handleImageError(currentImage.id)}
+                      />
+                    )}
               </div>
             </div>
 
-            {/* Navigation Arrows */}
             {images.length > 1 && (
               <>
                 <Button
@@ -194,7 +212,6 @@ export function ImageGallery({ images, className }: ImageGalleryProps) {
               </>
             )}
 
-            {/* Bottom Controls */}
             <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-50">
               <div className="flex items-center gap-2 bg-black/70 rounded-full px-4 py-2">
                 <Button

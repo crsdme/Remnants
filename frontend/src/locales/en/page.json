@@ -362,5 +362,22 @@
   "page.warehouses.form.description.edit": "Edit existing warehouse",
   "page.warehouses.form.names": "Name ({{language}})",
   "page.warehouses.form.priority": "Priority",
-  "page.warehouses.form.active": "Active"
+  "page.warehouses.form.active": "Active",
+
+  "page.barcodes.title": "Barcodes",
+  "page.barcodes.description": "Manage barcodes here",
+  "page.barcodes.filter.code": "Filter by code",
+  "page.barcodes.button.create": "Create Barcode",
+
+  "page.barcodes.table.code": "Code",
+  "page.barcodes.table.products": "Products",
+  "page.barcodes.table.active": "Active",
+
+  "page.barcodes.form.title.create": "Create New Barcode",
+  "page.barcodes.form.description.create": "Add a new barcode to the system",
+  "page.barcodes.form.title.edit": "Edit Barcode",
+  "page.barcodes.form.description.edit": "Edit existing barcode",
+  "page.barcodes.form.code": "Code",
+  "page.barcodes.form.products": "Products",
+  "page.barcodes.form.active": "Active"
 }

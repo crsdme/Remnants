@@ -1,4 +1,4 @@
-export default function PlaceholderIcon({ className }: { className?: string }) {
+export function PlaceholderIcon({ className }: { className?: string }) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1200" fill="none" className={className}>
       <rect width="1200" height="1200" fill="#EAEAEA" rx="3" />

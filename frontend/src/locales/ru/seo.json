@@ -36,5 +36,8 @@
   "description.page.product-properties-groups": "Управление группами свойств товаров в Remnant",
 
   "title.page.warehouses": "Склады - Remnant",
-  "description.page.warehouses": "Управление складами в Remnant"
+  "description.page.warehouses": "Управление складами в Remnant",
+
+  "title.page.barcodes": "Штрих-коды - Remnant",
+  "description.page.barcodes": "Управление штрих-кодами в Remnant"
 }

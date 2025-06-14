@@ -42,32 +42,33 @@ export interface getProductsResult {
 
 export interface getProductsParams {
   filters: {
-    names: LanguageString
-    language: SUPPORTED_LANGUAGES_TYPE
-    price: number
-    purchasePrice: number
-    barcodes: string[]
-    categories: IdType[]
-    unit: IdType
-    productPropertiesGroup: IdType
-    productProperties: IdType[]
-    createdAt: DateRange
-    updatedAt: DateRange
+    ids?: IdType[]
+    names?: LanguageString
+    language?: SUPPORTED_LANGUAGES_TYPE
+    price?: number
+    purchasePrice?: number
+    barcodes?: string[]
+    categories?: IdType[]
+    unit?: IdType
+    productPropertiesGroup?: IdType
+    productProperties?: IdType[]
+    createdAt?: DateRange
+    updatedAt?: DateRange
   }
   sorters: {
-    names: string
-    price: string
-    purchasePrice: string
-    barcodes: string
-    categories: string
-    unit: string
-    productPropertiesGroup: string
-    productProperties: string
-    createdAt: string
-    updatedAt: string
+    names?: string
+    price?: string
+    purchasePrice?: string
+    barcodes?: string
+    categories?: string
+    unit?: string
+    productPropertiesGroup?: string
+    productProperties?: string
+    createdAt?: string
+    updatedAt?: string
   }
   pagination: Pagination
-  isTree: boolean
+  isTree?: boolean
 }
 
 export interface createProductResult {

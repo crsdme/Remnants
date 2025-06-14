@@ -43,9 +43,6 @@ const ProductSchema: Schema = new Schema(
       ref: 'Currency',
       required: true,
     },
-    barcodes: [{
-      type: String,
-    }],
     categories: [{
       type: String,
       ref: 'Category',
@@ -90,6 +87,10 @@ const ProductSchema: Schema = new Schema(
     quantity: [{
       type: String,
       ref: 'Quantity',
+    }],
+    barcodes: [{
+      type: String,
+      ref: 'Barcode',
     }],
     removed: {
       type: Boolean,

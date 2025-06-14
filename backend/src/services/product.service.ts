@@ -17,6 +17,7 @@ export async function get(payload: ProductTypes.getProductsParams): Promise<Prod
   const { current = 1, pageSize = 10 } = payload.pagination
 
   const {
+    ids = [],
     names = '',
     language = 'en',
     price = undefined,
@@ -39,6 +40,7 @@ export async function get(payload: ProductTypes.getProductsParams): Promise<Prod
   const sorters = buildSortQuery(payload.sorters)
 
   const filterRules = {
+    _id: { type: 'array' },
     names: { type: 'string', langAware: true },
     active: { type: 'array' },
     price: { type: 'exact' },
@@ -53,7 +55,7 @@ export async function get(payload: ProductTypes.getProductsParams): Promise<Prod
   } as const
 
   const query = buildQuery({
-    filters: { names, price, purchasePrice, barcodes, categories, unit, productPropertiesGroup, productProperties, createdAt, updatedAt },
+    filters: { _id: ids, names, price, purchasePrice, barcodes, categories, unit, productPropertiesGroup, productProperties, createdAt, updatedAt },
     rules: filterRules,
     language,
   })
@@ -173,6 +175,14 @@ export async function get(payload: ProductTypes.getProductsParams): Promise<Prod
       },
     },
     {
+      $lookup: {
+        from: 'barcodes',
+        localField: 'barcodes',
+        foreignField: '_id',
+        as: 'barcodes',
+      },
+    },
+    {
       $addFields: {
         currency: { $arrayElemAt: ['$currency', 0] },
         purchaseCurrency: { $arrayElemAt: ['$purchaseCurrency', 0] },
@@ -223,6 +233,13 @@ export async function get(payload: ProductTypes.getProductsParams): Promise<Prod
             },
           },
         },
+        barcodes: {
+          $map: {
+            input: '$barcodes',
+            as: 'barcode',
+            in: { $mergeObjects: ['$$barcode', { id: '$$barcode._id', code: '$$barcode.code' }] },
+          },
+        },
       },
     },
     {
@@ -263,7 +280,7 @@ export async function get(payload: ProductTypes.getProductsParams): Promise<Prod
   let products = productsRaw[0].products
   const productsCount = productsRaw[0].totalCount[0]?.count || 0
 
-  products = products.map((product: ProductTypes.Product) => ({
+  products = products.map((product: any) => ({
     ...product,
     images: product.images.map((image: any) => ({
       id: image._id,

@@ -21,14 +21,19 @@ export function TablePagination({
   totalCount,
 }) {
   const { t } = useTranslation()
+  if (totalPages <= 1)
+    return null
+
   return (
-    <div className="flex justify-between items-center mt-3 max-md:flex-col gap-4">
-      <span className="text-sm text-muted-foreground">
-        {t('component.pagination.selected', {
-          selected: selectedCount,
-          total: totalCount,
-        })}
-      </span>
+    <div className="flex justify-end py-2 max-md:flex-col gap-4">
+      { selectedCount > 0 && (
+        <span className="text-sm text-muted-foreground">
+          {t('component.pagination.selected', {
+            selected: selectedCount,
+            total: totalCount,
+          })}
+        </span>
+      )}
       <div className="flex justify-end items-center gap-2 max-md:flex-col-reverse min-md:w-lg">
         <span className="text-sm text-muted-foreground w-56 text-center">
           {t('component.pagination.current', {
@@ -44,7 +49,7 @@ export function TablePagination({
             <SelectItem value="50">50</SelectItem>
           </SelectContent>
         </Select>
-        <Pagination>
+        <Pagination className="justify-end m-0">
           <PaginationContent>
             <PaginationItem>
               <PaginationPrevious

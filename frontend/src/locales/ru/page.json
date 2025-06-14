@@ -362,6 +362,22 @@
   "page.warehouses.form.description.edit": "Редактирование существующего склада",
   "page.warehouses.form.names": "Название ({{language}})",
   "page.warehouses.form.priority": "Приоритет",
-  "page.warehouses.form.active": "Активная"
+  "page.warehouses.form.active": "Активная",
 
+  "page.barcodes.title": "Штрих-коды",
+  "page.barcodes.description": "Управление штрих-кодами",
+  "page.barcodes.filter.code": "Фильтр по коду",
+  "page.barcodes.button.create": "Создать штрих-код",
+
+  "page.barcodes.table.code": "Код",
+  "page.barcodes.table.products": "Товары",
+  "page.barcodes.table.active": "Активность",
+
+  "page.barcodes.form.title.create": "Создание нового штрих-кода",
+  "page.barcodes.form.description.create": "Добавить новый штрих-код в систему",
+  "page.barcodes.form.title.edit": "Редактирование штрих-кода",
+  "page.barcodes.form.description.edit": "Редактирование существующего штрих-кода",
+  "page.barcodes.form.code": "Код",
+  "page.barcodes.form.products": "Товары",
+  "page.barcodes.form.active": "Активность"
 }
