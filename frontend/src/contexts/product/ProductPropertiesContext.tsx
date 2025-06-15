@@ -20,22 +20,22 @@ import {
 } from '@/api/hooks/'
 
 interface ProductPropertiesContextType {
-  selectedProductProperty: ProductProperty
-  isModalOpen: boolean
-  isOptionsModalOpen: boolean
+  selectedProperty: ProductProperty
+  isPropertyModalOpen: boolean
+  isOptionModalOpen: boolean
   isLoading: boolean
-  form: UseFormReturn
-  toggleModal: (productProperty?: ProductProperty) => void
-  openModal: (productProperty?: ProductProperty) => void
-  closeModal: () => void
+  isPropertyEdit: boolean
+  isOptionsEdit: boolean
+  propertyForm: UseFormReturn
+  optionForm: UseFormReturn
+  openPropertyModal: (productProperty?: ProductProperty) => void
+  closePropertyModal: () => void
   submitProductPropertyForm: (params) => void
-  removeProductProperty: (params: { ids: string[] }) => void
-  optionsForm: UseFormReturn
-  openOptionsModal: (params?: { option: ProductPropertyOption, property: string }) => void
+  removeProperty: (params: { ids: string[] }) => void
+  openOptionsModal: (option?: ProductPropertyOption, property?: ProductProperty) => void
   closeOptionsModal: () => void
   submitOptionsForm: (params) => void
-  removeProductPropertyOption: (params: { ids: string[] }) => void
-  toggleOptionsModal: (productPropertyOption?: ProductPropertyOption) => void
+  removeOption: (params: { ids: string[] }) => void
 }
 
 const ProductPropertiesContext = createContext<ProductPropertiesContextType | undefined>(undefined)
@@ -45,15 +45,17 @@ interface ProductPropertiesProviderProps {
 }
 
 export function ProductPropertiesProvider({ children }: ProductPropertiesProviderProps) {
-  const [isModalOpen, setIsModalOpen] = useState(false)
-  const [isOptionsModalOpen, setIsOptionsModalOpen] = useState(false)
+  const [isPropertyModalOpen, setIsPropertyModalOpen] = useState(false)
+  const [isOptionModalOpen, setIsOptionModalOpen] = useState(false)
+  const [isPropertyEdit, setIsPropertyEdit] = useState(false)
+  const [isOptionsEdit, setIsOptionsEdit] = useState(false)
+  const [selectedProperty, setSelectedProperty] = useState(null)
+  const [selectedOption, setSelectedOption] = useState(null)
   const [isLoading, setIsLoading] = useState(false)
-  const [selectedProductProperty, setSelectedProductProperty] = useState(null)
-  const [selectedProductPropertyOption, setSelectedProductPropertyOption] = useState(null)
 
   const { t } = useTranslation()
 
-  const formSchema = useMemo(() =>
+  const propertyFormSchema = useMemo(() =>
     z.object({
       names: z.record(z.string({ required_error: t('form.errors.required') }).min(3, { message: t('form.errors.min_length', { count: 3 }) }).trim()),
       priority: z.number().optional(),
@@ -64,8 +66,8 @@ export function ProductPropertiesProvider({ children }: ProductPropertiesProvide
       active: z.boolean().optional(),
     }), [t])
 
-  const form = useForm({
-    resolver: zodResolver(formSchema),
+  const propertyForm = useForm({
+    resolver: zodResolver(propertyFormSchema),
     defaultValues: {
       names: {
         en: '',
@@ -80,7 +82,7 @@ export function ProductPropertiesProvider({ children }: ProductPropertiesProvide
     },
   })
 
-  const optionsFormSchema = useMemo(() =>
+  const optionFormSchema = useMemo(() =>
     z.object({
       names: z.record(z.string({ required_error: t('form.errors.required') }).min(3, { message: t('form.errors.min_length', { count: 3 }) }).trim()),
       priority: z.number().optional(),
@@ -88,8 +90,8 @@ export function ProductPropertiesProvider({ children }: ProductPropertiesProvide
       color: z.string().optional(),
     }), [t])
 
-  const optionsForm = useForm({
-    resolver: zodResolver(optionsFormSchema),
+  const optionForm = useForm({
+    resolver: zodResolver(optionFormSchema),
     defaultValues: {
       names: {
         en: '',
@@ -101,22 +103,90 @@ export function ProductPropertiesProvider({ children }: ProductPropertiesProvide
     },
   })
 
+  const getPropertyValues = (property) => {
+    if (!property) {
+      return {
+        names: {},
+        priority: 0,
+        isMultiple: false,
+        isRequired: false,
+        showInTable: false,
+        type: '',
+        active: true,
+      }
+    }
+    return {
+      names: { ...property.names },
+      priority: property.priority,
+      isRequired: property.isRequired,
+      showInTable: property.showInTable,
+      type: property.type,
+      active: property.active,
+    }
+  }
+
+  const getOptionValues = (option) => {
+    if (!option) {
+      return {
+        names: {},
+        priority: 0,
+        color: '',
+        active: true,
+      }
+    }
+    return {
+      names: { ...option.names },
+      priority: option.priority,
+      color: option.color,
+      active: option.active,
+    }
+  }
+
+  const closePropertyModal = () => {
+    if (!isPropertyModalOpen)
+      return
+    setIsPropertyModalOpen(false)
+    setIsLoading(false)
+    setIsPropertyEdit(false)
+    setSelectedProperty(null)
+    propertyForm.reset()
+  }
+
+  const openPropertyModal = (property) => {
+    setIsPropertyModalOpen(true)
+    setIsPropertyEdit(!!property)
+    setSelectedProperty(property)
+    propertyForm.reset(getPropertyValues(property))
+  }
+
+  const openOptionsModal = (option, property) => {
+    setIsOptionModalOpen(true)
+    setIsOptionsEdit(!!option)
+    setSelectedOption(option)
+    setSelectedProperty(property)
+    optionForm.reset(getOptionValues(option))
+  }
+
+  const closeOptionsModal = () => {
+    setIsOptionModalOpen(false)
+    setSelectedOption(null)
+    setSelectedProperty(null)
+    setIsLoading(false)
+    optionForm.reset()
+  }
+
   const queryClient = useQueryClient()
 
   const useMutateCreateProductProperty = useCreateProductProperty({
     options: {
       onSuccess: ({ data }) => {
-        setIsModalOpen(false)
-        setIsLoading(false)
-        setSelectedProductProperty(null)
+        closePropertyModal()
         queryClient.invalidateQueries({ queryKey: ['product-properties'] })
         toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description || ''}` })
       },
       onError: ({ response }) => {
         const error = response.data.error
-        setIsModalOpen(false)
-        setIsLoading(false)
-        setSelectedProductProperty(null)
+        closePropertyModal()
         toast.error(t(`error.title.${error.code}`), { description: `${t(`error.description.${error.code}`)} ${error.description || ''}` })
       },
     },
@@ -125,17 +195,13 @@ export function ProductPropertiesProvider({ children }: ProductPropertiesProvide
   const useMutateEditProductProperty = useEditProductProperty({
     options: {
       onSuccess: ({ data }) => {
-        setIsModalOpen(false)
-        setIsLoading(false)
-        setSelectedProductProperty(null)
+        closePropertyModal()
         queryClient.invalidateQueries({ queryKey: ['product-properties'] })
         toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description || ''}` })
       },
       onError: ({ response }) => {
         const error = response.data.error
-        setIsModalOpen(false)
-        setIsLoading(false)
-        setSelectedProductProperty(null)
+        closePropertyModal()
         toast.error(t(`error.title.${error.code}`), { description: `${t(`error.description.${error.code}`)} ${error.description || ''}` })
       },
     },
@@ -157,17 +223,13 @@ export function ProductPropertiesProvider({ children }: ProductPropertiesProvide
   const useMutateCreateProductPropertyOption = useCreateProductPropertyOption({
     options: {
       onSuccess: ({ data }) => {
-        setIsOptionsModalOpen(false)
-        setIsLoading(false)
-        setSelectedProductPropertyOption(null)
-        queryClient.invalidateQueries({ queryKey: ['product-properties-options'] })
+        closeOptionsModal()
+        queryClient.invalidateQueries({ queryKey: ['product-properties'] })
         toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description || ''}` })
       },
       onError: ({ response }) => {
         const error = response.data.error
-        setIsOptionsModalOpen(false)
-        setIsLoading(false)
-        setSelectedProductPropertyOption(null)
+        closeOptionsModal()
         toast.error(t(`error.title.${error.code}`), { description: `${t(`error.description.${error.code}`)} ${error.description || ''}` })
       },
     },
@@ -176,17 +238,13 @@ export function ProductPropertiesProvider({ children }: ProductPropertiesProvide
   const useMutateEditProductPropertyOption = useEditProductPropertyOption({
     options: {
       onSuccess: ({ data }) => {
-        setIsOptionsModalOpen(false)
-        setIsLoading(false)
-        setSelectedProductPropertyOption(null)
-        queryClient.invalidateQueries({ queryKey: ['product-properties-options', 'get'] })
+        closeOptionsModal()
+        queryClient.invalidateQueries({ queryKey: ['product-properties-options'] })
         toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description || ''}` })
       },
       onError: ({ response }) => {
         const error = response.data.error
-        setIsOptionsModalOpen(false)
-        setIsLoading(false)
-        setSelectedProductPropertyOption(null)
+        closeOptionsModal()
         toast.error(t(`error.title.${error.code}`), { description: `${t(`error.description.${error.code}`)} ${error.description || ''}` })
       },
     },
@@ -195,7 +253,7 @@ export function ProductPropertiesProvider({ children }: ProductPropertiesProvide
   const useMutateRemoveProductPropertyOption = useRemoveProductPropertyOptions({
     options: {
       onSuccess: ({ data }) => {
-        queryClient.invalidateQueries({ queryKey: ['product-properties-options'] })
+        queryClient.invalidateQueries({ queryKey: ['product-properties'] })
         toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description || ''}` })
       },
       onError: ({ response }) => {
@@ -205,102 +263,50 @@ export function ProductPropertiesProvider({ children }: ProductPropertiesProvide
     },
   })
 
-  const openModal = (productProperty) => {
-    setIsModalOpen(true)
-    let productPropertyValues = {}
-    if (productProperty) {
-      setSelectedProductProperty(productProperty)
-
-      productPropertyValues = {
-        names: { ...productProperty.names },
-        priority: productProperty.priority,
-        isRequired: productProperty.isRequired,
-        showInTable: productProperty.showInTable,
-        type: productProperty.type,
-        active: productProperty.active,
-      }
-    }
-    form.reset(productPropertyValues)
-  }
-
-  const closeModal = () => {
-    setIsModalOpen(false)
-    setIsLoading(false)
-    setSelectedProductProperty(null)
-    form.reset()
-  }
-
-  const toggleModal = product => (isModalOpen ? closeModal() : openModal(product))
-
   const submitProductPropertyForm = (params) => {
     setIsLoading(true)
-    if (!selectedProductProperty) {
-      useMutateCreateProductProperty.mutate(params)
-    }
-    else {
-      useMutateEditProductProperty.mutate({ ...params, id: selectedProductProperty.id })
-    }
+    if (!selectedProperty)
+      return useMutateCreateProductProperty.mutate(params)
+
+    return useMutateEditProductProperty.mutate({ ...params, id: selectedProperty.id })
   }
-
-  const removeProductProperty = (params) => {
-    useMutateRemoveProductProperty.mutate(params)
-  }
-
-  const openOptionsModal = (params) => {
-    setIsOptionsModalOpen(true)
-    setSelectedProductPropertyOption(params.option)
-    setSelectedProductProperty(params.property)
-
-    let productPropertyOptionValues = {}
-    if (params.option) {
-      productPropertyOptionValues = params.option
-    }
-    optionsForm.reset(productPropertyOptionValues)
-  }
-
-  const closeOptionsModal = () => {
-    setIsOptionsModalOpen(false)
-    setSelectedProductPropertyOption(null)
-    setSelectedProductProperty(null)
-    optionsForm.reset()
-  }
-
-  const toggleOptionsModal = productPropertyOption => (isOptionsModalOpen ? closeOptionsModal() : openOptionsModal(productPropertyOption))
 
   const submitOptionsForm = (params) => {
     setIsLoading(true)
-    if (!selectedProductPropertyOption) {
-      useMutateCreateProductPropertyOption.mutate({ ...params, productProperty: selectedProductProperty.id })
-    }
-    else {
-      useMutateEditProductPropertyOption.mutate({ ...params, id: selectedProductPropertyOption.id })
-    }
+    if (!selectedOption)
+      return useMutateCreateProductPropertyOption.mutate({ ...params, productProperty: selectedProperty.id })
+
+    return useMutateEditProductPropertyOption.mutate({ ...params, id: selectedOption.id, productProperty: selectedProperty.id })
   }
 
-  const removeProductPropertyOption = (params) => {
+  const removeProperty = (params) => {
+    useMutateRemoveProductProperty.mutate(params)
+  }
+
+  const removeOption = (params) => {
     useMutateRemoveProductPropertyOption.mutate(params)
   }
 
   const value: ProductPropertiesContextType = useMemo(
     () => ({
-      selectedProductProperty,
-      isModalOpen,
+      selectedProperty,
+      isPropertyModalOpen,
+      isPropertyEdit,
       isLoading,
-      form,
-      isOptionsModalOpen,
-      toggleModal,
-      openModal,
-      closeModal,
+      propertyForm,
+      isOptionModalOpen,
+      isOptionsEdit,
+      optionForm,
+      openPropertyModal,
+      closePropertyModal,
       submitProductPropertyForm,
-      removeProductProperty,
-      optionsForm,
+      removeProperty,
       openOptionsModal,
       closeOptionsModal,
       submitOptionsForm,
-      removeProductPropertyOption,
-      toggleOptionsModal,
+      removeOption,
     }),
-    [selectedProductProperty, isModalOpen, isLoading, openModal, closeModal, submitProductPropertyForm, removeProductProperty, isOptionsModalOpen, optionsForm, closeOptionsModal, submitOptionsForm, removeProductPropertyOption],
+    [selectedProperty, isPropertyModalOpen, isLoading, isOptionModalOpen, optionForm],
   )
 
   return <ProductPropertiesContext.Provider value={value}>{children}</ProductPropertiesContext.Provider>

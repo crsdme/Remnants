@@ -17,15 +17,15 @@ import {
 } from '@/api/hooks/'
 
 interface ProductPropertiesGroupsContextType {
-  selectedProductPropertyGroup: ProductPropertyGroup
+  selectedGroup: ProductPropertyGroup
   isModalOpen: boolean
   isLoading: boolean
   form: UseFormReturn
-  toggleModal: (productPropertyGroup?: ProductPropertyGroup) => void
+  isEdit: boolean
   openModal: (productPropertyGroup?: ProductPropertyGroup) => void
   closeModal: () => void
-  submitProductPropertyGroupForm: (params) => void
-  removeProductPropertyGroup: (params: { ids: string[] }) => void
+  submitGroupForm: (params) => void
+  removeGroup: (params: { ids: string[] }) => void
 }
 
 const ProductPropertiesGroupsContext = createContext<ProductPropertiesGroupsContextType | undefined>(undefined)
@@ -37,7 +37,8 @@ interface ProductPropertiesGroupsProviderProps {
 export function ProductPropertiesGroupsProvider({ children }: ProductPropertiesGroupsProviderProps) {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
-  const [selectedProductPropertyGroup, setSelectedProductPropertyGroup] = useState(null)
+  const [isEdit, setIsEdit] = useState(false)
+  const [selectedGroup, setSelectedGroup] = useState(null)
 
   const { t } = useTranslation()
 
@@ -62,22 +63,51 @@ export function ProductPropertiesGroupsProvider({ children }: ProductPropertiesG
     },
   })
 
+  const getGroupValues = (productPropertyGroup) => {
+    if (!productPropertyGroup) {
+      return {
+        names: {},
+        priority: 0,
+        productProperties: [],
+        active: true,
+      }
+    }
+    return {
+      names: { ...productPropertyGroup.names },
+      priority: productPropertyGroup.priority,
+      productProperties: productPropertyGroup.productProperties.map(productProperty => productProperty.id),
+      active: productPropertyGroup.active,
+    }
+  }
+
+  const closeModal = () => {
+    if (!isModalOpen)
+      return
+    setIsModalOpen(false)
+    setIsLoading(false)
+    setSelectedGroup(null)
+    form.reset()
+  }
+
+  const openModal = (group) => {
+    setIsModalOpen(true)
+    setIsEdit(!!group)
+    setSelectedGroup(group)
+    form.reset(getGroupValues(group))
+  }
+
   const queryClient = useQueryClient()
 
   const useMutateCreateProductPropertyGroup = useCreateProductPropertyGroup({
     options: {
       onSuccess: ({ data }) => {
-        setIsModalOpen(false)
-        setIsLoading(false)
-        setSelectedProductPropertyGroup(null)
+        closeModal()
         queryClient.invalidateQueries({ queryKey: ['product-properties-groups'] })
         toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description || ''}` })
       },
       onError: ({ response }) => {
         const error = response.data.error
-        setIsModalOpen(false)
-        setIsLoading(false)
-        setSelectedProductPropertyGroup(null)
+        closeModal()
         toast.error(t(`error.title.${error.code}`), { description: `${t(`error.description.${error.code}`)} ${error.description || ''}` })
       },
     },
@@ -86,17 +116,13 @@ export function ProductPropertiesGroupsProvider({ children }: ProductPropertiesG
   const useMutateEditProductPropertyGroup = useEditProductPropertyGroup({
     options: {
       onSuccess: ({ data }) => {
-        setIsModalOpen(false)
-        setIsLoading(false)
-        setSelectedProductPropertyGroup(null)
+        closeModal()
         queryClient.invalidateQueries({ queryKey: ['product-properties-groups'] })
         toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description || ''}` })
       },
       onError: ({ response }) => {
         const error = response.data.error
-        setIsModalOpen(false)
-        setIsLoading(false)
-        setSelectedProductPropertyGroup(null)
+        closeModal()
         toast.error(t(`error.title.${error.code}`), { description: `${t(`error.description.${error.code}`)} ${error.description || ''}` })
       },
     },
@@ -115,58 +141,30 @@ export function ProductPropertiesGroupsProvider({ children }: ProductPropertiesG
     },
   })
 
-  const openModal = (productPropertyGroup) => {
-    setIsModalOpen(true)
-    let productPropertyGroupValues = {}
-    if (productPropertyGroup) {
-      setSelectedProductPropertyGroup(productPropertyGroup)
-      productPropertyGroupValues = {
-        names: { ...productPropertyGroup.names },
-        priority: productPropertyGroup.priority,
-        productProperties: productPropertyGroup.productProperties.map(productProperty => productProperty.id),
-        active: productPropertyGroup.active,
-      }
-    }
-
-    form.reset(productPropertyGroupValues)
-  }
-
-  const closeModal = () => {
-    setIsModalOpen(false)
-    setIsLoading(false)
-    setSelectedProductPropertyGroup(null)
-    form.reset()
-  }
-
-  const toggleModal = product => (isModalOpen ? closeModal() : openModal(product))
-
-  const submitProductPropertyGroupForm = (params) => {
+  const submitGroupForm = (params) => {
     setIsLoading(true)
-    if (!selectedProductPropertyGroup) {
-      useMutateCreateProductPropertyGroup.mutate(params)
-    }
-    else {
-      useMutateEditProductPropertyGroup.mutate({ ...params, id: selectedProductPropertyGroup.id })
-    }
+    if (!selectedGroup)
+      return useMutateCreateProductPropertyGroup.mutate(params)
+    return useMutateEditProductPropertyGroup.mutate({ ...params, id: selectedGroup.id })
   }
 
-  const removeProductPropertyGroup = (params) => {
+  const removeGroup = (params) => {
     useMutateRemoveProductPropertyGroup.mutate(params)
   }
 
   const value: ProductPropertiesGroupsContextType = useMemo(
     () => ({
-      selectedProductPropertyGroup,
+      selectedGroup,
       isModalOpen,
       isLoading,
       form,
-      toggleModal,
+      isEdit,
       openModal,
       closeModal,
-      submitProductPropertyGroupForm,
-      removeProductPropertyGroup,
+      submitGroupForm,
+      removeGroup,
     }),
-    [selectedProductPropertyGroup, isModalOpen, isLoading, openModal, closeModal, submitProductPropertyGroupForm, removeProductPropertyGroup],
+    [selectedGroup, isModalOpen, isLoading, isEdit, form],
   )
 
   return <ProductPropertiesGroupsContext.Provider value={value}>{children}</ProductPropertiesGroupsContext.Provider>

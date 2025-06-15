@@ -57,7 +57,7 @@ function SortableFileItem({ file, onDelete }: SortableFileItemProps) {
       </div>
 
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium truncate">{file.name}</p>
+        <p className="text-sm w-[70%] font-medium truncate">{file.name}</p>
       </div>
 
       <Button

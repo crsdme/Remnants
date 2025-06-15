@@ -109,7 +109,7 @@ export function BarcodeForm() {
             </FormItem>
           )}
         />
-        <div className="flex gap-2">
+        <div className="flex justify-end gap-2">
           <Button
             type="button"
             variant="secondary"

@@ -19,6 +19,7 @@
   "table.active.false": "Неактивный",
   "table.yesno.true": "Да",
   "table.yesno.false": "Нет",
+  "table.print": "Печатать {{size}}",
 
   "button.cancel": "Отмена",
   "button.submit": "Сохранить",

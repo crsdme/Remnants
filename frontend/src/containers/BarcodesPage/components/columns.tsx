@@ -1,6 +1,7 @@
 import {
   ArrowDown,
   ArrowUp,
+  Barcode,
   ChevronDown,
   ChevronRight,
   ChevronsUpDown,
@@ -13,7 +14,7 @@ import { useTranslation } from 'react-i18next'
 
 import { TableActionDropdown } from '@/components'
 import { Badge, Button, Checkbox } from '@/components/ui'
-import { useBarcodeContext, useWarehouseContext } from '@/contexts'
+import { useBarcodeContext } from '@/contexts'
 import { formatDate } from '@/utils/helpers'
 
 const sortIcons = { asc: ArrowUp, desc: ArrowDown }
@@ -122,6 +123,18 @@ export function useColumns() {
               onClick: () => barcodeContext.openModal(item),
               label: t('table.edit'),
               icon: <Pencil className="h-4 w-4" />,
+            },
+            {
+              permission: 'barcode.print',
+              onClick: () => barcodeContext.printBarcode({ id: item.id, size: '30x20', language: i18n.language }),
+              label: t('table.print', { size: '30x20' }),
+              icon: <Barcode className="h-4 w-4" />,
+            },
+            {
+              permission: 'barcode.print',
+              onClick: () => barcodeContext.printBarcode({ id: item.id, size: '60x30', language: i18n.language }),
+              label: t('table.print', { size: '60x30' }),
+              icon: <Barcode className="h-4 w-4" />,
             },
             {
               permission: 'barcode.delete',

@@ -14,7 +14,7 @@ import { DataTableFilters } from './data-table-filters'
 
 export function DataTable() {
   const { t, i18n } = useTranslation()
-  const productPropertiesGroupsContext = useProductPropertiesGroupsContext()
+  const { removeGroup } = useProductPropertiesGroupsContext()
 
   const filtersInitialState = {
     names: '',
@@ -146,7 +146,7 @@ export function DataTable() {
   }, 50)
 
   const handleBulkRemove = () => {
-    productPropertiesGroupsContext.removeProductPropertyGroup({ ids: Object.keys(rowSelection) })
+    removeGroup({ ids: Object.keys(rowSelection) })
     setRowSelection({})
   }
 

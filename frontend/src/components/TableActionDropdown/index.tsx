@@ -31,7 +31,7 @@ export function TableActionDropdown(
         <DropdownMenuContent align="end">
 
           {actions?.map(action => (
-            <Fragment key={action.permission}>
+            <Fragment key={`${action.permission}-${action.label}`}>
               {(action.isDestructive) && <DropdownMenuSeparator />}
               <PermissionGate key={action.permission} permission={action.permission}>
                 <DropdownMenuItem onClick={action.onClick} className={cn('gap-2', action.isDestructive && 'text-destructive focus:text-destructive focus:bg-destructive/10')}>

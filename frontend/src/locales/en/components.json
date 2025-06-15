@@ -20,6 +20,10 @@
   "component.tableSelection.delete": "Delete",
   "component.tableSelection.duplicate": "Duplicate",
 
+  "component.asyncSelect.searchPlaceholder": "Search",
+  "component.asyncSelect.noResultsMessage": "No results found",
+  "component.asyncSelect.placeholder": "Select",
+
   "component.batchEdit.button": "Batch Edit",
   "component.batchEdit.title": "Batch Edit",
   "component.batchEdit.description": "Select parameters to edit in bulk",

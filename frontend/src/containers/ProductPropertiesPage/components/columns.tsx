@@ -21,11 +21,10 @@ const sortIcons = { asc: ArrowUp, desc: ArrowDown }
 
 export function useColumns() {
   const { t, i18n } = useTranslation()
-  const productPropertiesContext = useProductPropertiesContext()
+  const { isLoading, openPropertyModal, openOptionsModal, removeProperty } = useProductPropertiesContext()
 
   const columns = useMemo(() => {
     function sortHeader(column, label) {
-      const isLoading = productPropertiesContext.isLoading
       const Icon = sortIcons[column.getIsSorted() || undefined] || ChevronsUpDown
 
       return (
@@ -119,21 +118,21 @@ export function useColumns() {
             },
             {
               permission: 'product-properties.edit',
-              onClick: () => productPropertiesContext.openModal(item),
+              onClick: () => openPropertyModal(item),
               label: t('table.edit'),
               icon: <Pencil className="h-4 w-4" />,
             },
             ...((item.type === 'select' || item.type === 'multiSelect' || item.type === 'color')
               ? [{
                   permission: 'product-properties-options.create',
-                  onClick: () => productPropertiesContext.openOptionsModal({ option: undefined, property: item }),
+                  onClick: () => openOptionsModal(undefined, item),
                   label: t('table.addOption'),
                   icon: <SquarePlus className="h-4 w-4" />,
                 }]
               : []),
             {
               permission: 'product-properties.delete',
-              onClick: () => productPropertiesContext.removeProductProperty({ ids: [item.id] }),
+              onClick: () => removeProperty({ ids: [item.id] }),
               label: t('table.delete'),
               icon: <Trash className="h-4 w-4" />,
               isDestructive: true,
@@ -160,7 +159,7 @@ export function useColumns() {
           sortable: true,
         },
         header: ({ column }) => sortHeader(column, t('page.product-properties.table.names')),
-        accessorFn: row => row.names?.[i18n.language] || row.names?.en,
+        cell: ({ row }) => row.original.names?.[i18n.language],
       },
       {
         id: 'type',

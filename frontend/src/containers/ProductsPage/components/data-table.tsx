@@ -1,14 +1,15 @@
 import type { ColumnSort } from '@tanstack/react-table'
 import { flexRender, getCoreRowModel, getExpandedRowModel, useReactTable } from '@tanstack/react-table'
-import { Fragment, useMemo, useState } from 'react'
+import { Warehouse } from 'lucide-react'
+import { Fragment, useEffect, useMemo, useState } from 'react'
+
 import { useTranslation } from 'react-i18next'
-
-import { useRequestLanguages, useRequestProducts } from '@/api/hooks'
+import { useRequestLanguages, useRequestProducts, useRequestWarehouses } from '@/api/hooks'
 import { AdvancedFilters, AdvancedSorters, BatchEdit, ColumnVisibilityMenu, PermissionGate, TablePagination, TableSelectionDropdown } from '@/components'
-import { Separator, Skeleton, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Separator, Skeleton, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui'
 import { useProductContext } from '@/contexts/product/ProductContext'
-import { useDebounceCallback } from '@/utils/hooks'
 
+import { useDebounceCallback } from '@/utils/hooks'
 import { useColumns } from './columns'
 import { DataTableFilters } from './data-table-filters'
 
@@ -50,22 +51,14 @@ export function DataTable() {
   const requestLanguages = useRequestLanguages({ pagination: { full: true } })
   const languages = requestLanguages.data?.data?.languages || []
 
-  // const loadOptions = useCallback(async (inputValue: string) => {
-  //   const response = await getProducts({
-  //     pagination: { full: true },
-  //     filters: {
-  //       names: inputValue,
-  //       active: [true],
-  //       language: i18n.language,
-  //     },
-  //   })
+  const requestWarehouses = useRequestWarehouses({ filters: { active: [true], language: i18n.language }, pagination: { full: true } })
+  const warehouses = requestWarehouses.data?.data?.warehouses || []
 
-  //   const products = response?.data?.products || []
-  //   return products.map(product => ({
-  //     value: product.id,
-  //     label: product.names[i18n.language],
-  //   }))
-  // }, [i18n.language])
+  useEffect(() => {
+    if (!productContext.selectedWarehouse && warehouses.length > 0) {
+      productContext.setSelectedWarehouse(warehouses[0].id)
+    }
+  }, [warehouses])
 
   const columns = useColumns()
 
@@ -250,6 +243,22 @@ export function DataTable() {
           </PermissionGate>
           <Separator orientation="vertical" className="min-h-6 max-md:hidden" />
           <DataTableFilters filters={filters} setFilters={setFilters} />
+          <Select
+            value={productContext.selectedWarehouse}
+            onValueChange={productContext.setSelectedWarehouse}
+          >
+            <SelectTrigger className="w-[150px]">
+              <Warehouse className="h-4 w-4 text-gray-400" />
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {warehouses.map(warehouse => (
+                <SelectItem key={warehouse.id} value={warehouse.id}>
+                  {warehouse.names[i18n.language]}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
         <div className="flex gap-2">
           <TableSelectionDropdown

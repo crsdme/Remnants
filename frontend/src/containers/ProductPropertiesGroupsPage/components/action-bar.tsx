@@ -26,13 +26,13 @@ import { useProductPropertiesGroupsContext } from '@/contexts'
 
 export function ActionBar() {
   const { t, i18n } = useTranslation()
-  const productPropertiesGroupsContext = useProductPropertiesGroupsContext()
+  const { isLoading, isEdit, form, submitGroupForm, openModal, closeModal, isModalOpen } = useProductPropertiesGroupsContext()
 
   const requestLanguages = useRequestLanguages({ pagination: { full: true } })
   const languages = requestLanguages?.data?.data?.languages || []
 
   const onSubmit = (values) => {
-    productPropertiesGroupsContext.submitProductPropertyGroupForm(values)
+    submitGroupForm(values)
   }
 
   const loadProductPropertiesOptions = useCallback(async ({ query, selectedValue }) => {
@@ -47,8 +47,6 @@ export function ActionBar() {
     return response?.data?.productProperties || []
   }, [i18n.language])
 
-  const isLoading = productPropertiesGroupsContext.isLoading
-
   return (
     <div className="flex items-center justify-between flex-wrap gap-2">
       <div>
@@ -58,26 +56,26 @@ export function ActionBar() {
       <div className="flex items-center flex-wrap gap-2">
 
         <PermissionGate permission={['product-properties-groups.create']}>
-          <Sheet open={productPropertiesGroupsContext.isModalOpen} onOpenChange={() => !isLoading && productPropertiesGroupsContext.toggleModal()}>
+          <Sheet open={isModalOpen} onOpenChange={() => closeModal()}>
             <SheetTrigger asChild>
-              <Button onClick={() => productPropertiesGroupsContext.toggleModal()} disabled={isLoading}>
+              <Button onClick={() => openModal()} disabled={isLoading}>
                 <Plus />
                 {t('page.product-properties-groups.button.create')}
               </Button>
             </SheetTrigger>
             <SheetContent className="sm:max-w-xl w-full overflow-y-auto" side="right">
               <SheetHeader>
-                <SheetTitle>{t(`page.product-properties-groups.form.title.${productPropertiesGroupsContext.selectedProductPropertyGroup ? 'edit' : 'create'}`)}</SheetTitle>
+                <SheetTitle>{t(`page.product-properties-groups.form.title.${isEdit ? 'edit' : 'create'}`)}</SheetTitle>
                 <SheetDescription>
-                  {t(`page.product-properties-groups.form.description.${productPropertiesGroupsContext.selectedProductPropertyGroup ? 'edit' : 'create'}`)}
+                  {t(`page.product-properties-groups.form.description.${isEdit ? 'edit' : 'create'}`)}
                 </SheetDescription>
               </SheetHeader>
               <div className="w-full pb-4 px-4">
-                <Form {...productPropertiesGroupsContext.form}>
-                  <form className="w-full space-y-4" onSubmit={productPropertiesGroupsContext.form.handleSubmit(onSubmit)}>
+                <Form {...form}>
+                  <form className="w-full space-y-4" onSubmit={form.handleSubmit(onSubmit)}>
                     {languages.map(language => (
                       <FormField
-                        control={productPropertiesGroupsContext.form.control}
+                        control={form.control}
                         key={language.code}
                         name={`names.${language.code}`}
                         render={({ field }) => (
@@ -103,7 +101,7 @@ export function ActionBar() {
                       />
                     ))}
                     <FormField
-                      control={productPropertiesGroupsContext.form.control}
+                      control={form.control}
                       name="productProperties"
                       render={({ field }) => (
                         <FormItem>
@@ -128,7 +126,7 @@ export function ActionBar() {
                       )}
                     />
                     <FormField
-                      control={productPropertiesGroupsContext.form.control}
+                      control={form.control}
                       name="priority"
                       render={({ field }) => (
                         <FormItem>
@@ -148,7 +146,7 @@ export function ActionBar() {
                       )}
                     />
                     <FormField
-                      control={productPropertiesGroupsContext.form.control}
+                      control={form.control}
                       name="active"
                       render={({ field }) => (
                         <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
@@ -167,7 +165,7 @@ export function ActionBar() {
                       <Button
                         type="button"
                         variant="secondary"
-                        onClick={() => productPropertiesGroupsContext.toggleModal()}
+                        onClick={closeModal}
                         disabled={isLoading}
                       >
                         {t('button.cancel')}

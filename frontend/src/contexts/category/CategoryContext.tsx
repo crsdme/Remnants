@@ -73,19 +73,19 @@ export function CategoryProvider({ children }: CategoryProviderProps) {
 
   const queryClient = useQueryClient()
 
-  function getCategoryFormValues(category) {
+  const getCategoryFormValues = (category) => {
     if (!category) {
       return {
         names: {},
         priority: 0,
-        parent: null,
+        parent: '',
         active: true,
       }
     }
     return {
       names: { ...category.names },
       priority: category.priority,
-      parent: category.parent,
+      parent: category.parent || undefined,
       active: category.active,
     }
   }

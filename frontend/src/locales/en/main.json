@@ -19,6 +19,7 @@
   "table.active.false": "Inactive",
   "table.yesno.true": "Yes",
   "table.yesno.false": "No",
+  "table.print": "Print {{size}}",
 
   "button.cancel": "Cancel",
   "button.submit": "Submit",
