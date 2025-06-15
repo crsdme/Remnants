@@ -202,7 +202,7 @@ export function BatchEdit({
             value={item.value as string[]}
             onChange={(value) => {
               const currentItems = form.getValues('items')
-              currentItems[index].value = value as string[]
+              currentItems[index].value = value as string
               form.setValue('items', currentItems)
             }}
             getOptionValue={option => option.value}
