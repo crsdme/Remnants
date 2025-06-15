@@ -1,4 +1,3 @@
-import type { Request, Response } from 'express'
 import fs from 'node:fs'
 import path from 'node:path'
 import express from 'express'
@@ -10,7 +9,7 @@ const router = express.Router()
 
 const authenticateJWT = authMiddleware()
 
-router.get('/products/images/:filename', authenticateJWT, (req: Request, res: Response) => {
+router.get('/products/images/:filename', authenticateJWT, (req: any, res: any) => {
   const { filename } = req.params
   const width = Number.parseInt(req.query.width as string)
   const height = Number.parseInt(req.query.height as string)
