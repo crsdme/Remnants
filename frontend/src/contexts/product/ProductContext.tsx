@@ -326,10 +326,6 @@ export function ProductProvider({ children }: ProductProviderProps) {
       params.productProperties = Object.entries(params.productProperties).map(([id, value]) => ({ id, value }))
     }
 
-    if (params.unit) {
-      params.unit = params.unit[0]
-    }
-
     params.images = images.map(image => ({
       id: image.id,
       filename: image.filename,
@@ -446,11 +442,13 @@ function getFormPropertiesSchema(selectedGroup, productPropertiesGroups, t) {
 
             switch (prop.type) {
               case 'text':
+                base = z.string({ required_error: t('form.errors.required') })
+                break
               case 'select':
                 base = z.array(z.string({ required_error: t('form.errors.required') }))
                 break
               case 'color':
-                base = z.string({ required_error: t('form.errors.required') })
+                base = z.array(z.string({ required_error: t('form.errors.required') }))
                 break
               case 'number':
                 base = z.number({ required_error: t('form.errors.required') })
