@@ -23,20 +23,22 @@ const sortIcons = { asc: ArrowUp, desc: ArrowDown }
 
 export function useColumns() {
   const { t, i18n } = useTranslation()
-  const productContext = useProductContext()
+  const { isLoading, selectedWarehouse, openModal, duplicateProducts, removeProduct } = useProductContext()
   const { permissions } = useAuthContext()
 
-  const requestProductProperties = useRequestProductProperties({ filters: { active: [true], language: i18n.language, showInTable: true }, pagination: { full: true } })
+  const requestProductProperties = useRequestProductProperties(
+    { filters: { active: [true], language: i18n.language, showInTable: true }, pagination: { full: true } },
+  )
   const productProperties = requestProductProperties.data?.data.productProperties || []
 
   const columns = useMemo(() => {
     function sortHeader(column, label) {
-      const isLoading = productContext.isLoading
       const Icon = sortIcons[column.getIsSorted() || undefined] || ChevronsUpDown
 
       return (
         <Button
           disabled={isLoading}
+          loading={isLoading}
           variant="ghost"
           onClick={() => column.toggleSorting()}
           className="my-2 flex items-center gap-2"
@@ -126,19 +128,19 @@ export function useColumns() {
             },
             {
               permission: 'product.edit',
-              onClick: () => productContext.toggleModal(item),
+              onClick: () => openModal(item),
               label: t('table.edit'),
               icon: <Pencil className="h-4 w-4" />,
             },
             {
               permission: 'product.duplicate',
-              onClick: () => productContext.duplicateProducts({ ids: [item.id] }),
+              onClick: () => duplicateProducts({ ids: [item.id] }),
               label: t('table.duplicate'),
               icon: <CopyPlus className="h-4 w-4" />,
             },
             {
               permission: 'product.delete',
-              onClick: () => productContext.removeProduct({ ids: [item.id] }),
+              onClick: () => removeProduct({ ids: [item.id] }),
               label: t('table.delete'),
               icon: <Trash className="h-4 w-4" />,
               isDestructive: true,
@@ -279,17 +281,14 @@ export function useColumns() {
         size: 150,
         meta: {
           title: t('page.products.table.quantity'),
-          batchEdit: true,
-          batchEditType: 'number',
           filterable: true,
           filterType: 'number',
           sortable: true,
         },
         header: ({ column }) => sortHeader(column, t('page.products.table.quantity')),
         cell: ({ row }) => {
-          const quantity = row.original.quantity.find(q => q.warehouse === '622b4c21-4937-4afe-b9df-d63b250c4555')
+          const quantity = row.original.quantity.find(q => q.warehouse === selectedWarehouse)
           const unit = row.original.unit.symbols[i18n.language]
-
           return quantity ? `${quantity.count} ${unit}` : `0 ${unit}`
         },
       },
@@ -379,6 +378,6 @@ export function useColumns() {
       },
       actionColumn(),
     ]
-  }, [i18n.language, productProperties])
+  }, [i18n.language, productProperties, selectedWarehouse])
   return columns
 }

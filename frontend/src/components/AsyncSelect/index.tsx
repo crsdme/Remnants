@@ -1,9 +1,9 @@
 /* eslint-disable react-hooks-extra/no-direct-set-state-in-use-effect */
-import { Check, ChevronsUpDown, Loader2 } from 'lucide-react'
+import { Check, ChevronDown, Loader2 } from 'lucide-react'
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import { Button, Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList, Popover, PopoverContent, PopoverTrigger } from '@/components/ui'
+import { Button, Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList, FormControl, FormMessage, Popover, PopoverContent, PopoverTrigger } from '@/components/ui'
 import { useDebounceValue } from '@/utils/hooks/useDebounceValue/useDebounceValue'
 import { cn } from '@/utils/lib/utils'
 
@@ -56,6 +56,8 @@ export interface AsyncSelectProps<T> {
   multi?: boolean
   /** Whether the select is clearable */
   clearable?: boolean
+  /** Field to bind to */
+  field?: any
 }
 
 export function AsyncSelect<T>({
@@ -78,6 +80,7 @@ export function AsyncSelect<T>({
   noResultsMessage,
   multi = false,
   clearable = true,
+  field,
 }: AsyncSelectProps<T>) {
   const [mounted, setMounted] = useState(false)
   const [open, setOpen] = useState(false)
@@ -254,24 +257,28 @@ export function AsyncSelect<T>({
     <>
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
-          <Button
-            variant="outline"
-            role="combobox"
-            aria-expanded={open}
-            className={cn(
-              'justify-between min-h-9',
-              disabled && 'opacity-50 cursor-not-allowed',
-              (multi && selectedOptions.length > 0) && 'h-auto p-1 has-[>svg]:pl-1',
-              triggerClassName,
-            )}
-            style={{ width }}
-            disabled={disabled}
-            ref={triggerRef}
-          >
-            { selectedOptionRender() }
-            <ChevronsUpDown className="opacity-50" size={10} />
-          </Button>
+          <FormControl>
+            <Button
+              variant="outline"
+              role="combobox"
+              aria-expanded={open}
+              className={cn(
+                'justify-between min-h-9',
+                disabled && 'opacity-50 cursor-not-allowed',
+                (multi && selectedOptions.length > 0) && 'h-auto p-1 has-[>svg]:pl-1',
+                triggerClassName,
+              )}
+              style={{ width }}
+              disabled={disabled}
+              {...field}
+              ref={triggerRef}
+            >
+              { selectedOptionRender() }
+              <ChevronDown className="opacity-50" size={10} />
+            </Button>
+          </FormControl>
         </PopoverTrigger>
+        <FormMessage />
         <PopoverContent style={{ width: popoverWidth }} className={cn('p-0', className)}>
           <Command shouldFilter={false}>
             <div className="relative w-full">

@@ -20,11 +20,10 @@ const sortIcons = { asc: ArrowUp, desc: ArrowDown }
 
 export function useColumns() {
   const { t, i18n } = useTranslation()
-  const productPropertiesGroupsContext = useProductPropertiesGroupsContext()
+  const { isLoading, openModal, removeGroup } = useProductPropertiesGroupsContext()
 
   const columns = useMemo(() => {
     function sortHeader(column, label) {
-      const isLoading = productPropertiesGroupsContext.isLoading
       const Icon = sortIcons[column.getIsSorted() || undefined] || ChevronsUpDown
 
       return (
@@ -119,13 +118,13 @@ export function useColumns() {
             },
             {
               permission: 'product-properties-groups.edit',
-              onClick: () => productPropertiesGroupsContext.openModal(item),
+              onClick: () => openModal(item),
               label: t('table.edit'),
               icon: <Pencil className="h-4 w-4" />,
             },
             {
               permission: 'product-properties-groups.delete',
-              onClick: () => productPropertiesGroupsContext.removeProductPropertyGroup({ ids: [item.id] }),
+              onClick: () => removeGroup({ ids: [item.id] }),
               label: t('table.delete'),
               icon: <Trash className="h-4 w-4" />,
               isDestructive: true,

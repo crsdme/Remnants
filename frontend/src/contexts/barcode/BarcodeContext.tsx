@@ -29,6 +29,7 @@ interface BarcodeContextType {
   submitBarcodeForm: (params) => void
   removeBarcodes: (params: { ids: string[] }) => void
   getBarcode: (code: string) => Promise<any>
+  printBarcode: (params: { id: string, size: string, language: string }) => void
 }
 
 const BarcodeContext = createContext<BarcodeContextType | undefined>(undefined)
@@ -177,6 +178,11 @@ export function BarcodeProvider({ children }: BarcodeProviderProps) {
     return useMutateRequestBarcodes.mutateAsync({ pagination: { current: 1, pageSize: 1 }, filters: { code }, sorters: { code: 'asc' } })
   }
 
+  const printBarcode = (params) => {
+    const url = `http://127.0.0.1:3001/api/barcodes/print?id=${params.id}&size=${params.size}&language=${params.language}`
+    window.open(url, '_blank')
+  }
+
   const value: BarcodeContextType = useMemo(
     () => ({
       selectedBarcode,
@@ -191,6 +197,7 @@ export function BarcodeProvider({ children }: BarcodeProviderProps) {
       submitBarcodeForm,
       removeBarcodes,
       getBarcode,
+      printBarcode,
     }),
     [selectedBarcode, isModalOpen, isLoading, isEdit, form, selectedProducts],
   )

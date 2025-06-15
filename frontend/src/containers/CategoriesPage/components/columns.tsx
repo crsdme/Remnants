@@ -177,7 +177,7 @@ export function useColumns() {
           sortable: true,
         },
         header: ({ column }) => sortHeader(column, t('page.categories.table.names')),
-        accessorFn: row => row.names?.[i18n.language] || row.names?.en,
+        cell: ({ row }) => row.original.names?.[i18n.language],
       },
       {
         id: 'priority',

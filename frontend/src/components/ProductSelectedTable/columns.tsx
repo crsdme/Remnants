@@ -127,8 +127,17 @@ export function useColumns({ removeProduct }: { removeProduct: (product: any) =>
                 >
                   <Minus className="h-4 w-4" />
                 </Button>
-                <Input type="number" value={item.selectedQuantity} className="w-15" />
-                {item.unit.symbols[i18n.language]}
+                <div className="relative min-w-5">
+                  <Input
+                    placeholder={t('component.product-select-table.quantity.placeholder')}
+                    value={item.selectedQuantity}
+                    className="pr-10 w-20"
+                    onChange={event => row.original.selectedQuantity = Number.parseInt(event.target.value)}
+                  />
+                  <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                    <p>{item.unit.symbols[i18n.language]}</p>
+                  </div>
+                </div>
                 <Button
                   variant="outline"
                   size="icon"

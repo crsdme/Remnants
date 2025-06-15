@@ -160,7 +160,7 @@ export function ProductTable({ addProduct }: { addProduct: (product: any) => voi
           <ColumnVisibilityMenu table={table} tableId="select-products-component" />
         </div>
       </div>
-      <div className="border rounded-sm overflow-y-auto max-h-[300px] scrollbar-hide">
+      <div className="border rounded-sm max-w-[100%] overflow-auto max-h-[300px] scrollbar-hide">
         <Table>
           <TableHeader>{renderTableHeader()}</TableHeader>
           <TableBody>

@@ -6,7 +6,6 @@ import * as React from 'react'
 
 import {
   Controller,
-
   FormProvider,
   useFormContext,
   useFormState,
@@ -74,7 +73,7 @@ function FormItem({ className, ...props }: React.ComponentProps<'div'>) {
   return (
     // eslint-disable-next-line react/no-unstable-context-value
     <FormItemContext value={{ id }}>
-      <div data-slot="form-item" className={cn('grid gap-2', className)} {...props} />
+      <div data-slot="form-item" className={cn('relative grid gap-2 pb-5', className)} {...props} />
     </FormItemContext>
   )
 }
@@ -124,15 +123,20 @@ function FormMessage({ className, ...props }: React.ComponentProps<'p'>) {
   const { error, formMessageId } = useFormField()
   const body = error ? String(error?.message ?? '') : props.children
 
-  if (!body) {
-    return null
-  }
+  // if (!body) {
+  //   return null
+  // }
 
   return (
     <p
       data-slot="form-message"
       id={formMessageId}
-      className={cn('text-[0.8rem] font-medium text-destructive', className)}
+      className={cn(
+        'absolute left-0 bottom-0 text-[0.75rem] font-medium text-destructive transition-opacity duration-200',
+        !body && 'opacity-0',
+        className,
+      )}
+      // className={cn('text-[0.8rem] font-medium text-destructive', className)}
       {...props}
     >
       {body}

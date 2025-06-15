@@ -60,7 +60,7 @@ export function DataTable() {
     getExpandedRowModel: getExpandedRowModel(),
     onExpandedChange: setExpanded,
     // getSubRows: row => row.options,
-    getRowId: row => row.id,
+    // getRowId: row => row.id,
     onSortingChange: setSorting,
     manualSorting: true,
     enableSortingRemoval: true,
@@ -124,11 +124,12 @@ export function DataTable() {
       </TableRow>
       {row.getIsExpanded() && row.original.options?.length > 0 && (
         <SubRowOptions
+          property={row.original}
           optionIds={row.original.options}
           language={i18n.language}
           columnsLength={columns.length}
           editOption={productPropertiesContext.openOptionsModal}
-          removeOption={productPropertiesContext.removeProductPropertyOption}
+          removeOption={productPropertiesContext.removeOption}
         />
       )}
     </Fragment>
@@ -158,7 +159,7 @@ export function DataTable() {
   }, 50)
 
   const handleBulkRemove = () => {
-    productPropertiesContext.removeProductProperty({ ids: Object.keys(rowSelection) })
+    productPropertiesContext.removeProperty({ ids: Object.keys(rowSelection) })
     setRowSelection({})
   }
 
@@ -229,7 +230,7 @@ export function DataTable() {
   )
 }
 
-function SubRowOptions({ optionIds, language, columnsLength, editOption, removeOption }) {
+function SubRowOptions({ property, optionIds, language, columnsLength, editOption, removeOption }) {
   const enabled = !!optionIds.length
 
   const { data, isLoading, isFetching, error } = useRequestProductPropertiesOptions(
@@ -276,7 +277,7 @@ function SubRowOptions({ optionIds, language, columnsLength, editOption, removeO
               <Button
                 variant="ghost"
                 size="icon"
-                onClick={() => editOption({ option })}
+                onClick={() => editOption(option, property)}
                 className="h-4 w-4 ml-1"
               >
                 <Pencil />

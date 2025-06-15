@@ -31,7 +31,7 @@ export function ActionBar() {
                 {t('page.barcodes.button.create')}
               </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-11/12 w-full overflow-y-auto max-w-11/12 max-h-[95vh]">
+            <DialogContent className="flex flex-col min-w-[80vw] max-w-[80vw] max-h-[95vh] overflow-y-auto sm:max-w-[95vw] sm:min-w-[95vw]">
               <DialogHeader>
                 <DialogTitle>
                   {t(`page.barcodes.form.title.${isEdit ? 'edit' : 'create'}`)}
