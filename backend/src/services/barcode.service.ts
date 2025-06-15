@@ -400,7 +400,7 @@ export async function print(payload: BarcodeTypes.printBarcodeParams): Promise<B
 
   const doc = new PDFDocument({ autoFirstPage: false })
 
-  doc.registerFont('Manrope', path.resolve(__dirname, '../../fonts/Manrope-Regular.ttf'))
+  doc.registerFont('Manrope', path.resolve(__dirname, '../utils/fonts/Manrope-Regular.ttf'))
   doc.font('Manrope')
   doc.fontSize(18)
   doc.addPage({
@@ -453,7 +453,7 @@ async function print60x30(payload: { barcode: any, size: string, language: strin
 
   const doc = new PDFDocument({ autoFirstPage: false })
 
-  doc.registerFont('Manrope', path.resolve(__dirname, '../../fonts/Manrope-Regular.ttf'))
+  doc.registerFont('Manrope', path.resolve(__dirname, '../utils/fonts/Manrope-Regular.ttf'))
   doc.font('Manrope')
   doc.fontSize(20)
   doc.addPage({

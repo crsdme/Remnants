@@ -1,53 +1,27 @@
+version: '3.9'
+
 services:
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    command: "true" # ❗ Только билдим, не запускаем
+    volumes:
+      - ./frontend/build:/app/build
+    env_file:
+      - ./frontend/.env
 
   backend:
     build:
       context: ./backend
-      dockerfile: Dockerfile.dev
-    restart: always
+      dockerfile: Dockerfile
     container_name: backend
+    restart: unless-stopped
+    ports:
+      - "3011:3001"
     volumes:
-      - ./backend/:/usr/src/app/
+      - ./backend/dist:/app/dist
     env_file:
       - ./backend/.env
-    environment:
-      MONGODB_URI: mongodb://@/RockCRMTabakka?directConnection=true
-      CHOKIDAR_USEPOLLING: true
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "3"
-    networks:
-      - network
-    ports:
-      - 3011:3001
-
-  frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile.dev
-    restart: always
-    container_name: frontend
-    volumes:
-      - ./frontend/src:/usr/src/app/src
-      - ./frontend/build:/usr/src/app/build
-    env_file:
-      - ./frontend/.env
-    environment:  
-      CHOKIDAR_USEPOLLING: true
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "3"
     depends_on:
-      - backend
-    networks:
-      - network
-    ports:
-      - 3010:3000
-
-  networks:
-    network:
-      driver: bridge
+      - frontend

@@ -8,9 +8,11 @@
     "strict": true,
     "outDir": "./dist",
     "esModuleInterop": true,
+    // "moduleResolution": "node",
+    // "resolveJsonModule": true,
     "forceConsistentCasingInFileNames": true,
     "skipLibCheck": true
   },
   "include": ["src/**/*"],
-  "exclude": ["node_modules"]
+  "exclude": ["node_modules", "dist"]
 }
