@@ -1,0 +1,19 @@
+{
+  "scripts": {
+    "prepare": "husky install"
+  },
+  "lint-staged": {
+    "frontend/*.{js,ts,tsx,jsx}": [
+      "npx eslint frontend --config frontend/eslint.config.js --fix"
+    ],
+    "backend/*.{js,ts}": [
+      "npx eslint backend --config backend/eslint.config.js --fix"
+    ]
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^19.8.0",
+    "@commitlint/config-conventional": "^19.8.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^15.5.1"
+  }
+}

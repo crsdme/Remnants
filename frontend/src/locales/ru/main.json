@@ -1,0 +1,83 @@
+{
+  "socketError": "Ошибка соединения с сервером",
+  "global.button.reset": "Сбросить",
+
+  "language.en": "Английский",
+  "language.ru": "Русский",
+
+  "table.createdAt": "Дата создания",
+  "table.updatedAt": "Дата обновления",
+  "table.copy": "Копировать ID",
+  "table.edit": "Редактировать",
+  "table.delete": "Удалить",
+  "table.duplicate": "Дублировать",
+  "table.test": "Просмотр деталей",
+  "table.noResults": "Результаты не найдены",
+  "table.seq": "#",
+  "table.addOption": "Добавить опцию",
+  "table.active.true": "Активный",
+  "table.active.false": "Неактивный",
+  "table.yesno.true": "Да",
+  "table.yesno.false": "Нет",
+
+  "button.cancel": "Отмена",
+  "button.submit": "Сохранить",
+  "button.import": "Импортировать",
+  "button.back": "Назад",
+  "button.generate": "Сгенерировать",
+
+  "form.errors.required": "Обязательное поле",
+  "form.errors.min_length": "Минимальная длина {{count}} символов",
+  "form.errors.max_length": "Максимальная длина {{count}} символов",
+
+  "permission.category.create": "Создать категорию",
+  "permission.category.read": "Прочитать категорию",
+  "permission.category.update": "Обновить категорию",
+  "permission.category.delete": "Удалить категорию",
+  "permission.category.import": "Импортировать категорию",
+  "permission.category.export": "Экспортировать категорию",
+
+  "permission.product.create": "Создать продукт",
+  "permission.product.read": "Прочитать продукт",
+  "permission.product.update": "Обновить продукт",
+  "permission.product.delete": "Удалить продукт",
+  "permission.product.import": "Импортировать продукт",
+  "permission.product.export": "Экспортировать продукт",
+
+  "permission.user.create": "Создать пользователя",
+  "permission.user.read": "Прочитать пользователя",
+  "permission.user.update": "Обновить пользователя",
+  "permission.user.delete": "Удалить пользователя",
+  "permission.user.import": "Импортировать пользователя",
+  "permission.user.export": "Экспортировать пользователя",
+
+  "permission.unit.create": "Создать единицу измерения",
+  "permission.unit.read": "Прочитать единицу измерения",
+  "permission.unit.update": "Обновить единицу измерения",
+  "permission.unit.delete": "Удалить единицу измерения",
+  "permission.unit.import": "Импортировать единицу измерения",
+  "permission.unit.export": "Экспортировать единицу измерения",
+
+  "permission.userRole.create": "Создать роль пользователя",
+  "permission.userRole.read": "Прочитать роль пользователя",
+  "permission.userRole.update": "Обновить роль пользователя",
+  "permission.userRole.delete": "Удалить роль пользователя",
+  "permission.userRole.import": "Импортировать роль пользователя",
+  "permission.userRole.export": "Экспортировать роль пользователя",
+
+  "permission.language.create": "Создать язык",
+  "permission.language.read": "Прочитать язык",
+  "permission.language.update": "Обновить язык",
+  "permission.language.delete": "Удалить язык",
+  "permission.language.import": "Импортировать язык",
+  "permission.language.export": "Экспортировать язык",
+
+  "permission.currency.create": "Создать валюту",
+  "permission.currency.read": "Прочитать валюту",
+  "permission.currency.update": "Обновить валюту",
+  "permission.currency.delete": "Удалить валюту",
+  "permission.currency.import": "Импортировать валюту",
+  "permission.currency.export": "Экспортировать валюту",
+
+  "permission.other.admin": "Администратор"
+}

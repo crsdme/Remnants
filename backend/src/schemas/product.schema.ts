@@ -1,0 +1,120 @@
+import { extendZodWithOpenApi } from '@asteasolutions/zod-to-openapi'
+import { z } from 'zod'
+import { dateRangeSchema, idSchema, languageStringSchema, numberFromStringSchema, paginationSchema, sorterParamsSchema } from './common'
+
+extendZodWithOpenApi(z)
+
+function hasIdsOrFilters(data: {
+  ids?: unknown
+  filters?: unknown
+}) {
+  return !!data.ids || !!data.filters
+}
+
+export const getProductSchema = z.object({
+  pagination: paginationSchema.optional(),
+  filters: z.object({
+    names: z.string().optional(),
+    language: z.string(),
+    price: numberFromStringSchema.optional(),
+    purchasePrice: numberFromStringSchema.optional(),
+    currency: z.string().optional(),
+    purchaseCurrency: z.string().optional(),
+    productPropertiesGroup: z.string().optional(),
+    productProperties: z.any().optional(),
+    unit: z.string().optional(),
+    categories: z.array(idSchema).optional(),
+    createdAt: dateRangeSchema.optional(),
+    updatedAt: dateRangeSchema.optional(),
+  }).optional().default({ language: 'en' }),
+  sorters: z.object({
+    names: sorterParamsSchema.optional(),
+    price: sorterParamsSchema.optional(),
+    purchasePrice: sorterParamsSchema.optional(),
+    currency: sorterParamsSchema.optional(),
+    purchaseCurrency: sorterParamsSchema.optional(),
+    productPropertiesGroup: sorterParamsSchema.optional(),
+    productProperties: sorterParamsSchema.optional(),
+    updatedAt: sorterParamsSchema.optional(),
+    createdAt: sorterParamsSchema.optional(),
+  }).optional().default({}),
+})
+
+export const createProductSchema = z.object({
+  names: languageStringSchema,
+  price: numberFromStringSchema,
+  purchasePrice: numberFromStringSchema,
+  currency: z.string(),
+  purchaseCurrency: z.string(),
+  productPropertiesGroup: z.string(),
+  productProperties: z.array(z.object({
+    id: z.string(),
+    value: z.any(),
+  })),
+  unit: idSchema,
+  categories: z.array(idSchema),
+  images: z.any().optional(),
+  uploadedImages: z.any().optional(),
+  uploadedImagesIds: z.any().optional(),
+})
+
+export const editProductSchema = z.object({
+  id: idSchema,
+  names: languageStringSchema,
+  price: numberFromStringSchema,
+  purchasePrice: numberFromStringSchema,
+  currency: z.string(),
+  purchaseCurrency: z.string(),
+  productPropertiesGroup: z.string(),
+  productProperties: z.array(z.object({
+    id: z.string(),
+    value: z.any(),
+  })),
+  unit: idSchema,
+  categories: z.array(idSchema),
+  images: z.any().optional(),
+  uploadedImages: z.any().optional(),
+  uploadedImagesIds: z.any().optional(),
+})
+
+export const removeProductSchema = z.object({
+  ids: z.array(idSchema),
+})
+
+export const duplicateProductSchema = z.object({
+  ids: z.array(idSchema),
+})
+
+export const batchProductSchema = z.object({
+  ids: z.array(idSchema).optional(),
+  filters: z.object({
+    names: z.string().optional(),
+    language: z.string(),
+    price: numberFromStringSchema.optional(),
+    purchasePrice: numberFromStringSchema.optional(),
+    currency: z.string().optional(),
+    purchaseCurrency: z.string().optional(),
+    productPropertiesGroup: z.string().optional(),
+    productProperties: z.any().optional(),
+    unit: z.string().optional(),
+    categories: z.array(idSchema).optional(),
+    createdAt: dateRangeSchema.optional(),
+    updatedAt: dateRangeSchema.optional(),
+  }).optional(),
+  params: z.array(
+    z.object({
+      column: z.string(),
+      value: z.any(),
+    }),
+  ),
+}).refine(hasIdsOrFilters, {
+  message: 'Either ids or filters are required.',
+})
+
+export const importProductsSchema = z.object({
+  file: z.instanceof(File),
+})
+
+export const exportProductsSchema = z.object({
+  ids: z.array(idSchema).optional(),
+})

@@ -1,0 +1,43 @@
+{
+  "title.page.login": "Login - Remnant",
+  "description.page.login": "Login to Remnant application",
+
+  "title.page.currencies": "Currencies - Remnant",
+  "description.page.currencies": "Manage currencies in Remnant application",
+
+  "title.page.units": "Units - Remnant",
+  "description.page.units": "Manage units in Remnant application",
+
+  "title.page.users": "Users - Remnant",
+  "description.page.users": "Manage users in Remnant application",
+
+  "title.page.languages": "Languages - Remnant",
+  "description.page.languages": "Manage languages in Remnant application",
+
+  "title.page.categories": "Categories - Remnant",
+  "description.page.categories": "Manage categories in Remnant application",
+
+  "title.page.userRoles": "User roles - Remnant",
+  "description.page.userRoles": "Manage user roles in Remnant application",
+
+  "title.page.error.403": "Forbidden - Remnant",
+  "description.page.error.403": "You are not authorized to access this page",
+
+  "title.page.error.404": "Not Found - Remnant",
+  "description.page.error.404": "The page you are looking for does not exist",
+
+  "title.page.products": "Products - Remnant",
+  "description.page.products": "Manage products in Remnant application",
+
+  "title.page.product-properties": "Product properties - Remnant",
+  "description.page.product-properties": "Manage product properties in Remnant",
+
+  "title.page.product-properties-groups": "Product properties groups - Remnant",
+  "description.page.product-properties-groups": "Manage product properties groups in Remnant",
+
+  "title.page.warehouses": "Warehouses - Remnant",
+  "description.page.warehouses": "Manage warehouses in Remnant",
+
+  "title.page.barcodes": "Barcodes - Remnant",
+  "description.page.barcodes": "Manage barcodes in Remnant"
+}

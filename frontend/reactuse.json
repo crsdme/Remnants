@@ -1,0 +1,7 @@
+{
+  "ts": true,
+  "aliases": {
+    "hooks": "@/utils/hooks",
+    "utils": "@/utils/lib"
+  }
+}

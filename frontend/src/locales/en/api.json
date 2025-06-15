@@ -1,0 +1,295 @@
+{
+  "response.title.LANGUAGES_FETCHED": "Languages fetched",
+  "response.description.LANGUAGES_FETCHED": "Languages list successfully fetched",
+
+  "response.title.LANGUAGE_CREATED": "Language created",
+  "response.description.LANGUAGE_CREATED": "New language has been created",
+
+  "response.title.LANGUAGE_EDITED": "Language edited",
+  "response.description.LANGUAGE_EDITED": "Language has been updated",
+
+  "response.title.LANGUAGES_REMOVED": "Languages removed",
+  "response.description.LANGUAGES_REMOVED": "Selected languages have been deleted",
+
+  "response.title.LANGUAGES_BATCH_EDITED": "Languages edited",
+  "response.description.LANGUAGES_BATCH_EDITED": "Batch language update completed",
+
+  "response.title.LANGUAGES_IMPORTED": "Languages imported",
+  "response.description.LANGUAGES_IMPORTED": "Languages have been imported successfully",
+
+  "response.title.LANGUAGES_DUPLICATED": "Languages duplicated",
+  "response.description.LANGUAGES_DUPLICATED": "Languages have been duplicated",
+
+  "response.title.CURRENCIES_FETCHED": "Currencies fetched",
+  "response.description.CURRENCIES_FETCHED": "Currency list successfully fetched",
+
+  "response.title.CURRENCY_CREATED": "Currency created",
+  "response.description.CURRENCY_CREATED": "New currency has been created",
+
+  "response.title.CURRENCY_EDITED": "Currency edited",
+  "response.description.CURRENCY_EDITED": "Currency has been updated",
+
+  "response.title.CURRENCIES_REMOVED": "Currencies removed",
+  "response.description.CURRENCIES_REMOVED": "Selected currencies have been deleted",
+
+  "response.title.CURRENCIES_BATCH_EDITED": "Currencies edited",
+  "response.description.CURRENCIES_BATCH_EDITED": "Batch currency update completed",
+
+  "response.title.CURRENCIES_IMPORTED": "Currencies imported",
+  "response.description.CURRENCIES_IMPORTED": "Currencies have been imported successfully",
+
+  "response.title.CURRENCIES_DUPLICATED": "Currencies duplicated",
+  "response.description.CURRENCIES_DUPLICATED": "Currencies have been duplicated",
+
+  "response.title.UNITS_FETCHED": "Units fetched",
+  "response.description.UNITS_FETCHED": "Units list successfully fetched",
+
+  "response.title.UNIT_CREATED": "Unit created",
+  "response.description.UNIT_CREATED": "New unit has been created",
+
+  "response.title.UNIT_EDITED": "Unit edited",
+  "response.description.UNIT_EDITED": "Unit has been updated",
+
+  "response.title.UNITS_REMOVED": "Units removed",
+  "response.description.UNITS_REMOVED": "Selected units have been deleted",
+
+  "response.title.UNITS_BATCH_EDITED": "Units edited",
+  "response.description.UNITS_BATCH_EDITED": "Batch unit update completed",
+
+  "response.title.UNITS_IMPORTED": "Units imported",
+  "response.description.UNITS_IMPORTED": "Units have been imported successfully",
+
+  "response.title.UNITS_DUPLICATED": "Units duplicated",
+  "response.description.UNITS_DUPLICATED": "Units have been duplicated",
+
+  "response.title.USERS_FETCHED": "Users fetched",
+  "response.description.USERS_FETCHED": "Users list successfully fetched",
+
+  "response.title.USER_CREATED": "User created",
+  "response.description.USER_CREATED": "New user has been created",
+
+  "response.title.USER_EDITED": "User edited",
+  "response.description.USER_EDITED": "User has been updated",
+
+  "response.title.USERS_REMOVED": "Users removed",
+  "response.description.USERS_REMOVED": "Selected users have been deleted",
+
+  "response.title.USERS_IMPORTED": "Users imported",
+  "response.description.USERS_IMPORTED": "Users have been imported successfully",
+
+  "response.title.USERS_DUPLICATED": "Users duplicated",
+  "response.description.USERS_DUPLICATED": "Users have been duplicated",
+
+  "error.title.NO_FILE_UPLOADED": "No file uploaded",
+  "error.description.NO_FILE_UPLOADED": "Please upload a valid file",
+
+  "error.title.USER_NOT_FOUND": "User not found",
+  "error.description.USER_NOT_FOUND": "User with this ID does not exist",
+
+  "error.title.INVALID_PASSWORD": "Invalid password",
+  "error.description.INVALID_PASSWORD": "The provided password is incorrect",
+
+  "error.title.CURRENCY_NOT_EDITED": "Currency not edited",
+  "error.description.CURRENCY_NOT_EDITED": "Unable to edit currency",
+
+  "error.title.CURRENCIES_NOT_REMOVED": "Currencies not removed",
+  "error.description.CURRENCIES_NOT_REMOVED": "Unable to delete selected currencies",
+
+  "error.title.CURRENCIES_NOT_BATCH_EDITED": "Batch edit failed",
+  "error.description.CURRENCIES_NOT_BATCH_EDITED": "Unable to batch edit currencies",
+
+  "error.title.LANGUAGE_NOT_EDITED": "Language not edited",
+  "error.description.LANGUAGE_NOT_EDITED": "Unable to edit language",
+
+  "error.title.LANGUAGE_NOT_REMOVED": "Language not removed",
+  "error.description.LANGUAGE_NOT_REMOVED": "Unable to remove selected language(s)",
+
+  "error.title.LANGUAGE_NOT_BATCH_EDITED": "Batch edit failed",
+  "error.description.LANGUAGE_NOT_BATCH_EDITED": "Unable to batch edit languages",
+
+  "error.title.UNIT_NOT_EDITED": "Unit not edited",
+  "error.description.UNIT_NOT_EDITED": "Unable to edit unit",
+
+  "error.title.UNITS_NOT_REMOVED": "Units not removed",
+  "error.description.UNITS_NOT_REMOVED": "Unable to remove selected units",
+
+  "error.title.UNITS_NOT_BATCH_EDITED": "Batch edit failed",
+  "error.description.UNITS_NOT_BATCH_EDITED": "Unable to batch edit units",
+
+  "error.title.USER_ALREADY_EXISTS": "User already exists",
+  "error.description.USER_ALREADY_EXISTS": "A user with this login already exists",
+
+  "error.title.USER_NOT_CREATED": "User not created",
+  "error.description.USER_NOT_CREATED": "Unable to create new user",
+
+  "error.title.USER_NOT_EDITED": "User not edited",
+  "error.description.USER_NOT_EDITED": "Unable to edit user",
+
+  "error.title.USERS_NOT_REMOVED": "Users not removed",
+  "error.description.USERS_NOT_REMOVED": "Unable to remove selected users",
+
+  "error.title.SOCKET_IO_NOT_INITIALIZED": "Socket not initialized",
+  "error.description.SOCKET_IO_NOT_INITIALIZED": "Socket.IO instance was not initialized",
+
+  "error.title.UNSUPPORTED_FILE_FORMAT": "Unsupported file format",
+  "error.description.UNSUPPORTED_FILE_FORMAT": "The uploaded file format is not supported",
+
+  "error.title.INVALID_CREDENTIALS": "Invalid credentials",
+  "error.description.INVALID_CREDENTIALS": "Invalid email or password",
+
+  "error.title.INTERNAL_ERROR": "Internal error",
+  "error.description.INTERNAL_ERROR": "An internal server error occurred",
+
+  "response.title.CATEGORIES_FETCHED": "Categories fetched",
+  "response.description.CATEGORIES_FETCHED": "Categories list successfully fetched",
+
+  "response.title.CATEGORY_CREATED": "Category created",
+  "response.description.CATEGORY_CREATED": "New category has been created",
+
+  "response.title.CATEGORY_EDITED": "Category edited",
+  "response.description.CATEGORY_EDITED": "Category has been updated",
+
+  "response.title.CATEGORIES_REMOVED": "Categories removed",
+  "response.description.CATEGORIES_REMOVED": "Selected categories have been deleted",
+
+  "response.title.CATEGORIES_BATCH_EDITED": "Categories edited",
+  "response.description.CATEGORIES_BATCH_EDITED": "Batch category update completed",
+
+  "response.title.CATEGORIES_IMPORTED": "Categories imported",
+  "response.description.CATEGORIES_IMPORTED": "Categories have been imported successfully",
+
+  "response.title.CATEGORIES_DUPLICATED": "Categories duplicated",
+  "response.description.CATEGORIES_DUPLICATED": "Categories have been duplicated",
+
+  "error.title.CATEGORY_NOT_EDITED": "Category not edited",
+  "error.description.CATEGORY_NOT_EDITED": "Unable to edit category",
+
+  "error.title.CATEGORIES_NOT_REMOVED": "Categories not removed",
+  "error.description.CATEGORIES_NOT_REMOVED": "Unable to remove selected categories",
+
+  "error.title.CATEGORIES_NOT_BATCH_EDITED": "Batch edit failed",
+  "error.description.CATEGORIES_NOT_BATCH_EDITED": "Unable to batch edit categories",
+
+  "response.title.CATEGORIES_EXPORTED": "Categories exported",
+  "response.description.CATEGORIES_EXPORTED": "Categories have been exported successfully",
+
+  "response.title.USER_ROLES_FETCHED": "User roles fetched",
+  "response.description.USER_ROLES_FETCHED": "User roles list successfully fetched",
+
+  "response.title.USER_ROLE_CREATED": "User role created",
+  "response.description.USER_ROLE_CREATED": "New user role has been created",
+
+  "response.title.USER_ROLE_NOT_CREATED": "User role not created",
+  "response.description.USER_ROLE_NOT_CREATED": "Unable to create new user role",
+
+  "response.title.USER_ROLE_NOT_EDITED": "User role not edited",
+  "response.description.USER_ROLE_NOT_EDITED": "Unable to edit user role",
+
+  "response.title.USER_ROLE_EDITED": "User role edited",
+  "response.description.USER_ROLE_EDITED": "User role has been updated",
+
+  "response.title.USER_ROLES_NOT_REMOVED": "User roles not removed",
+  "response.description.USER_ROLES_NOT_REMOVED": "Unable to remove selected user roles",
+
+  "response.title.USER_ROLES_REMOVED": "User roles removed",
+  "response.description.USER_ROLES_REMOVED": "Selected user roles have been deleted",
+
+  "response.title.USER_ROLES_IMPORTED": "User roles imported",
+  "response.description.USER_ROLES_IMPORTED": "User roles have been imported successfully",
+
+  "response.title.USER_ROLES_DUPLICATED": "User roles duplicated",
+  "response.description.USER_ROLES_DUPLICATED": "User roles have been duplicated",
+
+  "response.title.PRODUCT_PROPERTY_GROUPS_FETCHED": "Product properties groups fetched",
+  "response.description.PRODUCT_PROPERTY_GROUPS_FETCHED": "Product properties groups list successfully fetched",
+
+  "response.title.PRODUCT_PROPERTY_GROUP_CREATED": "Product property group created",
+  "response.description.PRODUCT_PROPERTY_GROUP_CREATED": "New product property group has been created",
+
+  "response.title.PRODUCT_PROPERTY_GROUP_NOT_EDITED": "Product property group not edited",
+  "response.description.PRODUCT_PROPERTY_GROUP_NOT_EDITED": "Unable to edit product property group",
+
+  "response.title.PRODUCT_PROPERTY_GROUP_EDITED": "Product property group edited",
+  "response.description.PRODUCT_PROPERTY_GROUP_EDITED": "Product property group has been updated",
+
+  "response.title.PRODUCT_PROPERTY_GROUPS_NOT_REMOVED": "Product properties groups not removed",
+  "response.description.PRODUCT_PROPERTY_GROUPS_NOT_REMOVED": "Unable to remove selected product properties groups",
+
+  "response.title.PRODUCT_PROPERTY_GROUPS_REMOVED": "Product properties groups removed",
+  "response.description.PRODUCT_PROPERTY_GROUPS_REMOVED": "Selected product properties groups have been deleted",
+
+  "response.title.PRODUCT_PROPERTY_OPTIONS_FETCHED": "Product properties options fetched",
+  "response.description.PRODUCT_PROPERTY_OPTIONS_FETCHED": "Product properties options list successfully fetched",
+
+  "response.title.PRODUCT_PROPERTY_OPTION_CREATED": "Опция свойств товаров создана",
+  "response.description.PRODUCT_PROPERTY_OPTION_CREATED": "Новая опция свойств товаров была создана",
+
+  "response.title.PRODUCT_PROPERTY_OPTION_NOT_EDITED": "Опция свойств товаров не обновлена",
+  "response.description.PRODUCT_PROPERTY_OPTION_NOT_EDITED": "Не удалось обновить опцию свойств товаров",
+
+  "response.title.PRODUCT_PROPERTY_OPTION_EDITED": "Опция свойств товаров обновлена",
+  "response.description.PRODUCT_PROPERTY_OPTION_EDITED": "Опция свойств товаров была обновлена",
+
+  "response.title.PRODUCT_PROPERTY_OPTIONS_NOT_REMOVED": "Опции свойств товаров не удалены",
+  "response.description.PRODUCT_PROPERTY_OPTIONS_NOT_REMOVED": "Не удалось удалить выбранные опции свойств товаров",
+
+  "response.title.PRODUCT_PROPERTY_OPTIONS_REMOVED": "Опции свойств товаров удалены",
+  "response.description.PRODUCT_PROPERTY_OPTIONS_REMOVED": "Выбранные опции свойств товаров были удалены",
+
+  "response.title.PRODUCT_PROPERTIES_FETCHED": "Product properties fetched",
+  "response.description.PRODUCT_PROPERTIES_FETCHED": "Product properties list successfully fetched",
+
+  "response.title.PRODUCT_PROPERTY_CREATED": "Product property created",
+  "response.description.PRODUCT_PROPERTY_CREATED": "New product property has been created",
+
+  "response.title.PRODUCT_PROPERTY_NOT_EDITED": "Product property not edited",
+  "response.description.PRODUCT_PROPERTY_NOT_EDITED": "Unable to edit product property",
+
+  "response.title.PRODUCT_PROPERTY_EDITED": "Product property edited",
+  "response.description.PRODUCT_PROPERTY_EDITED": "Product property has been updated",
+
+  "response.title.PRODUCT_PROPERTIES_NOT_REMOVED": "Product properties not removed",
+  "response.description.PRODUCT_PROPERTIES_NOT_REMOVED": "Unable to remove selected product properties",
+
+  "response.title.PRODUCT_PROPERTIES_REMOVED": "Product properties removed",
+  "response.description.PRODUCT_PROPERTIES_REMOVED": "Selected product properties have been deleted",
+
+  "response.title.WAREHOUSES_FETCHED": "Warehouses fetched",
+  "response.description.WAREHOUSES_FETCHED": "Warehouses list successfully fetched",
+
+  "response.title.WAREHOUSE_CREATED": "Warehouse created",
+  "response.description.WAREHOUSE_CREATED": "New warehouse has been created",
+
+  "response.title.WAREHOUSE_EDITED": "Warehouse edited",
+  "response.description.WAREHOUSE_EDITED": "Warehouse has been updated",
+
+  "response.title.WAREHOUSES_REMOVED": "Warehouses removed",
+  "response.description.WAREHOUSES_REMOVED": "Selected warehouses have been deleted",
+
+  "response.title.WAREHOUSE_NOT_EDITED": "Warehouse not edited",
+  "response.description.WAREHOUSE_NOT_EDITED": "Unable to edit warehouse",
+
+  "response.title.WAREHOUSES_NOT_REMOVED": "Warehouses not removed",
+  "response.description.WAREHOUSES_NOT_REMOVED": "Unable to remove selected warehouses",
+
+  "response.title.BARCODES_FETCHED": "Barcodes fetched",
+  "response.description.BARCODES_FETCHED": "Barcodes list successfully fetched",
+
+  "response.title.BARCODE_CREATED": "Barcode created",
+  "response.description.BARCODE_CREATED": "New barcode has been created",
+
+  "response.title.BARCODE_EDITED": "Barcode edited",
+  "response.description.BARCODE_EDITED": "Barcode has been updated",
+
+  "response.title.BARCODES_REMOVED": "Barcodes removed",
+  "response.description.BARCODES_REMOVED": "Selected barcodes have been deleted",
+
+  "response.title.BARCODE_NOT_EDITED": "Barcode not edited",
+  "response.description.BARCODE_NOT_EDITED": "Unable to edit barcode",
+
+  "response.title.BARCODES_NOT_REMOVED": "Barcodes not removed",
+  "response.description.BARCODES_NOT_REMOVED": "Unable to remove selected barcodes",
+
+  "error.title.BARCODES_FETCHED_EMPTY": "Barcodes not found",
+  "error.description.BARCODES_FETCHED_EMPTY": "Unable to find barcodes"
+}

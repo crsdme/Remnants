@@ -1,0 +1,43 @@
+{
+  "title.page.login": "Вход в Remnant",
+  "description.page.login": "Вход в Remnant",
+
+  "title.page.currencies": "Валюты - Remnant",
+  "description.page.currencies": "Управление валютами в Remnant",
+
+  "title.page.units": "Единицы измерения - Remnant",
+  "description.page.units": "Управление единицами измерения в Remnant",
+
+  "title.page.users": "Пользователи - Remnant",
+  "description.page.users": "Управление пользователями в Remnant",
+
+  "title.page.languages": "Языки - Remnant",
+  "description.page.languages": "Управление языками в Remnant",
+
+  "title.page.categories": "Категории - Remnant",
+  "description.page.categories": "Управление категориями в Remnant",
+
+  "title.page.userRoles": "Роли пользователей - Remnant",
+  "description.page.userRoles": "Управление ролями пользователей в Remnant",
+
+  "title.page.error.403": "Запрещено - Remnant",
+  "description.page.error.403": "У вас нет доступа к этой странице",
+
+  "title.page.error.404": "Не найдено - Remnant",
+  "description.page.error.404": "Страница, которую вы ищете, не существует",
+
+  "title.page.products": "Товары - Remnant",
+  "description.page.products": "Управление товарами в Remnant",
+
+  "title.page.product-properties": "Свойства товаров - Remnant",
+  "description.page.product-properties": "Управление свойствами товаров в Remnant",
+
+  "title.page.product-properties-groups": "Группы свойств товаров - Remnant",
+  "description.page.product-properties-groups": "Управление группами свойств товаров в Remnant",
+
+  "title.page.warehouses": "Склады - Remnant",
+  "description.page.warehouses": "Управление складами в Remnant",
+
+  "title.page.barcodes": "Штрих-коды - Remnant",
+  "description.page.barcodes": "Управление штрих-кодами в Remnant"
+}

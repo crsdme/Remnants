@@ -1,0 +1,10 @@
+npx lint-staged
+
+cd backend && npm run test
+BACK_TEST_RESULT=$?
+cd ..
+
+if [ $BACK_TEST_RESULT -ne 0 ]; then
+  echo "Tests failed. Commit aborted."
+  exit 1
+fi
