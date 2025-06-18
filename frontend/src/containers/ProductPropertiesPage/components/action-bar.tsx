@@ -36,8 +36,14 @@ export function ActionBar() {
     submitProductPropertyForm,
   } = useProductPropertiesContext()
 
-  const requestLanguages = useLanguageQuery({ pagination: { full: true } })
-  const languages = requestLanguages?.data?.data?.languages || []
+  const { data: { languages = [] } = {} } = useLanguageQuery(
+    { pagination: { full: true } },
+    { options: {
+      select: response => ({
+        languages: response.data.languages,
+      }),
+    } },
+  )
 
   return (
     <div className="flex items-center justify-between flex-wrap gap-2">

@@ -27,8 +27,14 @@ export function ActionBar() {
   const { t, i18n } = useTranslation()
   const { isLoading, isEdit, form, submitGroupForm, openModal, closeModal, isModalOpen } = useProductPropertiesGroupsContext()
 
-  const requestLanguages = useLanguageQuery({ pagination: { full: true } })
-  const languages = requestLanguages?.data?.data?.languages || []
+  const { data: { languages = [] } = {} } = useLanguageQuery(
+    { pagination: { full: true } },
+    { options: {
+      select: response => ({
+        languages: response.data.languages,
+      }),
+    } },
+  )
 
   const onSubmit = (values) => {
     submitGroupForm(values)

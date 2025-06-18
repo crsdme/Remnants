@@ -15,13 +15,14 @@ import { useTranslation } from 'react-i18next'
 import { TableActionDropdown } from '@/components'
 import { Badge, Button, Checkbox } from '@/components/ui'
 import { useBarcodeContext } from '@/contexts'
+import { backendUrl } from '@/utils/constants'
 import { formatDate } from '@/utils/helpers'
 
 const sortIcons = { asc: ArrowUp, desc: ArrowDown }
 
 export function useColumns() {
   const { t, i18n } = useTranslation()
-  const { isLoading, openModal, printBarcode, removeBarcodes } = useBarcodeContext()
+  const { isLoading, openModal, removeBarcodes } = useBarcodeContext()
 
   const columns = useMemo(() => {
     function sortHeader(column, label) {
@@ -125,13 +126,15 @@ export function useColumns() {
             },
             {
               permission: 'barcode.print',
-              onClick: () => printBarcode({ id: item.id, size: '30x20', language: i18n.language }),
+              link: `${backendUrl}api/barcodes/print?id=${item.id}&size=30x20&language=${i18n.language}`,
+              type: 'link' as const,
               label: t('table.print', { size: '30x20' }),
               icon: <Barcode className="h-4 w-4" />,
             },
             {
               permission: 'barcode.print',
-              onClick: () => printBarcode({ id: item.id, size: '60x30', language: i18n.language }),
+              link: `${backendUrl}api/barcodes/print?id=${item.id}&size=60x30&language=${i18n.language}`,
+              type: 'link' as const,
               label: t('table.print', { size: '60x30' }),
               icon: <Barcode className="h-4 w-4" />,
             },

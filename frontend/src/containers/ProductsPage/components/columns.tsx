@@ -26,10 +26,14 @@ export function useColumns() {
   const { isLoading, selectedWarehouse, openModal, duplicateProducts, removeProduct } = useProductContext()
   const { permissions } = useAuthContext()
 
-  const requestProductProperties = useProductPropertyQuery(
+  const { data: { productProperties = [] } = {} } = useProductPropertyQuery(
     { filters: { active: [true], language: i18n.language, showInTable: true }, pagination: { full: true } },
+    { options: {
+      select: response => ({
+        productProperties: response.data.productProperties,
+      }),
+    } },
   )
-  const productProperties = requestProductProperties.data?.data.productProperties || []
 
   const columns = useMemo(() => {
     function sortHeader(column, label) {

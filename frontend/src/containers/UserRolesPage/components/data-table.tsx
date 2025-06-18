@@ -38,14 +38,18 @@ export function DataTable() {
     Object.fromEntries(sorting.map(({ id, desc }) => [id, desc ? 'desc' : 'asc']))
   ), [sorting])
 
-  const requestUserRoles = useUserRoleQuery(
+  const { data: { userRoles = [], userRolesCount = 0 } = {}, isLoading, isFetching } = useUserRoleQuery(
     { pagination, filters, sorters },
-    { options: { placeholderData: prevData => prevData } },
+    { options: {
+      select: response => ({
+        userRoles: response.data.userRoles,
+        userRolesCount: response.data.userRolesCount,
+      }),
+      placeholderData: prevData => prevData,
+    } },
   )
 
   const columns = useColumns()
-  const userRoles = requestUserRoles?.data?.data?.userRoles || []
-  const userRolesCount = requestUserRoles?.data?.data?.userRolesCount || 0
 
   const table = useReactTable({
     data: userRoles,
@@ -100,7 +104,7 @@ export function DataTable() {
   }
 
   const renderTableBody = () => {
-    if (requestUserRoles.isLoading || requestUserRoles.isFetching)
+    if (isLoading || isFetching)
       return renderSkeletonRows()
 
     if (table.getRowModel().rows?.length) {

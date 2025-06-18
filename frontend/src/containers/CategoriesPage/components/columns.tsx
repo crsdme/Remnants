@@ -24,23 +24,12 @@ export function useColumns() {
   const { t, i18n } = useTranslation()
   const categoryContext = useCategoryContext()
 
-  // const loadOptions = useCallback(async (inputValue: string) => {
-  //   const response = await getCategories({
-  //     pagination: { full: true },
-  //     filters: {
-  //       names: inputValue,
-  //       active: [true],
-  //       language: i18n.language,
-  //     },
-  //   })
-
-  //   const categories = response?.data?.categories || []
-  //   return categories.map(category => ({
-  //     value: category.id,
-  //     label: category.names[i18n.language],
-  //   }))
-  // }, [i18n.language])
-  const loadCategoriesOptions = useCategoryOptions()
+  const loadCategoriesOptions = useCategoryOptions({
+    mapFn: category => ({
+      value: category.id,
+      label: category.names[i18n.language],
+    }),
+  })
 
   const columns = useMemo(() => {
     function sortHeader(column, label) {

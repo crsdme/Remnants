@@ -120,7 +120,7 @@
 
   "page.products.title": "Products",
   "page.products.description": "Manage products here",
-  "page.products.filter.names": "Filter by name",
+  "page.products.filter.search": "Search",
   "page.products.button.create": "Create Product",
 
   "page.products.table.seq": "Seq",

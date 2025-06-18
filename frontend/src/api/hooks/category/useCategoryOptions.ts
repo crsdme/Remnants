@@ -7,11 +7,11 @@ interface LoadOptionsParams {
   selectedValue?: string[]
 }
 
-export function useCategoryOptions() {
+export function useCategoryOptions({ mapFn }: { mapFn?: (category: Category) => { value: string, label: string } }) {
   const queryClient = useQueryClient()
   const { i18n } = useTranslation()
 
-  return async function loadCategoriesOptions({ query, selectedValue }: LoadOptionsParams): Promise<Category[]> {
+  return async function loadCategoriesOptions({ query, selectedValue }: LoadOptionsParams) {
     const filters = {
       ...(selectedValue ? { ids: selectedValue } : { names: query }),
       active: [true],
@@ -24,6 +24,8 @@ export function useCategoryOptions() {
       staleTime: 60000,
     })
 
-    return data?.data?.categories || []
+    const categories = data?.data?.categories || []
+
+    return mapFn ? categories.map(mapFn) : categories
   }
 }

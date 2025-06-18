@@ -40,14 +40,18 @@ export function DataTable() {
     Object.fromEntries(sorting.map(({ id, desc }) => [id, desc ? 'desc' : 'asc']))
   ), [sorting])
 
-  const requestLanguages = useLanguageQuery(
+  const { data: { languages = [], languagesCount = 0 } = {}, isLoading, isFetching } = useLanguageQuery(
     { pagination, filters, sorters },
-    { options: { placeholderData: prevData => prevData } },
+    { options: {
+      select: response => ({
+        languages: response.data.languages,
+        languagesCount: response.data.languagesCount,
+      }),
+      placeholderData: prevData => prevData,
+    } },
   )
 
   const columns = useColumns()
-  const languages = requestLanguages?.data?.data?.languages || []
-  const languagesCount = requestLanguages?.data?.data?.languagesCount || 0
 
   const table = useReactTable({
     data: languages,
@@ -102,7 +106,7 @@ export function DataTable() {
   }
 
   const renderTableBody = () => {
-    if (requestLanguages.isLoading || requestLanguages.isFetching)
+    if (isLoading || isFetching)
       return renderSkeletonRows()
 
     if (table.getRowModel().rows?.length) {

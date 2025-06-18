@@ -16,7 +16,6 @@ import {
   useBarcodeOptions,
   useBarcodeRemove,
 } from '@/api/hooks'
-import { backendUrl } from '@/utils/constants'
 
 interface BarcodeContextType {
   selectedBarcode: Barcode
@@ -31,7 +30,6 @@ interface BarcodeContextType {
   submitBarcodeForm: (params) => void
   removeBarcodes: (params: { ids: string[] }) => void
   getBarcode: (code: string) => Promise<any>
-  printBarcode: (params: { id: string, size: string, language: string }) => void
   generateBarcode: () => void
 }
 
@@ -193,11 +191,6 @@ export function BarcodeProvider({ children }: BarcodeProviderProps) {
 
   const getBarcode = (code: string) => loadBarcodeOptions({ query: code })
 
-  const printBarcode = (params) => {
-    const url = `${backendUrl}api/barcodes/print?id=${params.id}&size=${params.size}&language=${params.language}`
-    window.open(url, '_blank')
-  }
-
   const generateBarcode = () => {
     return useMutateGenerateCode.mutateAsync().then(({ data }) => {
       form.setValue('code', data.barcode)
@@ -218,7 +211,6 @@ export function BarcodeProvider({ children }: BarcodeProviderProps) {
       submitBarcodeForm,
       removeBarcodes,
       getBarcode,
-      printBarcode,
       generateBarcode,
     }),
     [selectedBarcode, isModalOpen, isLoading, isEdit, form, selectedProducts],

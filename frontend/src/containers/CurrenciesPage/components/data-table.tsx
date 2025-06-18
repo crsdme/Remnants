@@ -40,15 +40,23 @@ export function DataTable() {
     Object.fromEntries(sorting.map(({ id, desc }) => [id, desc ? 'desc' : 'asc']))
   ), [sorting])
 
-  const requestCurrencies = useCurrencyQuery(
+  const { data: { currencies = [], currenciesCount = 0 } = {}, isLoading, isFetching } = useCurrencyQuery(
     { pagination, filters, sorters },
-    { options: { placeholderData: prevData => prevData } },
+    { options: {
+      select: response => ({
+        currencies: response.data.currencies,
+        currenciesCount: response.data.currenciesCount,
+      }),
+      placeholderData: prevData => prevData,
+    } },
   )
-  const currencies = requestCurrencies?.data?.data?.currencies || []
-  const currenciesCount = requestCurrencies?.data?.data?.currenciesCount || 0
 
-  const requestLanguages = useLanguageQuery({ pagination: { full: true } })
-  const languages = requestLanguages.data?.data?.languages || []
+  const { data: { languages = [] } = {} } = useLanguageQuery(
+    { pagination: { full: true } },
+    { options: { select: response => ({
+      languages: response.data.languages,
+    }) } },
+  )
 
   const table = useReactTable({
     data: currencies,
@@ -103,7 +111,7 @@ export function DataTable() {
   }
 
   const renderTableBody = () => {
-    if (requestCurrencies.isLoading || requestCurrencies.isFetching)
+    if (isLoading || isFetching)
       return renderSkeletonRows()
 
     if (table.getRowModel().rows?.length) {

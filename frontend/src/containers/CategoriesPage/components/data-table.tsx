@@ -42,15 +42,25 @@ export function DataTable() {
     Object.fromEntries(sorting.map(({ id, desc }) => [id, desc ? 'desc' : 'asc']))
   ), [sorting])
 
-  const requestCategories = useCategoryQuery(
+  const { data: { categories = [], categoriesCount = 0 } = {}, isLoading, isFetching } = useCategoryQuery(
     { pagination, filters, sorters, isTree: true },
-    { options: { placeholderData: prevData => prevData } },
+    { options: {
+      select: response => ({
+        categories: response.data.categories,
+        categoriesCount: response.data.categoriesCount,
+      }),
+      placeholderData: prevData => prevData,
+    } },
   )
-  const categories = requestCategories?.data?.data?.categories || []
-  const categoriesCount = requestCategories?.data?.data?.categoriesCount || 0
 
-  const requestLanguages = useLanguageQuery({ pagination: { full: true } })
-  const languages = requestLanguages.data?.data?.languages || []
+  const { data: { languages = [] } = {} } = useLanguageQuery(
+    { pagination: { full: true } },
+    { options: {
+      select: response => ({
+        languages: response.data.languages,
+      }),
+    } },
+  )
 
   const columns = useColumns()
 
@@ -129,7 +139,7 @@ export function DataTable() {
   )
 
   const renderTableBody = () => {
-    if (requestCategories.isLoading || requestCategories.isFetching)
+    if (isLoading || isFetching)
       return renderSkeletonRows()
 
     const rows = table.getRowModel().rows

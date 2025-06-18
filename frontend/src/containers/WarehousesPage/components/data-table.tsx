@@ -38,12 +38,16 @@ export function DataTable() {
     Object.fromEntries(sorting.map(({ id, desc }) => [id, desc ? 'desc' : 'asc']))
   ), [sorting])
 
-  const requestWarehouses = useWarehouseQuery(
+  const { data: { warehouses = [], warehousesCount = 0 } = {}, isLoading, isFetching } = useWarehouseQuery(
     { pagination, filters, sorters },
-    { options: { placeholderData: prevData => prevData } },
+    { options: {
+      select: response => ({
+        warehouses: response.data.warehouses,
+        warehousesCount: response.data.warehousesCount,
+      }),
+      placeholderData: prevData => prevData,
+    } },
   )
-  const warehouses = requestWarehouses?.data?.data?.warehouses || []
-  const warehousesCount = requestWarehouses?.data?.data?.warehousesCount || 0
 
   const columns = useColumns()
 
@@ -122,7 +126,7 @@ export function DataTable() {
   )
 
   const renderTableBody = () => {
-    if (requestWarehouses.isLoading || requestWarehouses.isFetching)
+    if (isLoading || isFetching)
       return renderSkeletonRows()
 
     const rows = table.getRowModel().rows

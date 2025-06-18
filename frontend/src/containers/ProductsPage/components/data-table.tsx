@@ -41,18 +41,34 @@ export function DataTable() {
     Object.fromEntries(sorting.map(({ id, desc }) => [id, desc ? 'desc' : 'asc']))
   ), [sorting])
 
-  const requestProducts = useProductQuery(
-    { pagination, filters, sorters, isTree: true },
-    { options: { placeholderData: prevData => prevData } },
+  const { data: { products = [], productsCount = 0 } = {}, isLoading, isFetching } = useProductQuery(
+    { pagination, filters, sorters },
+    { options: {
+      select: response => ({
+        products: response.data.products,
+        productsCount: response.data.productsCount,
+      }),
+      placeholderData: prevData => prevData,
+    } },
   )
-  const products = requestProducts?.data?.data?.products || []
-  const productsCount = requestProducts?.data?.data?.productsCount || 0
 
-  const requestLanguages = useLanguageQuery({ pagination: { full: true } })
-  const languages = requestLanguages.data?.data?.languages || []
+  const { data: { languages = [] } = {} } = useLanguageQuery(
+    { pagination: { full: true } },
+    { options: {
+      select: response => ({
+        languages: response.data.languages,
+      }),
+    } },
+  )
 
-  const requestWarehouses = useWarehouseQuery({ filters: { active: [true], language: i18n.language }, pagination: { full: true } })
-  const warehouses = requestWarehouses.data?.data?.warehouses || []
+  const { data: { warehouses = [] } = {} } = useWarehouseQuery(
+    { filters: { active: [true], language: i18n.language }, pagination: { full: true } },
+    { options: {
+      select: response => ({
+        warehouses: response.data.warehouses,
+      }),
+    } },
+  )
 
   useEffect(() => {
     if (!productContext.selectedWarehouse && warehouses.length > 0) {
@@ -137,7 +153,7 @@ export function DataTable() {
   )
 
   const renderTableBody = () => {
-    if (requestProducts.isLoading || requestProducts.isFetching)
+    if (isLoading || isFetching)
       return renderSkeletonRows()
 
     const rows = table.getRowModel().rows

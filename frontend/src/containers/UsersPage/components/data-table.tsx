@@ -37,14 +37,18 @@ export function DataTable() {
     Object.fromEntries(sorting.map(({ id, desc }) => [id, desc ? 'desc' : 'asc']))
   ), [sorting])
 
-  const requestUsers = useUserQuery(
+  const { data: { users = [], usersCount = 0 } = {}, isLoading, isFetching } = useUserQuery(
     { pagination, filters, sorters },
-    { options: { placeholderData: prevData => prevData } },
+    { options: {
+      select: response => ({
+        users: response.data.users,
+        usersCount: response.data.usersCount,
+      }),
+      placeholderData: prevData => prevData,
+    } },
   )
 
   const columns = useColumns()
-  const users = requestUsers?.data?.data?.users || []
-  const usersCount = requestUsers?.data?.data?.usersCount || 0
 
   const table = useReactTable({
     data: users,
@@ -99,7 +103,7 @@ export function DataTable() {
   }
 
   const renderTableBody = () => {
-    if (requestUsers.isLoading || requestUsers.isFetching)
+    if (isLoading || isFetching)
       return renderSkeletonRows()
 
     if (table.getRowModel().rows?.length) {

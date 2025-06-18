@@ -18,8 +18,13 @@ import { useCategoryContext } from '@/contexts'
 export function CategoryForm() {
   const { isLoading, isEdit, form, submitCategoryForm, closeModal } = useCategoryContext()
 
-  const requestLanguages = useLanguageQuery({ pagination: { full: true } })
-  const languages = requestLanguages?.data?.data?.languages || []
+  const { data: { languages = [] } = {} } = useLanguageQuery(
+    { pagination: { full: true } },
+    { options: { select: response => ({
+      languages: response.data.languages,
+      count: response.data.languagesCount,
+    }) } },
+  )
 
   const onSubmit = (values) => {
     if (values.parent === '')

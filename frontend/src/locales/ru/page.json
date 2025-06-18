@@ -120,7 +120,7 @@
 
   "page.products.title": "Товары",
   "page.products.description": "Управление товарами",
-  "page.products.filter.names": "Фильтр по названию",
+  "page.products.filter.search": "Поиск",
   "page.products.button.create": "Создать товар",
 
   "page.products.table.seq": "Номер",

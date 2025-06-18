@@ -18,8 +18,14 @@ export function CurrencyForm() {
   const { t } = useTranslation()
   const { isLoading, form, closeModal, submitCurrencyForm } = useCurrencyContext()
 
-  const requestLanguages = useLanguageQuery({ pagination: { full: true } })
-  const languages = requestLanguages?.data?.data?.languages || []
+  const { data: { languages = [] } = {} } = useLanguageQuery(
+    { pagination: { full: true } },
+    { options: {
+      select: response => ({
+        languages: response.data.languages,
+      }),
+    } },
+  )
 
   const onSubmit = (values) => {
     submitCurrencyForm(values)

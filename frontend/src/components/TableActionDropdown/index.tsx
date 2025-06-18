@@ -1,5 +1,6 @@
 import { MoreHorizontal } from 'lucide-react'
 import { Fragment } from 'react'
+import { Link } from 'react-router-dom'
 
 import {
   Button,
@@ -15,7 +16,15 @@ import { PermissionGate } from '../PermissionGate'
 
 export function TableActionDropdown(
   { actions }:
-  { actions?: { permission: string, onClick: () => void, label: string, icon?: React.ReactNode, isDestructive?: boolean }[] },
+  { actions?: {
+    permission: string
+    onClick?: () => void
+    label: string
+    icon?: React.ReactNode
+    isDestructive?: boolean
+    type?: 'button' | 'link'
+    link?: string
+  }[] },
 ) {
   if (!actions)
     return <></>
@@ -35,8 +44,19 @@ export function TableActionDropdown(
               {(action.isDestructive) && <DropdownMenuSeparator />}
               <PermissionGate key={action.permission} permission={action.permission}>
                 <DropdownMenuItem onClick={action.onClick} className={cn('gap-2', action.isDestructive && 'text-destructive focus:text-destructive focus:bg-destructive/10')}>
-                  {action.icon}
-                  <span>{action.label}</span>
+                  {action.type === 'link'
+                    ? (
+                        <Link to={action.link || ''} target="_blank" className="flex items-center gap-2">
+                          {action.icon}
+                          <span>{action.label}</span>
+                        </Link>
+                      )
+                    : (
+                        <>
+                          {action.icon}
+                          <span>{action.label}</span>
+                        </>
+                      )}
                 </DropdownMenuItem>
               </PermissionGate>
             </Fragment>

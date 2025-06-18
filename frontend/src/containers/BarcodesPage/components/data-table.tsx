@@ -36,12 +36,16 @@ export function DataTable() {
     Object.fromEntries(sorting.map(({ id, desc }) => [id, desc ? 'desc' : 'asc']))
   ), [sorting])
 
-  const requestBarcodes = useBarcodeQuery(
+  const { data: { barcodes = [], barcodesCount = 0 } = {}, isLoading, isFetching } = useBarcodeQuery(
     { pagination, filters, sorters },
-    { options: { placeholderData: prevData => prevData } },
+    { options: {
+      select: response => ({
+        barcodes: response.data.barcodes,
+        barcodesCount: response.data.barcodesCount,
+      }),
+      placeholderData: prevData => prevData,
+    } },
   )
-  const barcodes = requestBarcodes?.data?.data?.barcodes || []
-  const barcodesCount = requestBarcodes?.data?.data?.barcodesCount || 0
 
   const columns = useColumns()
 
@@ -120,7 +124,7 @@ export function DataTable() {
   )
 
   const renderTableBody = () => {
-    if (requestBarcodes.isLoading || requestBarcodes.isFetching)
+    if (isLoading || isFetching)
       return renderSkeletonRows()
 
     const rows = table.getRowModel().rows

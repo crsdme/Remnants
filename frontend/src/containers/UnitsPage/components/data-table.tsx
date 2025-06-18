@@ -40,17 +40,27 @@ export function DataTable() {
     Object.fromEntries(sorting.map(({ id, desc }) => [id, desc ? 'desc' : 'asc']))
   ), [sorting])
 
-  const requestUnits = useUnitQuery(
+  const { data: { units = [], unitsCount = 0 } = {}, isLoading, isFetching } = useUnitQuery(
     { pagination, filters, sorters },
-    { options: { placeholderData: prevData => prevData } },
+    { options: {
+      select: response => ({
+        units: response.data.units,
+        unitsCount: response.data.unitsCount,
+      }),
+      placeholderData: prevData => prevData,
+    } },
   )
 
   const columns = useColumns()
-  const units = requestUnits?.data?.data?.units || []
-  const unitsCount = requestUnits?.data?.data?.unitsCount || 0
 
-  const requestLanguages = useLanguageQuery({ pagination: { full: true } })
-  const languages = requestLanguages.data?.data?.languages || []
+  const { data: { languages = [] } = {} } = useLanguageQuery(
+    { pagination: { full: true } },
+    { options: {
+      select: response => ({
+        languages: response.data.languages,
+      }),
+    } },
+  )
 
   const table = useReactTable({
     data: units,
@@ -105,7 +115,7 @@ export function DataTable() {
   }
 
   const renderTableBody = () => {
-    if (requestUnits.isLoading || requestUnits.isFetching)
+    if (isLoading || isFetching)
       return renderSkeletonRows()
 
     if (table.getRowModel().rows?.length) {

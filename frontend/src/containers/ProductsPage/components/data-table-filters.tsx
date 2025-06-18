@@ -25,9 +25,9 @@ export function DataTableFilters({ filters, setFilters }) {
         <Filter className="h-4 w-4 text-gray-400" />
       </div>
       <Input
-        placeholder={t('page.products.filter.names')}
-        value={localFilters.names}
-        onChange={event => handleFilter('names', event.target.value)}
+        placeholder={t('page.products.filter.search')}
+        value={localFilters.search}
+        onChange={event => handleFilter('search', event.target.value)}
         className="pl-10"
       />
     </div>

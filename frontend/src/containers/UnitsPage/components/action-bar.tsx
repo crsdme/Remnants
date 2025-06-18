@@ -23,8 +23,14 @@ export function ActionBar() {
   const { isModalOpen, isLoading, openModal, isEdit, closeModal, importUnits } = useUnitContext()
   const [file, setFile] = useState<File | null>(null)
 
-  const requestLanguages = useLanguageQuery({ pagination: { full: true } })
-  const languages = requestLanguages?.data?.data?.languages || []
+  const { data: { languages = [] } = {} } = useLanguageQuery(
+    { pagination: { full: true } },
+    { options: {
+      select: response => ({
+        languages: response.data.languages,
+      }),
+    } },
+  )
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]

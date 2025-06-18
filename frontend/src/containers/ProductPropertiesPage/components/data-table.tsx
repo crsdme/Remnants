@@ -41,13 +41,16 @@ export function DataTable() {
     Object.fromEntries(sorting.map(({ id, desc }) => [id, desc ? 'desc' : 'asc']))
   ), [sorting])
 
-  const requestProductProperties = useProductPropertyQuery(
+  const { data: { productProperties = [], productPropertiesCount = 0 } = {}, isLoading, isFetching } = useProductPropertyQuery(
     { pagination, filters, sorters },
-    { options: { placeholderData: prevData => prevData } },
+    { options: {
+      select: response => ({
+        productProperties: response.data.productProperties,
+        productPropertiesCount: response.data.productPropertiesCount,
+      }),
+      placeholderData: prevData => prevData,
+    } },
   )
-
-  const productProperties = requestProductProperties.data?.data?.productProperties || []
-  const productPropertiesCount = requestProductProperties.data?.data?.productPropertiesCount || 0
 
   const columns = useColumns()
 
@@ -136,7 +139,7 @@ export function DataTable() {
   )
 
   const renderTableBody = () => {
-    if (requestProductProperties.isLoading || requestProductProperties.isFetching)
+    if (isLoading || isFetching)
       return renderSkeletonRows()
 
     const rows = table.getRowModel().rows
