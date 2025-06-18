@@ -4,11 +4,11 @@ export const SUPPORTED_LANGUAGES = ['ru', 'en'] as const
 
 export type SUPPORTED_LANGUAGES_TYPE = (typeof SUPPORTED_LANGUAGES)[number]
 
-export const BACKEND_URL = process.env.BACKEND_URL || 'http://127.0.0.1:3001'
+export const BACKEND_URL = process.env.BACKEND_URL
 
 export const STORAGE_PATH = path.resolve('storage')
 
-export const STORAGE_URL = `${BACKEND_URL}/storage`
+export const STORAGE_URL = `${BACKEND_URL}storage`
 
 export const STORAGE_PATHS = {
   import: path.join(STORAGE_PATH, 'import'),
