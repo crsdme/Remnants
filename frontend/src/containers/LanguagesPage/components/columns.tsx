@@ -21,11 +21,10 @@ const sortIcons = { asc: ArrowUp, desc: ArrowDown }
 
 export function useColumns() {
   const { t, i18n } = useTranslation()
-  const languageContext = useLanguageContext()
+  const { isLoading, openModal, removeLanguages, duplicateLanguages } = useLanguageContext()
 
   const columns = useMemo(() => {
     function sortHeader(column, label) {
-      const isLoading = languageContext.isLoading
       const Icon = sortIcons[column.getIsSorted() || undefined] || ChevronsUpDown
 
       return (
@@ -120,19 +119,19 @@ export function useColumns() {
             },
             {
               permission: 'language.edit',
-              onClick: () => languageContext.toggleModal(item),
+              onClick: () => openModal(item),
               label: t('table.edit'),
               icon: <Pencil className="h-4 w-4" />,
             },
             {
               permission: 'language.duplicate',
-              onClick: () => languageContext.duplicateLanguages({ ids: [item.id] }),
+              onClick: () => duplicateLanguages({ ids: [item.id] }),
               label: t('table.duplicate'),
               icon: <CopyPlus className="h-4 w-4" />,
             },
             {
               permission: 'language.delete',
-              onClick: () => languageContext.removeLanguage({ ids: [item.id] }),
+              onClick: () => removeLanguages({ ids: [item.id] }),
               label: t('table.delete'),
               icon: <Trash className="h-4 w-4" />,
               isDestructive: true,
@@ -157,6 +156,7 @@ export function useColumns() {
           filterable: true,
           filterType: 'text',
           sortable: true,
+          defaultVisible: true,
         },
         header: ({ column }) => sortHeader(column, t('page.languages.table.name')),
         accessorFn: row => row.name,
@@ -171,6 +171,7 @@ export function useColumns() {
           filterable: true,
           filterType: 'text',
           sortable: true,
+          defaultVisible: true,
         },
         header: () => t('page.languages.table.code'),
         accessorFn: row => row.code,
@@ -190,6 +191,7 @@ export function useColumns() {
           filterable: true,
           filterType: 'number',
           sortable: true,
+          defaultVisible: true,
         },
         header: ({ column }) => sortHeader(column, t('page.languages.table.priority')),
         cell: ({ row }) => <Badge variant="outline">{row.original.priority}</Badge>,
@@ -204,6 +206,7 @@ export function useColumns() {
           filterable: true,
           filterType: 'boolean',
           sortable: true,
+          defaultVisible: true,
         },
         header: t('page.languages.table.active'),
         cell: ({ row }) => <Badge variant={row.original.active ? 'success' : 'destructive'}>{t(`table.active.${row.original.active}`)}</Badge>,
@@ -218,6 +221,7 @@ export function useColumns() {
           filterable: true,
           filterType: 'boolean',
           sortable: true,
+          defaultVisible: true,
         },
         header: t('page.languages.table.main'),
         cell: ({ row }) => <Badge variant={row.original.main ? 'success' : 'destructive'}>{t(`table.yesno.${row.original.main}`)}</Badge>,

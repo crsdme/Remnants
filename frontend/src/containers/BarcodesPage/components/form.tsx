@@ -11,27 +11,26 @@ import {
   FormLabel,
   FormMessage,
   Input,
+  Separator,
 } from '@/components/ui'
 import { useBarcodeContext } from '@/contexts'
 import { useBarcodeScanned } from '@/utils/hooks'
 
 export function BarcodeForm() {
-  const barcodeContext = useBarcodeContext()
+  const { isLoading, form, submitBarcodeForm, setSelectedProducts, selectedProducts, generateBarcode, closeModal, getBarcode } = useBarcodeContext()
   const { t } = useTranslation()
 
-  const { isLoading, form } = barcodeContext
-
   const onSubmit = (values) => {
-    values.products = barcodeContext.selectedProducts.map((product: any) => ({
+    values.products = selectedProducts.map((product: any) => ({
       id: product.id,
       quantity: product.selectedQuantity,
     }))
-    barcodeContext.submitBarcodeForm(values)
+    submitBarcodeForm(values)
   }
 
   const addProduct = (products, selectedQuantity = 1) => {
     products.forEach((product: any) => {
-      barcodeContext.setSelectedProducts((state) => {
+      setSelectedProducts((state) => {
         const productIndex = state.findIndex(item => item.id === product.id)
         const quantity = typeof product.quantity === 'number' ? product.quantity : selectedQuantity
         if (productIndex !== -1) {
@@ -49,26 +48,32 @@ export function BarcodeForm() {
   }
 
   const removeProduct = (product: any) => {
-    barcodeContext.setSelectedProducts(prev => prev.filter(p => p.id !== product.id))
+    setSelectedProducts(prev => prev.filter(p => p.id !== product.id))
+  }
+
+  const changeQuantity = (product: any, quantity: number) => {
+    setSelectedProducts(prev => prev.map(p => p.id === product.id ? { ...p, selectedQuantity: quantity } : p))
   }
 
   useBarcodeScanned(async (barcode: string) => {
-    const { data } = await barcodeContext.getBarcode(barcode)
-    addProduct(data?.barcodes?.[0]?.products || [])
+    const data = await getBarcode(barcode)
+    addProduct(data?.[0]?.products || [])
   })
 
   return (
     <Form {...form}>
       <ProductTable addProduct={addProduct} />
-      <ProductSelectedTable products={barcodeContext.selectedProducts} removeProduct={removeProduct} isLoading={isLoading} />
-      <form className="w-full space-y-4 mt-4" onSubmit={form.handleSubmit(onSubmit)}>
-        <div className="flex items-end gap-2">
-          <FormField
-            control={form.control}
-            name="code"
-            render={({ field }) => (
-              <FormItem className="w-full">
-                <FormLabel>{t('page.barcodes.form.code')}</FormLabel>
+      <Separator className="my-4" />
+      <ProductSelectedTable products={selectedProducts} removeProduct={removeProduct} isLoading={isLoading} changeQuantity={changeQuantity} />
+      <Separator className="my-4" />
+      <form className="w-full space-y-1 mt-4" onSubmit={form.handleSubmit(onSubmit)}>
+        <FormField
+          control={form.control}
+          name="code"
+          render={({ field }) => (
+            <FormItem className="w-full">
+              <FormLabel>{t('page.barcodes.form.code')}</FormLabel>
+              <div className="flex items-center gap-2">
                 <FormControl>
                   <Input
                     type="number"
@@ -79,20 +84,19 @@ export function BarcodeForm() {
                     onChange={e => field.onChange(e.target.value)}
                   />
                 </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => form.setValue('code', '1234567890')}
-          >
-            <ScanBarcode />
-            {t('button.generate')}
-          </Button>
-
-        </div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => generateBarcode()}
+                >
+                  <ScanBarcode />
+                  {t('button.generate')}
+                </Button>
+              </div>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
         <FormField
           control={form.control}
           name="active"
@@ -113,7 +117,7 @@ export function BarcodeForm() {
           <Button
             type="button"
             variant="secondary"
-            onClick={() => barcodeContext.closeModal()}
+            onClick={() => closeModal()}
             disabled={isLoading}
           >
             {t('button.cancel')}

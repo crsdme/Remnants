@@ -32,7 +32,9 @@
   "page.languages.form.code": "Code",
   "page.languages.form.priority": "Priority",
   "page.languages.form.active": "Active",
+  "page.languages.form.active.description": "Active language",
   "page.languages.form.main": "Main",
+  "page.languages.form.main.description": "Main language",
 
   "page.units.title": "Units",
   "page.units.description": "Manage units of measurement here",
@@ -52,6 +54,7 @@
   "page.units.form.symbols": "Symbol ({{language}})",
   "page.units.form.priority": "Priority",
   "page.units.form.active": "Active",
+  "page.units.form.active.description": "Active unit of measurement",
 
   "page.currencies.title": "Currencies",
   "page.currencies.description": "Manage your currencies here",
@@ -71,6 +74,7 @@
   "page.currencies.form.symbols": "Symbol ({{language}})",
   "page.currencies.form.priority": "Priority",
   "page.currencies.form.active": "Active",
+  "page.currencies.form.active.description": "Active currency",
 
   "page.users.title": "Users",
   "page.users.description": "Manage users here",
@@ -91,6 +95,7 @@
   "page.users.form.login": "Login",
   "page.users.form.password": "Password",
   "page.users.form.active": "Status",
+  "page.users.form.active.description": "Active user",
   "page.users.form.role": "Role",
 
   "page.categories.title": "Categories",
@@ -110,6 +115,7 @@
   "page.categories.form.names": "Name ({{language}})",
   "page.categories.form.priority": "Priority",
   "page.categories.form.active": "Active",
+  "page.categories.form.active.description": "Active category",
   "page.categories.form.parent": "Parent",
 
   "page.products.title": "Products",
@@ -117,6 +123,7 @@
   "page.products.filter.names": "Filter by name",
   "page.products.button.create": "Create Product",
 
+  "page.products.table.seq": "Seq",
   "page.products.table.images": "Images",
   "page.products.table.names": "Name",
   "page.products.table.priority": "Priority",
@@ -146,6 +153,8 @@
   "page.products.form.productPropertiesGroup": "Product Properties Group",
   "page.products.form.productProperties": "Product Properties",
   "page.products.form.images": "Images",
+  "page.products.form.generateBarcode": "Generate Barcode",
+  "page.products.form.generateBarcode.description": "Generate barcode for product",
 
   "page.userRoles.title": "User Roles",
   "page.userRoles.description": "Manage user roles here",
@@ -165,6 +174,7 @@
   "page.userRoles.form.priority": "Priority",
   "page.userRoles.form.permissions": "Permissions",
   "page.userRoles.form.active": "Active",
+  "page.userRoles.form.active.description": "Active user role",
 
   "page.userRoles.permissions.title.categories": "Categories",
   "page.userRoles.permissions.description.categories": "Manage categories",
@@ -307,6 +317,7 @@
   "page.product-properties-groups.form.names": "Name ({{language}})",
   "page.product-properties-groups.form.priority": "Priority",
   "page.product-properties-groups.form.active": "Active",
+  "page.product-properties-groups.form.active.description": "Active product properties group",
   "page.product-properties-groups.form.productProperties": "Product Properties",
 
   "page.product-properties.title": "Product properties",
@@ -336,8 +347,11 @@
   "page.product-properties.form.names": "Name ({{language}})",
   "page.product-properties.form.priority": "Priority",
   "page.product-properties.form.isRequired": "Required",
+  "page.product-properties.form.isRequired.description": "Property is required",
   "page.product-properties.form.active": "Active",
+  "page.product-properties.form.active.description": "Active product property",
   "page.product-properties.form.showInTable": "Show in table",
+  "page.product-properties.form.showInTable.description": "Show property in table",
   "page.product-properties.form.productProperties": "Product Properties",
   "page.product-properties.form.type": "Type",
   "page.product-properties.form.color": "Color",
@@ -363,6 +377,7 @@
   "page.warehouses.form.names": "Name ({{language}})",
   "page.warehouses.form.priority": "Priority",
   "page.warehouses.form.active": "Active",
+  "page.warehouses.form.active.description": "Active warehouse",
 
   "page.barcodes.title": "Barcodes",
   "page.barcodes.description": "Manage barcodes here",

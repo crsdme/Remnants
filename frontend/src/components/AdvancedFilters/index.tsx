@@ -21,6 +21,8 @@ interface AdvancedFiltersProps {
   columns: ColumnDef<any>[]
   onSubmit: (filters: FilterItem[]) => void
   onCancel: () => void
+  className?: string
+  align?: 'start' | 'center' | 'end'
 }
 
 interface ColumnMeta {
@@ -43,7 +45,7 @@ const formSchema = z.object({
 type FormValues = z.infer<typeof formSchema>
 type FormItemType = z.infer<typeof filterItemSchema>
 
-export function AdvancedFilters({ columns, onSubmit, onCancel }: AdvancedFiltersProps) {
+export function AdvancedFilters({ columns, onSubmit, onCancel, className, align = 'start' }: AdvancedFiltersProps) {
   const { t } = useTranslation()
   const [isOpen, setIsOpen] = useState(false)
 
@@ -197,7 +199,7 @@ export function AdvancedFilters({ columns, onSubmit, onCancel }: AdvancedFilters
       }}
     >
       <PopoverTrigger asChild>
-        <Button variant="outline">
+        <Button variant="outline" className={className}>
           <Filter className="mr-2 h-4 w-4" />
           {t('component.advancedFilters.button')}
           {form.watch('items').length > 0 && (
@@ -207,7 +209,7 @@ export function AdvancedFilters({ columns, onSubmit, onCancel }: AdvancedFilters
           )}
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[520px]" align="start">
+      <PopoverContent className="w-[520px]" align={align}>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
             <div className="space-y-2">

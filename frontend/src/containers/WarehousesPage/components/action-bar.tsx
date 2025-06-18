@@ -9,9 +9,7 @@ import { WarehouseForm } from './form'
 
 export function ActionBar() {
   const { t } = useTranslation()
-  const warehouseContext = useWarehouseContext()
-
-  const { isLoading, isEdit } = warehouseContext
+  const { isModalOpen, isLoading, openModal, isEdit, closeModal } = useWarehouseContext()
 
   return (
     <div className="flex items-center justify-between flex-wrap gap-2">
@@ -21,10 +19,10 @@ export function ActionBar() {
       </div>
       <div className="flex items-center flex-wrap gap-2">
         <PermissionGate permission={['warehouse.create', 'warehouse.edit']}>
-          <Sheet open={warehouseContext.isModalOpen} onOpenChange={warehouseContext.closeModal}>
+          <Sheet open={isModalOpen} onOpenChange={() => closeModal()}>
             <SheetTrigger asChild>
               <Button
-                onClick={() => warehouseContext.openModal()}
+                onClick={() => openModal()}
                 disabled={isLoading}
               >
                 <Plus />

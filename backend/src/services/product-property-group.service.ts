@@ -22,7 +22,7 @@ export async function get(payload: ProductPropertyGroupTypes.getProductPropertyG
     },
   } = payload.filters
 
-  const sorters = buildSortQuery(payload.sorters)
+  const sorters = buildSortQuery(payload.sorters, { priority: 1 })
 
   const filterRules = {
     names: { type: 'string', langAware: true },
@@ -44,9 +44,6 @@ export async function get(payload: ProductPropertyGroupTypes.getProductPropertyG
       $match: query,
     },
     {
-      $sort: sorters,
-    },
-    {
       $lookup: {
         from: 'product-properties',
         localField: 'productProperties',
@@ -63,6 +60,9 @@ export async function get(payload: ProductPropertyGroupTypes.getProductPropertyG
           },
         },
       },
+    },
+    {
+      $sort: sorters,
     },
     {
       $facet: {

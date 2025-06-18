@@ -5,11 +5,10 @@ import {
   ChevronRight,
   ChevronsUpDown,
   Copy,
-  CopyPlus,
   Pencil,
   Trash,
 } from 'lucide-react'
-import { useCallback, useMemo } from 'react'
+import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { TableActionDropdown } from '@/components'
@@ -21,11 +20,10 @@ const sortIcons = { asc: ArrowUp, desc: ArrowDown }
 
 export function useColumns() {
   const { t, i18n } = useTranslation()
-  const warehouseContext = useWarehouseContext()
+  const { isLoading, openModal, removeWarehouses } = useWarehouseContext()
 
   const columns = useMemo(() => {
     function sortHeader(column, label) {
-      const isLoading = warehouseContext.isLoading
       const Icon = sortIcons[column.getIsSorted() || undefined] || ChevronsUpDown
 
       return (
@@ -120,13 +118,13 @@ export function useColumns() {
             },
             {
               permission: 'warehouse.edit',
-              onClick: () => warehouseContext.openModal(item),
+              onClick: () => openModal(item),
               label: t('table.edit'),
               icon: <Pencil className="h-4 w-4" />,
             },
             {
               permission: 'warehouse.delete',
-              onClick: () => warehouseContext.removeWarehouses({ ids: [item.id] }),
+              onClick: () => removeWarehouses({ ids: [item.id] }),
               label: t('table.delete'),
               icon: <Trash className="h-4 w-4" />,
               isDestructive: true,
@@ -151,6 +149,7 @@ export function useColumns() {
           filterable: true,
           filterType: 'text',
           sortable: true,
+          defaultVisible: true,
         },
         header: ({ column }) => sortHeader(column, t('page.warehouses.table.names')),
         accessorFn: row => row.names?.[i18n.language] || row.names?.en,
@@ -165,6 +164,7 @@ export function useColumns() {
           filterable: true,
           filterType: 'number',
           sortable: true,
+          defaultVisible: true,
         },
         header: ({ column }) => sortHeader(column, t('page.warehouses.table.priority')),
         cell: ({ row }) => <Badge variant="outline">{row.original.priority}</Badge>,
@@ -179,6 +179,7 @@ export function useColumns() {
           filterable: true,
           filterType: 'boolean',
           sortable: true,
+          defaultVisible: true,
         },
         header: t('page.warehouses.table.active'),
         cell: ({ row }) => <Badge variant={row.original.active ? 'success' : 'destructive'}>{t(`table.active.${row.original.active}`)}</Badge>,

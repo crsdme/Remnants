@@ -25,8 +25,8 @@ export function DataTableFilters({ filters, setFilters }) {
       </div>
       <Input
         placeholder={t('component.productSelectTable.filter.placeholder')}
-        value={localFilters.names}
-        onChange={event => handleFilter('names', event.target.value)}
+        value={localFilters.search}
+        onChange={event => handleFilter('search', event.target.value)}
         className="pl-10"
       />
     </div>

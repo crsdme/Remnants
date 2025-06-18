@@ -2,7 +2,7 @@ import { flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-tabl
 import { Fragment, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import { useRequestCurrencies, useRequestLanguages } from '@/api/hooks'
+import { useCurrencyQuery, useLanguageQuery } from '@/api/hooks'
 import { AdvancedFilters, AdvancedSorters, BatchEdit, ColumnVisibilityMenu, PermissionGate, TablePagination, TableSelectionDropdown } from '@/components'
 import { Separator, Skeleton, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui'
 import { useCurrencyContext } from '@/contexts'
@@ -14,7 +14,7 @@ import { DataTableFilters } from './data-table-filters'
 
 export function DataTable() {
   const { t, i18n } = useTranslation()
-  const currencyContext = useCurrencyContext()
+  const { batchCurrency, removeCurrency, duplicateCurrencies } = useCurrencyContext()
 
   const filtersInitialState = {
     names: '',
@@ -40,14 +40,14 @@ export function DataTable() {
     Object.fromEntries(sorting.map(({ id, desc }) => [id, desc ? 'desc' : 'asc']))
   ), [sorting])
 
-  const requestCurrencies = useRequestCurrencies(
+  const requestCurrencies = useCurrencyQuery(
     { pagination, filters, sorters },
     { options: { placeholderData: prevData => prevData } },
   )
   const currencies = requestCurrencies?.data?.data?.currencies || []
   const currenciesCount = requestCurrencies?.data?.data?.currenciesCount || 0
 
-  const requestLanguages = useRequestLanguages({ pagination: { full: true } })
+  const requestLanguages = useLanguageQuery({ pagination: { full: true } })
   const languages = requestLanguages.data?.data?.languages || []
 
   const table = useReactTable({
@@ -169,7 +169,7 @@ export function DataTable() {
       value: item.value,
     }))
 
-    currencyContext.batchCurrency({
+    batchCurrency({
       ...(batchEditMode === 'filter' ? { filters } : { ids: selectedCurrencies }),
       params,
     })
@@ -179,7 +179,7 @@ export function DataTable() {
 
   const handleBulkRemove = () => {
     const ids = currencies.filter((_, index) => rowSelection[index]).map(item => item.id)
-    currencyContext.removeCurrency({ ids })
+    removeCurrency({ ids })
     setRowSelection({})
   }
 
@@ -193,7 +193,7 @@ export function DataTable() {
 
   const handleBulkDuplicate = () => {
     const ids = currencies.filter((_, index) => rowSelection[index]).map(item => item.id)
-    currencyContext.duplicateCurrencies({ ids })
+    duplicateCurrencies({ ids })
     setRowSelection({})
   }
 

@@ -7,7 +7,7 @@ import {
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import { useRequestProductProperties } from '@/api/hooks/product-properties/useRequestProductProperties'
+import { useProductPropertyQuery } from '@/api/hooks'
 import { ImageGallery } from '@/components'
 import { Badge, Button } from '@/components/ui'
 import { useAuthContext } from '@/contexts'
@@ -20,7 +20,7 @@ export function useColumns({ isLoading, addProduct }: { isLoading: boolean, addP
   const { t, i18n } = useTranslation()
   const { permissions } = useAuthContext()
 
-  const requestProductProperties = useRequestProductProperties({ filters: { active: [true], language: i18n.language, showInTable: true }, pagination: { full: true } })
+  const requestProductProperties = useProductPropertyQuery({ filters: { active: [true], language: i18n.language, showInTable: true }, pagination: { full: true } })
   const productProperties = requestProductProperties.data?.data.productProperties || []
 
   const columns = useMemo(() => {
@@ -125,8 +125,6 @@ export function useColumns({ isLoading, addProduct }: { isLoading: boolean, addP
         size: 150,
         meta: {
           title: property.names[i18n.language],
-          batchEdit: true,
-          batchEditType: 'textMultiLanguage',
           filterable: true,
           filterType: 'text',
           sortable: true,
@@ -184,8 +182,6 @@ export function useColumns({ isLoading, addProduct }: { isLoading: boolean, addP
           size: 150,
           meta: {
             title: t('component.productTable.table.purchasePrice'),
-            batchEdit: true,
-            batchEditType: 'number',
             filterable: true,
             filterType: 'number',
             sortable: true,
@@ -204,6 +200,7 @@ export function useColumns({ isLoading, addProduct }: { isLoading: boolean, addP
         size: 100,
         meta: {
           title: t('component.productTable.table.images'),
+          defaultVisible: true,
         },
         cell: ({ row }) => {
           const images = row.original.images.map((image, index) => ({
@@ -211,7 +208,7 @@ export function useColumns({ isLoading, addProduct }: { isLoading: boolean, addP
             src: image.path,
             alt: image.originalname,
           }))
-          return (<ImageGallery images={images} />)
+          return (<ImageGallery images={images} size={80} />)
         },
       },
       {
@@ -219,11 +216,10 @@ export function useColumns({ isLoading, addProduct }: { isLoading: boolean, addP
         size: 150,
         meta: {
           title: t('component.productTable.table.names'),
-          batchEdit: true,
-          batchEditType: 'textMultiLanguage',
           filterable: true,
           filterType: 'text',
           sortable: true,
+          defaultVisible: true,
         },
         header: ({ column }) => sortHeader(column, t('component.productTable.table.names')),
         accessorFn: row => row.names?.[i18n.language] || row.names?.en,
@@ -233,11 +229,10 @@ export function useColumns({ isLoading, addProduct }: { isLoading: boolean, addP
         size: 150,
         meta: {
           title: t('component.productTable.table.price'),
-          batchEdit: true,
-          batchEditType: 'number',
           filterable: true,
           filterType: 'number',
           sortable: true,
+          defaultVisible: true,
         },
         header: ({ column }) => sortHeader(column, t('component.productTable.table.price')),
         accessorFn: row => `${row.price} ${row.currency.symbols[i18n.language]}`,
@@ -248,11 +243,10 @@ export function useColumns({ isLoading, addProduct }: { isLoading: boolean, addP
         size: 150,
         meta: {
           title: t('component.productTable.table.quantity'),
-          batchEdit: true,
-          batchEditType: 'number',
           filterable: true,
           filterType: 'number',
           sortable: true,
+          defaultVisible: true,
         },
         header: ({ column }) => sortHeader(column, t('component.productTable.table.quantity')),
         cell: ({ row }) => {
@@ -282,6 +276,7 @@ export function useColumns({ isLoading, addProduct }: { isLoading: boolean, addP
           filterable: true,
           filterType: 'text',
           sortable: true,
+          defaultVisible: true,
         },
         header: ({ column }) => sortHeader(column, t('component.productTable.table.categories')),
         cell: ({ row }) => (

@@ -1,11 +1,12 @@
 import { useTranslation } from 'react-i18next'
 
-import { useRequestLanguages } from '@/api/hooks'
+import { useLanguageQuery } from '@/api/hooks'
 import {
   Button,
   Checkbox,
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -15,21 +16,19 @@ import {
 import { useWarehouseContext } from '@/contexts'
 
 export function WarehouseForm() {
-  const warehouseContext = useWarehouseContext()
   const { t } = useTranslation()
+  const { isLoading, form, closeModal, submitWarehouseForm } = useWarehouseContext()
 
-  const { isLoading, form } = warehouseContext
-
-  const requestLanguages = useRequestLanguages({ pagination: { full: true } })
+  const requestLanguages = useLanguageQuery({ pagination: { full: true } })
   const languages = requestLanguages?.data?.data?.languages || []
 
   const onSubmit = (values) => {
-    warehouseContext.submitWarehouseForm(values)
+    submitWarehouseForm(values)
   }
 
   return (
     <Form {...form}>
-      <form className="w-full space-y-4" onSubmit={form.handleSubmit(onSubmit)}>
+      <form className="w-full space-y-1" onSubmit={form.handleSubmit(onSubmit)}>
         {languages.map(language => (
           <FormField
             control={form.control}
@@ -38,9 +37,12 @@ export function WarehouseForm() {
             render={({ field }) => (
               <FormItem>
                 <FormLabel>
-                  {t('page.warehouses.form.names', {
-                    language: t(`language.${language.code}`),
-                  })}
+                  <p>
+                    {t('page.warehouses.form.names', {
+                      language: t(`language.${language.code}`),
+                    })}
+                    <span className="text-destructive ml-1">*</span>
+                  </p>
                 </FormLabel>
                 <FormControl>
                   <Input
@@ -77,27 +79,34 @@ export function WarehouseForm() {
             </FormItem>
           )}
         />
-        <FormField
-          control={form.control}
-          name="active"
-          render={({ field }) => (
-            <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
-              <FormControl>
-                <Checkbox
-                  checked={field.value}
-                  onCheckedChange={field.onChange}
-                  disabled={isLoading}
-                />
-              </FormControl>
-              <FormLabel>{t('page.warehouses.form.active')}</FormLabel>
-            </FormItem>
-          )}
-        />
+        <div className="flex gap-2 flex-wrap pb-2">
+          <FormField
+            control={form.control}
+            name="active"
+            render={({ field }) => (
+              <FormItem className="flex items-center justify-between rounded-md border p-4 grow">
+                <div className="space-y-1">
+                  <FormLabel className="text-sm">{t('page.warehouses.form.active')}</FormLabel>
+                  <FormDescription className="text-xs text-muted-foreground">
+                    {t('page.warehouses.form.active.description')}
+                  </FormDescription>
+                </div>
+                <FormControl>
+                  <Checkbox
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                    disabled={isLoading}
+                  />
+                </FormControl>
+              </FormItem>
+            )}
+          />
+        </div>
         <div className="flex gap-2">
           <Button
             type="button"
             variant="secondary"
-            onClick={() => warehouseContext.closeModal()}
+            onClick={() => closeModal()}
             disabled={isLoading}
           >
             {t('button.cancel')}

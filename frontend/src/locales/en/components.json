@@ -129,7 +129,7 @@
 
   "component.productSelectTable.filter.placeholder": "Search products",
 
-  "component.productTable.table.selectedProducts": "Selected Products",
+  "component.productTable.table.selectedProducts": "Selected Products ({{count}})",
   "component.productTable.table.images": "Images",
   "component.productTable.table.names": "Names",
   "component.productTable.table.categories": "Categories",

@@ -5,14 +5,7 @@ import { useTranslation } from 'react-i18next'
 import { ImportButton, PermissionGate } from '@/components'
 import {
   Button,
-  Checkbox,
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-  Input,
+
   Sheet,
   SheetContent,
   SheetDescription,
@@ -22,15 +15,12 @@ import {
 } from '@/components/ui'
 import { useLanguageContext } from '@/contexts'
 import { downloadCsv } from '@/utils/helpers/download'
+import { LanguageForm } from './form'
 
 export function ActionBar() {
   const { t } = useTranslation()
-  const languageContext = useLanguageContext()
+  const { isModalOpen, isLoading, isEdit, openModal, closeModal, importLanguages } = useLanguageContext()
   const [file, setFile] = useState<File | null>(null)
-
-  const onSubmit = (values) => {
-    languageContext.submitLanguageForm(values)
-  }
 
   const handleFileChange = (event) => {
     const file = event.target.files?.[0]
@@ -64,11 +54,9 @@ export function ActionBar() {
   const onImport = async () => {
     const formData = new FormData()
     formData.append('file', file)
-    languageContext.importLanguages(formData)
+    importLanguages(formData)
     setFile(null)
   }
-
-  const isLoading = languageContext.isLoading
 
   return (
     <div className="flex items-center justify-between flex-wrap gap-2">
@@ -87,130 +75,22 @@ export function ActionBar() {
           />
         </PermissionGate>
         <PermissionGate permission={['language.create']}>
-          <Sheet open={languageContext.isModalOpen} onOpenChange={() => !isLoading && languageContext.toggleModal()}>
+          <Sheet open={isModalOpen} onOpenChange={() => closeModal()}>
             <SheetTrigger asChild>
-              <Button onClick={() => languageContext.toggleModal()} disabled={isLoading}>
+              <Button onClick={() => openModal()} disabled={isLoading}>
                 <Plus />
                 {t('page.languages.button.create')}
               </Button>
             </SheetTrigger>
             <SheetContent className="sm:max-w-xl w-full overflow-y-auto" side="right">
               <SheetHeader>
-                <SheetTitle>{t(`page.languages.form.title.${languageContext.selectedLanguage ? 'edit' : 'create'} `)}</SheetTitle>
+                <SheetTitle>{t(`page.languages.form.title.${isEdit ? 'edit' : 'create'} `)}</SheetTitle>
                 <SheetDescription>
-                  {t(`page.languages.form.description.${languageContext.selectedLanguage ? 'edit' : 'create'}`)}
+                  {t(`page.languages.form.description.${isEdit ? 'edit' : 'create'}`)}
                 </SheetDescription>
               </SheetHeader>
               <div className="w-full pb-4 px-4">
-                <Form {...languageContext.form}>
-                  <form className="w-full space-y-4" onSubmit={languageContext.form.handleSubmit(onSubmit)}>
-                    <FormField
-                      control={languageContext.form.control}
-                      name="name"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>
-                            {t('page.languages.form.name')}
-                          </FormLabel>
-                          <FormControl>
-                            <Input
-                              placeholder={t('page.languages.form.name')}
-                              className="w-full"
-                              {...field}
-                              disabled={isLoading}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={languageContext.form.control}
-                      name="code"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>
-                            {t('page.languages.form.code')}
-                          </FormLabel>
-                          <FormControl>
-                            <Input
-                              placeholder={t('page.languages.form.code')}
-                              className="w-full"
-                              {...field}
-                              disabled={isLoading}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={languageContext.form.control}
-                      name="priority"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>{t('page.languages.form.priority')}</FormLabel>
-                          <FormControl>
-                            <Input
-                              type="number"
-                              placeholder={t('page.languages.form.priority')}
-                              className="w-full"
-                              {...field}
-                              disabled={isLoading}
-                              onChange={e => field.onChange(Number(e.target.value))}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={languageContext.form.control}
-                      name="active"
-                      render={({ field }) => (
-                        <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
-                          <FormControl>
-                            <Checkbox
-                              checked={field.value}
-                              onCheckedChange={field.onChange}
-                              disabled={isLoading}
-                            />
-                          </FormControl>
-                          <FormLabel>{t('page.languages.form.active')}</FormLabel>
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={languageContext.form.control}
-                      name="main"
-                      render={({ field }) => (
-                        <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
-                          <FormControl>
-                            <Checkbox
-                              checked={field.value}
-                              onCheckedChange={field.onChange}
-                              disabled={isLoading}
-                            />
-                          </FormControl>
-                          <FormLabel>{t('page.languages.form.main')}</FormLabel>
-                        </FormItem>
-                      )}
-                    />
-                    <div className="flex gap-2">
-                      <Button
-                        type="button"
-                        variant="secondary"
-                        onClick={() => languageContext.toggleModal()}
-                        disabled={isLoading}
-                      >
-                        {t('button.cancel')}
-                      </Button>
-                      <Button type="submit" disabled={isLoading} loading={isLoading}>
-                        {t('button.submit')}
-                      </Button>
-                    </div>
-                  </form>
-                </Form>
+                <LanguageForm />
               </div>
             </SheetContent>
           </Sheet>

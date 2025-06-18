@@ -2,7 +2,7 @@ import { Plus } from 'lucide-react'
 
 import { useTranslation } from 'react-i18next'
 
-import { useRequestLanguages } from '@/api/hooks'
+import { useLanguageQuery } from '@/api/hooks'
 import { PermissionGate } from '@/components'
 import {
   Button,
@@ -36,7 +36,7 @@ export function ActionBar() {
     submitProductPropertyForm,
   } = useProductPropertiesContext()
 
-  const requestLanguages = useRequestLanguages({ pagination: { full: true } })
+  const requestLanguages = useLanguageQuery({ pagination: { full: true } })
   const languages = requestLanguages?.data?.data?.languages || []
 
   return (

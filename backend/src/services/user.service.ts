@@ -44,9 +44,6 @@ export async function get(payload: UserTypes.getUsersParams): Promise<UserTypes.
       $match: query,
     },
     {
-      $sort: sorters,
-    },
-    {
       $lookup: {
         from: 'user-roles',
         localField: 'role',
@@ -56,6 +53,9 @@ export async function get(payload: UserTypes.getUsersParams): Promise<UserTypes.
     },
     {
       $unwind: '$role',
+    },
+    {
+      $sort: sorters,
     },
     {
       $facet: {

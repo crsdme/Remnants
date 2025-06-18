@@ -12,7 +12,7 @@ import {
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import { useRequestProductProperties } from '@/api/hooks/product-properties/useRequestProductProperties'
+import { useProductPropertyQuery } from '@/api/hooks/product-property/useProductPropertyQuery'
 import { ImageGallery, TableActionDropdown } from '@/components'
 import { Badge, Button, Checkbox } from '@/components/ui'
 import { useAuthContext, useProductContext } from '@/contexts'
@@ -26,7 +26,7 @@ export function useColumns() {
   const { isLoading, selectedWarehouse, openModal, duplicateProducts, removeProduct } = useProductContext()
   const { permissions } = useAuthContext()
 
-  const requestProductProperties = useRequestProductProperties(
+  const requestProductProperties = useProductPropertyQuery(
     { filters: { active: [true], language: i18n.language, showInTable: true }, pagination: { full: true } },
   )
   const productProperties = requestProductProperties.data?.data.productProperties || []
@@ -233,10 +233,22 @@ export function useColumns() {
       selectColumn(),
       expanderColumn(),
       {
+        id: 'seq',
+        meta: {
+          title: t('page.products.table.seq'),
+          filterable: true,
+          filterType: 'number',
+          sortable: true,
+        },
+        // header: ({ column }) => sortHeader(column, t('page.products.table.seq')),
+        cell: ({ row }) => row.original.seq,
+      },
+      {
         id: 'images',
         size: 100,
         meta: {
           title: t('page.products.table.images'),
+          defaultVisible: true,
         },
         cell: ({ row }) => {
           const images = row.original.images.map((image, index) => ({
@@ -257,6 +269,7 @@ export function useColumns() {
           filterable: true,
           filterType: 'text',
           sortable: true,
+          defaultVisible: true,
         },
         header: ({ column }) => sortHeader(column, t('page.products.table.names')),
         accessorFn: row => row.names?.[i18n.language] || row.names?.en,
@@ -271,6 +284,7 @@ export function useColumns() {
           filterable: true,
           filterType: 'number',
           sortable: true,
+          defaultVisible: true,
         },
         header: ({ column }) => sortHeader(column, t('page.products.table.price')),
         accessorFn: row => `${row.price} ${row.currency.symbols[i18n.language]}`,
@@ -284,6 +298,7 @@ export function useColumns() {
           filterable: true,
           filterType: 'number',
           sortable: true,
+          defaultVisible: true,
         },
         header: ({ column }) => sortHeader(column, t('page.products.table.quantity')),
         cell: ({ row }) => {
@@ -312,6 +327,7 @@ export function useColumns() {
           filterable: true,
           filterType: 'text',
           sortable: true,
+          defaultVisible: true,
         },
         header: ({ column }) => sortHeader(column, t('page.products.table.categories')),
         cell: ({ row }) => (

@@ -1,12 +1,13 @@
-import { useEffect, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useRequestCurrencies, useRequestLanguages, useRequestProductPropertiesGroups, useRequestUnits } from '@/api/hooks'
+import { useCurrencyQuery, useLanguageQuery, useProductPropertyGroupQuery, useUnitQuery } from '@/api/hooks'
 import { getProductPropertiesOptions } from '@/api/requests'
 import { AsyncSelect, FileUploadDnd } from '@/components'
 import {
   Button,
+  Checkbox,
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -25,16 +26,16 @@ export function ProductForm() {
   const { i18n } = useTranslation()
   const { isLoading, isEdit, form, submitProductForm } = useProductContext()
 
-  const requestLanguages = useRequestLanguages({ pagination: { full: true } })
+  const requestLanguages = useLanguageQuery({ pagination: { full: true } })
   const languages = requestLanguages?.data?.data?.languages || []
 
-  const requestCurrencies = useRequestCurrencies({ pagination: { full: true }, filters: { active: [true], language: i18n.language } })
+  const requestCurrencies = useCurrencyQuery({ pagination: { full: true }, filters: { active: [true], language: i18n.language } })
   const currencies = requestCurrencies?.data?.data?.currencies || []
 
-  const requestUnits = useRequestUnits({ pagination: { full: true }, filters: { active: [true], language: i18n.language } })
+  const requestUnits = useUnitQuery({ pagination: { full: true }, filters: { active: [true], language: i18n.language } })
   const units = requestUnits?.data?.data?.units || []
 
-  const requestProductPropertiesGroups = useRequestProductPropertiesGroups({ pagination: { full: true }, filters: { active: [true], language: i18n.language } })
+  const requestProductPropertiesGroups = useProductPropertyGroupQuery({ pagination: { full: true }, filters: { active: [true], language: i18n.language } })
   const productPropertiesGroups = requestProductPropertiesGroups?.data?.data?.productPropertyGroups || []
 
   const onSubmit = (values) => {
@@ -252,6 +253,7 @@ export function ProductForm() {
                   value={field.value}
                   onChange={field.onChange}
                   disabled={isLoading}
+                  field={field}
                 />
               </FormItem>
             )}
@@ -296,12 +298,13 @@ function CreateForm({ languages, currencies, units, productPropertiesGroups, onS
     setImages,
     closeModal,
     loadCategoryOptions,
+    getPropertiesDefaultValues,
   } = useProductContext()
 
   return (
     <Form {...form}>
       <form
-        className="w-full"
+        className="w-full space-y-1"
         onSubmit={(e) => {
           e.preventDefault()
           form.handleSubmit(onSubmit)(e)
@@ -516,7 +519,7 @@ function CreateForm({ languages, currencies, units, productPropertiesGroups, onS
                   value={field.value}
                   onValueChange={(value) => {
                     field.onChange(value)
-                    form.setValue('productProperties', {})
+                    form.setValue('productProperties', getPropertiesDefaultValues(value, productPropertiesGroups))
                     setSelectedGroup(value)
                   }}
                   disabled={isLoading}
@@ -539,7 +542,7 @@ function CreateForm({ languages, currencies, units, productPropertiesGroups, onS
         />
 
         {selectedGroup && (
-          <div className="space-y-2">
+          <div>
             {(productPropertiesGroups.find(group => group.id === selectedGroup)?.productProperties || []).map(property => (
               renderProductProperty(property)
             ))}
@@ -559,6 +562,30 @@ function CreateForm({ languages, currencies, units, productPropertiesGroups, onS
             </FormItem>
           )}
         />
+
+        <div className="flex gap-2 flex-wrap pb-2">
+          <FormField
+            control={form.control}
+            name="generateBarcode"
+            render={({ field }) => (
+              <FormItem className="flex items-center justify-between rounded-md border p-4 grow">
+                <div className="space-y-1">
+                  <FormLabel className="text-sm">{t('page.products.form.generateBarcode')}</FormLabel>
+                  <FormDescription className="text-xs text-muted-foreground">
+                    {t('page.products.form.generateBarcode.description')}
+                  </FormDescription>
+                </div>
+                <FormControl>
+                  <Checkbox
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                    disabled={isLoading}
+                  />
+                </FormControl>
+              </FormItem>
+            )}
+          />
+        </div>
 
         <div className="flex gap-2">
           <Button

@@ -25,7 +25,7 @@ export async function get(payload: ProductPropertyTypes.getProductPropertiesPara
     },
   } = payload.filters
 
-  const sorters = buildSortQuery(payload.sorters)
+  const sorters = buildSortQuery(payload.sorters, { priority: 1 })
 
   const filterRules = {
     _id: { type: 'array' },

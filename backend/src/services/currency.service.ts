@@ -43,7 +43,7 @@ export async function get(payload: CurrencyTypes.getCurrenciesParams): Promise<C
     language,
   })
 
-  const sorters = buildSortQuery(payload.sorters)
+  const sorters = buildSortQuery(payload.sorters, { priority: 1 })
 
   const pipeline = [
     {

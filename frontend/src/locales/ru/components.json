@@ -129,7 +129,7 @@
 
   "component.productSelectTable.filter.placeholder": "Поиск товаров",
 
-  "component.productTable.table.selectedProducts": "Выбранные товары",
+  "component.productTable.table.selectedProducts": "Выбранные товары ({{count}})",
   "component.productTable.table.images": "Изображения",
   "component.productTable.table.names": "Названия",
   "component.productTable.table.categories": "Категории",

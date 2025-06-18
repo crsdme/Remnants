@@ -28,7 +28,7 @@ export async function get(payload: UnitTypes.getUnitsParams): Promise<UnitTypes.
     },
   } = payload.filters
 
-  const sorters = buildSortQuery(payload.sorters)
+  const sorters = buildSortQuery(payload.sorters, { priority: 1 })
 
   const filterRules = {
     names: { type: 'string', langAware: true },

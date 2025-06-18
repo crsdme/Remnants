@@ -21,11 +21,10 @@ const sortIcons = { asc: ArrowUp, desc: ArrowDown }
 
 export function useColumns() {
   const { t, i18n } = useTranslation()
-  const barcodeContext = useBarcodeContext()
+  const { isLoading, openModal, printBarcode, removeBarcodes } = useBarcodeContext()
 
   const columns = useMemo(() => {
     function sortHeader(column, label) {
-      const isLoading = barcodeContext.isLoading
       const Icon = sortIcons[column.getIsSorted() || undefined] || ChevronsUpDown
 
       return (
@@ -120,25 +119,25 @@ export function useColumns() {
             },
             {
               permission: 'barcode.edit',
-              onClick: () => barcodeContext.openModal(item),
+              onClick: () => openModal(item),
               label: t('table.edit'),
               icon: <Pencil className="h-4 w-4" />,
             },
             {
               permission: 'barcode.print',
-              onClick: () => barcodeContext.printBarcode({ id: item.id, size: '30x20', language: i18n.language }),
+              onClick: () => printBarcode({ id: item.id, size: '30x20', language: i18n.language }),
               label: t('table.print', { size: '30x20' }),
               icon: <Barcode className="h-4 w-4" />,
             },
             {
               permission: 'barcode.print',
-              onClick: () => barcodeContext.printBarcode({ id: item.id, size: '60x30', language: i18n.language }),
+              onClick: () => printBarcode({ id: item.id, size: '60x30', language: i18n.language }),
               label: t('table.print', { size: '60x30' }),
               icon: <Barcode className="h-4 w-4" />,
             },
             {
               permission: 'barcode.delete',
-              onClick: () => barcodeContext.removeBarcodes({ ids: [item.id] }),
+              onClick: () => removeBarcodes({ ids: [item.id] }),
               label: t('table.delete'),
               icon: <Trash className="h-4 w-4" />,
               isDestructive: true,
@@ -163,6 +162,7 @@ export function useColumns() {
           filterable: true,
           filterType: 'text',
           sortable: true,
+          defaultVisible: true,
         },
         header: ({ column }) => sortHeader(column, t('page.barcodes.table.code')),
         accessorFn: row => row.code,
@@ -177,6 +177,7 @@ export function useColumns() {
           filterable: true,
           filterType: 'text',
           sortable: true,
+          defaultVisible: true,
         },
         cell: ({ row }) => (
           <div className="flex gap-2">
@@ -198,6 +199,7 @@ export function useColumns() {
           filterable: true,
           filterType: 'boolean',
           sortable: true,
+          defaultVisible: true,
         },
         header: t('page.barcodes.table.active'),
         cell: ({ row }) => <Badge variant={row.original.active ? 'success' : 'destructive'}>{t(`table.active.${row.original.active}`)}</Badge>,

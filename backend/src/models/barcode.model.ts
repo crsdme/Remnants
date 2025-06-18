@@ -2,6 +2,7 @@ import type { Barcode } from '../types/barcode.type'
 import mongoose, { Schema } from 'mongoose'
 import { v4 as uuidv4 } from 'uuid'
 import { uuidValidator } from '../utils/uuidValidator'
+import { CounterModel } from './counter.model'
 
 const BarcodeSchema: Schema = new Schema(
   {
@@ -50,6 +51,20 @@ BarcodeSchema.set('toJSON', {
     delete ret._id
     delete ret.removed
   },
+})
+
+BarcodeSchema.pre('save', async function (next) {
+  const doc = this as any
+
+  if (doc.isNew) {
+    await CounterModel.findByIdAndUpdate(
+      'barcodes',
+      { $inc: { seq: 1 } },
+      { new: true, upsert: true },
+    )
+  }
+
+  next()
 })
 
 BarcodeSchema.index({ removed: 1 })

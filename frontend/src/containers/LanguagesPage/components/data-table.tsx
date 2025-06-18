@@ -2,7 +2,7 @@ import { flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-tabl
 import { Fragment, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import { useRequestLanguages } from '@/api/hooks'
+import { useLanguageQuery } from '@/api/hooks'
 import { AdvancedFilters, AdvancedSorters, BatchEdit, ColumnVisibilityMenu, PermissionGate, TablePagination, TableSelectionDropdown } from '@/components'
 import { Separator, Skeleton, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui'
 import { useLanguageContext } from '@/contexts'
@@ -14,7 +14,7 @@ import { DataTableFilters } from './data-table-filters'
 
 export function DataTable() {
   const { t } = useTranslation()
-  const languageContext = useLanguageContext()
+  const { batchLanguage, removeLanguages, duplicateLanguages } = useLanguageContext()
 
   const filtersInitialState = {
     name: '',
@@ -40,7 +40,7 @@ export function DataTable() {
     Object.fromEntries(sorting.map(({ id, desc }) => [id, desc ? 'desc' : 'asc']))
   ), [sorting])
 
-  const requestLanguages = useRequestLanguages(
+  const requestLanguages = useLanguageQuery(
     { pagination, filters, sorters },
     { options: { placeholderData: prevData => prevData } },
   )
@@ -169,7 +169,7 @@ export function DataTable() {
       value: item.value,
     }))
 
-    languageContext.batchLanguage({
+    batchLanguage({
       ...(batchEditMode === 'filter' ? { filters } : { ids: selectedLanguages }),
       params,
     })
@@ -179,7 +179,7 @@ export function DataTable() {
 
   const handleBulkRemove = () => {
     const ids = languages.filter((_, index) => rowSelection[index]).map(item => item.id)
-    languageContext.removeLanguage({ ids })
+    removeLanguages(ids)
     setRowSelection({})
   }
 
@@ -193,7 +193,7 @@ export function DataTable() {
 
   const handleBulkDuplicate = () => {
     const ids = languages.filter((_, index) => rowSelection[index]).map(item => item.id)
-    languageContext.duplicateLanguages({ ids })
+    duplicateLanguages({ ids })
     setRowSelection({})
   }
 

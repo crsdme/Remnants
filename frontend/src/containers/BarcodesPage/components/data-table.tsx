@@ -4,7 +4,7 @@ import { flexRender, getCoreRowModel, getExpandedRowModel, useReactTable } from 
 import { Fragment, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import { useRequestBarcodes } from '@/api/hooks'
+import { useBarcodeQuery } from '@/api/hooks'
 import { AdvancedFilters, AdvancedSorters, ColumnVisibilityMenu, TablePagination, TableSelectionDropdown } from '@/components'
 import { Separator, Skeleton, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui'
 import { useBarcodeContext } from '@/contexts'
@@ -15,7 +15,7 @@ import { DataTableFilters } from './data-table-filters'
 
 export function DataTable() {
   const { t } = useTranslation()
-  const barcodeContext = useBarcodeContext()
+  const { removeBarcodes } = useBarcodeContext()
 
   const filtersInitialState = {
     code: '',
@@ -36,7 +36,7 @@ export function DataTable() {
     Object.fromEntries(sorting.map(({ id, desc }) => [id, desc ? 'desc' : 'asc']))
   ), [sorting])
 
-  const requestBarcodes = useRequestBarcodes(
+  const requestBarcodes = useBarcodeQuery(
     { pagination, filters, sorters },
     { options: { placeholderData: prevData => prevData } },
   )
@@ -143,7 +143,7 @@ export function DataTable() {
   }, 50)
 
   const handleBulkRemove = () => {
-    barcodeContext.removeBarcodes({ ids: Object.keys(rowSelection) })
+    removeBarcodes({ ids: Object.keys(rowSelection) })
     setRowSelection({})
   }
 

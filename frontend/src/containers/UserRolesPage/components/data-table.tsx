@@ -2,7 +2,7 @@ import { flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-tabl
 import { Fragment, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import { useRequestUserRoles } from '@/api/hooks'
+import { useUserRoleQuery } from '@/api/hooks'
 import { AdvancedFilters, AdvancedSorters, ColumnVisibilityMenu, TablePagination, TableSelectionDropdown } from '@/components'
 import { Separator, Skeleton, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui'
 import { useUserRoleContext } from '@/contexts'
@@ -14,7 +14,7 @@ import { DataTableFilters } from './data-table-filters'
 
 export function DataTable() {
   const { t } = useTranslation()
-  const userRoleContext = useUserRoleContext()
+  const { removeUserRoles, duplicateUserRoles } = useUserRoleContext()
 
   const filtersInitialState = {
     names: '',
@@ -38,7 +38,7 @@ export function DataTable() {
     Object.fromEntries(sorting.map(({ id, desc }) => [id, desc ? 'desc' : 'asc']))
   ), [sorting])
 
-  const requestUserRoles = useRequestUserRoles(
+  const requestUserRoles = useUserRoleQuery(
     { pagination, filters, sorters },
     { options: { placeholderData: prevData => prevData } },
   )
@@ -158,7 +158,7 @@ export function DataTable() {
 
   const handleBulkRemove = () => {
     const ids = userRoles.filter((_, index) => rowSelection[index]).map(item => item.id)
-    userRoleContext.removeUserRoles({ ids })
+    removeUserRoles({ ids })
     setRowSelection({})
   }
 
@@ -168,7 +168,7 @@ export function DataTable() {
 
   const handleBulkDuplicate = () => {
     const ids = userRoles.filter((_, index) => rowSelection[index]).map(item => item.id)
-    userRoleContext.duplicateUserRoles({ ids })
+    duplicateUserRoles({ ids })
     setRowSelection({})
   }
 

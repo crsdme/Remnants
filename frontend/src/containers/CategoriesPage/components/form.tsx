@@ -1,13 +1,12 @@
-import { useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useRequestLanguages } from '@/api/hooks'
-import { getCategories } from '@/api/requests'
+import { useCategoryOptions, useLanguageQuery } from '@/api/hooks'
 import { AsyncSelect } from '@/components'
 import {
   Button,
   Checkbox,
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -17,15 +16,15 @@ import {
 import { useCategoryContext } from '@/contexts'
 
 export function CategoryForm() {
-  const categoryContext = useCategoryContext()
+  const { isLoading, isEdit, form, submitCategoryForm, closeModal } = useCategoryContext()
 
-  const { isLoading, isEdit, form } = categoryContext
-
-  const requestLanguages = useRequestLanguages({ pagination: { full: true } })
+  const requestLanguages = useLanguageQuery({ pagination: { full: true } })
   const languages = requestLanguages?.data?.data?.languages || []
 
   const onSubmit = (values) => {
-    categoryContext.submitCategoryForm(values)
+    if (values.parent === '')
+      values.parent = undefined
+    submitCategoryForm(values)
   }
 
   if (isEdit) {
@@ -35,7 +34,7 @@ export function CategoryForm() {
         languages={languages}
         isLoading={isLoading}
         onSubmit={onSubmit}
-        categoryContext={categoryContext}
+        closeModal={closeModal}
       />
     )
   }
@@ -46,29 +45,19 @@ export function CategoryForm() {
       languages={languages}
       isLoading={isLoading}
       onSubmit={onSubmit}
-      categoryContext={categoryContext}
+      closeModal={closeModal}
     />
   )
 }
 
-function CreateForm({ form, languages, isLoading, onSubmit, categoryContext }) {
+function CreateForm({ form, languages, isLoading, onSubmit, closeModal }) {
   const { t, i18n } = useTranslation()
 
-  const loadCategoriesOptions = useCallback(async ({ query, selectedValue }) => {
-    const response = await getCategories({
-      pagination: { full: true },
-      filters: {
-        ...(selectedValue ? { ids: selectedValue } : { names: query }),
-        active: [true],
-        language: i18n.language,
-      },
-    })
-    return response?.data?.categories || []
-  }, [i18n.language])
+  const loadCategoriesOptions = useCategoryOptions()
 
   return (
     <Form {...form}>
-      <form className="w-full space-y-4" onSubmit={form.handleSubmit(onSubmit)}>
+      <form className="w-full space-y-1" onSubmit={form.handleSubmit(onSubmit)}>
         {languages.map(language => (
           <FormField
             control={form.control}
@@ -77,9 +66,12 @@ function CreateForm({ form, languages, isLoading, onSubmit, categoryContext }) {
             render={({ field }) => (
               <FormItem>
                 <FormLabel>
-                  {t('page.categories.form.names', {
-                    language: t(`language.${language.code}`),
-                  })}
+                  <p>
+                    {t('page.categories.form.names', {
+                      language: t(`language.${language.code}`),
+                    })}
+                    <span className="text-destructive ml-1">*</span>
+                  </p>
                 </FormLabel>
                 <FormControl>
                   <Input
@@ -140,27 +132,34 @@ function CreateForm({ form, languages, isLoading, onSubmit, categoryContext }) {
             </FormItem>
           )}
         />
-        <FormField
-          control={form.control}
-          name="active"
-          render={({ field }) => (
-            <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
-              <FormControl>
-                <Checkbox
-                  checked={field.value}
-                  onCheckedChange={field.onChange}
-                  disabled={isLoading}
-                />
-              </FormControl>
-              <FormLabel>{t('page.categories.form.active')}</FormLabel>
-            </FormItem>
-          )}
-        />
+        <div className="flex gap-2 flex-wrap pb-2">
+          <FormField
+            control={form.control}
+            name="active"
+            render={({ field }) => (
+              <FormItem className="flex items-center justify-between rounded-md border p-4 grow">
+                <div className="space-y-1">
+                  <FormLabel className="text-sm">{t('page.categories.form.active')}</FormLabel>
+                  <FormDescription className="text-xs text-muted-foreground">
+                    {t('page.categories.form.active.description')}
+                  </FormDescription>
+                </div>
+                <FormControl>
+                  <Checkbox
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                    disabled={isLoading}
+                  />
+                </FormControl>
+              </FormItem>
+            )}
+          />
+        </div>
         <div className="flex gap-2">
           <Button
             type="button"
             variant="secondary"
-            onClick={() => categoryContext.closeModal()}
+            onClick={() => closeModal()}
             disabled={isLoading}
           >
             {t('button.cancel')}
@@ -174,24 +173,14 @@ function CreateForm({ form, languages, isLoading, onSubmit, categoryContext }) {
   )
 }
 
-function EditForm({ form, languages, isLoading, onSubmit, categoryContext }) {
+function EditForm({ form, languages, isLoading, onSubmit, closeModal }) {
   const { t, i18n } = useTranslation()
 
-  const loadCategoriesOptions = useCallback(async ({ query, selectedValue }) => {
-    const response = await getCategories({
-      pagination: { full: true },
-      filters: {
-        ...(selectedValue ? { ids: selectedValue } : { names: query }),
-        active: [true],
-        language: i18n.language,
-      },
-    })
-    return response?.data?.categories || []
-  }, [i18n.language])
+  const loadCategoriesOptions = useCategoryOptions()
 
   return (
     <Form {...form}>
-      <form className="w-full space-y-4" onSubmit={form.handleSubmit(onSubmit)}>
+      <form className="w-full space-y-1" onSubmit={form.handleSubmit(onSubmit)}>
         {languages.map(language => (
           <FormField
             control={form.control}
@@ -263,27 +252,34 @@ function EditForm({ form, languages, isLoading, onSubmit, categoryContext }) {
             </FormItem>
           )}
         />
-        <FormField
-          control={form.control}
-          name="active"
-          render={({ field }) => (
-            <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
-              <FormControl>
-                <Checkbox
-                  checked={field.value}
-                  onCheckedChange={field.onChange}
-                  disabled={isLoading}
-                />
-              </FormControl>
-              <FormLabel>{t('page.categories.form.active')}</FormLabel>
-            </FormItem>
-          )}
-        />
+        <div className="flex gap-2 flex-wrap pb-2">
+          <FormField
+            control={form.control}
+            name="active"
+            render={({ field }) => (
+              <FormItem className="flex items-center justify-between rounded-md border p-4 grow">
+                <div className="space-y-1">
+                  <FormLabel className="text-sm">{t('page.categories.form.active')}</FormLabel>
+                  <FormDescription className="text-xs text-muted-foreground">
+                    {t('page.categories.form.active.description')}
+                  </FormDescription>
+                </div>
+                <FormControl>
+                  <Checkbox
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                    disabled={isLoading}
+                  />
+                </FormControl>
+              </FormItem>
+            )}
+          />
+        </div>
         <div className="flex gap-2">
           <Button
             type="button"
             variant="secondary"
-            onClick={() => categoryContext.closeModal()}
+            onClick={() => closeModal()}
             disabled={isLoading}
           >
             {t('button.cancel')}

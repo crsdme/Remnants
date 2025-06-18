@@ -3,6 +3,8 @@ import type { SUPPORTED_LANGUAGES_TYPE } from '../config/constants'
 import type { Code, DateRange, IdType, LanguageString, Message, Pagination, Status } from './common.type'
 
 export interface Product {
+  id: IdType
+  seq: number
   names: Map<string, string>
   price: number
   currency: IdType
@@ -42,7 +44,9 @@ export interface getProductsResult {
 
 export interface getProductsParams {
   filters: {
+    search?: string
     ids?: IdType[]
+    seq?: number
     names?: LanguageString
     language?: SUPPORTED_LANGUAGES_TYPE
     price?: number
@@ -56,6 +60,7 @@ export interface getProductsParams {
     updatedAt?: DateRange
   }
   sorters: {
+    seq?: string
     names?: string
     price?: string
     purchasePrice?: string
@@ -103,6 +108,7 @@ export interface createProductParams {
     mimetype: string
     path: string
   }[]
+  generateBarcode: boolean
 }
 
 export interface editProductResult {

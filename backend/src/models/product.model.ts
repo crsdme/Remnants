@@ -3,6 +3,7 @@ import mongoose, { Schema } from 'mongoose'
 import { v4 as uuidv4 } from 'uuid'
 import { SUPPORTED_LANGUAGES } from '../config/constants'
 import { uuidValidator } from '../utils/uuidValidator'
+import { CounterModel } from './counter.model'
 
 const ProductSchema: Schema = new Schema(
   {
@@ -10,6 +11,10 @@ const ProductSchema: Schema = new Schema(
       type: String,
       default: uuidv4,
       validate: uuidValidator,
+    },
+    seq: {
+      type: Number,
+      default: 0,
     },
     names: {
       type: Map,
@@ -115,6 +120,21 @@ ProductSchema.set('toJSON', {
     delete ret._id
     delete ret.removed
   },
+})
+
+ProductSchema.pre('save', async function (next) {
+  const doc = this as any
+
+  if (doc.isNew && !doc.seq) {
+    const counter = await CounterModel.findByIdAndUpdate(
+      'products',
+      { $inc: { seq: 1 } },
+      { new: true, upsert: true },
+    )
+    doc.seq = counter.seq
+  }
+
+  next()
 })
 
 ProductSchema.index({ removed: 1 })

@@ -3,7 +3,7 @@ import { flexRender, getCoreRowModel, getExpandedRowModel, useReactTable } from 
 import { Fragment, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import { useRequestProductPropertiesGroups } from '@/api/hooks'
+import { useProductPropertyGroupQuery } from '@/api/hooks'
 import { AdvancedFilters, AdvancedSorters, ColumnVisibilityMenu, TablePagination, TableSelectionDropdown } from '@/components'
 import { Separator, Skeleton, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui'
 import { useProductPropertiesGroupsContext } from '@/contexts'
@@ -38,7 +38,7 @@ export function DataTable() {
     Object.fromEntries(sorting.map(({ id, desc }) => [id, desc ? 'desc' : 'asc']))
   ), [sorting])
 
-  const requestProductPropertiesGroups = useRequestProductPropertiesGroups(
+  const requestProductPropertiesGroups = useProductPropertyGroupQuery(
     { pagination, filters, sorters },
     { options: { placeholderData: prevData => prevData } },
   )

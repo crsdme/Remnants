@@ -17,7 +17,7 @@ export interface Pagination {
   full?: boolean
 }
 
-export type IdType = mongoose.Types.ObjectId
+export type IdType = mongoose.Types.ObjectId | string
 
 export interface DateRange {
   from: Date

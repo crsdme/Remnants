@@ -2,7 +2,7 @@ import { flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-tabl
 import { Fragment, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import { useRequestUsers } from '@/api/hooks'
+import { useUserQuery } from '@/api/hooks'
 import { AdvancedFilters, AdvancedSorters, ColumnVisibilityMenu, TablePagination, TableSelectionDropdown } from '@/components'
 import { Separator, Skeleton, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui'
 import { useUserContext } from '@/contexts'
@@ -14,7 +14,7 @@ import { DataTableFilters } from './data-table-filters'
 
 export function DataTable() {
   const { t } = useTranslation()
-  const userContext = useUserContext()
+  const { removeUsers, duplicateUsers } = useUserContext()
 
   const filtersInitialState = {
     name: '',
@@ -37,7 +37,7 @@ export function DataTable() {
     Object.fromEntries(sorting.map(({ id, desc }) => [id, desc ? 'desc' : 'asc']))
   ), [sorting])
 
-  const requestUsers = useRequestUsers(
+  const requestUsers = useUserQuery(
     { pagination, filters, sorters },
     { options: { placeholderData: prevData => prevData } },
   )
@@ -156,7 +156,7 @@ export function DataTable() {
 
   const handleBulkRemove = () => {
     const ids = users.filter((_, index) => rowSelection[index]).map(item => item.id)
-    userContext.removeUsers({ ids })
+    removeUsers({ ids })
     setRowSelection({})
   }
 
@@ -166,7 +166,7 @@ export function DataTable() {
 
   const handleBulkDuplicate = () => {
     const ids = users.filter((_, index) => rowSelection[index]).map(item => item.id)
-    userContext.duplicateUsers({ ids })
+    duplicateUsers({ ids })
     setRowSelection({})
   }
 

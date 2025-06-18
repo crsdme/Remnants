@@ -12,12 +12,16 @@ import {
   toNumber,
 } from '../utils/parseTools'
 import { buildQuery, buildSortQuery } from '../utils/queryBuilder'
+import * as BarcodeService from './barcode.service'
+import * as LanguageService from './language.service'
 
 export async function get(payload: ProductTypes.getProductsParams): Promise<ProductTypes.getProductsResult> {
   const { current = 1, pageSize = 10 } = payload.pagination
 
   const {
+    search = '',
     ids = [],
+    seq = undefined,
     names = '',
     language = 'en',
     price = undefined,
@@ -37,10 +41,19 @@ export async function get(payload: ProductTypes.getProductsParams): Promise<Prod
     },
   } = payload.filters
 
-  const sorters = buildSortQuery(payload.sorters)
+  const sorters = buildSortQuery(payload.sorters, { seq: 1 })
 
-  const filterRules = {
+  const filterRules: any = {
+    // search: {
+    //   type: 'multiFieldSearch',
+    //   multiFields: [
+    //     { field: 'names', langAware: true },
+    //     { field: 'barcodes.code' },
+    //     { field: 'price' },
+    //   ],
+    // },
     _id: { type: 'array' },
+    seq: { type: 'exact' },
     names: { type: 'string', langAware: true },
     active: { type: 'array' },
     price: { type: 'exact' },
@@ -52,20 +65,41 @@ export async function get(payload: ProductTypes.getProductsParams): Promise<Prod
     productProperties: { type: 'array' },
     createdAt: { type: 'dateRange' },
     updatedAt: { type: 'dateRange' },
-  } as const
+  }
 
   const query = buildQuery({
-    filters: { _id: ids, names, price, purchasePrice, barcodes, categories, unit, productPropertiesGroup, productProperties, createdAt, updatedAt },
+    filters: { _id: ids, seq, names, price, purchasePrice, barcodes, categories, unit, productPropertiesGroup, productProperties, createdAt, updatedAt },
     rules: filterRules,
     language,
+  })
+
+  const { languages } = await LanguageService.get({ filters: { active: [true] }, sorters: { priority: 'asc' }, pagination: { current: 1, pageSize: 1000 } })
+
+  const fields = languages.map(language => [
+    { field: `names.${language.code}`, langAware: true },
+    { field: `categories.names.${language.code}`, langAware: true },
+  ]).flat()
+
+  const filterRulesLast: any = {
+    search: {
+      type: 'multiFieldSearch',
+      multiFields: [
+        ...fields,
+        { field: 'barcodes.code' },
+        { field: 'price' },
+      ],
+    },
+  }
+
+  const queryLast = buildQuery({
+    filters: { barcodes, categories, unit, productPropertiesGroup, productProperties, search },
+    rules: filterRulesLast,
+    removed: false,
   })
 
   const pipeline = [
     {
       $match: query,
-    },
-    {
-      $sort: sorters,
     },
     { $unwind: { path: '$productProperties', preserveNullAndEmptyArrays: true } },
     {
@@ -245,12 +279,13 @@ export async function get(payload: ProductTypes.getProductsParams): Promise<Prod
     {
       $project: {
         _id: 0,
+        seq: 1,
         names: 1,
         price: 1,
         currency: { id: '$currency._id', names: 1, symbols: 1 },
         purchasePrice: 1,
         purchaseCurrency: { id: '$purchaseCurrency._id', names: 1, symbols: 1 },
-        barcodes: 1,
+        barcodes: { id: 1, code: 1 },
         categories: { id: 1, names: 1 },
         unit: { id: '$unit._id', names: 1, symbols: 1 },
         quantity: { count: 1, warehouse: 1, status: 1 },
@@ -261,6 +296,12 @@ export async function get(payload: ProductTypes.getProductsParams): Promise<Prod
         updatedAt: 1,
         id: '$_id',
       },
+    },
+    {
+      $match: queryLast,
+    },
+    {
+      $sort: sorters,
     },
     {
       $facet: {
@@ -306,6 +347,7 @@ export async function create(payload: ProductTypes.createProductParams): Promise
     productProperties,
     unit,
     uploadedImages,
+    generateBarcode,
   } = payload
 
   const parsedProductProperties = productProperties.map(property => ({
@@ -315,7 +357,7 @@ export async function create(payload: ProductTypes.createProductParams): Promise
 
   const parsedUploadedImages = uploadedImages.map((image: any) => ({
     filename: image.filename,
-    name: image.originalname,
+    name: Buffer.from(image.originalname, 'latin1').toString('utf8').slice(0, 40),
     type: image.mimetype,
     path: image.path,
   }))
@@ -332,6 +374,13 @@ export async function create(payload: ProductTypes.createProductParams): Promise
     unit,
     images: parsedUploadedImages,
   })
+
+  if (generateBarcode) {
+    await BarcodeService.create({
+      products: [{ id: product._id.toString(), quantity: 1 }],
+      active: true,
+    })
+  }
 
   return { status: 'success', code: 'PRODUCT_CREATED', message: 'Product created', product }
 }
@@ -368,7 +417,7 @@ export async function edit(payload: ProductTypes.editProductParams): Promise<Pro
     id: image,
     path: uploadedImages[index].path,
     filename: uploadedImages[index].filename,
-    name: uploadedImages[index].originalname,
+    name: Buffer.from(uploadedImages[index].originalname, 'latin1').toString('utf8').slice(0, 40),
     type: uploadedImages[index].mimetype,
   }))
 

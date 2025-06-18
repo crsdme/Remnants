@@ -23,7 +23,7 @@ export async function get(payload: LanguageTypes.getLanguagesParams): Promise<La
     },
   } = payload.filters
 
-  const sorters = buildSortQuery(payload.sorters)
+  const sorters = buildSortQuery(payload.sorters, { priority: 1 })
 
   const filterRules = {
     name: { type: 'string' },

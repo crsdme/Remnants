@@ -1,23 +1,25 @@
 import type { ColumnSort } from '@tanstack/react-table'
 import { flexRender, getCoreRowModel, getExpandedRowModel, useReactTable } from '@tanstack/react-table'
+import { Package } from 'lucide-react'
 import { Fragment, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { ColumnVisibilityMenu } from '@/components'
 import { Skeleton, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui'
 
+import { cn } from '@/utils/lib/utils'
 import { useColumns } from './columns'
 
 export function ProductSelectedTable(
-  { products, removeProduct, isLoading = false }:
-  { products: any[], removeProduct: (product: any) => void, isLoading?: boolean },
+  { products, removeProduct, isLoading = false, className, changeQuantity }:
+  { products: any[], removeProduct: (product: any) => void, isLoading?: boolean, className?: string, changeQuantity: (product: any, quantity: number) => void },
 ) {
   const { t } = useTranslation()
 
   const [columnVisibility, setColumnVisibility] = useState({})
   const [sorting, setSorting] = useState<ColumnSort[]>([])
 
-  const columns = useColumns({ removeProduct })
+  const columns = useColumns({ removeProduct, changeQuantity })
 
   const table = useReactTable({
     data: products,
@@ -102,12 +104,17 @@ export function ProductSelectedTable(
   }
 
   return (
-    <div>
+    <div className={cn('', className)}>
       <div className="flex justify-between items-center max-md:flex-col gap-2 py-2">
-        <h3 className="text-lg font-medium">
-          {t('component.productTable.table.selectedProducts')}
+        <h3 className="text-lg font-medium flex items-center gap-2">
+          <Package className="size-5" />
+          <p className="text-lg font-medium">{t('component.productTable.table.selectedProducts', { count: products.reduce((acc, product) => acc + product.selectedQuantity, 0) })}</p>
         </h3>
-        <ColumnVisibilityMenu table={table} tableId="selected-products-component" />
+        <ColumnVisibilityMenu
+          table={table}
+          tableId="selected-products-component"
+          className="min-w-[100%] sm:min-w-[100px]"
+        />
       </div>
       <div className="border rounded-sm">
         <Table>
