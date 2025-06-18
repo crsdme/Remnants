@@ -29,7 +29,7 @@ interface ColumnMeta {
   title: string
   filterable: boolean
   filterType: 'text' | 'number' | 'boolean' | 'date' | 'asyncValue'
-  loadOptions?: (inputValue: string) => Promise<Array<{ value: string, label: string }>>
+  loadOptions?: (query?: { query?: string, selectedValue?: string[] }) => Promise<{ value: string, label: string }[]>
 }
 
 const filterItemSchema = z.object({
@@ -165,15 +165,15 @@ export function AdvancedFilters({ columns, onSubmit, onCancel, className, align 
         return (
           <AsyncSelect
             fetcher={column.loadOptions}
+            getOptionValue={option => option.value}
+            getDisplayValue={option => option.label}
+            renderOption={option => option.label}
             value={item.value as string[]}
             onChange={(value) => {
               const currentItems = form.getValues('items')
               currentItems[index].value = value
               form.setValue('items', currentItems)
             }}
-            getOptionValue={option => option.value}
-            getDisplayValue={option => option.label}
-            renderOption={option => option.label}
             placeholder={t('component.batchEdit.selectValue')}
             width="100%"
           />
