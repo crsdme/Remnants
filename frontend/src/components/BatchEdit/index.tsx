@@ -66,7 +66,7 @@ interface ColumnMeta {
   title: string
   batchEdit: boolean
   batchEditType: 'textMultiLanguage' | 'number' | 'boolean' | 'text' | 'asyncValue'
-  loadOptions?: (inputValue: string) => Promise<Array<{ value: string, label: string }>>
+  loadOptions?: (query?: { query?: string, selectedValue?: string[] }) => Promise<Array<{ value: string, label: string }>>
 }
 
 export function BatchEdit({

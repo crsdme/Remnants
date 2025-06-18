@@ -1,25 +1,25 @@
 services:
-  frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
-    command: "true" # ❗ Только билдим, не запускаем
-    volumes:
-      - ./frontend/build:/app/build
-    env_file:
-      - ./frontend/.env
+  # frontend:
+  #   build:
+  #     context: ./frontend
+  #     dockerfile: Dockerfile
+  #   command: "true" # ❗ Только билдим, не запускаем
+  #   volumes:
+  #     - ./frontend/build:/app/build
+  #   env_file:
+  #     - ./frontend/.env
 
   backend:
     build:
       context: ./backend
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.dev
     container_name: backend
     restart: unless-stopped
     ports:
-      - "3011:3001"
+      - "3041:3001"
     volumes:
       - ./backend/dist:/app/dist
     env_file:
       - ./backend/.env
-    depends_on:
-      - frontend
+    # depends_on:
+    #   - frontend

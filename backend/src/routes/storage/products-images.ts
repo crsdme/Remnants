@@ -42,8 +42,8 @@ router.get('/:filename', async (req: any, res: any) => {
   const height = Number.parseInt(req.query.height)
   const imagePath = path.join(STORAGE_PATHS.productImages, filename)
 
-  // if (!fs.existsSync(imagePath))
-  // throw new HttpError(404, 'Image not found')
+  if (!fs.existsSync(imagePath))
+    throw new HttpError(404, 'Image not found')
 
   const cacheKey = `${filename}-${width || 'auto'}x${height || 'auto'}.jpg`
   const cachedPath = path.join(STORAGE_PATHS.cacheProductImages, cacheKey)
