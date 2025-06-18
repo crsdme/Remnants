@@ -23,7 +23,7 @@ export async function get(payload: ProductPropertyOptionTypes.getProductProperty
     },
   } = payload.filters
 
-  const sorters = buildSortQuery(payload.sorters)
+  const sorters = buildSortQuery(payload.sorters, { priority: 1 })
 
   const filterRules = {
     _id: { type: 'array' },
@@ -96,7 +96,7 @@ export async function remove(payload: ProductPropertyOptionTypes.removeProductPr
     { _id: { $in: ids } },
     { $set: { removed: true } },
   )
-  console.log(productPropertyOptions, ids)
+
   await ProductPropertyModel.updateMany(
     { options: { $in: ids } },
     { $pull: { options: { $in: ids } } },

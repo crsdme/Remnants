@@ -1,0 +1,31 @@
+import { useQueryClient } from '@tanstack/react-query'
+import { useTranslation } from 'react-i18next'
+import { getCategories } from '@/api/requests'
+
+interface LoadOptionsParams {
+  query: string
+  selectedValue?: string[]
+}
+
+export function useCategoryOptions({ mapFn }: { mapFn?: (category: Category) => { value: string, label: string } }) {
+  const queryClient = useQueryClient()
+  const { i18n } = useTranslation()
+
+  return async function loadCategoriesOptions({ query, selectedValue }: LoadOptionsParams) {
+    const filters = {
+      ...(selectedValue ? { ids: selectedValue } : { names: query }),
+      active: [true],
+      language: i18n.language,
+    }
+
+    const data = await queryClient.fetchQuery({
+      queryKey: ['categories', 'get', { full: true }, filters, undefined],
+      queryFn: () => getCategories({ pagination: { full: true }, filters }),
+      staleTime: 60000,
+    })
+
+    const categories = data?.data?.categories || []
+
+    return mapFn ? categories.map(mapFn) : categories
+  }
+}

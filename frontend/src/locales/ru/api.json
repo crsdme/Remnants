@@ -291,5 +291,38 @@
   "response.description.BARCODES_NOT_REMOVED": "Не удалось удалить выбранные штрих-коды",
 
   "error.title.BARCODES_FETCHED_EMPTY": "Штрих-коды не найдены",
-  "error.description.BARCODES_FETCHED_EMPTY": "Не удалось найти штрих-коды"
+  "error.description.BARCODES_FETCHED_EMPTY": "Не удалось найти штрих-коды",
+
+  "response.title.BARCODE_CODE_GENERATED": "Штрих-код сгенерирован",
+  "response.description.BARCODE_CODE_GENERATED": "Штрих-код был сгенерирован",
+
+  "response.title.PRODUCT_CREATED": "Товар создан",
+  "response.description.PRODUCT_CREATED": "Новый товар был создан",
+
+  "response.title.PRODUCT_NOT_EDITED": "Товар не обновлен",
+  "response.description.PRODUCT_NOT_EDITED": "Не удалось обновить товар",
+
+  "response.title.PRODUCT_EDITED": "Товар обновлен",
+  "response.description.PRODUCT_EDITED": "Товар был обновлен",
+
+  "response.title.PRODUCTS_NOT_REMOVED": "Товары не удалены",
+  "response.description.PRODUCTS_NOT_REMOVED": "Не удалось удалить выбранные товары",
+
+  "response.title.PRODUCTS_REMOVED": "Товары удалены",
+  "response.description.PRODUCTS_REMOVED": "Выбранные товары были удалены",
+
+  "response.title.PRODUCTS_NOT_BATCH_EDITED": "Обновление товаров не завершено",
+  "response.description.PRODUCTS_NOT_BATCH_EDITED": "Не удалось обновить товары",
+
+  "response.title.PRODUCTS_BATCH_EDITED": "Товары обновлены",
+  "response.description.PRODUCTS_BATCH_EDITED": "Обновление товаров завершено",
+
+  "response.title.PRODUCTS_DUPLICATED": "Товары дублированы",
+  "response.description.PRODUCTS_DUPLICATED": "Товары были дублированы",
+
+  "response.title.PRODUCTS_IMPORTED": "Товары импортированы",
+  "response.description.PRODUCTS_IMPORTED": "Товары были импортированы успешно",
+
+  "response.title.PRODUCTS_EXPORTED": "Товары экспортированы",
+  "response.description.PRODUCTS_EXPORTED": "Товары были экспортированы успешно"
 }

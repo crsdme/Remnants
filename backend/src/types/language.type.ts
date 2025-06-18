@@ -21,22 +21,22 @@ export interface getLanguagesResult {
 
 export interface getLanguagesParams {
   filters: {
-    name: string
-    code: string
-    active: boolean[]
-    priority: number
-    main: boolean[]
-    createdAt: DateRange
-    updatedAt: DateRange
+    name?: string
+    code?: string
+    active?: boolean[]
+    priority?: number
+    main?: boolean[]
+    createdAt?: DateRange
+    updatedAt?: DateRange
   }
   sorters: {
-    name: string
-    code: string
-    priority: string
-    main: string
-    active: string
-    createdAt: string
-    updatedAt: string
+    name?: string
+    code?: string
+    priority?: string
+    main?: string
+    active?: string
+    createdAt?: string
+    updatedAt?: string
   }
   pagination: Pagination
 }

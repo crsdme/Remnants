@@ -4,7 +4,7 @@ import { postAuthLogout } from '@/api/requests'
 
 export function useAuthLogout(settings?: MutationSettings) {
   return useMutation({
-    mutationFn: () => postAuthLogout(),
+    mutationFn: postAuthLogout,
     ...settings?.options,
   })
 }

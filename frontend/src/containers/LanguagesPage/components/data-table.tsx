@@ -2,7 +2,7 @@ import { flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-tabl
 import { Fragment, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import { useRequestLanguages } from '@/api/hooks'
+import { useLanguageQuery } from '@/api/hooks'
 import { AdvancedFilters, AdvancedSorters, BatchEdit, ColumnVisibilityMenu, PermissionGate, TablePagination, TableSelectionDropdown } from '@/components'
 import { Separator, Skeleton, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui'
 import { useLanguageContext } from '@/contexts'
@@ -14,7 +14,7 @@ import { DataTableFilters } from './data-table-filters'
 
 export function DataTable() {
   const { t } = useTranslation()
-  const languageContext = useLanguageContext()
+  const { batchLanguage, removeLanguages, duplicateLanguages } = useLanguageContext()
 
   const filtersInitialState = {
     name: '',
@@ -40,14 +40,18 @@ export function DataTable() {
     Object.fromEntries(sorting.map(({ id, desc }) => [id, desc ? 'desc' : 'asc']))
   ), [sorting])
 
-  const requestLanguages = useRequestLanguages(
+  const { data: { languages = [], languagesCount = 0 } = {}, isLoading, isFetching } = useLanguageQuery(
     { pagination, filters, sorters },
-    { options: { placeholderData: prevData => prevData } },
+    { options: {
+      select: response => ({
+        languages: response.data.languages,
+        languagesCount: response.data.languagesCount,
+      }),
+      placeholderData: prevData => prevData,
+    } },
   )
 
   const columns = useColumns()
-  const languages = requestLanguages?.data?.data?.languages || []
-  const languagesCount = requestLanguages?.data?.data?.languagesCount || 0
 
   const table = useReactTable({
     data: languages,
@@ -102,7 +106,7 @@ export function DataTable() {
   }
 
   const renderTableBody = () => {
-    if (requestLanguages.isLoading || requestLanguages.isFetching)
+    if (isLoading || isFetching)
       return renderSkeletonRows()
 
     if (table.getRowModel().rows?.length) {
@@ -169,7 +173,7 @@ export function DataTable() {
       value: item.value,
     }))
 
-    languageContext.batchLanguage({
+    batchLanguage({
       ...(batchEditMode === 'filter' ? { filters } : { ids: selectedLanguages }),
       params,
     })
@@ -179,7 +183,7 @@ export function DataTable() {
 
   const handleBulkRemove = () => {
     const ids = languages.filter((_, index) => rowSelection[index]).map(item => item.id)
-    languageContext.removeLanguage({ ids })
+    removeLanguages(ids)
     setRowSelection({})
   }
 
@@ -193,7 +197,7 @@ export function DataTable() {
 
   const handleBulkDuplicate = () => {
     const ids = languages.filter((_, index) => rowSelection[index]).map(item => item.id)
-    languageContext.duplicateLanguages({ ids })
+    duplicateLanguages({ ids })
     setRowSelection({})
   }
 

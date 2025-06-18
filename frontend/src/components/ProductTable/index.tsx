@@ -3,7 +3,7 @@ import { flexRender, getCoreRowModel, getExpandedRowModel, useReactTable } from 
 import { Fragment, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import { useRequestProducts } from '@/api/hooks'
+import { useProductQuery } from '@/api/hooks'
 import { AdvancedFilters, ColumnVisibilityMenu, TablePagination } from '@/components'
 import { Skeleton, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui'
 import { useDebounceCallback } from '@/utils/hooks'
@@ -35,7 +35,7 @@ export function ProductTable({ addProduct }: { addProduct: (product: any) => voi
     Object.fromEntries(sorting.map(({ id, desc }) => [id, desc ? 'desc' : 'asc']))
   ), [sorting])
 
-  const requestProducts = useRequestProducts(
+  const requestProducts = useProductQuery(
     { pagination, filters, sorters, isTree: true },
     { options: { placeholderData: prevData => prevData } },
   )
@@ -150,17 +150,23 @@ export function ProductTable({ addProduct }: { addProduct: (product: any) => voi
   return (
     <div>
       <div className="w-full flex justify-between items-start max-md:flex-col gap-2 py-2">
-        <div className="flex gap-2 items-center w-full">
+        <div className="sm:flex-row flex-col flex gap-2 items-center w-full">
           <DataTableFilters filters={filters} setFilters={setFilters} />
           <AdvancedFilters
             columns={columns}
             onSubmit={advancedFiltersSubmit}
             onCancel={advancedFiltersCancel}
+            className="min-w-[100%] sm:min-w-[100px]"
+            align="end"
           />
-          <ColumnVisibilityMenu table={table} tableId="select-products-component" />
+          <ColumnVisibilityMenu
+            table={table}
+            tableId="products-component"
+            className="min-w-[100%] sm:min-w-[100px]"
+          />
         </div>
       </div>
-      <div className="border rounded-sm max-w-[100%] overflow-auto max-h-[300px] scrollbar-hide">
+      <div className="border rounded-sm max-w-[100%] overflow-auto h-[300px] scrollbar-hide">
         <Table>
           <TableHeader>{renderTableHeader()}</TableHeader>
           <TableBody>

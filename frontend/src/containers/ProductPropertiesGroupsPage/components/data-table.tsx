@@ -3,7 +3,7 @@ import { flexRender, getCoreRowModel, getExpandedRowModel, useReactTable } from 
 import { Fragment, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import { useRequestProductPropertiesGroups } from '@/api/hooks'
+import { useProductPropertyGroupQuery } from '@/api/hooks'
 import { AdvancedFilters, AdvancedSorters, ColumnVisibilityMenu, TablePagination, TableSelectionDropdown } from '@/components'
 import { Separator, Skeleton, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui'
 import { useProductPropertiesGroupsContext } from '@/contexts'
@@ -38,18 +38,21 @@ export function DataTable() {
     Object.fromEntries(sorting.map(({ id, desc }) => [id, desc ? 'desc' : 'asc']))
   ), [sorting])
 
-  const requestProductPropertiesGroups = useRequestProductPropertiesGroups(
+  const { data: { productPropertyGroups = [], productPropertyGroupsCount = 0 } = {}, isLoading, isFetching } = useProductPropertyGroupQuery(
     { pagination, filters, sorters },
-    { options: { placeholderData: prevData => prevData } },
+    { options: {
+      select: response => ({
+        productPropertyGroups: response.data.productPropertyGroups,
+        productPropertyGroupsCount: response.data.productPropertyGroupsCount,
+      }),
+      placeholderData: prevData => prevData,
+    } },
   )
-
-  const productPropertiesGroups = requestProductPropertiesGroups.data?.data?.productPropertyGroups || []
-  const productPropertiesGroupsCount = requestProductPropertiesGroups.data?.data?.productPropertyGroupsCount || 0
 
   const columns = useColumns()
 
   const table = useReactTable({
-    data: productPropertiesGroups,
+    data: productPropertyGroups,
     columns,
     getCoreRowModel: getCoreRowModel(),
     onColumnVisibilityChange: setColumnVisibility,
@@ -123,7 +126,7 @@ export function DataTable() {
   )
 
   const renderTableBody = () => {
-    if (requestProductPropertiesGroups.isLoading || requestProductPropertiesGroups.isFetching)
+    if (isLoading || isFetching)
       return renderSkeletonRows()
 
     const rows = table.getRowModel().rows
@@ -208,10 +211,10 @@ export function DataTable() {
       </div>
       <TablePagination
         pagination={pagination}
-        totalPages={Math.ceil(productPropertiesGroupsCount / pagination.pageSize)}
+        totalPages={Math.ceil(productPropertyGroupsCount / pagination.pageSize)}
         changePagination={changePagination}
         selectedCount={Object.keys(rowSelection).length}
-        totalCount={productPropertiesGroupsCount}
+        totalCount={productPropertyGroupsCount}
       />
     </>
   )

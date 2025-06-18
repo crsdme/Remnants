@@ -74,7 +74,7 @@ describe('language API', () => {
       const createdLanguageId = createdLanguage.body.language.id
 
       const res = await LanguageFactory.duplicate([createdLanguageId])
-      console.log(res)
+
       expect(res.status).toBe(200)
     })
   })

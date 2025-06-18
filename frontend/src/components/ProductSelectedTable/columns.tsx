@@ -9,23 +9,26 @@ import {
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import { useRequestProductProperties } from '@/api/hooks/product-properties/useRequestProductProperties'
+import { useProductPropertyQuery } from '@/api/hooks'
 import { ImageGallery } from '@/components'
 import { Badge, Button, Input } from '@/components/ui'
 import { useAuthContext } from '@/contexts'
 import { formatDate } from '@/utils/helpers'
 import { hasPermission } from '@/utils/helpers/permission'
+import { useDebounceCallback } from '@/utils/hooks'
 
 const sortIcons = { asc: ArrowUp, desc: ArrowDown }
 
-export function useColumns({ removeProduct }: { removeProduct: (product: any) => void }) {
+export function useColumns({ removeProduct, changeQuantity }: { removeProduct: (product: any) => void, changeQuantity: (product: any, quantity: number) => void }) {
   const { t, i18n } = useTranslation()
   const { permissions } = useAuthContext()
 
-  const requestProductProperties = useRequestProductProperties({ filters: { active: [true], language: i18n.language, showInTable: true }, pagination: { full: true } })
+  const requestProductProperties = useProductPropertyQuery({ filters: { active: [true], language: i18n.language, showInTable: true }, pagination: { full: true } })
   const productProperties = requestProductProperties.data?.data.productProperties || []
 
   const isLoading = false
+
+  const debounceChangeQuantity = useDebounceCallback((product: any, quantity: number) => changeQuantity(product, quantity), 1000)
 
   const columns = useMemo(() => {
     function sortHeader(column, label) {
@@ -120,10 +123,7 @@ export function useColumns({ removeProduct }: { removeProduct: (product: any) =>
                 <Button
                   variant="outline"
                   size="icon"
-                  onClick={() => {
-                    const newQuantity = item.selectedQuantity - 1
-                    row.original.selectedQuantity = newQuantity
-                  }}
+                  onClick={() => changeQuantity(item, item.selectedQuantity - 1)}
                 >
                   <Minus className="h-4 w-4" />
                 </Button>
@@ -132,7 +132,8 @@ export function useColumns({ removeProduct }: { removeProduct: (product: any) =>
                     placeholder={t('component.product-select-table.quantity.placeholder')}
                     value={item.selectedQuantity}
                     className="pr-10 w-20"
-                    onChange={event => row.original.selectedQuantity = Number.parseInt(event.target.value)}
+                    disabled={true}
+                    onChange={event => debounceChangeQuantity(item, Number.parseInt(event.target.value))}
                   />
                   <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
                     <p>{item.unit.symbols[i18n.language]}</p>
@@ -141,10 +142,7 @@ export function useColumns({ removeProduct }: { removeProduct: (product: any) =>
                 <Button
                   variant="outline"
                   size="icon"
-                  onClick={() => {
-                    const newQuantity = item.selectedQuantity + 1
-                    row.original.selectedQuantity = newQuantity
-                  }}
+                  onClick={() => changeQuantity(item, item.selectedQuantity + 1)}
                 >
                   <Plus className="h-4 w-4" />
                 </Button>
@@ -169,8 +167,6 @@ export function useColumns({ removeProduct }: { removeProduct: (product: any) =>
         size: 150,
         meta: {
           title: property.names[i18n.language],
-          batchEdit: true,
-          batchEditType: 'textMultiLanguage',
           filterable: true,
           filterType: 'text',
           sortable: true,
@@ -228,8 +224,6 @@ export function useColumns({ removeProduct }: { removeProduct: (product: any) =>
           size: 150,
           meta: {
             title: t('component.productTable.table.purchasePrice'),
-            batchEdit: true,
-            batchEditType: 'number',
             filterable: true,
             filterType: 'number',
             sortable: true,
@@ -248,6 +242,7 @@ export function useColumns({ removeProduct }: { removeProduct: (product: any) =>
         size: 100,
         meta: {
           title: t('component.productTable.table.images'),
+          defaultVisible: true,
         },
         cell: ({ row }) => {
           const images = row.original.images.map((image, index) => ({
@@ -255,7 +250,7 @@ export function useColumns({ removeProduct }: { removeProduct: (product: any) =>
             src: image.path,
             alt: image.originalname,
           }))
-          return (<ImageGallery images={images} />)
+          return (<ImageGallery images={images} size={60} />)
         },
       },
       {
@@ -263,11 +258,10 @@ export function useColumns({ removeProduct }: { removeProduct: (product: any) =>
         size: 150,
         meta: {
           title: t('component.productTable.table.names'),
-          batchEdit: true,
-          batchEditType: 'textMultiLanguage',
           filterable: true,
           filterType: 'text',
           sortable: true,
+          defaultVisible: true,
         },
         header: ({ column }) => sortHeader(column, t('component.productTable.table.names')),
         accessorFn: row => row.names?.[i18n.language] || row.names?.en,
@@ -277,11 +271,10 @@ export function useColumns({ removeProduct }: { removeProduct: (product: any) =>
         size: 150,
         meta: {
           title: t('component.productTable.table.price'),
-          batchEdit: true,
-          batchEditType: 'number',
           filterable: true,
           filterType: 'number',
           sortable: true,
+          defaultVisible: true,
         },
         header: ({ column }) => sortHeader(column, t('component.productTable.table.price')),
         accessorFn: row => `${row.price} ${row.currency.symbols[i18n.language]}`,
@@ -292,8 +285,6 @@ export function useColumns({ removeProduct }: { removeProduct: (product: any) =>
       //   size: 150,
       //   meta: {
       //     title: t('component.productTable.table.quantity'),
-      //     batchEdit: true,
-      //     batchEditType: 'number',
       //     filterable: true,
       //     filterType: 'number',
       //     sortable: true,
@@ -311,11 +302,10 @@ export function useColumns({ removeProduct }: { removeProduct: (product: any) =>
         size: 150,
         meta: {
           title: t('component.productTable.table.selectedQuantity'),
-          batchEdit: true,
-          batchEditType: 'number',
           filterable: true,
           filterType: 'number',
           sortable: true,
+          defaultVisible: true,
         },
         header: ({ column }) => sortHeader(column, t('component.productTable.table.selectedQuantity')),
         cell: ({ row }) => {
@@ -345,6 +335,7 @@ export function useColumns({ removeProduct }: { removeProduct: (product: any) =>
           filterable: true,
           filterType: 'text',
           sortable: true,
+          defaultVisible: true,
         },
         header: ({ column }) => sortHeader(column, t('component.productTable.table.categories')),
         cell: ({ row }) => (

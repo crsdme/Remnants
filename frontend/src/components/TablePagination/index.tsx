@@ -27,15 +27,15 @@ export function TablePagination({
   return (
     <div className="flex justify-end py-2 max-md:flex-col gap-4">
       { selectedCount > 0 && (
-        <span className="text-sm text-muted-foreground">
+        <span className="text-sm text-muted-foreground w-full">
           {t('component.pagination.selected', {
             selected: selectedCount,
             total: totalCount,
           })}
         </span>
       )}
-      <div className="flex justify-end items-center gap-2 max-md:flex-col-reverse min-md:w-lg">
-        <span className="text-sm text-muted-foreground w-56 text-center">
+      <div className="flex justify-end items-center gap-2 max-md:flex-wrap min-md:w-lg">
+        <span className="text-sm text-muted-foreground text-center mr-2">
           {t('component.pagination.current', {
             current: pagination.current,
             total: totalPages,

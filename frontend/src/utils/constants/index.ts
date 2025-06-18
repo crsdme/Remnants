@@ -1,6 +1,6 @@
-export const backendUrl = 'http://127.0.0.1:3001/'
+export const backendUrl = import.meta.env.VITE_BACKEND_URL
 
-export const SUPPORTED_LANGUAGES = ['ru', 'en', 'fr', 'de'] as const
+export const SUPPORTED_LANGUAGES = ['ru', 'en'] as const
 export type SupportedLanguage = typeof SUPPORTED_LANGUAGES[number]
 
 export const USER_ROLE_PERMISSIONS = [

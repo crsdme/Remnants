@@ -3,10 +3,10 @@ import { flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-tabl
 import { Fragment, useMemo, useState } from 'react'
 
 import { useTranslation } from 'react-i18next'
-import { useRequestLanguages, useRequestUnits } from '@/api/hooks'
+import { useLanguageQuery, useUnitQuery } from '@/api/hooks'
 import { AdvancedFilters, AdvancedSorters, BatchEdit, ColumnVisibilityMenu, PermissionGate, TablePagination, TableSelectionDropdown } from '@/components'
 import { Separator, Skeleton, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui'
-import { useUnitContext } from '@/contexts/unit/UnitContext'
+import { useUnitContext } from '@/contexts/UnitContext'
 import { downloadCsv } from '@/utils/helpers/download'
 import { useDebounceCallback } from '@/utils/hooks'
 
@@ -15,7 +15,7 @@ import { DataTableFilters } from './data-table-filters'
 
 export function DataTable() {
   const { t, i18n } = useTranslation()
-  const unitContext = useUnitContext()
+  const { batchUnit, removeUnit, duplicateUnits } = useUnitContext()
 
   const filtersInitialState = {
     names: '',
@@ -40,17 +40,27 @@ export function DataTable() {
     Object.fromEntries(sorting.map(({ id, desc }) => [id, desc ? 'desc' : 'asc']))
   ), [sorting])
 
-  const requestUnits = useRequestUnits(
+  const { data: { units = [], unitsCount = 0 } = {}, isLoading, isFetching } = useUnitQuery(
     { pagination, filters, sorters },
-    { options: { placeholderData: prevData => prevData } },
+    { options: {
+      select: response => ({
+        units: response.data.units,
+        unitsCount: response.data.unitsCount,
+      }),
+      placeholderData: prevData => prevData,
+    } },
   )
 
   const columns = useColumns()
-  const units = requestUnits?.data?.data?.units || []
-  const unitsCount = requestUnits?.data?.data?.unitsCount || 0
 
-  const requestLanguages = useRequestLanguages({ pagination: { full: true } })
-  const languages = requestLanguages.data?.data?.languages || []
+  const { data: { languages = [] } = {} } = useLanguageQuery(
+    { pagination: { full: true } },
+    { options: {
+      select: response => ({
+        languages: response.data.languages,
+      }),
+    } },
+  )
 
   const table = useReactTable({
     data: units,
@@ -105,7 +115,7 @@ export function DataTable() {
   }
 
   const renderTableBody = () => {
-    if (requestUnits.isLoading || requestUnits.isFetching)
+    if (isLoading || isFetching)
       return renderSkeletonRows()
 
     if (table.getRowModel().rows?.length) {
@@ -171,7 +181,7 @@ export function DataTable() {
       value: item.value,
     }))
 
-    unitContext.batchUnit({
+    batchUnit({
       ...(batchEditMode === 'filter' ? { filters } : { ids: selectedUnits }),
       params,
     })
@@ -181,7 +191,7 @@ export function DataTable() {
 
   const handleBulkRemove = () => {
     const ids = units.filter((_, index) => rowSelection[index]).map(item => item.id)
-    unitContext.removeUnit({ ids })
+    removeUnit({ ids })
     setRowSelection({})
   }
 
@@ -195,7 +205,7 @@ export function DataTable() {
 
   const handleBulkDuplicate = () => {
     const ids = units.filter((_, index) => rowSelection[index]).map(item => item.id)
-    unitContext.duplicateUnits({ ids })
+    duplicateUnits({ ids })
     setRowSelection({})
   }
 

@@ -17,6 +17,10 @@ router.post(
   checkPermissions('barcode.create'),
   BarcodeController.create,
 )
+router.get(
+  '/generate-code',
+  BarcodeController.generateCode,
+)
 router.post(
   '/edit',
   validateBodyRequest(editBarcodeSchema),

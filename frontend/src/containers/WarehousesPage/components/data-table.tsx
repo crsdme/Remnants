@@ -4,7 +4,7 @@ import { flexRender, getCoreRowModel, getExpandedRowModel, useReactTable } from 
 import { Fragment, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import { useRequestWarehouses } from '@/api/hooks'
+import { useWarehouseQuery } from '@/api/hooks'
 import { AdvancedFilters, AdvancedSorters, ColumnVisibilityMenu, TablePagination, TableSelectionDropdown } from '@/components'
 import { Separator, Skeleton, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui'
 import { useWarehouseContext } from '@/contexts'
@@ -15,7 +15,7 @@ import { DataTableFilters } from './data-table-filters'
 
 export function DataTable() {
   const { t, i18n } = useTranslation()
-  const warehouseContext = useWarehouseContext()
+  const { removeWarehouses } = useWarehouseContext()
 
   const filtersInitialState = {
     names: '',
@@ -38,12 +38,16 @@ export function DataTable() {
     Object.fromEntries(sorting.map(({ id, desc }) => [id, desc ? 'desc' : 'asc']))
   ), [sorting])
 
-  const requestWarehouses = useRequestWarehouses(
+  const { data: { warehouses = [], warehousesCount = 0 } = {}, isLoading, isFetching } = useWarehouseQuery(
     { pagination, filters, sorters },
-    { options: { placeholderData: prevData => prevData } },
+    { options: {
+      select: response => ({
+        warehouses: response.data.warehouses,
+        warehousesCount: response.data.warehousesCount,
+      }),
+      placeholderData: prevData => prevData,
+    } },
   )
-  const warehouses = requestWarehouses?.data?.data?.warehouses || []
-  const warehousesCount = requestWarehouses?.data?.data?.warehousesCount || 0
 
   const columns = useColumns()
 
@@ -122,7 +126,7 @@ export function DataTable() {
   )
 
   const renderTableBody = () => {
-    if (requestWarehouses.isLoading || requestWarehouses.isFetching)
+    if (isLoading || isFetching)
       return renderSkeletonRows()
 
     const rows = table.getRowModel().rows
@@ -145,7 +149,7 @@ export function DataTable() {
   }, 50)
 
   const handleBulkRemove = () => {
-    warehouseContext.removeWarehouses({ ids: Object.keys(rowSelection) })
+    removeWarehouses({ ids: Object.keys(rowSelection) })
     setRowSelection({})
   }
 

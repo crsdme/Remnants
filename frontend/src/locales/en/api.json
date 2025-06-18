@@ -291,5 +291,38 @@
   "response.description.BARCODES_NOT_REMOVED": "Unable to remove selected barcodes",
 
   "error.title.BARCODES_FETCHED_EMPTY": "Barcodes not found",
-  "error.description.BARCODES_FETCHED_EMPTY": "Unable to find barcodes"
+  "error.description.BARCODES_FETCHED_EMPTY": "Unable to find barcodes",
+
+  "response.title.BARCODE_CODE_GENERATED": "Barcode code generated",
+  "response.description.BARCODE_CODE_GENERATED": "Barcode code has been generated",
+
+  "response.title.PRODUCT_CREATED": "Product created",
+  "response.description.PRODUCT_CREATED": "New product has been created",
+
+  "response.title.PRODUCT_NOT_EDITED": "Product not edited",
+  "response.description.PRODUCT_NOT_EDITED": "Unable to edit product",
+
+  "response.title.PRODUCT_EDITED": "Product edited",
+  "response.description.PRODUCT_EDITED": "Product has been updated",
+
+  "response.title.PRODUCTS_NOT_REMOVED": "Products not removed",
+  "response.description.PRODUCTS_NOT_REMOVED": "Unable to remove selected products",
+
+  "response.title.PRODUCTS_REMOVED": "Products removed",
+  "response.description.PRODUCTS_REMOVED": "Selected products have been deleted",
+
+  "response.title.PRODUCTS_NOT_BATCH_EDITED": "Batch edit failed",
+  "response.description.PRODUCTS_NOT_BATCH_EDITED": "Unable to batch edit products",
+
+  "response.title.PRODUCTS_BATCH_EDITED": "Products edited",
+  "response.description.PRODUCTS_BATCH_EDITED": "Batch product update completed",
+
+  "response.title.PRODUCTS_DUPLICATED": "Products duplicated",
+  "response.description.PRODUCTS_DUPLICATED": "Products have been duplicated",
+
+  "response.title.PRODUCTS_IMPORTED": "Products imported",
+  "response.description.PRODUCTS_IMPORTED": "Products have been imported successfully",
+
+  "response.title.PRODUCTS_EXPORTED": "Products exported",
+  "response.description.PRODUCTS_EXPORTED": "Products have been exported successfully"
 }

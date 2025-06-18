@@ -2,18 +2,9 @@ import { Plus } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import { useRequestUserRoles } from '@/api/hooks'
-import { AsyncSelect, ImportButton, PermissionGate } from '@/components'
+import { ImportButton, PermissionGate } from '@/components'
 import {
   Button,
-  Checkbox,
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-  Input,
   Sheet,
   SheetContent,
   SheetDescription,
@@ -24,19 +15,12 @@ import {
 import { useUserContext } from '@/contexts'
 import { downloadCsv } from '@/utils/helpers/download'
 
+import { UserForm } from './form'
+
 export function ActionBar() {
-  const { t, i18n } = useTranslation()
-  const userContext = useUserContext()
+  const { t } = useTranslation()
+  const { isModalOpen, isLoading, openModal, isEdit, closeModal, importUsers } = useUserContext()
   const [file, setFile] = useState<File | null>(null)
-  const [search, setSearch] = useState('')
-
-  const requestUserRoles = useRequestUserRoles(
-    { pagination: { full: true }, filters: { names: search, active: [true], language: i18n.language } },
-  )
-
-  const onSubmit = (values) => {
-    userContext.submitUserForm(values)
-  }
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
@@ -67,11 +51,9 @@ export function ActionBar() {
   const onImport = async () => {
     const formData = new FormData()
     formData.append('file', file)
-    userContext.importUsers(formData)
+    importUsers(formData)
     setFile(null)
   }
-
-  const isLoading = userContext.isLoading
 
   return (
     <div className="flex items-center justify-between flex-wrap gap-2">
@@ -90,140 +72,22 @@ export function ActionBar() {
           />
         </PermissionGate>
         <PermissionGate permission={['user.create']}>
-          <Sheet open={userContext.isModalOpen} onOpenChange={() => !isLoading && userContext.toggleModal()}>
+          <Sheet open={isModalOpen} onOpenChange={() => closeModal()}>
             <SheetTrigger asChild>
-              <Button onClick={() => userContext.toggleModal()} disabled={isLoading}>
+              <Button onClick={() => openModal()} disabled={isLoading}>
                 <Plus />
                 {t('page.users.button.create')}
               </Button>
             </SheetTrigger>
             <SheetContent className="sm:max-w-xl w-full overflow-y-auto" side="right">
               <SheetHeader>
-                <SheetTitle>{t(`page.users.form.title.${userContext.selectedUser ? 'edit' : 'create'}`)}</SheetTitle>
+                <SheetTitle>{t(`page.users.form.title.${isEdit ? 'edit' : 'create'}`)}</SheetTitle>
                 <SheetDescription>
-                  {t(`page.users.form.description.${userContext.selectedUser ? 'edit' : 'create'}`)}
+                  {t(`page.users.form.description.${isEdit ? 'edit' : 'create'}`)}
                 </SheetDescription>
               </SheetHeader>
               <div className="w-full pb-4 px-4">
-                <Form {...userContext.form}>
-                  <form className="w-full space-y-4" onSubmit={userContext.form.handleSubmit(onSubmit)}>
-                    <FormField
-                      control={userContext.form.control}
-                      name="name"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>
-                            {t('page.users.form.name')}
-                          </FormLabel>
-                          <FormControl>
-                            <Input
-                              placeholder={t('page.users.form.name')}
-                              className="w-full"
-                              {...field}
-                              disabled={isLoading}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={userContext.form.control}
-                      name="login"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>
-                            {t('page.users.form.login')}
-                          </FormLabel>
-                          <FormControl>
-                            <Input
-                              placeholder={t('page.users.form.login')}
-                              className="w-full"
-                              {...field}
-                              disabled={isLoading}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={userContext.form.control}
-                      name="password"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>{t('page.users.form.password')}</FormLabel>
-                          <FormControl>
-                            <Input
-                              type="password"
-                              placeholder={t('page.users.form.password')}
-                              className="w-full"
-                              {...field}
-                              disabled={isLoading}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={userContext.form.control}
-                      name="role"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>{t('page.users.form.role')}</FormLabel>
-                          <FormControl>
-                            <AsyncSelect<UserRole>
-                              fetcher={async (searchValue) => {
-                                setSearch(searchValue as string)
-                                return requestUserRoles.data?.data?.userRoles || []
-                              }}
-                              renderOption={e => e.names[i18n.language]}
-                              getDisplayValue={e => e.names[i18n.language]}
-                              getOptionValue={e => e.id}
-                              width="100%"
-                              className="w-full"
-                              name="role"
-                              value={field.value}
-                              onChange={field.onChange}
-                              disabled={isLoading}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={userContext.form.control}
-                      name="active"
-                      render={({ field }) => (
-                        <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
-                          <FormControl>
-                            <Checkbox
-                              checked={field.value}
-                              onCheckedChange={field.onChange}
-                              disabled={isLoading}
-                            />
-                          </FormControl>
-                          <FormLabel>{t('page.users.form.active')}</FormLabel>
-                        </FormItem>
-                      )}
-                    />
-                    <div className="flex gap-2">
-                      <Button
-                        type="button"
-                        variant="secondary"
-                        onClick={() => userContext.toggleModal()}
-                        disabled={isLoading}
-                      >
-                        {t('button.cancel')}
-                      </Button>
-                      <Button type="submit" disabled={isLoading} loading={isLoading}>
-                        {t('button.submit')}
-                      </Button>
-                    </div>
-                  </form>
-                </Form>
+                <UserForm />
               </div>
             </SheetContent>
           </Sheet>

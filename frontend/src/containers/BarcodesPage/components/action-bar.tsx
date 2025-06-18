@@ -2,16 +2,14 @@ import { Plus } from 'lucide-react'
 
 import { useTranslation } from 'react-i18next'
 import { PermissionGate } from '@/components'
-import { Button, Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui'
+import { Button, Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui'
 import { useBarcodeContext } from '@/contexts'
 
 import { BarcodeForm } from './form'
 
 export function ActionBar() {
   const { t } = useTranslation()
-  const barcodeContext = useBarcodeContext()
-
-  const { isLoading, isEdit } = barcodeContext
+  const { isLoading, isEdit, isModalOpen, closeModal, openModal } = useBarcodeContext()
 
   return (
     <div className="flex items-center justify-between flex-wrap gap-2">
@@ -21,17 +19,17 @@ export function ActionBar() {
       </div>
       <div className="flex items-center flex-wrap gap-2">
         <PermissionGate permission={['barcode.create', 'barcode.edit']}>
-          <Dialog open={barcodeContext.isModalOpen} onOpenChange={barcodeContext.closeModal}>
+          <Dialog open={isModalOpen} onOpenChange={closeModal}>
             <DialogTrigger asChild>
               <Button
-                onClick={() => barcodeContext.openModal()}
+                onClick={() => openModal()}
                 disabled={isLoading}
               >
                 <Plus />
                 {t('page.barcodes.button.create')}
               </Button>
             </DialogTrigger>
-            <DialogContent className="flex flex-col min-w-[80vw] max-w-[80vw] max-h-[95vh] overflow-y-auto sm:max-w-[95vw] sm:min-w-[95vw]">
+            <DialogContent className="flex flex-col min-w-[98vw] max-w-[98vw] max-h-[98vh] overflow-y-auto sm:max-w-[85vw] sm:min-w-[85vw]">
               <DialogHeader>
                 <DialogTitle>
                   {t(`page.barcodes.form.title.${isEdit ? 'edit' : 'create'}`)}

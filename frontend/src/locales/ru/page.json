@@ -32,7 +32,9 @@
   "page.languages.form.code": "Код",
   "page.languages.form.priority": "Приоритет",
   "page.languages.form.active": "Активный",
+  "page.languages.form.active.description": "Активный язык",
   "page.languages.form.main": "Основной",
+  "page.languages.form.main.description": "Основной язык",
 
   "page.units.title": "Единицы измерения",
   "page.units.description": "Управление единицами измерения",
@@ -52,6 +54,7 @@
   "page.units.form.symbols": "Символ ({{language}})",
   "page.units.form.priority": "Приоритет",
   "page.units.form.active": "Активная",
+  "page.units.form.active.description": "Активная единица измерения",
 
   "page.currencies.title": "Валюты",
   "page.currencies.description": "Управление валютами",
@@ -71,6 +74,7 @@
   "page.currencies.form.symbols": "Символ ({{language}})",
   "page.currencies.form.priority": "Приоритет",
   "page.currencies.form.active": "Активная",
+  "page.currencies.form.active.description": "Активная валюта",
 
   "page.users.title": "Пользователи",
   "page.users.description": "Управление пользователями",
@@ -91,6 +95,7 @@
   "page.users.form.login": "Логин",
   "page.users.form.password": "Пароль",
   "page.users.form.active": "Статус",
+  "page.users.form.active.description": "Активный пользователь",
   "page.users.form.role": "Роль",
 
   "page.categories.title": "Категории",
@@ -110,13 +115,15 @@
   "page.categories.form.names": "Название ({{language}})",
   "page.categories.form.priority": "Приоритет",
   "page.categories.form.active": "Активная",
+  "page.categories.form.active.description": "Активная категория",
   "page.categories.form.parent": "Родитель",
 
   "page.products.title": "Товары",
   "page.products.description": "Управление товарами",
-  "page.products.filter.names": "Фильтр по названию",
+  "page.products.filter.search": "Поиск",
   "page.products.button.create": "Создать товар",
 
+  "page.products.table.seq": "Номер",
   "page.products.table.images": "Изображения",
   "page.products.table.names": "Название",
   "page.products.table.priority": "Приоритет",
@@ -146,6 +153,8 @@
   "page.products.form.productPropertiesGroup": "Группа свойств",
   "page.products.form.productProperties": "Свойства товара",
   "page.products.form.images": "Изображения",
+  "page.products.form.generateBarcode": "Генерировать штрих-код",
+  "page.products.form.generateBarcode.description": "Генерировать штрих-код для товара",
 
   "page.userRoles.title": "Роли пользователей",
   "page.userRoles.description": "Управление ролями пользователей",
@@ -165,6 +174,7 @@
   "page.userRoles.form.priority": "Приоритет",
   "page.userRoles.form.permissions": "Права",
   "page.userRoles.form.active": "Статус",
+  "page.userRoles.form.active.description": "Активная роль пользователя",
 
   "page.userRoles.permissions.title.categories": "Категории",
   "page.userRoles.permissions.description.categories": "Управление категориями",
@@ -307,6 +317,7 @@
   "page.product-properties-groups.form.names": "Название ({{language}})",
   "page.product-properties-groups.form.priority": "Приоритет",
   "page.product-properties-groups.form.active": "Активная",
+  "page.product-properties-groups.form.active.description": "Активная группа свойств товара",
   "page.product-properties-groups.form.productProperties": "Свойства",
 
   "page.product-properties.title": "Свойства товаров",
@@ -336,8 +347,11 @@
   "page.product-properties.form.names": "Название ({{language}})",
   "page.product-properties.form.priority": "Приоритет",
   "page.product-properties.form.isRequired": "Обязательное",
+  "page.product-properties.form.isRequired.description": "Свойство обязательное",
   "page.product-properties.form.active": "Активная",
+  "page.product-properties.form.active.description": "Активное свойство товара",
   "page.product-properties.form.showInTable": "Показывать в таблице",
+  "page.product-properties.form.showInTable.description": "Показывать свойство в таблице",
   "page.product-properties.form.productProperties": "Свойства",
   "page.product-properties.form.type": "Тип",
   "page.product-properties.form.color": "Цвет",
@@ -363,6 +377,7 @@
   "page.warehouses.form.names": "Название ({{language}})",
   "page.warehouses.form.priority": "Приоритет",
   "page.warehouses.form.active": "Активная",
+  "page.warehouses.form.active.description": "Активный склад",
 
   "page.barcodes.title": "Штрих-коды",
   "page.barcodes.description": "Управление штрих-кодами",

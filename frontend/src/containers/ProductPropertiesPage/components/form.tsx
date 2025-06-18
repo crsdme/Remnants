@@ -6,6 +6,7 @@ import {
   Checkbox,
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -23,7 +24,7 @@ export function ProductOptionForm({ form, languages, isLoading, onSubmit, closeM
 
   return (
     <Form {...form}>
-      <form className="w-full space-y-4" onSubmit={form.handleSubmit(onSubmit)}>
+      <form className="w-full space-y-1" onSubmit={form.handleSubmit(onSubmit)}>
         {languages.map(language => (
           <FormField
             control={form.control}
@@ -32,9 +33,12 @@ export function ProductOptionForm({ form, languages, isLoading, onSubmit, closeM
             render={({ field }) => (
               <FormItem>
                 <FormLabel>
-                  {t('page.product-properties.form.names', {
-                    language: t(`language.${language.code}`),
-                  })}
+                  <p>
+                    {t('page.product-properties.form.names', {
+                      language: t(`language.${language.code}`),
+                    })}
+                    <span className="text-destructive ml-1">*</span>
+                  </p>
                 </FormLabel>
                 <FormControl>
                   <Input
@@ -73,22 +77,29 @@ export function ProductOptionForm({ form, languages, isLoading, onSubmit, closeM
           )}
         />
 
-        <FormField
-          control={form.control}
-          name="active"
-          render={({ field }) => (
-            <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
-              <FormControl>
-                <Checkbox
-                  checked={field.value}
-                  onCheckedChange={field.onChange}
-                  disabled={isLoading}
-                />
-              </FormControl>
-              <FormLabel>{t('page.product-properties.form.active')}</FormLabel>
-            </FormItem>
-          )}
-        />
+        <div className="flex gap-2 flex-wrap pb-2">
+          <FormField
+            control={form.control}
+            name="active"
+            render={({ field }) => (
+              <FormItem className="flex items-center justify-between rounded-md border p-4 grow">
+                <div className="space-y-1">
+                  <FormLabel className="text-sm">{t('page.product-properties.form.active')}</FormLabel>
+                  <FormDescription className="text-xs text-muted-foreground">
+                    {t('page.product-properties.form.active.description')}
+                  </FormDescription>
+                </div>
+                <FormControl>
+                  <Checkbox
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                    disabled={isLoading}
+                  />
+                </FormControl>
+              </FormItem>
+            )}
+          />
+        </div>
 
         {selectedProperty?.type === 'color'
           && (
@@ -133,7 +144,7 @@ export function ProductPropertyForm({ form, languages, isLoading, onSubmit, clos
 
   return (
     <Form {...form}>
-      <form className="w-full space-y-4" onSubmit={form.handleSubmit(onSubmit)}>
+      <form className="w-full space-y-1" onSubmit={form.handleSubmit(onSubmit)}>
         {languages.map(language => (
           <FormField
             control={form.control}
@@ -142,9 +153,12 @@ export function ProductPropertyForm({ form, languages, isLoading, onSubmit, clos
             render={({ field }) => (
               <FormItem>
                 <FormLabel>
-                  {t('page.product-properties.form.names', {
-                    language: t(`language.${language.code}`),
-                  })}
+                  <p>
+                    {t('page.product-properties.form.names', {
+                      language: t(`language.${language.code}`),
+                    })}
+                    <span className="text-destructive ml-1">*</span>
+                  </p>
                 </FormLabel>
                 <FormControl>
                   <Input
@@ -166,7 +180,12 @@ export function ProductPropertyForm({ form, languages, isLoading, onSubmit, clos
           name="type"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>{t('page.product-properties.form.type')}</FormLabel>
+              <FormLabel>
+                <p>
+                  {t('page.product-properties.form.type')}
+                  <span className="text-destructive ml-1">*</span>
+                </p>
+              </FormLabel>
               <FormControl>
                 <Select
                   onValueChange={field.onChange}
@@ -210,54 +229,72 @@ export function ProductPropertyForm({ form, languages, isLoading, onSubmit, clos
             </FormItem>
           )}
         />
-        <FormField
-          control={form.control}
-          name="isRequired"
-          render={({ field }) => (
-            <FormItem className="flex flex-row items-start space-y-0 rounded-md border p-4">
-              <FormControl>
-                <Checkbox
-                  checked={field.value}
-                  onCheckedChange={field.onChange}
-                  disabled={isLoading}
-                />
-              </FormControl>
-              <FormLabel>{t('page.product-properties.form.isRequired')}</FormLabel>
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="showInTable"
-          render={({ field }) => (
-            <FormItem className="flex flex-row items-start space-y-0 rounded-md border p-4">
-              <FormControl>
-                <Checkbox
-                  checked={field.value}
-                  onCheckedChange={field.onChange}
-                  disabled={isLoading}
-                />
-              </FormControl>
-              <FormLabel>{t('page.product-properties.form.showInTable')}</FormLabel>
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="active"
-          render={({ field }) => (
-            <FormItem className="flex flex-row items-start space-y-0 rounded-md border p-4">
-              <FormControl>
-                <Checkbox
-                  checked={field.value}
-                  onCheckedChange={field.onChange}
-                  disabled={isLoading}
-                />
-              </FormControl>
-              <FormLabel>{t('page.product-properties.form.active')}</FormLabel>
-            </FormItem>
-          )}
-        />
+
+        <div className="flex gap-2 flex-wrap pb-2">
+          <FormField
+            control={form.control}
+            name="active"
+            render={({ field }) => (
+              <FormItem className="flex items-center justify-between rounded-md border p-4 grow">
+                <div className="space-y-1">
+                  <FormLabel className="text-sm">{t('page.product-properties.form.active')}</FormLabel>
+                  <FormDescription className="text-xs text-muted-foreground">
+                    {t('page.product-properties.form.active.description')}
+                  </FormDescription>
+                </div>
+                <FormControl>
+                  <Checkbox
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                    disabled={isLoading}
+                  />
+                </FormControl>
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="showInTable"
+            render={({ field }) => (
+              <FormItem className="flex items-center justify-between rounded-md border p-4 grow">
+                <div className="space-y-1">
+                  <FormLabel className="text-sm">{t('page.product-properties.form.showInTable')}</FormLabel>
+                  <FormDescription className="text-xs text-muted-foreground">
+                    {t('page.product-properties.form.showInTable.description')}
+                  </FormDescription>
+                </div>
+                <FormControl>
+                  <Checkbox
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                    disabled={isLoading}
+                  />
+                </FormControl>
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="isRequired"
+            render={({ field }) => (
+              <FormItem className="flex items-center justify-between rounded-md border p-4 grow">
+                <div className="space-y-1">
+                  <FormLabel className="text-sm">{t('page.product-properties.form.isRequired')}</FormLabel>
+                  <FormDescription className="text-xs text-muted-foreground">
+                    {t('page.product-properties.form.isRequired.description')}
+                  </FormDescription>
+                </div>
+                <FormControl>
+                  <Checkbox
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                    disabled={isLoading}
+                  />
+                </FormControl>
+              </FormItem>
+            )}
+          />
+        </div>
         <div className="flex gap-2">
           <Button
             type="button"

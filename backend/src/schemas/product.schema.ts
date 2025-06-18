@@ -14,6 +14,8 @@ function hasIdsOrFilters(data: {
 export const getProductSchema = z.object({
   pagination: paginationSchema.optional(),
   filters: z.object({
+    search: z.string().optional().transform(val => val?.trim() === '' ? undefined : val),
+    seq: z.number().optional(),
     names: z.string().optional(),
     language: z.string(),
     price: numberFromStringSchema.optional(),
@@ -28,6 +30,7 @@ export const getProductSchema = z.object({
     updatedAt: dateRangeSchema.optional(),
   }).optional().default({ language: 'en' }),
   sorters: z.object({
+    seq: sorterParamsSchema.optional(),
     names: sorterParamsSchema.optional(),
     price: sorterParamsSchema.optional(),
     purchasePrice: sorterParamsSchema.optional(),
@@ -56,6 +59,7 @@ export const createProductSchema = z.object({
   images: z.any().optional(),
   uploadedImages: z.any().optional(),
   uploadedImagesIds: z.any().optional(),
+  generateBarcode: z.boolean().optional(),
 })
 
 export const editProductSchema = z.object({

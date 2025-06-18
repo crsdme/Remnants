@@ -1,15 +1,14 @@
 import { Plus } from 'lucide-react'
-import { useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import { useRequestLanguages } from '@/api/hooks'
-import { getProductProperties } from '@/api/requests'
+import { useLanguageQuery, useProductPropertyOptions } from '@/api/hooks'
 import { AsyncSelect, PermissionGate } from '@/components'
 import {
   Button,
   Checkbox,
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -28,24 +27,20 @@ export function ActionBar() {
   const { t, i18n } = useTranslation()
   const { isLoading, isEdit, form, submitGroupForm, openModal, closeModal, isModalOpen } = useProductPropertiesGroupsContext()
 
-  const requestLanguages = useRequestLanguages({ pagination: { full: true } })
-  const languages = requestLanguages?.data?.data?.languages || []
+  const { data: { languages = [] } = {} } = useLanguageQuery(
+    { pagination: { full: true } },
+    { options: {
+      select: response => ({
+        languages: response.data.languages,
+      }),
+    } },
+  )
 
   const onSubmit = (values) => {
     submitGroupForm(values)
   }
 
-  const loadProductPropertiesOptions = useCallback(async ({ query, selectedValue }) => {
-    const response = await getProductProperties({
-      pagination: { full: true },
-      filters: {
-        ...(selectedValue ? { ids: selectedValue } : { names: query }),
-        active: [true],
-        language: i18n.language,
-      },
-    })
-    return response?.data?.productProperties || []
-  }, [i18n.language])
+  const loadProductPropertiesOptions = useProductPropertyOptions()
 
   return (
     <div className="flex items-center justify-between flex-wrap gap-2">
@@ -56,7 +51,7 @@ export function ActionBar() {
       <div className="flex items-center flex-wrap gap-2">
 
         <PermissionGate permission={['product-properties-groups.create']}>
-          <Sheet open={isModalOpen} onOpenChange={() => closeModal()}>
+          <Sheet open={isModalOpen} onOpenChange={closeModal}>
             <SheetTrigger asChild>
               <Button onClick={() => openModal()} disabled={isLoading}>
                 <Plus />
@@ -72,7 +67,7 @@ export function ActionBar() {
               </SheetHeader>
               <div className="w-full pb-4 px-4">
                 <Form {...form}>
-                  <form className="w-full space-y-4" onSubmit={form.handleSubmit(onSubmit)}>
+                  <form className="w-full space-y-1" onSubmit={form.handleSubmit(onSubmit)}>
                     {languages.map(language => (
                       <FormField
                         control={form.control}
@@ -81,9 +76,12 @@ export function ActionBar() {
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel>
-                              {t('page.product-properties-groups.form.names', {
-                                language: t(`language.${language.code}`),
-                              })}
+                              <p>
+                                {t('page.product-properties-groups.form.names', {
+                                  language: t(`language.${language.code}`),
+                                })}
+                                <span className="text-destructive ml-1">*</span>
+                              </p>
                             </FormLabel>
                             <FormControl>
                               <Input
@@ -145,22 +143,29 @@ export function ActionBar() {
                         </FormItem>
                       )}
                     />
-                    <FormField
-                      control={form.control}
-                      name="active"
-                      render={({ field }) => (
-                        <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
-                          <FormControl>
-                            <Checkbox
-                              checked={field.value}
-                              onCheckedChange={field.onChange}
-                              disabled={isLoading}
-                            />
-                          </FormControl>
-                          <FormLabel>{t('page.product-properties-groups.form.active')}</FormLabel>
-                        </FormItem>
-                      )}
-                    />
+                    <div className="flex gap-2 flex-wrap pb-2">
+                      <FormField
+                        control={form.control}
+                        name="active"
+                        render={({ field }) => (
+                          <FormItem className="flex items-center justify-between rounded-md border p-4 grow">
+                            <div className="space-y-1">
+                              <FormLabel className="text-sm">{t('page.product-properties-groups.form.active')}</FormLabel>
+                              <FormDescription className="text-xs text-muted-foreground">
+                                {t('page.product-properties-groups.form.active.description')}
+                              </FormDescription>
+                            </div>
+                            <FormControl>
+                              <Checkbox
+                                checked={field.value}
+                                onCheckedChange={field.onChange}
+                                disabled={isLoading}
+                              />
+                            </FormControl>
+                          </FormItem>
+                        )}
+                      />
+                    </div>
                     <div className="flex gap-2">
                       <Button
                         type="button"

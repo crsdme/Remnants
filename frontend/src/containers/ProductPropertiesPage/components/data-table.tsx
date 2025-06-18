@@ -4,7 +4,7 @@ import { Pencil, Trash2 } from 'lucide-react'
 import { Fragment, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import { useRequestProductProperties, useRequestProductPropertiesOptions } from '@/api/hooks'
+import { useProductPropertyOptionQuery, useProductPropertyQuery } from '@/api/hooks'
 import { AdvancedFilters, AdvancedSorters, ColumnVisibilityMenu, TablePagination, TableSelectionDropdown } from '@/components'
 import { Badge, Button, Separator, Skeleton, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui'
 import { useProductPropertiesContext } from '@/contexts'
@@ -41,13 +41,16 @@ export function DataTable() {
     Object.fromEntries(sorting.map(({ id, desc }) => [id, desc ? 'desc' : 'asc']))
   ), [sorting])
 
-  const requestProductProperties = useRequestProductProperties(
+  const { data: { productProperties = [], productPropertiesCount = 0 } = {}, isLoading, isFetching } = useProductPropertyQuery(
     { pagination, filters, sorters },
-    { options: { placeholderData: prevData => prevData } },
+    { options: {
+      select: response => ({
+        productProperties: response.data.productProperties,
+        productPropertiesCount: response.data.productPropertiesCount,
+      }),
+      placeholderData: prevData => prevData,
+    } },
   )
-
-  const productProperties = requestProductProperties.data?.data?.productProperties || []
-  const productPropertiesCount = requestProductProperties.data?.data?.productPropertiesCount || 0
 
   const columns = useColumns()
 
@@ -136,7 +139,7 @@ export function DataTable() {
   )
 
   const renderTableBody = () => {
-    if (requestProductProperties.isLoading || requestProductProperties.isFetching)
+    if (isLoading || isFetching)
       return renderSkeletonRows()
 
     const rows = table.getRowModel().rows
@@ -233,7 +236,7 @@ export function DataTable() {
 function SubRowOptions({ property, optionIds, language, columnsLength, editOption, removeOption }) {
   const enabled = !!optionIds.length
 
-  const { data, isLoading, isFetching, error } = useRequestProductPropertiesOptions(
+  const { data, isLoading, isFetching, error } = useProductPropertyOptionQuery(
     { pagination: { full: true }, filters: { ids: optionIds, language } },
     { options: { placeholderData: prevData => prevData } },
   )

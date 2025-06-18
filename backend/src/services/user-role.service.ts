@@ -22,7 +22,7 @@ export async function get(payload: UserRoleTypes.getUserRolesParams): Promise<Us
     },
   } = payload.filters
 
-  const sorters = buildSortQuery(payload.sorters)
+  const sorters = buildSortQuery(payload.sorters, { priority: 1 })
 
   const filterRules = {
     names: { type: 'string', langAware: true },

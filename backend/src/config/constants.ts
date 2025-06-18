@@ -14,11 +14,13 @@ export const STORAGE_PATHS = {
   import: path.join(STORAGE_PATH, 'import'),
   export: path.join(STORAGE_PATH, 'export'),
   temp: path.join(STORAGE_PATH, 'temp'),
+  cache: path.join(STORAGE_PATH, 'cache'),
   importCategories: path.join(STORAGE_PATH, 'import', 'categories'),
   exportCategories: path.join(STORAGE_PATH, 'export', 'categories'),
   importProducts: path.join(STORAGE_PATH, 'import', 'products'),
   exportProducts: path.join(STORAGE_PATH, 'export', 'products'),
   productImages: path.join(STORAGE_PATH, 'products', 'images'),
+  cacheProductImages: path.join(STORAGE_PATH, 'cache', 'products', 'images'),
 }
 
 export const STORAGE_URLS = {

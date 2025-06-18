@@ -21,11 +21,10 @@ const sortIcons = { asc: ArrowUp, desc: ArrowDown }
 
 export function useColumns() {
   const { t, i18n } = useTranslation()
-  const userRoleContext = useUserRoleContext()
+  const { isLoading, openModal, duplicateUserRoles, removeUserRoles } = useUserRoleContext()
 
   const columns = useMemo(() => {
     function sortHeader(column, label) {
-      const isLoading = userRoleContext.isLoading
       const Icon = sortIcons[column.getIsSorted() || undefined] || ChevronsUpDown
 
       return (
@@ -120,19 +119,19 @@ export function useColumns() {
             },
             {
               permission: 'user-role.edit',
-              onClick: () => userRoleContext.toggleModal(item),
+              onClick: () => openModal(item),
               label: t('table.edit'),
               icon: <Pencil className="h-4 w-4" />,
             },
             {
               permission: 'user-role.duplicate',
-              onClick: () => userRoleContext.duplicateUserRoles({ ids: [item.id] }),
+              onClick: () => duplicateUserRoles({ ids: [item.id] }),
               label: t('table.duplicate'),
               icon: <CopyPlus className="h-4 w-4" />,
             },
             {
               permission: 'user-role.delete',
-              onClick: () => userRoleContext.removeUserRoles({ ids: [item.id] }),
+              onClick: () => removeUserRoles({ ids: [item.id] }),
               label: t('table.delete'),
               icon: <Trash className="h-4 w-4" />,
               isDestructive: true,
@@ -155,6 +154,7 @@ export function useColumns() {
           filterable: true,
           filterType: 'text',
           sortable: true,
+          defaultVisible: true,
         },
         header: ({ column }) => sortHeader(column, t('page.userRoles.table.names')),
         accessorFn: row => row.names?.[i18n.language] || row.names?.en,
@@ -167,6 +167,7 @@ export function useColumns() {
           filterable: true,
           filterType: 'text',
           sortable: true,
+          defaultVisible: true,
         },
         header: () => t('page.userRoles.table.permissions'),
         accessorFn: row => row.permissions,
@@ -190,6 +191,7 @@ export function useColumns() {
           filterable: true,
           filterType: 'boolean',
           sortable: true,
+          defaultVisible: true,
         },
         header: t('page.userRoles.table.active'),
         cell: ({ row }) => <Badge variant={row.original.active ? 'success' : 'destructive'}>{t(`table.active.${row.original.active}`)}</Badge>,
@@ -204,6 +206,7 @@ export function useColumns() {
           filterable: true,
           filterType: 'number',
           sortable: true,
+          defaultVisible: true,
         },
         header: t('page.userRoles.table.priority'),
         cell: ({ row }) => <Badge variant="outline">{row.original.priority}</Badge>,

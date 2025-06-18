@@ -4,10 +4,10 @@ import { Warehouse } from 'lucide-react'
 import { Fragment, useEffect, useMemo, useState } from 'react'
 
 import { useTranslation } from 'react-i18next'
-import { useRequestLanguages, useRequestProducts, useRequestWarehouses } from '@/api/hooks'
+import { useLanguageQuery, useProductQuery, useWarehouseQuery } from '@/api/hooks'
 import { AdvancedFilters, AdvancedSorters, BatchEdit, ColumnVisibilityMenu, PermissionGate, TablePagination, TableSelectionDropdown } from '@/components'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Separator, Skeleton, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui'
-import { useProductContext } from '@/contexts/product/ProductContext'
+import { useProductContext } from '@/contexts/ProductContext'
 
 import { useDebounceCallback } from '@/utils/hooks'
 import { useColumns } from './columns'
@@ -41,18 +41,34 @@ export function DataTable() {
     Object.fromEntries(sorting.map(({ id, desc }) => [id, desc ? 'desc' : 'asc']))
   ), [sorting])
 
-  const requestProducts = useRequestProducts(
-    { pagination, filters, sorters, isTree: true },
-    { options: { placeholderData: prevData => prevData } },
+  const { data: { products = [], productsCount = 0 } = {}, isLoading, isFetching } = useProductQuery(
+    { pagination, filters, sorters },
+    { options: {
+      select: response => ({
+        products: response.data.products,
+        productsCount: response.data.productsCount,
+      }),
+      placeholderData: prevData => prevData,
+    } },
   )
-  const products = requestProducts?.data?.data?.products || []
-  const productsCount = requestProducts?.data?.data?.productsCount || 0
 
-  const requestLanguages = useRequestLanguages({ pagination: { full: true } })
-  const languages = requestLanguages.data?.data?.languages || []
+  const { data: { languages = [] } = {} } = useLanguageQuery(
+    { pagination: { full: true } },
+    { options: {
+      select: response => ({
+        languages: response.data.languages,
+      }),
+    } },
+  )
 
-  const requestWarehouses = useRequestWarehouses({ filters: { active: [true], language: i18n.language }, pagination: { full: true } })
-  const warehouses = requestWarehouses.data?.data?.warehouses || []
+  const { data: { warehouses = [] } = {} } = useWarehouseQuery(
+    { filters: { active: [true], language: i18n.language }, pagination: { full: true } },
+    { options: {
+      select: response => ({
+        warehouses: response.data.warehouses,
+      }),
+    } },
+  )
 
   useEffect(() => {
     if (!productContext.selectedWarehouse && warehouses.length > 0) {
@@ -137,7 +153,7 @@ export function DataTable() {
   )
 
   const renderTableBody = () => {
-    if (requestProducts.isLoading || requestProducts.isFetching)
+    if (isLoading || isFetching)
       return renderSkeletonRows()
 
     const rows = table.getRowModel().rows
@@ -267,7 +283,10 @@ export function DataTable() {
             onRemove={handleBulkRemove}
             onDuplicate={handleBulkDuplicate}
           />
-          <ColumnVisibilityMenu table={table} tableId="category" />
+          <ColumnVisibilityMenu
+            table={table}
+            tableId="product"
+          />
         </div>
       </div>
       <div className="border rounded-sm">

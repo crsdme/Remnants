@@ -1,7 +1,8 @@
 interface Rule {
-  type: 'string' | 'array' | 'exact' | 'dateRange'
+  type: 'string' | 'array' | 'exact' | 'dateRange' | 'multiFieldSearch'
   field?: string
   langAware?: boolean
+  multiFields?: { field: string, langAware?: boolean }[]
 }
 
 interface BuildQueryOptions {
@@ -46,6 +47,20 @@ export function buildQuery({ filters, rules, language = 'en', removed = true, ba
         query[field] = value
         break
 
+      case 'multiFieldSearch': {
+        const terms = String(value).trim().toLowerCase().split(/\s+/)
+
+        const searchConditions = terms.map(term => ({
+          $or: rule.multiFields!.map(({ field, langAware = false }) => ({
+            [langAware ? `${field}.${language}` : field]: { $regex: term, $options: 'i' },
+          })),
+        }))
+
+        query.$and = query.$and || []
+        query.$and.push(...searchConditions)
+        break
+      }
+
       case 'dateRange':
         if (value.from && value.to) {
           query[field] = { $gte: value.from, $lte: value.to }
@@ -61,8 +76,8 @@ export function buildQuery({ filters, rules, language = 'en', removed = true, ba
   return query
 }
 
-export function buildSortQuery(sort: Record<string, string>): Record<string, any> {
-  let sortersQuery: Record<string, any> = { _id: 1 }
+export function buildSortQuery(sort: Record<string, string>, defaultSorters: Record<string, any> = { _id: 1, id: 1 }): Record<string, any> {
+  let sortersQuery: Record<string, any> = defaultSorters
 
   if (!sort)
     return sortersQuery

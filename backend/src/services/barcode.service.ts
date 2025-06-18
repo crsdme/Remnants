@@ -4,7 +4,7 @@ import path from 'node:path'
 import bwipjs from 'bwip-js'
 import PDFDocument from 'pdfkit'
 import { STORAGE_URLS } from '../config/constants'
-import { BarcodeModel } from '../models/'
+import { BarcodeModel, CounterModel } from '../models/'
 import { ProductModel } from '../models/product.model'
 import { HttpError } from '../utils/httpError'
 import { buildQuery, buildSortQuery } from '../utils/queryBuilder'
@@ -93,7 +93,6 @@ export async function get(payload: BarcodeTypes.getBarcodesParams): Promise<Barc
 
   const pipeline = [
     { $match: query },
-    { $sort: sorters },
     { $unwind: '$products' },
     {
       $lookup: {
@@ -279,6 +278,7 @@ export async function get(payload: BarcodeTypes.getBarcodesParams): Promise<Barc
         },
       },
     },
+    { $sort: sorters },
     {
       $facet: {
         barcodes: [
@@ -323,12 +323,17 @@ export async function get(payload: BarcodeTypes.getBarcodesParams): Promise<Barc
 }
 
 export async function create(payload: BarcodeTypes.createBarcodeParams): Promise<BarcodeTypes.createBarcodeResult> {
-  const { code, products, active } = payload
+  let { code, products, active } = payload
 
   const parsedProducts = products.map((product: any) => ({
     _id: product.id,
     quantity: product.quantity,
   }))
+
+  if (code === undefined || code.length === 0) {
+    const { barcode: generatedCode } = await generateCode()
+    code = generatedCode
+  }
 
   const barcode = await BarcodeModel.create({
     code,
@@ -339,6 +344,15 @@ export async function create(payload: BarcodeTypes.createBarcodeParams): Promise
   await ProductModel.updateMany({ _id: { $in: parsedProducts.map(product => product._id) } }, { $push: { barcodes: barcode._id } })
 
   return { status: 'success', code: 'BARCODE_CREATED', message: 'Barcode created', barcode }
+}
+
+export async function generateCode(): Promise<BarcodeTypes.generateCodeResult> {
+  const counter = await CounterModel.findOne({ _id: 'barcodes' }) || { seq: 0 }
+  const seq = counter.seq + 1
+
+  const code = `224${seq.toString().padStart(10, '0')}`
+
+  return { status: 'success', code: 'BARCODE_CODE_GENERATED', message: 'Barcode code generated', barcode: code }
 }
 
 export async function edit(payload: BarcodeTypes.editBarcodeParams): Promise<BarcodeTypes.editBarcodeResult> {

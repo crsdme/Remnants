@@ -1,15 +1,14 @@
 import type { ColumnSort } from '@tanstack/react-table'
 
 import { flexRender, getCoreRowModel, getExpandedRowModel, useReactTable } from '@tanstack/react-table'
-import { Fragment, useCallback, useMemo, useState } from 'react'
+import { Fragment, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import { useRequestCategories, useRequestLanguages } from '@/api/hooks'
-import { getCategories } from '@/api/requests'
+import { useCategoryQuery, useLanguageQuery } from '@/api/hooks'
 import { AdvancedFilters, AdvancedSorters, BatchEdit, ColumnVisibilityMenu, PermissionGate, TablePagination, TableSelectionDropdown } from '@/components'
 import { Separator, Skeleton, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui'
 
-import { useCategoryContext } from '@/contexts/category/CategoryContext'
+import { useCategoryContext } from '@/contexts/CategoryContext'
 import { useDebounceCallback } from '@/utils/hooks'
 
 import { useColumns } from './columns'
@@ -43,15 +42,25 @@ export function DataTable() {
     Object.fromEntries(sorting.map(({ id, desc }) => [id, desc ? 'desc' : 'asc']))
   ), [sorting])
 
-  const requestCategories = useRequestCategories(
+  const { data: { categories = [], categoriesCount = 0 } = {}, isLoading, isFetching } = useCategoryQuery(
     { pagination, filters, sorters, isTree: true },
-    { options: { placeholderData: prevData => prevData } },
+    { options: {
+      select: response => ({
+        categories: response.data.categories,
+        categoriesCount: response.data.categoriesCount,
+      }),
+      placeholderData: prevData => prevData,
+    } },
   )
-  const categories = requestCategories?.data?.data?.categories || []
-  const categoriesCount = requestCategories?.data?.data?.categoriesCount || 0
 
-  const requestLanguages = useRequestLanguages({ pagination: { full: true } })
-  const languages = requestLanguages.data?.data?.languages || []
+  const { data: { languages = [] } = {} } = useLanguageQuery(
+    { pagination: { full: true } },
+    { options: {
+      select: response => ({
+        languages: response.data.languages,
+      }),
+    } },
+  )
 
   const columns = useColumns()
 
@@ -130,7 +139,7 @@ export function DataTable() {
   )
 
   const renderTableBody = () => {
-    if (requestCategories.isLoading || requestCategories.isFetching)
+    if (isLoading || isFetching)
       return renderSkeletonRows()
 
     const rows = table.getRowModel().rows

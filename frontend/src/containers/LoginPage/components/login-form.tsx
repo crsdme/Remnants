@@ -61,7 +61,7 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
         <p className="text-balance text-sm text-muted-foreground text-center">{t('page.login.form.description')}</p>
       </div>
       <Form {...form}>
-        <form className="w-full space-y-4" onSubmit={form.handleSubmit(onSubmit)}>
+        <form className="w-full space-y-1" onSubmit={form.handleSubmit(onSubmit)}>
           <FormField
             control={form.control}
             name="login"

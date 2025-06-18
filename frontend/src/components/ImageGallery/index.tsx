@@ -16,9 +16,10 @@ interface GalleryImage {
 interface ImageGalleryProps {
   images: GalleryImage[]
   className?: string
+  size?: number
 }
 
-export function ImageGallery({ images, className }: ImageGalleryProps) {
+export function ImageGallery({ images, className, size = 80 }: ImageGalleryProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [currentIndex, setCurrentIndex] = useState(0)
   const [imageErrors, setImageErrors] = useState<Record<string, boolean>>({})
@@ -122,26 +123,25 @@ export function ImageGallery({ images, className }: ImageGalleryProps) {
       <div className={cn('flex', className)}>
         <div
           key={images[0]?.src}
-          className="relative aspect-square cursor-pointer group overflow-hidden rounded-lg border"
+          className="relative aspect-square cursor-pointer group overflow-hidden rounded-md border"
           onClick={() => openLightbox(0)}
         >
           {!images[0]
             ? (
-                <div className="flex items-center justify-center min-w-[80px] min-h-[80px] bg-muted">
-                </div>
+                <PlaceholderIcon size={size} />
               )
             : (
                 <img
-                  src={getImageSrc(images[0], 80)}
+                  src={getImageSrc(images[0], size)}
                   alt={images[0]?.alt || ''}
-                  className="object-cover h-full transition-transform group-hover:scale-105 min-w-[80px] min-h-[80px]"
+                  className={cn('object-cover h-full transition-transform group-hover:scale-105', `size-[${size}px]`)}
                   onError={() => handleImageError(images[0].id)}
-                  width={80}
-                  height={80}
+                  width={size}
+                  height={size}
                 />
               )}
 
-          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center"></div>
+          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center "></div>
         </div>
       </div>
 
@@ -176,13 +176,13 @@ export function ImageGallery({ images, className }: ImageGalleryProps) {
               >
                 {!currentImage.src
                   ? (
-                      <div className="flex items-center justify-center w-[600px] h-[800px] bg-muted"></div>
+                      <div className="flex items-center justify-center w-[600px] h-[600px] bg-muted"></div>
                     )
                   : (
                       <img
                         src={getImageSrc(currentImage)}
                         alt={currentImage.alt}
-                        width={800}
+                        width={600}
                         height={600}
                         className="max-w-full max-h-full object-contain"
                         onError={() => handleImageError(currentImage.id)}

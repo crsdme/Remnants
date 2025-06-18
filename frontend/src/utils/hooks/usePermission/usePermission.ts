@@ -1,4 +1,4 @@
-import { useAuthContext } from '@/contexts/auth/AuthContext'
+import { useAuthContext } from '@/contexts/AuthContext'
 import { hasPermission } from '@/utils/helpers/permission'
 
 export function usePermission(required: string | string[]) {

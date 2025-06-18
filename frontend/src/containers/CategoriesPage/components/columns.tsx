@@ -9,10 +9,10 @@ import {
   Pencil,
   Trash,
 } from 'lucide-react'
-import { useCallback, useMemo } from 'react'
+import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import { getCategories } from '@/api/requests'
+import { useCategoryOptions } from '@/api/hooks'
 import { TableActionDropdown } from '@/components'
 import { Badge, Button, Checkbox } from '@/components/ui'
 import { useCategoryContext } from '@/contexts'
@@ -24,22 +24,12 @@ export function useColumns() {
   const { t, i18n } = useTranslation()
   const categoryContext = useCategoryContext()
 
-  const loadOptions = useCallback(async (inputValue: string) => {
-    const response = await getCategories({
-      pagination: { full: true },
-      filters: {
-        names: inputValue,
-        active: [true],
-        language: i18n.language,
-      },
-    })
-
-    const categories = response?.data?.categories || []
-    return categories.map(category => ({
+  const loadCategoriesOptions = useCategoryOptions({
+    mapFn: category => ({
       value: category.id,
       label: category.names[i18n.language],
-    }))
-  }, [i18n.language])
+    }),
+  })
 
   const columns = useMemo(() => {
     function sortHeader(column, label) {
@@ -175,6 +165,7 @@ export function useColumns() {
           filterable: true,
           filterType: 'text',
           sortable: true,
+          defaultVisible: true,
         },
         header: ({ column }) => sortHeader(column, t('page.categories.table.names')),
         cell: ({ row }) => row.original.names?.[i18n.language],
@@ -189,6 +180,7 @@ export function useColumns() {
           filterable: true,
           filterType: 'number',
           sortable: true,
+          defaultVisible: true,
         },
         header: ({ column }) => sortHeader(column, t('page.categories.table.priority')),
         cell: ({ row }) => <Badge variant="outline">{row.original.priority}</Badge>,
@@ -203,6 +195,7 @@ export function useColumns() {
           filterable: true,
           filterType: 'boolean',
           sortable: true,
+          defaultVisible: true,
         },
         header: t('page.categories.table.active'),
         cell: ({ row }) => <Badge variant={row.original.active ? 'success' : 'destructive'}>{t(`table.active.${row.original.active}`)}</Badge>,
@@ -216,8 +209,7 @@ export function useColumns() {
           batchEditType: 'asyncValue',
           filterable: true,
           filterType: 'asyncValue',
-          alwaysHidden: true,
-          loadOptions,
+          loadOptions: loadCategoriesOptions,
         },
         header: t('page.categories.table.parent'),
         enableSorting: false,

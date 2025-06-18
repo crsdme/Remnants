@@ -45,6 +45,17 @@ export async function remove(req: Request, res: Response, next: NextFunction) {
   }
 }
 
+export async function generateCode(req: Request, res: Response, next: NextFunction) {
+  try {
+    const serviceResponse = await BarcodeService.generateCode()
+
+    res.status(200).json(serviceResponse)
+  }
+  catch (err) {
+    next(err)
+  }
+}
+
 export async function print(req: Request, res: Response, next: NextFunction) {
   try {
     const { doc } = await BarcodeService.print(req.body)

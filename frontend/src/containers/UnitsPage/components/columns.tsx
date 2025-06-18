@@ -21,11 +21,10 @@ const sortIcons = { asc: ArrowUp, desc: ArrowDown }
 
 export function useColumns() {
   const { t, i18n } = useTranslation()
-  const unitContext = useUnitContext()
+  const { isLoading, removeUnit, duplicateUnits, openModal } = useUnitContext()
 
   const columns = useMemo(() => {
     function sortHeader(column, label) {
-      const isLoading = unitContext.isLoading
       const Icon = sortIcons[column.getIsSorted() || undefined] || ChevronsUpDown
 
       return (
@@ -120,19 +119,19 @@ export function useColumns() {
             },
             {
               permission: 'unit.edit',
-              onClick: () => unitContext.toggleModal(item),
+              onClick: () => openModal(item),
               label: t('table.edit'),
               icon: <Pencil className="h-4 w-4" />,
             },
             {
               permission: 'unit.duplicate',
-              onClick: () => unitContext.duplicateUnits({ ids: [item.id] }),
+              onClick: () => duplicateUnits({ ids: [item.id] }),
               label: t('table.duplicate'),
               icon: <CopyPlus className="h-4 w-4" />,
             },
             {
               permission: 'unit.delete',
-              onClick: () => unitContext.removeUnit({ ids: [item.id] }),
+              onClick: () => removeUnit({ ids: [item.id] }),
               label: t('table.delete'),
               icon: <Trash className="h-4 w-4" />,
               isDestructive: true,
@@ -157,6 +156,7 @@ export function useColumns() {
           filterable: true,
           filterType: 'text',
           sortable: true,
+          defaultVisible: true,
         },
         header: ({ column }) => sortHeader(column, t('page.units.table.names')),
         accessorFn: row => row.names?.[i18n.language] || row.names?.en,
@@ -171,6 +171,7 @@ export function useColumns() {
           filterable: true,
           filterType: 'text',
           sortable: true,
+          defaultVisible: true,
         },
         header: () => t('page.units.table.symbols'),
         accessorFn: row => row.symbols?.[i18n.language] || row.symbols?.en,
@@ -190,6 +191,7 @@ export function useColumns() {
           filterable: true,
           filterType: 'number',
           sortable: true,
+          defaultVisible: true,
         },
         header: ({ column }) => sortHeader(column, t('page.units.table.priority')),
         cell: ({ row }) => <Badge variant="outline">{row.original.priority}</Badge>,
@@ -204,6 +206,7 @@ export function useColumns() {
           filterable: true,
           filterType: 'boolean',
           sortable: true,
+          defaultVisible: true,
         },
         header: t('page.units.table.active'),
         cell: ({ row }) => <Badge variant={row.original.active ? 'success' : 'destructive'}>{t(`table.active.${row.original.active}`)}</Badge>,

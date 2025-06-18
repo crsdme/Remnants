@@ -47,9 +47,9 @@ export interface createBarcodeResult {
 }
 
 export interface createBarcodeParams {
-  code: string
+  code?: string
   products: {
-    _id: IdType
+    id: IdType
     quantity: number
   }[]
   active?: boolean
@@ -93,4 +93,11 @@ export interface printBarcodeParams {
   id: IdType
   size: string
   language: string
+}
+
+export interface generateCodeResult {
+  status: Status
+  code: Code
+  message: Message
+  barcode: string
 }

@@ -21,11 +21,10 @@ const sortIcons = { asc: ArrowUp, desc: ArrowDown }
 
 export function useColumns() {
   const { t, i18n } = useTranslation()
-  const userContext = useUserContext()
+  const { isLoading, openModal, duplicateUsers, removeUsers } = useUserContext()
 
   const columns = useMemo(() => {
     function sortHeader(column, label) {
-      const isLoading = userContext.isLoading
       const Icon = sortIcons[column.getIsSorted() || undefined] || ChevronsUpDown
 
       return (
@@ -120,19 +119,19 @@ export function useColumns() {
             },
             {
               permission: 'user.edit',
-              onClick: () => userContext.toggleModal(item),
+              onClick: () => openModal(item),
               label: t('table.edit'),
               icon: <Pencil className="h-4 w-4" />,
             },
             {
               permission: 'user.duplicate',
-              onClick: () => userContext.duplicateUsers({ ids: [item.id] }),
+              onClick: () => duplicateUsers({ ids: [item.id] }),
               label: t('table.duplicate'),
               icon: <CopyPlus className="h-4 w-4" />,
             },
             {
               permission: 'user.delete',
-              onClick: () => userContext.removeUsers({ ids: [item.id] }),
+              onClick: () => removeUsers({ ids: [item.id] }),
               label: t('table.delete'),
               icon: <Trash className="h-4 w-4" />,
               isDestructive: true,
@@ -164,6 +163,7 @@ export function useColumns() {
           filterable: true,
           filterType: 'text',
           sortable: true,
+          defaultVisible: true,
         },
         header: ({ column }) => sortHeader(column, t('page.users.table.name')),
         accessorFn: row => row.name,
@@ -176,6 +176,7 @@ export function useColumns() {
           filterable: true,
           filterType: 'text',
           sortable: true,
+          defaultVisible: true,
         },
         header: () => t('page.users.table.login'),
         accessorFn: row => row.login,
@@ -193,6 +194,7 @@ export function useColumns() {
           filterable: true,
           filterType: 'text',
           sortable: true,
+          defaultVisible: true,
         },
         header: () => t('page.users.table.role'),
         accessorFn: row => row.role,
@@ -212,6 +214,7 @@ export function useColumns() {
           filterable: true,
           filterType: 'boolean',
           sortable: true,
+          defaultVisible: true,
         },
         header: t('page.users.table.active'),
         cell: ({ row }) => <Badge variant={row.original.active ? 'success' : 'destructive'}>{t(`table.active.${row.original.active}`)}</Badge>,
