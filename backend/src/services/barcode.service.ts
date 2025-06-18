@@ -511,12 +511,26 @@ async function print60x30(payload: { barcode: any, size: string, language: strin
     { width: contentWidth, height: 50, ellipsis: true, lineBreak: false },
   )
 
-  const brand = product.productProperties.find((property: any) => property.id === '5fac5ba7-df3f-4eef-8e80-26f6aac48588')
+  const result = (product.productProperties || []).map((property: any) => {
+    let value = ''
 
-  const color = product.productProperties.find((property: any) => property.id === '0481d1f8-3364-4258-83e2-5c240e026ae4')
+    if (typeof property.value === 'number') {
+      if (property.id === 'baad1168-e6bd-48e1-a610-0fd60ffcfc4d') {
+        value = `${property.value} cm`
+      }
+      else {
+        value = `${property.value} g`
+      }
+    }
+    else {
+      value = property.optionData.map((option: any) => option.names[language]).join(', ')
+    }
+
+    return value
+  }).join(', ')
 
   doc.text(
-    `${brand.optionData.map((option: any) => option.names[language]).join(', ')}, ${color.optionData.map((option: any) => option.names[language]).join(', ')}`,
+    result,
     padding,
     doc.y,
     { width: contentWidth, height: 50, ellipsis: true, lineBreak: false },
