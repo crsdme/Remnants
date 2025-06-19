@@ -1,9 +1,9 @@
 import type { Buffer } from 'node:buffer'
 import type { SUPPORTED_LANGUAGES_TYPE } from '../config/constants'
-import type { Code, DateRange, IdType, LanguageString, Message, Pagination, Status } from './common.type'
+import type { Code, DateRange, IdType, LanguageString, Message, Pagination, Sorter, Status } from './common.type'
 
 export interface Category {
-  names: Map<string, string>
+  names: LanguageString
   priority: number
   parent: IdType
   active: boolean
@@ -20,26 +20,30 @@ export interface getCategoriesResult {
   categoriesCount: number
 }
 
+export interface getCategoriesFilters {
+  names: LanguageString
+  language: SUPPORTED_LANGUAGES_TYPE
+  active: boolean[]
+  priority: number
+  parent: IdType
+  createdAt: DateRange
+  updatedAt: DateRange
+}
+
+export interface getCategoriesSorters {
+  names: Sorter
+  active: Sorter
+  priority: Sorter
+  parent: Sorter
+  updatedAt: Sorter
+  createdAt: Sorter
+}
+
 export interface getCategoriesParams {
-  filters: {
-    names: LanguageString
-    language: SUPPORTED_LANGUAGES_TYPE
-    active: boolean[]
-    priority: number
-    parent: IdType
-    createdAt: DateRange
-    updatedAt: DateRange
-  }
-  sorters: {
-    names: string
-    active: string
-    priority: string
-    parent: string
-    updatedAt: string
-    createdAt: string
-  }
-  pagination: Pagination
-  isTree: boolean
+  filters: Partial<getCategoriesFilters>
+  sorters: Partial<getCategoriesSorters>
+  pagination: Partial<Pagination>
+  isTree?: boolean
 }
 
 export interface createCategoryResult {
@@ -51,8 +55,8 @@ export interface createCategoryResult {
 
 export interface createCategoryParams {
   names: LanguageString
-  priority: number
-  parent: IdType
+  priority?: number
+  parent?: IdType
   active?: boolean
 }
 
@@ -66,8 +70,8 @@ export interface editCategoryResult {
 export interface editCategoryParams {
   id: IdType
   names: LanguageString
-  priority: number
-  parent: IdType
+  priority?: number
+  parent?: IdType
   active?: boolean
 }
 
@@ -89,17 +93,10 @@ export interface batchCategoriesResult {
 
 export interface batchCategoriesParams {
   ids: IdType[]
-  filters: {
-    names: LanguageString
-    language: SUPPORTED_LANGUAGES_TYPE
-    active: boolean[]
-    priority: number
-    createdAt: DateRange
-    updatedAt: DateRange
-  }
+  filters: Partial<getCategoriesFilters>
   params: {
     column: string
-    value: string | number | boolean | Record<string, string>
+    value: string | number | boolean | LanguageString
   }[]
 }
 

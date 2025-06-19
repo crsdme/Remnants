@@ -12,16 +12,15 @@ function hasIdsOrFilters(data: {
 }
 
 export const getCurrencySchema = z.object({
-  pagination: paginationSchema.optional(),
   filters: z.object({
-    names: z.string().optional(),
-    symbols: z.string().optional(),
-    language: z.string(),
+    names: z.string().trim().optional(),
+    symbols: z.string().trim().optional(),
+    language: z.string().optional().default('en'),
     priority: numberFromStringSchema.optional(),
     createdAt: dateRangeSchema.optional(),
     updatedAt: dateRangeSchema.optional(),
     active: booleanArraySchema.optional(),
-  }).optional().default({ language: 'en' }),
+  }).optional().default({}),
   sorters: z.object({
     names: sorterParamsSchema.optional(),
     symbols: sorterParamsSchema.optional(),
@@ -30,48 +29,49 @@ export const getCurrencySchema = z.object({
     updatedAt: sorterParamsSchema.optional(),
     createdAt: sorterParamsSchema.optional(),
   }).optional().default({}),
+  pagination: paginationSchema.optional().default({}),
 })
 
 export const createCurrencySchema = z.object({
   names: languageStringSchema,
   symbols: languageStringSchema,
-  priority: z.number(),
-  active: z.boolean().optional(),
+  priority: z.number().optional().default(0),
+  active: z.boolean().optional().default(true),
 })
 
 export const editCurrencySchema = z.object({
   id: idSchema,
   names: languageStringSchema,
   symbols: languageStringSchema,
-  priority: numberFromStringSchema,
-  active: z.boolean().optional(),
+  priority: z.number().optional().default(0),
+  active: z.boolean().optional().default(true),
 })
 
 export const removeCurrencySchema = z.object({
-  ids: z.array(idSchema),
+  ids: z.array(idSchema).min(1),
 })
 
 export const duplicateCurrencySchema = z.object({
-  ids: z.array(idSchema),
+  ids: z.array(idSchema).min(1),
 })
 
 export const batchCurrencySchema = z.object({
   ids: z.array(idSchema).optional(),
   filters: z.object({
-    names: z.string().optional(),
-    symbols: z.string().optional(),
-    language: z.string(),
+    names: z.string().trim().optional(),
+    symbols: z.string().trim().optional(),
+    language: z.string().optional().default('en'),
     active: booleanArraySchema.optional(),
     priority: numberFromStringSchema.optional(),
     createdAt: dateRangeSchema.optional(),
     updatedAt: dateRangeSchema.optional(),
-  }).optional(),
+  }).optional().default({}),
   params: z.array(
     z.object({
       column: z.string(),
       value: z.any(),
     }),
-  ),
+  ).min(1),
 }).refine(hasIdsOrFilters, {
   message: 'Either ids or filters are required.',
 })

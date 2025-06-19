@@ -1,5 +1,5 @@
 import type { SUPPORTED_LANGUAGES_TYPE } from '../config/constants'
-import type { Code, DateRange, IdType, LanguageString, Message, Pagination, Status } from './common.type'
+import type { Code, DateRange, IdType, LanguageString, Message, Pagination, Sorter, Status } from './common.type'
 
 export interface Currency {
   names: string
@@ -19,25 +19,29 @@ export interface getCurrenciesResult {
   currenciesCount: number
 }
 
+export interface getCurrenciesFilters {
+  names: LanguageString
+  symbols: LanguageString
+  language: SUPPORTED_LANGUAGES_TYPE
+  active: boolean[]
+  priority: number
+  createdAt: DateRange
+  updatedAt: DateRange
+}
+
+export interface getCurrenciesSorters {
+  names: Sorter
+  symbols: Sorter
+  active: Sorter
+  priority: Sorter
+  updatedAt: Sorter
+  createdAt: Sorter
+}
+
 export interface getCurrenciesParams {
-  filters: {
-    names: LanguageString
-    symbols: LanguageString
-    language: SUPPORTED_LANGUAGES_TYPE
-    active: boolean[]
-    priority: number
-    createdAt: DateRange
-    updatedAt: DateRange
-  }
-  sorters: {
-    names: string
-    symbols: string
-    active: string
-    priority: string
-    updatedAt: string
-    createdAt: string
-  }
-  pagination: Pagination
+  filters: Partial<getCurrenciesFilters>
+  sorters: Partial<getCurrenciesSorters>
+  pagination: Partial<Pagination>
 }
 
 export interface createCurrenciesResult {
@@ -50,7 +54,7 @@ export interface createCurrenciesResult {
 export interface createCurrencyParams {
   names: LanguageString
   symbols: LanguageString
-  priority: number
+  priority?: number
   active?: boolean
 }
 
@@ -65,7 +69,7 @@ export interface editCurrencyParams {
   id: IdType
   names: LanguageString
   symbols: LanguageString
-  priority: number
+  priority?: number
   active?: boolean
 }
 
@@ -87,18 +91,10 @@ export interface batchCurrenciesResult {
 
 export interface batchCurrenciesParams {
   ids: IdType[]
-  filters: {
-    names: LanguageString
-    symbols: LanguageString
-    language: SUPPORTED_LANGUAGES_TYPE
-    active: boolean[]
-    priority: number
-    createdAt: DateRange
-    updatedAt: DateRange
-  }
+  filters: Partial<getCurrenciesFilters>
   params: {
     column: string
-    value: string | number | boolean | Record<string, string>
+    value: string | number | boolean | LanguageString
   }[]
 }
 

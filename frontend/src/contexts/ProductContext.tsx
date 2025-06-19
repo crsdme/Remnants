@@ -207,6 +207,7 @@ export function ProductProvider({ children }: ProductProviderProps) {
       onSuccess: ({ data }) => {
         closeModal()
         queryClient.invalidateQueries({ queryKey: ['products'] })
+        queryClient.invalidateQueries({ queryKey: ['barcodes'] })
         toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description || ''}` })
       },
       onError: ({ response }) => {

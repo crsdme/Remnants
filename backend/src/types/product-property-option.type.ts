@@ -21,21 +21,21 @@ export interface getProductPropertyOptionsResult {
 
 export interface getProductPropertyOptionsParams {
   filters: {
-    ids: IdType[]
-    names: LanguageString
-    language: SUPPORTED_LANGUAGES_TYPE
-    priority: number
-    active: boolean
-    productProperty: IdType
-    createdAt: DateRange
-    updatedAt: DateRange
+    ids?: IdType[]
+    names?: LanguageString
+    language?: SUPPORTED_LANGUAGES_TYPE
+    priority?: number
+    active?: boolean
+    productProperty?: IdType
+    createdAt?: DateRange
+    updatedAt?: DateRange
   }
   sorters: {
-    names: string
-    priority: string
-    active: string
-    createdAt: string
-    updatedAt: string
+    names?: string
+    priority?: string
+    active?: string
+    createdAt?: string
+    updatedAt?: string
   }
   pagination: Pagination
 }

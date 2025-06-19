@@ -1,11 +1,11 @@
 import type { Buffer } from 'node:buffer'
 import type { SUPPORTED_LANGUAGES_TYPE } from '../config/constants'
-import type { Code, DateRange, IdType, LanguageString, Message, Pagination, Status } from './common.type'
+import type { Code, DateRange, IdType, LanguageString, Message, Pagination, Sorter, Status } from './common.type'
 
 export interface Product {
   id: IdType
   seq: number
-  names: Map<string, string>
+  names: LanguageString
   price: number
   currency: IdType
   purchasePrice: number
@@ -21,13 +21,11 @@ export interface Product {
   }[]
   productPropertiesGroup: {
     id: IdType
+    names: LanguageString
   }
   productProperties: {
     id: IdType
-    options: {
-      id: IdType
-      name: string
-    }[]
+    options: IdType[]
   }[]
   removed: boolean
   createdAt: Date
@@ -42,38 +40,41 @@ export interface getProductsResult {
   productsCount: number
 }
 
+export interface getProductsFilters {
+  search?: string
+  ids?: IdType[]
+  seq?: number
+  names?: LanguageString
+  language?: SUPPORTED_LANGUAGES_TYPE
+  price?: number
+  purchasePrice?: number
+  barcodes?: string[]
+  categories?: IdType[]
+  unit?: IdType
+  productPropertiesGroup?: IdType
+  productProperties?: IdType[]
+  createdAt?: DateRange
+  updatedAt?: DateRange
+}
+
+export interface getProductsSorters {
+  seq?: Sorter
+  names?: Sorter
+  price?: Sorter
+  purchasePrice?: Sorter
+  barcodes?: Sorter
+  categories?: Sorter
+  unit?: Sorter
+  productPropertiesGroup?: Sorter
+  productProperties?: Sorter
+  createdAt?: Sorter
+  updatedAt?: Sorter
+}
+
 export interface getProductsParams {
-  filters: {
-    search?: string
-    ids?: IdType[]
-    seq?: number
-    names?: LanguageString
-    language?: SUPPORTED_LANGUAGES_TYPE
-    price?: number
-    purchasePrice?: number
-    barcodes?: string[]
-    categories?: IdType[]
-    unit?: IdType
-    productPropertiesGroup?: IdType
-    productProperties?: IdType[]
-    createdAt?: DateRange
-    updatedAt?: DateRange
-  }
-  sorters: {
-    seq?: string
-    names?: string
-    price?: string
-    purchasePrice?: string
-    barcodes?: string
-    categories?: string
-    unit?: string
-    productPropertiesGroup?: string
-    productProperties?: string
-    createdAt?: string
-    updatedAt?: string
-  }
-  pagination: Pagination
-  isTree?: boolean
+  filters: Partial<getProductsFilters>
+  sorters: Partial<getProductsSorters>
+  pagination: Partial<Pagination>
 }
 
 export interface createProductResult {
@@ -87,8 +88,8 @@ export interface createProductParams {
   names: LanguageString
   price: number
   currency: IdType
-  purchasePrice: number
-  purchaseCurrency: IdType
+  purchasePrice?: number
+  purchaseCurrency?: IdType
   categories: IdType[]
   unit: IdType
   productPropertiesGroup: IdType
@@ -108,7 +109,7 @@ export interface createProductParams {
     mimetype: string
     path: string
   }[]
-  generateBarcode: boolean
+  generateBarcode?: boolean
 }
 
 export interface editProductResult {
@@ -123,8 +124,8 @@ export interface editProductParams {
   names: LanguageString
   price: number
   currency: IdType
-  purchasePrice: number
-  purchaseCurrency: IdType
+  purchasePrice?: number
+  purchaseCurrency?: IdType
   categories: IdType[]
   unit: IdType
   productPropertiesGroup: IdType
@@ -144,7 +145,7 @@ export interface editProductParams {
     mimetype: string
     path: string
   }[]
-  uploadedImagesIds: IdType[]
+  uploadedImagesIds?: IdType[]
 }
 
 export interface removeProductsResult {
@@ -166,21 +167,21 @@ export interface batchProductsResult {
 export interface batchProductsParams {
   ids: IdType[]
   filters: {
-    names: LanguageString
-    language: SUPPORTED_LANGUAGES_TYPE
-    price: number
-    purchasePrice: number
-    barcodes: string[]
-    categories: IdType[]
-    unit: IdType
-    productPropertiesGroup: IdType
-    productProperties: IdType[]
-    createdAt: DateRange
-    updatedAt: DateRange
+    names?: LanguageString
+    language?: SUPPORTED_LANGUAGES_TYPE
+    price?: number
+    purchasePrice?: number
+    barcodes?: string[]
+    categories?: IdType[]
+    unit?: IdType
+    productPropertiesGroup?: IdType
+    productProperties?: IdType[]
+    createdAt?: DateRange
+    updatedAt?: DateRange
   }
   params: {
-    column: string
-    value: string | number | boolean | Record<string, string>
+    column?: string
+    value?: string | number | boolean | Record<string, string>
   }[]
 }
 

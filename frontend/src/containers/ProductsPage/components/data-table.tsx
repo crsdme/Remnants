@@ -87,7 +87,7 @@ export function DataTable() {
     getExpandedRowModel: getExpandedRowModel(),
     onExpandedChange: setExpanded,
     // getSubRows: row => row.children,
-    // getRowId: row => row.id,
+    getRowId: row => (row as Product).id,
     onSortingChange: setSorting,
     manualSorting: true,
     enableSortingRemoval: true,

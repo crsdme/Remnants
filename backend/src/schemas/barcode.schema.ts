@@ -5,9 +5,9 @@ import { booleanArraySchema, dateRangeSchema, idSchema, paginationSchema, sorter
 extendZodWithOpenApi(z)
 
 export const getBarcodeSchema = z.object({
-  pagination: paginationSchema.optional(),
   filters: z.object({
-    code: z.string().optional(),
+    id: idSchema.optional(),
+    code: z.string().trim().optional(),
     products: z.array(idSchema).optional(),
     active: booleanArraySchema.optional(),
     createdAt: dateRangeSchema.optional(),
@@ -19,32 +19,34 @@ export const getBarcodeSchema = z.object({
     updatedAt: sorterParamsSchema.optional(),
     createdAt: sorterParamsSchema.optional(),
   }).optional().default({}),
+  pagination: paginationSchema.optional().default({}),
 })
 
 export const createBarcodeSchema = z.object({
-  code: z.string(),
+  code: z.string().trim().optional(),
   products: z.array(z.object({
     id: idSchema,
-    quantity: z.number(),
-  })),
-  active: z.boolean().optional(),
+    quantity: z.number().int().positive(),
+  })).min(1),
+  active: z.boolean().optional().default(true),
 })
 
 export const editBarcodeSchema = z.object({
   id: idSchema,
-  code: z.string(),
+  code: z.string().trim(),
   products: z.array(z.object({
     id: idSchema,
-    quantity: z.number(),
-  })),
-  active: z.boolean().optional(),
+    quantity: z.number().int().positive(),
+  })).min(1),
+  active: z.boolean().optional().default(true),
 })
 
 export const removeBarcodeSchema = z.object({
-  ids: z.array(idSchema),
+  ids: z.array(idSchema).min(1),
 })
 
 export const printBarcodeSchema = z.object({
   id: idSchema,
   size: z.string().optional().default('20x30'),
+  language: z.string().optional().default('en'),
 })
