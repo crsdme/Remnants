@@ -18,6 +18,7 @@
     "@scalar/express-api-reference": "^0.7.1",
     "@types/multer": "^1.4.12",
     "@types/uuid": "^10.0.0",
+    "axios": "^1.10.0",
     "bcrypt": "^5.1.1",
     "bwip-js": "^4.6.0",
     "cookie-parser": "^1.4.7",

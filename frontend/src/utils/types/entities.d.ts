@@ -2,7 +2,7 @@ interface Barcode {
   id: string
   code: string
   products: {
-    _id: string
+    id: string
     quantity: number
   }[]
   active: boolean

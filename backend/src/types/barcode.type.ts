@@ -1,10 +1,10 @@
 import type PDFDocument from 'pdfkit'
-import type { Code, DateRange, IdType, Message, Pagination, Status } from './common.type'
+import type { Code, DateRange, IdType, Message, Pagination, Sorter, Status } from './common.type'
 
 export interface Barcode {
   code: string
   products: {
-    _id: IdType
+    id: IdType
     quantity: number
   }[]
   active: boolean
@@ -21,22 +21,26 @@ export interface getBarcodesResult {
   barcodesCount: number
 }
 
+export interface getBarcodesFilters {
+  id?: IdType
+  code?: string
+  products?: IdType[]
+  active?: boolean[]
+  createdAt?: DateRange
+  updatedAt?: DateRange
+}
+
+export interface getBarcodesSorters {
+  code?: Sorter
+  active?: Sorter
+  createdAt?: Sorter
+  updatedAt?: Sorter
+}
+
 export interface getBarcodesParams {
-  filters: {
-    id?: IdType
-    code?: string
-    active?: boolean[]
-    products?: IdType[]
-    createdAt?: DateRange
-    updatedAt?: DateRange
-  }
-  sorters: {
-    code?: string
-    active?: string
-    updatedAt?: string
-    createdAt?: string
-  }
-  pagination: Pagination
+  filters: Partial<getBarcodesFilters>
+  sorters: Partial<getBarcodesSorters>
+  pagination: Partial<Pagination>
 }
 
 export interface createBarcodeResult {
@@ -66,7 +70,7 @@ export interface editBarcodeParams {
   id: IdType
   code: string
   products: {
-    _id: IdType
+    id: IdType
     quantity: number
   }[]
   active?: boolean
@@ -91,8 +95,8 @@ export interface printBarcodeResult {
 
 export interface printBarcodeParams {
   id: IdType
-  size: string
-  language: string
+  size?: string
+  language?: string
 }
 
 export interface generateCodeResult {

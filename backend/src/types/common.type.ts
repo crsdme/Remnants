@@ -5,6 +5,8 @@ export type LanguageString = {
   [key in (typeof SUPPORTED_LANGUAGES)[number]]: string
 }
 
+export type Sorter = 'asc' | 'desc'
+
 export type Status = 'success' | 'error'
 
 export type Code = string

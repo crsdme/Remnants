@@ -1,8 +1,8 @@
 import type { SUPPORTED_LANGUAGES_TYPE } from '../config/constants'
-import type { Code, DateRange, IdType, LanguageString, Message, Pagination, Status } from './common.type'
+import type { Code, DateRange, IdType, LanguageString, Message, Pagination, Sorter, Status } from './common.type'
 
 export interface ProductProperty {
-  names: Map<string, string>
+  names: LanguageString
   options: IdType[]
   priority: number
   type: string
@@ -23,33 +23,35 @@ export interface getProductPropertiesResult {
   productPropertiesCount: number
 }
 
+export interface getProductPropertiesFilters {
+  ids: IdType[]
+  names: LanguageString
+  language: SUPPORTED_LANGUAGES_TYPE
+  options: IdType[]
+  type: string
+  priority: number
+  isMultiple: boolean
+  isRequired: boolean
+  showInTable: boolean
+  active: boolean[]
+  createdAt: DateRange
+  updatedAt: DateRange
+}
+
+export interface getProductPropertiesSorters {
+  names: Sorter
+  priority: Sorter
+  type: Sorter
+  isMultiple: Sorter
+  isRequired: Sorter
+  showInTable: Sorter
+  active: Sorter
+}
+
 export interface getProductPropertiesParams {
-  filters: {
-    ids: IdType[]
-    names: LanguageString
-    language: SUPPORTED_LANGUAGES_TYPE
-    options: IdType[]
-    type: string
-    priority: number
-    isMultiple: boolean
-    isRequired: boolean
-    showInTable: boolean
-    active: boolean
-    createdAt: DateRange
-    updatedAt: DateRange
-  }
-  sorters: {
-    names: string
-    priority: string
-    type: string
-    isMultiple: string
-    isRequired: string
-    showInTable: string
-    active: string
-    createdAt: string
-    updatedAt: string
-  }
-  pagination: Pagination
+  filters: Partial<getProductPropertiesFilters>
+  sorters: Partial<getProductPropertiesSorters>
+  pagination: Partial<Pagination>
 }
 
 export interface createProductPropertyResult {
@@ -61,11 +63,12 @@ export interface createProductPropertyResult {
 
 export interface createProductPropertyParams {
   names: LanguageString
-  priority: number
+  priority?: number
   type: string
   isMultiple: boolean
   showInTable: boolean
-  active: boolean
+  isRequired: boolean
+  active?: boolean
 }
 
 export interface editProductPropertyResult {
@@ -78,11 +81,12 @@ export interface editProductPropertyResult {
 export interface editProductPropertyParams {
   id: IdType
   names: LanguageString
-  priority: number
+  priority?: number
   type: string
   isMultiple: boolean
   showInTable: boolean
-  active: boolean
+  isRequired: boolean
+  active?: boolean
 }
 
 export interface removeProductPropertiesResult {

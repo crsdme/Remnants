@@ -1,4 +1,4 @@
-import type { Code, DateRange, IdType, Message, Pagination, Status } from './common.type'
+import type { Code, DateRange, IdType, LanguageString, Message, Pagination, Sorter, Status } from './common.type'
 
 export interface Language {
   name: string
@@ -19,26 +19,30 @@ export interface getLanguagesResult {
   languagesCount: number
 }
 
+export interface getLanguagesFilters {
+  name: string
+  code: string
+  active: boolean[]
+  priority: number
+  main: boolean[]
+  createdAt: DateRange
+  updatedAt: DateRange
+}
+
+export interface getLanguagesSorters {
+  name: Sorter
+  code: Sorter
+  priority: Sorter
+  main: Sorter
+  active: Sorter
+  createdAt: Sorter
+  updatedAt: Sorter
+}
+
 export interface getLanguagesParams {
-  filters: {
-    name?: string
-    code?: string
-    active?: boolean[]
-    priority?: number
-    main?: boolean[]
-    createdAt?: DateRange
-    updatedAt?: DateRange
-  }
-  sorters: {
-    name?: string
-    code?: string
-    priority?: string
-    main?: string
-    active?: string
-    createdAt?: string
-    updatedAt?: string
-  }
-  pagination: Pagination
+  filters: Partial<getLanguagesFilters>
+  sorters: Partial<getLanguagesSorters>
+  pagination: Partial<Pagination>
 }
 
 export interface createLanguagesResult {
@@ -49,9 +53,9 @@ export interface createLanguagesResult {
 }
 
 export interface createLanguageParams {
-  names: object
+  name: string
   code: string
-  priority: number
+  priority?: number
   main?: boolean
   active?: boolean
 }
@@ -67,7 +71,7 @@ export interface editLanguageParams {
   id: IdType
   name: string
   code: string
-  priority: number
+  priority?: number
   main?: boolean
   active?: boolean
 }
@@ -90,18 +94,10 @@ export interface batchLanguagesResult {
 
 export interface batchLanguagesParams {
   ids: IdType[]
-  filters: {
-    name: string
-    code: string
-    priority: number
-    main: boolean
-    active: boolean
-    createdAt: DateRange
-    updatedAt: DateRange
-  }
+  filters: Partial<getLanguagesFilters>
   params: {
     column: string
-    value: string | number | boolean | Record<string, string>
+    value: string | number | boolean | LanguageString
   }[]
 }
 

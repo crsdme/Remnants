@@ -20,7 +20,7 @@ export interface getBarcodesParams {
 export interface createBarcodesParams {
   code: string
   products: {
-    _id: string
+    id: string
     quantity: number
   }[]
   active?: boolean
@@ -30,7 +30,7 @@ export interface editBarcodeParams {
   id: string
   code: string
   products: {
-    _id: string
+    id: string
     quantity: number
   }[]
   active?: boolean

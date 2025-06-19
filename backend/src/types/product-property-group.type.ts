@@ -1,8 +1,8 @@
 import type { SUPPORTED_LANGUAGES_TYPE } from '../config/constants'
-import type { Code, DateRange, IdType, LanguageString, Message, Pagination, Status } from './common.type'
+import type { Code, DateRange, IdType, LanguageString, Message, Pagination, Sorter, Status } from './common.type'
 
 export interface ProductPropertyGroup {
-  names: Map<string, string>
+  names: LanguageString
   productProperties: IdType[]
   priority: number
   active: boolean
@@ -19,24 +19,28 @@ export interface getProductPropertyGroupsResult {
   productPropertyGroupsCount: number
 }
 
+export interface getProductPropertyGroupsFilters {
+  names: LanguageString
+  language: SUPPORTED_LANGUAGES_TYPE
+  productProperties: IdType[]
+  active: boolean[]
+  priority: number
+  createdAt: DateRange
+  updatedAt: DateRange
+}
+
+export interface getProductPropertyGroupsSorters {
+  names: Sorter
+  active: Sorter
+  priority: Sorter
+  createdAt: Sorter
+  updatedAt: Sorter
+}
+
 export interface getProductPropertyGroupsParams {
-  filters: {
-    names: LanguageString
-    language: SUPPORTED_LANGUAGES_TYPE
-    productProperties: IdType[]
-    active: boolean[]
-    priority: number
-    createdAt: DateRange
-    updatedAt: DateRange
-  }
-  sorters: {
-    names: string
-    active: string
-    priority: string
-    createdAt: string
-    updatedAt: string
-  }
-  pagination: Pagination
+  filters: Partial<getProductPropertyGroupsFilters>
+  sorters: Partial<getProductPropertyGroupsSorters>
+  pagination: Partial<Pagination>
 }
 
 export interface createProductPropertyGroupResult {
@@ -49,8 +53,8 @@ export interface createProductPropertyGroupResult {
 export interface createProductPropertyGroupParams {
   names: LanguageString
   productProperties: IdType[]
-  priority: number
-  active: boolean
+  priority?: number
+  active?: boolean
 }
 
 export interface editProductPropertyGroupResult {
@@ -64,8 +68,8 @@ export interface editProductPropertyGroupParams {
   id: IdType
   names: LanguageString
   productProperties: IdType[]
-  priority: number
-  active: boolean
+  priority?: number
+  active?: boolean
 }
 
 export interface removeProductPropertyGroupsResult {

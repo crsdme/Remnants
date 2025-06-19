@@ -12,12 +12,11 @@ function hasIdsOrFilters(data: {
 }
 
 export const getProductSchema = z.object({
-  pagination: paginationSchema.optional(),
   filters: z.object({
     search: z.string().optional().transform(val => val?.trim() === '' ? undefined : val),
     seq: z.number().optional(),
-    names: z.string().optional(),
-    language: z.string(),
+    names: z.string().trim().optional(),
+    language: z.string().optional().default('en'),
     price: numberFromStringSchema.optional(),
     purchasePrice: numberFromStringSchema.optional(),
     currency: z.string().optional(),
@@ -28,7 +27,7 @@ export const getProductSchema = z.object({
     categories: z.array(idSchema).optional(),
     createdAt: dateRangeSchema.optional(),
     updatedAt: dateRangeSchema.optional(),
-  }).optional().default({ language: 'en' }),
+  }).optional().default({}),
   sorters: z.object({
     seq: sorterParamsSchema.optional(),
     names: sorterParamsSchema.optional(),
@@ -41,6 +40,7 @@ export const getProductSchema = z.object({
     updatedAt: sorterParamsSchema.optional(),
     createdAt: sorterParamsSchema.optional(),
   }).optional().default({}),
+  pagination: paginationSchema.optional().default({}),
 })
 
 export const createProductSchema = z.object({
@@ -51,15 +51,15 @@ export const createProductSchema = z.object({
   purchaseCurrency: z.string(),
   productPropertiesGroup: z.string(),
   productProperties: z.array(z.object({
-    id: z.string(),
+    id: idSchema,
     value: z.any(),
   })),
   unit: idSchema,
-  categories: z.array(idSchema),
+  categories: z.array(idSchema).min(1),
   images: z.any().optional(),
   uploadedImages: z.any().optional(),
   uploadedImagesIds: z.any().optional(),
-  generateBarcode: z.boolean().optional(),
+  generateBarcode: z.boolean().optional().default(false),
 })
 
 export const editProductSchema = z.object({
@@ -71,29 +71,29 @@ export const editProductSchema = z.object({
   purchaseCurrency: z.string(),
   productPropertiesGroup: z.string(),
   productProperties: z.array(z.object({
-    id: z.string(),
+    id: idSchema,
     value: z.any(),
   })),
   unit: idSchema,
-  categories: z.array(idSchema),
+  categories: z.array(idSchema).min(1),
   images: z.any().optional(),
   uploadedImages: z.any().optional(),
   uploadedImagesIds: z.any().optional(),
 })
 
 export const removeProductSchema = z.object({
-  ids: z.array(idSchema),
+  ids: z.array(idSchema).min(1),
 })
 
 export const duplicateProductSchema = z.object({
-  ids: z.array(idSchema),
+  ids: z.array(idSchema).min(1),
 })
 
 export const batchProductSchema = z.object({
   ids: z.array(idSchema).optional(),
   filters: z.object({
-    names: z.string().optional(),
-    language: z.string(),
+    names: z.string().trim().optional(),
+    language: z.string().optional().default('en'),
     price: numberFromStringSchema.optional(),
     purchasePrice: numberFromStringSchema.optional(),
     currency: z.string().optional(),
@@ -101,7 +101,7 @@ export const batchProductSchema = z.object({
     productPropertiesGroup: z.string().optional(),
     productProperties: z.any().optional(),
     unit: z.string().optional(),
-    categories: z.array(idSchema).optional(),
+    categories: z.array(idSchema).min(1).optional(),
     createdAt: dateRangeSchema.optional(),
     updatedAt: dateRangeSchema.optional(),
   }).optional(),
@@ -120,5 +120,5 @@ export const importProductsSchema = z.object({
 })
 
 export const exportProductsSchema = z.object({
-  ids: z.array(idSchema).optional(),
+  ids: z.array(idSchema).min(1).optional(),
 })

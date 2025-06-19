@@ -4,7 +4,7 @@ import path from 'node:path'
 import ExcelJS from 'exceljs'
 import { v4 as uuidv4 } from 'uuid'
 import { STORAGE_PATHS, STORAGE_URLS } from '../config/constants'
-import { LanguageModel, ProductModel } from '../models'
+import { CategoryModel, CurrencyModel, LanguageModel, ProductModel, ProductPropertyGroupModel, ProductPropertyModel, UnitModel } from '../models'
 import { HttpError } from '../utils/httpError'
 import {
   extractLangMap,
@@ -14,6 +14,7 @@ import {
 import { buildQuery, buildSortQuery } from '../utils/queryBuilder'
 import * as BarcodeService from './barcode.service'
 import * as LanguageService from './language.service'
+import * as ProductPropertyOptionService from './product-property-option.service'
 
 export async function get(payload: ProductTypes.getProductsParams): Promise<ProductTypes.getProductsResult> {
   const { current = 1, pageSize = 10 } = payload.pagination
@@ -614,89 +615,186 @@ export async function importHandler(payload: ProductTypes.importProductsParams):
 
 export async function exportHandler(payload: ProductTypes.exportProductsParams): Promise<ProductTypes.exportProductsResult> {
   const { ids } = payload
-  console.log(ids)
-
-  const userLanguage = 'ru'
+  const language = 'ru'
 
   const languages = await LanguageModel.find({ active: true, removed: false })
-  const products = await ProductModel.find({ active: true, removed: false })
+  const currencies = await CurrencyModel.find({ active: true, removed: false })
+  const units = await UnitModel.find({ active: true, removed: false })
+  const categories = await CategoryModel.find({ active: true, removed: false })
+  const productPropertiesGroups = await ProductPropertyGroupModel.find({ active: true, removed: false })
+  const productProperties = await ProductPropertyModel.find({ active: true, removed: false })
 
   const workbook = new ExcelJS.Workbook()
-  const sheet = workbook.addWorksheet('Products')
-
-  sheet.columns = [
-    { header: 'id', key: 'id' },
-    ...languages.map(lang => ({
-      header: `name_${lang.code}`,
-      key: `name_${lang.code}`,
-    })),
-    { header: 'price', key: 'price' },
-    { header: 'purchasePrice', key: 'purchasePrice' },
-    { header: 'barcodes', key: 'barcodes' },
-    { header: 'categories', key: 'categories' },
-    { header: 'unit', key: 'unit' },
-    { header: 'productPropertiesGroup', key: 'productPropertiesGroup' },
-    { header: 'productProperties', key: 'productProperties' },
-  ]
-
-  // if ((ids || []).length > 0) {
-  //   const selectedProducts = await ProductModel.find({ _id: { $in: ids } })
-  //   selectedProducts.forEach((product) => {
-  //     const row: Record<string, any> = {}
-  //     row.id = product._id
-
-  //     for (const lang of languages) {
-  //       row[`name_${lang.code}`] = (product.names as Map<string, string>).get(lang.code) || ''
-  //     }
-
-  //     const parentProduct = products.find(p => p._id.toString() === product.parent?.toString())
-  //     const parentName = parentProduct
-  //       ? `${parentProduct.names.get(userLanguage) || 'NO_NAME'} (${parentProduct._id})`
-  //       : ''
-
-  //     row.parent = parentName
-  //     row.price = product.price
-  //     row.purchasePrice = product.purchasePrice
-  //     row.barcodes = product.barcodes
-  //     row.categories = product.categories
-  //     row.unit = product.unit
-  //     row.productPropertiesGroup = product.productPropertiesGroup
-  //     row.productProperties = product.productProperties
-
-  //     sheet.addRow(row)
-  //   })
-  // }
-  // else {
-  //   sheet.addRow({
-  //     ...languages.map(lang => ({
-  //       [`name_${lang.code}`]: `name.${lang.code}`,
-  //     })),
-  //     parent: '1',
-  //     priority: 1,
-  //     active: true,
-  //   })
-  // }
-
-  const parentOptions = products.map((product) => {
-    const name = product.names.get(userLanguage) || 'NO_NAME'
-    return `${name} (${product._id})`
-  })
-
-  const hiddenSheet = workbook.addWorksheet('ParentOptions')
+  const hiddenSheet = workbook.addWorksheet('hidden')
   hiddenSheet.state = 'veryHidden'
 
-  parentOptions.forEach((value, index) => {
-    hiddenSheet.getCell(`A${index + 1}`).value = value
-  })
+  const selectedProducts = await get({ filters: { ids }, pagination: { full: true }, sorters: { seq: 'asc' } })
 
-  const formulaRange = `ParentOptions!$A$1:$A$${parentOptions.length}`
-  const parentCol = sheet.columns.findIndex(col => col.key === 'parent') + 1
+  const groupedProducts: Record<string, any[]> = {}
+  for (const product of selectedProducts.products) {
+    const groupId = product.productPropertiesGroup.id.toString()
+    if (!groupedProducts[groupId]) {
+      groupedProducts[groupId] = []
+    }
+    groupedProducts[groupId].push(product)
+  }
 
-  for (let i = 2; i <= sheet.rowCount; i++) {
-    sheet.getCell(i, parentCol).dataValidation = {
-      type: 'list',
-      allowBlank: true,
-      formulae: [formulaRange],
+  for (const [groupId, products] of Object.entries(groupedProducts)) {
+    const groupName = products[0].productPropertiesGroup.names[language] || groupId
+    const sheet = workbook.addWorksheet(groupName)
+
+    const productPropertiesIds = productPropertiesGroups.find(item => item.id === groupId)?.productProperties || []
+    const productPropertiesData = productProperties.filter(item => productPropertiesIds.includes(item.id))
+
+    const dynamicKeys: { key: string, header: string, id: string, type: string }[] = []
+    const dynamicColumns: { key: string, header: string }[] = []
+    productPropertiesData.forEach(({ type, id, names }: any) => {
+      if (type === 'multiSelect') {
+        for (let i = 1; i <= 5; i++) {
+          const key = `${id}_${i}`
+          dynamicColumns.push({
+            header: `${names.get(language) || 'NO_NAME'}_${i} (${key})`,
+            key,
+          })
+          dynamicKeys.push({
+            key,
+            id,
+            header: `${names.get(language) || 'NO_NAME'}_${i} (${key})`,
+            type,
+          })
+        }
+      }
+      else {
+        dynamicColumns.push({
+          header: `${names.get(language) || 'NO_NAME'} (${id})`,
+          key: id,
+        })
+        dynamicKeys.push({
+          key: id,
+          header: `${names.get(language) || 'NO_NAME'} (${id})`,
+          id,
+          type,
+        })
+      }
+    })
+
+    sheet.columns = [
+      { header: 'id', key: 'id' },
+      { header: 'seq', key: 'seq' },
+      { header: 'images', key: 'images' },
+      ...languages.map(lang => ({
+        header: `name_${lang.code}`,
+        key: `name_${lang.code}`,
+      })),
+      { header: 'price', key: 'price' },
+      { header: 'purchasePrice', key: 'purchasePrice' },
+      { header: 'currency', key: 'currency' },
+      { header: 'purchaseCurrency', key: 'purchaseCurrency' },
+      { header: 'unit', key: 'unit' },
+      { header: 'productPropertiesGroup', key: 'productPropertiesGroup' },
+      { header: 'categories_1', key: 'categories_1' },
+      { header: 'categories_2', key: 'categories_2' },
+      { header: 'categories_3', key: 'categories_3' },
+      { header: 'categories_4', key: 'categories_4' },
+      { header: 'categories_5', key: 'categories_5' },
+      ...dynamicColumns,
+    ]
+
+    products.forEach((product: any) => {
+      const row: Record<string, any> = {}
+
+      row.id = product.id
+      row.seq = product.seq
+      row.images = product.images.map((image: any) => `${STORAGE_URLS.productImages}/${image.filename}`).join(', ')
+      for (const lang of languages) {
+        row[`name_${lang.code}`] = product.names[lang.code] || ''
+      }
+      row.price = product.price
+      row.purchasePrice = product.purchasePrice
+      row.currency = `${product.currency.names[language] || 'NO_NAME'} (${product.currency.id})`
+      row.purchaseCurrency = `${product.purchaseCurrency.names[language] || 'NO_NAME'} (${product.purchaseCurrency.id})`
+      row.unit = `${product.unit.names[language] || 'NO_NAME'} (${product.unit.id})`
+      row.productPropertiesGroup = `${product.productPropertiesGroup.names[language] || 'NO_NAME'} (${product.productPropertiesGroup.id})`
+      for (let i = 1; i <= 5; i++) {
+        row[`categories_${i}`] = product?.categories[i - 1] ? `${product?.categories[i - 1]?.names[language] || 'NO_NAME'} (${product?.categories[i - 1]?.id})` : ''
+      }
+      dynamicKeys.forEach(({ id, type, key }) => {
+        const property = product.productProperties.find((item: any) => item.id === id)
+        if (type === 'multiSelect') {
+          const options = property.optionData || []
+          const index = Number.parseInt(key.split('_')[1], 10) - 1
+          const option = options[index]
+          row[key] = option ? `${option.names?.[language]} (${option.id})` : ''
+        }
+        else if (type === 'select' || type === 'color') {
+          row[key] = property.optionData?.[0]
+            ? `${property.optionData[0].names?.[language]} (${property.optionData[0].id})`
+            : ''
+        }
+        else {
+          row[key] = property?.value || ''
+        }
+      })
+      sheet.addRow(row)
+    })
+
+    createHiddenList({ data: currencies, columnKey: 'A', columnName: 'currency' })
+    createHiddenList({ data: currencies, columnKey: 'A', columnName: 'purchaseCurrency' })
+    createHiddenList({ data: units, columnKey: 'B', columnName: 'unit' })
+    createHiddenList({ data: productPropertiesGroups, columnKey: 'C', columnName: 'productPropertiesGroup' })
+    createHiddenList({ data: categories, columnKey: 'D', columnName: 'categories_1' })
+    createHiddenList({ data: categories, columnKey: 'D', columnName: 'categories_2' })
+    createHiddenList({ data: categories, columnKey: 'D', columnName: 'categories_3' })
+    createHiddenList({ data: categories, columnKey: 'D', columnName: 'categories_4' })
+    createHiddenList({ data: categories, columnKey: 'D', columnName: 'categories_5' })
+    const propertiesLetters: Record<string, string> = {}
+    for (const [index, property] of dynamicKeys.entries()) {
+      if (['select', 'multiSelect', 'color'].includes(property.type)) {
+        const { productPropertiesOptions } = await ProductPropertyOptionService.get({
+          filters: { productProperty: property.id },
+          pagination: { full: true },
+          sorters: { priority: 'asc' },
+        })
+        if (!propertiesLetters[property.id])
+          propertiesLetters[property.id] = getExcelColumnLetter(5 + index)
+
+        createHiddenList({
+          data: productPropertiesOptions,
+          columnKey: propertiesLetters[property.id],
+          columnName: property.key,
+        })
+      }
+    }
+
+    function createHiddenList({ data, columnKey, columnName }: { data: any[], columnKey: string, columnName: string }) {
+      const options = data.map((item: any) => {
+        const name = item.names.get(language) || 'NO_NAME'
+        return `${name} (${item._id})`
+      })
+
+      options.forEach((value, index) => {
+        hiddenSheet.getCell(`${columnKey}${index + 1}`).value = value
+      })
+
+      const formulaRange = `hidden!$${columnKey}$1:$${columnKey}$${options.length}`
+      const column = sheet.columns.findIndex(col => col.key === columnName) + 1
+
+      for (let i = 2; i <= sheet.rowCount; i++) {
+        sheet.getCell(i, column).dataValidation = {
+          type: 'list',
+          allowBlank: true,
+          formulae: [formulaRange],
+        }
+      }
+    }
+
+    function getExcelColumnLetter(colIndex: number): string {
+      let letter = ''
+      while (colIndex > 0) {
+        letter = String.fromCharCode(65 + (colIndex - 1) % 26) + letter
+        colIndex = Math.floor((colIndex - 1) / 26)
+      }
+      return letter
     }
   }
 
