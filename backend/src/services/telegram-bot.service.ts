@@ -1,13 +1,11 @@
+import type { Product } from '../types/product.type'
 import fs from 'node:fs'
 import path from 'node:path'
 import axios from 'axios'
 import FormData from 'form-data'
 import { STORAGE_PATHS } from '../config/constants'
-import * as ProductService from './product.service'
 
-export async function sendMessage(): Promise<any> {
-  const { products } = await ProductService.get({ filters: { language: 'ru' }, pagination: { full: true }, sorters: { seq: 'asc' } })
-  const product = products[0]
+export async function sendMessage(product: ProductTypes.Product): Promise<any> {
   const form = new FormData()
   form.append('chat_id', '-1002510719726')
   form.append('caption', product.names.ru || 'NO_NAME')

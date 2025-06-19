@@ -15,7 +15,6 @@ import { buildQuery, buildSortQuery } from '../utils/queryBuilder'
 import * as BarcodeService from './barcode.service'
 import * as LanguageService from './language.service'
 import * as ProductPropertyOptionService from './product-property-option.service'
-import * as TelegramBotService from './telegram-bot.service'
 
 export async function get(payload: ProductTypes.getProductsParams): Promise<ProductTypes.getProductsResult> {
   const { current = 1, pageSize = 10 } = payload.pagination
@@ -408,7 +407,7 @@ export async function edit(payload: ProductTypes.editProductParams): Promise<Pro
     _id: property.id,
     value: property.value,
   }))
-  await TelegramBotService.sendMessage()
+
   let parsedUploadedImagesIds: string[] = []
 
   if (typeof uploadedImagesIds === 'string') {
