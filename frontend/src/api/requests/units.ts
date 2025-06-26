@@ -7,7 +7,7 @@ import type {
   importUnitsParams,
   removeUnitParams,
   UnitsResponse,
-} from '@/api/types/units'
+} from '@/api/types'
 import { api } from '@/api/instance'
 
 export async function getUnits(params: getUnitsParams) {

@@ -13,6 +13,7 @@ function hasIdsOrFilters(data: {
 
 export const getCurrencySchema = z.object({
   filters: z.object({
+    ids: z.array(idSchema).optional(),
     names: z.string().trim().optional(),
     symbols: z.string().trim().optional(),
     language: z.string().optional().default('en'),

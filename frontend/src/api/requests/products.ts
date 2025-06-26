@@ -8,7 +8,7 @@ import type {
   importProductsParams,
   ProductsResponse,
   removeProductParams,
-} from '@/api/types/products'
+} from '@/api/types'
 import { api } from '@/api/instance'
 
 export async function getProducts(params: getProductsParams) {

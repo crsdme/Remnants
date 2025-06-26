@@ -7,7 +7,7 @@ import type {
   importLanguagesParams,
   LanguagesResponse,
   removeLanguageParams,
-} from '@/api/types/languages'
+} from '@/api/types'
 import { api } from '@/api/instance'
 
 export async function getLanguages(params: getLanguagesParams) {

@@ -6,7 +6,7 @@ import type {
   importUserRolesParams,
   removeUserRolesParams,
   UserRolesResponse,
-} from '@/api/types/users-roles'
+} from '@/api/types'
 import { api } from '@/api/instance'
 
 export async function getUserRoles(params: getUserRolesParams) {

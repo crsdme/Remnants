@@ -7,7 +7,7 @@ import type {
   getCurrenciesParams,
   importCurrenciesParams,
   removeCurrencyParams,
-} from '@/api/types/currencies'
+} from '@/api/types'
 import { api } from '@/api/instance'
 
 export async function getCurrencies(params: getCurrenciesParams) {

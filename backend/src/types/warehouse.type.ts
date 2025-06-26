@@ -1,9 +1,12 @@
-import type { Code, IdType, LanguageString, Message, Pagination, Status } from './common.type'
+import type { SUPPORTED_LANGUAGES_TYPE } from '../config/constants'
+import type { Code, DateRange, IdType, LanguageString, Message, Pagination, Sorter, Status } from './common.type'
 
 export interface Warehouse {
+  id: IdType
   names: LanguageString
   priority: number
   active: boolean
+  removed: boolean
   createdAt: Date
   updatedAt: Date
 }
@@ -16,18 +19,27 @@ export interface getWarehousesResult {
   warehousesCount: number
 }
 
+export interface getWarehousesFilters {
+  names: LanguageString
+  language: SUPPORTED_LANGUAGES_TYPE
+  priority: number
+  active: boolean
+  createdAt: DateRange
+  updatedAt: DateRange
+}
+
+export interface getWarehousesSorters {
+  names: Sorter
+  priority: Sorter
+  active: Sorter
+  updatedAt: Sorter
+  createdAt: Sorter
+}
+
 export interface getWarehousesParams {
-  filters: {
-    names: LanguageString
-    priority: number
-    active: boolean
-    language: string
-  }
-  sorters: {
-    priority: string
-    active: string
-  }
-  pagination: Pagination
+  filters?: Partial<getWarehousesFilters>
+  sorters?: Partial<getWarehousesSorters>
+  pagination?: Partial<Pagination>
 }
 
 export interface createWarehousesResult {

@@ -3,12 +3,14 @@ import mongoose, { Schema } from 'mongoose'
 
 import { v4 as uuidv4 } from 'uuid'
 import { SUPPORTED_LANGUAGES } from '../config/constants'
+import { uuidValidator } from '../utils/uuidValidator'
 
 const WarehouseSchema: Schema = new Schema(
   {
     _id: {
       type: String,
       default: uuidv4,
+      validate: uuidValidator,
     },
     names: {
       type: Map,
@@ -24,15 +26,15 @@ const WarehouseSchema: Schema = new Schema(
       },
     },
     priority: {
-      type: Schema.Types.Number,
+      type: Number,
       default: 0,
     },
     active: {
-      type: Schema.Types.Boolean,
+      type: Boolean,
       default: true,
     },
     removed: {
-      type: Schema.Types.Boolean,
+      type: Boolean,
       default: false,
     },
   },

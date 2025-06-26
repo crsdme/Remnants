@@ -46,7 +46,7 @@ function buildHierarchy(items: Node[]): Node[] {
 }
 
 export async function get(payload: CategoryTypes.getCategoriesParams): Promise<CategoryTypes.getCategoriesResult> {
-  const { current = 1, pageSize = 10 } = payload.pagination
+  const { current = 1, pageSize = 10 } = payload.pagination || {}
 
   const {
     names = '',
@@ -62,9 +62,9 @@ export async function get(payload: CategoryTypes.getCategoriesParams): Promise<C
       from: undefined,
       to: undefined,
     },
-  } = payload.filters
+  } = payload.filters || {}
 
-  const sorters = buildSortQuery({ ...payload.sorters, level: 'asc' })
+  const sorters = buildSortQuery(payload.sorters || {}, { level: 1 })
 
   const filterRules = {
     names: { type: 'string', langAware: true },
@@ -287,12 +287,12 @@ export async function exportHandler(payload: CategoryTypes.exportCategoriesParam
       row.id = cat._id
 
       for (const lang of languages) {
-        row[`name_${lang.code}`] = (cat.names as Map<string, string>).get(lang.code) || ''
+        row[`name_${lang.code}`] = (cat.names as unknown as Map<string, string>).get(lang.code) || ''
       }
 
       const parentCategory = categories.find(c => c._id.toString() === cat.parent?.toString())
       const parentName = parentCategory
-        ? `${parentCategory.names.get(userLanguage) || 'NO_NAME'} (${parentCategory._id})`
+        ? `${(parentCategory.names as unknown as Map<string, string>).get(userLanguage) || 'NO_NAME'} (${parentCategory._id})`
         : ''
 
       row.parent = parentName
@@ -314,7 +314,7 @@ export async function exportHandler(payload: CategoryTypes.exportCategoriesParam
   }
 
   const parentOptions = categories.map((cat) => {
-    const name = cat.names.get(userLanguage) || 'NO_NAME'
+    const name = (cat.names as unknown as Map<string, string>).get(userLanguage) || 'NO_NAME'
     return `${name} (${cat._id})`
   })
 

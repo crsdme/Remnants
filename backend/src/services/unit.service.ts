@@ -10,7 +10,7 @@ import {
 import { buildQuery, buildSortQuery } from '../utils/queryBuilder'
 
 export async function get(payload: UnitTypes.getUnitsParams): Promise<UnitTypes.getUnitsResult> {
-  const { current = 1, pageSize = 10 } = payload.pagination
+  const { current = 1, pageSize = 10 } = payload.pagination || {}
 
   const {
     names = '',
@@ -26,9 +26,9 @@ export async function get(payload: UnitTypes.getUnitsParams): Promise<UnitTypes.
       from: undefined,
       to: undefined,
     },
-  } = payload.filters
+  } = payload.filters || {}
 
-  const sorters = buildSortQuery(payload.sorters, { priority: 1 })
+  const sorters = buildSortQuery(payload.sorters || {}, { priority: 1 })
 
   const filterRules = {
     names: { type: 'string', langAware: true },

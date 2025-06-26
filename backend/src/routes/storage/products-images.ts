@@ -7,35 +7,6 @@ import { HttpError } from '../../utils/httpError'
 
 const router = Router()
 
-// router.get('/:filename', (req: any, res: any) => {
-//   const { filename } = req.params
-//   const width = Number.parseInt(req.query.width as string)
-//   const height = Number.parseInt(req.query.height as string)
-//   const imagePath = path.join(STORAGE_PATHS.productImages, filename)
-
-//   if (!fs.existsSync(imagePath))
-//     throw new HttpError(404, 'Image not found')
-
-//   try {
-//     const transform = sharp(imagePath)
-
-//     if (!Number.isNaN(width) || !Number.isNaN(height)) {
-//       transform.resize({
-//         width: !Number.isNaN(width) ? width : undefined,
-//         height: !Number.isNaN(height) ? height : undefined,
-//         fit: 'cover',
-//       })
-//     }
-//     res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin')
-//     res.setHeader('Access-Control-Allow-Origin', '*')
-//     res.set('Content-Type', 'image/jpeg')
-//     transform.pipe(res)
-//   }
-//   catch (err) {
-//     throw new HttpError(500, 'Failed to process image', err as string)
-//   }
-// })
-
 router.get('/:filename', async (req: any, res: any) => {
   const { filename } = req.params
   const width = Number.parseInt(req.query.width)

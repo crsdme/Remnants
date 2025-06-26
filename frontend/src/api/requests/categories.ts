@@ -8,7 +8,7 @@ import type {
   getCategoriesParams,
   importCategoriesParams,
   removeCategoryParams,
-} from '@/api/types/categories'
+} from '@/api/types'
 import { api } from '@/api/instance'
 
 export async function getCategories(params: getCategoriesParams) {

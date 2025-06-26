@@ -556,7 +556,7 @@ function CreateForm({ languages, currencies, units, productPropertiesGroups, onS
             <FormItem>
               <FormLabel>{t('page.products.form.images')}</FormLabel>
               <FormControl>
-                <FileUploadDnd disabled={isLoading} files={images} setFiles={setImages} />
+                <FileUploadDnd isLoading={isLoading} files={images} setFiles={setImages} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -856,7 +856,7 @@ function EditForm({ languages, currencies, units, productPropertiesGroups, onSub
             <FormItem>
               <FormLabel>{t('page.products.form.images')}</FormLabel>
               <FormControl>
-                <FileUploadDnd disabled={isLoading} files={images} setFiles={setImages} />
+                <FileUploadDnd isLoading={isLoading} files={images} setFiles={setImages} />
               </FormControl>
               <FormMessage />
             </FormItem>

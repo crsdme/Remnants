@@ -38,9 +38,9 @@ export interface getBarcodesSorters {
 }
 
 export interface getBarcodesParams {
-  filters: Partial<getBarcodesFilters>
-  sorters: Partial<getBarcodesSorters>
-  pagination: Partial<Pagination>
+  filters?: Partial<getBarcodesFilters>
+  sorters?: Partial<getBarcodesSorters>
+  pagination?: Partial<Pagination>
 }
 
 export interface createBarcodeResult {

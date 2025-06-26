@@ -4,7 +4,7 @@ import { HttpError } from '../utils/httpError'
 import { buildQuery, buildSortQuery } from '../utils/queryBuilder'
 
 export async function get(payload: ProductPropertyOptionTypes.getProductPropertyOptionsParams): Promise<ProductPropertyOptionTypes.getProductPropertyOptionsResult> {
-  const { current = 1, pageSize = 10 } = payload.pagination
+  const { current = 1, pageSize = 10 } = payload.pagination || {}
 
   const {
     ids = [],
@@ -21,9 +21,9 @@ export async function get(payload: ProductPropertyOptionTypes.getProductProperty
       from: undefined,
       to: undefined,
     },
-  } = payload.filters
+  } = payload.filters || {}
 
-  const sorters = buildSortQuery(payload.sorters, { priority: 1 })
+  const sorters = buildSortQuery(payload.sorters || {}, { priority: 1 })
 
   const filterRules = {
     _id: { type: 'array' },

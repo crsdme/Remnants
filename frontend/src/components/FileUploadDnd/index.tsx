@@ -13,10 +13,11 @@ import { arrayMove, SortableContext, sortableKeyboardCoordinates, useSortable, v
 import { CSS } from '@dnd-kit/utilities'
 
 import { GripVertical, Upload, X } from 'lucide-react'
-import { useCallback } from 'react'
+import { useCallback, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { Button } from '@/components/ui'
+import { cn } from '@/utils/lib'
 
 interface UploadedFile {
   id: string
@@ -31,9 +32,10 @@ interface UploadedFile {
 interface SortableFileItemProps {
   file: UploadedFile
   onDelete: (id: string) => void
+  isLoading: boolean
 }
 
-function SortableFileItem({ file, onDelete }: SortableFileItemProps) {
+function SortableFileItem({ file, onDelete, isLoading }: SortableFileItemProps) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: file.id })
 
   const style = {
@@ -44,7 +46,7 @@ function SortableFileItem({ file, onDelete }: SortableFileItemProps) {
 
   return (
     <div ref={setNodeRef} style={style} className="flex items-center gap-3 p-2 border rounded-lg bg-background">
-      <div {...attributes} {...listeners} className="cursor-grab active:cursor-grabbing p-1 hover:bg-muted rounded">
+      <div {...attributes} {...listeners} className={cn('cursor-grab active:cursor-grabbing p-1 hover:bg-muted rounded', isLoading && 'cursor-not-allowed')}>
         <GripVertical className="h-4 w-4 text-muted-foreground" />
       </div>
 
@@ -64,6 +66,7 @@ function SortableFileItem({ file, onDelete }: SortableFileItemProps) {
         variant="ghost"
         size="sm"
         onClick={() => onDelete(file.id)}
+        disabled={isLoading}
         className="flex-shrink-0 h-8 w-8 p-0 hover:bg-destructive/10 hover:text-destructive"
       >
         <X className="h-4 w-4" />
@@ -72,12 +75,13 @@ function SortableFileItem({ file, onDelete }: SortableFileItemProps) {
   )
 }
 
-export function FileUploadDnd({ files, setFiles, disabled = false }: {
+export function FileUploadDnd({ files, setFiles, isLoading = false }: {
   files
   setFiles
-  disabled
+  isLoading
 }) {
   const { t } = useTranslation()
+  const inputRef = useRef(null)
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -88,7 +92,7 @@ export function FileUploadDnd({ files, setFiles, disabled = false }: {
 
   const handleFileUpload = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFiles = event.target.files
-    if (!selectedFiles)
+    if (!selectedFiles || isLoading)
       return
 
     Array.from(selectedFiles).forEach((file) => {
@@ -110,7 +114,6 @@ export function FileUploadDnd({ files, setFiles, disabled = false }: {
       }
     })
 
-    // Reset input
     event.target.value = ''
   }, [])
 
@@ -131,29 +134,48 @@ export function FileUploadDnd({ files, setFiles, disabled = false }: {
     }
   }, [])
 
+  const handleOpenFileDialog = useCallback(() => {
+    if (isLoading)
+      return
+    inputRef.current?.click()
+  }, [isLoading])
+
   return (
     <div>
       <div>
-        <input type="file" multiple accept="image/*" onChange={handleFileUpload} className="hidden" id="file-upload" />
+        <input type="file" multiple accept="image/*" onChange={handleFileUpload} className="hidden" id="file-upload" ref={inputRef} />
         <label htmlFor="file-upload">
-          <Button variant="outline" className="w-full cursor-pointer" asChild disabled={disabled}>
-            <div className="flex items-center gap-2">
-              <Upload className="h-4 w-4" />
-              {t('component.fileUploadDnd.upload')}
-            </div>
+          <Button
+            variant="outline"
+            className="w-full cursor-pointer"
+            type="button"
+            disabled={isLoading}
+            loading={isLoading}
+            onClick={handleOpenFileDialog}
+          >
+            <Upload className="h-4 w-4" />
+            {t('component.fileUploadDnd.upload')}
           </Button>
         </label>
       </div>
 
-      {files.length > 0 && (
+      {files.length > 0 && !isLoading && (
         <div className="space-y-2 mt-2">
           <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
             <SortableContext items={files.map(f => f.id)} strategy={verticalListSortingStrategy}>
               {files.map(file => (
-                <SortableFileItem key={file.id} file={file} onDelete={handleDeleteFile} />
+                <SortableFileItem key={file.id} file={file} onDelete={handleDeleteFile} isLoading={isLoading} />
               ))}
             </SortableContext>
           </DndContext>
+        </div>
+      )}
+
+      {files.length > 0 && isLoading && (
+        <div className="space-y-2 mt-2">
+          {files.map(file => (
+            <SortableFileItem key={file.id} file={file} onDelete={handleDeleteFile} isLoading={isLoading} />
+          ))}
         </div>
       )}
 

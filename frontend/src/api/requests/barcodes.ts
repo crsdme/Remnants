@@ -4,7 +4,7 @@ import type {
   editBarcodeParams,
   getBarcodesParams,
   removeBarcodesParams,
-} from '@/api/types/barcodes'
+} from '@/api/types'
 import { api } from '@/api/instance'
 
 export async function getBarcodes(params: getBarcodesParams) {

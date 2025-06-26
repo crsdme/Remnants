@@ -72,9 +72,9 @@ export interface getProductsSorters {
 }
 
 export interface getProductsParams {
-  filters: Partial<getProductsFilters>
-  sorters: Partial<getProductsSorters>
-  pagination: Partial<Pagination>
+  filters?: Partial<getProductsFilters>
+  sorters?: Partial<getProductsSorters>
+  pagination?: Partial<Pagination>
 }
 
 export interface createProductResult {

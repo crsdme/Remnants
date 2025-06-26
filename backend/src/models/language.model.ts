@@ -1,6 +1,7 @@
 import type { Language } from '../types/language.type'
 import mongoose, { Schema } from 'mongoose'
 import { v4 as uuidv4 } from 'uuid'
+import { uuidValidator } from '../utils/uuidValidator'
 import { CounterModel } from './counter.model'
 
 const LanguageSchema: Schema = new Schema(
@@ -8,33 +9,34 @@ const LanguageSchema: Schema = new Schema(
     _id: {
       type: String,
       default: uuidv4,
+      validate: uuidValidator,
     },
     seq: {
       type: Number,
       default: 0,
     },
     name: {
-      type: Schema.Types.String,
+      type: String,
       required: true,
     },
     code: {
-      type: Schema.Types.String,
+      type: String,
       required: true,
     },
     main: {
-      type: Schema.Types.Boolean,
+      type: Boolean,
       required: true,
     },
     priority: {
-      type: Schema.Types.Number,
+      type: Number,
       default: 0,
     },
     active: {
-      type: Schema.Types.Boolean,
+      type: Boolean,
       default: true,
     },
     removed: {
-      type: Schema.Types.Boolean,
+      type: Boolean,
       default: false,
     },
   },

@@ -2,12 +2,14 @@ import type { UserRole } from '../types/user-role.type'
 import mongoose, { Schema } from 'mongoose'
 import { v4 as uuidv4 } from 'uuid'
 import { SUPPORTED_LANGUAGES } from '../config/constants'
+import { uuidValidator } from '../utils/uuidValidator'
 
 const UserRoleSchema: Schema = new Schema(
   {
     _id: {
       type: String,
       default: uuidv4,
+      validate: uuidValidator,
     },
     names: {
       type: Map,

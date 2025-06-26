@@ -4,7 +4,7 @@ import type {
   getProductPropertiesOptionsParams,
   ProductPropertiesOptionsResponse,
   removeProductPropertyOptionParams,
-} from '@/api/types/products-properties-options'
+} from '@/api/types'
 import { api } from '@/api/instance'
 
 export async function getProductPropertiesOptions(params: getProductPropertiesOptionsParams) {

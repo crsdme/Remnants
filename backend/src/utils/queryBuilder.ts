@@ -1,5 +1,5 @@
 interface Rule {
-  type: 'string' | 'array' | 'exact' | 'dateRange' | 'multiFieldSearch'
+  type: 'string' | 'array' | 'exact' | 'number' | 'dateRange' | 'multiFieldSearch'
   field?: string
   langAware?: boolean
   multiFields?: { field: string, langAware?: boolean }[]
@@ -45,6 +45,10 @@ export function buildQuery({ filters, rules, language = 'en', removed = true, ba
 
       case 'exact':
         query[field] = value
+        break
+
+      case 'number':
+        query[field] = Number(value)
         break
 
       case 'multiFieldSearch': {

@@ -120,17 +120,18 @@ export function LayoutSidebar({ ...props }: React.ComponentProps<typeof Sidebar>
       {
         title: t('component.sidemenu.label.money'),
         icon: Banknote,
-        permissions: ['money.page', 'cashregister.page', 'expense.page', 'investor.page', 'provider.page'],
+        permissions: ['money.page', 'cashregister.page', 'cashregister-account.page', 'expense.page', 'investor.page', 'provider.page', 'money-transaction.page'],
         items: [
           { title: t('component.sidemenu.label.cashregisters'), url: '/cashregisters', permissions: ['cashregister.page'] },
           {
-            title: t('component.sidemenu.label.cashregistersAccounts'),
-            url: '/cashregisters/accounts',
-            permissions: ['cashregisterAccount.page'],
+            title: t('component.sidemenu.label.cashregisterAccounts'),
+            url: '/cashregister-accounts',
+            permissions: ['cashregister-account.page'],
           },
           { title: t('component.sidemenu.label.expenses'), url: '/expenses', permissions: ['expense.page'] },
           { title: t('component.sidemenu.label.investors'), url: '/investors', permissions: ['investor.page'] },
           { title: t('component.sidemenu.label.providers'), url: '/providers', permissions: ['provider.page'] },
+          { title: t('component.sidemenu.label.moneyTransactions'), url: '/money-transactions', permissions: ['money-transaction.page'] },
         ],
       },
       {

@@ -1,7 +1,8 @@
 import type { SUPPORTED_LANGUAGES_TYPE } from '../config/constants'
-import type { Code, DateRange, IdType, LanguageString, Message, Pagination, Status } from './common.type'
+import type { Code, DateRange, IdType, LanguageString, Message, Pagination, Sorter, Status } from './common.type'
 
 export interface ProductPropertyOption {
+  id: IdType
   names: Map<string, string>
   priority: number
   active: boolean
@@ -19,25 +20,29 @@ export interface getProductPropertyOptionsResult {
   productPropertiesOptionsCount: number
 }
 
+export interface getProductPropertyOptionsFilters {
+  ids?: IdType[]
+  names?: LanguageString
+  language?: SUPPORTED_LANGUAGES_TYPE
+  priority?: number
+  active?: boolean
+  productProperty?: IdType
+  createdAt?: DateRange
+  updatedAt?: DateRange
+}
+
+export interface getProductPropertyOptionsSorters {
+  names?: Sorter
+  priority?: Sorter
+  active?: Sorter
+  createdAt?: Sorter
+  updatedAt?: Sorter
+}
+
 export interface getProductPropertyOptionsParams {
-  filters: {
-    ids?: IdType[]
-    names?: LanguageString
-    language?: SUPPORTED_LANGUAGES_TYPE
-    priority?: number
-    active?: boolean
-    productProperty?: IdType
-    createdAt?: DateRange
-    updatedAt?: DateRange
-  }
-  sorters: {
-    names?: string
-    priority?: string
-    active?: string
-    createdAt?: string
-    updatedAt?: string
-  }
-  pagination: Pagination
+  filters?: Partial<getProductPropertyOptionsFilters>
+  sorters?: Partial<getProductPropertyOptionsSorters>
+  pagination?: Partial<Pagination>
 }
 
 export interface createProductPropertyOptionResult {
