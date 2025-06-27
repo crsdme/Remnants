@@ -15,10 +15,12 @@ import {
   ErrorPage,
   LanguagesPage,
   LoginPage,
+  MainSettingsPage,
   MoneyTransactionsPage,
   ProductPropertiesGroupsPage,
   ProductPropertiesPage,
   ProductsPage,
+  SettingsLayout,
   TestPage,
   UnitsPage,
   UserRolesPage,
@@ -75,6 +77,10 @@ export default function App() {
             path="/users"
             element={(<ProtectedRoute children={<UsersPage />} permissions={['user.page']} />)}
           />
+          <Route
+            path="/users/roles"
+            element={<ProtectedRoute children={<UserRolesPage />} permissions={['userRole.page']} />}
+          />
 
           <Route
             path="/cashregisters"
@@ -90,6 +96,16 @@ export default function App() {
           />
 
           <Route
+            path="/settings"
+            element={<ProtectedRoute children={<SettingsLayout />} permissions={['settings.page']} />}
+          >
+            <Route
+              path="/settings"
+              element={<ProtectedRoute children={<MainSettingsPage />} permissions={['settings.page']} />}
+            />
+          </Route>
+
+          <Route
             path="/settings/currencies"
             element={<ProtectedRoute children={<CurrenciesPage />} permissions={['currency.page']} />}
           />
@@ -100,10 +116,6 @@ export default function App() {
           <Route
             path="/settings/units"
             element={<ProtectedRoute children={<UnitsPage />} permissions={['unit.page']} />}
-          />
-          <Route
-            path="/settings/user-roles"
-            element={<ProtectedRoute children={<UserRolesPage />} permissions={['userRole.page']} />}
           />
 
           <Route

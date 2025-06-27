@@ -147,16 +147,17 @@ export function LayoutSidebar({ ...props }: React.ComponentProps<typeof Sidebar>
       {
         title: t('component.sidemenu.label.users'),
         icon: Users,
-        permissions: ['user.page', 'timetable.page'],
+        permissions: ['user.page', 'timetable.page', 'userRole.page'],
         items: [
           { title: t('component.sidemenu.label.users'), url: '/users', permissions: ['user.page'] },
           { title: t('component.sidemenu.label.timetable'), url: '/users/timetable', permissions: ['timetable.page'] },
+          { title: t('component.sidemenu.label.userRoles'), url: '/users/roles', permissions: ['userRole.page'] },
         ],
       },
       {
         title: t('component.sidemenu.label.settings'),
         icon: Settings,
-        permissions: ['settings.page', 'language.page', 'currency.page', 'source.page', 'orderStatus.page', 'deliveryService.page', 'unit.page', 'log.page', 'userRole.page'],
+        permissions: ['settings.page', 'language.page', 'currency.page', 'source.page', 'orderStatus.page', 'deliveryService.page', 'unit.page', 'log.page'],
         items: [
           { title: t('component.sidemenu.label.languages'), url: '/settings/languages', permissions: ['language.page'] },
           { title: t('component.sidemenu.label.currencies'), url: '/settings/currencies', permissions: ['currency.page'] },
@@ -168,9 +169,8 @@ export function LayoutSidebar({ ...props }: React.ComponentProps<typeof Sidebar>
             permissions: ['deliveryService.page'],
           },
           { title: t('component.sidemenu.label.units'), url: '/settings/units', permissions: ['unit.page'] },
-          { title: t('component.sidemenu.label.settings'), url: '/settings', permissions: ['settings.page'] },
           { title: t('component.sidemenu.label.logs'), url: '/settings/logs', permissions: ['log.page'] },
-          { title: t('component.sidemenu.label.userRoles'), url: '/settings/user-roles', permissions: ['userRole.page'] },
+          { title: t('component.sidemenu.label.settings'), url: '/settings', permissions: ['settings.page'] },
         ],
       },
       {

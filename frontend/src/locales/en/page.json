@@ -474,5 +474,17 @@
   "page.money-transactions.form.description": "Description",
   "page.money-transactions.form.tabs.add": "Add Money",
   "page.money-transactions.form.tabs.account": "Account",
-  "page.money-transactions.form.tabs.cashregister": "Cashregister"
+  "page.money-transactions.form.tabs.cashregister": "Cashregister",
+
+  "page.settings.title": "Main Settings",
+  "page.settings.description": "Main settings of the system",
+
+  "page.settings.navigation.main": "Main Settings",
+
+  "page.settings.main.card.title": "Main Settings",
+  "page.settings.main.card.description": "Main settings of the system",
+  "page.settings.main.isPropertyGroupRequired.label": "Property group required",
+  "page.settings.main.isPropertyGroupRequired.description": "Property group required for product",
+  "page.settings.main.isCategoryRequired.label": "Category required",
+  "page.settings.main.isCategoryRequired.description": "Category required for product"
 }

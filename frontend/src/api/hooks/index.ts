@@ -50,34 +50,38 @@ export * from './language/useLanguageRemove'
 
 export * from './money-transaction/useMoneyTransactionCreate'
 export * from './money-transaction/useMoneyTransactionEdit'
+
 export * from './money-transaction/useMoneyTransactionQuery'
 export * from './money-transaction/useMoneyTransactionRemove'
-
 export * from './product-property-group/useProductPropertyGroupCreate'
 export * from './product-property-group/useProductPropertyGroupEdit'
-export * from './product-property-group/useProductPropertyGroupQuery'
 
+export * from './product-property-group/useProductPropertyGroupQuery'
 export * from './product-property-group/useProductPropertyGroupRemove'
 export * from './product-property-option/useProductPropertyOptionCreate'
+
 export * from './product-property-option/useProductPropertyOptionEdit'
 export * from './product-property-option/useProductPropertyOptionQuery'
-
 export * from './product-property-option/useProductPropertyOptionRemove'
 export * from './product-property/useProductPropertyCreate'
+
 export * from './product-property/useProductPropertyEdit'
 export * from './product-property/useProductPropertyOptions'
 export * from './product-property/useProductPropertyQuery'
-
 export * from './product-property/useProductPropertyRemove'
 export * from './product/useProductBatch'
+
 export * from './product/useProductCreate'
 export * from './product/useProductDuplicate'
 export * from './product/useProductEdit'
 export * from './product/useProductExport'
 export * from './product/useProductImport'
 export * from './product/useProductQuery'
-
 export * from './product/useProductRemove'
+
+export * from './setting/useSettingEdit'
+export * from './setting/useSettingQuery'
+
 export * from './unit/useUnitBatch'
 export * from './unit/useUnitCreate'
 export * from './unit/useUnitDuplicate'

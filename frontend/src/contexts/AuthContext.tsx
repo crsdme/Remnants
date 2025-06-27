@@ -62,7 +62,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const { t } = useTranslation()
 
-  const [user, setUser] = useState<User | null>(null)
+  const [user, setUser] = useState<User & { settings: Setting[] } | null>(null)
 
   const useQueryRefreshToken = useRefreshToken({
     options: {
@@ -75,8 +75,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const useMutateAuthLogin = useAuthLogin({
     options: {
       onSuccess: ({ data }) => {
-        setUser(data.user)
+        setUser({ ...data.user, settings: undefined, permissions: undefined })
         setPermissions(data.user.permissions)
+        localStorage.setItem('settings', JSON.stringify(data.user.settings))
         dispatch({ type: 'LOGIN' })
       },
       onError: ({ response }) => {

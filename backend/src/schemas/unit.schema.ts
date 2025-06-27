@@ -14,8 +14,8 @@ function hasIdsOrFilters(data: {
 export const getUnitSchema = z.object({
   pagination: paginationSchema.optional(),
   filters: z.object({
-    names: languageStringSchema.optional(),
-    symbols: languageStringSchema.optional(),
+    names: z.string().optional(),
+    symbols: z.string().optional(),
     language: z.string().optional(),
     priority: numberFromStringSchema.optional(),
     createdAt: dateRangeSchema.optional(),

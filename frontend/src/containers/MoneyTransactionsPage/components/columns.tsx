@@ -145,9 +145,14 @@ export function useColumns() {
         meta: {
           title: t('page.money-transactions.table.type'),
           filterable: true,
-          filterType: 'text',
+          filterType: 'select',
           sortable: true,
           defaultVisible: true,
+          options: [
+            { label: t('page.money-transactions.table.type.transfer'), value: 'transfer' },
+            { label: t('page.money-transactions.table.type.income'), value: 'income' },
+            { label: t('page.money-transactions.table.type.expense'), value: 'expense' },
+          ],
         },
         header: ({ column }) => sortHeader(column, t('page.money-transactions.table.type')),
         cell: ({ row }) => <Badge variant="outline">{t(`page.money-transactions.table.type.${row.original.type.toLowerCase()}`)}</Badge>,
@@ -210,9 +215,12 @@ export function useColumns() {
         meta: {
           title: t('page.money-transactions.table.sourceModel'),
           filterable: true,
-          filterType: 'text',
+          filterType: 'select',
           sortable: true,
           defaultVisible: true,
+          options: [
+            { label: t('page.money-transactions.table.sourceModel.manual'), value: 'Manual' },
+          ],
         },
         header: ({ column }) => sortHeader(column, t('page.money-transactions.table.sourceModel')),
         cell: ({ row }) => <Badge variant="outline">{t(`page.money-transactions.table.sourceModel.${row.original.sourceModel.toLowerCase()}`)}</Badge>,

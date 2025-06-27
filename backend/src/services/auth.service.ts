@@ -5,6 +5,7 @@ import dotenv from 'dotenv'
 import jwt from 'jsonwebtoken'
 import { UserModel } from '../models/'
 import { HttpError } from '../utils/httpError'
+import * as SettingsService from './setting.service'
 
 dotenv.config()
 
@@ -46,11 +47,18 @@ export async function login(payload: loginParams): Promise<loginResult> {
     permissions: user.role.permissions,
   })
 
+  const { settings } = await SettingsService.get({})
+  const mappedSettings = settings.map(setting => ({
+    key: setting.key,
+    value: setting.value,
+  }))
+
   const userData = {
     id: user._id,
     login: user.login,
     name: user.name,
     permissions: user.role.permissions,
+    settings: mappedSettings,
     createdAt: user.createdAt,
     updatedAt: user.updatedAt,
   }

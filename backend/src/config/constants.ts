@@ -33,3 +33,8 @@ export const STORAGE_URLS = {
   exportProducts: `${STORAGE_URL}/export/products`,
   productImages: `${STORAGE_URL}/products/images`,
 }
+
+export const DEFAULT_SETTINGS = [
+  { key: 'productForm:isPropertyGroupRequired', value: true, scope: 'productForm', description: 'Is property group required', isPublic: true },
+  { key: 'productForm:isCategoryRequired', value: true, scope: 'productForm', description: 'Is category required', isPublic: true },
+]

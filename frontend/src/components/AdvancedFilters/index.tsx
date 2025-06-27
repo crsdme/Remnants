@@ -28,8 +28,9 @@ interface AdvancedFiltersProps {
 interface ColumnMeta {
   title: string
   filterable: boolean
-  filterType: 'text' | 'number' | 'boolean' | 'date' | 'asyncValue'
+  filterType: 'text' | 'number' | 'boolean' | 'date' | 'asyncValue' | 'select'
   loadOptions?: (query?: { query?: string, selectedValue?: string[] }) => Promise<{ value: string, label: string }[]>
+  options?: { value: string, label: string }[]
 }
 
 const filterItemSchema = z.object({
@@ -67,6 +68,7 @@ export function AdvancedFilters({ columns, onSubmit, onCancel, className, align 
         label: (column.meta as ColumnMeta)?.title || column.id,
         type: (column.meta as ColumnMeta)?.filterType,
         loadOptions: (column.meta as ColumnMeta)?.loadOptions,
+        options: (column.meta as ColumnMeta)?.options,
         disabled: isDisabled,
       }
     })
@@ -178,6 +180,18 @@ export function AdvancedFilters({ columns, onSubmit, onCancel, className, align 
             width="100%"
           />
         )
+      case 'select':
+        return (
+          <MultiSelect
+            value={item.value as string[]}
+            onChange={(value) => {
+              const currentItems = form.getValues('items')
+              currentItems[index].value = value
+              form.setValue('items', currentItems)
+            }}
+            options={column.options || []}
+          />
+        )
       default:
         return null
     }
@@ -226,7 +240,7 @@ export function AdvancedFilters({ columns, onSubmit, onCancel, className, align 
                     control={form.control}
                     name={`items.${index}.column`}
                     render={({ field }) => (
-                      <FormItem>
+                      <FormItem className="pb-0">
                         <Select
                           value={field.value}
                           onValueChange={(v) => {

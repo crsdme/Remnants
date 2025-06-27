@@ -478,5 +478,17 @@
   "page.money-transactions.form.cashregister-from": "Из кассы",
   "page.money-transactions.form.cashregister-to": "В кассу",
   "page.money-transactions.form.cashregister-account-from": "Из счета",
-  "page.money-transactions.form.cashregister-account-to": "В счет"
+  "page.money-transactions.form.cashregister-account-to": "В счет",
+
+  "page.settings.title": "Основные настройки",
+  "page.settings.description": "Настройки основных параметров системы",
+
+  "page.settings.navigation.main": "Основные настройки",
+
+  "page.settings.main.card.title": "Основные настройки",
+  "page.settings.main.card.description": "Настройки основных параметров системы",
+  "page.settings.main.isPropertyGroupRequired.label": "Обязательность группы свойств",
+  "page.settings.main.isPropertyGroupRequired.description": "Обязательность группы свойств для товара",
+  "page.settings.main.isCategoryRequired.label": "Обязательность категории",
+  "page.settings.main.isCategoryRequired.description": "Обязательность категории для товара"
 }
