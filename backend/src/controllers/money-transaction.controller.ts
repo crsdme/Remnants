@@ -23,24 +23,24 @@ export async function create(req: Request, res: Response, next: NextFunction) {
   }
 }
 
-export async function edit(req: Request, res: Response, next: NextFunction) {
-  try {
-    const serviceResponse = await MoneyTransactionService.edit(req.body)
+// export async function edit(req: Request, res: Response, next: NextFunction) {
+//   try {
+//     const serviceResponse = await MoneyTransactionService.edit(req.body)
 
-    res.status(200).json(serviceResponse)
-  }
-  catch (err) {
-    next(err)
-  }
-}
+//     res.status(200).json(serviceResponse)
+//   }
+//   catch (err) {
+//     next(err)
+//   }
+// }
 
-export async function remove(req: Request, res: Response, next: NextFunction) {
-  try {
-    const serviceResponse = await MoneyTransactionService.remove(req.body)
+// export async function remove(req: Request, res: Response, next: NextFunction) {
+//   try {
+//     const serviceResponse = await MoneyTransactionService.remove(req.body)
 
-    res.status(200).json(serviceResponse)
-  }
-  catch (err) {
-    next(err)
-  }
-}
+//     res.status(200).json(serviceResponse)
+//   }
+//   catch (err) {
+//     next(err)
+//   }
+// }
