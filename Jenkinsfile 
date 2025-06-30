@@ -1,15 +1,19 @@
 pipeline {
   agent any
   stages {
-    stage('Checkout') {
+    stage('Pull latest changes') {
       steps {
-        checkout scm
+        dir('/home/remnants/dev.remnant') {
+          sh 'git pull origin main'
+        }
       }
     }
     stage('Build and Run') {
       steps {
-        sh 'docker compose -f docker-compose.yml down'
-        sh 'docker compose -f docker-compose.yml up -d --build'
+        dir('/home/remnants/dev.remnant') {
+          sh 'docker compose down'
+          sh 'docker compose up -d --build'
+        }
       }
     }
   }
