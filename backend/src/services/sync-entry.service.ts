@@ -120,8 +120,8 @@ export async function syncProductToSite(payload: SyncEntryTypes.syncProductToSit
     filters: { ids: [productId] },
   })
 
-  const weightProperty = product.productProperties.find(property => property.id === 'baad1168-e6bd-48e1-a610-0fd60ffcfc4d')
-  const lengthProperty = product.productProperties.find(property => property.id === '8010a149-fdc4-4bb5-b33a-b39ac0ea2ae7')
+  const weightProperty = product.productProperties.find(property => property.id === '7c3e2c1b-f2bf-4639-baf2-7b1101fa7bf2')
+  const lengthProperty = product.productProperties.find(property => property.id === 'efcc3c51-a146-4975-bc5b-196745f76891')
 
   const syncProduct = {
     model: `REMNANT NEW PRODUCT`,
