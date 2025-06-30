@@ -126,7 +126,7 @@ export async function syncProductToSite(payload: SyncEntryTypes.syncProductToSit
   const syncProduct = {
     model: `REMNANT NEW PRODUCT`,
     external_id: productId,
-    price: product.price,
+    price: product.price * 1.18,
     translations: [
       {
         name: product.names.ru,
