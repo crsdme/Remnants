@@ -15,8 +15,8 @@ export interface Product {
   unit: IdType
   images: {
     filename: string
-    originalname: string
-    mimetype: string
+    name: string
+    type: string
     path: string
   }[]
   productPropertiesGroup: {
