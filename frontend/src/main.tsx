@@ -2,7 +2,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 
 import { createRoot } from 'react-dom/client'
 
-import { AuthProvider, ThemeProvider } from '@/contexts'
+import { AppSettingsProvider, AuthProvider, ThemeProvider } from '@/contexts'
 
 import App from './app/App'
 import '@/locales/i18n.ts'
@@ -13,7 +13,9 @@ createRoot(document.getElementById('root')!).render(
   <QueryClientProvider client={queryClient}>
     <ThemeProvider>
       <AuthProvider>
-        <App />
+        <AppSettingsProvider>
+          <App />
+        </AppSettingsProvider>
       </AuthProvider>
     </ThemeProvider>
   </QueryClientProvider>,

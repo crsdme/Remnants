@@ -1,11 +1,12 @@
-import type { Code, DateRange, IdType, LanguageString, Message, Pagination, Status } from './common.type'
+import type { Code, DateRange, IdType, LanguageString, Message, Pagination, Sorter, Status } from './common.type'
 
-export interface UserRole extends Document {
-  _id: string
+export interface UserRole {
+  id: IdType
   names: LanguageString
   permissions: string[]
   priority: number
   active: boolean
+  removed: boolean
   createdAt: Date
   updatedAt: Date
 }
@@ -18,24 +19,28 @@ export interface getUserRolesResult {
   userRolesCount: number
 }
 
+export interface getUserRolesFilters {
+  names: string
+  permissions: string[]
+  active: boolean[]
+  priority: number
+  createdAt: DateRange
+  updatedAt: DateRange
+}
+
+export interface getUserRolesSorters {
+  names: Sorter
+  permissions: Sorter
+  active: Sorter
+  priority: Sorter
+  updatedAt: Sorter
+  createdAt: Sorter
+}
+
 export interface getUserRolesParams {
-  filters: {
-    names: string
-    permissions: string[]
-    active: boolean[]
-    priority: number
-    createdAt: DateRange
-    updatedAt: DateRange
-  }
-  sorters: {
-    names: string
-    permissions: string
-    active: string
-    priority: string
-    updatedAt: string
-    createdAt: string
-  }
-  pagination: Pagination
+  filters?: Partial<getUserRolesFilters>
+  sorters?: Partial<getUserRolesSorters>
+  pagination?: Partial<Pagination>
 }
 
 export interface createUserRoleResult {

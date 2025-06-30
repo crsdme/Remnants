@@ -4,14 +4,14 @@ import { HttpError } from '../utils/httpError'
 import { buildQuery, buildSortQuery } from '../utils/queryBuilder'
 
 export async function get(payload: WarehouseTypes.getWarehousesParams): Promise<WarehouseTypes.getWarehousesResult> {
-  const { current = 1, pageSize = 10 } = payload.pagination
+  const { current = 1, pageSize = 10 } = payload.pagination || {}
 
   const {
     names = '',
     active = undefined,
     priority = undefined,
     language = 'en',
-  } = payload.filters
+  } = payload.filters || {}
 
   const filterRules = {
     names: { type: 'string', langAware: true },
@@ -25,7 +25,7 @@ export async function get(payload: WarehouseTypes.getWarehousesParams): Promise<
     language,
   })
 
-  const sorters = buildSortQuery(payload.sorters, { priority: 1 })
+  const sorters = buildSortQuery(payload.sorters || {}, { priority: 1 })
 
   const pipeline = [
     {

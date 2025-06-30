@@ -17,7 +17,7 @@ import * as LanguageService from './language.service'
 import * as ProductPropertyOptionService from './product-property-option.service'
 
 export async function get(payload: ProductTypes.getProductsParams): Promise<ProductTypes.getProductsResult> {
-  const { current = 1, pageSize = 10 } = payload.pagination
+  const { current = 1, pageSize = 10 } = payload.pagination || {}
 
   const {
     search = '',
@@ -40,19 +40,11 @@ export async function get(payload: ProductTypes.getProductsParams): Promise<Prod
       from: undefined,
       to: undefined,
     },
-  } = payload.filters
+  } = payload.filters || {}
 
-  const sorters = buildSortQuery(payload.sorters, { seq: 1 })
+  const sorters = buildSortQuery(payload.sorters || {}, { seq: 1 })
 
   const filterRules: any = {
-    // search: {
-    //   type: 'multiFieldSearch',
-    //   multiFields: [
-    //     { field: 'names', langAware: true },
-    //     { field: 'barcodes.code' },
-    //     { field: 'price' },
-    //   ],
-    // },
     _id: { type: 'array' },
     seq: { type: 'exact' },
     names: { type: 'string', langAware: true },
@@ -74,7 +66,7 @@ export async function get(payload: ProductTypes.getProductsParams): Promise<Prod
     language,
   })
 
-  const { languages } = await LanguageService.get({ filters: { active: [true] }, sorters: { priority: 'asc' }, pagination: { current: 1, pageSize: 1000 } })
+  const { languages } = await LanguageService.get({})
 
   const fields = languages.map(language => [
     { field: `names.${language.code}`, langAware: true },
@@ -753,7 +745,6 @@ export async function exportHandler(payload: ProductTypes.exportProductsParams):
         const { productPropertiesOptions } = await ProductPropertyOptionService.get({
           filters: { productProperty: property.id },
           pagination: { full: true },
-          sorters: { priority: 'asc' },
         })
         if (!propertiesLetters[property.id])
           propertiesLetters[property.id] = getExcelColumnLetter(5 + index)

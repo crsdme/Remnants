@@ -4,16 +4,16 @@ import { HttpError } from '../utils/httpError'
 import { buildQuery, buildSortQuery } from '../utils/queryBuilder'
 
 export async function get(payload: QuantityTypes.getQuantitiesParams): Promise<QuantityTypes.getQuantitiesResult> {
-  const { current = 1, pageSize = 10 } = payload.pagination
+  const { current = 1, pageSize = 10 } = payload.pagination || {}
 
   const {
     product = '',
     warehouse = '',
     status = '',
     count = 0,
-  } = payload.filters
+  } = payload.filters || {}
 
-  const sorters = buildSortQuery(payload.sorters)
+  const sorters = buildSortQuery(payload.sorters || {}, { count: 1 })
 
   const filterRules = {
     product: { type: 'exact' },

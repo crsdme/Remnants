@@ -2,6 +2,7 @@ import type { Unit } from '../types/unit.type'
 import mongoose, { Schema } from 'mongoose'
 import { v4 as uuidv4 } from 'uuid'
 import { SUPPORTED_LANGUAGES } from '../config/constants'
+import { uuidValidator } from '../utils/uuidValidator'
 import { CounterModel } from './counter.model'
 
 const UnitSchema: Schema = new Schema(
@@ -9,6 +10,7 @@ const UnitSchema: Schema = new Schema(
     _id: {
       type: String,
       default: uuidv4,
+      validate: uuidValidator,
     },
     seq: {
       type: Number,
@@ -41,15 +43,15 @@ const UnitSchema: Schema = new Schema(
       },
     },
     priority: {
-      type: Schema.Types.Number,
+      type: Number,
       default: 0,
     },
     active: {
-      type: Schema.Types.Boolean,
+      type: Boolean,
       default: true,
     },
     removed: {
-      type: Schema.Types.Boolean,
+      type: Boolean,
       default: false,
     },
   },

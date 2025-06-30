@@ -16,12 +16,12 @@ export const getUnitSchema = z.object({
   filters: z.object({
     names: z.string().optional(),
     symbols: z.string().optional(),
-    language: z.string(),
+    language: z.string().optional(),
     priority: numberFromStringSchema.optional(),
     createdAt: dateRangeSchema.optional(),
     updatedAt: dateRangeSchema.optional(),
     active: booleanArraySchema.optional(),
-  }).optional().default({ language: 'en' }),
+  }).optional().default({}),
   sorters: z.object({
     names: sorterParamsSchema.optional(),
     symbols: sorterParamsSchema.optional(),
@@ -48,11 +48,11 @@ export const editUnitSchema = z.object({
 })
 
 export const removeUnitSchema = z.object({
-  ids: z.array(idSchema),
+  ids: z.array(idSchema).min(1),
 })
 
 export const duplicateUnitSchema = z.object({
-  ids: z.array(idSchema),
+  ids: z.array(idSchema).min(1),
 })
 
 export const batchUnitSchema = z.object({
@@ -60,18 +60,18 @@ export const batchUnitSchema = z.object({
   filters: z.object({
     names: z.string().optional(),
     symbols: z.string().optional(),
-    language: z.string(),
+    language: z.string().optional(),
     active: booleanArraySchema.optional(),
     priority: numberFromStringSchema.optional(),
     createdAt: dateRangeSchema.optional(),
     updatedAt: dateRangeSchema.optional(),
-  }).optional(),
+  }).optional().default({}),
   params: z.array(
     z.object({
       column: z.string(),
       value: z.any(),
     }),
-  ),
+  ).min(1),
 }).refine(hasIdsOrFilters, {
   message: 'Either ids or filters are required.',
 })

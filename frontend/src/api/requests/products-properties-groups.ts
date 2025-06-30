@@ -4,7 +4,7 @@ import type {
   getProductPropertiesGroupsParams,
   ProductPropertiesGroupsResponse,
   removeProductPropertiesGroupsParams,
-} from '@/api/types/products-properties-groups'
+} from '@/api/types'
 import { api } from '@/api/instance'
 
 export async function getProductPropertiesGroups(params: getProductPropertiesGroupsParams) {

@@ -33,5 +33,5 @@ export const editWarehousesSchema = z.object({
 })
 
 export const removeWarehousesSchema = z.object({
-  ids: z.array(idSchema),
+  ids: z.array(idSchema).min(1),
 })

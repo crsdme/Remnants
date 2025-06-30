@@ -5,7 +5,7 @@ import axios from 'axios'
 import FormData from 'form-data'
 import { STORAGE_PATHS } from '../config/constants'
 
-export async function sendMessage(product: ProductTypes.Product): Promise<any> {
+export async function sendMessage(product: Product): Promise<any> {
   const form = new FormData()
   form.append('chat_id', '-1002510719726')
   form.append('caption', product.names.ru || 'NO_NAME')

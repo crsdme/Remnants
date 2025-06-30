@@ -13,7 +13,7 @@ export const getUserSchema = z.object({
     createdAt: dateRangeSchema.optional(),
     updatedAt: dateRangeSchema.optional(),
     active: booleanArraySchema.optional(),
-  }).optional(),
+  }).optional().default({}),
   sorters: z.object({
     name: sorterParamsSchema.optional(),
     login: sorterParamsSchema.optional(),
@@ -21,7 +21,7 @@ export const getUserSchema = z.object({
     active: sorterParamsSchema.optional(),
     updatedAt: sorterParamsSchema.optional(),
     createdAt: sorterParamsSchema.optional(),
-  }).optional(),
+  }).optional().default({}),
 })
 
 export const createUserSchema = z.object({
@@ -42,11 +42,11 @@ export const editUserSchema = z.object({
 })
 
 export const removeUserSchema = z.object({
-  ids: z.array(idSchema),
+  ids: z.array(idSchema).min(1),
 })
 
 export const duplicateUserSchema = z.object({
-  ids: z.array(idSchema),
+  ids: z.array(idSchema).min(1),
 })
 
 export const importUsersSchema = z.object({

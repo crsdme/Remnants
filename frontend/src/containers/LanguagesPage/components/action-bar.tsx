@@ -84,7 +84,7 @@ export function ActionBar() {
             </SheetTrigger>
             <SheetContent className="sm:max-w-xl w-full overflow-y-auto" side="right">
               <SheetHeader>
-                <SheetTitle>{t(`page.languages.form.title.${isEdit ? 'edit' : 'create'} `)}</SheetTitle>
+                <SheetTitle>{t(`page.languages.form.title.${isEdit ? 'edit' : 'create'}`)}</SheetTitle>
                 <SheetDescription>
                   {t(`page.languages.form.description.${isEdit ? 'edit' : 'create'}`)}
                 </SheetDescription>

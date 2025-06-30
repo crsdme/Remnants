@@ -7,7 +7,7 @@ export interface postAuthLoginParams {
 export interface authLoginResponse {
   status: string
   accessToken: string
-  user: User
+  user: User & { settings: Setting[] }
 }
 
 export interface refreshTokenResponse {

@@ -39,5 +39,14 @@
   "description.page.warehouses": "Manage warehouses in Remnant",
 
   "title.page.barcodes": "Barcodes - Remnant",
-  "description.page.barcodes": "Manage barcodes in Remnant"
+  "description.page.barcodes": "Manage barcodes in Remnant",
+
+  "title.page.money-transactions": "Money Transactions - Remnant",
+  "description.page.money-transactions": "Manage money transactions in Remnant",
+
+  "title.page.cashregisters": "Cash Registers - Remnant",
+  "description.page.cashregisters": "Manage cash registers in Remnant",
+
+  "title.page.cashregister-accounts": "Cash Register Accounts - Remnant",
+  "description.page.cashregister-accounts": "Manage cash register accounts in Remnant"
 }

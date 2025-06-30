@@ -1,8 +1,8 @@
-import type { Code, DateRange, IdType, Message, Pagination, Status } from './common.type'
+import type { Code, DateRange, IdType, Message, Pagination, Sorter, Status } from './common.type'
 import type { UserRole } from './user-role.type'
 
-export interface User extends Document {
-  _id: string
+export interface User {
+  id: IdType
   login: string
   password?: string
   name: string
@@ -15,6 +15,7 @@ export interface User extends Document {
 }
 
 export interface PopulatedUser extends Omit<User, 'role'> {
+  _id: IdType
   role: UserRole
 }
 
@@ -26,24 +27,28 @@ export interface getUsersResult {
   usersCount: number
 }
 
+export interface getUsersFilters {
+  name: string
+  login: string
+  role: string
+  active: boolean[]
+  createdAt: DateRange
+  updatedAt: DateRange
+}
+
+export interface getUsersSorters {
+  name: Sorter
+  login: Sorter
+  role: Sorter
+  active: Sorter
+  updatedAt: Sorter
+  createdAt: Sorter
+}
+
 export interface getUsersParams {
-  filters: {
-    name: string
-    login: string
-    role: string
-    active: boolean[]
-    createdAt: DateRange
-    updatedAt: DateRange
-  }
-  sorters: {
-    name: string
-    login: string
-    role: string
-    active: string
-    updatedAt: string
-    createdAt: string
-  }
-  pagination: Pagination
+  filters?: Partial<getUsersFilters>
+  sorters?: Partial<getUsersSorters>
+  pagination?: Partial<Pagination>
 }
 
 export interface createUserResult {

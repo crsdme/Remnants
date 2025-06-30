@@ -1,6 +1,7 @@
 import type { Code, DateRange, IdType, LanguageString, Message, Pagination, Sorter, Status } from './common.type'
 
 export interface Language {
+  id: IdType
   name: string
   code: string
   priority: number
@@ -40,9 +41,9 @@ export interface getLanguagesSorters {
 }
 
 export interface getLanguagesParams {
-  filters: Partial<getLanguagesFilters>
-  sorters: Partial<getLanguagesSorters>
-  pagination: Partial<Pagination>
+  filters?: Partial<getLanguagesFilters>
+  sorters?: Partial<getLanguagesSorters>
+  pagination?: Partial<Pagination>
 }
 
 export interface createLanguagesResult {

@@ -1,9 +1,10 @@
-import type { Code, IdType, Message, Pagination, Status } from './common.type'
+import type { Code, IdType, Message, Pagination, Sorter, Status } from './common.type'
 
 export interface Quantity {
+  id: IdType
   count: number
-  product: string
-  warehouse: string
+  product: IdType
+  warehouse: IdType
   status: 'available' | 'reserved' | 'sold'
   createdAt: Date
   updatedAt: Date
@@ -17,19 +18,23 @@ export interface getQuantitiesResult {
   quantitiesCount: number
 }
 
+export interface getQuantitiesFilters {
+  product: IdType
+  warehouse: IdType
+  status: 'available' | 'reserved' | 'sold'
+  count: number
+}
+
+export interface getQuantitiesSorters {
+  count: Sorter
+  status: Sorter
+  warehouse: Sorter
+}
+
 export interface getQuantitiesParams {
-  filters: {
-    product: string
-    warehouse: string
-    status: 'available' | 'reserved' | 'sold'
-    count: number
-  }
-  sorters: {
-    count: string
-    status: string
-    warehouse: string
-  }
-  pagination: Pagination
+  filters?: Partial<getQuantitiesFilters>
+  sorters?: Partial<getQuantitiesSorters>
+  pagination?: Partial<Pagination>
 }
 
 export interface createQuantitiesResult {
@@ -41,8 +46,8 @@ export interface createQuantitiesResult {
 
 export interface createQuantitiesParams {
   count: number
-  product: string
-  warehouse: string
+  product: IdType
+  warehouse: IdType
 }
 
 export interface countQuantitiesResult {
@@ -53,8 +58,8 @@ export interface countQuantitiesResult {
 
 export interface countQuantitiesParams {
   count: number
-  product: string
-  warehouse: string
+  product: IdType
+  warehouse: IdType
 }
 
 export interface editQuantitiesResult {
@@ -67,8 +72,8 @@ export interface editQuantitiesResult {
 export interface editQuantitiesParams {
   id: IdType
   count: number
-  product: string
-  warehouse: string
+  product: IdType
+  warehouse: IdType
 }
 
 export interface removeQuantitiesResult {

@@ -74,12 +74,12 @@ export function MultiSelect({
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className="justify-between w-full"
+          className={cn('justify-between w-full min-h-9', value.length > 0 && 'h-auto p-1 has-[>svg]:pl-1')}
           disabled={isLoading}
         >
           {value.length > 0
             ? (
-                <div className="flex gap-1">
+                <div className="flex gap-1 flex-wrap">
                   {value.map((val) => {
                     const option = options.find(o => o.value === val)
                     return (
@@ -92,9 +92,9 @@ export function MultiSelect({
                 </div>
               )
             : (
-                <>
+                <p className="text-muted-foreground">
                   {activeFiltersLabel || t('component.multiSelect.activeFilters')}
-                </>
+                </p>
               )}
           <ChevronDown className="size-4 opacity-50" />
         </Button>

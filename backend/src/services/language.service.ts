@@ -5,7 +5,7 @@ import { parseFile, toBoolean, toNumber } from '../utils/parseTools'
 import { buildQuery, buildSortQuery } from '../utils/queryBuilder'
 
 export async function get(payload: LanguageTypes.getLanguagesParams): Promise<LanguageTypes.getLanguagesResult> {
-  const { current = 1, pageSize = 10 } = payload.pagination
+  const { current = 1, pageSize = 10 } = payload.pagination || {}
 
   const {
     name = '',
@@ -21,9 +21,9 @@ export async function get(payload: LanguageTypes.getLanguagesParams): Promise<La
       from: undefined,
       to: undefined,
     },
-  } = payload.filters
+  } = payload.filters || {}
 
-  const sorters = buildSortQuery(payload.sorters, { priority: 1 })
+  const sorters = buildSortQuery(payload.sorters || {}, { priority: 1 })
 
   const filterRules = {
     name: { type: 'string' },

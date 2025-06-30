@@ -1,4 +1,5 @@
 import type { JwtPayload } from 'jsonwebtoken'
+import type { IdType } from './common.type'
 
 export interface loginParams {
   login: string
@@ -21,5 +22,5 @@ export interface refreshResult {
 }
 
 export interface TokenPayload extends JwtPayload {
-  id: string
+  id: IdType
 }

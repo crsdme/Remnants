@@ -1,8 +1,9 @@
 import type { Currency } from '../types/currency.type'
 import mongoose, { Schema } from 'mongoose'
-
 import { v4 as uuidv4 } from 'uuid'
+
 import { SUPPORTED_LANGUAGES } from '../config/constants'
+import { uuidValidator } from '../utils/uuidValidator'
 import { CounterModel } from './counter.model'
 
 const CurrencySchema: Schema = new Schema(
@@ -10,6 +11,7 @@ const CurrencySchema: Schema = new Schema(
     _id: {
       type: String,
       default: uuidv4,
+      validate: uuidValidator,
     },
     seq: {
       type: Number,
@@ -42,15 +44,15 @@ const CurrencySchema: Schema = new Schema(
       },
     },
     priority: {
-      type: Schema.Types.Number,
+      type: Number,
       default: 0,
     },
     active: {
-      type: Schema.Types.Boolean,
+      type: Boolean,
       default: true,
     },
     removed: {
-      type: Schema.Types.Boolean,
+      type: Boolean,
       default: false,
     },
   },

@@ -1,8 +1,9 @@
 export interface getCurrenciesParams {
-  filters: {
+  filters?: {
+    ids?: string[]
     names?: string
     symbols?: string
-    language: string
+    language?: string
     active?: boolean[]
     priority?: number
     createdAt?: {

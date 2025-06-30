@@ -7,9 +7,9 @@ extendZodWithOpenApi(z)
 export const getQuantitiesSchema = z.object({
   pagination: paginationSchema.optional(),
   filters: z.object({
-    product: z.string().optional(),
-    warehouse: z.string().optional(),
-    status: z.string().optional(),
+    product: idSchema.optional(),
+    warehouse: idSchema.optional(),
+    status: z.enum(['available', 'reserved', 'sold']).optional(),
   }).optional().default({}),
   sorters: z.object({
     count: sorterParamsSchema.optional(),
@@ -22,19 +22,19 @@ export const getQuantitiesSchema = z.object({
 
 export const createQuantitiesSchema = z.object({
   count: z.number(),
-  product: z.string(),
-  warehouse: z.string(),
-  status: z.string(),
+  product: idSchema,
+  warehouse: idSchema,
+  status: z.enum(['available', 'reserved', 'sold']),
 })
 
 export const editQuantitiesSchema = z.object({
   id: idSchema,
   count: z.number(),
-  product: z.string(),
-  warehouse: z.string(),
-  status: z.string(),
+  product: idSchema,
+  warehouse: idSchema,
+  status: z.enum(['available', 'reserved', 'sold']),
 })
 
 export const removeQuantitiesSchema = z.object({
-  ids: z.array(idSchema),
+  ids: z.array(idSchema).min(1),
 })

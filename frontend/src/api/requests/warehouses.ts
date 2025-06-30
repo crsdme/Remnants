@@ -4,7 +4,7 @@ import type {
   getWarehousesParams,
   removeWarehouseParams,
   WarehousesResponse,
-} from '@/api/types/warehouses'
+} from '@/api/types'
 import { api } from '@/api/instance'
 
 export async function getWarehouses(params: getWarehousesParams) {

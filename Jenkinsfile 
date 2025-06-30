@@ -1,0 +1,16 @@
+pipeline {
+  agent any
+  stages {
+    stage('Checkout') {
+      steps {
+        checkout scm
+      }
+    }
+    stage('Build and Run') {
+      steps {
+        sh 'docker compose -f docker-compose.yml down'
+        sh 'docker compose -f docker-compose.yml up -d --build'
+      }
+    }
+  }
+}

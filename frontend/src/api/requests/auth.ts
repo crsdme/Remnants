@@ -1,4 +1,4 @@
-import type { authLoginResponse, postAuthLoginParams, refreshTokenResponse } from '@/api/types/auth'
+import type { authLoginResponse, postAuthLoginParams, refreshTokenResponse } from '@/api/types'
 import { api } from '@/api/instance'
 
 export async function postAuthLogin(params: postAuthLoginParams) {

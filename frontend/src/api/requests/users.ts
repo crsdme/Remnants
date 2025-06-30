@@ -6,7 +6,7 @@ import type {
   importUsersParams,
   removeUserParams,
   UsersResponse,
-} from '@/api/types/users'
+} from '@/api/types'
 import { api } from '@/api/instance'
 
 export async function getUsers(params: getUsersParams) {

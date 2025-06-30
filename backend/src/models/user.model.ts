@@ -1,6 +1,7 @@
 import type { User } from '../types/user.type'
 import mongoose, { Schema } from 'mongoose'
 import { v4 as uuidv4 } from 'uuid'
+import { uuidValidator } from '../utils/uuidValidator'
 import { CounterModel } from './counter.model'
 
 const UserSchema: Schema = new Schema(
@@ -8,6 +9,7 @@ const UserSchema: Schema = new Schema(
     _id: {
       type: String,
       default: uuidv4,
+      validate: uuidValidator,
     },
     seq: {
       type: Number,

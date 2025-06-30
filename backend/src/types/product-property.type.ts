@@ -2,6 +2,7 @@ import type { SUPPORTED_LANGUAGES_TYPE } from '../config/constants'
 import type { Code, DateRange, IdType, LanguageString, Message, Pagination, Sorter, Status } from './common.type'
 
 export interface ProductProperty {
+  id: IdType
   names: LanguageString
   options: IdType[]
   priority: number
@@ -49,9 +50,9 @@ export interface getProductPropertiesSorters {
 }
 
 export interface getProductPropertiesParams {
-  filters: Partial<getProductPropertiesFilters>
-  sorters: Partial<getProductPropertiesSorters>
-  pagination: Partial<Pagination>
+  filters?: Partial<getProductPropertiesFilters>
+  sorters?: Partial<getProductPropertiesSorters>
+  pagination?: Partial<Pagination>
 }
 
 export interface createProductPropertyResult {

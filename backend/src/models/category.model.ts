@@ -25,21 +25,21 @@ const CategorySchema: Schema = new Schema(
       },
     },
     parent: {
-      type: Schema.Types.String,
+      type: String,
       ref: 'Category',
       required: false,
       validate: uuidValidator,
     },
     priority: {
-      type: Schema.Types.Number,
+      type: Number,
       default: 0,
     },
     active: {
-      type: Schema.Types.Boolean,
+      type: Boolean,
       default: true,
     },
     removed: {
-      type: Schema.Types.Boolean,
+      type: Boolean,
       default: false,
     },
   },

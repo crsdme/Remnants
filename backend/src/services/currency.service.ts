@@ -10,9 +10,10 @@ import {
 import { buildQuery, buildSortQuery } from '../utils/queryBuilder'
 
 export async function get(payload: CurrencyTypes.getCurrenciesParams): Promise<CurrencyTypes.getCurrenciesResult> {
-  const { current = 1, pageSize = 10 } = payload.pagination
+  const { current = 1, pageSize = 10 } = payload.pagination || {}
 
   const {
+    ids = [],
     names = '',
     symbols = '',
     language = 'en',
@@ -26,9 +27,10 @@ export async function get(payload: CurrencyTypes.getCurrenciesParams): Promise<C
       from: undefined,
       to: undefined,
     },
-  } = payload.filters
+  } = payload.filters || {}
 
   const filterRules = {
+    _id: { type: 'array' },
     names: { type: 'string', langAware: true },
     symbols: { type: 'string', langAware: true },
     active: { type: 'array' },
@@ -38,12 +40,12 @@ export async function get(payload: CurrencyTypes.getCurrenciesParams): Promise<C
   } as const
 
   const query = buildQuery({
-    filters: { names, symbols, active, priority, createdAt, updatedAt },
+    filters: { _id: ids, names, symbols, active, priority, createdAt, updatedAt },
     rules: filterRules,
     language,
   })
 
-  const sorters = buildSortQuery(payload.sorters, { priority: 1 })
+  const sorters = buildSortQuery(payload.sorters || {}, { priority: 1 })
 
   const pipeline = [
     {

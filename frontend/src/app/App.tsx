@@ -7,15 +7,20 @@ import { usePermission } from '@/utils/hooks/usePermission/usePermission'
 
 import {
   BarcodesPage,
+  CashregisterAccountsPage,
+  CashregistersPage,
   CategoriesPage,
   CurrenciesPage,
   DashboardPage,
   ErrorPage,
   LanguagesPage,
   LoginPage,
+  MainSettingsPage,
+  MoneyTransactionsPage,
   ProductPropertiesGroupsPage,
   ProductPropertiesPage,
   ProductsPage,
+  SettingsLayout,
   TestPage,
   UnitsPage,
   UserRolesPage,
@@ -72,6 +77,33 @@ export default function App() {
             path="/users"
             element={(<ProtectedRoute children={<UsersPage />} permissions={['user.page']} />)}
           />
+          <Route
+            path="/users/roles"
+            element={<ProtectedRoute children={<UserRolesPage />} permissions={['userRole.page']} />}
+          />
+
+          <Route
+            path="/cashregisters"
+            element={<ProtectedRoute children={<CashregistersPage />} permissions={['cashregister.page']} />}
+          />
+          <Route
+            path="/cashregister-accounts"
+            element={<ProtectedRoute children={<CashregisterAccountsPage />} permissions={['cashregister-account.page']} />}
+          />
+          <Route
+            path="/money-transactions"
+            element={<ProtectedRoute children={<MoneyTransactionsPage />} permissions={['money-transaction.page']} />}
+          />
+
+          <Route
+            path="/settings"
+            element={<ProtectedRoute children={<SettingsLayout />} permissions={['settings.page']} />}
+          >
+            <Route
+              path="/settings"
+              element={<ProtectedRoute children={<MainSettingsPage />} permissions={['settings.page']} />}
+            />
+          </Route>
 
           <Route
             path="/settings/currencies"
@@ -84,10 +116,6 @@ export default function App() {
           <Route
             path="/settings/units"
             element={<ProtectedRoute children={<UnitsPage />} permissions={['unit.page']} />}
-          />
-          <Route
-            path="/settings/user-roles"
-            element={<ProtectedRoute children={<UserRolesPage />} permissions={['userRole.page']} />}
           />
 
           <Route

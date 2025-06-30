@@ -2,6 +2,7 @@ import type { SUPPORTED_LANGUAGES_TYPE } from '../config/constants'
 import type { Code, DateRange, IdType, LanguageString, Message, Pagination, Sorter, Status } from './common.type'
 
 export interface Currency {
+  id: IdType
   names: string
   symbols: string
   priority: number
@@ -20,6 +21,7 @@ export interface getCurrenciesResult {
 }
 
 export interface getCurrenciesFilters {
+  ids: IdType[]
   names: LanguageString
   symbols: LanguageString
   language: SUPPORTED_LANGUAGES_TYPE
@@ -39,9 +41,9 @@ export interface getCurrenciesSorters {
 }
 
 export interface getCurrenciesParams {
-  filters: Partial<getCurrenciesFilters>
-  sorters: Partial<getCurrenciesSorters>
-  pagination: Partial<Pagination>
+  filters?: Partial<getCurrenciesFilters>
+  sorters?: Partial<getCurrenciesSorters>
+  pagination?: Partial<Pagination>
 }
 
 export interface createCurrenciesResult {

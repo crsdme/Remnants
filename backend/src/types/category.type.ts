@@ -3,6 +3,7 @@ import type { SUPPORTED_LANGUAGES_TYPE } from '../config/constants'
 import type { Code, DateRange, IdType, LanguageString, Message, Pagination, Sorter, Status } from './common.type'
 
 export interface Category {
+  id: IdType
   names: LanguageString
   priority: number
   parent: IdType
@@ -40,9 +41,9 @@ export interface getCategoriesSorters {
 }
 
 export interface getCategoriesParams {
-  filters: Partial<getCategoriesFilters>
-  sorters: Partial<getCategoriesSorters>
-  pagination: Partial<Pagination>
+  filters?: Partial<getCategoriesFilters>
+  sorters?: Partial<getCategoriesSorters>
+  pagination?: Partial<Pagination>
   isTree?: boolean
 }
 

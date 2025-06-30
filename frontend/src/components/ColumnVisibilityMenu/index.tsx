@@ -13,7 +13,7 @@ export function ColumnVisibilityMenu(
   const [columnVisibility, setColumnVisibility] = useState({})
 
   useEffect(() => {
-    const savedVisibility = JSON.parse(localStorage.getItem(`${tableId}-columnVisibility`) || '{}')
+    const savedVisibility = JSON.parse(localStorage.getItem(`${tableId}-columns`) || '{}')
     const updatedVisibility = { ...savedVisibility }
 
     table.getAllColumns().forEach((column) => {
@@ -35,7 +35,7 @@ export function ColumnVisibilityMenu(
   }, [tableId, table.getAllColumns().map(col => col.id).join(',')])
 
   useEffect(() => {
-    localStorage.setItem(`${tableId}-columnVisibility`, JSON.stringify(columnVisibility))
+    localStorage.setItem(`${tableId}-columns`, JSON.stringify(columnVisibility))
   }, [columnVisibility, tableId])
 
   return (
@@ -94,7 +94,7 @@ export function ColumnVisibilityMenu(
           onClick={() => {
             table.resetColumnVisibility()
             setColumnVisibility({})
-            localStorage.removeItem(`${tableId}-columnVisibility`)
+            localStorage.removeItem(`${tableId}-columns`)
             setSearchQuery('')
           }}
         >

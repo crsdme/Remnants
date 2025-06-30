@@ -10,7 +10,7 @@ import { HttpError } from '../utils/httpError'
 import { buildQuery, buildSortQuery } from '../utils/queryBuilder'
 
 export async function get(payload: BarcodeTypes.getBarcodesParams): Promise<BarcodeTypes.getBarcodesResult> {
-  const { current = 1, pageSize = 10 } = payload.pagination
+  const { current = 1, pageSize = 10 } = payload.pagination || {}
 
   const {
     id = '',
@@ -25,7 +25,7 @@ export async function get(payload: BarcodeTypes.getBarcodesParams): Promise<Barc
       from: undefined,
       to: undefined,
     },
-  } = payload.filters
+  } = payload.filters || {}
 
   const filterRules = {
     _id: { type: 'string' },
@@ -41,7 +41,7 @@ export async function get(payload: BarcodeTypes.getBarcodesParams): Promise<Barc
     rules: filterRules,
   })
 
-  const sorters = buildSortQuery(payload.sorters)
+  const sorters = buildSortQuery(payload.sorters || {}, { code: 1 })
 
   // const pipeline = [
   //   {
@@ -469,7 +469,7 @@ async function print60x30(payload: { barcode: any, size: string, language: strin
 
   doc.registerFont('Manrope', path.resolve(__dirname, '../utils/fonts/Manrope-Regular.ttf'))
   doc.font('Manrope')
-  doc.fontSize(20)
+  doc.fontSize(26)
   doc.addPage({
     size: [w * 8.49, h * 8.49],
   })
@@ -504,12 +504,12 @@ async function print60x30(payload: { barcode: any, size: string, language: strin
     { width: contentWidth, height: 50, ellipsis: true, lineBreak: false },
   )
 
-  doc.text(
-    `${product.price} ${product.currency.symbols[language] || ''}`,
-    padding,
-    doc.y,
-    { width: contentWidth, height: 50, ellipsis: true, lineBreak: false },
-  )
+  // doc.text(
+  //   `${product.price} ${product.currency.symbols[language] || ''}`,
+  //   padding,
+  //   doc.y,
+  //   { width: contentWidth, height: 50, ellipsis: true, lineBreak: false },
+  // )
 
   const result = (product.productProperties || []).map((property: any) => {
     let value = ''

@@ -6,7 +6,7 @@ import { parseFile, toBoolean } from '../utils/parseTools'
 import { buildQuery, buildSortQuery } from '../utils/queryBuilder'
 
 export async function get(payload: UserTypes.getUsersParams): Promise<UserTypes.getUsersResult> {
-  const { current = 1, pageSize = 10 } = payload.pagination
+  const { current = 1, pageSize = 10 } = payload.pagination || {}
 
   const {
     name = '',
@@ -21,9 +21,9 @@ export async function get(payload: UserTypes.getUsersParams): Promise<UserTypes.
       from: undefined,
       to: undefined,
     },
-  } = payload.filters
+  } = payload.filters || {}
 
-  const sorters = buildSortQuery(payload.sorters)
+  const sorters = buildSortQuery(payload.sorters || {}, { name: 1 })
 
   const filterRules = {
     name: { type: 'string' },

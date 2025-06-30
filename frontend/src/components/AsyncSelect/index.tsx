@@ -155,6 +155,15 @@ export function AsyncSelect<T>({
     }
   }, [fetcher, debouncedSearch])
 
+  useEffect(() => {
+    if (options.length > 0) {
+      setSelectedOptions(options.filter(option =>
+        (value || []).includes(getOptionValue(option)),
+      ))
+      setSelectedValues(value || [])
+    }
+  }, [options, value, getOptionValue])
+
   // useEffect(() => {
   //   if (value && options.length > 0) {
   //     const filteredOptions = options.filter(opt => getOptionValue(opt) === value)

@@ -1,9 +1,9 @@
 import type mongoose from 'mongoose'
 import type { SUPPORTED_LANGUAGES } from '../config/constants'
 
-export type LanguageString = {
+export type LanguageString = Partial<{
   [key in (typeof SUPPORTED_LANGUAGES)[number]]: string
-}
+}>
 
 export type Sorter = 'asc' | 'desc'
 

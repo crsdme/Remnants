@@ -13,7 +13,7 @@ export const getUserRoleSchema = z.object({
     active: booleanArraySchema.optional(),
     createdAt: dateRangeSchema.optional(),
     updatedAt: dateRangeSchema.optional(),
-  }).optional(),
+  }).optional().default({}),
   sorters: z.object({
     names: sorterParamsSchema.optional(),
     permissions: sorterParamsSchema.optional(),
@@ -21,12 +21,12 @@ export const getUserRoleSchema = z.object({
     priority: sorterParamsSchema.optional(),
     updatedAt: sorterParamsSchema.optional(),
     createdAt: sorterParamsSchema.optional(),
-  }).optional(),
+  }).optional().default({}),
 })
 
 export const createUserRoleSchema = z.object({
   names: languageStringSchema,
-  permissions: z.array(z.string()),
+  permissions: z.array(z.string()).min(1),
   priority: z.number(),
   active: z.boolean().optional(),
 })
@@ -34,17 +34,17 @@ export const createUserRoleSchema = z.object({
 export const editUserRoleSchema = z.object({
   id: idSchema,
   names: languageStringSchema,
-  permissions: z.array(z.string()),
+  permissions: z.array(z.string()).min(1),
   priority: z.number(),
   active: z.boolean().optional(),
 })
 
 export const removeUserRoleSchema = z.object({
-  ids: z.array(idSchema),
+  ids: z.array(idSchema).min(1),
 })
 
 export const duplicateUserRoleSchema = z.object({
-  ids: z.array(idSchema),
+  ids: z.array(idSchema).min(1),
 })
 
 export const importUserRolesSchema = z.object({
