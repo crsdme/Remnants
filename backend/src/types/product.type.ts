@@ -26,6 +26,7 @@ export interface Product {
   productProperties: {
     id: IdType
     options: IdType[]
+    value: any
   }[]
   removed: boolean
   createdAt: Date

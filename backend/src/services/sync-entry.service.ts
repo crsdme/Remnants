@@ -1,7 +1,6 @@
 import type * as SyncEntryTypes from '../types/sync-entry.type'
 import axios from 'axios'
 import slugify from 'slugify'
-import { v4 as uuidv4 } from 'uuid'
 import { STORAGE_URLS } from '../config/constants'
 import { SyncEntryModel } from '../models'
 import { HttpError } from '../utils/httpError'
@@ -121,6 +120,9 @@ export async function syncProductToSite(payload: SyncEntryTypes.syncProductToSit
     filters: { ids: [productId] },
   })
 
+  const weightProperty = product.productProperties.find(property => property.id === 'baad1168-e6bd-48e1-a610-0fd60ffcfc4d')
+  const lengthProperty = product.productProperties.find(property => property.id === '8010a149-fdc4-4bb5-b33a-b39ac0ea2ae7')
+
   const syncProduct = {
     model: `REMNANT NEW PRODUCT`,
     external_id: productId,
@@ -142,6 +144,26 @@ export async function syncProductToSite(payload: SyncEntryTypes.syncProductToSit
       image: `${STORAGE_URLS.productImages}/${image.filename}`,
       name: image.filename || '',
     })),
+    attributes: [
+      {
+        attribute_id: 77,
+        product_attribute_description: [
+          {
+            text: `${weightProperty?.value} g`,
+            language_code: 'en-gb',
+          },
+        ],
+      },
+      {
+        attribute_id: 78,
+        product_attribute_description: [
+          {
+            text: `${lengthProperty?.value} cm`,
+            language_code: 'en-gb',
+          },
+        ],
+      },
+    ],
     // special: {
     //   price: product.price,
     // },
