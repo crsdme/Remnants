@@ -1,10 +1,10 @@
 import { Router } from 'express'
-import { authMiddleware } from '../../middleware/auth.middleware'
+// import { authMiddleware } from '../../middleware/auth.middleware'
 import productImages from './products-images'
 
 const router = Router()
-const authenticateJWT = authMiddleware()
+// const authenticateJWT = authMiddleware()
 
-router.use('/products/images', authenticateJWT, productImages)
+router.use('/products/images', productImages)
 
 export default router
