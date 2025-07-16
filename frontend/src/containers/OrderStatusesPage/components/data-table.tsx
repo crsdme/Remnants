@@ -2,10 +2,10 @@ import { flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-tabl
 import { Fragment, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import { useDeliveryStatusQuery } from '@/api/hooks'
+import { useOrderStatusQuery } from '@/api/hooks'
 import { AdvancedFilters, AdvancedSorters, ColumnVisibilityMenu, TablePagination, TableSelectionDropdown } from '@/components'
 import { Separator, Skeleton, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui'
-import { useDeliveryStatusContext } from '@/contexts'
+import { useOrderStatusContext } from '@/contexts'
 import { useDebounceCallback } from '@/utils/hooks'
 
 import { useColumns } from './columns'
@@ -13,7 +13,7 @@ import { DataTableFilters } from './data-table-filters'
 
 export function DataTable() {
   const { t, i18n } = useTranslation()
-  const { removeDeliveryStatus } = useDeliveryStatusContext()
+  const { removeOrderStatus } = useOrderStatusContext()
 
   const filtersInitialState = {
     names: '',
@@ -37,19 +37,19 @@ export function DataTable() {
     Object.fromEntries(sorting.map(({ id, desc }) => [id, desc ? 'desc' : 'asc']))
   ), [sorting])
 
-  const { data: { deliveryStatuses = [], deliveryStatusesCount = 0 } = {}, isLoading, isFetching } = useDeliveryStatusQuery(
+  const { data: { orderStatuses = [], orderStatusesCount = 0 } = {}, isLoading, isFetching } = useOrderStatusQuery(
     { pagination, filters, sorters },
     { options: {
       select: response => ({
-        deliveryStatuses: response.data.deliveryStatuses,
-        deliveryStatusesCount: response.data.deliveryStatusesCount,
+        orderStatuses: response.data.orderStatuses,
+        orderStatusesCount: response.data.orderStatusesCount,
       }),
       placeholderData: prevData => prevData,
     } },
   )
 
   const table = useReactTable({
-    data: deliveryStatuses,
+    data: orderStatuses,
     columns,
     getCoreRowModel: getCoreRowModel(),
     onColumnVisibilityChange: setColumnVisibility,
@@ -143,8 +143,8 @@ export function DataTable() {
   }
 
   const handleBulkRemove = () => {
-    const ids = deliveryStatuses.filter((_, index) => rowSelection[index]).map(item => item.id)
-    removeDeliveryStatus({ ids })
+    const ids = orderStatuses.filter((_, index) => rowSelection[index]).map(item => item.id)
+    removeOrderStatus({ ids })
     setRowSelection({})
   }
 
@@ -187,7 +187,7 @@ export function DataTable() {
             selectedCount={Object.keys(rowSelection).length}
             onRemove={handleBulkRemove}
           />
-          <ColumnVisibilityMenu table={table} tableId="delivery-status" />
+          <ColumnVisibilityMenu table={table} tableId="order-status" />
         </div>
       </div>
       <div className="border rounded-sm">
@@ -198,10 +198,10 @@ export function DataTable() {
       </div>
       <TablePagination
         pagination={pagination}
-        totalPages={Math.ceil(deliveryStatusesCount / pagination.pageSize)}
+        totalPages={Math.ceil(orderStatusesCount / pagination.pageSize)}
         changePagination={changePagination}
         selectedCount={Object.keys(rowSelection).length}
-        totalCount={deliveryStatusesCount}
+        totalCount={orderStatusesCount}
       />
     </>
   )

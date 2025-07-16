@@ -1,8 +1,6 @@
 import {
   ArrowDown,
   ArrowUp,
-  ChevronDown,
-  ChevronRight,
   ChevronsUpDown,
   Copy,
   Pencil,
@@ -13,14 +11,14 @@ import { useTranslation } from 'react-i18next'
 
 import { TableActionDropdown } from '@/components'
 import { Badge, Button, Checkbox } from '@/components/ui'
-import { useDeliveryStatusContext } from '@/contexts'
+import { useOrderStatusContext } from '@/contexts'
 import { formatDate } from '@/utils/helpers'
 
 const sortIcons = { asc: ArrowUp, desc: ArrowDown }
 
 export function useColumns() {
   const { t, i18n } = useTranslation()
-  const { isLoading, openModal, removeDeliveryStatus } = useDeliveryStatusContext()
+  const { isLoading, openModal, removeOrderStatus } = useOrderStatusContext()
 
   const columns = useMemo(() => {
     function sortHeader(column, label) {
@@ -84,20 +82,20 @@ export function useColumns() {
 
           const actions = [
             {
-              permission: 'delivery-status.copy',
+              permission: 'order-status.copy',
               onClick: () => navigator.clipboard.writeText(item.id),
               label: t('table.copy'),
               icon: <Copy className="h-4 w-4" />,
             },
             {
-              permission: 'delivery-status.edit',
+              permission: 'order-status.edit',
               onClick: () => openModal(item),
               label: t('table.edit'),
               icon: <Pencil className="h-4 w-4" />,
             },
             {
-              permission: 'delivery-status.delete',
-              onClick: () => removeDeliveryStatus({ ids: [item.id] }),
+              permission: 'order-status.delete',
+              onClick: () => removeOrderStatus({ ids: [item.id] }),
               label: t('table.delete'),
               icon: <Trash className="h-4 w-4" />,
               isDestructive: true,
@@ -115,7 +113,7 @@ export function useColumns() {
         id: 'names',
         size: 150,
         meta: {
-          title: t('page.delivery-statuses.table.names'),
+          title: t('page.order-statuses.table.names'),
           batchEdit: true,
           batchEditType: 'textMultiLanguage',
           filterable: true,
@@ -123,35 +121,35 @@ export function useColumns() {
           sortable: true,
           defaultVisible: true,
         },
-        header: ({ column }) => sortHeader(column, t('page.delivery-statuses.table.names')),
+        header: ({ column }) => sortHeader(column, t('page.order-statuses.table.names')),
         accessorFn: row => row.names?.[i18n.language] || row.names?.en,
       },
       {
         id: 'priority',
         accessorKey: 'priority',
         meta: {
-          title: t('page.delivery-statuses.table.priority'),
+          title: t('page.order-statuses.table.priority'),
           batchEdit: true,
           batchEditType: 'number',
           filterable: true,
           filterType: 'number',
           sortable: true,
         },
-        header: ({ column }) => sortHeader(column, t('page.delivery-statuses.table.priority')),
+        header: ({ column }) => sortHeader(column, t('page.order-statuses.table.priority')),
         cell: ({ row }) => <Badge variant="outline">{row.original.priority}</Badge>,
       },
       {
         id: 'color',
         accessorKey: 'color',
         meta: {
-          title: t('page.delivery-statuses.table.color'),
+          title: t('page.order-statuses.table.color'),
           batchEdit: true,
           batchEditType: 'boolean',
           filterable: true,
           filterType: 'boolean',
           sortable: true,
         },
-        header: t('page.delivery-statuses.table.color'),
+        header: t('page.order-statuses.table.color'),
         cell: ({ row }) => {
           const color = row.original.color || '#ffffff'
           return <div className="w-6 h-6 rounded-full border border-gray-300" style={{ backgroundColor: color }} />

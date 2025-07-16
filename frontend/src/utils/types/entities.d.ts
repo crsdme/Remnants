@@ -192,7 +192,7 @@ interface WarehouseTransactionItem {
   updatedAt: Date
 }
 
-interface DeliveryStatus {
+interface OrderStatus {
   id: string
   names: LanguageString
   priority: number

@@ -1,25 +1,22 @@
 import { useTranslation } from 'react-i18next'
 
 import { useLanguageQuery } from '@/api/hooks'
-import { AsyncSelect, ColorPicker } from '@/components'
+import { ColorPicker } from '@/components'
 import {
   Button,
-  Checkbox,
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
   Input,
 } from '@/components/ui'
-import { useDeliveryStatusContext } from '@/contexts'
-import i18n from '@/locales/i18n'
+import { useOrderStatusContext } from '@/contexts'
 
-export function DeliveryStatusForm() {
+export function OrderStatusForm() {
   const { t } = useTranslation()
-  const { isLoading, form, closeModal, submitDeliveryStatusForm } = useDeliveryStatusContext()
+  const { isLoading, form, closeModal, submitOrderStatusForm } = useOrderStatusContext()
 
   const { data: { languages = [] } = {} } = useLanguageQuery(
     { pagination: { full: true } },
@@ -31,7 +28,7 @@ export function DeliveryStatusForm() {
   )
 
   const onSubmit = (values) => {
-    submitDeliveryStatusForm(values)
+    submitOrderStatusForm(values)
   }
 
   return (
@@ -46,7 +43,7 @@ export function DeliveryStatusForm() {
               <FormItem>
                 <FormLabel>
                   <p>
-                    {t('page.delivery-statuses.form.names', {
+                    {t('page.order-statuses.form.names', {
                       language: t(`language.${language.code}`),
                     })}
                     <span className="text-destructive ml-1">*</span>
@@ -54,7 +51,7 @@ export function DeliveryStatusForm() {
                 </FormLabel>
                 <FormControl>
                   <Input
-                    placeholder={t('page.delivery-statuses.form.names', {
+                    placeholder={t('page.order-statuses.form.names', {
                       language: t(`language.${language.code}`),
                     })}
                     className="w-full"
@@ -73,11 +70,11 @@ export function DeliveryStatusForm() {
           name="priority"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>{t('page.delivery-statuses.form.priority')}</FormLabel>
+              <FormLabel>{t('page.order-statuses.form.priority')}</FormLabel>
               <FormControl>
                 <Input
                   type="number"
-                  placeholder={t('page.delivery-statuses.form.priority')}
+                  placeholder={t('page.order-statuses.form.priority')}
                   className="w-full"
                   {...field}
                   disabled={isLoading}
@@ -101,7 +98,7 @@ export function DeliveryStatusForm() {
                   disabled={isLoading}
                 />
               </FormControl>
-              <FormLabel>{t('page.delivery-statuses.form.color')}</FormLabel>
+              <FormLabel>{t('page.order-statuses.form.color')}</FormLabel>
             </FormItem>
           )}
         />

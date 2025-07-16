@@ -326,23 +326,23 @@
   "response.title.PRODUCTS_EXPORTED": "Товары экспортированы",
   "response.description.PRODUCTS_EXPORTED": "Товары были экспортированы успешно",
 
-  "response.title.DELIVERY_STATUSES_FETCHED": "Статусы доставки получены",
-  "response.description.DELIVERY_STATUSES_FETCHED": "Список статусов доставки успешно получен",
+  "response.title.ORDER_STATUSES_FETCHED": "Статусы заказов получены",
+  "response.description.ORDER_STATUSES_FETCHED": "Список статусов заказов успешно получен",
 
-  "response.title.DELIVERY_STATUS_CREATED": "Статус доставки создан",
-  "response.description.DELIVERY_STATUS_CREATED": "Новый статус доставки был создан",
+  "response.title.ORDER_STATUS_CREATED": "Статус заказа создан",
+  "response.description.ORDER_STATUS_CREATED": "Новый статус заказа был создан",
 
-  "response.title.DELIVERY_STATUS_NOT_EDITED": "Статус доставки не обновлен",
-  "response.description.DELIVERY_STATUS_NOT_EDITED": "Не удалось обновить статус доставки",
+  "response.title.ORDER_STATUS_NOT_EDITED": "Статус заказа не обновлен",
+  "response.description.ORDER_STATUS_NOT_EDITED": "Не удалось обновить статус заказа",
 
-  "response.title.DELIVERY_STATUS_EDITED": "Статус доставки обновлен",
-  "response.description.DELIVERY_STATUS_EDITED": "Статус доставки был обновлен",
+  "response.title.ORDER_STATUS_EDITED": "Статус заказа обновлен",
+  "response.description.ORDER_STATUS_EDITED": "Статус заказа был обновлен",
 
-  "response.title.DELIVERY_STATUSES_NOT_REMOVED": "Статусы доставки не удалены",
-  "response.description.DELIVERY_STATUSES_NOT_REMOVED": "Не удалось удалить выбранные статусы доставки",
+  "response.title.ORDER_STATUSES_NOT_REMOVED": "Статусы заказов не удалены",
+  "response.description.ORDER_STATUSES_NOT_REMOVED": "Не удалось удалить выбранные статусы заказов",
 
-  "response.title.DELIVERY_STATUSES_REMOVED": "Статусы доставки удалены",
-  "response.description.DELIVERY_STATUSES_REMOVED": "Выбранные статусы доставки были удалены",
+  "response.title.ORDER_STATUSES_REMOVED": "Статусы заказов удалены",
+  "response.description.ORDER_STATUSES_REMOVED": "Выбранные статусы заказов были удалены",
 
   "response.title.WAREHOUSE_TRANSACTIONS_FETCHED": "Транзакции складов получены",
   "response.description.WAREHOUSE_TRANSACTIONS_FETCHED": "Список транзакций складов успешно получен",

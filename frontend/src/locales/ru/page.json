@@ -526,22 +526,22 @@
   "page.warehouse-transactions.form.comment": "Комментарий",
   "page.warehouse-transactions.form.requiresReceiving": "Требует приемки",
 
-  "page.delivery-statuses.title": "Статусы доставки",
-  "page.delivery-statuses.description": "Управление статусами доставки",
-  "page.delivery-statuses.filter.names": "Фильтр по названию",
-  "page.delivery-statuses.button.create": "Создать статус доставки",
+  "page.order-statuses.title": "Статусы заказов",
+  "page.order-statuses.description": "Управление статусами заказов",
+  "page.order-statuses.filter.names": "Фильтр по названию",
+  "page.order-statuses.button.create": "Создать статус заказа",
 
-  "page.delivery-statuses.table.names": "Название",
-  "page.delivery-statuses.table.priority": "Приоритет",
-  "page.delivery-statuses.table.color": "Цвет",
-  "page.delivery-statuses.table.active": "Активность",
+  "page.order-statuses.table.names": "Название",
+  "page.order-statuses.table.priority": "Приоритет",
+  "page.order-statuses.table.color": "Цвет",
+  "page.order-statuses.table.active": "Активность",
 
-  "page.delivery-statuses.form.title.create": "Создание нового статуса доставки",
-  "page.delivery-statuses.form.description.create": "Добавить новый статус доставки в систему",
-  "page.delivery-statuses.form.title.edit": "Редактирование статуса доставки",
-  "page.delivery-statuses.form.description.edit": "Редактирование существующего статуса доставки",
-  "page.delivery-statuses.form.names": "Название ({{language}})",
-  "page.delivery-statuses.form.priority": "Приоритет",
-  "page.delivery-statuses.form.color": "Цвет",
-  "page.delivery-statuses.form.active": "Активность"
+  "page.order-statuses.form.title.create": "Создание нового статуса заказа",
+  "page.order-statuses.form.description.create": "Добавить новый статус заказа в систему",
+  "page.order-statuses.form.title.edit": "Редактирование статуса заказа",
+  "page.order-statuses.form.description.edit": "Редактирование существующего статуса заказа",
+  "page.order-statuses.form.names": "Название ({{language}})",
+  "page.order-statuses.form.priority": "Приоритет",
+  "page.order-statuses.form.color": "Цвет",
+  "page.order-statuses.form.active": "Активность"
 }

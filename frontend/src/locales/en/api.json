@@ -326,23 +326,23 @@
   "response.title.PRODUCTS_EXPORTED": "Products exported",
   "response.description.PRODUCTS_EXPORTED": "Products have been exported successfully",
 
-  "response.title.DELIVERY_STATUSES_FETCHED": "Delivery statuses fetched",
-  "response.description.DELIVERY_STATUSES_FETCHED": "Delivery statuses list successfully fetched",
+  "response.title.ORDER_STATUSES_FETCHED": "Order statuses fetched",
+  "response.description.ORDER_STATUSES_FETCHED": "Order statuses list successfully fetched",
 
-  "response.title.DELIVERY_STATUS_CREATED": "Delivery status created",
-  "response.description.DELIVERY_STATUS_CREATED": "New delivery status has been created",
+  "response.title.ORDER_STATUS_CREATED": "Order status created",
+  "response.description.ORDER_STATUS_CREATED": "New order status has been created",
 
-  "response.title.DELIVERY_STATUS_NOT_EDITED": "Delivery status not edited",
-  "response.description.DELIVERY_STATUS_NOT_EDITED": "Unable to edit delivery status",
+  "response.title.ORDER_STATUS_NOT_EDITED": "Order status not edited",
+  "response.description.ORDER_STATUS_NOT_EDITED": "Unable to edit order status",
 
-  "response.title.DELIVERY_STATUS_EDITED": "Delivery status edited",
-  "response.description.DELIVERY_STATUS_EDITED": "Delivery status has been updated",
+  "response.title.ORDER_STATUS_EDITED": "Order status edited",
+  "response.description.ORDER_STATUS_EDITED": "Order status has been updated",
 
-  "response.title.DELIVERY_STATUSES_NOT_REMOVED": "Delivery statuses not removed",
-  "response.description.DELIVERY_STATUSES_NOT_REMOVED": "Unable to remove selected delivery statuses",
+  "response.title.ORDER_STATUSES_NOT_REMOVED": "Order statuses not removed",
+  "response.description.ORDER_STATUSES_NOT_REMOVED": "Unable to remove selected order statuses",
 
-  "response.title.DELIVERY_STATUSES_REMOVED": "Delivery statuses removed",
-  "response.description.DELIVERY_STATUSES_REMOVED": "Selected delivery statuses have been deleted",
+  "response.title.ORDER_STATUSES_REMOVED": "Order statuses removed",
+  "response.description.ORDER_STATUSES_REMOVED": "Selected order statuses have been deleted",
 
   "response.title.WAREHOUSE_TRANSACTIONS_FETCHED": "Warehouse transactions fetched",
   "response.description.WAREHOUSE_TRANSACTIONS_FETCHED": "Warehouse transactions list successfully fetched",

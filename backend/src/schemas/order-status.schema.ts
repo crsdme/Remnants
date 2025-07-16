@@ -4,7 +4,7 @@ import { dateRangeSchema, idSchema, languageStringSchema, numberFromStringSchema
 
 extendZodWithOpenApi(z)
 
-export const getDeliveryStatusesSchema = z.object({
+export const getOrderStatusesSchema = z.object({
   filters: z.object({
     names: z.string().trim().optional(),
     language: z.string().optional().default('en'),
@@ -23,19 +23,19 @@ export const getDeliveryStatusesSchema = z.object({
   pagination: paginationSchema.optional().default({}),
 })
 
-export const createDeliveryStatusSchema = z.object({
+export const createOrderStatusSchema = z.object({
   names: languageStringSchema,
   priority: z.number().optional().default(0),
   color: z.string().optional(),
 })
 
-export const editDeliveryStatusSchema = z.object({
+export const editOrderStatusSchema = z.object({
   id: idSchema,
   names: languageStringSchema,
   priority: z.number().optional().default(0),
   color: z.string().optional(),
 })
 
-export const removeDeliveryStatusesSchema = z.object({
+export const removeOrderStatusesSchema = z.object({
   ids: z.array(idSchema).min(1),
 })

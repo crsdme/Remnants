@@ -24,7 +24,7 @@ export function DataTableFilters({ filters, setFilters }) {
         <Filter className="h-4 w-4 text-gray-400" />
       </div>
       <Input
-        placeholder={t('page.delivery-statuses.filter.names')}
+        placeholder={t('page.order-statuses.filter.names')}
         value={localFilters.names}
         onChange={event => handleFilter('names', event.target.value)}
         className="pl-10"

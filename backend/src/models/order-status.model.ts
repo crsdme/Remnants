@@ -1,10 +1,10 @@
-import type { DeliveryStatus } from '../types/delivery-status.type'
+import type { OrderStatus } from '../types/order-status.type'
 import mongoose, { Schema } from 'mongoose'
 import { v4 as uuidv4 } from 'uuid'
 import { SUPPORTED_LANGUAGES } from '../config/constants'
 import { uuidValidator } from '../utils/uuidValidator'
 
-const DeliveryStatusSchema: Schema = new Schema(
+const OrderStatusSchema: Schema = new Schema(
   {
     _id: {
       type: String,
@@ -40,7 +40,7 @@ const DeliveryStatusSchema: Schema = new Schema(
   { timestamps: true },
 )
 
-DeliveryStatusSchema.set('toJSON', {
+OrderStatusSchema.set('toJSON', {
   virtuals: true,
   versionKey: false,
   transform: (_, ret) => {
@@ -50,4 +50,4 @@ DeliveryStatusSchema.set('toJSON', {
   },
 })
 
-export const DeliveryStatusModel = mongoose.model<DeliveryStatus>('DeliveryStatus', DeliveryStatusSchema)
+export const OrderStatusModel = mongoose.model<OrderStatus>('OrderStatus', OrderStatusSchema)

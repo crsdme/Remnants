@@ -10,35 +10,35 @@ import { toast } from 'sonner'
 import { z } from 'zod'
 
 import {
-  useDeliveryStatusCreate,
-  useDeliveryStatusEdit,
-  useDeliveryStatusRemove,
+  useOrderStatusCreate,
+  useOrderStatusEdit,
+  useOrderStatusRemove,
 } from '@/api/hooks'
 import { SUPPORTED_LANGUAGES } from '@/utils/constants'
 
-interface DeliveryStatusContextType {
-  selectedDeliveryStatus: DeliveryStatus
+interface OrderStatusContextType {
+  selectedOrderStatus: OrderStatus
   isModalOpen: boolean
   isLoading: boolean
   isEdit: boolean
   form: UseFormReturn
-  openModal: (deliveryStatus?: DeliveryStatus) => void
+  openModal: (orderStatus?: OrderStatus) => void
   closeModal: () => void
-  submitDeliveryStatusForm: (params) => void
-  removeDeliveryStatus: (params: { ids: string[] }) => void
+  submitOrderStatusForm: (params) => void
+  removeOrderStatus: (params: { ids: string[] }) => void
 }
 
-const DeliveryStatusContext = createContext<DeliveryStatusContextType | undefined>(undefined)
+const OrderStatusContext = createContext<OrderStatusContextType | undefined>(undefined)
 
-interface DeliveryStatusProviderProps {
+interface OrderStatusProviderProps {
   children: ReactNode
 }
 
-export function DeliveryStatusProvider({ children }: DeliveryStatusProviderProps) {
+export function OrderStatusProvider({ children }: OrderStatusProviderProps) {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [isEdit, setIsEdit] = useState(false)
-  const [selectedDeliveryStatus, setSelectedDeliveryStatus] = useState(null)
+  const [selectedOrderStatus, setSelectedOrderStatus] = useState(null)
 
   const { t } = useTranslation()
 
@@ -62,8 +62,8 @@ export function DeliveryStatusProvider({ children }: DeliveryStatusProviderProps
 
   const queryClient = useQueryClient()
 
-  function getDeliveryStatusFormValues(deliveryStatus) {
-    if (!deliveryStatus) {
+  function getOrderStatusFormValues(orderStatus) {
+    if (!orderStatus) {
       return {
         names: defaultLanguageValues,
         color: '',
@@ -71,9 +71,9 @@ export function DeliveryStatusProvider({ children }: DeliveryStatusProviderProps
       }
     }
     return {
-      names: { ...deliveryStatus.names },
-      color: deliveryStatus.color,
-      priority: deliveryStatus.priority,
+      names: { ...orderStatus.names },
+      color: orderStatus.color,
+      priority: orderStatus.priority,
     }
   }
 
@@ -83,22 +83,22 @@ export function DeliveryStatusProvider({ children }: DeliveryStatusProviderProps
     setIsModalOpen(false)
     setIsLoading(false)
     setIsEdit(false)
-    setSelectedDeliveryStatus(null)
+    setSelectedOrderStatus(null)
     form.reset()
   }
 
-  const openModal = (deliveryStatus) => {
+  const openModal = (orderStatus) => {
     setIsModalOpen(true)
-    setIsEdit(!!deliveryStatus)
-    setSelectedDeliveryStatus(deliveryStatus)
-    form.reset(getDeliveryStatusFormValues(deliveryStatus))
+    setIsEdit(!!orderStatus)
+    setSelectedOrderStatus(orderStatus)
+    form.reset(getOrderStatusFormValues(orderStatus))
   }
 
-  const useMutateCreateDeliveryStatus = useDeliveryStatusCreate({
+  const useMutateCreateOrderStatus = useOrderStatusCreate({
     options: {
       onSuccess: ({ data }) => {
         closeModal()
-        queryClient.invalidateQueries({ queryKey: ['delivery-statuses'] })
+        queryClient.invalidateQueries({ queryKey: ['order-statuses'] })
         toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description || ''}` })
       },
       onError: ({ response }) => {
@@ -109,11 +109,11 @@ export function DeliveryStatusProvider({ children }: DeliveryStatusProviderProps
     },
   })
 
-  const useMutateEditDeliveryStatus = useDeliveryStatusEdit({
+  const useMutateEditOrderStatus = useOrderStatusEdit({
     options: {
       onSuccess: ({ data }) => {
         closeModal()
-        queryClient.invalidateQueries({ queryKey: ['delivery-statuses'] })
+        queryClient.invalidateQueries({ queryKey: ['order-statuses'] })
         toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description || ''}` })
       },
       onError: ({ response }) => {
@@ -124,10 +124,10 @@ export function DeliveryStatusProvider({ children }: DeliveryStatusProviderProps
     },
   })
 
-  const useMutateRemoveDeliveryStatus = useDeliveryStatusRemove({
+  const useMutateRemoveOrderStatus = useOrderStatusRemove({
     options: {
       onSuccess: ({ data }) => {
-        queryClient.invalidateQueries({ queryKey: ['delivery-statuses'] })
+        queryClient.invalidateQueries({ queryKey: ['order-statuses'] })
         toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description || ''}` })
       },
       onError: ({ response }) => {
@@ -137,41 +137,41 @@ export function DeliveryStatusProvider({ children }: DeliveryStatusProviderProps
     },
   })
 
-  const removeDeliveryStatus = (params) => {
-    useMutateRemoveDeliveryStatus.mutate(params)
+  const removeOrderStatus = (params) => {
+    useMutateRemoveOrderStatus.mutate(params)
   }
 
-  const submitDeliveryStatusForm = (params) => {
+  const submitOrderStatusForm = (params) => {
     setIsLoading(true)
-    if (!selectedDeliveryStatus)
-      return useMutateCreateDeliveryStatus.mutate(params)
+    if (!selectedOrderStatus)
+      return useMutateCreateOrderStatus.mutate(params)
 
-    return useMutateEditDeliveryStatus.mutate({ ...params, id: selectedDeliveryStatus.id })
+    return useMutateEditOrderStatus.mutate({ ...params, id: selectedOrderStatus.id })
   }
 
-  const value: DeliveryStatusContextType = useMemo(
+  const value: OrderStatusContextType = useMemo(
     () => ({
-      selectedDeliveryStatus,
+      selectedOrderStatus,
       isModalOpen,
       isLoading,
       isEdit,
       form,
       openModal,
       closeModal,
-      submitDeliveryStatusForm,
-      removeDeliveryStatus,
+      submitOrderStatusForm,
+      removeOrderStatus,
     }),
-    [selectedDeliveryStatus, isModalOpen, isLoading, isEdit, form],
+    [selectedOrderStatus, isModalOpen, isLoading, isEdit, form],
   )
 
-  return <DeliveryStatusContext.Provider value={value}>{children}</DeliveryStatusContext.Provider>
+  return <OrderStatusContext.Provider value={value}>{children}</OrderStatusContext.Provider>
 }
 
 // eslint-disable-next-line react-refresh/only-export-components
-export function useDeliveryStatusContext(): DeliveryStatusContextType {
-  const context = useContext(DeliveryStatusContext)
+export function useOrderStatusContext(): OrderStatusContextType {
+  const context = useContext(OrderStatusContext)
   if (!context) {
-    throw new Error('useDeliveryStatusContext - DeliveryStatusContext')
+    throw new Error('useOrderStatusContext - OrderStatusContext')
   }
   return context
 }

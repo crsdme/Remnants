@@ -1,7 +1,7 @@
 import type { SUPPORTED_LANGUAGES_TYPE } from '../config/constants'
 import type { Code, DateRange, IdType, LanguageString, Message, Pagination, Sorter, Status } from './common.type'
 
-export interface DeliveryStatus {
+export interface OrderStatus {
   id: IdType
   names: LanguageString
   priority: number
@@ -11,15 +11,15 @@ export interface DeliveryStatus {
   updatedAt: Date
 }
 
-export interface getDeliveryStatusesResult {
+export interface getOrderStatusesResult {
   status: Status
   code: Code
   message: Message
-  deliveryStatuses: DeliveryStatus[]
-  deliveryStatusesCount: number
+  orderStatuses: OrderStatus[]
+  orderStatusesCount: number
 }
 
-export interface getDeliveryStatusesFilters {
+export interface getOrderStatusesFilters {
   names: LanguageString
   language: SUPPORTED_LANGUAGES_TYPE
   color: string
@@ -28,7 +28,7 @@ export interface getDeliveryStatusesFilters {
   updatedAt: DateRange
 }
 
-export interface getDeliveryStatusesSorters {
+export interface getOrderStatusesSorters {
   names: Sorter
   color: Sorter
   priority: Sorter
@@ -36,46 +36,46 @@ export interface getDeliveryStatusesSorters {
   createdAt: Sorter
 }
 
-export interface getDeliveryStatusesParams {
-  filters?: Partial<getDeliveryStatusesFilters>
-  sorters?: Partial<getDeliveryStatusesSorters>
+export interface getOrderStatusesParams {
+  filters?: Partial<getOrderStatusesFilters>
+  sorters?: Partial<getOrderStatusesSorters>
   pagination?: Partial<Pagination>
   isTree?: boolean
 }
 
-export interface createDeliveryStatusResult {
+export interface createOrderStatusResult {
   status: Status
   code: Code
   message: Message
-  deliveryStatus: DeliveryStatus
+  orderStatus: OrderStatus
 }
 
-export interface createDeliveryStatusParams {
+export interface createOrderStatusParams {
   names: LanguageString
   priority?: number
   color?: string
 }
 
-export interface editDeliveryStatusResult {
+export interface editOrderStatusResult {
   status: Status
   code: Code
   message: Message
-  deliveryStatus: DeliveryStatus
+  orderStatus: OrderStatus
 }
 
-export interface editDeliveryStatusParams {
+export interface editOrderStatusParams {
   id: IdType
   names: LanguageString
   priority?: number
   color?: string
 }
 
-export interface removeDeliveryStatusesResult {
+export interface removeOrderStatusesResult {
   status: Status
   code: Code
   message: Message
 }
 
-export interface removeDeliveryStatusesParams {
+export interface removeOrderStatusesParams {
   ids: IdType[]
 }

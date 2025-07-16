@@ -53,6 +53,6 @@
   "title.page.warehouse-transactions": "Транзакции складов - Remnant",
   "description.page.warehouse-transactions": "Управление транзакциями складов в Remnant",
 
-  "title.page.delivery-statuses": "Статусы доставки - Remnant",
-  "description.page.delivery-statuses": "Управление статусами доставки в Remnant"
+  "title.page.order-statuses": "Статусы заказов - Remnant",
+  "description.page.order-statuses": "Управление статусами заказов в Remnant"
 }

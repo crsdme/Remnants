@@ -53,6 +53,6 @@
   "title.page.warehouse-transactions": "Warehouse Transactions - Remnant",
   "description.page.warehouse-transactions": "Manage warehouse transactions in Remnant",
 
-  "title.page.delivery-statuses": "Delivery Statuses - Remnant",
-  "description.page.delivery-statuses": "Manage delivery statuses in Remnant"
+  "title.page.order-statuses": "Order Statuses - Remnant",
+  "description.page.order-statuses": "Manage order statuses in Remnant"
 }

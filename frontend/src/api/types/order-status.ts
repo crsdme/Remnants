@@ -1,4 +1,4 @@
-export interface getDeliveryStatusesParams {
+export interface getOrderStatusesParams {
   filters: {
     names?: string
     color?: string
@@ -16,28 +16,28 @@ export interface getDeliveryStatusesParams {
   }
 }
 
-export interface createDeliveryStatusesParams {
+export interface createOrderStatusesParams {
   names: LanguageString
   priority: number
   color?: string
 }
 
-export interface DeliveryStatusesResponse {
+export interface OrderStatusesResponse {
   status: string
   code: string
   message: string
   description: string
-  deliveryStatuses: DeliveryStatus[]
-  deliveryStatusesCount: number
+  orderStatuses: OrderStatus[]
+  orderStatusesCount: number
 }
 
-export interface editDeliveryStatusesParams {
+export interface editOrderStatusesParams {
   id: string
   names: LanguageString
   priority: number
   color?: string
 }
 
-export interface removeDeliveryStatusesParams {
+export interface removeOrderStatusesParams {
   ids: string[]
 }
