@@ -12,6 +12,7 @@ import {
   CategoriesPage,
   CurrenciesPage,
   DashboardPage,
+  DeliveryStatusesPage,
   ErrorPage,
   LanguagesPage,
   LoginPage,
@@ -117,6 +118,10 @@ export default function App() {
           <Route
             path="/settings/units"
             element={<ProtectedRoute children={<UnitsPage />} permissions={['unit.page']} />}
+          />
+          <Route
+            path="/delivery-statuses"
+            element={<ProtectedRoute children={<DeliveryStatusesPage />} permissions={['delivery-status.page']} />}
           />
 
           <Route

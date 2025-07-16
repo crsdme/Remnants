@@ -191,3 +191,12 @@ interface WarehouseTransactionItem {
   createdAt: Date
   updatedAt: Date
 }
+
+interface DeliveryStatus {
+  id: string
+  names: LanguageString
+  priority: number
+  color: string
+  createdAt: Date
+  updatedAt: Date
+}

@@ -524,5 +524,24 @@
   "page.warehouse-transactions.form.fromWarehouse": "Из склада",
   "page.warehouse-transactions.form.toWarehouse": "В склад",
   "page.warehouse-transactions.form.comment": "Комментарий",
-  "page.warehouse-transactions.form.requiresReceiving": "Требует приемки"
+  "page.warehouse-transactions.form.requiresReceiving": "Требует приемки",
+
+  "page.delivery-statuses.title": "Статусы доставки",
+  "page.delivery-statuses.description": "Управление статусами доставки",
+  "page.delivery-statuses.filter.names": "Фильтр по названию",
+  "page.delivery-statuses.button.create": "Создать статус доставки",
+
+  "page.delivery-statuses.table.names": "Название",
+  "page.delivery-statuses.table.priority": "Приоритет",
+  "page.delivery-statuses.table.color": "Цвет",
+  "page.delivery-statuses.table.active": "Активность",
+
+  "page.delivery-statuses.form.title.create": "Создание нового статуса доставки",
+  "page.delivery-statuses.form.description.create": "Добавить новый статус доставки в систему",
+  "page.delivery-statuses.form.title.edit": "Редактирование статуса доставки",
+  "page.delivery-statuses.form.description.edit": "Редактирование существующего статуса доставки",
+  "page.delivery-statuses.form.names": "Название ({{language}})",
+  "page.delivery-statuses.form.priority": "Приоритет",
+  "page.delivery-statuses.form.color": "Цвет",
+  "page.delivery-statuses.form.active": "Активность"
 }

@@ -520,5 +520,24 @@
   "page.warehouse-transactions.form.fromWarehouse": "From Warehouse",
   "page.warehouse-transactions.form.toWarehouse": "To Warehouse",
   "page.warehouse-transactions.form.comment": "Comment",
-  "page.warehouse-transactions.form.requiresReceiving": "Requires Receiving"
+  "page.warehouse-transactions.form.requiresReceiving": "Requires Receiving",
+
+  "page.delivery-statuses.title": "Delivery Statuses",
+  "page.delivery-statuses.description": "Manage delivery statuses",
+  "page.delivery-statuses.filter.names": "Filter by name",
+  "page.delivery-statuses.button.create": "Create delivery status",
+
+  "page.delivery-statuses.table.names": "Name",
+  "page.delivery-statuses.table.priority": "Priority",
+  "page.delivery-statuses.table.color": "Color",
+  "page.delivery-statuses.table.active": "Active",
+
+  "page.delivery-statuses.form.title.create": "Create new delivery status",
+  "page.delivery-statuses.form.description.create": "Add new delivery status to the system",
+  "page.delivery-statuses.form.title.edit": "Edit delivery status",
+  "page.delivery-statuses.form.description.edit": "Edit existing delivery status",
+  "page.delivery-statuses.form.names": "Name ({{language}})",
+  "page.delivery-statuses.form.priority": "Priority",
+  "page.delivery-statuses.form.color": "Color",
+  "page.delivery-statuses.form.active": "Active"
 }

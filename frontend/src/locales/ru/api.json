@@ -324,5 +324,38 @@
   "response.description.PRODUCTS_IMPORTED": "Товары были импортированы успешно",
 
   "response.title.PRODUCTS_EXPORTED": "Товары экспортированы",
-  "response.description.PRODUCTS_EXPORTED": "Товары были экспортированы успешно"
+  "response.description.PRODUCTS_EXPORTED": "Товары были экспортированы успешно",
+
+  "response.title.DELIVERY_STATUSES_FETCHED": "Статусы доставки получены",
+  "response.description.DELIVERY_STATUSES_FETCHED": "Список статусов доставки успешно получен",
+
+  "response.title.DELIVERY_STATUS_CREATED": "Статус доставки создан",
+  "response.description.DELIVERY_STATUS_CREATED": "Новый статус доставки был создан",
+
+  "response.title.DELIVERY_STATUS_NOT_EDITED": "Статус доставки не обновлен",
+  "response.description.DELIVERY_STATUS_NOT_EDITED": "Не удалось обновить статус доставки",
+
+  "response.title.DELIVERY_STATUS_EDITED": "Статус доставки обновлен",
+  "response.description.DELIVERY_STATUS_EDITED": "Статус доставки был обновлен",
+
+  "response.title.DELIVERY_STATUSES_NOT_REMOVED": "Статусы доставки не удалены",
+  "response.description.DELIVERY_STATUSES_NOT_REMOVED": "Не удалось удалить выбранные статусы доставки",
+
+  "response.title.DELIVERY_STATUSES_REMOVED": "Статусы доставки удалены",
+  "response.description.DELIVERY_STATUSES_REMOVED": "Выбранные статусы доставки были удалены",
+
+  "response.title.WAREHOUSE_TRANSACTIONS_FETCHED": "Транзакции складов получены",
+  "response.description.WAREHOUSE_TRANSACTIONS_FETCHED": "Список транзакций складов успешно получен",
+
+  "response.title.WAREHOUSE_TRANSACTIONS_ITEMS_FETCHED": "Товары транзакций складов получены",
+  "response.description.WAREHOUSE_TRANSACTIONS_ITEMS_FETCHED": "Список товаров транзакций складов успешно получен",
+
+  "response.title.WAREHOUSE_TRANSACTION_CREATED": "Транзакция склада создана",
+  "response.description.WAREHOUSE_TRANSACTION_CREATED": "Новая транзакция склада была создана",
+
+  "response.title.WAREHOUSE_TRANSACTION_EDITED": "Транзакция склада обновлена",
+  "response.description.WAREHOUSE_TRANSACTION_EDITED": "Транзакция склада была обновлена",
+
+  "response.title.WAREHOUSE_TRANSACTION_RECEIVED": "Транзакция склада принята",
+  "response.description.WAREHOUSE_TRANSACTION_RECEIVED": "Транзакция склада была принята"
 }
