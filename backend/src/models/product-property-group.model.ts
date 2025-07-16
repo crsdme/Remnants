@@ -21,7 +21,7 @@ const ProductPropertyGroupSchema: Schema = new Schema(
             SUPPORTED_LANGUAGES.includes(key as any),
           )
         },
-        message: 'ru en keys only',
+        message: 'Supported languages only',
       },
     },
     productProperties: [{

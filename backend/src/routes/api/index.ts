@@ -6,6 +6,7 @@ import cashregisterAccountRoutes from './cashregister-account.route'
 import cashregisterRoutes from './cashregister.route'
 import categoryRoutes from './category.route'
 import currencyRoutes from './currency.route'
+import deliveryStatusRoutes from './delivery-status.route'
 import languageRoutes from './language.route'
 import moneyTransactionRoutes from './money-transaction.route'
 import productPropertyGroupRoutes from './product-property-group.route'
@@ -39,6 +40,7 @@ router.use('/barcodes', authenticateJWT, barcodeRoutes)
 router.use('/money-transactions', authenticateJWT, moneyTransactionRoutes)
 router.use('/cashregisters', authenticateJWT, cashregisterRoutes)
 router.use('/cashregister-accounts', authenticateJWT, cashregisterAccountRoutes)
+router.use('/delivery-statuses', authenticateJWT, deliveryStatusRoutes)
 router.use('/settings', authenticateJWT, settingRoutes)
 router.use('/warehouse-transactions', authenticateJWT, warehouseTransactionRoutes)
 router.use('/test', authenticateJWT, testRoutes)

@@ -1,10 +1,10 @@
-import type { ProductPropertyOption } from '../types/product-property-option.type'
+import type { DeliveryStatus } from '../types/delivery-status.type'
 import mongoose, { Schema } from 'mongoose'
 import { v4 as uuidv4 } from 'uuid'
 import { SUPPORTED_LANGUAGES } from '../config/constants'
 import { uuidValidator } from '../utils/uuidValidator'
 
-const ProductPropertyOptionSchema: Schema = new Schema(
+const DeliveryStatusSchema: Schema = new Schema(
   {
     _id: {
       type: String,
@@ -24,20 +24,13 @@ const ProductPropertyOptionSchema: Schema = new Schema(
         message: 'Supported languages only',
       },
     },
+    color: {
+      type: String,
+      default: '#000000',
+    },
     priority: {
       type: Number,
       default: 0,
-    },
-    productProperty: {
-      type: String,
-      ref: 'product-property',
-    },
-    active: {
-      type: Boolean,
-      default: true,
-    },
-    color: {
-      type: String,
     },
     removed: {
       type: Boolean,
@@ -47,7 +40,7 @@ const ProductPropertyOptionSchema: Schema = new Schema(
   { timestamps: true },
 )
 
-ProductPropertyOptionSchema.set('toJSON', {
+DeliveryStatusSchema.set('toJSON', {
   virtuals: true,
   versionKey: false,
   transform: (_, ret) => {
@@ -57,6 +50,4 @@ ProductPropertyOptionSchema.set('toJSON', {
   },
 })
 
-ProductPropertyOptionSchema.index({ removed: 1 })
-
-export const ProductPropertyOptionModel = mongoose.model<ProductPropertyOption>('product-property-option', ProductPropertyOptionSchema)
+export const DeliveryStatusModel = mongoose.model<DeliveryStatus>('DeliveryStatus', DeliveryStatusSchema)
