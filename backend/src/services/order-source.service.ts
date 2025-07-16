@@ -60,7 +60,7 @@ export async function get(payload: OrderSourceTypes.getOrderSourcesParams): Prom
 
   const orderSourcesRaw = await OrderSourceModel.aggregate(pipeline).exec()
 
-  const orderSources = orderSourcesRaw[0].orderSources
+  const orderSources = orderSourcesRaw[0].orderSources.map((doc: any) => OrderSourceModel.hydrate(doc))
   const orderSourcesCount = orderSourcesRaw[0].totalCount[0]?.count || 0
 
   return { status: 'success', code: 'ORDER_SOURCES_FETCHED', message: 'Order sources fetched', orderSources, orderSourcesCount }

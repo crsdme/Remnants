@@ -375,6 +375,23 @@
   "response.description.ORDER_SOURCES_NOT_REMOVED": "Unable to remove selected order sources",
 
   "response.title.ORDER_SOURCES_REMOVED": "Order sources removed",
-  "response.description.ORDER_SOURCES_REMOVED": "Selected order sources have been deleted"
+  "response.description.ORDER_SOURCES_REMOVED": "Selected order sources have been deleted",
 
+  "response.title.DELIVERY_SERVICES_FETCHED": "Delivery services fetched",
+  "response.description.DELIVERY_SERVICES_FETCHED": "Delivery services list successfully fetched",
+
+  "response.title.DELIVERY_SERVICE_CREATED": "Delivery service created",
+  "response.description.DELIVERY_SERVICE_CREATED": "New delivery service has been created",
+
+  "response.title.DELIVERY_SERVICE_NOT_EDITED": "Delivery service not edited",
+  "response.description.DELIVERY_SERVICE_NOT_EDITED": "Unable to edit delivery service",
+
+  "response.title.DELIVERY_SERVICE_EDITED": "Delivery service edited",
+  "response.description.DELIVERY_SERVICE_EDITED": "Delivery service has been updated",
+
+  "response.title.DELIVERY_SERVICES_NOT_REMOVED": "Delivery services not removed",
+  "response.description.DELIVERY_SERVICES_NOT_REMOVED": "Unable to remove selected delivery services",
+
+  "response.title.DELIVERY_SERVICES_REMOVED": "Delivery services removed",
+  "response.description.DELIVERY_SERVICES_REMOVED": "Selected delivery services have been deleted"
 }

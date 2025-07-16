@@ -114,6 +114,7 @@
   "component.sidemenu.label.currencies": "Валюты",
   "component.sidemenu.label.sources": "Источники",
   "component.sidemenu.label.orderStatuses": "Статусы заказов",
+  "component.sidemenu.label.orderSources": "Источники заказов",
   "component.sidemenu.label.deliveryServices": "Сервисы доставки",
   "component.sidemenu.label.units": "Единицы измерения",
   "component.sidemenu.label.settings": "Настройки",

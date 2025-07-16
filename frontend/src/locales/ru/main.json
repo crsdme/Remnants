@@ -24,6 +24,9 @@
   "table.mismatch": "Несоответствие",
   "table.match": "Соответствие",
 
+  "delivery-services.novaposhta": "Новая Почта",
+  "delivery-services.selfpickup": "Самовывоз",
+
   "button.cancel": "Отмена",
   "button.submit": "Сохранить",
   "button.import": "Импортировать",

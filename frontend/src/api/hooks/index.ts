@@ -40,6 +40,12 @@ export * from './currency/useCurrencyOptions'
 export * from './currency/useCurrencyQuery'
 export * from './currency/useCurrencyRemove'
 
+export * from './delivery-service/useDeliveryServiceCreate'
+export * from './delivery-service/useDeliveryServiceEdit'
+export * from './delivery-service/useDeliveryServiceOptions'
+export * from './delivery-service/useDeliveryServiceQuery'
+export * from './delivery-service/useDeliveryServiceRemove'
+
 export * from './language/useLanguageBatch'
 export * from './language/useLanguageCreate'
 export * from './language/useLanguageDuplicate'

@@ -24,6 +24,9 @@
   "table.mismatch": "Mismatch",
   "table.match": "Match",
 
+  "delivery-services.novaposhta": "Nova Poshta",
+  "delivery-services.selfpickup": "Self Pickup",
+
   "button.cancel": "Cancel",
   "button.submit": "Submit",
   "button.import": "Import",

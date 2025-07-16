@@ -60,7 +60,7 @@ export async function get(payload: OrderStatusTypes.getOrderStatusesParams): Pro
 
   const orderStatusesRaw = await OrderStatusModel.aggregate(pipeline).exec()
 
-  const orderStatuses = orderStatusesRaw[0].orderStatuses
+  const orderStatuses = orderStatusesRaw[0].orderStatuses.map((doc: any) => OrderStatusModel.hydrate(doc))
   const orderStatusesCount = orderStatusesRaw[0].totalCount[0]?.count || 0
 
   return { status: 'success', code: 'ORDER_STATUSES_FETCHED', message: 'Order statuses fetched', orderStatuses, orderStatusesCount }

@@ -164,6 +164,7 @@ export function LayoutSidebar({ ...props }: React.ComponentProps<typeof Sidebar>
           { title: t('component.sidemenu.label.currencies'), url: '/settings/currencies', permissions: ['currency.page'] },
           { title: t('component.sidemenu.label.sources'), url: '/settings/sources', permissions: ['source.page'] },
           { title: t('component.sidemenu.label.orderStatuses'), url: '/settings/order-statuses', permissions: ['orderStatus.page'] },
+          { title: t('component.sidemenu.label.orderSources'), url: '/settings/order-sources', permissions: ['orderSource.page'] },
           {
             title: t('component.sidemenu.label.deliveryServices'),
             url: '/settings/delivery-services',

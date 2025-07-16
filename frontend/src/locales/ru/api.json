@@ -375,5 +375,23 @@
   "response.description.ORDER_SOURCES_NOT_REMOVED": "Не удалось удалить выбранные источники заказов",
 
   "response.title.ORDER_SOURCES_REMOVED": "Источники заказов удалены",
-  "response.description.ORDER_SOURCES_REMOVED": "Выбранные источники заказов были удалены"
+  "response.description.ORDER_SOURCES_REMOVED": "Выбранные источники заказов были удалены",
+
+  "response.title.DELIVERY_SERVICES_FETCHED": "Службы доставки получены",
+  "response.description.DELIVERY_SERVICES_FETCHED": "Список служб доставки успешно получен",
+
+  "response.title.DELIVERY_SERVICE_CREATED": "Служба доставки создана",
+  "response.description.DELIVERY_SERVICE_CREATED": "Новая служба доставки была создана",
+
+  "response.title.DELIVERY_SERVICE_NOT_EDITED": "Служба доставки не обновлена",
+  "response.description.DELIVERY_SERVICE_NOT_EDITED": "Не удалось обновить службу доставки",
+
+  "response.title.DELIVERY_SERVICE_EDITED": "Служба доставки обновлена",
+  "response.description.DELIVERY_SERVICE_EDITED": "Служба доставки была обновлена",
+
+  "response.title.DELIVERY_SERVICES_NOT_REMOVED": "Службы доставки не удалены",
+  "response.description.DELIVERY_SERVICES_NOT_REMOVED": "Не удалось удалить выбранные службы доставки",
+
+  "response.title.DELIVERY_SERVICES_REMOVED": "Службы доставки удалены",
+  "response.description.DELIVERY_SERVICES_REMOVED": "Выбранные службы доставки были удалены"
 }

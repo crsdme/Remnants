@@ -209,3 +209,13 @@ interface OrderSource {
   createdAt: Date
   updatedAt: Date
 }
+
+interface DeliveryService {
+  id: string
+  names: LanguageString
+  priority: number
+  color: string
+  type: 'novaposhta' | 'selfpickup'
+  createdAt: Date
+  updatedAt: Date
+}

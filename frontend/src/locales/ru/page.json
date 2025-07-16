@@ -562,5 +562,26 @@
   "page.order-sources.form.names": "Название ({{language}})",
   "page.order-sources.form.priority": "Приоритет",
   "page.order-sources.form.color": "Цвет",
-  "page.order-sources.form.active": "Активность"
+  "page.order-sources.form.active": "Активность",
+
+  "page.delivery-services.title": "Службы доставки",
+  "page.delivery-services.description": "Управление службами доставки",
+  "page.delivery-services.filter.names": "Фильтр по названию",
+  "page.delivery-services.button.create": "Создать службу доставки",
+
+  "page.delivery-services.table.names": "Название",
+  "page.delivery-services.table.priority": "Приоритет",
+  "page.delivery-services.table.color": "Цвет",
+  "page.delivery-services.table.active": "Активность",
+  "page.delivery-services.table.type": "Тип",
+
+  "page.delivery-services.form.title.create": "Создание новой службы доставки",
+  "page.delivery-services.form.description.create": "Добавить новую службу доставки в систему",
+  "page.delivery-services.form.title.edit": "Редактирование службы доставки",
+  "page.delivery-services.form.description.edit": "Редактирование существующей службы доставки",
+  "page.delivery-services.form.names": "Название ({{language}})",
+  "page.delivery-services.form.priority": "Приоритет",
+  "page.delivery-services.form.color": "Цвет",
+  "page.delivery-services.form.active": "Активность",
+  "page.delivery-services.form.type": "Тип"
 }

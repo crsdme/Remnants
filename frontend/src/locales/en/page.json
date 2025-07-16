@@ -558,5 +558,26 @@
   "page.order-sources.form.names": "Name ({{language}})",
   "page.order-sources.form.priority": "Priority",
   "page.order-sources.form.color": "Color",
-  "page.order-sources.form.active": "Active"
+  "page.order-sources.form.active": "Active",
+
+  "page.delivery-services.title": "Delivery Services",
+  "page.delivery-services.description": "Manage delivery services",
+  "page.delivery-services.filter.names": "Filter by name",
+  "page.delivery-services.button.create": "Create delivery service",
+
+  "page.delivery-services.table.names": "Name",
+  "page.delivery-services.table.priority": "Priority",
+  "page.delivery-services.table.color": "Color",
+  "page.delivery-services.table.active": "Active",
+  "page.delivery-services.table.type": "Type",
+
+  "page.delivery-services.form.title.create": "Create new delivery service",
+  "page.delivery-services.form.description.create": "Add new delivery service to the system",
+  "page.delivery-services.form.title.edit": "Edit delivery service",
+  "page.delivery-services.form.description.edit": "Edit existing delivery service",
+  "page.delivery-services.form.names": "Name ({{language}})",
+  "page.delivery-services.form.priority": "Priority",
+  "page.delivery-services.form.color": "Color",
+  "page.delivery-services.form.active": "Active",
+  "page.delivery-services.form.type": "Type"
 }

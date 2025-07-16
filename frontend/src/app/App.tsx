@@ -12,6 +12,7 @@ import {
   CategoriesPage,
   CurrenciesPage,
   DashboardPage,
+  DeliveryServicesPage,
   ErrorPage,
   LanguagesPage,
   LoginPage,
@@ -121,14 +122,17 @@ export default function App() {
             element={<ProtectedRoute children={<UnitsPage />} permissions={['unit.page']} />}
           />
           <Route
-            path="/order-statuses"
+            path="/settings/delivery-services"
+            element={<ProtectedRoute children={<DeliveryServicesPage />} permissions={['delivery-service.page']} />}
+          />
+          <Route
+            path="/settings/order-statuses"
             element={<ProtectedRoute children={<OrderStatusesPage />} permissions={['order-status.page']} />}
           />
           <Route
-            path="/order-sources"
+            path="/settings/order-sources"
             element={<ProtectedRoute children={<OrderSourcesPage />} permissions={['order-source.page']} />}
           />
-
           <Route
             path="/warehouses"
             element={<ProtectedRoute children={<WarehousesPage />} permissions={['warehouse.page']} />}

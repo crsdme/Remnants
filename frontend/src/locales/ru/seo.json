@@ -57,5 +57,8 @@
   "description.page.order-statuses": "Управление статусами заказов в Remnant",
 
   "title.page.order-sources": "Источники заказов - Remnant",
-  "description.page.order-sources": "Управление источниками заказов в Remnant"
+  "description.page.order-sources": "Управление источниками заказов в Remnant",
+
+  "title.page.delivery-services": "Службы доставки - Remnant",
+  "description.page.delivery-services": "Управление службами доставки в Remnant"
 }

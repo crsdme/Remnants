@@ -57,5 +57,8 @@
   "description.page.order-statuses": "Manage order statuses in Remnant",
 
   "title.page.order-sources": "Order Sources - Remnant",
-  "description.page.order-sources": "Manage order sources in Remnant"
+  "description.page.order-sources": "Manage order sources in Remnant",
+
+  "title.page.delivery-services": "Delivery Services - Remnant",
+  "description.page.delivery-services": "Manage delivery services in Remnant"
 }
