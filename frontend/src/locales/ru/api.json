@@ -357,5 +357,23 @@
   "response.description.WAREHOUSE_TRANSACTION_EDITED": "Транзакция склада была обновлена",
 
   "response.title.WAREHOUSE_TRANSACTION_RECEIVED": "Транзакция склада принята",
-  "response.description.WAREHOUSE_TRANSACTION_RECEIVED": "Транзакция склада была принята"
+  "response.description.WAREHOUSE_TRANSACTION_RECEIVED": "Транзакция склада была принята",
+
+  "response.title.ORDER_SOURCES_FETCHED": "Источники заказов получены",
+  "response.description.ORDER_SOURCES_FETCHED": "Список источников заказов успешно получен",
+
+  "response.title.ORDER_SOURCE_CREATED": "Источник заказа создан",
+  "response.description.ORDER_SOURCE_CREATED": "Новый источник заказа был создан",
+
+  "response.title.ORDER_SOURCE_NOT_EDITED": "Источник заказа не обновлен",
+  "response.description.ORDER_SOURCE_NOT_EDITED": "Не удалось обновить источник заказа",
+
+  "response.title.ORDER_SOURCE_EDITED": "Источник заказа обновлен",
+  "response.description.ORDER_SOURCE_EDITED": "Источник заказа был обновлен",
+
+  "response.title.ORDER_SOURCES_NOT_REMOVED": "Источники заказов не удалены",
+  "response.description.ORDER_SOURCES_NOT_REMOVED": "Не удалось удалить выбранные источники заказов",
+
+  "response.title.ORDER_SOURCES_REMOVED": "Источники заказов удалены",
+  "response.description.ORDER_SOURCES_REMOVED": "Выбранные источники заказов были удалены"
 }

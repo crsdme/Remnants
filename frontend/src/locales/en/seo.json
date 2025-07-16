@@ -54,5 +54,8 @@
   "description.page.warehouse-transactions": "Manage warehouse transactions in Remnant",
 
   "title.page.order-statuses": "Order Statuses - Remnant",
-  "description.page.order-statuses": "Manage order statuses in Remnant"
+  "description.page.order-statuses": "Manage order statuses in Remnant",
+
+  "title.page.order-sources": "Order Sources - Remnant",
+  "description.page.order-sources": "Manage order sources in Remnant"
 }

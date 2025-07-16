@@ -357,5 +357,24 @@
   "response.description.WAREHOUSE_TRANSACTION_EDITED": "Warehouse transaction has been updated",
 
   "response.title.WAREHOUSE_TRANSACTION_RECEIVED": "Warehouse transaction received",
-  "response.description.WAREHOUSE_TRANSACTION_RECEIVED": "Warehouse transaction has been received"
+  "response.description.WAREHOUSE_TRANSACTION_RECEIVED": "Warehouse transaction has been received",
+
+  "response.title.ORDER_SOURCES_FETCHED": "Order sources fetched",
+  "response.description.ORDER_SOURCES_FETCHED": "Order sources list successfully fetched",
+
+  "response.title.ORDER_SOURCE_CREATED": "Order source created",
+  "response.description.ORDER_SOURCE_CREATED": "New order source has been created",
+
+  "response.title.ORDER_SOURCE_NOT_EDITED": "Order source not edited",
+  "response.description.ORDER_SOURCE_NOT_EDITED": "Unable to edit order source",
+
+  "response.title.ORDER_SOURCE_EDITED": "Order source edited",
+  "response.description.ORDER_SOURCE_EDITED": "Order source has been updated",
+
+  "response.title.ORDER_SOURCES_NOT_REMOVED": "Order sources not removed",
+  "response.description.ORDER_SOURCES_NOT_REMOVED": "Unable to remove selected order sources",
+
+  "response.title.ORDER_SOURCES_REMOVED": "Order sources removed",
+  "response.description.ORDER_SOURCES_REMOVED": "Selected order sources have been deleted"
+
 }

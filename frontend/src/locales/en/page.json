@@ -539,5 +539,24 @@
   "page.order-statuses.form.names": "Name ({{language}})",
   "page.order-statuses.form.priority": "Priority",
   "page.order-statuses.form.color": "Color",
-  "page.order-statuses.form.active": "Active"
+  "page.order-statuses.form.active": "Active",
+
+  "page.order-sources.title": "Order Sources",
+  "page.order-sources.description": "Manage order sources",
+  "page.order-sources.filter.names": "Filter by name",
+  "page.order-sources.button.create": "Create order source",
+
+  "page.order-sources.table.names": "Name",
+  "page.order-sources.table.priority": "Priority",
+  "page.order-sources.table.color": "Color",
+  "page.order-sources.table.active": "Active",
+
+  "page.order-sources.form.title.create": "Create new order source",
+  "page.order-sources.form.description.create": "Add new order source to the system",
+  "page.order-sources.form.title.edit": "Edit order source",
+  "page.order-sources.form.description.edit": "Edit existing order source",
+  "page.order-sources.form.names": "Name ({{language}})",
+  "page.order-sources.form.priority": "Priority",
+  "page.order-sources.form.color": "Color",
+  "page.order-sources.form.active": "Active"
 }

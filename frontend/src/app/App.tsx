@@ -17,6 +17,7 @@ import {
   LoginPage,
   MainSettingsPage,
   MoneyTransactionsPage,
+  OrderSourcesPage,
   OrderStatusesPage,
   ProductPropertiesGroupsPage,
   ProductPropertiesPage,
@@ -122,6 +123,10 @@ export default function App() {
           <Route
             path="/order-statuses"
             element={<ProtectedRoute children={<OrderStatusesPage />} permissions={['order-status.page']} />}
+          />
+          <Route
+            path="/order-sources"
+            element={<ProtectedRoute children={<OrderSourcesPage />} permissions={['order-source.page']} />}
           />
 
           <Route

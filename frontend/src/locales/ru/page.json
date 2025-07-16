@@ -543,5 +543,24 @@
   "page.order-statuses.form.names": "Название ({{language}})",
   "page.order-statuses.form.priority": "Приоритет",
   "page.order-statuses.form.color": "Цвет",
-  "page.order-statuses.form.active": "Активность"
+  "page.order-statuses.form.active": "Активность",
+
+  "page.order-sources.title": "Источники заказов",
+  "page.order-sources.description": "Управление источниками заказов",
+  "page.order-sources.filter.names": "Фильтр по названию",
+  "page.order-sources.button.create": "Создать источник заказа",
+
+  "page.order-sources.table.names": "Название",
+  "page.order-sources.table.priority": "Приоритет",
+  "page.order-sources.table.color": "Цвет",
+  "page.order-sources.table.active": "Активность",
+
+  "page.order-sources.form.title.create": "Создание нового источника заказа",
+  "page.order-sources.form.description.create": "Добавить новый источник заказа в систему",
+  "page.order-sources.form.title.edit": "Редактирование источника заказа",
+  "page.order-sources.form.description.edit": "Редактирование существующего источника заказа",
+  "page.order-sources.form.names": "Название ({{language}})",
+  "page.order-sources.form.priority": "Приоритет",
+  "page.order-sources.form.color": "Цвет",
+  "page.order-sources.form.active": "Активность"
 }
