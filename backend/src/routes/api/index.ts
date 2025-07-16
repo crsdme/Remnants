@@ -17,6 +17,7 @@ import testRoutes from './test.route'
 import unitRoutes from './unit.route'
 import userRoleRoutes from './user-role.route'
 import userRoutes from './user.route'
+import warehouseTransactionRoutes from './warehouse-transaction.route'
 import warehouseRoutes from './warehouse.route'
 
 const router = Router()
@@ -39,6 +40,7 @@ router.use('/money-transactions', authenticateJWT, moneyTransactionRoutes)
 router.use('/cashregisters', authenticateJWT, cashregisterRoutes)
 router.use('/cashregister-accounts', authenticateJWT, cashregisterAccountRoutes)
 router.use('/settings', authenticateJWT, settingRoutes)
+router.use('/warehouse-transactions', authenticateJWT, warehouseTransactionRoutes)
 router.use('/test', authenticateJWT, testRoutes)
 
 export default router

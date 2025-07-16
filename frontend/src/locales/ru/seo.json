@@ -48,5 +48,8 @@
   "description.page.cashregisters": "Управление кассами в Remnant",
 
   "title.page.cashregister-accounts": "Счета касс - Remnant",
-  "description.page.cashregister-accounts": "Управление счетами касс в Remnant"
+  "description.page.cashregister-accounts": "Управление счетами касс в Remnant",
+
+  "title.page.warehouse-transactions": "Транзакции складов - Remnant",
+  "description.page.warehouse-transactions": "Управление транзакциями складов в Remnant"
 }

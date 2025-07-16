@@ -100,6 +100,7 @@
   "component.sidemenu.label.procurements": "Procurements",
   "component.sidemenu.label.production": "Production",
   "component.sidemenu.label.inventories": "Inventory",
+  "component.sidemenu.label.warehouseTransactions": "Warehouse Transactions",
   "component.sidemenu.label.money": "Finance",
   "component.sidemenu.label.cashregisters": "Cash Registers",
   "component.sidemenu.label.cashregisterAccounts": "Cash Register Accounts",

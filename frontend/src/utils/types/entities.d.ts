@@ -168,3 +168,26 @@ interface Setting {
   createdAt: Date
   updatedAt: Date
 }
+
+interface WarehouseTransaction {
+  id: string
+  type: string
+  sourceWarehouseId: string
+  destinationWarehouseId: string
+  requiresReceiving: boolean
+  status: string
+  createdBy: string
+  comment: string
+  createdAt: Date
+  updatedAt: Date
+}
+
+interface WarehouseTransactionItem {
+  id: string
+  transactionId: string
+  productId: string
+  product: Product
+  quantity: number
+  createdAt: Date
+  updatedAt: Date
+}

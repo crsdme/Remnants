@@ -92,9 +92,8 @@ export function AsyncSelect<T>({
   const triggerRef = useRef<HTMLButtonElement>(null)
   const [popoverWidth, setPopoverWidth] = useState<number>()
 
-  const [selectedValues, setSelectedValues] = useState<string[]>(value || [])
+  const [selectedValues, setSelectedValues] = useState(value || [])
   const [selectedOptions, setSelectedOptions] = useState([])
-
   const [search, setSearch] = useState('')
   const debouncedSearch = useDebounceValue(search, preload ? 0 : 200)
 
@@ -105,7 +104,6 @@ export function AsyncSelect<T>({
 
   useEffect(() => {
     setMounted(true)
-    // setSelectedvalue(typeof value === 'string' && value ? [value] : [])
   }, [])
 
   useEffect(() => {
@@ -164,40 +162,6 @@ export function AsyncSelect<T>({
     }
   }, [options, value, getOptionValue])
 
-  // useEffect(() => {
-  //   if (value && options.length > 0) {
-  //     const filteredOptions = options.filter(opt => getOptionValue(opt) === value)
-  //     if (filteredOptions.length > 0)
-  //       setSelectedOptions(filteredOptions)
-  //     else
-  //       setSelectedOptions([])
-  //   }
-  // }, [value, options, getOptionValue])
-
-  // useEffect(() => {
-  //   const fetchOptions = async () => {
-  //     try {
-  //       setLoading(true)
-  //       setError(null)
-  //       const data = await fetcher(debouncedSearch)
-  //       setOptions(data)
-  //     }
-  //     catch (err) {
-  //       setError(err instanceof Error ? err.message : 'Failed to fetch options')
-  //     }
-  //     finally {
-  //       setLoading(false)
-  //     }
-  //   }
-  //   fetchOptions()
-  //   if (!mounted || !preload) {
-  //     fetchOptions()
-  //   }
-  //   else if (preload) {
-  //     setOptions(options.filter(option => filterFn ? filterFn(option, debouncedSearch) : true))
-  //   }
-  // }, [fetcher, debouncedSearch, mounted, preload, filterFn])
-
   const handleSelect = useCallback((currentValue: string) => {
     if (multi) {
       const newSelectedValeus = selectedValues.includes(currentValue)
@@ -218,7 +182,7 @@ export function AsyncSelect<T>({
       setSelectedValues(newValues)
       setSelectedOptions(options.filter(option => newValues.includes(getOptionValue(option))))
       setOpen(false)
-      onChange?.(newValues)
+      onChange?.(newValues.length > 0 ? newValues[0] : '')
     }
   }, [onChange, options, getOptionValue, selectedValues])
 

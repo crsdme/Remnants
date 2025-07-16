@@ -1,4 +1,5 @@
 import {
+  AlertTriangle,
   ArrowDown,
   ArrowUp,
   ChevronsUpDown,
@@ -11,7 +12,7 @@ import { useTranslation } from 'react-i18next'
 
 import { useProductPropertyQuery } from '@/api/hooks'
 import { ImageGallery } from '@/components'
-import { Badge, Button, Input } from '@/components/ui'
+import { Badge, Button, Input, Separator } from '@/components/ui'
 import { useAuthContext } from '@/contexts'
 import { formatDate } from '@/utils/helpers'
 import { hasPermission } from '@/utils/helpers/permission'
@@ -19,7 +20,14 @@ import { useDebounceCallback } from '@/utils/hooks'
 
 const sortIcons = { asc: ArrowUp, desc: ArrowDown }
 
-export function useColumns({ removeProduct, changeQuantity }: { removeProduct: (product: any) => void, changeQuantity: (product: any, quantity: number) => void }) {
+export function useColumns(
+  { removeProduct, changeQuantity, isReceiving }:
+  {
+    removeProduct: (product: any) => void
+    changeQuantity: (product: any, options: { quantity?: number, receivedQuantity?: number }) => void
+    isReceiving: boolean
+  },
+) {
   const { t, i18n } = useTranslation()
   const { permissions } = useAuthContext()
 
@@ -28,7 +36,7 @@ export function useColumns({ removeProduct, changeQuantity }: { removeProduct: (
 
   const isLoading = false
 
-  const debounceChangeQuantity = useDebounceCallback((product: any, quantity: number) => changeQuantity(product, quantity), 1000)
+  const debounceChangeQuantity = useDebounceCallback((product, options) => changeQuantity(product, options), 1000)
 
   const columns = useMemo(() => {
     function sortHeader(column, label) {
@@ -116,21 +124,30 @@ export function useColumns({ removeProduct, changeQuantity }: { removeProduct: (
         enableHiding: false,
         cell: ({ row }) => {
           const item = row.original
+          const hasMismatch = item.receivedQuantity !== item.quantity
 
           return (
             <div className="flex gap-2 justify-end">
+              {isReceiving && (
+                <Badge variant={hasMismatch ? 'destructive' : 'success'}>
+                  {hasMismatch ? t('table.mismatch') : t('table.match')}
+                </Badge>
+              )}
               <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={() => changeQuantity(item, item.selectedQuantity - 1)}
-                >
-                  <Minus className="h-4 w-4" />
-                </Button>
+                {!isReceiving && (
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => changeQuantity(item, { quantity: item.quantity - 1 })}
+                    disabled={isLoading || isReceiving}
+                  >
+                    <Minus className="h-4 w-4" />
+                  </Button>
+                )}
                 <div className="relative min-w-5">
                   <Input
                     placeholder={t('component.product-select-table.quantity.placeholder')}
-                    value={item.selectedQuantity}
+                    value={item.quantity}
                     className="pr-10 w-20"
                     disabled={true}
                     onChange={event => debounceChangeQuantity(item, Number.parseInt(event.target.value))}
@@ -139,19 +156,58 @@ export function useColumns({ removeProduct, changeQuantity }: { removeProduct: (
                     <p>{item.unit.symbols[i18n.language]}</p>
                   </div>
                 </div>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={() => changeQuantity(item, item.selectedQuantity + 1)}
-                >
-                  <Plus className="h-4 w-4" />
-                </Button>
+                {!isReceiving && (
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => changeQuantity(item, { quantity: item.quantity + 1 })}
+                    disabled={isLoading || isReceiving}
+                  >
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                )}
               </div>
+              {isReceiving && (
+                <>
+                  <Separator orientation="vertical" className="h-8" />
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => changeQuantity(item, { receivedQuantity: item.receivedQuantity - 1 })}
+                      disabled={isLoading}
+                    >
+                      <Minus className="h-4 w-4" />
+                    </Button>
+                    <div className="relative min-w-5">
+                      <Input
+                        placeholder={t('component.product-select-table.quantity.placeholder')}
+                        value={item.receivedQuantity}
+                        className="pr-10 w-20"
+                        disabled={true}
+                        onChange={event => debounceChangeQuantity(item, { receivedQuantity: Number.parseInt(event.target.value) })}
+                      />
+                      <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                        <p>{item.unit.symbols[i18n.language]}</p>
+                      </div>
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => changeQuantity(item, { receivedQuantity: item.receivedQuantity + 1 })}
+                      disabled={isLoading}
+                    >
+                      <Plus className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </>
+              )}
               <Button
                 onClick={() => removeProduct(item)}
                 variant="ghost"
                 size="icon"
                 className="h-8 w-8 p-0 text-destructive hover:text-destructive hover:bg-destructive/10"
+                disabled={isLoading}
               >
                 <Trash2 className="h-4 w-4" />
               </Button>
@@ -309,10 +365,9 @@ export function useColumns({ removeProduct, changeQuantity }: { removeProduct: (
         },
         header: ({ column }) => sortHeader(column, t('component.productTable.table.selectedQuantity')),
         cell: ({ row }) => {
-          const selectedQuantity = row.original.selectedQuantity
           const unit = row.original.unit.symbols[i18n.language]
 
-          return `${selectedQuantity || 0} ${unit}`
+          return `${row.original.quantity || 0} ${unit}`
         },
       },
       {

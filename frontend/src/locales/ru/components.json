@@ -96,6 +96,7 @@
   "component.sidemenu.label.procurements": "Закупки",
   "component.sidemenu.label.production": "Производство",
   "component.sidemenu.label.inventories": "Инвентаризация",
+  "component.sidemenu.label.warehouseTransactions": "Транзакции складов",
   "component.sidemenu.label.money": "Финансы",
   "component.sidemenu.label.cashregisters": "Кассы",
   "component.sidemenu.label.cashregisterAccounts": "Счета касс",

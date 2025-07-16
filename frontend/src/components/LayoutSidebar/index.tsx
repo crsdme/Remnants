@@ -115,6 +115,7 @@ export function LayoutSidebar({ ...props }: React.ComponentProps<typeof Sidebar>
           { title: t('component.sidemenu.label.procurements'), url: '/procurements', permissions: ['procurement.page'] },
           { title: t('component.sidemenu.label.production'), url: '/production', permissions: ['production.page'] },
           { title: t('component.sidemenu.label.inventories'), url: '/inventories', permissions: ['inventory.page'] },
+          { title: t('component.sidemenu.label.warehouseTransactions'), url: '/warehouse-transactions', permissions: ['warehouse-transaction.page'] },
         ],
       },
       {

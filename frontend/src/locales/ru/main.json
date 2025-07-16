@@ -20,6 +20,9 @@
   "table.yesno.true": "Да",
   "table.yesno.false": "Нет",
   "table.print": "Печатать {{size}}",
+  "table.receive": "Принять",
+  "table.mismatch": "Несоответствие",
+  "table.match": "Соответствие",
 
   "button.cancel": "Отмена",
   "button.submit": "Сохранить",
@@ -28,6 +31,7 @@
   "button.generate": "Сгенерировать",
 
   "form.errors.required": "Обязательное поле",
+  "form.errors.required.products": "Необходимо выбрать хотя бы один товар",
   "form.errors.min_length": "Минимальная длина {{count}} символов",
   "form.errors.max_length": "Максимальная длина {{count}} символов",
 

@@ -143,7 +143,7 @@ export function ProductForm() {
                     const response = await getProductPropertiesOptions({
                       pagination: { full: true },
                       filters: {
-                        ...(selectedValue ? { ids: selectedValue } : { names: query }),
+                        ...(selectedValue ? { ids: [selectedValue] } : { names: query }),
                         productProperty: property.id,
                         active: [true],
                         language: i18n.language,

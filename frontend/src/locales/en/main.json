@@ -20,6 +20,9 @@
   "table.yesno.true": "Yes",
   "table.yesno.false": "No",
   "table.print": "Print {{size}}",
+  "table.receive": "Receive",
+  "table.mismatch": "Mismatch",
+  "table.match": "Match",
 
   "button.cancel": "Cancel",
   "button.submit": "Submit",
@@ -28,6 +31,7 @@
   "button.generate": "Generate",
 
   "form.errors.required": "Required field",
+  "form.errors.required.products": "You must select at least one product",
   "form.errors.min_length": "Minimum length {{count}} characters",
   "form.errors.max_length": "Maximum length {{count}} characters",
 

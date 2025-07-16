@@ -48,5 +48,8 @@
   "description.page.cashregisters": "Manage cash registers in Remnant",
 
   "title.page.cashregister-accounts": "Cash Register Accounts - Remnant",
-  "description.page.cashregister-accounts": "Manage cash register accounts in Remnant"
+  "description.page.cashregister-accounts": "Manage cash register accounts in Remnant",
+
+  "title.page.warehouse-transactions": "Warehouse Transactions - Remnant",
+  "description.page.warehouse-transactions": "Manage warehouse transactions in Remnant"
 }

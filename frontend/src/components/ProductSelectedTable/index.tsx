@@ -11,15 +11,22 @@ import { cn } from '@/utils/lib/utils'
 import { useColumns } from './columns'
 
 export function ProductSelectedTable(
-  { products, removeProduct, isLoading = false, className, changeQuantity }:
-  { products: any[], removeProduct: (product: any) => void, isLoading?: boolean, className?: string, changeQuantity: (product: any, quantity: number) => void },
+  { products, removeProduct, isLoading = false, className, changeQuantity, isReceiving = false }:
+  {
+    products: any[]
+    removeProduct: (product: any) => void
+    isLoading?: boolean
+    className?: string
+    changeQuantity: (product: any, options: { quantity?: number, receivedQuantity?: number }) => void
+    isReceiving: boolean
+  },
 ) {
   const { t } = useTranslation()
 
   const [columnVisibility, setColumnVisibility] = useState({})
   const [sorting, setSorting] = useState<ColumnSort[]>([])
 
-  const columns = useColumns({ removeProduct, changeQuantity })
+  const columns = useColumns({ removeProduct, changeQuantity, isReceiving })
 
   const table = useReactTable({
     data: products,
@@ -108,7 +115,7 @@ export function ProductSelectedTable(
       <div className="flex justify-between items-center max-md:flex-col gap-2 py-2">
         <h3 className="text-lg font-medium flex items-center gap-2">
           <Package className="size-5" />
-          <p className="text-lg font-medium">{t('component.productTable.table.selectedProducts', { count: products.reduce((acc, product) => acc + product.selectedQuantity, 0) })}</p>
+          <p className="text-lg font-medium">{t('component.productTable.table.selectedProducts', { count: products.reduce((acc, product) => acc + product.quantity, 0) })}</p>
         </h3>
         <ColumnVisibilityMenu
           table={table}
