@@ -219,3 +219,50 @@ interface DeliveryService {
   createdAt: Date
   updatedAt: Date
 }
+
+interface Client {
+  id: string
+  name: string
+  middleName: string
+  lastName: string
+  emails: string[]
+  phones: string[]
+  addresses: string[]
+}
+
+interface Order {
+  id: string
+  warehouse: string
+  deliveryService: string
+  orderSource: string
+  orderStatus: string
+  orderPayments: string
+  client: string
+  comment: string
+  items: OrderItem[]
+  createdAt: Date
+  updatedAt: Date
+}
+
+interface OrderItem {
+  id: string
+  order: string
+  product: string
+  quantity: number
+  price: number
+  currency: string
+}
+
+interface OrderPayment {
+  id: string
+  order: string
+  cashregister: string
+  cashregisterAccount: string
+  amount: number
+  currency: string
+  paymentStatus: string
+  paymentDate: Date
+  comment: string
+  createdAt: Date
+  updatedAt: Date
+}

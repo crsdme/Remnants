@@ -20,6 +20,7 @@ export interface getWarehousesResult {
 }
 
 export interface getWarehousesFilters {
+  ids?: IdType[]
   names: LanguageString
   language: SUPPORTED_LANGUAGES_TYPE
   priority: number

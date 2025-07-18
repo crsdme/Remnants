@@ -18,6 +18,7 @@ export const getCurrencySchema = z.object({
     symbols: z.string().trim().optional(),
     language: z.string().optional().default('en'),
     priority: numberFromStringSchema.optional(),
+    cashregisterAccount: z.array(idSchema).optional(),
     createdAt: dateRangeSchema.optional(),
     updatedAt: dateRangeSchema.optional(),
     active: booleanArraySchema.optional(),

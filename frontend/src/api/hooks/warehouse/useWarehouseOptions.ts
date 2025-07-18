@@ -1,5 +1,5 @@
+import type { getWarehousesParams } from '@/api/types'
 import { useQueryClient } from '@tanstack/react-query'
-import { useTranslation } from 'react-i18next'
 import { getWarehouses } from '@/api/requests'
 
 interface LoadOptionsParams {
@@ -7,21 +7,38 @@ interface LoadOptionsParams {
   selectedValue?: string[]
 }
 
-export function useWarehouseOptions({ defaultFilters, mapFn }: { defaultFilters?: { ids?: string[] }, mapFn?: (warehouse: Warehouse) => { value: string, label: string } } = {}) {
+interface UseWarehouseOptionsParams {
+  defaultFilters?: { ids?: string[] }
+  mapFn?: (warehouse: Warehouse) => { value: string, label: string }
+}
+
+export function useWarehouseOptions({ defaultFilters, mapFn }: UseWarehouseOptionsParams = {}) {
   const queryClient = useQueryClient()
-  const { i18n } = useTranslation()
 
   return async function loadWarehouseOptions({ query, selectedValue }: LoadOptionsParams): Promise<Warehouse[]> {
-    const filters = {
-      ...(selectedValue ? { ids: selectedValue } : { names: query }),
-      ...defaultFilters,
-      active: [true],
-      language: i18n.language,
+    const params: getWarehousesParams = {}
+    let filters = {}
+
+    if (query) {
+      filters = {
+        ...(selectedValue ? { ids: selectedValue } : { names: query }),
+      }
+    }
+
+    if (defaultFilters) {
+      filters = {
+        ...filters,
+        ...defaultFilters,
+      }
+    }
+
+    if (Object.keys(filters).length > 0) {
+      params.filters = filters
     }
 
     const data = await queryClient.fetchQuery({
-      queryKey: ['warehouses', 'get', { full: true }, filters, undefined],
-      queryFn: () => getWarehouses({ pagination: { full: true }, filters }),
+      queryKey: ['warehouses', 'get', params],
+      queryFn: () => getWarehouses(params),
       staleTime: 60000,
     })
 

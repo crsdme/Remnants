@@ -579,5 +579,52 @@
   "page.delivery-services.form.priority": "Priority",
   "page.delivery-services.form.color": "Color",
   "page.delivery-services.form.active": "Active",
-  "page.delivery-services.form.type": "Type"
+  "page.delivery-services.form.type": "Type",
+
+  "page.orders.title": "Orders",
+  "page.orders.description": "Manage orders",
+  "page.orders.filter.names": "Filter by name",
+  "page.orders.button.create": "Create order",
+
+  "page.orders.table.seq": "Seq",
+  "page.orders.table.client": "Client",
+  "page.orders.table.warehouse": "Warehouse",
+  "page.orders.table.deliveryService": "Delivery Service",
+  "page.orders.table.orderSource": "Order Source",
+  "page.orders.table.orderStatus": "Order Status",
+
+  "page.create-order.title": "Create Order",
+  "page.create-order.description": "Create order",
+  "page.create-order.filter.names": "Filter by name",
+  "page.create-order.button.create": "Create order",
+
+  "page.create-order.form.title.create": "Create new delivery service",
+  "page.create-order.form.description.create": "Add new delivery service to the system",
+  "page.create-order.form.title.edit": "Edit delivery service",
+  "page.create-order.form.description.edit": "Edit existing delivery service",
+  "page.create-order.form.client": "Client",
+  "page.create-order.form.warehouse": "Warehouse",
+  "page.create-order.form.delivery-service": "Delivery Service",
+  "page.create-order.form.order-source": "Order Source",
+  "page.create-order.form.order-status": "Order Status",
+  "page.create-order.form.comment": "Comment",
+
+  "page.create-order.form.add-payment": "Add Payment",
+  "page.create-order.form.add-payment.description": "Add payment to the order",
+  "page.create-order.form.title.payment": "Payment",
+  "page.create-order.form.description.payment": "Add payment to the order",
+  "page.create-order.form.cashregister": "Cashregister",
+  "page.create-order.form.cashregister-account": "Cashregister Account",
+  "page.create-order.form.amount": "Amount",
+  "page.create-order.form.payment-date": "Payment Date",
+  "page.create-order.form.payment-status": "Payment Status",
+
+  "page.create-order.form.title.client": "Create Client",
+  "page.create-order.form.description.client": "Add client to the system",
+  "page.create-order.form.name": "Name",
+  "page.create-order.form.lastName": "Last Name",
+  "page.create-order.form.middleName": "Middle Name",
+  "page.create-order.form.phones": "Phones",
+  "page.create-order.form.emails": "Emails",
+  "page.create-order.form.address": "Address"
 }

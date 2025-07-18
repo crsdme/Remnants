@@ -51,7 +51,7 @@ const MoneyTransactionSchema: Schema = new Schema(
     },
     sourceModel: {
       type: String,
-      enum: ['Investor', 'Order', 'Purchase', 'Expense', 'Manual', null],
+      enum: ['investor', 'order', 'purchase', 'expense', 'manual', null],
       default: null,
     },
     sourceId: {

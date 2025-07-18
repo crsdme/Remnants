@@ -1,5 +1,5 @@
+import type { getOrderStatusesParams } from '@/api/types'
 import { useQueryClient } from '@tanstack/react-query'
-import { useTranslation } from 'react-i18next'
 import { getOrderStatuses } from '@/api/requests'
 
 interface LoadOptionsParams {
@@ -7,23 +7,43 @@ interface LoadOptionsParams {
   selectedValue?: string[]
 }
 
-export function useOrderStatusOptions() {
+interface UseOrderStatusOptionsParams {
+  defaultFilters?: { ids?: string[] }
+  mapFn?: (orderStatus: OrderStatus) => { value: string, label: string }
+}
+
+export function useOrderStatusOptions({ defaultFilters, mapFn }: UseOrderStatusOptionsParams = {}) {
   const queryClient = useQueryClient()
-  const { i18n } = useTranslation()
 
   return async function loadOrderStatusOptions({ query, selectedValue }: LoadOptionsParams): Promise<OrderStatus[]> {
-    const filters = {
-      ...(selectedValue ? { ids: selectedValue } : { names: query }),
-      active: [true],
-      language: i18n.language,
+    const params: getOrderStatusesParams = {}
+    let filters = {}
+
+    if (query) {
+      filters = {
+        ...(selectedValue ? { ids: selectedValue } : { names: query }),
+      }
+    }
+
+    if (defaultFilters) {
+      filters = {
+        ...filters,
+        ...defaultFilters,
+      }
+    }
+
+    if (Object.keys(filters).length > 0) {
+      params.filters = filters
     }
 
     const data = await queryClient.fetchQuery({
-      queryKey: ['order-statuses', 'get', { full: true }, filters],
-      queryFn: () => getOrderStatuses({ pagination: { full: true }, filters }),
+      queryKey: ['order-statuses', 'get', params],
+      queryFn: () => getOrderStatuses(params),
       staleTime: 60000,
     })
 
-    return data?.data?.orderStatuses || []
+    const orderStatuses = data?.data?.orderStatuses || []
+
+    return mapFn ? orderStatuses.map(mapFn) as unknown as OrderStatus[] : orderStatuses
   }
 }

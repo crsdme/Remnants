@@ -50,4 +50,4 @@ OrderStatusSchema.set('toJSON', {
   },
 })
 
-export const OrderStatusModel = mongoose.model<OrderStatus>('OrderStatus', OrderStatusSchema)
+export const OrderStatusModel = mongoose.model<OrderStatus>('order-status', OrderStatusSchema)

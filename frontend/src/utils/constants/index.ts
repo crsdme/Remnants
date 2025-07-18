@@ -1,7 +1,36 @@
+import { enUS, ru, uk } from 'date-fns/locale'
+
+export const DATE_LOCALE_MAP = {
+  en: enUS,
+  ru,
+  uk,
+}
+
 export const backendUrl = import.meta.env.VITE_BACKEND_URL
 
 export const SUPPORTED_LANGUAGES = ['ru', 'en'] as const
 export type SupportedLanguage = typeof SUPPORTED_LANGUAGES[number]
+
+export const PAYMENT_STATUSES = [
+  {
+    id: 'pending',
+  },
+  {
+    id: 'processing',
+  },
+  {
+    id: 'paid',
+  },
+  {
+    id: 'failed',
+  },
+  {
+    id: 'cancelled',
+  },
+  {
+    id: 'refunded',
+  },
+]
 
 export const USER_ROLE_PERMISSIONS = [
   {

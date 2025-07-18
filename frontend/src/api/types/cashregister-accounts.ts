@@ -1,5 +1,5 @@
 export interface getCashregisterAccountsParams {
-  filters: {
+  filters?: {
     names?: string
     ids?: string[]
     active?: boolean[]

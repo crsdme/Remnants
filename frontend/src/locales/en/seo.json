@@ -60,5 +60,11 @@
   "description.page.order-sources": "Manage order sources in Remnant",
 
   "title.page.delivery-services": "Delivery Services - Remnant",
-  "description.page.delivery-services": "Manage delivery services in Remnant"
+  "description.page.delivery-services": "Manage delivery services in Remnant",
+
+  "title.page.orders": "Orders - Remnant",
+  "description.page.orders": "Manage orders in Remnant",
+
+  "title.page.create-order": "Create Order - Remnant",
+  "description.page.create-order": "Create order in Remnant"
 }

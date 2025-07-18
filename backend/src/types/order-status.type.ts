@@ -40,7 +40,6 @@ export interface getOrderStatusesParams {
   filters?: Partial<getOrderStatusesFilters>
   sorters?: Partial<getOrderStatusesSorters>
   pagination?: Partial<Pagination>
-  isTree?: boolean
 }
 
 export interface createOrderStatusResult {

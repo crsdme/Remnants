@@ -1,5 +1,5 @@
+import type { getDeliveryServicesParams } from '@/api/types'
 import { useQueryClient } from '@tanstack/react-query'
-import { useTranslation } from 'react-i18next'
 import { getDeliveryServices } from '@/api/requests'
 
 interface LoadOptionsParams {
@@ -7,23 +7,43 @@ interface LoadOptionsParams {
   selectedValue?: string[]
 }
 
-export function useDeliveryServiceOptions() {
+interface UseDeliveryServiceOptionsParams {
+  defaultFilters?: { ids?: string[] }
+  mapFn?: (deliveryService: DeliveryService) => { value: string, label: string }
+}
+
+export function useDeliveryServiceOptions({ defaultFilters, mapFn }: UseDeliveryServiceOptionsParams = {}) {
   const queryClient = useQueryClient()
-  const { i18n } = useTranslation()
 
   return async function loadDeliveryServiceOptions({ query, selectedValue }: LoadOptionsParams): Promise<DeliveryService[]> {
-    const filters = {
-      ...(selectedValue ? { ids: selectedValue } : { names: query }),
-      active: [true],
-      language: i18n.language,
+    const params: getDeliveryServicesParams = {}
+    let filters = {}
+
+    if (query) {
+      filters = {
+        ...(selectedValue ? { ids: selectedValue } : { names: query }),
+      }
+    }
+
+    if (defaultFilters) {
+      filters = {
+        ...filters,
+        ...defaultFilters,
+      }
+    }
+
+    if (Object.keys(filters).length > 0) {
+      params.filters = filters
     }
 
     const data = await queryClient.fetchQuery({
-      queryKey: ['delivery-services', 'get', { full: true }, filters],
-      queryFn: () => getDeliveryServices({ pagination: { full: true }, filters }),
+      queryKey: ['delivery-services', 'get', params],
+      queryFn: () => getDeliveryServices(params),
       staleTime: 60000,
     })
 
-    return data?.data?.deliveryServices || []
+    const deliveryServices = data?.data?.deliveryServices || []
+
+    return mapFn ? deliveryServices.map(mapFn) as unknown as DeliveryService[] : deliveryServices
   }
 }

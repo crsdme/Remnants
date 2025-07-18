@@ -1,3 +1,4 @@
+import type { getCurrenciesParams } from '@/api/types'
 import { useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { getCurrencies } from '@/api/requests'
@@ -7,21 +8,40 @@ interface LoadOptionsParams {
   selectedValue?: string[]
 }
 
-export function useCurrencyOptions({ defaultFilters, mapFn }: { defaultFilters?: { ids?: string[] }, mapFn?: (currency: Currency) => { value: string, label: string } } = {}) {
-  const queryClient = useQueryClient()
-  const { i18n } = useTranslation()
+interface UseCurrencyOptionsParams {
+  defaultFilters?: { ids?: string[], cashregisterAccount?: string[] }
+  mapFn?: (currency: Currency) => { value: string, label: string }
+}
 
-  return async function loadCurrenciesOptions({ query, selectedValue }: LoadOptionsParams): Promise<Currency[]> {
-    const filters = {
-      ...(selectedValue ? { ids: selectedValue } : { names: query }),
-      ...defaultFilters,
-      active: [true],
-      language: i18n.language,
+export function useCurrencyOptions({ defaultFilters, mapFn }: UseCurrencyOptionsParams = {}) {
+  const { i18n } = useTranslation()
+  const queryClient = useQueryClient()
+
+  return async function loadCurrencyOptions({ query, selectedValue }: LoadOptionsParams): Promise<Currency[]> {
+    const params: getCurrenciesParams = {}
+    let filters = { language: i18n.language }
+
+    if (query) {
+      filters = {
+        ...filters,
+        ...(selectedValue ? { ids: selectedValue } : { names: query }),
+      }
+    }
+
+    if (defaultFilters) {
+      filters = {
+        ...filters,
+        ...defaultFilters,
+      }
+    }
+
+    if (Object.keys(filters).length > 0) {
+      params.filters = filters
     }
 
     const data = await queryClient.fetchQuery({
-      queryKey: ['currencies', 'get', { full: true }, filters, undefined],
-      queryFn: () => getCurrencies({ pagination: { full: true }, filters }),
+      queryKey: ['currencies', 'get', params],
+      queryFn: () => getCurrencies(params),
       staleTime: 60000,
     })
 

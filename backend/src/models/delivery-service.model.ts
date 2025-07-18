@@ -55,4 +55,4 @@ DeliveryServiceSchema.set('toJSON', {
   },
 })
 
-export const DeliveryServiceModel = mongoose.model<DeliveryService>('DeliveryService', DeliveryServiceSchema)
+export const DeliveryServiceModel = mongoose.model<DeliveryService>('delivery-service', DeliveryServiceSchema)

@@ -58,6 +58,8 @@ export interface AsyncSelectProps<T> {
   clearable?: boolean
   /** Field to bind to */
   field?: any
+  /** Whether to show the search input */
+  showSearchInput?: boolean
 }
 
 export function AsyncSelect<T>({
@@ -81,6 +83,7 @@ export function AsyncSelect<T>({
   multi = false,
   clearable = true,
   field,
+  showSearchInput = true,
 }: AsyncSelectProps<T>) {
   const [mounted, setMounted] = useState(false)
   const [open, setOpen] = useState(false)
@@ -108,6 +111,9 @@ export function AsyncSelect<T>({
 
   useEffect(() => {
     const initializeOptions = async () => {
+      if (!mounted)
+        return
+
       try {
         setLoading(true)
         setError(null)
@@ -123,13 +129,15 @@ export function AsyncSelect<T>({
       }
     }
 
-    if (!mounted)
-      initializeOptions()
-  }, [mounted, fetcher, value])
+    initializeOptions()
+  }, [mounted, fetcher, value, selectedValues, getOptionValue])
 
   useEffect(() => {
     let ignore = false
     const fetchOptions = async () => {
+      if (!mounted || preload || !debouncedSearch)
+        return
+
       try {
         setLoading(true)
         setError(null)
@@ -138,20 +146,22 @@ export function AsyncSelect<T>({
           setOptions(data)
       }
       catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to fetch options')
+        if (!ignore) {
+          setError(err instanceof Error ? err.message : 'Failed to fetch options')
+        }
       }
       finally {
         if (!ignore)
           setLoading(false)
       }
     }
-    if (mounted)
-      fetchOptions()
+
+    fetchOptions()
 
     return () => {
       ignore = true
     }
-  }, [fetcher, debouncedSearch])
+  }, [fetcher, debouncedSearch, mounted, preload, options.length])
 
   useEffect(() => {
     if (options.length > 0) {
@@ -254,19 +264,21 @@ export function AsyncSelect<T>({
         <FormMessage />
         <PopoverContent style={{ width: popoverWidth }} className={cn('p-0', className)}>
           <Command shouldFilter={false}>
-            <div className="relative w-full">
-              <CommandInput
-                placeholder={t('component.asyncSelect.searchPlaceholder')}
-                value={search}
-                onValueChange={value => setSearch(value)}
-                className="w-full"
-              />
-              {loading && options.length > 0 && (
-                <div className="absolute right-2 top-1/2 transform -translate-y-1/2 flex items-center">
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                </div>
-              )}
-            </div>
+            {showSearchInput && (
+              <div className="relative w-full">
+                <CommandInput
+                  placeholder={t('component.asyncSelect.searchPlaceholder')}
+                  value={search}
+                  onValueChange={value => setSearch(value)}
+                  className="w-full"
+                />
+                {loading && options.length > 0 && (
+                  <div className="absolute right-2 top-1/2 transform -translate-y-1/2 flex items-center">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  </div>
+                )}
+              </div>
+            )}
             <CommandList className="w-full">
               {error && (
                 <div className="p-4 text-destructive text-center">

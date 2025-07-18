@@ -41,7 +41,6 @@ export interface getDeliveryServicesParams {
   filters?: Partial<getDeliveryServicesFilters>
   sorters?: Partial<getDeliveryServicesSorters>
   pagination?: Partial<Pagination>
-  isTree?: boolean
 }
 
 export interface createDeliveryServiceResult {

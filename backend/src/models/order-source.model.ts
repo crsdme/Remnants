@@ -50,4 +50,4 @@ OrderSourceSchema.set('toJSON', {
   },
 })
 
-export const OrderSourceModel = mongoose.model<OrderSource>('OrderSource', OrderSourceSchema)
+export const OrderSourceModel = mongoose.model<OrderSource>('order-source', OrderSourceSchema)

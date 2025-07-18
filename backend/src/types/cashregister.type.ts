@@ -46,7 +46,6 @@ export interface getCashregistersParams {
   filters?: Partial<getCashregistersFilters>
   sorters?: Partial<getCashregistersSorters>
   pagination?: Partial<Pagination>
-  isTree?: boolean
 }
 
 export interface createCashregisterResult {

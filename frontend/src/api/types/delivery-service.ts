@@ -1,5 +1,5 @@
 export interface getDeliveryServicesParams {
-  filters: {
+  filters?: {
     names?: string
     color?: string
     priority?: number

@@ -27,6 +27,7 @@ export interface getCurrenciesFilters {
   language: SUPPORTED_LANGUAGES_TYPE
   active: boolean[]
   priority: number
+  cashregisterAccount: IdType[]
   createdAt: DateRange
   updatedAt: DateRange
 }

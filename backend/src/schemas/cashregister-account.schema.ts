@@ -11,6 +11,7 @@ export const getCashregisterAccountsSchema = z.object({
     language: z.string().optional().default('en'),
     active: booleanArraySchema.optional(),
     priority: numberFromStringSchema.optional(),
+    cashregister: z.array(idSchema).optional(),
     createdAt: dateRangeSchema.optional(),
     updatedAt: dateRangeSchema.optional(),
   }).optional().default({}),

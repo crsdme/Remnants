@@ -27,6 +27,7 @@ export interface getCashregisterAccountsFilters {
   active: boolean[]
   priority: number
   balance: IdType
+  cashregister: IdType[]
   createdAt: DateRange
   updatedAt: DateRange
 }
@@ -44,7 +45,6 @@ export interface getCashregisterAccountsParams {
   filters?: Partial<getCashregisterAccountsFilters>
   sorters?: Partial<getCashregisterAccountsSorters>
   pagination?: Partial<Pagination>
-  isTree?: boolean
 }
 
 export interface createCashregisterAccountResult {

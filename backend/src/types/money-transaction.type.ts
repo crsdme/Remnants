@@ -49,7 +49,6 @@ export interface getMoneyTransactionsParams {
   filters?: Partial<getMoneyTransactionsFilters>
   sorters?: Partial<getMoneyTransactionsSorters>
   pagination?: Partial<Pagination>
-  isTree?: boolean
 }
 
 export interface createMoneyTransactionResult {

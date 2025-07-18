@@ -27,11 +27,20 @@
   "delivery-services.novaposhta": "Nova Poshta",
   "delivery-services.selfpickup": "Self Pickup",
 
+  "payment-status.pending": "Pending",
+  "payment-status.processing": "Processing",
+  "payment-status.paid": "Paid",
+  "payment-status.failed": "Failed",
+  "payment-status.cancelled": "Cancelled",
+  "payment-status.refunded": "Refunded",
+
   "button.cancel": "Cancel",
   "button.submit": "Submit",
   "button.import": "Import",
   "button.back": "Back",
   "button.generate": "Generate",
+  "button.create": "Create",
+  "button.add": "Add",
 
   "form.errors.required": "Required field",
   "form.errors.required.products": "You must select at least one product",

@@ -583,5 +583,52 @@
   "page.delivery-services.form.priority": "Приоритет",
   "page.delivery-services.form.color": "Цвет",
   "page.delivery-services.form.active": "Активность",
-  "page.delivery-services.form.type": "Тип"
+  "page.delivery-services.form.type": "Тип",
+
+  "page.orders.title": "Заказы",
+  "page.orders.description": "Управление заказами",
+  "page.orders.filter.names": "Фильтр по названию",
+  "page.orders.button.create": "Создать заказ",
+
+  "page.orders.table.seq": "Номер",
+  "page.orders.table.client": "Клиент",
+  "page.orders.table.warehouse": "Склад",
+  "page.orders.table.deliveryService": "Служба доставки",
+  "page.orders.table.orderSource": "Источник заказа",
+  "page.orders.table.orderStatus": "Статус заказа",
+
+  "page.create-order.title": "Создание заказа",
+  "page.create-order.description": "Создание заказа",
+  "page.create-order.filter.names": "Фильтр по названию",
+  "page.create-order.button.create": "Создать заказ",
+
+  "page.create-order.form.title.create": "Создание нового заказа",
+  "page.create-order.form.description.create": "Добавить новый заказ в систему",
+  "page.create-order.form.title.edit": "Редактирование заказа",
+  "page.create-order.form.description.edit": "Редактирование существующего заказа",
+  "page.create-order.form.client": "Клиент",
+  "page.create-order.form.warehouse": "Склад",
+  "page.create-order.form.delivery-service": "Служба доставки",
+  "page.create-order.form.order-source": "Источник заказа",
+  "page.create-order.form.order-status": "Статус заказа",
+  "page.create-order.form.comment": "Комментарий",
+
+  "page.create-order.form.add-payment": "Добавить оплату",
+  "page.create-order.form.add-payment.description": "Добавить оплату к заказу",
+  "page.create-order.form.title.payment": "Оплата",
+  "page.create-order.form.description.payment": "Добавить оплату к заказу",
+  "page.create-order.form.cashregister": "Касса",
+  "page.create-order.form.cashregister-account": "Счет",
+  "page.create-order.form.amount": "Сумма",
+  "page.create-order.form.payment-date": "Дата оплаты",
+  "page.create-order.form.payment-status": "Статус оплаты",
+
+  "page.create-order.form.title.client": "Создание клиента",
+  "page.create-order.form.description.client": "Добавить клиента в систему",
+  "page.create-order.form.name": "Имя",
+  "page.create-order.form.lastName": "Фамилия",
+  "page.create-order.form.middleName": "Отчество",
+  "page.create-order.form.phones": "Телефоны",
+  "page.create-order.form.emails": "Email",
+  "page.create-order.form.address": "Адрес"
 }

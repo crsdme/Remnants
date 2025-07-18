@@ -57,7 +57,6 @@ export interface getWarehouseTransactionsParams {
   filters?: Partial<getWarehouseTransactionsFilters>
   sorters?: Partial<getWarehouseTransactionsSorters>
   pagination?: Partial<Pagination>
-  isTree?: boolean
 }
 
 export interface createWarehouseTransactionResult {

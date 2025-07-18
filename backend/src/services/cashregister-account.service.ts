@@ -12,6 +12,7 @@ export async function get(payload: CashregisterAccountTypes.getCashregisterAccou
     language = 'en',
     active = undefined,
     priority = undefined,
+    cashregister = [],
     createdAt = {
       from: undefined,
       to: undefined,
@@ -46,6 +47,25 @@ export async function get(payload: CashregisterAccountTypes.getCashregisterAccou
     {
       $sort: sorters,
     },
+    {
+      $lookup: {
+        from: 'cashregisters',
+        let: { accountId: '$_id' },
+        pipeline: [
+          {
+            $match: {
+              $expr: { $in: ['$$accountId', '$accounts'] },
+              ...(cashregister.length > 0 ? { _id: { $in: cashregister } } : {}),
+            },
+          },
+          { $project: { _id: 1 } },
+        ],
+        as: 'matchedCashregisters',
+      },
+    },
+    ...(cashregister.length > 0
+      ? [{ $match: { 'matchedCashregisters.0': { $exists: true } } }]
+      : []),
     {
       $lookup: {
         from: 'currencies',

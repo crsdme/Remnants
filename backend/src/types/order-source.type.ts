@@ -40,7 +40,6 @@ export interface getOrderSourcesParams {
   filters?: Partial<getOrderSourcesFilters>
   sorters?: Partial<getOrderSourcesSorters>
   pagination?: Partial<Pagination>
-  isTree?: boolean
 }
 
 export interface createOrderSourceResult {

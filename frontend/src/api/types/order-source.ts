@@ -1,8 +1,8 @@
 export interface getOrderSourcesParams {
-  filters: {
+  filters?: {
     names?: string
     color?: string
-    priority?: number
+    priority?: number | number[]
     language?: string
   }
   sorters?: {

@@ -19,6 +19,7 @@ export async function get(payload: CurrencyTypes.getCurrenciesParams): Promise<C
     language = 'en',
     active = undefined,
     priority = undefined,
+    cashregisterAccount = [],
     createdAt = {
       from: undefined,
       to: undefined,
@@ -55,6 +56,44 @@ export async function get(payload: CurrencyTypes.getCurrenciesParams): Promise<C
       $sort: sorters,
     },
     {
+      $lookup: {
+        from: 'cashregister-accounts',
+        let: { currencyId: '$_id' },
+        pipeline: [
+          {
+            $match: {
+              $expr: {
+                $and: [
+                  { $isArray: '$currencies' },
+                  { $in: ['$$currencyId', '$currencies'] },
+                ],
+              },
+              ...(Array.isArray(cashregisterAccount) && cashregisterAccount.length > 0
+                ? { _id: { $in: cashregisterAccount } }
+                : {}),
+            },
+          },
+          { $project: { _id: 1 } },
+        ],
+        as: 'matchedCashregisterAccounts',
+      },
+    },
+    ...(cashregisterAccount.length > 0
+      ? [{ $match: { 'matchedCashregisterAccounts.0': { $exists: true } } }]
+      : []),
+    {
+      $project: {
+        _id: 0,
+        id: '$_id',
+        names: 1,
+        symbols: 1,
+        active: 1,
+        priority: 1,
+        createdAt: 1,
+        updatedAt: 1,
+      },
+    },
+    {
       $facet: {
         currencies: [
           { $skip: (current - 1) * pageSize },
@@ -69,7 +108,7 @@ export async function get(payload: CurrencyTypes.getCurrenciesParams): Promise<C
 
   const currenciesRaw = await CurrencyModel.aggregate(pipeline).exec()
 
-  const currencies = currenciesRaw[0].currencies.map((doc: any) => CurrencyModel.hydrate(doc))
+  const currencies = currenciesRaw[0].currencies
   const currenciesCount = currenciesRaw[0].totalCount[0]?.count || 0
 
   return { status: 'success', code: 'CURRENCIES_FETCHED', message: 'Currencies fetched', currencies, currenciesCount }

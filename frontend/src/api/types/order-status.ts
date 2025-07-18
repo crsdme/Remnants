@@ -1,5 +1,5 @@
 export interface getOrderStatusesParams {
-  filters: {
+  filters?: {
     names?: string
     color?: string
     priority?: number

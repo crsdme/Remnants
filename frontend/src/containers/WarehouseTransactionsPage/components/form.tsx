@@ -1,4 +1,3 @@
-import { intlFormat } from 'date-fns'
 import { useFieldArray, useWatch } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { useWarehouseOptions } from '@/api/hooks'

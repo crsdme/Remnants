@@ -5,12 +5,15 @@ import barcodeRoutes from './barcode.route'
 import cashregisterAccountRoutes from './cashregister-account.route'
 import cashregisterRoutes from './cashregister.route'
 import categoryRoutes from './category.route'
+import clientRoutes from './client.route'
 import currencyRoutes from './currency.route'
 import deliveryServiceRoutes from './delivery-service.route'
 import languageRoutes from './language.route'
 import moneyTransactionRoutes from './money-transaction.route'
+import orderPaymentRoutes from './order-payment.route'
 import orderSourceRoutes from './order-source.route'
 import orderStatusRoutes from './order-status.route'
+import orderRoutes from './order.route'
 import productPropertyGroupRoutes from './product-property-group.route'
 import productPropertyOptionRoutes from './product-property-option.route'
 import productPropertyRoutes from './product-property.route'
@@ -46,6 +49,9 @@ router.use('/order-statuses', authenticateJWT, orderStatusRoutes)
 router.use('/order-sources', authenticateJWT, orderSourceRoutes)
 router.use('/delivery-services', authenticateJWT, deliveryServiceRoutes)
 router.use('/settings', authenticateJWT, settingRoutes)
+router.use('/order-payments', authenticateJWT, orderPaymentRoutes)
+router.use('/clients', authenticateJWT, clientRoutes)
+router.use('/orders', authenticateJWT, orderRoutes)
 router.use('/warehouse-transactions', authenticateJWT, warehouseTransactionRoutes)
 router.use('/test', authenticateJWT, testRoutes)
 

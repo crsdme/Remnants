@@ -10,6 +10,7 @@ import {
   CashregisterAccountsPage,
   CashregistersPage,
   CategoriesPage,
+  CreateOrderPage,
   CurrenciesPage,
   DashboardPage,
   DeliveryServicesPage,
@@ -19,6 +20,7 @@ import {
   MainSettingsPage,
   MoneyTransactionsPage,
   OrderSourcesPage,
+  OrdersPage,
   OrderStatusesPage,
   ProductPropertiesGroupsPage,
   ProductPropertiesPage,
@@ -58,6 +60,15 @@ export default function App() {
           <Route
             path="/test"
             element={(<ProtectedRoute children={<TestPage />} permissions={['user.page']} />)}
+          />
+
+          <Route
+            path="/orders"
+            element={<ProtectedRoute children={<OrdersPage />} permissions={['order.page']} />}
+          />
+          <Route
+            path="/orders/create"
+            element={<ProtectedRoute children={<CreateOrderPage />} permissions={['order.page']} />}
           />
 
           <Route

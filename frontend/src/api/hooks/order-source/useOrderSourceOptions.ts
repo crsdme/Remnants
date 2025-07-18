@@ -1,5 +1,5 @@
+import type { getOrderSourcesParams } from '@/api/types'
 import { useQueryClient } from '@tanstack/react-query'
-import { useTranslation } from 'react-i18next'
 import { getOrderSources } from '@/api/requests'
 
 interface LoadOptionsParams {
@@ -7,23 +7,43 @@ interface LoadOptionsParams {
   selectedValue?: string[]
 }
 
-export function useOrderSourceOptions() {
+interface UseOrderSourceOptionsParams {
+  defaultFilters?: { ids?: string[] }
+  mapFn?: (orderSource: OrderSource) => { value: string, label: string }
+}
+
+export function useOrderSourceOptions({ defaultFilters, mapFn }: UseOrderSourceOptionsParams = {}) {
   const queryClient = useQueryClient()
-  const { i18n } = useTranslation()
 
   return async function loadOrderSourceOptions({ query, selectedValue }: LoadOptionsParams): Promise<OrderSource[]> {
-    const filters = {
-      ...(selectedValue ? { ids: selectedValue } : { names: query }),
-      active: [true],
-      language: i18n.language,
+    const params: getOrderSourcesParams = {}
+    let filters = {}
+
+    if (query) {
+      filters = {
+        ...(selectedValue ? { ids: selectedValue } : { names: query }),
+      }
+    }
+
+    if (defaultFilters) {
+      filters = {
+        ...filters,
+        ...defaultFilters,
+      }
+    }
+
+    if (Object.keys(filters).length > 0) {
+      params.filters = filters
     }
 
     const data = await queryClient.fetchQuery({
-      queryKey: ['order-sources', 'get', { full: true }, filters],
-      queryFn: () => getOrderSources({ pagination: { full: true }, filters }),
+      queryKey: ['order-sources', 'get', params],
+      queryFn: () => getOrderSources(params),
       staleTime: 60000,
     })
 
-    return data?.data?.orderSources || []
+    const orderSources = data?.data?.orderSources || []
+
+    return mapFn ? orderSources.map(mapFn) as unknown as OrderSource[] : orderSources
   }
 }

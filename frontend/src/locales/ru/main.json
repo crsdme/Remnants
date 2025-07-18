@@ -27,11 +27,20 @@
   "delivery-services.novaposhta": "Новая Почта",
   "delivery-services.selfpickup": "Самовывоз",
 
+  "payment-status.pending": "Ожидание",
+  "payment-status.processing": "В процессе",
+  "payment-status.paid": "Оплачен",
+  "payment-status.failed": "Неудачно",
+  "payment-status.cancelled": "Отменен",
+  "payment-status.refunded": "Возвращен",
+
   "button.cancel": "Отмена",
   "button.submit": "Сохранить",
   "button.import": "Импортировать",
   "button.back": "Назад",
   "button.generate": "Сгенерировать",
+  "button.create": "Создать",
+  "button.add": "Добавить",
 
   "form.errors.required": "Обязательное поле",
   "form.errors.required.products": "Необходимо выбрать хотя бы один товар",

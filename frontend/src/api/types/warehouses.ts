@@ -1,5 +1,6 @@
 export interface getWarehousesParams {
-  filters: {
+  filters?: {
+    ids?: string[]
     names?: string
     active?: boolean[]
     priority?: number
