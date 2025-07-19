@@ -4,6 +4,7 @@ export interface getOrderStatusesParams {
     color?: string
     priority?: number
     language?: string
+    orderStatus?: string
   }
   sorters?: {
     priority?: string

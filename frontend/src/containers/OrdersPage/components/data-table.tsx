@@ -2,9 +2,9 @@ import { flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-tabl
 import { Fragment, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import { useOrderQuery } from '@/api/hooks'
+import { useOrderQuery, useOrderStatusQuery } from '@/api/hooks'
 import { AdvancedFilters, AdvancedSorters, ColumnVisibilityMenu, TablePagination, TableSelectionDropdown } from '@/components'
-import { Separator, Skeleton, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui'
+import { Separator, Skeleton, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Tabs, TabsList, TabsTrigger } from '@/components/ui'
 import { useOrderContext } from '@/contexts'
 import { useDebounceCallback } from '@/utils/hooks'
 
@@ -12,7 +12,7 @@ import { useColumns } from './columns'
 import { DataTableFilters } from './data-table-filters'
 
 export function DataTable() {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const { removeOrder } = useOrderContext()
 
   const filtersInitialState = {
@@ -33,6 +33,7 @@ export function DataTable() {
     pageSize: 10,
   })
   const [filters, setFilters] = useState(filtersInitialState)
+  const [selectedStatus, setSelectedStatus] = useState('')
   const columns = useColumns()
 
   const sorters = useMemo(() => (
@@ -40,11 +41,21 @@ export function DataTable() {
   ), [sorting])
 
   const { data: { orders = [], ordersCount = 0 } = {}, isLoading, isFetching } = useOrderQuery(
-    { pagination, filters, sorters },
+    { pagination, filters: { ...filters, orderStatus: selectedStatus }, sorters },
     { options: {
       select: response => ({
         orders: response.data.orders,
         ordersCount: response.data.ordersCount,
+      }),
+      placeholderData: prevData => prevData,
+    } },
+  )
+
+  const { data: { orderStatuses = [] } = {} } = useOrderStatusQuery(
+    {},
+    { options: {
+      select: response => ({
+        orderStatuses: response.data.orderStatuses,
       }),
       placeholderData: prevData => prevData,
     } },
@@ -167,6 +178,10 @@ export function DataTable() {
     setSorting([])
   }
 
+  const changeOrderStatus = (statusId: string) => {
+    setSelectedStatus(statusId)
+  }
+
   return (
     <>
       <div className="w-full flex justify-between items-start max-md:flex-col gap-2 py-2">
@@ -191,6 +206,21 @@ export function DataTable() {
           />
           <ColumnVisibilityMenu table={table} tableId="order" />
         </div>
+      </div>
+      <div className="w-full flex items-start max-md:flex-col gap-2 py-2">
+        <Tabs defaultValue="" className="w-full">
+          <TabsList>
+            {orderStatuses.map(status => (
+              <TabsTrigger
+                key={status.id}
+                value={status.id}
+                onClick={() => changeOrderStatus(status.id)}
+              >
+                {`${status.names[i18n.language]} ${status.ordersCount || 0}`}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+        </Tabs>
       </div>
       <div className="border rounded-sm">
         <Table>

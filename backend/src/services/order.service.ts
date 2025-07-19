@@ -52,7 +52,7 @@ export async function get(payload: OrderTypes.getOrdersParams): Promise<OrderTyp
     rules: filterRules,
   })
 
-  const sorters = buildSortQuery(payload.sorters || {}, { createdAt: 1 })
+  const sorters = buildSortQuery(payload.sorters || {}, { seq: -1 })
 
   const pipeline = [
     {

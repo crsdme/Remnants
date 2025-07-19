@@ -12,6 +12,7 @@ export const getOrdersSchema = z.object({
     priority: numberFromStringSchema.optional(),
     createdAt: dateRangeSchema.optional(),
     updatedAt: dateRangeSchema.optional(),
+    orderStatus: z.string().optional(),
   }).optional().default({}),
   sorters: z.object({
     names: sorterParamsSchema.optional(),

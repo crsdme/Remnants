@@ -46,6 +46,42 @@ export async function get(payload: OrderStatusTypes.getOrderStatusesParams): Pro
       $sort: sorters,
     },
     {
+      $lookup: {
+        from: 'orders',
+        let: { statusId: '$_id' },
+        pipeline: [
+          {
+            $match: {
+              $expr: {
+                $and: [
+                  { $eq: ['$orderStatus', '$$statusId'] },
+                  { $ne: ['$removed', true] },
+                ],
+              },
+            },
+          },
+        ],
+        as: 'relatedOrders',
+      },
+    },
+    {
+      $addFields: {
+        ordersCount: { $size: '$relatedOrders' },
+      },
+    },
+    {
+      $project: {
+        _id: 0,
+        id: '$_id',
+        names: 1,
+        color: 1,
+        priority: 1,
+        createdAt: 1,
+        updatedAt: 1,
+        ordersCount: 1,
+      },
+    },
+    {
       $facet: {
         orderStatuses: [
           { $skip: (current - 1) * pageSize },
@@ -60,8 +96,20 @@ export async function get(payload: OrderStatusTypes.getOrderStatusesParams): Pro
 
   const orderStatusesRaw = await OrderStatusModel.aggregate(pipeline).exec()
 
-  const orderStatuses = orderStatusesRaw[0].orderStatuses.map((doc: any) => OrderStatusModel.hydrate(doc))
+  const orderStatuses = orderStatusesRaw[0].orderStatuses
   const orderStatusesCount = orderStatusesRaw[0].totalCount[0]?.count || 0
+
+  const virtualAllStatus = {
+    id: null,
+    names: { ru: 'Все', en: 'All' },
+    color: null,
+    priority: -1,
+    createdAt: null,
+    updatedAt: null,
+    ordersCount: orderStatuses.reduce((acc: number, status: any) => acc + status.ordersCount, 0),
+  }
+
+  orderStatuses.unshift(virtualAllStatus)
 
   return { status: 'success', code: 'ORDER_STATUSES_FETCHED', message: 'Order statuses fetched', orderStatuses, orderStatusesCount }
 }
