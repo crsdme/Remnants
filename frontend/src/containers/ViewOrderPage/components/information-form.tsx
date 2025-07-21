@@ -27,7 +27,7 @@ export function InformationForm({ form, onSubmit }: { form: UseFormReturn, onSub
 
   const loadWarehouseOptions = useWarehouseOptions()
   const loadOrderSourceOptions = useOrderSourceOptions()
-  const loadOrderStatusOptions = useOrderStatusOptions({ defaultFilters: { isSelectable: true } })
+  const loadOrderStatusOptions = useOrderStatusOptions()
   const loadDeliveryServiceOptions = useDeliveryServiceOptions()
   const loadClientsOptions = useClientOptions()
 
