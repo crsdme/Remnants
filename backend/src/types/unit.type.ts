@@ -111,7 +111,7 @@ export interface importUnitsResult {
   status: Status
   code: Code
   message: Message
-  unitIds: IdType[]
+  unitIds: any[]
 }
 
 export interface importUnitsParams {

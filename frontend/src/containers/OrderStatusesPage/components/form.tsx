@@ -4,8 +4,10 @@ import { useLanguageQuery } from '@/api/hooks'
 import { ColorPicker } from '@/components'
 import {
   Button,
+  Checkbox,
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -102,6 +104,30 @@ export function OrderStatusForm() {
             </FormItem>
           )}
         />
+
+        <div className="flex gap-2 flex-wrap pb-2">
+          <FormField
+            control={form.control}
+            name="isLocked"
+            render={({ field }) => (
+              <FormItem className="flex items-center justify-between rounded-md border p-4 grow">
+                <div className="space-y-1">
+                  <FormLabel className="text-sm">{t('page.order-statuses.form.isLocked')}</FormLabel>
+                  <FormDescription className="text-xs text-muted-foreground">
+                    {t('page.order-statuses.form.isLocked.description')}
+                  </FormDescription>
+                </div>
+                <FormControl>
+                  <Checkbox
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                    disabled={isLoading}
+                  />
+                </FormControl>
+              </FormItem>
+            )}
+          />
+        </div>
 
         <div className="flex gap-2">
           <Button

@@ -62,7 +62,6 @@ export interface createClientParams {
   lastName: string
   emails: string[]
   phones: string[]
-  addresses: string[]
 }
 
 export interface editClientResult {

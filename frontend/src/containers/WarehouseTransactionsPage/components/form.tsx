@@ -40,28 +40,49 @@ export function WarehouseTransactionForm() {
     submitWarehouseTransactionForm(value)
   }
 
-  const addProduct = (products, selectedQuantity = 1) => {
+  const addProduct = (product, selectedQuantity = 1) => {
     const selectedProducts = form.getValues('products')
-    products.forEach((product) => {
-      const existing = selectedProducts.find(p => p.id === product.id) as any
+    const existing = selectedProducts.find(p => p.id === product.id) as any
 
-      if (existing) {
-        const index = selectedProducts.findIndex(p => p.id === product.id)
-        productsField.update(index, {
-          ...existing,
-          quantity: existing.quantity + selectedQuantity,
-        })
-      }
-      else {
-        productsField.append({
-          ...product,
-          id: product.id,
-          quantity: selectedQuantity,
-          receivedQuantity: 0,
-        })
-      }
-    })
+    if (existing) {
+      const index = selectedProducts.findIndex(p => p.id === product.id)
+      productsField.update(index, {
+        ...existing,
+        quantity: existing.quantity + selectedQuantity,
+      })
+    }
+    else {
+      productsField.append({
+        ...product,
+        product: product.id,
+        quantity: selectedQuantity,
+        receivedQuantity: 0,
+      })
+    }
   }
+
+  // const addProduct = (products, selectedQuantity = 1) => {
+  //   const selectedProducts = form.getValues('products')
+  //   products.forEach((product) => {
+  //     const existing = selectedProducts.find(p => p.id === product.id) as any
+
+  //     if (existing) {
+  //       const index = selectedProducts.findIndex(p => p.id === product.id)
+  //       productsField.update(index, {
+  //         ...existing,
+  //         quantity: existing.quantity + selectedQuantity,
+  //       })
+  //     }
+  //     else {
+  //       productsField.append({
+  //         ...product,
+  //         id: product.id,
+  //         quantity: selectedQuantity,
+  //         receivedQuantity: 0,
+  //       })
+  //     }
+  //   })
+  // }
 
   const removeProduct = (product) => {
     const selectedProducts = form.getValues('products')

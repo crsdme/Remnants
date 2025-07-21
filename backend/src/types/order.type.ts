@@ -24,6 +24,8 @@ export interface OrderItem {
   quantity: number
   price: number
   currency: IdType
+  removedBy: string
+  removed: boolean
 }
 
 export interface getOrdersResult {
@@ -35,6 +37,7 @@ export interface getOrdersResult {
 }
 
 export interface getOrdersFilters {
+  seq: string
   warehouse: string
   deliveryService: string
   orderSource: string
@@ -115,4 +118,38 @@ export interface removeOrdersResult {
 
 export interface removeOrdersParams {
   ids: IdType[]
+}
+
+export interface getOrderItemsFilters {
+  order: IdType
+}
+
+export interface getOrderItemsParams {
+  filters?: Partial<getOrderItemsFilters>
+  pagination?: Partial<Pagination>
+}
+
+export interface getOrderItemsResult {
+  status: Status
+  code: Code
+  message: Message
+  orderItems: OrderItem[]
+  orderItemsCount: number
+}
+
+export interface getOrderPaymentsFilters {
+  order: IdType
+}
+
+export interface getOrderPaymentsParams {
+  filters?: Partial<getOrderPaymentsFilters>
+  pagination?: Partial<Pagination>
+}
+
+export interface getOrderPaymentsResult {
+  status: Status
+  code: Code
+  message: Message
+  orderPayments: OrderPayment[]
+  orderPaymentsCount: number
 }

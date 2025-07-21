@@ -12,7 +12,7 @@ import { PaymentForm } from './payment-form'
 import { ProductSelectedTotal } from './product-selected-total'
 
 export function DataTable() {
-  const { paymentForm, informationForm, isLoading, clientForm, createClient, createOrder, createPayment } = useCreateOrderContext()
+  const { paymentForm, informationForm, isLoading, clientForm, createClient, createOrder, createPayment, getBarcode } = useCreateOrderContext()
 
   const itemsField = useFieldArray({
     control: informationForm.control,
@@ -31,27 +31,25 @@ export function DataTable() {
     createPayment(value)
   }
 
-  const addProduct = (products, selectedQuantity = 1) => {
+  const addProduct = (product, selectedQuantity = 1) => {
     const selectedProducts = informationForm.getValues('items')
-    products.forEach((product) => {
-      const existing = selectedProducts.find(p => p.id === product.id) as any
+    const existing = selectedProducts.find(p => p.id === product.id) as any
 
-      if (existing) {
-        const index = selectedProducts.findIndex(p => p.id === product.id)
-        itemsField.update(index, {
-          ...existing,
-          quantity: existing.quantity + selectedQuantity,
-        })
-      }
-      else {
-        itemsField.append({
-          ...product,
-          product: product.id,
-          quantity: selectedQuantity,
-          receivedQuantity: 0,
-        })
-      }
-    })
+    if (existing) {
+      const index = selectedProducts.findIndex(p => p.id === product.id)
+      itemsField.update(index, {
+        ...existing,
+        quantity: existing.quantity + selectedQuantity,
+      })
+    }
+    else {
+      itemsField.append({
+        ...product,
+        product: product.id,
+        quantity: selectedQuantity,
+        receivedQuantity: 0,
+      })
+    }
   }
 
   const removeProduct = (product) => {
@@ -75,9 +73,8 @@ export function DataTable() {
   }
 
   useBarcodeScanned(async (barcode: string) => {
-    addProduct([{ id: barcode, name: barcode, price: 0, quantity: 1 }])
-    // const data = await getBarcode(barcode)
-    // addProduct(data?.[0]?.products || [])
+    const products = await getBarcode(barcode)
+    addProduct(products)
   })
 
   return (

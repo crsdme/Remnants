@@ -1,6 +1,7 @@
 import type * as MoneyTransactionTypes from '../types/money-transaction.type'
 import { v4 as uuidv4 } from 'uuid'
 import { MoneyTransactionModel } from '../models'
+import { HttpError } from '../utils/httpError'
 import { buildQuery, buildSortQuery } from '../utils/queryBuilder'
 
 export async function get(payload: MoneyTransactionTypes.getMoneyTransactionsParams): Promise<MoneyTransactionTypes.getMoneyTransactionsResult> {
@@ -154,7 +155,8 @@ export async function create(payload: any) {
   if (payload.type === 'income') {
     return createIncome(payload)
   }
-  return { status: 'error', code: 'MONEY_TRANSACTION_TYPE_NOT_SUPPORTED', message: 'Money transaction type not supported' }
+
+  throw new HttpError(400, 'Money transaction type not supported', 'MONEY_TRANSACTION_TYPE_NOT_SUPPORTED')
 }
 
 async function createTransferAccount(payload: MoneyTransactionTypes.createMoneyTransferAccountParams) {

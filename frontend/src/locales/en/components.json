@@ -118,6 +118,7 @@
   "component.sidemenu.label.currencies": "Currencies",
   "component.sidemenu.label.sources": "Sources",
   "component.sidemenu.label.orderStatuses": "Order Statuses",
+  "component.sidemenu.label.automations": "Automations",
   "component.sidemenu.label.orderSources": "Order Sources",
   "component.sidemenu.label.deliveryServices": "Delivery Services",
   "component.sidemenu.label.units": "Units of Measure",

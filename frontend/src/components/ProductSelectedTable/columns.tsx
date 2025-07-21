@@ -21,11 +21,12 @@ import { useDebounceCallback } from '@/utils/hooks'
 const sortIcons = { asc: ArrowUp, desc: ArrowDown }
 
 export function useColumns(
-  { removeProduct, changeQuantity, isReceiving }:
+  { removeProduct, changeQuantity, isReceiving, disabled = false }:
   {
     removeProduct: (product: any) => void
     changeQuantity: (product: any, options: { quantity?: number, receivedQuantity?: number }) => void
     isReceiving: boolean
+    disabled: boolean
   },
 ) {
   const { t, i18n } = useTranslation()
@@ -44,7 +45,7 @@ export function useColumns(
 
       return (
         <Button
-          disabled={isLoading}
+          disabled={isLoading || disabled}
           variant="ghost"
           onClick={() => column.toggleSorting()}
           className="my-2 flex items-center gap-2"
@@ -139,7 +140,7 @@ export function useColumns(
                     variant="outline"
                     size="icon"
                     onClick={() => changeQuantity(item, { quantity: item.quantity - 1 })}
-                    disabled={isLoading || isReceiving}
+                    disabled={isLoading || isReceiving || disabled}
                   >
                     <Minus className="h-4 w-4" />
                   </Button>
@@ -161,7 +162,7 @@ export function useColumns(
                     variant="outline"
                     size="icon"
                     onClick={() => changeQuantity(item, { quantity: item.quantity + 1 })}
-                    disabled={isLoading || isReceiving}
+                    disabled={isLoading || isReceiving || disabled}
                   >
                     <Plus className="h-4 w-4" />
                   </Button>
@@ -175,7 +176,7 @@ export function useColumns(
                       variant="outline"
                       size="icon"
                       onClick={() => changeQuantity(item, { receivedQuantity: item.receivedQuantity - 1 })}
-                      disabled={isLoading}
+                      disabled={isLoading || disabled}
                     >
                       <Minus className="h-4 w-4" />
                     </Button>
@@ -195,7 +196,7 @@ export function useColumns(
                       variant="outline"
                       size="icon"
                       onClick={() => changeQuantity(item, { receivedQuantity: item.receivedQuantity + 1 })}
-                      disabled={isLoading}
+                      disabled={isLoading || disabled}
                     >
                       <Plus className="h-4 w-4" />
                     </Button>
@@ -207,7 +208,7 @@ export function useColumns(
                 variant="ghost"
                 size="icon"
                 className="h-8 w-8 p-0 text-destructive hover:text-destructive hover:bg-destructive/10"
-                disabled={isLoading}
+                disabled={isLoading || disabled}
               >
                 <Trash2 className="h-4 w-4" />
               </Button>

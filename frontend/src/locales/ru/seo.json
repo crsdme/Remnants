@@ -66,5 +66,8 @@
   "description.page.orders": "Управление заказами в Remnant",
 
   "title.page.create-order": "Создание заказа - Remnant",
-  "description.page.create-order": "Создание заказа в Remnant"
+  "description.page.create-order": "Создание заказа в Remnant",
+
+  "title.page.automations": "Автоматизация - Remnant",
+  "description.page.automations": "Управление автоматизацией в Remnant"
 }

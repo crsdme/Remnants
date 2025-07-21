@@ -58,10 +58,7 @@ export interface createCashregisterResult {
 export interface createCashregisterParams {
   names: LanguageString
   priority?: number
-  accounts?: Array<{
-    name: string
-    amount: number
-  }>
+  accounts?: IdType[]
   active?: boolean
 }
 

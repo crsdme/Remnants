@@ -5,6 +5,9 @@ export interface getOrderStatusesParams {
     priority?: number
     language?: string
     orderStatus?: string
+    includeAll?: boolean
+    includeCount?: boolean
+    isLocked?: boolean
   }
   sorters?: {
     priority?: string
@@ -21,6 +24,7 @@ export interface createOrderStatusesParams {
   names: LanguageString
   priority: number
   color?: string
+  isLocked?: boolean
 }
 
 export interface OrderStatusesResponse {
@@ -37,6 +41,7 @@ export interface editOrderStatusesParams {
   names: LanguageString
   priority: number
   color?: string
+  isLocked?: boolean
 }
 
 export interface removeOrderStatusesParams {

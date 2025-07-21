@@ -11,7 +11,7 @@ import { cn } from '@/utils/lib/utils'
 import { useColumns } from './columns'
 
 export function ProductSelectedTable(
-  { products, removeProduct, isLoading = false, className, changeQuantity, isReceiving = false }:
+  { products, removeProduct, isLoading = false, className, changeQuantity, isReceiving = false, disabled = false }:
   {
     products: any[]
     removeProduct: (product: any) => void
@@ -19,6 +19,7 @@ export function ProductSelectedTable(
     className?: string
     changeQuantity: (product: any, options: { quantity?: number, receivedQuantity?: number }) => void
     isReceiving: boolean
+    disabled?: boolean
   },
 ) {
   const { t } = useTranslation()
@@ -26,7 +27,7 @@ export function ProductSelectedTable(
   const [columnVisibility, setColumnVisibility] = useState({})
   const [sorting, setSorting] = useState<ColumnSort[]>([])
 
-  const columns = useColumns({ removeProduct, changeQuantity, isReceiving })
+  const columns = useColumns({ removeProduct, changeQuantity, isReceiving, disabled })
 
   const table = useReactTable({
     data: products,

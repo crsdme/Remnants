@@ -266,3 +266,13 @@ interface OrderPayment {
   createdAt: Date
   updatedAt: Date
 }
+
+interface Automation {
+  id: string
+  name: string
+  trigger: string
+  conditions: string[]
+  actions: string[]
+  createdAt: Date
+  updatedAt: Date
+}

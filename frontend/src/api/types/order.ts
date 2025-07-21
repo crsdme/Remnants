@@ -1,5 +1,6 @@
 export interface getOrdersParams {
   filters: {
+    seq?: string
     warehouse?: string
     deliveryService?: string
     orderSource?: string

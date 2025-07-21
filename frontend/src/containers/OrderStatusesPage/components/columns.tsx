@@ -156,6 +156,20 @@ export function useColumns() {
         },
       },
       {
+        id: 'isLocked',
+        accessorKey: 'isLocked',
+        meta: {
+          title: t('page.order-statuses.table.isLocked'),
+          batchEdit: true,
+          batchEditType: 'boolean',
+          filterable: true,
+          filterType: 'boolean',
+          sortable: true,
+        },
+        header: t('page.order-statuses.table.isLocked'),
+        cell: ({ row }) => <Badge variant={row.original.isLocked ? 'success' : 'destructive'}>{t(`table.yesno.${row.original.isLocked}`)}</Badge>,
+      },
+      {
         id: 'createdAt',
         accessorKey: 'createdAt',
         meta: {

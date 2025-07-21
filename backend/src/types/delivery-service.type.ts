@@ -54,6 +54,7 @@ export interface createDeliveryServiceParams {
   names: LanguageString
   priority?: number
   color?: string
+  type: 'novaposhta' | 'selfpickup'
 }
 
 export interface editDeliveryServiceResult {

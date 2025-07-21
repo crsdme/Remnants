@@ -1,4 +1,5 @@
 export * from './auth'
+export * from './automation'
 export * from './barcodes'
 export * from './cashregister-accounts'
 export * from './cashregisters'

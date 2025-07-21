@@ -11,6 +11,9 @@ export async function get(payload: OrderStatusTypes.getOrderStatusesParams): Pro
     language = 'en',
     color = '',
     priority = undefined,
+    includeAll = false,
+    includeCount = false,
+    isLocked = undefined,
     createdAt = {
       from: undefined,
       to: undefined,
@@ -26,12 +29,13 @@ export async function get(payload: OrderStatusTypes.getOrderStatusesParams): Pro
     names: { type: 'string', langAware: true },
     color: { type: 'string' },
     priority: { type: 'exact' },
+    isLocked: { type: 'exact' },
     createdAt: { type: 'dateRange' },
     updatedAt: { type: 'dateRange' },
   } as const
 
   const query = buildQuery({
-    filters: { names, color, priority, createdAt, updatedAt },
+    filters: { names, color, priority, createdAt, updatedAt, isLocked },
     rules: filterRules,
     language,
   })
@@ -45,30 +49,31 @@ export async function get(payload: OrderStatusTypes.getOrderStatusesParams): Pro
     {
       $sort: sorters,
     },
-    {
-      $lookup: {
-        from: 'orders',
-        let: { statusId: '$_id' },
-        pipeline: [
-          {
-            $match: {
-              $expr: {
-                $and: [
-                  { $eq: ['$orderStatus', '$$statusId'] },
-                  { $ne: ['$removed', true] },
-                ],
+    ...(includeCount
+      ? [{
+          $lookup: {
+            from: 'orders',
+            let: { statusId: '$_id' },
+            pipeline: [
+              {
+                $match: {
+                  $expr: {
+                    $and: [
+                      { $eq: ['$orderStatus', '$$statusId'] },
+                      { $ne: ['$removed', true] },
+                    ],
+                  },
+                },
               },
-            },
+            ],
+            as: 'relatedOrders',
           },
-        ],
-        as: 'relatedOrders',
-      },
-    },
-    {
-      $addFields: {
-        ordersCount: { $size: '$relatedOrders' },
-      },
-    },
+        }, {
+          $addFields: {
+            ordersCount: { $size: '$relatedOrders' },
+          },
+        }]
+      : []),
     {
       $project: {
         _id: 0,
@@ -76,9 +81,10 @@ export async function get(payload: OrderStatusTypes.getOrderStatusesParams): Pro
         names: 1,
         color: 1,
         priority: 1,
+        isLocked: 1,
         createdAt: 1,
         updatedAt: 1,
-        ordersCount: 1,
+        ...(includeCount ? { ordersCount: 1 } : {}),
       },
     },
     {
@@ -99,17 +105,15 @@ export async function get(payload: OrderStatusTypes.getOrderStatusesParams): Pro
   const orderStatuses = orderStatusesRaw[0].orderStatuses
   const orderStatusesCount = orderStatusesRaw[0].totalCount[0]?.count || 0
 
-  const virtualAllStatus = {
-    id: null,
-    names: { ru: 'Все', en: 'All' },
-    color: null,
-    priority: -1,
-    createdAt: null,
-    updatedAt: null,
-    ordersCount: orderStatuses.reduce((acc: number, status: any) => acc + status.ordersCount, 0),
-  }
+  if (includeAll) {
+    const virtualAllStatus = {
+      id: 'all',
+      priority: -1,
+      ordersCount: orderStatuses.reduce((acc: number, status: any) => acc + status.ordersCount, 0),
+    }
 
-  orderStatuses.unshift(virtualAllStatus)
+    orderStatuses.unshift(virtualAllStatus)
+  }
 
   return { status: 'success', code: 'ORDER_STATUSES_FETCHED', message: 'Order statuses fetched', orderStatuses, orderStatusesCount }
 }

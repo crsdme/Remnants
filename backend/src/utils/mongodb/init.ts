@@ -1,9 +1,9 @@
-import { DEFAULT_SETTINGS } from '../config/constants'
-import { connectDB } from '../config/db'
-import { SettingModel } from '../models/setting.model'
-import { UserModel } from '../models/user.model'
-import * as UserRoleService from '../services/user-role.service'
-import * as UserService from '../services/user.service'
+import { DEFAULT_SETTINGS } from '../../config/constants'
+import { connectDB } from '../../config/db'
+import { SettingModel } from '../../models/setting.model'
+import { UserModel } from '../../models/user.model'
+import * as UserRoleService from '../../services/user-role.service'
+import * as UserService from '../../services/user.service'
 
 async function initializeApp() {
   console.log('🔧 Initializing application...')

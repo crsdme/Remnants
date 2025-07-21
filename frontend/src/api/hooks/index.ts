@@ -3,6 +3,12 @@ export * from './auth/useAuthLogin'
 export * from './auth/useAuthLogout'
 export * from './auth/useRefreshToken'
 
+// Automation Management
+export * from './automation/useAutomationCreate'
+export * from './automation/useAutomationEdit'
+export * from './automation/useAutomationQuery'
+export * from './automation/useAutomationRemove'
+
 // Barcode Management
 export * from './barcode/useBarcodeCreate'
 export * from './barcode/useBarcodeEdit'

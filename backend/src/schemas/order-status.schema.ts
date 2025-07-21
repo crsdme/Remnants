@@ -1,6 +1,6 @@
 import { extendZodWithOpenApi } from '@asteasolutions/zod-to-openapi'
 import { z } from 'zod'
-import { dateRangeSchema, idSchema, languageStringSchema, numberFromStringSchema, paginationSchema, sorterParamsSchema } from './common'
+import { dateRangeSchema, idSchema, languageStringSchema, numberFromStringSchema, paginationSchema, sorterParamsSchema, stringToBooleanSchema } from './common'
 
 extendZodWithOpenApi(z)
 
@@ -10,6 +10,9 @@ export const getOrderStatusesSchema = z.object({
     language: z.string().optional().default('en'),
     color: z.string().optional(),
     priority: numberFromStringSchema.optional(),
+    includeAll: stringToBooleanSchema.optional(),
+    includeCount: stringToBooleanSchema.optional(),
+    isLocked: stringToBooleanSchema.optional(),
     createdAt: dateRangeSchema.optional(),
     updatedAt: dateRangeSchema.optional(),
   }).optional().default({}),
@@ -27,6 +30,7 @@ export const createOrderStatusSchema = z.object({
   names: languageStringSchema,
   priority: z.number().optional().default(0),
   color: z.string().optional(),
+  isLocked: stringToBooleanSchema.optional(),
 })
 
 export const editOrderStatusSchema = z.object({
@@ -34,6 +38,7 @@ export const editOrderStatusSchema = z.object({
   names: languageStringSchema,
   priority: z.number().optional().default(0),
   color: z.string().optional(),
+  isLocked: stringToBooleanSchema.optional(),
 })
 
 export const removeOrderStatusesSchema = z.object({

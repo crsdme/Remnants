@@ -1,5 +1,5 @@
 import type * as DeliveryServiceTypes from '../types/delivery-service.type'
-import { CategoryModel, DeliveryServiceModel } from '../models'
+import { DeliveryServiceModel } from '../models'
 import { HttpError } from '../utils/httpError'
 import { buildQuery, buildSortQuery } from '../utils/queryBuilder'
 

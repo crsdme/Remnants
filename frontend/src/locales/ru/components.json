@@ -118,6 +118,7 @@
   "component.sidemenu.label.deliveryServices": "Сервисы доставки",
   "component.sidemenu.label.units": "Единицы измерения",
   "component.sidemenu.label.settings": "Настройки",
+  "component.sidemenu.label.automations": "Автоматизация",
   "component.sidemenu.label.logs": "Логи",
   "component.sidemenu.label.documents": "Документы",
   "component.sidemenu.label.logout": "Выйти",

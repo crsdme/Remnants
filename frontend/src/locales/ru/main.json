@@ -23,8 +23,9 @@
   "table.receive": "Принять",
   "table.mismatch": "Несоответствие",
   "table.match": "Соответствие",
+  "table.view": "Просмотр",
 
-  "orderStatus.all": "Все",
+  "order-status.all": "Все",
 
   "delivery-services.novaposhta": "Новая Почта",
   "delivery-services.selfpickup": "Самовывоз",

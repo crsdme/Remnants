@@ -265,7 +265,7 @@ export function AsyncSelectNew<T>({
                 multi,
                 getOptionValue,
                 getDisplayValue,
-                placeholder,
+                placeholder: placeholder || <p className="text-muted-foreground">{t('component.asyncSelect.placeholder')}</p>,
                 onRemove: handleRemoveTag,
               }) }
               <ChevronDown className="opacity-50" size={10} />
@@ -360,9 +360,10 @@ function renderSelectedOptions<T>({
   getDisplayValue: (opt: T) => React.ReactNode
   placeholder?: React.ReactNode
   onRemove?: (val: string) => void
+
 }) {
   if (selectedOptions.length === 0)
-    return placeholder || <p className="text-muted-foreground">Выберите значение</p>
+    return placeholder
 
   if (!multi)
     return getDisplayValue(selectedOptions[0])

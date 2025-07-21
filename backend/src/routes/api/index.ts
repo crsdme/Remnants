@@ -1,6 +1,7 @@
 import { Router } from 'express'
 import { authMiddleware } from '../../middleware/auth.middleware'
 import authRoutes from './auth.route'
+import automationRoutes from './automation.route'
 import barcodeRoutes from './barcode.route'
 import cashregisterAccountRoutes from './cashregister-account.route'
 import cashregisterRoutes from './cashregister.route'
@@ -54,5 +55,6 @@ router.use('/clients', authenticateJWT, clientRoutes)
 router.use('/orders', authenticateJWT, orderRoutes)
 router.use('/warehouse-transactions', authenticateJWT, warehouseTransactionRoutes)
 router.use('/test', authenticateJWT, testRoutes)
+router.use('/automations', authenticateJWT, automationRoutes)
 
 export default router

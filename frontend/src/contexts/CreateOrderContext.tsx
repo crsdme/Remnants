@@ -11,6 +11,7 @@ import { toast } from 'sonner'
 
 import { z } from 'zod'
 import {
+  useBarcodeOptions,
   useCashregisterAccountQuery,
   useCashregisterQuery,
   useClientCreate,
@@ -35,6 +36,7 @@ interface CreateOrderContextType {
   createClient: (params) => void
   createOrder: (params) => void
   createPayment: (params) => void
+  getBarcode: (code: string) => Promise<any>
 }
 
 const CreateOrderContext = createContext<CreateOrderContextType | undefined>(undefined)
@@ -109,7 +111,6 @@ export function CreateOrderProvider({ children }: CreateOrderProviderProps) {
         id: z.string(),
       }),
       price: z.number(),
-      // receivedQuantity: z.number({ required_error: t('error.required') }).min(1, { message: t('error.required') }),
     })).min(1, { message: t('error.required') }),
     comment: z.string().optional(),
   }).superRefine((data) => {
@@ -198,6 +199,7 @@ export function CreateOrderProvider({ children }: CreateOrderProviderProps) {
     options: {
       onSuccess: ({ data }) => {
         queryClient.invalidateQueries({ queryKey: ['orders'] })
+        queryClient.invalidateQueries({ queryKey: ['order-statuses', { filters: { includeAll: true, includeCount: true } }] })
         toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description || ''}` })
       },
       onError: ({ response }) => {
@@ -271,6 +273,12 @@ export function CreateOrderProvider({ children }: CreateOrderProviderProps) {
   //   }
   // }, [currencies, cashregisters])
 
+  const loadBarcodeOptions = useBarcodeOptions()
+  const getBarcode = async (code: string) => {
+    const barcode = await loadBarcodeOptions({ query: code })
+    return barcode[0]?.products
+  }
+
   const value: CreateOrderContextType = useMemo(
     () => ({
       isClientModalOpen,
@@ -288,6 +296,7 @@ export function CreateOrderProvider({ children }: CreateOrderProviderProps) {
       removePayment,
       createClient,
       createOrder,
+      getBarcode,
     }),
     [isClientModalOpen, isPaymentModalOpen, isLoading, paymentForm, informationForm, clientForm, payments],
   )

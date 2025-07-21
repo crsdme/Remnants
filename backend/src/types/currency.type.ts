@@ -3,8 +3,8 @@ import type { Code, DateRange, IdType, LanguageString, Message, Pagination, Sort
 
 export interface Currency {
   id: IdType
-  names: string
-  symbols: string
+  names: LanguageString
+  symbols: LanguageString
   priority: number
   active: boolean
   removed: boolean
@@ -105,7 +105,7 @@ export interface importCurrenciesResult {
   status: Status
   code: Code
   message: Message
-  currencyIds: IdType[]
+  currencyIds: any[]
 }
 
 export interface importCurrenciesParams {

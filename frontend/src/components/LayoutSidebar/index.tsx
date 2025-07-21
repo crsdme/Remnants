@@ -50,30 +50,30 @@ export function LayoutSidebar({ ...props }: React.ComponentProps<typeof Sidebar>
         title: t('component.sidemenu.label.orders'),
         url: '/orders',
         icon: ShoppingCart,
-        permissions: ['orders.page'],
+        permissions: ['order.page'],
       },
       {
         title: t('component.sidemenu.label.leades'),
         url: '/leades',
         icon: Users,
-        permissions: ['leades.page'],
+        permissions: ['lead.page'],
       },
       {
         title: t('component.sidemenu.label.chats'),
         url: '/chats',
         icon: MessageSquare,
-        permissions: ['chats.page'],
+        permissions: ['chat.page'],
       },
       {
         title: t('component.sidemenu.label.tasks'),
         url: '/tasks',
         icon: ListChecks,
-        permissions: ['tasks.page'],
+        permissions: ['task.page'],
       },
       {
         title: t('component.sidemenu.label.catalog'),
         icon: Package,
-        permissions: ['catalog.page', 'product.page', 'attribute.page', 'attributeGroup.page', 'barcode.page', 'category.page'],
+        permissions: ['product.page', 'attribute.page', 'attributeGroup.page', 'barcode.page', 'category.page'],
         items: [
           { title: t('component.sidemenu.label.products'), url: '/products', permissions: ['product.page'] },
           { title: t('component.sidemenu.label.categories'), url: '/categories', permissions: ['category.page'] },
@@ -165,6 +165,7 @@ export function LayoutSidebar({ ...props }: React.ComponentProps<typeof Sidebar>
           { title: t('component.sidemenu.label.sources'), url: '/settings/sources', permissions: ['source.page'] },
           { title: t('component.sidemenu.label.orderStatuses'), url: '/settings/order-statuses', permissions: ['orderStatus.page'] },
           { title: t('component.sidemenu.label.orderSources'), url: '/settings/order-sources', permissions: ['orderSource.page'] },
+          { title: t('component.sidemenu.label.automations'), url: '/settings/automations', permissions: ['automation.page'] },
           {
             title: t('component.sidemenu.label.deliveryServices'),
             url: '/settings/delivery-services',

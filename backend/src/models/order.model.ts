@@ -92,6 +92,14 @@ const OrderItemSchema: Schema = new Schema({
     type: String,
     required: true,
   },
+  removedBy: {
+    type: String,
+    ref: 'User',
+  },
+  removed: {
+    type: Boolean,
+    default: false,
+  },
 })
 
 OrderSchema.set('toJSON', {

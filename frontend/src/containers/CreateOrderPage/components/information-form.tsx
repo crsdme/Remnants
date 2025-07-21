@@ -32,7 +32,7 @@ export function InformationForm({ form, onSubmit }: { form: UseFormReturn, onSub
   return (
     <div className="flex flex-col gap-4 flex-1">
       <div className="flex items-center gap-2">
-        <p className="text-lg font-bold">Order Information</p>
+        <p className="text-lg font-bold">{t('page.create-order.information-form.title')}</p>
         <Separator className="flex-1" />
       </div>
       <Form {...form}>
@@ -193,13 +193,13 @@ export function InformationForm({ form, onSubmit }: { form: UseFormReturn, onSub
           />
 
           <div className="grid gap-2 grid-cols-1 md:grid-cols-2 lg:grid-cols-3 mb-2">
-            <div className="border-dashed border-2 border-gray-300 rounded-md p-10 cursor-pointer flex flex-col items-center justify-center" onClick={openPaymentModal}>
+            <div className="border-dashed border-2 border-gray-300 dark:border-gray-700 rounded-md p-10 cursor-pointer flex flex-col items-center justify-center" onClick={openPaymentModal}>
               <p className="text-lg font-bold">{t('page.create-order.form.add-payment')}</p>
               <p className="text-sm text-gray-500">{t('page.create-order.form.add-payment.description')}</p>
             </div>
             {payments.map((payment) => {
               return (
-                <div key={payment.id} className="border border-gray-300 rounded-md p-2">
+                <div key={payment.id} className="border border-gray-300 dark:border-gray-700 rounded-md p-2">
                   <div className="flex items-center flex-wrap gap-2">
                     <Badge variant="outline">{`${payment.amount} ${payment.currency.symbols[i18n.language]}`}</Badge>
                     <Badge variant="outline">{`${payment.cashregister.names[i18n.language]} | ${payment.cashregisterAccount.names[i18n.language]}`}</Badge>

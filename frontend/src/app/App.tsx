@@ -6,6 +6,7 @@ import { useAuthContext } from '@/contexts'
 import { usePermission } from '@/utils/hooks/usePermission/usePermission'
 
 import {
+  AutomationsPage,
   BarcodesPage,
   CashregisterAccountsPage,
   CashregistersPage,
@@ -14,6 +15,7 @@ import {
   CurrenciesPage,
   DashboardPage,
   DeliveryServicesPage,
+  EditOrderPage,
   ErrorPage,
   LanguagesPage,
   LoginPage,
@@ -30,6 +32,7 @@ import {
   UnitsPage,
   UserRolesPage,
   UsersPage,
+  ViewOrderPage,
   WarehousesPage,
   WarehouseTransactionsPage,
 } from '../containers'
@@ -57,6 +60,7 @@ export default function App() {
       <Routes>
         <Route path="/" element={authContenxt.state.isAuthenticated ? <Layout /> : <LoginPage />}>
           <Route path="/" element={<DashboardPage />} />
+
           <Route
             path="/test"
             element={(<ProtectedRoute children={<TestPage />} permissions={['user.page']} />)}
@@ -69,6 +73,14 @@ export default function App() {
           <Route
             path="/orders/create"
             element={<ProtectedRoute children={<CreateOrderPage />} permissions={['order.page']} />}
+          />
+          <Route
+            path="/orders/edit/:id"
+            element={<ProtectedRoute children={<EditOrderPage />} permissions={['order.page']} />}
+          />
+          <Route
+            path="/orders/view/:id"
+            element={<ProtectedRoute children={<ViewOrderPage />} permissions={['order.page']} />}
           />
 
           <Route
@@ -143,6 +155,10 @@ export default function App() {
           <Route
             path="/settings/order-sources"
             element={<ProtectedRoute children={<OrderSourcesPage />} permissions={['order-source.page']} />}
+          />
+          <Route
+            path="/settings/automations"
+            element={<ProtectedRoute children={<AutomationsPage />} permissions={['automation.page']} />}
           />
           <Route
             path="/warehouses"

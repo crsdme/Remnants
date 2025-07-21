@@ -7,6 +7,7 @@ export interface OrderStatus {
   priority: number
   color: string
   removed: boolean
+  isLocked: boolean
   createdAt: Date
   updatedAt: Date
 }
@@ -24,6 +25,9 @@ export interface getOrderStatusesFilters {
   language: SUPPORTED_LANGUAGES_TYPE
   color: string
   priority: number
+  includeCount: boolean
+  includeAll: boolean
+  isLocked: boolean
   createdAt: DateRange
   updatedAt: DateRange
 }
@@ -53,6 +57,7 @@ export interface createOrderStatusParams {
   names: LanguageString
   priority?: number
   color?: string
+  isLocked?: boolean
 }
 
 export interface editOrderStatusResult {
@@ -67,6 +72,7 @@ export interface editOrderStatusParams {
   names: LanguageString
   priority?: number
   color?: string
+  isLocked?: boolean
 }
 
 export interface removeOrderStatusesResult {

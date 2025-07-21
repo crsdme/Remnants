@@ -17,6 +17,7 @@ const MoneyTransactionSchema: Schema = new Schema(
       type: String,
       enum: [
         'income', // поступление (оплата, инвестиция)
+        'cancelled', // отмена поступления
         'expense', // расход (выплата, закупка)
         'transfer', // перемещение между счетами
         'refund', // возврат

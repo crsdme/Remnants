@@ -49,6 +49,7 @@ export function OrderStatusProvider({ children }: OrderStatusProviderProps) {
       names: z.record(z.string({ required_error: t('form.errors.required') }).min(3, { message: t('form.errors.min_length', { count: 3 }) }).trim()),
       color: z.string().optional(),
       priority: z.number().default(0),
+      isLocked: z.boolean().default(false),
     }), [t])
 
   const form = useForm({
@@ -57,6 +58,7 @@ export function OrderStatusProvider({ children }: OrderStatusProviderProps) {
       names: defaultLanguageValues,
       color: '',
       priority: 0,
+      isLocked: false,
     },
   })
 
@@ -68,12 +70,14 @@ export function OrderStatusProvider({ children }: OrderStatusProviderProps) {
         names: defaultLanguageValues,
         color: '',
         priority: 0,
+        isLocked: false,
       }
     }
     return {
       names: { ...orderStatus.names },
       color: orderStatus.color,
       priority: orderStatus.priority,
+      isLocked: orderStatus.isLocked,
     }
   }
 

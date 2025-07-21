@@ -3,22 +3,27 @@ import {
   ArrowUp,
   ChevronsUpDown,
   Copy,
+  Eye,
   Pencil,
   Trash,
 } from 'lucide-react'
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 
+import { useNavigate } from 'react-router-dom'
 import { TableActionDropdown } from '@/components'
 import { Badge, Button, Checkbox } from '@/components/ui'
-import { useOrderContext } from '@/contexts'
+import { useAuthContext, useOrderContext } from '@/contexts'
 import { formatDate } from '@/utils/helpers'
+import { hasPermission } from '@/utils/helpers/permission'
 
 const sortIcons = { asc: ArrowUp, desc: ArrowDown }
 
 export function useColumns() {
   const { t, i18n } = useTranslation()
-  const { isLoading, openModal, removeOrder } = useOrderContext()
+  const { isLoading, removeOrder } = useOrderContext()
+  const { permissions } = useAuthContext()
+  const navigate = useNavigate()
 
   const columns = useMemo(() => {
     function sortHeader(column, label) {
@@ -80,27 +85,34 @@ export function useColumns() {
         cell: ({ row }) => {
           const item = row.original
 
-          const actions = [
-            {
-              permission: 'order.copy',
+          const actions = [{
+            permission: 'order.page',
+            onClick: () => navigate(`/orders/view/${item.seq}`),
+            label: t('table.view'),
+            icon: <Eye className="h-4 w-4" />,
+          }] as any
+
+          if (!item.orderStatus.isLocked || hasPermission(permissions, ['order.editLocked', 'order.removeLocked'])) {
+            actions.push({
+              permission: 'other.admin',
               onClick: () => navigator.clipboard.writeText(item.id),
               label: t('table.copy'),
               icon: <Copy className="h-4 w-4" />,
-            },
-            {
+            })
+            actions.push({
               permission: 'order.edit',
-              onClick: () => openModal(item),
+              onClick: () => navigate(`/orders/edit/${item.seq}`),
               label: t('table.edit'),
               icon: <Pencil className="h-4 w-4" />,
-            },
-            {
-              permission: 'order.delete',
+            })
+            actions.push({
+              permission: 'order.remove',
               onClick: () => removeOrder({ ids: [item.id] }),
               label: t('table.delete'),
               icon: <Trash className="h-4 w-4" />,
               isDestructive: true,
-            },
-          ]
+            })
+          }
 
           return <TableActionDropdown actions={actions} />
         },

@@ -23,8 +23,9 @@
   "table.receive": "Receive",
   "table.mismatch": "Mismatch",
   "table.match": "Match",
+  "table.view": "View",
 
-  "orderStatus.all": "All",
+  "order-status.all": "All",
 
   "delivery-services.novaposhta": "Nova Poshta",
   "delivery-services.selfpickup": "Self Pickup",

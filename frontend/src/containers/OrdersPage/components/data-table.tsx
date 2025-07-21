@@ -52,7 +52,7 @@ export function DataTable() {
   )
 
   const { data: { orderStatuses = [] } = {} } = useOrderStatusQuery(
-    {},
+    { filters: { includeAll: true, includeCount: true } },
     { options: {
       select: response => ({
         orderStatuses: response.data.orderStatuses,
@@ -208,15 +208,15 @@ export function DataTable() {
         </div>
       </div>
       <div className="w-full flex items-start max-md:flex-col gap-2 py-2">
-        <Tabs defaultValue="" className="w-full">
-          <TabsList>
+        <Tabs defaultValue="all" className="flex flex-wrap">
+          <TabsList className="flex flex-wrap">
             {orderStatuses.map(status => (
               <TabsTrigger
                 key={status.id}
                 value={status.id}
                 onClick={() => changeOrderStatus(status.id)}
               >
-                {`${status.names[i18n.language]} ${status.ordersCount || 0}`}
+                {`${status?.names?.[i18n.language] || t('order-status.all')} ${status.ordersCount || 0}`}
               </TabsTrigger>
             ))}
           </TabsList>

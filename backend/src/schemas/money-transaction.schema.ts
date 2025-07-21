@@ -33,7 +33,7 @@ export const getMoneyTransactionsSchema = z.object({
 const baseCreateMoneyTransactionSchema = z.object({
   currency: idSchema,
   amount: z.number(),
-  sourceModel: z.enum(['Manual', 'Cashregister', 'CashregisterAccount']),
+  sourceModel: z.enum(['manual', 'cashregister', 'cashregisterAccount']),
   sourceId: idSchema.optional(),
   role: z.string().trim().optional(),
   transferId: idSchema.optional(),
