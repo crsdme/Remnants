@@ -728,7 +728,7 @@ async function createAutomations({ removed }: { removed: any }) {
     ],
     actions: [
       {
-        field: 'orderStatus',
+        field: 'order-status-update',
         params: [removed.id],
       },
     ],
