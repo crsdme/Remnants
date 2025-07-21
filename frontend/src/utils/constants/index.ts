@@ -40,6 +40,12 @@ export const AUTOMATION_TRIGGERS = [
         id: 'order-created',
       },
       {
+        id: 'order-updated',
+      },
+      {
+        id: 'order-removed',
+      },
+      {
         id: 'order-status-updated',
       },
       {

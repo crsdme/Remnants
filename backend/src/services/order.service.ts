@@ -73,6 +73,7 @@ export async function get(payload: OrderTypes.getOrdersParams): Promise<OrderTyp
       updatedAt,
     },
     rules: filterRules,
+    removed: false,
   })
 
   const sorters = buildSortQuery(payload.sorters || {}, { seq: -1 })
@@ -734,6 +735,10 @@ export async function remove(payload: OrderTypes.removeOrdersParams): Promise<Or
 
   if (!orders) {
     throw new HttpError(400, 'Orders not removed', 'ORDERS_NOT_REMOVED')
+  }
+
+  for (const id of ids) {
+    await AutomationService.run({ type: 'order-removed', entityId: id })
   }
 
   return { status: 'success', code: 'ORDERS_REMOVED', message: 'Orders removed' }

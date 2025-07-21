@@ -393,5 +393,23 @@
   "response.description.DELIVERY_SERVICES_NOT_REMOVED": "Не удалось удалить выбранные службы доставки",
 
   "response.title.DELIVERY_SERVICES_REMOVED": "Службы доставки удалены",
-  "response.description.DELIVERY_SERVICES_REMOVED": "Выбранные службы доставки были удалены"
+  "response.description.DELIVERY_SERVICES_REMOVED": "Выбранные службы доставки были удалены",
+
+  "response.title.ORDERS_FETCHED": "Заказы получены",
+  "response.description.ORDERS_FETCHED": "Список заказов успешно получен",
+
+  "response.title.ORDER_CREATED": "Заказ создан",
+  "response.description.ORDER_CREATED": "Новый заказ был создан",
+
+  "response.title.ORDER_NOT_EDITED": "Заказ не обновлен",
+  "response.description.ORDER_NOT_EDITED": "Не удалось обновить заказ",
+
+  "response.title.ORDER_EDITED": "Заказ обновлен",
+  "response.description.ORDER_EDITED": "Заказ был обновлен",
+
+  "response.title.ORDERS_NOT_REMOVED": "Заказы не удалены",
+  "response.description.ORDERS_NOT_REMOVED": "Не удалось удалить выбранные заказы",
+
+  "response.title.ORDERS_REMOVED": "Заказы удалены",
+  "response.description.ORDERS_REMOVED": "Выбранные заказы были удалены"
 }

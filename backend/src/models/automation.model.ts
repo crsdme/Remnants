@@ -9,6 +9,8 @@ const TriggerSchema = new Schema({
     enum: [
       'order-status-updated',
       'order-created',
+      'order-updated',
+      'order-removed',
     ],
     required: true,
   },

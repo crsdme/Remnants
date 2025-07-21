@@ -62,7 +62,7 @@ export async function get(payload: OrderStatusTypes.getOrderStatusesParams): Pro
                   $expr: {
                     $and: [
                       { $eq: ['$orderStatus', '$$statusId'] },
-                      { $ne: ['$removed', true] },
+                      // { $ne: ['$removed', true] },
                     ],
                   },
                 },

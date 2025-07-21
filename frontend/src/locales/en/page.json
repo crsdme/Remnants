@@ -702,6 +702,8 @@
 
   "page.automations.form.trigger.order": "Order",
   "page.automations.trigger.order-created": "Order created",
+  "page.automations.trigger.order-updated": "Order updated",
+  "page.automations.trigger.order-removed": "Order removed",
   "page.automations.trigger.order-status-updated": "Order status updated",
   "page.automations.trigger.order-payment-updated": "Order payment updated",
 

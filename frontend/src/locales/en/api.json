@@ -393,5 +393,23 @@
   "response.description.DELIVERY_SERVICES_NOT_REMOVED": "Unable to remove selected delivery services",
 
   "response.title.DELIVERY_SERVICES_REMOVED": "Delivery services removed",
-  "response.description.DELIVERY_SERVICES_REMOVED": "Selected delivery services have been deleted"
+  "response.description.DELIVERY_SERVICES_REMOVED": "Selected delivery services have been deleted",
+
+  "response.title.ORDERS_FETCHED": "Orders fetched",
+  "response.description.ORDERS_FETCHED": "Orders list successfully fetched",
+
+  "response.title.ORDER_CREATED": "Order created",
+  "response.description.ORDER_CREATED": "New order has been created",
+
+  "response.title.ORDER_NOT_EDITED": "Order not edited",
+  "response.description.ORDER_NOT_EDITED": "Unable to update order",
+
+  "response.title.ORDER_EDITED": "Order edited",
+  "response.description.ORDER_EDITED": "Order has been updated",
+
+  "response.title.ORDERS_NOT_REMOVED": "Order not removed",
+  "response.description.ORDERS_NOT_REMOVED": "Unable to remove selected order",
+
+  "response.title.ORDERS_REMOVED": "Order removed",
+  "response.description.ORDERS_REMOVED": "Selected order has been deleted"
 }

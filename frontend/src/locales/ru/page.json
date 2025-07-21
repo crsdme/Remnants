@@ -706,6 +706,8 @@
 
   "page.automations.form.trigger.order": "Заказ",
   "page.automations.trigger.order-created": "Заказ создан",
+  "page.automations.trigger.order-updated": "Заказ обновлен",
+  "page.automations.trigger.order-removed": "Заказ удален",
   "page.automations.trigger.order-status-updated": "Статус заказа обновлен",
   "page.automations.trigger.order-payment-updated": "Статус оплаты заказа обновлен",
 

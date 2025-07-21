@@ -711,25 +711,25 @@ async function createUserRoles() {
   })
 }
 
-async function createAutomations({ inProgress, completed }: { inProgress: any, completed: any }) {
+async function createAutomations({ removed }: { removed: any }) {
   await AutomationService.create({
-    name: 'IN PROGRESS -> COMPLETED',
+    name: 'Add "Removed" status to order',
     active: true,
     trigger: {
-      type: 'order-created',
+      type: 'order-removed',
       params: [],
     },
     conditions: [
       {
         field: 'orderStatus',
-        operator: 'contains',
-        params: [inProgress.id],
+        operator: 'not-contains',
+        params: [removed.id],
       },
     ],
     actions: [
       {
-        field: 'order-status-update',
-        params: [completed.id],
+        field: 'orderStatus',
+        params: [removed.id],
       },
     ],
   })

@@ -104,6 +104,16 @@ const automationHandlers: Record<string, (payload: any) => Promise<void>> = {
       await applyActions(actions, entity)
     }
   },
+  'order-updated': async ({ conditions, actions, entity }: any) => {
+    if (evaluateConditions(conditions, entity)) {
+      await applyActions(actions, entity)
+    }
+  },
+  'order-removed': async ({ conditions, actions, entity }: any) => {
+    if (evaluateConditions(conditions, entity)) {
+      await applyActions(actions, entity)
+    }
+  },
   'money-transaction-created': async ({ conditions, actions, entity }: any) => {
     if (evaluateConditions(conditions, entity)) {
       await applyActions(actions, entity)
@@ -138,6 +148,8 @@ async function loadEntityByType(type: string, id: string): Promise<any> {
       return await OrderModel.findById(id)
     case 'order-updated':
       return await OrderModel.findById(id)
+    case 'order-removed':
+      return await OrderModel.findById(id)
 
     case 'money-transaction-created':
       return await MoneyTransactionModel.findById(id)
@@ -156,6 +168,9 @@ function evaluateConditions(conditions: AutomationTypes.Condition[], entity: Rec
     switch (operator) {
       case 'contains':
         return Array.isArray(value) ? value.includes(params[0]) : value === params[0]
+
+      case 'not-contains':
+        return Array.isArray(value) ? !value.includes(params[0]) : value !== params[0]
 
       case 'equals':
         return value === params[0]
