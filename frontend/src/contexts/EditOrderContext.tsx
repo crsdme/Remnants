@@ -237,7 +237,7 @@ export function EditOrderProvider({ children }: EditOrderProviderProps) {
     options: {
       onSuccess: ({ data }) => {
         queryClient.invalidateQueries({ queryKey: ['orders'] })
-        queryClient.invalidateQueries({ queryKey: ['order-statuses', { filters: { includeAll: true, includeCount: true } }] })
+        queryClient.invalidateQueries({ queryKey: ['order-statuses', 'get', { filters: { includeAll: true, includeCount: true } }] })
         toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description || ''}` })
       },
       onError: ({ response }) => {

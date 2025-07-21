@@ -36,6 +36,10 @@ const OrderStatusSchema: Schema = new Schema(
       type: Boolean,
       default: false,
     },
+    isSelectable: {
+      type: Boolean,
+      default: false,
+    },
     removed: {
       type: Boolean,
       default: false,

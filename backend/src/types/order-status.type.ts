@@ -28,6 +28,7 @@ export interface getOrderStatusesFilters {
   includeCount: boolean
   includeAll: boolean
   isLocked: boolean
+  isSelectable: boolean
   createdAt: DateRange
   updatedAt: DateRange
 }
@@ -58,6 +59,7 @@ export interface createOrderStatusParams {
   priority?: number
   color?: string
   isLocked?: boolean
+  isSelectable?: boolean
 }
 
 export interface editOrderStatusResult {
@@ -73,6 +75,7 @@ export interface editOrderStatusParams {
   priority?: number
   color?: string
   isLocked?: boolean
+  isSelectable?: boolean
 }
 
 export interface removeOrderStatusesResult {

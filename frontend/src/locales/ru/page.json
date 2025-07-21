@@ -536,6 +536,7 @@
   "page.order-statuses.table.color": "Цвет",
   "page.order-statuses.table.active": "Активность",
   "page.order-statuses.table.isLocked": "Заблокирован",
+  "page.order-statuses.table.isSelectable": "Доступен для выбора",
 
   "page.order-statuses.form.title.create": "Создание нового статуса заказа",
   "page.order-statuses.form.description.create": "Добавить новый статус заказа в систему",
@@ -546,7 +547,9 @@
   "page.order-statuses.form.color": "Цвет",
   "page.order-statuses.form.active": "Активность",
   "page.order-statuses.form.isLocked": "Заблокирован",
-  "page.order-statuses.form.isLocked.description": "Заблокированный статус заказа",
+  "page.order-statuses.form.isLocked.description": "Запрещает редактирование заказа",
+  "page.order-statuses.form.isSelectable": "Доступен для выбора",
+  "page.order-statuses.form.isSelectable.description": "Доступен для выбора в качестве статуса заказа",
 
   "page.order-sources.title": "Источники заказов",
   "page.order-sources.description": "Управление источниками заказов",

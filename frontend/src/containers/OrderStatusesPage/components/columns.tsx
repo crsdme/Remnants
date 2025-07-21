@@ -156,6 +156,20 @@ export function useColumns() {
         },
       },
       {
+        id: 'isSelectable',
+        accessorKey: 'isSelectable',
+        meta: {
+          title: t('page.order-statuses.table.isSelectable'),
+          batchEdit: true,
+          batchEditType: 'boolean',
+          filterable: true,
+          filterType: 'boolean',
+          sortable: true,
+        },
+        header: t('page.order-statuses.table.isSelectable'),
+        cell: ({ row }) => <Badge variant={row.original.isSelectable ? 'success' : 'destructive'}>{t(`table.yesno.${row.original.isSelectable}`)}</Badge>,
+      },
+      {
         id: 'isLocked',
         accessorKey: 'isLocked',
         meta: {

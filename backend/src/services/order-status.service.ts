@@ -14,6 +14,7 @@ export async function get(payload: OrderStatusTypes.getOrderStatusesParams): Pro
     includeAll = false,
     includeCount = false,
     isLocked = undefined,
+    isSelectable = undefined,
     createdAt = {
       from: undefined,
       to: undefined,
@@ -30,12 +31,13 @@ export async function get(payload: OrderStatusTypes.getOrderStatusesParams): Pro
     color: { type: 'string' },
     priority: { type: 'exact' },
     isLocked: { type: 'exact' },
+    isSelectable: { type: 'exact' },
     createdAt: { type: 'dateRange' },
     updatedAt: { type: 'dateRange' },
   } as const
 
   const query = buildQuery({
-    filters: { names, color, priority, createdAt, updatedAt, isLocked },
+    filters: { names, color, priority, createdAt, updatedAt, isLocked, isSelectable },
     rules: filterRules,
     language,
   })
@@ -82,6 +84,7 @@ export async function get(payload: OrderStatusTypes.getOrderStatusesParams): Pro
         color: 1,
         priority: 1,
         isLocked: 1,
+        isSelectable: 1,
         createdAt: 1,
         updatedAt: 1,
         ...(includeCount ? { ordersCount: 1 } : {}),

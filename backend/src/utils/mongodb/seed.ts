@@ -577,6 +577,8 @@ async function createOrderStatuses() {
       ru: 'Новый',
     },
     priority: 1,
+    isSelectable: true,
+    isLocked: false,
   })
 
   const { orderStatus: inProgress } = await OrderStatusService.create({
@@ -585,6 +587,8 @@ async function createOrderStatuses() {
       ru: 'В работе',
     },
     priority: 2,
+    isSelectable: true,
+    isLocked: false,
   })
 
   const { orderStatus: sent } = await OrderStatusService.create({
@@ -593,6 +597,8 @@ async function createOrderStatuses() {
       ru: 'Отправлен',
     },
     priority: 3,
+    isSelectable: true,
+    isLocked: false,
   })
 
   const { orderStatus: completed } = await OrderStatusService.create({
@@ -602,6 +608,7 @@ async function createOrderStatuses() {
     },
     isLocked: true,
     priority: 4,
+    isSelectable: false,
   })
 
   const { orderStatus: removed } = await OrderStatusService.create({
@@ -611,6 +618,7 @@ async function createOrderStatuses() {
     },
     isLocked: true,
     priority: 5,
+    isSelectable: false,
   })
 
   return { isNew, inProgress, sent, completed, removed }

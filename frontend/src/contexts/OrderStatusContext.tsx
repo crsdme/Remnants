@@ -50,6 +50,7 @@ export function OrderStatusProvider({ children }: OrderStatusProviderProps) {
       color: z.string().optional(),
       priority: z.number().default(0),
       isLocked: z.boolean().default(false),
+      isSelectable: z.boolean().default(false),
     }), [t])
 
   const form = useForm({
@@ -71,6 +72,7 @@ export function OrderStatusProvider({ children }: OrderStatusProviderProps) {
         color: '',
         priority: 0,
         isLocked: false,
+        isSelectable: false,
       }
     }
     return {
@@ -78,6 +80,7 @@ export function OrderStatusProvider({ children }: OrderStatusProviderProps) {
       color: orderStatus.color,
       priority: orderStatus.priority,
       isLocked: orderStatus.isLocked,
+      isSelectable: orderStatus.isSelectable,
     }
   }
 

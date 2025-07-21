@@ -532,6 +532,7 @@
   "page.order-statuses.table.color": "Color",
   "page.order-statuses.table.active": "Active",
   "page.order-statuses.table.isLocked": "Locked",
+  "page.order-statuses.table.isSelectable": "Selectable",
 
   "page.order-statuses.form.title.create": "Create new order status",
   "page.order-statuses.form.description.create": "Add new order status to the system",
@@ -542,7 +543,9 @@
   "page.order-statuses.form.color": "Color",
   "page.order-statuses.form.active": "Active",
   "page.order-statuses.form.isLocked": "Locked",
-  "page.order-statuses.form.isLocked.description": "Locked order status",
+  "page.order-statuses.form.isLocked.description": "Prevents editing the order",
+  "page.order-statuses.form.isSelectable": "Selectable",
+  "page.order-statuses.form.isSelectable.description": "Available for selection as an order status",
 
   "page.order-sources.title": "Order Sources",
   "page.order-sources.description": "Manage order sources",

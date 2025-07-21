@@ -13,6 +13,7 @@ export const getOrderStatusesSchema = z.object({
     includeAll: stringToBooleanSchema.optional(),
     includeCount: stringToBooleanSchema.optional(),
     isLocked: stringToBooleanSchema.optional(),
+    isSelectable: stringToBooleanSchema.optional(),
     createdAt: dateRangeSchema.optional(),
     updatedAt: dateRangeSchema.optional(),
   }).optional().default({}),
@@ -22,6 +23,7 @@ export const getOrderStatusesSchema = z.object({
     priority: sorterParamsSchema.optional(),
     updatedAt: sorterParamsSchema.optional(),
     createdAt: sorterParamsSchema.optional(),
+    isSelectable: sorterParamsSchema.optional(),
   }).optional().default({}),
   pagination: paginationSchema.optional().default({}),
 })
@@ -31,6 +33,7 @@ export const createOrderStatusSchema = z.object({
   priority: z.number().optional().default(0),
   color: z.string().optional(),
   isLocked: stringToBooleanSchema.optional(),
+  isSelectable: stringToBooleanSchema.optional(),
 })
 
 export const editOrderStatusSchema = z.object({
@@ -39,6 +42,7 @@ export const editOrderStatusSchema = z.object({
   priority: z.number().optional().default(0),
   color: z.string().optional(),
   isLocked: stringToBooleanSchema.optional(),
+  isSelectable: stringToBooleanSchema.optional(),
 })
 
 export const removeOrderStatusesSchema = z.object({

@@ -127,6 +127,27 @@ export function OrderStatusForm() {
               </FormItem>
             )}
           />
+          <FormField
+            control={form.control}
+            name="isSelectable"
+            render={({ field }) => (
+              <FormItem className="flex items-center justify-between rounded-md border p-4 grow">
+                <div className="space-y-1">
+                  <FormLabel className="text-sm">{t('page.order-statuses.form.isSelectable')}</FormLabel>
+                  <FormDescription className="text-xs text-muted-foreground">
+                    {t('page.order-statuses.form.isSelectable.description')}
+                  </FormDescription>
+                </div>
+                <FormControl>
+                  <Checkbox
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                    disabled={isLoading}
+                  />
+                </FormControl>
+              </FormItem>
+            )}
+          />
         </div>
 
         <div className="flex gap-2">
