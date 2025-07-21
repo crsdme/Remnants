@@ -11,6 +11,149 @@ export const backendUrl = import.meta.env.VITE_BACKEND_URL
 export const SUPPORTED_LANGUAGES = ['ru', 'en'] as const
 export type SupportedLanguage = typeof SUPPORTED_LANGUAGES[number]
 
+export const NAV_MENU_ITEMS = [
+  {
+    id: 'dashboard',
+    url: '/dashboard',
+    icon: 'LayoutDashboard',
+    permissions: ['dashboard.page'],
+  },
+  {
+    id: 'orders',
+    url: '/orders',
+    icon: 'ShoppingCart',
+    permissions: ['order.page'],
+  },
+  {
+    id: 'leades',
+    url: '/leades',
+    icon: 'Users',
+    permissions: ['lead.page'],
+  },
+  {
+    id: 'chats',
+    url: '/chats',
+    icon: 'MessageSquare',
+    permissions: ['chat.page'],
+  },
+  {
+    id: 'tasks',
+    url: '/tasks',
+    icon: 'ListChecks',
+    permissions: ['task.page'],
+  },
+  {
+    id: 'catalog',
+    icon: 'Package',
+    permissions: ['product.page', 'attribute.page', 'attributeGroup.page', 'barcode.page', 'category.page'],
+    items: [
+      { id: 'products', url: '/products', permissions: ['product.page'] },
+      { id: 'categories', url: '/categories', permissions: ['category.page'] },
+      { id: 'productPropertiesGroups', url: '/product-properties-groups', permissions: ['product-properties-groups.page'] },
+      { id: 'productProperties', url: '/product-properties', permissions: ['product-property.page'] },
+      { id: 'barcodes', url: '/barcodes', permissions: ['barcode.page'] },
+    ],
+  },
+  {
+    id: 'statistic',
+    icon: 'BarChart3',
+    permissions: ['statistic.page', 'orderStatistic.page', 'productStatistic.page', 'stockStatistic.page'],
+    items: [
+      { id: 'orderStatistic', url: '/statistic/order', permissions: ['orderStatistic.page'] },
+      { id: 'productStatistic', url: '/statistic/product', permissions: ['productStatistic.page'] },
+      { id: 'stockStatistic', url: '/statistic/stock', permissions: ['stockStatistic.page'] },
+      { id: 'productionStatistic', url: '/statistic/production', permissions: ['productionStatistic.page'] },
+      { id: 'metrics', url: '/statistic/metrics', permissions: ['metrics.page'] },
+    ],
+  },
+  {
+    id: 'marketing',
+    icon: 'Tag',
+    permissions: ['marketing.page', 'client.page', 'promocode.page', 'coupon.page', 'bonus.page'],
+    items: [
+      { id: 'clients', url: '/clients', permissions: ['client.page'] },
+      { id: 'promocodes', url: '/promocodes', permissions: ['promocode.page'] },
+      { id: 'coupons', url: '/coupons', permissions: ['coupon.page'] },
+      { id: 'bonuses', url: '/bonuses', permissions: ['bonus.page'] },
+    ],
+  },
+  {
+    id: 'warehouses',
+    icon: 'Warehouse',
+    permissions: ['warehouse.page', 'purchase.page', 'procurement.page', 'production.page', 'inventory.page'],
+    items: [
+      { id: 'warehouses', url: '/warehouses', permissions: ['warehouses.page'] },
+      { id: 'purchases', url: '/purchases', permissions: ['purchase.page'] },
+      { id: 'procurements', url: '/procurements', permissions: ['procurement.page'] },
+      { id: 'production', url: '/production', permissions: ['production.page'] },
+      { id: 'inventories', url: '/inventories', permissions: ['inventory.page'] },
+      { id: 'warehouseTransactions', url: '/warehouse-transactions', permissions: ['warehouse-transaction.page'] },
+    ],
+  },
+  {
+    id: 'money',
+    icon: 'Banknote',
+    permissions: ['money.page', 'cashregister.page', 'cashregister-account.page', 'expense.page', 'investor.page', 'provider.page', 'money-transaction.page'],
+    items: [
+      { id: 'cashregisters', url: '/cashregisters', permissions: ['cashregister.page'] },
+      {
+        id: 'cashregisterAccounts',
+        url: '/cashregister-accounts',
+        permissions: ['cashregister-account.page'],
+      },
+      { id: 'expenses', url: '/expenses', permissions: ['expense.page'] },
+      { id: 'investors', url: '/investors', permissions: ['investor.page'] },
+      { id: 'providers', url: '/providers', permissions: ['provider.page'] },
+      { id: 'moneyTransactions', url: '/money-transactions', permissions: ['money-transaction.page'] },
+    ],
+  },
+  {
+    id: 'socials',
+    icon: 'Globe',
+    permissions: ['social.page', 'news.page', 'update.page', 'tour.page'],
+    items: [
+      { id: 'news', url: '/socials/news', permissions: ['news.page'] },
+      { id: 'updates', url: '/updates', permissions: ['update.page'] },
+      { id: 'tour', url: '/tour', permissions: ['tour.page'] },
+    ],
+  },
+  {
+    id: 'users',
+    icon: 'Users',
+    permissions: ['user.page', 'timetable.page', 'userRole.page'],
+    items: [
+      { id: 'users', url: '/users', permissions: ['user.page'] },
+      { id: 'timetable', url: '/users/timetable', permissions: ['timetable.page'] },
+      { id: 'userRoles', url: '/users/roles', permissions: ['userRole.page'] },
+    ],
+  },
+  {
+    id: 'settings',
+    icon: 'Settings',
+    permissions: ['settings.page', 'language.page', 'currency.page', 'source.page', 'orderStatus.page', 'deliveryService.page', 'unit.page', 'log.page'],
+    items: [
+      { id: 'automations', url: '/settings/automations', permissions: ['automation.page'] },
+      { id: 'currencies', url: '/settings/currencies', permissions: ['currency.page'] },
+      {
+        id: 'deliveryServices',
+        url: '/settings/delivery-services',
+        permissions: ['deliveryService.page'],
+      },
+      { id: 'languages', url: '/settings/languages', permissions: ['language.page'] },
+      { id: 'orderSources', url: '/settings/order-sources', permissions: ['orderSource.page'] },
+      { id: 'orderStatuses', url: '/settings/order-statuses', permissions: ['orderStatus.page'] },
+      { id: 'settings', url: '/settings', permissions: ['settings.page'] },
+      { id: 'units', url: '/settings/units', permissions: ['unit.page'] },
+    ],
+  },
+  {
+    id: 'documents',
+    url: '/documents',
+    icon: 'FileText',
+    permissions: ['document.page'],
+  },
+]
+
 export const PAYMENT_STATUSES = [
   {
     id: 'pending',

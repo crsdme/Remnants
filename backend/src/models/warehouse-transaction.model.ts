@@ -37,6 +37,10 @@ const WarehouseTransactionSchema: Schema = new Schema(
       enum: ['draft', 'confirmed', 'awaiting', 'received', 'cancelled'],
       default: 'draft',
     },
+    accepted: {
+      type: Boolean,
+      default: false,
+    },
     createdBy: {
       type: String,
       ref: 'User',
@@ -55,6 +59,10 @@ const WarehouseTransactionSchema: Schema = new Schema(
     comment: {
       type: String,
       default: '',
+    },
+    acceptedAt: {
+      type: Date,
+      default: null,
     },
   },
   { timestamps: true },

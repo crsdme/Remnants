@@ -359,6 +359,9 @@
   "response.title.WAREHOUSE_TRANSACTION_RECEIVED": "Транзакция склада принята",
   "response.description.WAREHOUSE_TRANSACTION_RECEIVED": "Транзакция склада была принята",
 
+  "response.title.WAREHOUSE_TRANSACTIONS_NOT_REMOVED": "Транзакции складов не удалены",
+  "response.description.WAREHOUSE_TRANSACTIONS_NOT_REMOVED": "Не удалось удалить выбранные транзакции складов",
+
   "response.title.ORDER_SOURCES_FETCHED": "Источники заказов получены",
   "response.description.ORDER_SOURCES_FETCHED": "Список источников заказов успешно получен",
 
@@ -411,5 +414,23 @@
   "response.description.ORDERS_NOT_REMOVED": "Не удалось удалить выбранные заказы",
 
   "response.title.ORDERS_REMOVED": "Заказы удалены",
-  "response.description.ORDERS_REMOVED": "Выбранные заказы были удалены"
+  "response.description.ORDERS_REMOVED": "Выбранные заказы были удалены",
+
+  "response.title.MONEY_TRANSACTION_CREATED": "Транзакция денег создана",
+  "response.description.MONEY_TRANSACTION_CREATED": "Новая транзакция денег была создана",
+
+  "response.title.MONEY_TRANSACTION_EDITED": "Транзакция денег обновлена",
+  "response.description.MONEY_TRANSACTION_EDITED": "Транзакция денег была обновлена",
+
+  "response.title.MONEY_TRANSACTIONS_NOT_REMOVED": "Транзакции денег не удалены",
+  "response.description.MONEY_TRANSACTIONS_NOT_REMOVED": "Не удалось удалить выбранные транзакции денег",
+
+  "response.title.MONEY_TRANSACTIONS_REMOVED": "Транзакции денег удалены",
+  "response.description.MONEY_TRANSACTIONS_REMOVED": "Выбранные транзакции денег были удалены",
+
+  "response.title.MONEY_TRANSACTION_NOT_EDITED": "Транзакция денег не обновлена",
+  "response.description.MONEY_TRANSACTION_NOT_EDITED": "Не удалось обновить транзакцию денег",
+
+  "response.title.MONEY_TRANSACTIONS_FETCHED": "Транзакции денег получены",
+  "response.description.MONEY_TRANSACTIONS_FETCHED": "Список транзакций денег успешно получен"
 }

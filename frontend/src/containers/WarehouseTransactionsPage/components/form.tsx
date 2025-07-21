@@ -2,6 +2,7 @@ import { useFieldArray, useWatch } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { useWarehouseOptions } from '@/api/hooks'
 import { AsyncSelect, ProductSelectedTable, ProductTable } from '@/components'
+import { AsyncSelectNew } from '@/components/AsyncSelectNew'
 import {
   Button,
   Form,
@@ -178,18 +179,17 @@ export function WarehouseTransactionForm() {
                     </p>
                   </FormLabel>
                   <FormControl>
-                    <AsyncSelect
-                      fetcher={(params) => {
-                        form.resetField('toWarehouse')
-                        return loadWarehouseOptions({ query: params.query, selectedValue: params.selectedValue })
-                      }}
+                    <AsyncSelectNew
+                      {...field}
+                      loadOptions={loadWarehouseOptions}
                       renderOption={e => e.names[i18n.language]}
                       getDisplayValue={e => e.names[i18n.language]}
                       getOptionValue={e => e.id}
-                      name="fromWarehouse"
-                      value={field.value}
-                      onChange={field.onChange}
                       disabled={isLoading || isReceiving}
+                      onChange={(e) => {
+                        field.onChange(e)
+                        form.setValue('toWarehouse', '')
+                      }}
                     />
                   </FormControl>
                   <FormMessage />
@@ -211,18 +211,18 @@ export function WarehouseTransactionForm() {
                     </p>
                   </FormLabel>
                   <FormControl>
-                    <AsyncSelect
-                      fetcher={async (params) => {
-                        const data = await loadWarehouseOptions({ query: params.query, selectedValue: form.watch('toWarehouse') })
-                        const excludeIds = form.watch('fromWarehouse') || []
-                        return data.filter(d => !excludeIds.includes(d.id))
+                    <AsyncSelectNew
+                      {...field}
+                      loadOptions={(params) => {
+                        return loadWarehouseOptions({ query: params.query, selectedValue: params.selectedValue }).then((data) => {
+                          const excludeIds = form.watch('fromWarehouse') || []
+                          const warehouses = data.filter((d: any) => !excludeIds.includes(d.id))
+                          return warehouses
+                        })
                       }}
                       renderOption={e => e.names[i18n.language]}
                       getDisplayValue={e => e.names[i18n.language]}
                       getOptionValue={e => e.id}
-                      name="toWarehouse"
-                      value={field.value}
-                      onChange={field.onChange}
                       disabled={isLoading || isReceiving}
                     />
                   </FormControl>

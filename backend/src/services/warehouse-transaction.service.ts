@@ -498,27 +498,51 @@ export async function remove(payload: WarehouseTransactionTypes.removeWarehouseT
   const { ids } = payload
   const removedBy = user.id
 
-  await WarehouseTransactionModel.updateMany({ _id: { $in: ids } }, { status: 'cancelled', removedBy })
+  await WarehouseTransactionModel.updateMany(
+    { _id: { $in: ids } },
+    { status: 'cancelled', removedBy, removedAt: new Date() },
+  )
 
   for (const id of ids) {
-    const warehouseTransaction = await WarehouseTransactionModel.findById(id)
+    const transaction = await WarehouseTransactionModel.findById(id)
+    if (!transaction)
+      continue
+
     const products = await WarehouseTransactionItemModel.find({ transactionId: id })
 
     for (const product of products) {
-      if (warehouseTransaction?.fromWarehouse) {
-        await QuantityService.count({
-          product: product.productId,
-          warehouse: warehouseTransaction.fromWarehouse,
-          count: product.quantity,
-        })
-      }
+      switch (transaction.type) {
+        case 'in':
+          await QuantityService.count({
+            product: product.productId,
+            warehouse: transaction.toWarehouse,
+            count: -product.quantity,
+          })
+          break
 
-      if (warehouseTransaction?.toWarehouse) {
-        await QuantityService.count({
-          product: product.productId,
-          warehouse: warehouseTransaction.toWarehouse,
-          count: -product.quantity,
-        })
+        case 'out':
+          await QuantityService.count({
+            product: product.productId,
+            warehouse: transaction.fromWarehouse,
+            count: product.quantity,
+          })
+          break
+
+        case 'transfer':
+          await QuantityService.count({
+            product: product.productId,
+            warehouse: transaction.fromWarehouse,
+            count: product.quantity,
+          })
+
+          if (transaction.accepted) {
+            await QuantityService.count({
+              product: product.productId,
+              warehouse: transaction.toWarehouse,
+              count: -product.quantity,
+            })
+          }
+          break
       }
     }
   }
@@ -533,6 +557,8 @@ export async function receive(payload: WarehouseTransactionTypes.receiveWarehous
   const warehouseTransaction = await WarehouseTransactionModel.findByIdAndUpdate(id, {
     status: 'received',
     acceptedBy,
+    acceptedAt: new Date(),
+    accepted: true,
   }, { new: true })
 
   const mappedProducts = products.map(product => ({
@@ -552,7 +578,16 @@ export async function receive(payload: WarehouseTransactionTypes.receiveWarehous
     })
   }
 
-  await WarehouseTransactionItemModel.create(mappedProducts)
+  for (const product of mappedProducts) {
+    await WarehouseTransactionItemModel.updateOne({
+      transactionId: id,
+      productId: product.productId,
+    }, {
+      $set: {
+        receivedQuantity: product.receivedQuantity,
+      },
+    })
+  }
 
   return { status: 'success', code: 'WAREHOUSE_TRANSACTION_RECEIVED', message: 'Warehouse transaction received', warehouseTransaction }
 }

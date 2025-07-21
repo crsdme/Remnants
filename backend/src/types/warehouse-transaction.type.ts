@@ -7,8 +7,13 @@ export interface WarehouseTransaction {
   toWarehouse: string
   requiresReceiving: boolean
   status: string
+  accepted: boolean
+  acceptedBy: string
   createdBy: string
+  removedBy: string
   comment: string
+  removedAt: Date
+  acceptedAt: Date
   createdAt: Date
   updatedAt: Date
 }

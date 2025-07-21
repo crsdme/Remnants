@@ -359,6 +359,9 @@
   "response.title.WAREHOUSE_TRANSACTION_RECEIVED": "Warehouse transaction received",
   "response.description.WAREHOUSE_TRANSACTION_RECEIVED": "Warehouse transaction has been received",
 
+  "response.title.WAREHOUSE_TRANSACTIONS_NOT_REMOVED": "Warehouse transactions not removed",
+  "response.description.WAREHOUSE_TRANSACTIONS_NOT_REMOVED": "Unable to remove selected warehouse transactions",
+
   "response.title.ORDER_SOURCES_FETCHED": "Order sources fetched",
   "response.description.ORDER_SOURCES_FETCHED": "Order sources list successfully fetched",
 
@@ -411,5 +414,24 @@
   "response.description.ORDERS_NOT_REMOVED": "Unable to remove selected order",
 
   "response.title.ORDERS_REMOVED": "Order removed",
-  "response.description.ORDERS_REMOVED": "Selected order has been deleted"
+  "response.description.ORDERS_REMOVED": "Selected order has been deleted",
+
+  "response.title.MONEY_TRANSACTION_CREATED": "Money transaction created",
+  "response.description.MONEY_TRANSACTION_CREATED": "New money transaction has been created",
+
+  "response.title.MONEY_TRANSACTION_EDITED": "Money transaction edited",
+  "response.description.MONEY_TRANSACTION_EDITED": "Money transaction has been updated",
+
+  "response.title.MONEY_TRANSACTIONS_NOT_REMOVED": "Money transactions not removed",
+  "response.description.MONEY_TRANSACTIONS_NOT_REMOVED": "Unable to remove selected money transactions",
+
+  "response.title.MONEY_TRANSACTIONS_REMOVED": "Money transactions removed",
+  "response.description.MONEY_TRANSACTIONS_REMOVED": "Selected money transactions have been deleted",
+
+  "response.title.MONEY_TRANSACTION_NOT_EDITED": "Money transaction not edited",
+  "response.description.MONEY_TRANSACTION_NOT_EDITED": "Unable to edit money transaction",
+
+  "response.title.MONEY_TRANSACTIONS_FETCHED": "Money transactions fetched",
+  "response.description.MONEY_TRANSACTIONS_FETCHED": "Money transactions list successfully fetched"
+
 }
