@@ -2,7 +2,7 @@ import { Router } from 'express'
 import * as WarehouseTransactionController from '../../controllers/warehouse-transaction.controller'
 import { validateBodyRequest, validateQueryRequest } from '../../middleware'
 import { checkPermissions } from '../../middleware/permission.middleware'
-import { createWarehouseTransactionSchema, editWarehouseTransactionSchema, getWarehouseTransactionsItemsSchema, getWarehouseTransactionsSchema, receiveWarehouseTransactionSchema, removeWarehouseTransactionsSchema } from '../../schemas/warehouse-transaction.schema'
+import { createWarehouseTransactionSchema, editWarehouseTransactionSchema, getWarehouseTransactionsItemsSchema, getWarehouseTransactionsSchema, receiveWarehouseTransactionSchema, removeWarehouseTransactionsSchema, scanBarcodeToDraftSchema } from '../../schemas/warehouse-transaction.schema'
 
 const router = Router()
 
@@ -15,6 +15,11 @@ router.get(
   '/get/items',
   validateQueryRequest(getWarehouseTransactionsItemsSchema),
   WarehouseTransactionController.getItems,
+)
+router.get(
+  '/scan/barcode',
+  validateQueryRequest(scanBarcodeToDraftSchema),
+  WarehouseTransactionController.scanBarcodeToDraft,
 )
 router.post(
   '/create',

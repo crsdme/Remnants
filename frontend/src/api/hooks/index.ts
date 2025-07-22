@@ -178,6 +178,7 @@ export * from './warehouse-transaction/useWarehouseTransactionQuery'
 
 export * from './warehouse-transaction/useWarehouseTransactionReceive'
 export * from './warehouse-transaction/useWarehouseTransactionRemove'
+export * from './warehouse-transaction/useWarehouseTransactionScanOptions'
 // Warehouse Management
 export * from './warehouse/useWarehouseCreate'
 export * from './warehouse/useWarehouseEdit'

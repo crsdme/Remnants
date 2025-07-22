@@ -15,6 +15,7 @@ import {
   useWarehouseTransactionItemsOptions,
   useWarehouseTransactionReceive,
   useWarehouseTransactionRemove,
+  useWarehouseTransactionScanOptions,
 } from '@/api/hooks'
 
 interface WarehouseTransactionContextType {
@@ -264,7 +265,12 @@ export function WarehouseTransactionProvider({ children }: WarehouseTransactionP
     },
   })
 
-  const getBarcode = (code: string) => loadWarehouseTransactionItemsOptions({ query: code, transaction: selectedWarehouseTransaction?.id })
+  const loadWarehouseTransactionScanOptions = useWarehouseTransactionScanOptions()
+
+  const getBarcode = async (code: string) => {
+    const { warehouseItems } = await loadWarehouseTransactionScanOptions({ barcode: code })
+    return warehouseItems
+  }
 
   const removeWarehouseTransaction = (params) => {
     useMutateRemoveWarehouseTransaction.mutate(params)

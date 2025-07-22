@@ -5,6 +5,8 @@ import type {
   getWarehouseTransactionsParams,
   receiveWarehouseTransactionsParams,
   removeWarehouseTransactionsParams,
+  scanBarcodeToDraftParams,
+  scanBarcodeToDraftResponse,
   WarehouseTransactionsItemsResponse,
   WarehouseTransactionsResponse,
 } from '@/api/types'
@@ -28,6 +30,10 @@ export async function removeWarehouseTransaction(params: removeWarehouseTransact
 
 export async function getWarehouseTransactionsItems(params: getWarehouseTransactionsItemsParams) {
   return api.get<WarehouseTransactionsItemsResponse>('warehouse-transactions/get/items', { params })
+}
+
+export async function scanBarcodeToDraft(params: scanBarcodeToDraftParams) {
+  return api.get<scanBarcodeToDraftResponse>('warehouse-transactions/scan/barcode', { params })
 }
 
 export async function receiveWarehouseTransaction(params: receiveWarehouseTransactionsParams) {

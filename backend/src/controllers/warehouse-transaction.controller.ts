@@ -23,6 +23,17 @@ export async function getItems(req: Request, res: Response, next: NextFunction) 
   }
 }
 
+export async function scanBarcodeToDraft(req: Request, res: Response, next: NextFunction) {
+  try {
+    const serviceResponse = await WarehouseTransactionService.scanBarcodeToDraft(req.body, req.user)
+
+    res.status(200).json(serviceResponse)
+  }
+  catch (err) {
+    next(err)
+  }
+}
+
 export async function create(req: Request, res: Response, next: NextFunction) {
   try {
     const serviceResponse = await WarehouseTransactionService.create(req.body, req.user)

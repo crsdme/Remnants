@@ -23,8 +23,6 @@ interface BarcodeContextType {
   isLoading: boolean
   isEdit: boolean
   form: UseFormReturn
-  selectedProducts: Product[]
-  setSelectedProducts: (products: any) => void
   openModal: (barcode?: Barcode) => void
   closeModal: () => void
   submitBarcodeForm: (params) => void
@@ -44,7 +42,6 @@ export function BarcodeProvider({ children }: BarcodeProviderProps) {
   const [isLoading, setIsLoading] = useState(false)
   const [isEdit, setIsEdit] = useState(false)
   const [selectedBarcode, setSelectedBarcode] = useState(null)
-  const [selectedProducts, setSelectedProducts] = useState([])
 
   const { t } = useTranslation()
 
@@ -52,6 +49,14 @@ export function BarcodeProvider({ children }: BarcodeProviderProps) {
     z.object({
       code: z.string({ required_error: t('form.errors.required') }).min(3, { message: t('form.errors.min_length', { count: 3 }) }).trim(),
       active: z.boolean().default(true),
+      products: z.array(z.object({
+        id: z.string({
+          required_error: t('form.errors.required'),
+        }),
+        quantity: z.number({
+          required_error: t('form.errors.required'),
+        }),
+      })).min(1, { message: t('form.errors.required.products') }),
     }), [t])
 
   const form = useForm({
@@ -66,20 +71,20 @@ export function BarcodeProvider({ children }: BarcodeProviderProps) {
 
   function getBarcodeFormValues(barcode) {
     if (!barcode) {
-      setSelectedProducts([])
       return {
         code: '',
         active: true,
+        products: [],
       }
     }
     const products = barcode.products.map((product: any) => ({
       ...product,
       selectedQuantity: product.quantity,
     }))
-    setSelectedProducts(products)
     return {
       code: barcode.code,
       active: barcode.active,
+      products,
     }
   }
 
@@ -146,22 +151,6 @@ export function BarcodeProvider({ children }: BarcodeProviderProps) {
     },
   })
 
-  // const useMutateRequestBarcodes = useBarcodeQuery({
-  //   options: {
-  //     onSuccess: ({ data }) => {
-  //       if (data.barcodes.length === 0) {
-  //         toast.error(t(`error.title.${data.code}`), { description: `${t(`error.description.${data.code}`)} ${data.description || ''}` })
-  //       }
-  //       else {
-  //         toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description || ''}` })
-  //       }
-  //     },
-  //     onError: ({ response }) => {
-  //       const error = response.data.error
-  //       toast.error(t(`error.title.${error.code}`), { description: `${t(`error.description.${error.code}`)} ${error.description || ''}` })
-  //     },
-  //   },
-  // })
   const loadBarcodeOptions = useBarcodeOptions()
 
   const useMutateGenerateCode = useBarcodeGenerate({
@@ -204,8 +193,6 @@ export function BarcodeProvider({ children }: BarcodeProviderProps) {
       isLoading,
       isEdit,
       form,
-      selectedProducts,
-      setSelectedProducts,
       openModal,
       closeModal,
       submitBarcodeForm,
@@ -213,7 +200,7 @@ export function BarcodeProvider({ children }: BarcodeProviderProps) {
       getBarcode,
       generateBarcode,
     }),
-    [selectedBarcode, isModalOpen, isLoading, isEdit, form, selectedProducts],
+    [selectedBarcode, isModalOpen, isLoading, isEdit, form],
   )
 
   return <BarcodeContext.Provider value={value}>{children}</BarcodeContext.Provider>

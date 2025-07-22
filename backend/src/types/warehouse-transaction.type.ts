@@ -146,3 +146,16 @@ export interface receiveWarehouseTransactionParams {
     receivedQuantity: number
   }[]
 }
+
+export interface scanBarcodeToDraftParams {
+  barcode: string
+  transactionId?: string
+}
+
+export interface scanBarcodeToDraftResult {
+  status: Status
+  code: Code
+  message: Message
+  warehouseItems: WarehouseTransactionItem[]
+  transactionId?: string
+}

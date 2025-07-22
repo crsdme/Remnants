@@ -18,7 +18,7 @@ export function ProductSelectedTable(
     isLoading?: boolean
     className?: string
     changeQuantity: (product: any, options: { quantity?: number, receivedQuantity?: number }) => void
-    isReceiving: boolean
+    isReceiving?: boolean
     disabled?: boolean
   },
 ) {

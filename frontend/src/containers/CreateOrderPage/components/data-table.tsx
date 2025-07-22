@@ -74,7 +74,9 @@ export function DataTable() {
 
   useBarcodeScanned(async (barcode: string) => {
     const products = await getBarcode(barcode)
-    addProduct(products)
+    for (const product of products) {
+      addProduct(product, product.quantity)
+    }
   })
 
   return (

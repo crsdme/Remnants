@@ -11,6 +11,7 @@ import { toast } from 'sonner'
 
 import { z } from 'zod'
 import {
+  useBarcodeOptions,
   useCashregisterAccountQuery,
   useCashregisterQuery,
   useClientCreate,
@@ -38,6 +39,7 @@ interface EditOrderContextType {
   createClient: (params) => void
   editOrder: (params) => void
   createPayment: (params) => void
+  getBarcode: (code: string) => Promise<any>
 }
 
 const EditOrderContext = createContext<EditOrderContextType | undefined>(undefined)
@@ -287,6 +289,12 @@ export function EditOrderProvider({ children }: EditOrderProviderProps) {
     navigate('/orders')
   }
 
+  const loadBarcodeOptions = useBarcodeOptions()
+  const getBarcode = async (code: string) => {
+    const barcode = await loadBarcodeOptions({ query: code })
+    return barcode[0]?.products
+  }
+
   const value: EditOrderContextType = useMemo(
     () => ({
       isClientModalOpen,
@@ -304,6 +312,7 @@ export function EditOrderProvider({ children }: EditOrderProviderProps) {
       removePayment,
       createClient,
       editOrder,
+      getBarcode,
     }),
     [isClientModalOpen, isPaymentModalOpen, isLoading, paymentForm, informationForm, clientForm, payments],
   )

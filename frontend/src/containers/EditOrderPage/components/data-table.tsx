@@ -12,7 +12,7 @@ import { PaymentForm } from './payment-form'
 import { ProductSelectedTotal } from './product-selected-total'
 
 export function DataTable() {
-  const { paymentForm, informationForm, isLoading, clientForm, createClient, editOrder, createPayment } = useEditOrderContext()
+  const { paymentForm, informationForm, isLoading, clientForm, createClient, editOrder, createPayment, getBarcode } = useEditOrderContext()
 
   const itemsField = useFieldArray({
     control: informationForm.control,
@@ -96,9 +96,10 @@ export function DataTable() {
   }
 
   useBarcodeScanned(async (barcode: string) => {
-    addProduct([{ id: barcode, name: barcode, price: 0, quantity: 1 }])
-    // const data = await getBarcode(barcode)
-    // addProduct(data?.[0]?.products || [])
+    const products = await getBarcode(barcode)
+    for (const product of products) {
+      addProduct(product, product.quantity)
+    }
   })
 
   return (

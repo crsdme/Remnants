@@ -204,7 +204,6 @@ export async function getItems(payload: OrderTypes.getOrderItemsParams): Promise
   const query = buildQuery({
     filters: { order },
     rules: filterRules,
-    removed: false,
   })
 
   const pipeline = [

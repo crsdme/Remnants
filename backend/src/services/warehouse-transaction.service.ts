@@ -1,7 +1,7 @@
 import type { User } from '../types/user.type'
 import type * as WarehouseTransactionTypes from '../types/warehouse-transaction.type'
 import { STORAGE_URLS } from '../config/constants'
-import { WarehouseTransactionItemModel, WarehouseTransactionModel } from '../models'
+import { BarcodeModel, WarehouseTransactionItemModel, WarehouseTransactionModel } from '../models'
 import { buildQuery, buildSortQuery } from '../utils/queryBuilder'
 import * as QuantityService from './quantity.service'
 
@@ -394,6 +394,288 @@ export async function getItems(payload: WarehouseTransactionTypes.getWarehouseTr
   }))
 
   return { status: 'success', code: 'WAREHOUSE_TRANSACTIONS_ITEMS_FETCHED', message: 'Warehouse transactions items fetched', warehouseTransactionsItems, warehouseTransactionsItemsCount }
+}
+
+export async function scanBarcodeToDraft(payload: WarehouseTransactionTypes.scanBarcodeToDraftParams): Promise<WarehouseTransactionTypes.scanBarcodeToDraftResult> {
+  const { barcode, transactionId } = payload
+
+  const filterRules = {
+    code: { type: 'string' },
+  } as const
+
+  const query = buildQuery({
+    filters: { code: barcode },
+    rules: filterRules,
+    removed: false,
+  })
+
+  const pipeline = [
+    {
+      $match: query,
+    },
+    {
+      $unwind: {
+        path: '$products',
+        preserveNullAndEmptyArrays: true,
+      },
+    },
+    {
+      $lookup: {
+        from: 'products',
+        let: { productId: '$products._id' },
+        pipeline: [
+          { $match: { $expr: { $eq: ['$_id', '$$productId'] } } },
+          { $unwind: { path: '$productProperties', preserveNullAndEmptyArrays: true } },
+          {
+            $lookup: {
+              from: 'product-properties',
+              localField: 'productProperties._id',
+              foreignField: '_id',
+              as: 'productProperties.data',
+            },
+          },
+          {
+            $lookup: {
+              from: 'product-property-options',
+              localField: 'productProperties.value',
+              foreignField: '_id',
+              as: 'productProperties.optionData',
+            },
+          },
+          {
+            $lookup: {
+              from: 'product-property-options',
+              let: { valueArr: '$productProperties.value' },
+              pipeline: [
+                {
+                  $match: {
+                    $expr: {
+                      $in: [
+                        '$_id',
+                        {
+                          $cond: [
+                            { $isArray: ['$$valueArr'] },
+                            '$$valueArr',
+                            [{ $ifNull: ['$$valueArr', null] }],
+                          ],
+                        },
+                      ],
+                    },
+                  },
+                },
+              ],
+              as: 'productProperties.optionData',
+            },
+          },
+          {
+            $group: {
+              _id: '$_id',
+              doc: { $first: '$$ROOT' },
+              productProperties: { $push: '$productProperties' },
+            },
+          },
+          {
+            $addFields: {
+              'doc.productProperties': '$productProperties',
+            },
+          },
+          {
+            $replaceRoot: {
+              newRoot: '$doc',
+            },
+          },
+          {
+            $lookup: {
+              from: 'currencies',
+              localField: 'currency',
+              foreignField: '_id',
+              as: 'currency',
+            },
+          },
+          {
+            $lookup: {
+              from: 'currencies',
+              localField: 'purchaseCurrency',
+              foreignField: '_id',
+              as: 'purchaseCurrency',
+            },
+          },
+          {
+            $lookup: {
+              from: 'units',
+              localField: 'unit',
+              foreignField: '_id',
+              as: 'unit',
+            },
+          },
+          {
+            $lookup: {
+              from: 'categories',
+              localField: 'categories',
+              foreignField: '_id',
+              as: 'categories',
+            },
+          },
+          {
+            $lookup: {
+              from: 'quantities',
+              localField: 'quantity',
+              foreignField: '_id',
+              as: 'quantity',
+            },
+          },
+          {
+            $lookup: {
+              from: 'product-property-groups',
+              localField: 'productPropertiesGroup',
+              foreignField: '_id',
+              as: 'productPropertiesGroup',
+            },
+          },
+          {
+            $lookup: {
+              from: 'barcodes',
+              localField: 'barcodes',
+              foreignField: '_id',
+              as: 'barcodes',
+            },
+          },
+          {
+            $addFields: {
+              currency: { $arrayElemAt: ['$currency', 0] },
+              purchaseCurrency: { $arrayElemAt: ['$purchaseCurrency', 0] },
+              unit: { $arrayElemAt: ['$unit', 0] },
+              productPropertiesGroup: { $arrayElemAt: ['$productPropertiesGroup', 0] },
+              productProperties: {
+                $map: {
+                  input: '$productProperties',
+                  as: 'prop',
+                  in: {
+                    $mergeObjects: [
+                      '$$prop',
+                      {
+                        id: '$$prop._id',
+                        data: { $arrayElemAt: ['$$prop.data', 0] },
+                        optionData: {
+                          $map: {
+                            input: '$$prop.optionData',
+                            as: 'option',
+                            in: {
+                              $mergeObjects: [
+                                '$$option',
+                                {
+                                  id: '$$option._id',
+                                  names: '$$option.names',
+                                  color: '$$option.color',
+                                },
+                              ],
+                            },
+                          },
+                        },
+                      },
+                    ],
+                  },
+                },
+              },
+              categories: {
+                $map: {
+                  input: '$categories',
+                  as: 'prop',
+                  in: {
+                    $mergeObjects: [
+                      '$$prop',
+                      {
+                        id: '$$prop._id',
+                      },
+                    ],
+                  },
+                },
+              },
+              barcodes: {
+                $map: {
+                  input: '$barcodes',
+                  as: 'barcode',
+                  in: { $mergeObjects: ['$$barcode', { id: '$$barcode._id', code: '$$barcode.code' }] },
+                },
+              },
+            },
+          },
+          {
+            $project: {
+              _id: 0,
+              seq: 1,
+              names: 1,
+              price: 1,
+              currency: { id: '$currency._id', names: 1, symbols: 1 },
+              purchasePrice: 1,
+              purchaseCurrency: { id: '$purchaseCurrency._id', names: 1, symbols: 1 },
+              barcodes: { id: 1, code: 1 },
+              categories: { id: 1, names: 1 },
+              unit: { id: '$unit._id', names: 1, symbols: 1 },
+              quantity: { count: 1, warehouse: 1, status: 1 },
+              images: 1,
+              productProperties: { id: 1, value: 1, data: { names: 1, type: 1, isRequired: 1, showInTable: 1 }, optionData: { id: 1, names: 1, color: 1 } },
+              productPropertiesGroup: { id: '$productPropertiesGroup._id', names: 1 },
+              createdAt: 1,
+              updatedAt: 1,
+              id: '$_id',
+            },
+          },
+        ],
+        as: 'products.product',
+      },
+    },
+    {
+      $group: {
+        _id: '$_id',
+        doc: { $first: '$$ROOT' },
+        products: {
+          $push: {
+            quantity: '$products.quantity',
+            product: { $first: '$products.product' }, // т.к. product — это массив из $lookup
+          },
+        },
+      },
+    },
+    {
+      $addFields: {
+        'doc.products': '$products',
+      },
+    },
+    {
+      $replaceRoot: {
+        newRoot: '$doc',
+      },
+    },
+    {
+      $project: {
+        _id: 0,
+        id: '$_id',
+        code: 1,
+        products: 1,
+      },
+    },
+
+  ]
+
+  const barcodeRaw = await BarcodeModel.aggregate(pipeline).exec()
+  let warehouseItems = barcodeRaw[0].products || []
+
+  warehouseItems = warehouseItems.map((item: any) => ({
+    ...item,
+    product: {
+      ...item.product,
+      images: item.product.images.map((image: any) => ({
+        id: image._id,
+        path: `${STORAGE_URLS.productImages}/${image.filename}`,
+        filename: image.filename,
+        name: image.name,
+        type: image.type,
+      })),
+    },
+  }))
+
+  return { status: 'success', code: 'WAREHOUSE_ITEM_FETCHED', message: 'Warehouse item fetched', warehouseItems, transactionId }
 }
 
 export async function create(payload: WarehouseTransactionTypes.createWarehouseTransactionParams, user: User) {

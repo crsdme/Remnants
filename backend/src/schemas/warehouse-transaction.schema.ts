@@ -112,3 +112,7 @@ export const receiveWarehouseTransactionSchema = z.object({
     receivedQuantity: z.number(),
   })),
 })
+export const scanBarcodeToDraftSchema = z.object({
+  barcode: z.string().trim(),
+  transactionId: z.string().trim().optional(),
+})

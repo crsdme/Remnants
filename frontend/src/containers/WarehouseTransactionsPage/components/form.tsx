@@ -24,7 +24,7 @@ import { useWarehouseTransactionContext } from '@/contexts'
 import { useBarcodeScanned } from '@/utils/hooks'
 
 export function WarehouseTransactionForm() {
-  const { isLoading, form, submitWarehouseTransactionForm, closeModal, onError, isReceiving } = useWarehouseTransactionContext()
+  const { isLoading, form, submitWarehouseTransactionForm, closeModal, onError, isReceiving, getBarcode } = useWarehouseTransactionContext()
   const { t, i18n } = useTranslation()
 
   const type = useWatch({
@@ -106,9 +106,10 @@ export function WarehouseTransactionForm() {
   }
 
   useBarcodeScanned(async (barcode: string) => {
-    addProduct([{ id: barcode, name: barcode, price: 0, quantity: 1 }])
-    // const data = await getBarcode(barcode)
-    // addProduct(data?.[0]?.products || [])
+    const products = await getBarcode(barcode)
+    for (const { product, quantity } of products) {
+      addProduct(product, quantity)
+    }
   })
 
   const loadWarehouseOptions = useWarehouseOptions()
