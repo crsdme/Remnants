@@ -24,3 +24,13 @@ export interface DateRange {
   from: Date
   to: Date
 }
+
+export interface RequestUser {
+  id: IdType
+  login: string
+  name: string
+  role: string
+  active: boolean
+  createdAt: Date
+  updatedAt: Date
+}

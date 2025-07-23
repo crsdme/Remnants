@@ -251,7 +251,7 @@ export function AsyncSelectNew<T>({
               role="combobox"
               aria-expanded={open}
               className={cn(
-                'justify-between min-h-9',
+                'w-full max-w-full min-w-0 justify-between min-h-9',
                 disabled && 'opacity-50 cursor-not-allowed',
                 (multi && selectedOptions.length > 0) && 'h-auto p-1 has-[>svg]:pl-1',
                 triggerClassName,
@@ -365,8 +365,13 @@ function renderSelectedOptions<T>({
   if (selectedOptions.length === 0)
     return placeholder
 
-  if (!multi)
-    return getDisplayValue(selectedOptions[0])
+  if (!multi) {
+    return (
+      <span className="block overflow-hidden text-ellipsis whitespace-nowrap max-w-full">
+        {getDisplayValue(selectedOptions[0])}
+      </span>
+    )
+  }
 
   return (
     <div className="flex flex-wrap items-center gap-1">

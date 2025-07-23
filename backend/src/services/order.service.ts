@@ -1,5 +1,5 @@
+import type { RequestUser } from '../types/common.type'
 import type * as OrderTypes from '../types/order.type'
-import type { User } from '../types/user.type'
 import { v4 as uuidv4 } from 'uuid'
 import { STORAGE_URLS } from '../config/constants'
 import { OrderItemModel, OrderModel, OrderPaymentModel } from '../models'
@@ -572,7 +572,7 @@ export async function getOrderPayments(payload: OrderTypes.getOrderPaymentsParam
   }
 }
 
-export async function create(payload: OrderTypes.createOrderParams, user: User): Promise<OrderTypes.createOrderResult> {
+export async function create(payload: OrderTypes.createOrderParams, user: RequestUser): Promise<OrderTypes.createOrderResult> {
   const { orderPayments } = payload
   const createdOrderPayments = []
   const id = uuidv4()
@@ -620,7 +620,7 @@ export async function create(payload: OrderTypes.createOrderParams, user: User):
   return { status: 'success', code: 'ORDER_CREATED', message: 'Order created', order }
 }
 
-export async function edit(payload: OrderTypes.editOrderParams, user: User): Promise<OrderTypes.editOrderResult> {
+export async function edit(payload: OrderTypes.editOrderParams, user: RequestUser): Promise<OrderTypes.editOrderResult> {
   const { id, orderPayments, items } = payload
   const createdOrderPayments = []
 

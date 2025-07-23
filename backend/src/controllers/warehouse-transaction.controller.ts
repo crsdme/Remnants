@@ -1,4 +1,5 @@
 import type { NextFunction, Request, Response } from 'express'
+import type { RequestUser } from '../types/common.type'
 import * as WarehouseTransactionService from '../services/warehouse-transaction.service'
 
 export async function get(req: Request, res: Response, next: NextFunction) {
@@ -25,7 +26,7 @@ export async function getItems(req: Request, res: Response, next: NextFunction) 
 
 export async function scanBarcodeToDraft(req: Request, res: Response, next: NextFunction) {
   try {
-    const serviceResponse = await WarehouseTransactionService.scanBarcodeToDraft(req.body, req.user)
+    const serviceResponse = await WarehouseTransactionService.scanBarcodeToDraft(req.body)
 
     res.status(200).json(serviceResponse)
   }
@@ -34,7 +35,7 @@ export async function scanBarcodeToDraft(req: Request, res: Response, next: Next
   }
 }
 
-export async function create(req: Request, res: Response, next: NextFunction) {
+export async function create(req: Request & { user: RequestUser }, res: Response, next: NextFunction) {
   try {
     const serviceResponse = await WarehouseTransactionService.create(req.body, req.user)
 
@@ -56,7 +57,7 @@ export async function edit(req: Request, res: Response, next: NextFunction) {
   }
 }
 
-export async function remove(req: Request, res: Response, next: NextFunction) {
+export async function remove(req: Request & { user: RequestUser }, res: Response, next: NextFunction) {
   try {
     const serviceResponse = await WarehouseTransactionService.remove(req.body, req.user)
 
@@ -67,7 +68,7 @@ export async function remove(req: Request, res: Response, next: NextFunction) {
   }
 }
 
-export async function receive(req: Request, res: Response, next: NextFunction) {
+export async function receive(req: Request & { user: RequestUser }, res: Response, next: NextFunction) {
   try {
     const serviceResponse = await WarehouseTransactionService.receive(req.body, req.user)
 

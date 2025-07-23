@@ -1,4 +1,4 @@
-import type { User } from '../types/user.type'
+import type { RequestUser } from '../types/common.type'
 import type * as WarehouseTransactionTypes from '../types/warehouse-transaction.type'
 import { STORAGE_URLS } from '../config/constants'
 import { BarcodeModel, WarehouseTransactionItemModel, WarehouseTransactionModel } from '../models'
@@ -678,7 +678,7 @@ export async function scanBarcodeToDraft(payload: WarehouseTransactionTypes.scan
   return { status: 'success', code: 'WAREHOUSE_ITEM_FETCHED', message: 'Warehouse item fetched', warehouseItems, transactionId }
 }
 
-export async function create(payload: WarehouseTransactionTypes.createWarehouseTransactionParams, user: User) {
+export async function create(payload: WarehouseTransactionTypes.createWarehouseTransactionParams, user: RequestUser) {
   const { type, fromWarehouse, toWarehouse, requiresReceiving, comment, products } = payload
   const createdBy = user.id
 
@@ -776,7 +776,7 @@ export async function edit(payload: WarehouseTransactionTypes.editWarehouseTrans
   return { status: 'success', code: 'WAREHOUSE_TRANSACTION_EDITED', message: 'Warehouse transaction edited', warehouseTransaction }
 }
 
-export async function remove(payload: WarehouseTransactionTypes.removeWarehouseTransactionsParams, user: User) {
+export async function remove(payload: WarehouseTransactionTypes.removeWarehouseTransactionsParams, user: RequestUser) {
   const { ids } = payload
   const removedBy = user.id
 
@@ -832,7 +832,7 @@ export async function remove(payload: WarehouseTransactionTypes.removeWarehouseT
   return { status: 'success', code: 'WAREHOUSE_TRANSACTION_REMOVED', message: 'Warehouse transaction removed' }
 }
 
-export async function receive(payload: WarehouseTransactionTypes.receiveWarehouseTransactionParams, user: User) {
+export async function receive(payload: WarehouseTransactionTypes.receiveWarehouseTransactionParams, user: RequestUser) {
   const { id, products } = payload
   const acceptedBy = user.id
 
