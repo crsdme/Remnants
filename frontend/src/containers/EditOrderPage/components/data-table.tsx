@@ -48,32 +48,12 @@ export function DataTable() {
         product: product.id,
         quantity: selectedQuantity,
         receivedQuantity: 0,
+        selectedPrice: product.price,
+        discountAmount: 0,
+        discountPercent: 0,
       })
     }
   }
-
-  // const addProduct = (products, selectedQuantity = 1) => {
-  //   const selectedProducts = informationForm.getValues('items')
-  //   products.forEach((product) => {
-  //     const existing = selectedProducts.find(p => p.id === product.id) as any
-
-  //     if (existing) {
-  //       const index = selectedProducts.findIndex(p => p.id === product.id)
-  //       itemsField.update(index, {
-  //         ...existing,
-  //         quantity: existing.quantity + selectedQuantity,
-  //       })
-  //     }
-  //     else {
-  //       itemsField.append({
-  //         ...product,
-  //         product: product.id,
-  //         quantity: selectedQuantity,
-  //         receivedQuantity: 0,
-  //       })
-  //     }
-  //   })
-  // }
 
   const removeProduct = (product) => {
     const selectedProducts = informationForm.getValues('items')
@@ -95,6 +75,37 @@ export function DataTable() {
     }
   }
 
+  const changePrice = (product, { selectedPrice }: { selectedPrice?: number }) => {
+    const selectedProducts = informationForm.getValues('items')
+    const index = selectedProducts.findIndex(p => p.id === product.id)
+    if (index !== -1) {
+      itemsField.update(index, { ...selectedProducts[index], selectedPrice })
+    }
+  }
+
+  const changeDiscount = (product, { discountPercent = 0, discountAmount = 0 }: { discountPercent?: number, discountAmount?: number }) => {
+    const selectedProducts = informationForm.getValues('items')
+    const index = selectedProducts.findIndex(p => p.id === product.id)
+    if (index !== -1) {
+      const product = selectedProducts[index]
+
+      let discountPrice = product.price
+      if (discountPercent > 0) {
+        discountPrice = product.price - (product.price * discountPercent) / 100
+      }
+      else if (discountAmount > 0) {
+        discountPrice = product.price - discountAmount
+      }
+
+      itemsField.update(index, {
+        ...product,
+        discountPercent,
+        discountAmount,
+        selectedPrice: discountPrice,
+      })
+    }
+  }
+
   useBarcodeScanned(async (barcode: string) => {
     const products = await getBarcode(barcode)
     for (const product of products) {
@@ -111,7 +122,12 @@ export function DataTable() {
         removeProduct={removeProduct}
         isLoading={isLoading}
         changeQuantity={changeQuantity}
+        changePrice={changePrice}
+        changeDiscount={changeDiscount}
         isReceiving={false}
+        isSelectedPrice={true}
+        isDiscount={true}
+        includeTotal={true}
       />
       <ProductSelectedTotal />
       <InformationForm form={informationForm} onSubmit={informationForm.handleSubmit(onSubmitInformation)} />

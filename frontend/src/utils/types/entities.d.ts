@@ -251,6 +251,8 @@ interface OrderItem {
   quantity: number
   price: number
   currency: string
+  discountAmount: number
+  discountPercent: number
 }
 
 interface OrderPayment {

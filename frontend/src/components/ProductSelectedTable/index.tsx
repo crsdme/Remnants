@@ -7,27 +7,83 @@ import { useTranslation } from 'react-i18next'
 import { ColumnVisibilityMenu } from '@/components'
 import { Skeleton, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui'
 
+import { useDebounceCallback } from '@/utils/hooks'
 import { cn } from '@/utils/lib/utils'
 import { useColumns } from './columns'
 
+interface ProductSelectedTableProps {
+  products: any[]
+  removeProduct: (product: any) => void
+  changeQuantity: (product: any, options: { quantity?: number, receivedQuantity?: number }) => void
+  changePrice?: (product: any, options: { selectedPrice?: number }) => void
+  changeDiscount?: (product: any, options: { discountPercent?: number, discountAmount?: number }) => void
+  isReceiving?: boolean
+  isSelectedPrice?: boolean
+  isDiscount?: boolean
+  disabled?: boolean
+  isLoading?: boolean
+  className?: string
+  includeTotal?: boolean
+}
+
 export function ProductSelectedTable(
-  { products, removeProduct, isLoading = false, className, changeQuantity, isReceiving = false, disabled = false }:
   {
-    products: any[]
-    removeProduct: (product: any) => void
-    isLoading?: boolean
-    className?: string
-    changeQuantity: (product: any, options: { quantity?: number, receivedQuantity?: number }) => void
-    isReceiving?: boolean
-    disabled?: boolean
-  },
+    products,
+    removeProduct,
+    isLoading = false,
+    className,
+    changeQuantity,
+    changePrice,
+    isReceiving = false,
+    isSelectedPrice = false,
+    isDiscount = false,
+    disabled = false,
+    changeDiscount,
+    includeTotal,
+  }: ProductSelectedTableProps,
 ) {
   const { t } = useTranslation()
 
   const [columnVisibility, setColumnVisibility] = useState({})
   const [sorting, setSorting] = useState<ColumnSort[]>([])
 
-  const columns = useColumns({ removeProduct, changeQuantity, isReceiving, disabled })
+  // const [editedValues, setEditedValues] = useState<EditedValues>({})
+
+  const debouncedUpdate = useDebounceCallback((productId: string, field: string, value: number) => {
+    const product = products.find(p => p.id === productId)
+    if (!product)
+      return
+
+    switch (field) {
+      case 'selectedPrice':
+        changePrice?.(product, { selectedPrice: value })
+        break
+      case 'quantity':
+        changeQuantity?.(product, { quantity: value })
+        break
+      case 'discountPercent':
+        changeDiscount?.(product, { discountPercent: value })
+        break
+      case 'discountAmount':
+        changeDiscount?.(product, { discountAmount: value })
+        break
+    }
+  }, 500)
+
+  function handleChange(productId: string, field: string, value: number) {
+    debouncedUpdate(productId, field, value)
+  }
+
+  const columns = useColumns({
+    removeProduct,
+    changeQuantity,
+    isReceiving,
+    isSelectedPrice,
+    disabled,
+    handleChange,
+    isDiscount,
+    includeTotal,
+  })
 
   const table = useReactTable({
     data: products,

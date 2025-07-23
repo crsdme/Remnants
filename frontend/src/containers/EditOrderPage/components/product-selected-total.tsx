@@ -10,7 +10,7 @@ export function ProductSelectedTotal() {
 
   const totalsByCurrency = items.reduce((acc, item) => {
     const currency = item.currency?.symbols?.[i18n.language] || null
-    const subtotal = (item.quantity || 0) * (item.price || 0)
+    const subtotal = (item.quantity || 0) * (item.selectedPrice || 0)
 
     if (!currency)
       return acc

@@ -110,6 +110,8 @@ export function CreateOrderProvider({ children }: CreateOrderProviderProps) {
       currency: z.object({
         id: z.string(),
       }),
+      discountAmount: z.number().optional(),
+      discountPercent: z.number().optional(),
       price: z.number(),
     })).min(1, { message: t('error.required') }),
     comment: z.string().optional(),
@@ -236,6 +238,9 @@ export function CreateOrderProvider({ children }: CreateOrderProviderProps) {
     params.items = params.items.map(item => ({
       ...item,
       currency: item.currency.id,
+      price: item.selectedPrice || item.price,
+      discountAmount: item.discountAmount || 0,
+      discountPercent: item.discountPercent || 0,
     }))
 
     params.orderPayments = payments.map(payment => ({

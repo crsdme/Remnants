@@ -143,5 +143,7 @@
   "component.productTable.table.productProperties": "Product Properties",
   "component.productTable.table.quantity": "Quantity",
   "component.productTable.table.selectedQuantity": "Selected Quantity",
-  "component.productTable.table.unit": "Unit"
+  "component.productTable.table.unit": "Unit",
+  "component.productTable.table.discount": "Discount",
+  "component.productTable.table.selectedPrice": "Price"
 }

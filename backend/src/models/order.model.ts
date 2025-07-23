@@ -92,6 +92,14 @@ const OrderItemSchema: Schema = new Schema({
     type: String,
     required: true,
   },
+  discountAmount: {
+    type: Number,
+    default: 0,
+  },
+  discountPercent: {
+    type: Number,
+    default: 0,
+  },
   removedBy: {
     type: String,
     ref: 'User',

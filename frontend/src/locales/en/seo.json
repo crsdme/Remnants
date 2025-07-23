@@ -69,5 +69,11 @@
   "description.page.create-order": "Create order in Remnant",
 
   "title.page.automations": "Automations - Remnant",
-  "description.page.automations": "Manage automations in Remnant"
+  "description.page.automations": "Manage automations in Remnant",
+
+  "title.page.edit-order": "Edit Order - Remnant",
+  "description.page.edit-order": "Edit order in Remnant",
+
+  "title.page.view-order": "View Order - Remnant",
+  "description.page.view-order": "View order in Remnant"
 }

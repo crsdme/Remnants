@@ -1,5 +1,4 @@
 import {
-  AlertTriangle,
   ArrowDown,
   ArrowUp,
   ChevronsUpDown,
@@ -12,22 +11,36 @@ import { useTranslation } from 'react-i18next'
 
 import { useProductPropertyQuery } from '@/api/hooks'
 import { ImageGallery } from '@/components'
-import { Badge, Button, Input, Separator } from '@/components/ui'
+import { Badge, Button, Input, Popover, PopoverContent, PopoverTrigger, Separator } from '@/components/ui'
 import { useAuthContext } from '@/contexts'
 import { formatDate } from '@/utils/helpers'
 import { hasPermission } from '@/utils/helpers/permission'
-import { useDebounceCallback } from '@/utils/hooks'
+import { EditableCell } from './cells'
 
 const sortIcons = { asc: ArrowUp, desc: ArrowDown }
 
+interface ProductSelectedTableProps {
+  removeProduct: (product: any) => void
+  changeQuantity: (product: any, options: { quantity?: number, receivedQuantity?: number }) => void
+  isReceiving: boolean
+  isSelectedPrice: boolean
+  isDiscount: boolean
+  disabled: boolean
+  handleChange: (productId: string, field: string, value: number) => void
+  includeTotal: boolean
+}
+
 export function useColumns(
-  { removeProduct, changeQuantity, isReceiving, disabled = false }:
   {
-    removeProduct: (product: any) => void
-    changeQuantity: (product: any, options: { quantity?: number, receivedQuantity?: number }) => void
-    isReceiving: boolean
-    disabled: boolean
-  },
+    removeProduct,
+    changeQuantity,
+    isReceiving,
+    isSelectedPrice,
+    isDiscount,
+    disabled,
+    handleChange,
+    includeTotal,
+  }: ProductSelectedTableProps,
 ) {
   const { t, i18n } = useTranslation()
   const { permissions } = useAuthContext()
@@ -36,8 +49,6 @@ export function useColumns(
   const productProperties = requestProductProperties.data?.data.productProperties || []
 
   const isLoading = false
-
-  const debounceChangeQuantity = useDebounceCallback((product, options) => changeQuantity(product, options), 1000)
 
   const columns = useMemo(() => {
     function sortHeader(column, label) {
@@ -55,65 +66,6 @@ export function useColumns(
         </Button>
       )
     }
-
-    // function selectColumn() {
-    //   return ({
-    //     id: 'select',
-    //     size: 35,
-    //     meta: { title: t('component.columnMenu.columns.select') },
-    //     header: ({ table }) => {
-    //       const isChecked = table.getIsAllPageRowsSelected()
-    //         ? true
-    //         : table.getIsSomePageRowsSelected()
-    //           ? 'indeterminate'
-    //           : false
-
-    //       return (
-    //         <Checkbox
-    //           checked={isChecked}
-    //           onCheckedChange={value => table.toggleAllPageRowsSelected(!!value)}
-    //           aria-label="Select all"
-    //         />
-    //       )
-    //     },
-    //     cell: ({ row }) => (
-    //       <Checkbox
-    //         checked={row.getIsSelected()}
-    //         onCheckedChange={value => row.toggleSelected(!!value)}
-    //         aria-label="Select row"
-    //       />
-    //     ),
-    //     enableSorting: false,
-    //     enableHiding: false,
-    //   })
-    // }
-
-    // function expanderColumn() {
-    //   return ({
-    //     id: 'expander',
-    //     header: '',
-    //     cell: ({ row }) => {
-    //       if (row.getCanExpand()) {
-    //         return (
-    //           <Button
-    //             variant="ghost"
-    //             size="icon"
-    //             onClick={row.getToggleExpandedHandler()}
-    //             style={{ width: 24, height: 24, padding: 0 }}
-    //           >
-    //             {row.getIsExpanded()
-    //               ? <ChevronDown size={16} />
-    //               : <ChevronRight size={16} />}
-    //           </Button>
-    //         )
-    //       }
-    //       return null
-    //     },
-    //     size: 24,
-    //     enableSorting: false,
-    //     enableHiding: false,
-    //   })
-    // }
 
     function actionColumn() {
       return ({
@@ -134,40 +86,6 @@ export function useColumns(
                   {hasMismatch ? t('table.mismatch') : t('table.match')}
                 </Badge>
               )}
-              <div className="flex gap-2">
-                {!isReceiving && (
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={() => changeQuantity(item, { quantity: item.quantity - 1 })}
-                    disabled={isLoading || isReceiving || disabled}
-                  >
-                    <Minus className="h-4 w-4" />
-                  </Button>
-                )}
-                <div className="relative min-w-5">
-                  <Input
-                    placeholder={t('component.product-select-table.quantity.placeholder')}
-                    value={item.quantity}
-                    className="pr-10 w-20"
-                    disabled={true}
-                    onChange={event => debounceChangeQuantity(item, Number.parseInt(event.target.value))}
-                  />
-                  <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                    <p>{item.unit.symbols[i18n.language]}</p>
-                  </div>
-                </div>
-                {!isReceiving && (
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={() => changeQuantity(item, { quantity: item.quantity + 1 })}
-                    disabled={isLoading || isReceiving || disabled}
-                  >
-                    <Plus className="h-4 w-4" />
-                  </Button>
-                )}
-              </div>
               {isReceiving && (
                 <>
                   <Separator orientation="vertical" className="h-8" />
@@ -186,7 +104,7 @@ export function useColumns(
                         value={item.receivedQuantity}
                         className="pr-10 w-20"
                         disabled={true}
-                        onChange={event => debounceChangeQuantity(item, { receivedQuantity: Number.parseInt(event.target.value) })}
+                        onChange={event => handleChange(item.id, 'receivedQuantity', Number.parseInt(event.target.value))}
                       />
                       <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
                         <p>{item.unit.symbols[i18n.language]}</p>
@@ -292,8 +210,6 @@ export function useColumns(
     }
 
     return [
-      // selectColumn(),
-      // expanderColumn(),
       {
         id: 'images',
         size: 100,
@@ -337,40 +253,6 @@ export function useColumns(
         accessorFn: row => `${row.price} ${row.currency.symbols[i18n.language]}`,
       },
       ...permissionColumns(),
-      // {
-      //   id: 'quantity',
-      //   size: 150,
-      //   meta: {
-      //     title: t('component.productTable.table.quantity'),
-      //     filterable: true,
-      //     filterType: 'number',
-      //     sortable: true,
-      //   },
-      //   header: ({ column }) => sortHeader(column, t('component.productTable.table.quantity')),
-      //   cell: ({ row }) => {
-      //     const quantity = row.original.quantity.find(q => q.warehouse === '622b4c21-4937-4afe-b9df-d63b250c4555')
-      //     const unit = row.original.unit.symbols[i18n.language]
-
-      //     return quantity ? `${quantity.count} ${unit}` : `0 ${unit}`
-      //   },
-      // },
-      {
-        id: 'selectedQuantity',
-        size: 150,
-        meta: {
-          title: t('component.productTable.table.selectedQuantity'),
-          filterable: true,
-          filterType: 'number',
-          sortable: true,
-          defaultVisible: true,
-        },
-        header: ({ column }) => sortHeader(column, t('component.productTable.table.selectedQuantity')),
-        cell: ({ row }) => {
-          const unit = row.original.unit.symbols[i18n.language]
-
-          return `${row.original.quantity || 0} ${unit}`
-        },
-      },
       {
         id: 'unit',
         size: 150,
@@ -437,6 +319,179 @@ export function useColumns(
         header: ({ column }) => sortHeader(column, t('table.updatedAt')),
         cell: ({ row }) => formatDate(row.getValue('updatedAt'), 'MMMM dd, yyyy', i18n.language),
       },
+      ...(isDiscount
+        ? [
+            {
+              id: 'discount',
+              meta: {
+                title: t('component.productTable.table.discount'),
+                filterable: true,
+                filterType: 'number',
+                sortable: true,
+              },
+              header: () => t('component.productTable.table.discount'),
+              cell: ({ row }) => {
+                const product = row.original
+                const currency = product.currency.symbols[i18n.language]
+
+                let discountPrice = 0
+                if (product.discountPercent > 0) {
+                  discountPrice = product.price - (product.price * product.discountPercent) / 100 - product.price
+                }
+                else if (product.discountAmount > 0) {
+                  discountPrice = product.price - product.discountAmount - product.price
+                }
+
+                return (
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <div className="flex gap-2 relative">
+                        <Button variant="outline" className="w-full justify-start">
+                          {discountPrice}
+                        </Button>
+                        <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                          <p>{currency}</p>
+                        </div>
+                      </div>
+                    </PopoverTrigger>
+
+                    <PopoverContent className="w-30 space-y-3 p-2" onOpenAutoFocus={e => e.preventDefault()}>
+                      <div className="flex gap-2 relative min-w-5">
+                        <EditableCell
+                          product={product}
+                          onChange={val => handleChange(product.id, 'discountAmount', val)}
+                          field="discountAmount"
+                          className="w-full"
+                          disabled={isLoading || disabled}
+                        />
+                        <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                          <p>{currency}</p>
+                        </div>
+                      </div>
+                      <div className="flex gap-2 relative min-w-5">
+                        <EditableCell
+                          product={product}
+                          onChange={val => handleChange(product.id, 'discountPercent', val)}
+                          field="discountPercent"
+                          className="w-full"
+                          disabled={isLoading || disabled}
+                        />
+                        <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                          <p>%</p>
+                        </div>
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+                )
+              },
+            },
+          ]
+        : []),
+      ...(isSelectedPrice
+        ? [
+            {
+              id: 'selectedPrice',
+              meta: {
+                title: t('component.productTable.table.selectedPrice'),
+                filterable: true,
+                filterType: 'number',
+                sortable: true,
+              },
+              header: () => t('component.productTable.table.selectedPrice'),
+              cell: ({ row }) => {
+                const product = row.original
+                const currency = product.currency.symbols[i18n.language]
+
+                return (
+                  <div className="flex gap-2">
+                    <div className="flex gap-2 relative min-w-5">
+                      <EditableCell
+                        product={product}
+                        onChange={val => handleChange(product.id, 'selectedPrice', val)}
+                        field="selectedPrice"
+                        className="w-25"
+                        disabled={isLoading || disabled}
+                      />
+                      <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                        <p>{currency}</p>
+                      </div>
+                    </div>
+                  </div>
+                )
+              },
+            },
+          ]
+        : []),
+      {
+        id: 'selectedQuantity',
+        size: 150,
+        meta: {
+          title: t('component.productTable.table.selectedQuantity'),
+          filterable: true,
+          filterType: 'number',
+          sortable: true,
+          defaultVisible: true,
+        },
+        header: ({ column }) => sortHeader(column, t('component.productTable.table.selectedQuantity')),
+        cell: ({ row }) => {
+          const item = row.original
+
+          return (
+            <div className="flex gap-2">
+              {!isReceiving && (
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => changeQuantity(item, { quantity: item.quantity - 1 })}
+                  disabled={isLoading || isReceiving || disabled}
+                >
+                  <Minus className="h-4 w-4" />
+                </Button>
+              )}
+              <div className="relative min-w-5">
+                <EditableCell
+                  product={item}
+                  onChange={val => handleChange(item.id, 'quantity', val)}
+                  field="quantity"
+                  className="w-20"
+                  disabled={isLoading || disabled}
+                />
+                <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                  <p>{item.unit.symbols[i18n.language]}</p>
+                </div>
+              </div>
+              {!isReceiving && (
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => changeQuantity(item, { quantity: item.quantity + 1 })}
+                  disabled={isLoading || isReceiving || disabled}
+                >
+                  <Plus className="h-4 w-4" />
+                </Button>
+              )}
+            </div>
+          )
+        },
+      },
+      ...(includeTotal
+        ? [
+            {
+              id: 'total',
+              cell: ({ row }) => {
+                const item = row.original
+
+                return (
+                  <div className="flex items-center gap-2">
+                    <p className="font-bold">
+                      {`${item.quantity * item.selectedPrice} ${item.currency.symbols[i18n.language]}`}
+                    </p>
+                  </div>
+                )
+              },
+            },
+          ]
+        : []),
       actionColumn(),
     ]
   }, [i18n.language, productProperties])

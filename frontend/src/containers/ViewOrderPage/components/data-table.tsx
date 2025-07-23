@@ -17,6 +17,11 @@ export function DataTable() {
         disabled={true}
         changeQuantity={() => {}}
         isReceiving={false}
+        isSelectedPrice={true}
+        isDiscount={true}
+        includeTotal={true}
+        changePrice={() => {}}
+        changeDiscount={() => {}}
       />
       <ProductSelectedTotal />
       <InformationForm form={informationForm} onSubmit={() => {}} />

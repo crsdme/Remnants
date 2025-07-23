@@ -47,6 +47,8 @@ export const createOrderSchema = z.object({
     quantity: z.number(),
     price: z.number(),
     currency: z.string(),
+    discountAmount: z.number().optional(),
+    discountPercent: z.number().optional(),
   })),
 })
 
@@ -72,6 +74,8 @@ export const editOrderSchema = z.object({
     quantity: z.number(),
     price: z.number(),
     currency: z.string(),
+    discountAmount: z.number().optional(),
+    discountPercent: z.number().optional(),
   })),
 })
 

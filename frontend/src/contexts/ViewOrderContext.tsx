@@ -81,6 +81,8 @@ export function ViewOrderProvider({ children }: ViewOrderProviderProps) {
         id: z.string(),
       }),
       price: z.number(),
+      discountAmount: z.number().optional(),
+      discountPercent: z.number().optional(),
       // receivedQuantity: z.number({ required_error: t('error.required') }).min(1, { message: t('error.required') }),
     })).min(1, { message: t('error.required') }),
     comment: z.string().optional(),
@@ -132,12 +134,24 @@ export function ViewOrderProvider({ children }: ViewOrderProviderProps) {
         orderStatus: order.orderStatus.id,
         deliveryService: order.deliveryService.id,
         client: order.client.id,
-        items: order.items.map(item => ({
-          ...item.product,
-          product: item.product.id,
-          quantity: item.quantity,
-          price: item.price || item.product.price,
-        })),
+        items: order.items.map((item) => {
+          let discountPrice = item.price || item.product.price
+          if (item.discountPercent > 0) {
+            discountPrice = item.price - (item.price * item.discountPercent) / 100
+          }
+          else if (item.discountAmount > 0) {
+            discountPrice = item.price - item.discountAmount
+          }
+          return {
+            ...item.product,
+            product: item.product.id,
+            quantity: item.quantity,
+            price: item.price || item.product.price,
+            selectedPrice: discountPrice,
+            discountAmount: item.discountAmount || 0,
+            discountPercent: item.discountPercent || 0,
+          }
+        }),
         comment: order.comment,
       })
       setPayments(order.payments)
