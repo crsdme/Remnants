@@ -1,5 +1,4 @@
 import type { NextFunction, Request, Response } from 'express'
-import type { RequestUser } from '../types/common.type'
 import * as OrderService from '../services/order.service'
 
 export async function get(req: Request, res: Response, next: NextFunction) {
@@ -13,7 +12,7 @@ export async function get(req: Request, res: Response, next: NextFunction) {
   }
 }
 
-export async function create(req: Request & { user: RequestUser }, res: Response, next: NextFunction) {
+export async function create(req: Request, res: Response, next: NextFunction) {
   try {
     const serviceResponse = await OrderService.create(req.body, req.user)
 
@@ -24,7 +23,7 @@ export async function create(req: Request & { user: RequestUser }, res: Response
   }
 }
 
-export async function edit(req: Request & { user: RequestUser }, res: Response, next: NextFunction) {
+export async function edit(req: Request, res: Response, next: NextFunction) {
   try {
     const serviceResponse = await OrderService.edit(req.body, req.user)
 

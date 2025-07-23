@@ -5,6 +5,7 @@
     "target": "ES6",
     "rootDir": "./src",
     "module": "commonjs",
+    "typeRoots": ["./node_modules/@types", "./src/types/express"],
     "strict": true,
     "outDir": "./dist",
     "esModuleInterop": true,
