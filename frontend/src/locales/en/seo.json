@@ -75,5 +75,8 @@
   "description.page.edit-order": "Edit order in Remnant",
 
   "title.page.view-order": "View Order - Remnant",
-  "description.page.view-order": "View order in Remnant"
+  "description.page.view-order": "View order in Remnant",
+
+  "title.page.clients": "Clients - Remnant",
+  "description.page.clients": "Manage clients in Remnant"
 }

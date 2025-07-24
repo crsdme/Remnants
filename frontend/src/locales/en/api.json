@@ -432,6 +432,24 @@
   "response.description.MONEY_TRANSACTION_NOT_EDITED": "Unable to edit money transaction",
 
   "response.title.MONEY_TRANSACTIONS_FETCHED": "Money transactions fetched",
-  "response.description.MONEY_TRANSACTIONS_FETCHED": "Money transactions list successfully fetched"
+  "response.description.MONEY_TRANSACTIONS_FETCHED": "Money transactions list successfully fetched",
+
+  "response.title.CLIENTS_FETCHED": "Clients fetched",
+  "response.description.CLIENTS_FETCHED": "Clients list successfully fetched",
+
+  "response.title.CLIENT_CREATED": "Client created",
+  "response.description.CLIENT_CREATED": "New client has been created",
+
+  "response.title.CLIENT_NOT_EDITED": "Client not edited",
+  "response.description.CLIENT_NOT_EDITED": "Unable to edit client",
+
+  "response.title.CLIENT_EDITED": "Client edited",
+  "response.description.CLIENT_EDITED": "Client has been updated",
+
+  "response.title.CLIENTS_NOT_REMOVED": "Clients not removed",
+  "response.description.CLIENTS_NOT_REMOVED": "Unable to remove selected clients",
+
+  "response.title.CLIENTS_REMOVED": "Clients removed",
+  "response.description.CLIENTS_REMOVED": "Selected clients have been deleted"
 
 }

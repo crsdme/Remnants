@@ -733,5 +733,26 @@
   "page.automations.action.order-status-update": "Обновление статуса заказа",
   "page.automations.action.order-payment-update": "Обновление статуса оплаты заказа",
   "page.automations.action.order-source-update": "Обновление источника заказа",
-  "page.automations.action.order-delivery-service-update": "Обновление службы доставки"
+  "page.automations.action.order-delivery-service-update": "Обновление службы доставки",
+
+  "page.clients.title": "Клиенты",
+  "page.clients.description": "Управление клиентами",
+  "page.clients.filter.name": "Фильтр по имени",
+  "page.clients.button.create": "Создать клиента",
+
+  "page.clients.table.name": "Имя",
+  "page.clients.table.phones": "Телефоны",
+  "page.clients.table.emails": "Email",
+  "page.clients.table.createdAt": "Дата создания",
+  "page.clients.table.updatedAt": "Дата обновления",
+
+  "page.clients.form.title.create": "Создание нового клиента",
+  "page.clients.form.description.create": "Добавить нового клиента в систему",
+  "page.clients.form.title.edit": "Редактирование клиента",
+  "page.clients.form.description.edit": "Редактирование существующего клиента",
+  "page.clients.form.name": "Имя",
+  "page.clients.form.lastName": "Фамилия",
+  "page.clients.form.middleName": "Отчество",
+  "page.clients.form.phones": "Телефоны",
+  "page.clients.form.emails": "Emails"
 }

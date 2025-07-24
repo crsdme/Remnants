@@ -729,5 +729,26 @@
   "page.automations.action.order-status-update": "Order status update",
   "page.automations.action.order-payment-update": "Order payment update",
   "page.automations.action.order-source-update": "Order source update",
-  "page.automations.action.order-delivery-service-update": "Order delivery service update"
+  "page.automations.action.order-delivery-service-update": "Order delivery service update",
+
+  "page.clients.title": "Clients",
+  "page.clients.description": "Manage clients",
+  "page.clients.filter.name": "Filter by name",
+  "page.clients.button.create": "Create client",
+
+  "page.clients.table.name": "Name",
+  "page.clients.table.phones": "Phones",
+  "page.clients.table.emails": "Email",
+  "page.clients.table.createdAt": "Created At",
+  "page.clients.table.updatedAt": "Updated At",
+
+  "page.clients.form.title.create": "Create new client",
+  "page.clients.form.description.create": "Add new client to the system",
+  "page.clients.form.title.edit": "Edit client",
+  "page.clients.form.description.edit": "Edit existing client",
+  "page.clients.form.name": "Name",
+  "page.clients.form.lastName": "Last Name",
+  "page.clients.form.middleName": "Middle Name",
+  "page.clients.form.phones": "Phones",
+  "page.clients.form.emails": "Emails"
 }

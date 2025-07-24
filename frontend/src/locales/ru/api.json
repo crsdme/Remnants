@@ -432,5 +432,23 @@
   "response.description.MONEY_TRANSACTION_NOT_EDITED": "Не удалось обновить транзакцию денег",
 
   "response.title.MONEY_TRANSACTIONS_FETCHED": "Транзакции денег получены",
-  "response.description.MONEY_TRANSACTIONS_FETCHED": "Список транзакций денег успешно получен"
+  "response.description.MONEY_TRANSACTIONS_FETCHED": "Список транзакций денег успешно получен",
+
+  "response.title.CLIENTS_FETCHED": "Клиенты получены",
+  "response.description.CLIENTS_FETCHED": "Список клиентов успешно получен",
+
+  "response.title.CLIENT_CREATED": "Клиент создан",
+  "response.description.CLIENT_CREATED": "Новый клиент был создан",
+
+  "response.title.CLIENT_NOT_EDITED": "Клиент не обновлен",
+  "response.description.CLIENT_NOT_EDITED": "Не удалось обновить клиента",
+
+  "response.title.CLIENT_EDITED": "Клиент обновлен",
+  "response.description.CLIENT_EDITED": "Клиент был обновлен",
+
+  "response.title.CLIENTS_NOT_REMOVED": "Клиенты не удалены",
+  "response.description.CLIENTS_NOT_REMOVED": "Не удалось удалить выбранные клиенты",
+
+  "response.title.CLIENTS_REMOVED": "Клиенты удалены",
+  "response.description.CLIENTS_REMOVED": "Выбранные клиенты были удалены"
 }

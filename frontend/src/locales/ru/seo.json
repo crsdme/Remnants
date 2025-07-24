@@ -75,5 +75,8 @@
   "description.page.edit-order": "Редактирование заказа в Remnant",
 
   "title.page.view-order": "Просмотр заказа - Remnant",
-  "description.page.view-order": "Просмотр заказа в Remnant"
+  "description.page.view-order": "Просмотр заказа в Remnant",
+
+  "title.page.clients": "Клиенты - Remnant",
+  "description.page.clients": "Управление клиентами в Remnant"
 }
