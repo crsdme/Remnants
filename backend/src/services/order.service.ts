@@ -6,14 +6,17 @@ import { OrderItemModel, OrderModel, OrderPaymentModel } from '../models'
 import { HttpError } from '../utils/httpError'
 import { buildQuery, buildSortQuery } from '../utils/queryBuilder'
 import * as AutomationService from './automation.service'
+import * as CashregisterService from './cashregister.service'
 import * as MoneyTransactionService from './money-transaction.service'
 import * as OrderPaymentService from './order-payment.service'
 import * as QuantityService from './quantity.service'
+// import * as UserService from './user.service'
 
 export async function get(payload: OrderTypes.getOrdersParams): Promise<OrderTypes.getOrdersResult> {
   const { current = 1, pageSize = 10 } = payload.pagination || {}
 
   const {
+    ids = [],
     seq = '',
     warehouse = '',
     deliveryService = '',
@@ -58,6 +61,7 @@ export async function get(payload: OrderTypes.getOrdersParams): Promise<OrderTyp
 
   const query = buildQuery({
     filters: {
+      _id: ids,
       seq,
       warehouse,
       deliveryService,
@@ -753,9 +757,89 @@ export async function create(payload: OrderTypes.createOrderParams, user: Reques
 
   const order = await OrderModel.create({ ...payload, _id: id, orderPayments: createdOrderPayments })
 
-  await AutomationService.run({ type: 'order-created', entityId: order.id })
+  await AutomationService.run({ type: 'order-created', entityId: order.id, user })
 
   return { status: 'success', code: 'ORDER_CREATED', message: 'Order created', order }
+}
+
+export async function payOrder(payload: OrderTypes.payOrderParams, user: RequestUser): Promise<OrderTypes.payOrderResult> {
+  const { id } = payload
+  const { orders } = await get({ filters: { ids: [id] } })
+  // const { users } = await UserService.get({ filters: { login: user.login } })
+  const { cashregisters } = await CashregisterService.get({})
+
+  if (orders.length === 0) {
+    throw new HttpError(400, 'Order not found', 'ORDER_NOT_FOUND')
+  }
+
+  // if (users.length === 0) {
+  //   throw new HttpError(400, 'User not found', 'USER_NOT_FOUND')
+  // }
+  // const userData = users[0]
+
+  const order = orders[0]
+
+  const payments = mapTotalsToPayments(order.totals, cashregisters[0])
+
+  const createdOrderPayments = []
+
+  for (const payment of payments) {
+    const createdOrderPayment = await OrderPaymentService.create({
+      order: id,
+      cashregister: payment.cashregister,
+      cashregisterAccount: payment.cashregisterAccount,
+      amount: payment.amount,
+      currency: payment.currency,
+      createdBy: user.id.toString(),
+      paymentStatus: 'paid',
+      paymentDate: new Date(),
+      comment: '',
+    })
+    createdOrderPayments.push(createdOrderPayment.orderPayment.id)
+
+    await MoneyTransactionService.create({
+      type: 'income',
+      direction: 'in',
+      account: payment.cashregisterAccount,
+      cashregister: payment.cashregister,
+      sourceModel: 'order',
+      sourceId: id,
+      currency: payment.currency,
+      amount: payment.amount,
+      description: `Payment for order ${id}`,
+    })
+  }
+
+  function mapTotalsToPayments(totals: { currency: string, total: number }[], cashregister: any) {
+    const payments = []
+
+    for (const { currency, total } of totals) {
+      const matchingAccount = cashregister.accounts.find((account: any) =>
+        account.currencies.some((c: any) => c.id === currency),
+      )
+
+      if (!matchingAccount)
+        continue
+
+      const matchingCurrency = matchingAccount.currencies.find((c: any) => c.id === currency)
+
+      if (!matchingCurrency)
+        continue
+
+      payments.push({
+        cashregister: cashregister.id,
+        cashregisterAccount: matchingAccount.id,
+        currency: matchingCurrency.id,
+        amount: total,
+      })
+    }
+
+    return payments
+  }
+
+  await OrderModel.findOneAndUpdate({ _id: id }, { orderPayments: createdOrderPayments })
+
+  return { status: 'success', code: 'ORDER_PAYED', message: 'Order payed' }
 }
 
 export async function edit(payload: OrderTypes.editOrderParams, user: RequestUser): Promise<OrderTypes.editOrderResult> {
@@ -857,12 +941,12 @@ export async function edit(payload: OrderTypes.editOrderParams, user: RequestUse
     throw new HttpError(400, 'Order not edited', 'ORDER_NOT_EDITED')
   }
 
-  await AutomationService.run({ type: 'order-updated', entityId: order.id })
+  await AutomationService.run({ type: 'order-updated', entityId: order.id, user })
 
   return { status: 'success', code: 'ORDER_EDITED', message: 'Order edited', order }
 }
 
-export async function remove(payload: OrderTypes.removeOrdersParams): Promise<OrderTypes.removeOrdersResult> {
+export async function remove(payload: OrderTypes.removeOrdersParams, user: RequestUser): Promise<OrderTypes.removeOrdersResult> {
   const { ids } = payload
 
   const orders = await OrderModel.updateMany(
@@ -875,7 +959,7 @@ export async function remove(payload: OrderTypes.removeOrdersParams): Promise<Or
   }
 
   for (const id of ids) {
-    await AutomationService.run({ type: 'order-removed', entityId: id })
+    await AutomationService.run({ type: 'order-removed', entityId: id, user })
   }
 
   return { status: 'success', code: 'ORDERS_REMOVED', message: 'Orders removed' }

@@ -191,9 +191,6 @@ export const AUTOMATION_TRIGGERS = [
       {
         id: 'order-status-updated',
       },
-      {
-        id: 'order-payment-updated',
-      },
     ],
   },
 ]
@@ -226,13 +223,13 @@ export const AUTOMATION_ACTIONS = [
         id: 'order-status-update',
       },
       {
-        id: 'order-payment-update',
-      },
-      {
         id: 'order-source-update',
       },
       {
         id: 'order-delivery-service-update',
+      },
+      {
+        id: 'pay-order',
       },
     ],
   },

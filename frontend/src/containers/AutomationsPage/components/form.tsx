@@ -3,7 +3,7 @@ import { TrashIcon } from 'lucide-react'
 import { useMemo } from 'react'
 import { useWatch } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
-import { useOrderStatusOptions } from '@/api/hooks'
+import { useDeliveryServiceOptions, useOrderSourceOptions, useOrderStatusOptions } from '@/api/hooks'
 import { AsyncSelectNew } from '@/components/AsyncSelectNew'
 import {
   Badge,
@@ -269,11 +269,12 @@ export function AutomationConditionsForm() {
   }
 
   const loadOrderStatusOptions = useOrderStatusOptions()
+  const loadDeliveryServiceOptions = useDeliveryServiceOptions()
+  const loadOrderSourceOptions = useOrderSourceOptions()
 
   const condition = useWatch({ control: conditionForm.control, name: 'field' })
 
   const conditionType = useMemo(() => AUTOMATION_CONDITIONS.find(group => group.items.find(item => item.id === condition))?.items[0].type, [condition])
-  const conditionId = useMemo(() => AUTOMATION_CONDITIONS.find(group => group.items.find(item => item.id === condition))?.items[0].id, [condition])
 
   const conditionTypeForm = (conditionType) => {
     switch (conditionType) {
@@ -317,8 +318,8 @@ export function AutomationConditionsForm() {
     }
   }
 
-  const conditionField = (conditionId) => {
-    switch (conditionId) {
+  const conditionField = (condition) => {
+    switch (condition) {
       case 'orderStatus':
         return (
           <FormField
@@ -331,6 +332,56 @@ export function AutomationConditionsForm() {
                   <AsyncSelectNew
                     {...field}
                     loadOptions={loadOrderStatusOptions}
+                    renderOption={e => e.names[i18n.language]}
+                    getDisplayValue={e => e.names[i18n.language]}
+                    getOptionValue={e => e.id}
+                    disabled={isLoading}
+                    clearable
+                    multi
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        )
+      case 'deliveryService':
+        return (
+          <FormField
+            control={conditionForm.control}
+            name="params"
+            render={({ field }) => (
+              <FormItem className="flex-1">
+                <FormLabel>{t('page.automations.form.delivery-service')}</FormLabel>
+                <FormControl>
+                  <AsyncSelectNew
+                    {...field}
+                    loadOptions={loadDeliveryServiceOptions}
+                    renderOption={e => e.names[i18n.language]}
+                    getDisplayValue={e => e.names[i18n.language]}
+                    getOptionValue={e => e.id}
+                    disabled={isLoading}
+                    clearable
+                    multi
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        )
+      case 'orderSource':
+        return (
+          <FormField
+            control={conditionForm.control}
+            name="params"
+            render={({ field }) => (
+              <FormItem className="flex-1">
+                <FormLabel>{t('page.automations.form.order-source')}</FormLabel>
+                <FormControl>
+                  <AsyncSelectNew
+                    {...field}
+                    loadOptions={loadOrderSourceOptions}
                     renderOption={e => e.names[i18n.language]}
                     getDisplayValue={e => e.names[i18n.language]}
                     getOptionValue={e => e.id}
@@ -390,7 +441,7 @@ export function AutomationConditionsForm() {
 
         {conditionTypeForm(conditionType)}
 
-        {conditionField(conditionId)}
+        {conditionField(condition)}
 
         <div className="flex gap-2">
           <Button
@@ -419,6 +470,8 @@ export function AutomationActionsForm() {
   }
 
   const loadOrderStatusOptions = useOrderStatusOptions()
+  const loadOrderSourceOptions = useOrderSourceOptions()
+  const loadDeliveryServiceOptions = useDeliveryServiceOptions()
 
   const action = useWatch({ control: actionForm.control, name: 'field' })
 
@@ -436,6 +489,54 @@ export function AutomationActionsForm() {
                   <AsyncSelectNew
                     {...field}
                     loadOptions={loadOrderStatusOptions}
+                    renderOption={e => e.names[i18n.language]}
+                    getDisplayValue={e => e.names[i18n.language]}
+                    getOptionValue={e => e.id}
+                    disabled={isLoading}
+                    clearable
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        )
+      case 'order-source-update':
+        return (
+          <FormField
+            control={actionForm.control}
+            name="params"
+            render={({ field }) => (
+              <FormItem className="flex-1">
+                <FormLabel>{t('page.automations.form.order-source')}</FormLabel>
+                <FormControl>
+                  <AsyncSelectNew
+                    {...field}
+                    loadOptions={loadOrderSourceOptions}
+                    renderOption={e => e.names[i18n.language]}
+                    getDisplayValue={e => e.names[i18n.language]}
+                    getOptionValue={e => e.id}
+                    disabled={isLoading}
+                    clearable
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        )
+      case 'order-delivery-service-update':
+        return (
+          <FormField
+            control={actionForm.control}
+            name="params"
+            render={({ field }) => (
+              <FormItem className="flex-1">
+                <FormLabel>{t('page.automations.form.delivery-service')}</FormLabel>
+                <FormControl>
+                  <AsyncSelectNew
+                    {...field}
+                    loadOptions={loadDeliveryServiceOptions}
                     renderOption={e => e.names[i18n.language]}
                     getDisplayValue={e => e.names[i18n.language]}
                     getOptionValue={e => e.id}

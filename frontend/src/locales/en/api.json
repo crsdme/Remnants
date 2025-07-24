@@ -450,6 +450,23 @@
   "response.description.CLIENTS_NOT_REMOVED": "Unable to remove selected clients",
 
   "response.title.CLIENTS_REMOVED": "Clients removed",
-  "response.description.CLIENTS_REMOVED": "Selected clients have been deleted"
+  "response.description.CLIENTS_REMOVED": "Selected clients have been deleted",
 
+  "response.title.AUTOMATION_CREATED": "Automation created",
+  "response.description.AUTOMATION_CREATED": "New automation has been created",
+
+  "response.title.AUTOMATION_NOT_EDITED": "Automation not edited",
+  "response.description.AUTOMATION_NOT_EDITED": "Unable to edit automation",
+
+  "response.title.AUTOMATION_EDITED": "Automation edited",
+  "response.description.AUTOMATION_EDITED": "Automation has been updated",
+
+  "response.title.AUTOMATIONS_NOT_REMOVED": "Automations not removed",
+  "response.description.AUTOMATIONS_NOT_REMOVED": "Unable to remove selected automations",
+
+  "response.title.AUTOMATIONS_REMOVED": "Automations removed",
+  "response.description.AUTOMATIONS_REMOVED": "Selected automations have been deleted",
+
+  "response.title.AUTOMATIONS_FETCHED": "Automations fetched",
+  "response.description.AUTOMATIONS_FETCHED": "Automations list successfully fetched"
 }

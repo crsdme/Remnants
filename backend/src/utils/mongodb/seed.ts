@@ -33,13 +33,17 @@ async function seedData() {
     await createCategories()
     const productProperties = await createProductProperties()
     await createProducts(productProperties)
-    await createDeliveryServices()
+    const deliveryServices = await createDeliveryServices()
     await createOrderSources()
     const statuses = await createOrderStatuses()
     await createCashregisters()
     await createWarehouses()
     await createUserRoles()
-    await createAutomations(statuses)
+    await createAutomations({
+      removed: statuses.removed,
+      selfpickup: deliveryServices.selfpickup,
+      completed: statuses.completed,
+    })
     await createClients()
 
     console.log('✅ Test data seeded successfully!')
@@ -533,23 +537,25 @@ async function createProducts(productProperties: any) {
 }
 
 async function createDeliveryServices() {
-  await DeliveryService.create({
+  const { deliveryService: novaposhta } = await DeliveryService.create({
     names: {
       en: 'Nova Poshta',
       ru: 'Нова Пошта',
     },
-    priority: 1,
+    priority: 2,
     type: 'novaposhta',
   })
 
-  await DeliveryService.create({
+  const { deliveryService: selfpickup } = await DeliveryService.create({
     names: {
       en: 'Self Pickup',
       ru: 'Самовывоз',
     },
-    priority: 2,
+    priority: 1,
     type: 'selfpickup',
   })
+
+  return { novaposhta, selfpickup }
 }
 
 async function createOrderSources() {
@@ -711,7 +717,7 @@ async function createUserRoles() {
   })
 }
 
-async function createAutomations({ removed }: { removed: any }) {
+async function createAutomations({ removed, selfpickup, completed }: { removed: any, selfpickup: any, completed: any }) {
   await AutomationService.create({
     name: 'Add "Removed" status to order',
     active: true,
@@ -730,6 +736,50 @@ async function createAutomations({ removed }: { removed: any }) {
       {
         field: 'order-status-update',
         params: [removed.id],
+      },
+    ],
+  })
+
+  await AutomationService.create({
+    name: 'Auto Pay Order When Selfpickup',
+    active: true,
+    trigger: {
+      type: 'order-created',
+      params: [],
+    },
+    conditions: [
+      {
+        field: 'deliveryService',
+        operator: 'contains',
+        params: [selfpickup.id],
+      },
+    ],
+    actions: [
+      {
+        field: 'pay-order',
+        params: [],
+      },
+    ],
+  })
+
+  await AutomationService.create({
+    name: 'Auto Update Order Status When Selfpickup',
+    active: true,
+    trigger: {
+      type: 'order-created',
+      params: [],
+    },
+    conditions: [
+      {
+        field: 'deliveryService',
+        operator: 'contains',
+        params: [selfpickup.id],
+      },
+    ],
+    actions: [
+      {
+        field: 'order-status-update',
+        params: [completed.id],
       },
     ],
   })

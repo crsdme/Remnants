@@ -721,6 +721,8 @@
   "page.automations.operator.not-contains": "Not contains",
 
   "page.automations.form.order-status": "Order status",
+  "page.automations.form.order-source": "Order source",
+  "page.automations.form.delivery-service": "Delivery service",
 
   "page.automations.form.title.action": "Action",
   "page.automations.form.description.action": "Add action to the automation",
@@ -730,6 +732,7 @@
   "page.automations.action.order-payment-update": "Order payment update",
   "page.automations.action.order-source-update": "Order source update",
   "page.automations.action.order-delivery-service-update": "Order delivery service update",
+  "page.automations.action.pay-order": "Pay order",
 
   "page.clients.title": "Clients",
   "page.clients.description": "Manage clients",

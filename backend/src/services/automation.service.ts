@@ -1,7 +1,9 @@
 import type * as AutomationTypes from '../types/automation.type'
+import type { RequestUser } from '../types/common.type'
 import { AutomationModel, MoneyTransactionModel, OrderModel } from '../models'
 import { HttpError } from '../utils/httpError'
 import { buildQuery, buildSortQuery } from '../utils/queryBuilder'
+import * as OrderService from './order.service'
 
 export async function get(payload: AutomationTypes.getAutomationsParams): Promise<AutomationTypes.getAutomationsResult> {
   const { current = 1, pageSize = 10 } = payload.pagination || {}
@@ -98,31 +100,31 @@ export async function remove(payload: AutomationTypes.removeAutomationsParams): 
   return { status: 'success', code: 'AUTOMATIONS_REMOVED', message: 'Automations removed' }
 }
 
-const automationHandlers: Record<string, (payload: any) => Promise<void>> = {
-  'order-created': async ({ conditions, actions, entity }: any) => {
+const automationHandlers: Record<string, (payload: any) => Promise<void>> = { // TRIGGERS
+  'order-created': async ({ conditions, actions, entity, user }: any) => {
     if (evaluateConditions(conditions, entity)) {
-      await applyActions(actions, entity)
+      await applyActions(actions, entity, user)
     }
   },
-  'order-updated': async ({ conditions, actions, entity }: any) => {
+  'order-updated': async ({ conditions, actions, entity, user }: any) => {
     if (evaluateConditions(conditions, entity)) {
-      await applyActions(actions, entity)
+      await applyActions(actions, entity, user)
     }
   },
-  'order-removed': async ({ conditions, actions, entity }: any) => {
+  'order-removed': async ({ conditions, actions, entity, user }: any) => {
     if (evaluateConditions(conditions, entity)) {
-      await applyActions(actions, entity)
+      await applyActions(actions, entity, user)
     }
   },
-  'money-transaction-created': async ({ conditions, actions, entity }: any) => {
+  'money-transaction-created': async ({ conditions, actions, entity, user }: any) => {
     if (evaluateConditions(conditions, entity)) {
-      await applyActions(actions, entity)
+      await applyActions(actions, entity, user)
     }
   },
 }
 
 export async function run(payload: AutomationTypes.runAutomationsParams): Promise<AutomationTypes.runAutomationsResult> {
-  const { type, entityId } = payload
+  const { type, entityId, user } = payload
 
   const automations = await AutomationModel.find({ 'trigger.type': type, 'removed': false, 'active': true })
 
@@ -135,14 +137,14 @@ export async function run(payload: AutomationTypes.runAutomationsParams): Promis
   for (const automation of automations) {
     const handler = automationHandlers[type]
     if (handler) {
-      await handler({ ...automation.toObject(), entity })
+      await handler({ ...automation.toObject(), entity, user })
     }
   }
 
   return { status: 'success', code: 'AUTOMATIONS_REMOVED', message: 'Automations removed' }
 }
 
-async function loadEntityByType(type: string, id: string): Promise<any> {
+async function loadEntityByType(type: string, id: string): Promise<any> { // ENTITIES
   switch (type) {
     case 'order-created':
       return await OrderModel.findById(id)
@@ -161,7 +163,7 @@ async function loadEntityByType(type: string, id: string): Promise<any> {
   }
 }
 
-function evaluateConditions(conditions: AutomationTypes.Condition[], entity: Record<string, any>): boolean {
+function evaluateConditions(conditions: AutomationTypes.Condition[], entity: Record<string, any>): boolean { // CONDITIONS
   return conditions.every(({ field, operator, params }) => {
     const value = entity[field]
 
@@ -187,12 +189,20 @@ function evaluateConditions(conditions: AutomationTypes.Condition[], entity: Rec
   })
 }
 
-async function applyActions(actions: AutomationTypes.Action[], entity: any): Promise<void> {
+async function applyActions(actions: AutomationTypes.Action[], entity: any, user: RequestUser): Promise<void> { // ACTIONS
   for (const { field, params } of actions) {
     switch (field) {
       case 'order-status-update':
         entity.orderStatus = params[0]
         break
+      case 'order-source-update':
+        entity.orderSource = params[0]
+        break
+      case 'order-delivery-service-update':
+        entity.deliveryService = params[0]
+        break
+      case 'pay-order':
+        await OrderService.payOrder({ id: entity.id }, user)
     }
   }
 

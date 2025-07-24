@@ -8,6 +8,10 @@ export interface Order {
   orderSource: string
   orderStatus: string
   orderPayments: OrderPayment[]
+  totals: {
+    currency: IdType
+    total: number
+  }[]
   client: IdType
   comment: string
   createdBy: string
@@ -37,6 +41,7 @@ export interface getOrdersResult {
 }
 
 export interface getOrdersFilters {
+  ids: IdType[]
   seq: string
   warehouse: string
   deliveryService: string
@@ -152,4 +157,14 @@ export interface getOrderPaymentsResult {
   message: Message
   orderPayments: OrderPayment[]
   orderPaymentsCount: number
+}
+
+export interface payOrderResult {
+  status: Status
+  code: Code
+  message: Message
+}
+
+export interface payOrderParams {
+  id: IdType
 }

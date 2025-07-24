@@ -6,6 +6,7 @@ extendZodWithOpenApi(z)
 
 export const getOrdersSchema = z.object({
   filters: z.object({
+    ids: z.array(idSchema).optional(),
     seq: z.string().trim().optional(),
     warehouse: z.string().trim().optional(),
     deliveryService: z.string().trim().optional(),

@@ -26,7 +26,7 @@ const ConditionSchema = new Schema({
   },
   operator: {
     type: String,
-    enum: ['eq', 'ne', 'lt', 'lte', 'gt', 'gte', 'contains', 'not-contains'],
+    enum: ['contains', 'not-contains'],
     required: true,
   },
   params: {
@@ -38,7 +38,7 @@ const ConditionSchema = new Schema({
 const ActionSchema = new Schema({
   field: {
     type: String,
-    enum: ['order-status-update'],
+    enum: ['order-status-update', 'order-source-update', 'order-delivery-service-update', 'pay-order'],
     required: true,
   },
   params: {

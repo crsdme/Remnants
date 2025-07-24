@@ -725,6 +725,8 @@
   "page.automations.operator.not-contains": "Не содержит",
 
   "page.automations.form.order-status": "Статус заказа",
+  "page.automations.form.order-source": "Источник заказа",
+  "page.automations.form.delivery-service": "Служба доставки",
 
   "page.automations.form.title.action": "Действие",
   "page.automations.form.description.action": "Добавить действие к автоматизации",
@@ -734,6 +736,7 @@
   "page.automations.action.order-payment-update": "Обновление статуса оплаты заказа",
   "page.automations.action.order-source-update": "Обновление источника заказа",
   "page.automations.action.order-delivery-service-update": "Обновление службы доставки",
+  "page.automations.action.pay-order": "Оплатить заказ",
 
   "page.clients.title": "Клиенты",
   "page.clients.description": "Управление клиентами",

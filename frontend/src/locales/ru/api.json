@@ -450,5 +450,23 @@
   "response.description.CLIENTS_NOT_REMOVED": "Не удалось удалить выбранные клиенты",
 
   "response.title.CLIENTS_REMOVED": "Клиенты удалены",
-  "response.description.CLIENTS_REMOVED": "Выбранные клиенты были удалены"
+  "response.description.CLIENTS_REMOVED": "Выбранные клиенты были удалены",
+
+  "response.title.AUTOMATION_CREATED": "Автоматизация создана",
+  "response.description.AUTOMATION_CREATED": "Новая автоматизация была создана",
+
+  "response.title.AUTOMATION_NOT_EDITED": "Автоматизация не обновлена",
+  "response.description.AUTOMATION_NOT_EDITED": "Не удалось обновить автоматизацию",
+
+  "response.title.AUTOMATION_EDITED": "Автоматизация обновлена",
+  "response.description.AUTOMATION_EDITED": "Автоматизация была обновлена",
+
+  "response.title.AUTOMATIONS_NOT_REMOVED": "Автоматизации не удалены",
+  "response.description.AUTOMATIONS_NOT_REMOVED": "Не удалось удалить выбранные автоматизации",
+
+  "response.title.AUTOMATIONS_REMOVED": "Автоматизации удалены",
+  "response.description.AUTOMATIONS_REMOVED": "Выбранные автоматизации были удалены",
+
+  "response.title.AUTOMATIONS_FETCHED": "Автоматизации получены",
+  "response.description.AUTOMATIONS_FETCHED": "Список автоматизаций успешно получен"
 }

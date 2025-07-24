@@ -1,4 +1,4 @@
-import type { Code, DateRange, IdType, Message, Pagination, Sorter, Status } from './common.type'
+import type { Code, DateRange, IdType, Message, Pagination, RequestUser, Sorter, Status } from './common.type'
 
 export interface Automation {
   id: IdType
@@ -101,6 +101,7 @@ export interface removeAutomationsParams {
 export interface runAutomationsParams {
   type: string
   entityId: IdType
+  user: RequestUser
 }
 
 export interface runAutomationsResult {
