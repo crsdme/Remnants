@@ -88,6 +88,19 @@ const OrderItemSchema: Schema = new Schema({
     type: Number,
     required: true,
   },
+  purchasePrice: {
+    type: Number,
+    required: true,
+  },
+  purchaseCurrency: {
+    type: String,
+    ref: 'Currency',
+    required: true,
+  },
+  profit: {
+    type: Number,
+    required: true,
+  },
   currency: {
     type: String,
     required: true,
@@ -100,7 +113,15 @@ const OrderItemSchema: Schema = new Schema({
     type: Number,
     default: 0,
   },
+  exchangeRate: {
+    type: Number,
+    default: 1,
+  },
   removedBy: {
+    type: String,
+    ref: 'User',
+  },
+  createdBy: {
     type: String,
     ref: 'User',
   },
@@ -117,6 +138,17 @@ OrderSchema.set('toJSON', {
     ret.id = ret._id
     delete ret._id
     delete ret.removed
+  },
+})
+
+OrderItemSchema.set('toJSON', {
+  virtuals: true,
+  versionKey: false,
+  transform: (_, ret) => {
+    ret.id = ret._id
+    delete ret._id
+    delete ret.removed
+    delete ret.purchasePrice
   },
 })
 

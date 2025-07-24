@@ -2,11 +2,12 @@ import type { RequestUser } from '../types/common.type'
 import type * as OrderTypes from '../types/order.type'
 import { v4 as uuidv4 } from 'uuid'
 import { STORAGE_URLS } from '../config/constants'
-import { OrderItemModel, OrderModel, OrderPaymentModel } from '../models'
+import { OrderItemModel, OrderModel, OrderPaymentModel, ProductModel } from '../models'
 import { HttpError } from '../utils/httpError'
 import { buildQuery, buildSortQuery } from '../utils/queryBuilder'
 import * as AutomationService from './automation.service'
 import * as CashregisterService from './cashregister.service'
+import * as ExchangeRateService from './currency.service'
 import * as MoneyTransactionService from './money-transaction.service'
 import * as OrderPaymentService from './order-payment.service'
 import * as QuantityService from './quantity.service'
@@ -743,11 +744,26 @@ export async function create(payload: OrderTypes.createOrderParams, user: Reques
   }
 
   for (const item of payload.items) {
-    const mappedItem = {
+    const product = await ProductModel.findOne({ _id: item.product })
+
+    if (!product)
+      throw new HttpError(400, 'Product not found', 'PRODUCT_NOT_FOUND')
+
+    const { profit, exchangeRate } = await calculateProfit({
+      item,
+      purchasePrice: product.purchasePrice,
+      purchaseCurrency: product.purchaseCurrency,
+    })
+
+    await OrderItemModel.create({
       ...item,
       order: id,
-    }
-    await OrderItemModel.create(mappedItem)
+      purchasePrice: product.purchasePrice,
+      purchaseCurrency: product.purchaseCurrency,
+      profit,
+      exchangeRate,
+      createdBy: user.id.toString(),
+    })
     await QuantityService.count({
       product: item.product,
       count: -item.quantity,
@@ -923,10 +939,27 @@ export async function edit(payload: OrderTypes.editOrderParams, user: RequestUse
   // CREATED NEW ITEMS
   if (items.length > 0) {
     for (const item of items) {
+      const product = await ProductModel.findOne({ _id: item.product })
+
+      if (!product)
+        throw new HttpError(400, 'Product not found', 'PRODUCT_NOT_FOUND')
+
+      const { profit, exchangeRate } = await calculateProfit({
+        item,
+        purchasePrice: product.purchasePrice,
+        purchaseCurrency: product.purchaseCurrency,
+      })
+
       await OrderItemModel.create({
         ...item,
         order: id,
+        purchasePrice: product.purchasePrice,
+        purchaseCurrency: product.purchaseCurrency,
+        profit,
+        exchangeRate,
+        createdBy: user.id.toString(),
       })
+
       await QuantityService.count({
         product: item.product,
         count: -item.quantity,
@@ -963,4 +996,66 @@ export async function remove(payload: OrderTypes.removeOrdersParams, user: Reque
   }
 
   return { status: 'success', code: 'ORDERS_REMOVED', message: 'Orders removed' }
+}
+
+async function convertCurrency({
+  amount,
+  fromCurrencyId,
+  toCurrencyId,
+}: {
+  amount: number
+  fromCurrencyId: string
+  toCurrencyId: string
+}): Promise<{ convertedAmount: number, rate: number }> {
+  if (fromCurrencyId === toCurrencyId) {
+    return { convertedAmount: amount, rate: 1 }
+  }
+
+  const { exchangeRates } = await ExchangeRateService.getExchangeRates({
+    filters: { fromCurrency: fromCurrencyId, toCurrency: toCurrencyId },
+  })
+
+  if (!exchangeRates || !exchangeRates.length) {
+    throw new Error(`Exchange rate not found from ${fromCurrencyId} to ${toCurrencyId}`)
+  }
+
+  const rate = exchangeRates[0].rate
+  return { convertedAmount: amount * rate, rate }
+}
+
+async function calculateProfit({
+  item,
+  purchasePrice,
+  purchaseCurrency,
+}: {
+  item: any
+  purchasePrice: number
+  purchaseCurrency: string
+}): Promise<{ profit: number, exchangeRate: number }> {
+  let sellingPrice = item.price
+
+  if (item.discountPercent && item.discountPercent > 0) {
+    sellingPrice -= (sellingPrice * item.discountPercent) / 100
+  }
+  else if (item.discountAmount && item.discountAmount > 0) {
+    sellingPrice -= item.discountAmount
+  }
+
+  let convertedPurchasePrice = purchasePrice
+  let exchangeRate = 1
+
+  if (purchaseCurrency !== item.currency) {
+    const { convertedAmount, rate } = await convertCurrency({
+      amount: purchasePrice,
+      fromCurrencyId: purchaseCurrency,
+      toCurrencyId: item.currency,
+    })
+    convertedPurchasePrice = convertedAmount
+    exchangeRate = rate
+  }
+
+  const unitProfit = sellingPrice - convertedPurchasePrice
+  const profit = unitProfit * item.quantity
+
+  return { profit, exchangeRate }
 }
