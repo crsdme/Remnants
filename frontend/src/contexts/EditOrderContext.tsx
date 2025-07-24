@@ -104,7 +104,7 @@ export function EditOrderProvider({ children }: EditOrderProviderProps) {
       cashregisterAccount: '',
       amount: 0,
       currency: '',
-      paymentDate: undefined,
+      paymentDate: new Date(),
       paymentStatus: PAYMENT_STATUSES[0].id,
       comment: '',
     },
@@ -119,7 +119,7 @@ export function EditOrderProvider({ children }: EditOrderProviderProps) {
     items: z.array(z.object({
       product: z.string(),
       quantity: z.number(),
-      currency: z.object({
+      selectedCurrency: z.object({
         id: z.string(),
       }),
       price: z.number(),
@@ -189,7 +189,7 @@ export function EditOrderProvider({ children }: EditOrderProviderProps) {
           else if (item.discountAmount > 0) {
             discountPrice = item.price - item.discountAmount
           }
-          console.log(item)
+
           return {
             ...item.product,
             product: item.product.id,
@@ -294,7 +294,7 @@ export function EditOrderProvider({ children }: EditOrderProviderProps) {
     params.id = order.id
     params.items = params.items.map(item => ({
       ...item,
-      currency: item.currency.id,
+      currency: item.selectedCurrency.id,
       price: item.selectedPrice || item.price,
       discountAmount: item.discountAmount || 0,
       discountPercent: item.discountPercent || 0,
@@ -306,6 +306,7 @@ export function EditOrderProvider({ children }: EditOrderProviderProps) {
       cashregisterAccount: payment.cashregisterAccount.id,
       currency: payment.currency.id,
     }))
+
     useMutateEditOrder.mutate(params)
     navigate('/orders')
   }

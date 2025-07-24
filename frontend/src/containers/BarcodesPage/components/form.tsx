@@ -59,16 +59,21 @@ export function BarcodeForm() {
     }
   }
 
-  const changeQuantity = (product, { quantity, receivedQuantity }: { quantity?: number, receivedQuantity?: number }) => {
+  const updateProduct = ({ productId, field, value }: { productId: string, field: string, value: any }) => {
     const selectedProducts = form.getValues('products')
-    const index = selectedProducts.findIndex(p => p.id === product.id)
-    if (index !== -1) {
-      productsField.update(index, {
-        ...selectedProducts[index],
-        quantity: quantity ?? product.quantity,
-        receivedQuantity: receivedQuantity ?? product.receivedQuantity ?? 0,
-      })
+    const index = selectedProducts.findIndex(p => p.id === productId)
+
+    if (index === -1)
+      return
+
+    const current = selectedProducts[index]
+    const updated = { ...current, [field]: value }
+
+    if (field === 'quantity') {
+      updated.quantity = value ?? current.quantity
     }
+
+    productsField.update(index, updated)
   }
 
   useBarcodeScanned(async (barcode: string) => {
@@ -80,7 +85,13 @@ export function BarcodeForm() {
     <Form {...form}>
       <ProductTable addProduct={addProduct} />
       <Separator className="my-4" />
-      <ProductSelectedTable products={form.getValues('products') || []} removeProduct={removeProduct} isLoading={isLoading} changeQuantity={changeQuantity} />
+      <ProductSelectedTable
+        products={form.getValues('products') || []}
+        removeProduct={removeProduct}
+        isLoading={isLoading}
+        changeProduct={updateProduct}
+        includeFooterTotal={true}
+      />
       <Separator className="my-4" />
       <form className="w-full space-y-1 mt-4" onSubmit={form.handleSubmit(onSubmit)}>
         <FormField

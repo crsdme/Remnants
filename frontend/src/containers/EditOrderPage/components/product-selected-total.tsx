@@ -33,9 +33,9 @@ export function ProductSelectedTotal() {
   return (
     <div className="flex flex-col items-end gap-2 mt-2">
       <div className="flex items-center flex-wrap gap-2">
-        {Object.entries(totalsByCurrency).map(([currency, total]) => (
+        {Object.entries(totalsByCurrency).map(([currency, total]: [string, number]) => (
           <Badge key={currency}>
-            {`${total} ${currency}`}
+            {`${total.toFixed(2)} ${currency}`}
           </Badge>
         ))}
       </div>

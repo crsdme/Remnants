@@ -171,14 +171,39 @@ export async function get(payload: OrderTypes.getOrdersParams): Promise<OrderTyp
                       },
                       currentItem: '$$this',
                       totalPrice: {
-                        $multiply: [
-                          '$$this.quantity',
+                        $round: [
                           {
-                            $subtract: [
-                              '$$this.price',
-                              { $ifNull: ['$$this.discountAmount', 0] },
+                            $multiply: [
+                              '$$this.quantity',
+                              {
+                                $let: {
+                                  vars: {
+                                    basePrice: '$$this.price',
+                                    discountAmount: { $ifNull: ['$$this.discountAmount', 0] },
+                                    discountPercent: { $ifNull: ['$$this.discountPercent', 0] },
+                                  },
+                                  in: {
+                                    $cond: [
+                                      { $gt: ['$$discountPercent', 0] },
+                                      {
+                                        $subtract: [
+                                          '$$basePrice',
+                                          {
+                                            $divide: [
+                                              { $multiply: ['$$basePrice', '$$discountPercent'] },
+                                              100,
+                                            ],
+                                          },
+                                        ],
+                                      },
+                                      { $subtract: ['$$basePrice', '$$discountAmount'] },
+                                    ],
+                                  },
+                                },
+                              },
                             ],
                           },
+                          2,
                         ],
                       },
                     },

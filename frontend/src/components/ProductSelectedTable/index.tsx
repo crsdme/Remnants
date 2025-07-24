@@ -10,6 +10,7 @@ import { Skeleton, Table, TableBody, TableCell, TableHead, TableHeader, TableRow
 import { useDebounceCallback } from '@/utils/hooks'
 import { cn } from '@/utils/lib/utils'
 import { useColumns } from './columns'
+import { ProductSelectedTotal } from './product-selected-total'
 
 interface ProductSelectedTableProps {
   products: any[]
@@ -22,6 +23,7 @@ interface ProductSelectedTableProps {
   isLoading?: boolean
   className?: string
   includeTotal?: boolean
+  includeFooterTotal?: boolean
 }
 
 export function ProductSelectedTable(
@@ -35,7 +37,8 @@ export function ProductSelectedTable(
     isSelectedPrice = false,
     isDiscount = false,
     disabled = false,
-    includeTotal,
+    includeTotal = false,
+    includeFooterTotal = false,
   }: ProductSelectedTableProps,
 ) {
   const { t } = useTranslation()
@@ -167,6 +170,7 @@ export function ProductSelectedTable(
           <TableBody>{renderTableBody()}</TableBody>
         </Table>
       </div>
+      {includeFooterTotal && <ProductSelectedTotal products={products} />}
     </div>
   )
 }

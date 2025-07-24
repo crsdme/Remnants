@@ -145,5 +145,7 @@
   "component.productTable.table.selectedQuantity": "Selected Quantity",
   "component.productTable.table.unit": "Unit",
   "component.productTable.table.discount": "Discount",
-  "component.productTable.table.selectedPrice": "Price"
+  "component.productTable.table.selectedPrice": "Price",
+  "component.productTable.table.receivedQuantity": "Received Quantity",
+  "component.productTable.table.total": "Total"
 }

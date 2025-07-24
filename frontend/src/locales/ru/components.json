@@ -145,5 +145,7 @@
   "component.productTable.table.selectedQuantity": "Выбранное количество",
   "component.productTable.table.unit": "Единица измерения",
   "component.productTable.table.discount": "Скидка",
-  "component.productTable.table.selectedPrice": "Цена"
+  "component.productTable.table.selectedPrice": "Цена",
+  "component.productTable.table.receivedQuantity": "Полученное количество",
+  "component.productTable.table.total": "Итого"
 }

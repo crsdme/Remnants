@@ -1,6 +1,4 @@
-import { useFieldArray } from 'react-hook-form'
-
-import { ProductSelectedTable, ProductTable } from '@/components'
+import { ProductSelectedTable } from '@/components'
 
 import { useViewOrderContext } from '@/contexts'
 import { InformationForm } from './information-form'

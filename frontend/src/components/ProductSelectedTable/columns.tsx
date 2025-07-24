@@ -1,10 +1,12 @@
 import {
   ArrowDown,
   ArrowUp,
+  Check,
   ChevronsUpDown,
   Minus,
   Plus,
   Trash2,
+  X,
 } from 'lucide-react'
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -87,55 +89,8 @@ export function useColumns(
         enableHiding: false,
         cell: ({ row }) => {
           const item = row.original
-          const hasMismatch = item.receivedQuantity !== item.quantity
-
           return (
             <div className="flex gap-2 justify-end">
-              {isReceiving && (
-                <Badge variant={hasMismatch ? 'destructive' : 'success'}>
-                  {hasMismatch ? t('table.mismatch') : t('table.match')}
-                </Badge>
-              )}
-              {isReceiving && (
-                <>
-                  <Separator orientation="vertical" className="h-8" />
-                  <div className="flex gap-2">
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      onClick={() => handleChange({ productId: item.id, field: 'receivedQuantity', value: item.receivedQuantity - 1 })}
-                      disabled={isLoading || disabled}
-                    >
-                      <Minus className="h-4 w-4" />
-                    </Button>
-                    <div className="relative min-w-5">
-                      <Input
-                        placeholder={t('component.product-select-table.quantity.placeholder')}
-                        value={item.receivedQuantity}
-                        className="pr-10 w-20"
-                        disabled={true}
-                        onChange={event => handleChange({
-                          productId: item.id,
-                          field: 'receivedQuantity',
-                          value: Number.parseInt(event.target.value),
-                          isDebounced: true,
-                        })}
-                      />
-                      <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                        <p>{item.unit.symbols[i18n.language]}</p>
-                      </div>
-                    </div>
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      onClick={() => handleChange({ productId: item.id, field: 'receivedQuantity', value: item.receivedQuantity + 1 })}
-                      disabled={isLoading || disabled}
-                    >
-                      <Plus className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </>
-              )}
               <Button
                 onClick={() => removeProduct(item)}
                 variant="ghost"
@@ -354,7 +309,7 @@ export function useColumns(
                   discountPrice = product.price - (product.price * product.discountPercent) / 100 - product.price
                 }
                 else if (product.discountAmount > 0) {
-                  discountPrice = product.price - product.discountAmount - product.price
+                  discountPrice = (product.price - product.discountAmount - product.price)
                 }
 
                 return (
@@ -362,7 +317,7 @@ export function useColumns(
                     <PopoverTrigger asChild>
                       <div className="flex gap-2 relative">
                         <Button variant="outline" className="w-full justify-start">
-                          {discountPrice}
+                          {discountPrice.toFixed(2)}
                         </Button>
                         <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
                           <p>{currency}</p>
@@ -425,7 +380,6 @@ export function useColumns(
               header: () => t('component.productTable.table.selectedPrice'),
               cell: ({ row }) => {
                 const product = row.original
-                console.log(product)
                 return (
                   <div className="flex gap-2">
                     <EditableCell
@@ -437,7 +391,7 @@ export function useColumns(
                         isDebounced: true,
                       })}
                       field="selectedPrice"
-                      className="w-15 pr-2"
+                      className="w-20 pr-2"
                       disabled={isLoading || disabled}
                     />
                     <AsyncSelectNew
@@ -500,7 +454,7 @@ export function useColumns(
                   })}
                   field="quantity"
                   className="w-20"
-                  disabled={isLoading || disabled}
+                  disabled={isLoading || isReceiving || disabled}
                 />
                 <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
                   <p>{item.unit.symbols[i18n.language]}</p>
@@ -520,17 +474,92 @@ export function useColumns(
           )
         },
       },
+      ...(isReceiving
+        ? [{
+            id: 'selectedPrice',
+            meta: {
+              title: t('component.productTable.table.receivedQuantity'),
+              filterable: true,
+              filterType: 'number',
+              sortable: true,
+            },
+            header: () => t('component.productTable.table.receivedQuantity'),
+            cell: ({ row }) => {
+              const product = row.original
+              const hasMismatch = product.receivedQuantity !== product.quantity
+
+              return (
+                <div className="flex items-center gap-2">
+                  <Badge variant={hasMismatch ? 'destructive' : 'success'}>
+                    {hasMismatch ? <X /> : <Check />}
+                  </Badge>
+                  <Separator orientation="vertical" className="h-8" />
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => handleChange({ productId: product.id, field: 'receivedQuantity', value: product.receivedQuantity - 1 })}
+                      disabled={isLoading || disabled}
+                    >
+                      <Minus className="h-4 w-4" />
+                    </Button>
+                    <div className="relative min-w-5">
+                      {/* <Input
+                        placeholder={t('component.product-select-table.quantity.placeholder')}
+                        value={product.receivedQuantity}
+                        className="pr-10 w-20"
+                        disabled={isLoading || disabled}
+                        onChange={event => handleChange({
+                          productId: product.id,
+                          field: 'receivedQuantity',
+                          value: Number.parseInt(event.target.value),
+                          isDebounced: true,
+                        })}
+                      /> */}
+                      <EditableCell
+                        product={product}
+                        onChange={value => handleChange({
+                          productId: product.id,
+                          field: 'receivedQuantity',
+                          value,
+                          isDebounced: true,
+                        })}
+                        field="receivedQuantity"
+                        className="w-20"
+                        disabled={isLoading || disabled}
+                      />
+                      <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                        <p>{product.unit.symbols[i18n.language]}</p>
+                      </div>
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => handleChange({ productId: product.id, field: 'receivedQuantity', value: product.receivedQuantity + 1 })}
+                      disabled={isLoading || disabled}
+                    >
+                      <Plus className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              )
+            },
+          }]
+        : []),
       ...(includeTotal
         ? [
             {
               id: 'total',
+              meta: {
+                title: t('component.productTable.table.total'),
+              },
               cell: ({ row }) => {
                 const item = row.original
 
                 return (
                   <div className="flex items-center gap-2">
                     <p className="font-bold">
-                      {`${item.quantity * item.selectedPrice} ${currencies.find(c => c.id === item.selectedCurrency.id)?.symbols[i18n.language]}`}
+                      {`${(item.quantity * item.selectedPrice).toFixed(2)} ${currencies.find(c => c.id === item.selectedCurrency.id)?.symbols[i18n.language]}`}
                     </p>
                   </div>
                 )

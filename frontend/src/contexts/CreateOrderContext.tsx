@@ -92,7 +92,7 @@ export function CreateOrderProvider({ children }: CreateOrderProviderProps) {
       cashregisterAccount: '',
       amount: 0,
       currency: '',
-      paymentDate: undefined,
+      paymentDate: new Date(),
       paymentStatus: PAYMENT_STATUSES[0].id,
       comment: '',
     },

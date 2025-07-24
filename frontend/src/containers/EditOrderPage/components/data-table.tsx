@@ -117,22 +117,32 @@ export function DataTable() {
     const current = selectedProducts[index]
     const updated = { ...current, [field]: value }
 
-    if (field === 'discountPercent' || field === 'discountAmount') {
+    if (field === 'discountPercent') {
       const discountPercent = value ?? current.discountPercent ?? 0
-      const discountAmount = value ?? current.discountAmount ?? 0
 
       if (discountPercent > 0) {
         updated.selectedPrice = current.price - (current.price * discountPercent) / 100
-      }
-      else if (discountAmount > 0) {
-        updated.selectedPrice = current.price - discountAmount
       }
       else {
         updated.selectedPrice = current.price
       }
 
       updated.discountPercent = discountPercent
-      updated.discountAmount = discountAmount
+      updated.discountAmount = 0
+    }
+
+    if (field === 'discountAmount') {
+      const discountAmount = value ?? current.discountAmount ?? 0
+
+      if (discountAmount > 0) {
+        updated.selectedPrice = current.price - discountAmount
+      }
+      else {
+        updated.selectedPrice = current.price
+      }
+
+      updated.discountAmount = discountAmount.toFixed(2)
+      updated.discountPercent = 0
     }
 
     if (field === 'quantity' || field === 'receivedQuantity') {

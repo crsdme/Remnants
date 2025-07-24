@@ -153,7 +153,7 @@ export function FullForm({ form, onSubmit }: { form: UseFormReturn, onSubmit: (p
                     <Input
                       type="number"
                       placeholder={t('page.create-order.form.amount')}
-                      className="w-full"
+                      className="flex-1"
                       {...field}
                       disabled={isLoading}
                       onChange={e => field.onChange(Number(e.target.value))}
@@ -171,7 +171,9 @@ export function FullForm({ form, onSubmit }: { form: UseFormReturn, onSubmit: (p
                         getOptionValue={e => e.id}
                         disabled={isLoading || !selectedAccount}
                         clearable
+                        triggerClassName="flex-1 max-w-[80px]"
                         selectFirstOption
+                        placeholder="..."
                       />
                     )}
                   />

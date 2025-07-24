@@ -62,29 +62,6 @@ export function WarehouseTransactionForm() {
     }
   }
 
-  // const addProduct = (products, selectedQuantity = 1) => {
-  //   const selectedProducts = form.getValues('products')
-  //   products.forEach((product) => {
-  //     const existing = selectedProducts.find(p => p.id === product.id) as any
-
-  //     if (existing) {
-  //       const index = selectedProducts.findIndex(p => p.id === product.id)
-  //       productsField.update(index, {
-  //         ...existing,
-  //         quantity: existing.quantity + selectedQuantity,
-  //       })
-  //     }
-  //     else {
-  //       productsField.append({
-  //         ...product,
-  //         id: product.id,
-  //         quantity: selectedQuantity,
-  //         receivedQuantity: 0,
-  //       })
-  //     }
-  //   })
-  // }
-
   const removeProduct = (product) => {
     const selectedProducts = form.getValues('products')
     const index = selectedProducts.findIndex(p => p.id === product.id)
@@ -93,16 +70,25 @@ export function WarehouseTransactionForm() {
     }
   }
 
-  const changeQuantity = (product, { quantity, receivedQuantity }: { quantity?: number, receivedQuantity?: number }) => {
+  const updateProduct = ({ productId, field, value }: { productId: string, field: string, value: any }) => {
     const selectedProducts = form.getValues('products')
-    const index = selectedProducts.findIndex(p => p.id === product.id)
-    if (index !== -1) {
-      productsField.update(index, {
-        ...selectedProducts[index],
-        quantity: quantity ?? product.quantity,
-        receivedQuantity: receivedQuantity ?? product.receivedQuantity ?? 0,
-      })
+    const index = selectedProducts.findIndex(p => p.id === productId)
+
+    if (index === -1)
+      return
+
+    const current = selectedProducts[index]
+    const updated = { ...current, [field]: value }
+
+    if (field === 'receivedQuantity') {
+      updated.receivedQuantity = value ?? current.receivedQuantity ?? 0
     }
+
+    if (field === 'quantity') {
+      updated.quantity = value ?? current.quantity
+    }
+
+    productsField.update(index, updated)
   }
 
   useBarcodeScanned(async (barcode: string) => {
@@ -118,7 +104,14 @@ export function WarehouseTransactionForm() {
     <Form {...form}>
       <ProductTable addProduct={addProduct} />
       <Separator className="my-4" />
-      <ProductSelectedTable products={form.getValues('products') || []} removeProduct={removeProduct} isLoading={isLoading} changeQuantity={changeQuantity} isReceiving={isReceiving} />
+      <ProductSelectedTable
+        products={form.getValues('products') || []}
+        removeProduct={removeProduct}
+        isLoading={isLoading}
+        changeProduct={updateProduct}
+        isReceiving={isReceiving}
+        includeFooterTotal={true}
+      />
       <Separator className="my-4" />
       <form className="w-full space-y-1 mt-4" onSubmit={form.handleSubmit(onSubmit, onError)}>
 
