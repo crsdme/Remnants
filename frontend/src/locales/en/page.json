@@ -598,6 +598,7 @@
   "page.orders.table.deliveryService": "Delivery Service",
   "page.orders.table.orderSource": "Order Source",
   "page.orders.table.orderStatus": "Order Status",
+  "page.orders.table.totals": "Totals",
 
   "page.create-order.title": "Create Order",
   "page.create-order.description": "Create order",

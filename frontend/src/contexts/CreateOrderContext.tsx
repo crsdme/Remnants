@@ -107,7 +107,7 @@ export function CreateOrderProvider({ children }: CreateOrderProviderProps) {
     items: z.array(z.object({
       product: z.string(),
       quantity: z.number(),
-      currency: z.object({
+      selectedCurrency: z.object({
         id: z.string(),
       }),
       discountAmount: z.number().optional(),
@@ -235,9 +235,10 @@ export function CreateOrderProvider({ children }: CreateOrderProviderProps) {
 
   const createOrder = (params) => {
     setIsLoading(true)
+
     params.items = params.items.map(item => ({
       ...item,
-      currency: item.currency.id,
+      currency: item.selectedCurrency.id,
       price: item.selectedPrice || item.price,
       discountAmount: item.discountAmount || 0,
       discountPercent: item.discountPercent || 0,

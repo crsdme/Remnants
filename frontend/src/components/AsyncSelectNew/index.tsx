@@ -35,6 +35,7 @@ export interface AsyncSelectProps<T> {
   notFound?: React.ReactNode
   loadingSkeleton?: React.ReactNode
   selectFirstOption?: boolean
+  isForm?: boolean
   // noResultsMessage?: string
 }
 
@@ -53,6 +54,7 @@ export function AsyncSelectNew<T>({
   multi = false,
   clearable = false,
   searchable = false,
+  isForm = true,
   field,
   loadingSkeleton,
   notFound,
@@ -95,14 +97,6 @@ export function AsyncSelectNew<T>({
     return () => resizeObserver.disconnect()
   }, [])
 
-  const handleRemoveTag = (id: string) => {
-    const updated = selectedValues.filter(v => v !== id)
-    const updatedOptions = selectedOptions.filter(o => getOptionValue(o) !== id)
-    setSelectedValues(updated)
-    setSelectedOptions(updatedOptions)
-    onChange?.(updated)
-  }
-
   const handleSelect = useCallback((id: string) => {
     const isAlreadySelected = selectedValues.includes(id)
 
@@ -141,6 +135,14 @@ export function AsyncSelectNew<T>({
     getOptionValue,
     onChange,
   ])
+
+  const handleRemoveTag = (id: string) => {
+    const updated = selectedValues.filter(v => v !== id)
+    const updatedOptions = selectedOptions.filter(o => getOptionValue(o) !== id)
+    setSelectedValues(updated)
+    setSelectedOptions(updatedOptions)
+    onChange?.(updated)
+  }
 
   useEffect(() => { // INITIAL
     if (!mounted)
@@ -245,34 +247,22 @@ export function AsyncSelectNew<T>({
     <>
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
-          <FormControl>
-            <Button
-              variant="outline"
-              role="combobox"
-              aria-expanded={open}
-              className={cn(
-                'w-full max-w-full min-w-0 justify-between min-h-9',
-                disabled && 'opacity-50 cursor-not-allowed',
-                (multi && selectedOptions.length > 0) && 'h-auto p-1 has-[>svg]:pl-1',
-                triggerClassName,
-              )}
-              disabled={disabled}
-              {...field}
-              ref={triggerRef}
-            >
-              { renderSelectedOptions({
-                selectedOptions,
-                multi,
-                getOptionValue,
-                getDisplayValue,
-                placeholder: placeholder || <p className="text-muted-foreground">{t('component.asyncSelect.placeholder')}</p>,
-                onRemove: handleRemoveTag,
-              }) }
-              <ChevronDown className="opacity-50" size={10} />
-            </Button>
-          </FormControl>
+          {RenderSelectTrigger({
+            isForm,
+            disabled,
+            multi,
+            triggerClassName,
+            field,
+            triggerRef,
+            open,
+            selectedOptions,
+            getOptionValue,
+            getDisplayValue,
+            placeholder,
+            handleRemoveTag,
+          })}
         </PopoverTrigger>
-        <FormMessage />
+        {isForm && <FormMessage />}
         <PopoverContent style={{ width: popoverWidth }} className={cn('p-0', className)}>
           <Command shouldFilter={false}>
             {searchable && (
@@ -396,5 +386,80 @@ function renderSelectedOptions<T>({
         </span>
       ))}
     </div>
+  )
+}
+
+function RenderSelectTrigger({
+  isForm,
+  disabled,
+  multi,
+  triggerClassName,
+  field,
+  triggerRef,
+  open,
+  selectedOptions,
+  getOptionValue,
+  getDisplayValue,
+  placeholder,
+  handleRemoveTag,
+}) {
+  const { t } = useTranslation()
+
+  if (isForm) {
+    return (
+      <FormControl>
+        <Button
+          variant="outline"
+          role="combobox"
+          aria-expanded={open}
+          className={cn(
+            'w-full max-w-full min-w-0 justify-between min-h-9',
+            disabled && 'opacity-50 cursor-not-allowed',
+            (multi && selectedOptions.length > 0) && 'h-auto p-1 has-[>svg]:pl-1',
+            triggerClassName,
+          )}
+          disabled={disabled}
+          {...field}
+          ref={triggerRef}
+        >
+          { renderSelectedOptions({
+            selectedOptions,
+            multi,
+            getOptionValue,
+            getDisplayValue,
+            placeholder: placeholder || <p className="text-muted-foreground">{t('component.asyncSelect.placeholder')}</p>,
+            onRemove: handleRemoveTag,
+          }) }
+          <ChevronDown className="opacity-50" size={10} />
+        </Button>
+      </FormControl>
+    )
+  }
+
+  return (
+    <Button
+      variant="outline"
+      role="combobox"
+      aria-expanded={open}
+      className={cn(
+        'w-full max-w-full min-w-0 justify-between min-h-9',
+        disabled && 'opacity-50 cursor-not-allowed',
+        (multi && selectedOptions.length > 0) && 'h-auto p-1 has-[>svg]:pl-1',
+        triggerClassName,
+      )}
+      disabled={disabled}
+      {...field}
+      ref={triggerRef}
+    >
+      { renderSelectedOptions({
+        selectedOptions,
+        multi,
+        getOptionValue,
+        getDisplayValue,
+        placeholder: placeholder || <p className="text-muted-foreground">{t('component.asyncSelect.placeholder')}</p>,
+        onRemove: handleRemoveTag,
+      }) }
+      <ChevronDown className="opacity-50" size={10} />
+    </Button>
   )
 }

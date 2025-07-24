@@ -21,7 +21,7 @@ const sortIcons = { asc: ArrowUp, desc: ArrowDown }
 
 export function useColumns() {
   const { t, i18n } = useTranslation()
-  const { isLoading, removeOrder } = useOrderContext()
+  const { isLoading, removeOrder, currencies } = useOrderContext()
   const { permissions } = useAuthContext()
   const navigate = useNavigate()
 
@@ -242,20 +242,26 @@ export function useColumns() {
           )
         },
       },
-      // {
-      //   id: 'orderStatus',
-      //   accessorKey: 'orderStatus',
-      //   meta: {
-      //     title: t('page.orders.table.orderStatus'),
-      //     batchEdit: true,
-      //     batchEditType: 'number',
-      //     filterable: true,
-      //     filterType: 'number',
-      //     sortable: true,
-      //   },
-      //   header: ({ column }) => sortHeader(column, t('page.orders.table.orderStatus')),
-      //   cell: ({ row }) => <Badge variant="outline">{row.original.orderStatus.names?.[i18n.language] || row.original.orderStatus.names?.en}</Badge>,
-      // },
+      {
+        id: 'totals',
+        size: 150,
+        meta: {
+          title: t('page.orders.table.totals'),
+        },
+        header: ({ column }) => sortHeader(column, t('page.orders.table.totals')),
+        cell: ({ row }) => {
+          const totals = row.original.totals
+          return (
+            <div className="flex flex-col gap-2">
+              {totals.map(item => (
+                <Badge key={item.currency}>
+                  {`${item.total} ${currencies.find(currency => currency.id === item.currency)?.symbols[i18n.language] || ''}`}
+                </Badge>
+              ))}
+            </div>
+          )
+        },
+      },
       {
         id: 'createdAt',
         accessorKey: 'createdAt',
@@ -282,6 +288,6 @@ export function useColumns() {
       },
       actionColumn(),
     ]
-  }, [i18n.language])
+  }, [i18n.language, currencies, isLoading])
   return columns
 }

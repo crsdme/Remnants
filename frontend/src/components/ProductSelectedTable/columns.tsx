@@ -9,31 +9,30 @@ import {
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import { useProductPropertyQuery } from '@/api/hooks'
+import { useCurrencyOptions, useCurrencyQuery, useProductPropertyQuery } from '@/api/hooks'
 import { ImageGallery } from '@/components'
 import { Badge, Button, Input, Popover, PopoverContent, PopoverTrigger, Separator } from '@/components/ui'
 import { useAuthContext } from '@/contexts'
 import { formatDate } from '@/utils/helpers'
 import { hasPermission } from '@/utils/helpers/permission'
+import { AsyncSelectNew } from '../AsyncSelectNew'
 import { EditableCell } from './cells'
 
 const sortIcons = { asc: ArrowUp, desc: ArrowDown }
 
 interface ProductSelectedTableProps {
   removeProduct: (product: any) => void
-  changeQuantity: (product: any, options: { quantity?: number, receivedQuantity?: number }) => void
   isReceiving: boolean
   isSelectedPrice: boolean
   isDiscount: boolean
   disabled: boolean
-  handleChange: (productId: string, field: string, value: number) => void
+  handleChange: (options: { productId: string, field: string, value: string | number | string[], isDebounced?: boolean }) => void
   includeTotal: boolean
 }
 
 export function useColumns(
   {
     removeProduct,
-    changeQuantity,
     isReceiving,
     isSelectedPrice,
     isDiscount,
@@ -49,6 +48,17 @@ export function useColumns(
   const productProperties = requestProductProperties.data?.data.productProperties || []
 
   const isLoading = false
+
+  const loadCurrencyOptions = useCurrencyOptions()
+
+  const { data: { currencies = [] } = {} } = useCurrencyQuery(
+    {},
+    { options: {
+      select: response => ({
+        currencies: response.data.currencies,
+      }),
+    } },
+  )
 
   const columns = useMemo(() => {
     function sortHeader(column, label) {
@@ -93,7 +103,7 @@ export function useColumns(
                     <Button
                       variant="outline"
                       size="icon"
-                      onClick={() => changeQuantity(item, { receivedQuantity: item.receivedQuantity - 1 })}
+                      onClick={() => handleChange({ productId: item.id, field: 'receivedQuantity', value: item.receivedQuantity - 1 })}
                       disabled={isLoading || disabled}
                     >
                       <Minus className="h-4 w-4" />
@@ -104,7 +114,12 @@ export function useColumns(
                         value={item.receivedQuantity}
                         className="pr-10 w-20"
                         disabled={true}
-                        onChange={event => handleChange(item.id, 'receivedQuantity', Number.parseInt(event.target.value))}
+                        onChange={event => handleChange({
+                          productId: item.id,
+                          field: 'receivedQuantity',
+                          value: Number.parseInt(event.target.value),
+                          isDebounced: true,
+                        })}
                       />
                       <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
                         <p>{item.unit.symbols[i18n.language]}</p>
@@ -113,7 +128,7 @@ export function useColumns(
                     <Button
                       variant="outline"
                       size="icon"
-                      onClick={() => changeQuantity(item, { receivedQuantity: item.receivedQuantity + 1 })}
+                      onClick={() => handleChange({ productId: item.id, field: 'receivedQuantity', value: item.receivedQuantity + 1 })}
                       disabled={isLoading || disabled}
                     >
                       <Plus className="h-4 w-4" />
@@ -332,7 +347,7 @@ export function useColumns(
               header: () => t('component.productTable.table.discount'),
               cell: ({ row }) => {
                 const product = row.original
-                const currency = product.currency.symbols[i18n.language]
+                const currency = currencies.find(c => c.id === product.selectedCurrency.id)?.symbols[i18n.language]
 
                 let discountPrice = 0
                 if (product.discountPercent > 0) {
@@ -359,7 +374,12 @@ export function useColumns(
                       <div className="flex gap-2 relative min-w-5">
                         <EditableCell
                           product={product}
-                          onChange={val => handleChange(product.id, 'discountAmount', val)}
+                          onChange={val => handleChange({
+                            productId: product.id,
+                            field: 'discountAmount',
+                            value: val,
+                            isDebounced: true,
+                          })}
                           field="discountAmount"
                           className="w-full"
                           disabled={isLoading || disabled}
@@ -371,7 +391,12 @@ export function useColumns(
                       <div className="flex gap-2 relative min-w-5">
                         <EditableCell
                           product={product}
-                          onChange={val => handleChange(product.id, 'discountPercent', val)}
+                          onChange={val => handleChange({
+                            productId: product.id,
+                            field: 'discountPercent',
+                            value: val,
+                            isDebounced: true,
+                          })}
                           field="discountPercent"
                           className="w-full"
                           disabled={isLoading || disabled}
@@ -400,22 +425,38 @@ export function useColumns(
               header: () => t('component.productTable.table.selectedPrice'),
               cell: ({ row }) => {
                 const product = row.original
-                const currency = product.currency.symbols[i18n.language]
-
+                console.log(product)
                 return (
                   <div className="flex gap-2">
-                    <div className="flex gap-2 relative min-w-5">
-                      <EditableCell
-                        product={product}
-                        onChange={val => handleChange(product.id, 'selectedPrice', val)}
-                        field="selectedPrice"
-                        className="w-25"
-                        disabled={isLoading || disabled}
-                      />
-                      <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                        <p>{currency}</p>
-                      </div>
-                    </div>
+                    <EditableCell
+                      product={product}
+                      onChange={value => handleChange({
+                        productId: product.id,
+                        field: 'selectedPrice',
+                        value,
+                        isDebounced: true,
+                      })}
+                      field="selectedPrice"
+                      className="w-15 pr-2"
+                      disabled={isLoading || disabled}
+                    />
+                    <AsyncSelectNew
+                      loadOptions={loadCurrencyOptions}
+                      value={[product.selectedCurrency.id]}
+                      renderOption={e => `${e.symbols[i18n.language]}`}
+                      getDisplayValue={e => `${e.symbols[i18n.language]}`}
+                      getOptionValue={e => e.id}
+                      disabled={isLoading || disabled}
+                      onChange={val => handleChange({
+                        productId: product.id,
+                        field: 'selectedCurrency',
+                        value: currencies.find(c => c.id === val),
+                      })}
+                      triggerClassName="w-15"
+                      placeholder="..."
+                      clearable
+                      isForm={false}
+                    />
                   </div>
                 )
               },
@@ -442,7 +483,7 @@ export function useColumns(
                 <Button
                   variant="outline"
                   size="icon"
-                  onClick={() => changeQuantity(item, { quantity: item.quantity - 1 })}
+                  onClick={() => handleChange({ productId: item.id, field: 'quantity', value: item.quantity - 1 })}
                   disabled={isLoading || isReceiving || disabled}
                 >
                   <Minus className="h-4 w-4" />
@@ -451,7 +492,12 @@ export function useColumns(
               <div className="relative min-w-5">
                 <EditableCell
                   product={item}
-                  onChange={val => handleChange(item.id, 'quantity', val)}
+                  onChange={val => handleChange({
+                    productId: item.id,
+                    field: 'quantity',
+                    value: val,
+                    isDebounced: true,
+                  })}
                   field="quantity"
                   className="w-20"
                   disabled={isLoading || disabled}
@@ -464,7 +510,7 @@ export function useColumns(
                 <Button
                   variant="outline"
                   size="icon"
-                  onClick={() => changeQuantity(item, { quantity: item.quantity + 1 })}
+                  onClick={() => handleChange({ productId: item.id, field: 'quantity', value: item.quantity + 1 })}
                   disabled={isLoading || isReceiving || disabled}
                 >
                   <Plus className="h-4 w-4" />
@@ -484,7 +530,7 @@ export function useColumns(
                 return (
                   <div className="flex items-center gap-2">
                     <p className="font-bold">
-                      {`${item.quantity * item.selectedPrice} ${item.currency.symbols[i18n.language]}`}
+                      {`${item.quantity * item.selectedPrice} ${currencies.find(c => c.id === item.selectedCurrency.id)?.symbols[i18n.language]}`}
                     </p>
                   </div>
                 )
@@ -494,6 +540,6 @@ export function useColumns(
         : []),
       actionColumn(),
     ]
-  }, [i18n.language, productProperties])
+  }, [i18n.language, productProperties, currencies])
   return columns
 }

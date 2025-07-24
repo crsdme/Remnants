@@ -189,6 +189,7 @@ export function EditOrderProvider({ children }: EditOrderProviderProps) {
           else if (item.discountAmount > 0) {
             discountPrice = item.price - item.discountAmount
           }
+          console.log(item)
           return {
             ...item.product,
             product: item.product.id,
@@ -197,6 +198,8 @@ export function EditOrderProvider({ children }: EditOrderProviderProps) {
             selectedPrice: discountPrice,
             discountAmount: item.discountAmount || 0,
             discountPercent: item.discountPercent || 0,
+            selectedCurrency: item.currency,
+            currency: item.product.currency,
           }
         }),
         comment: order.comment,

@@ -49,6 +49,7 @@ export function DataTable() {
         quantity: selectedQuantity,
         receivedQuantity: 0,
         selectedPrice: product.price,
+        selectedCurrency: product.currency,
         discountAmount: 0,
         discountPercent: 0,
       })
@@ -63,47 +64,91 @@ export function DataTable() {
     }
   }
 
-  const changeQuantity = (product, { quantity, receivedQuantity }: { quantity?: number, receivedQuantity?: number }) => {
-    const selectedProducts = informationForm.getValues('items')
-    const index = selectedProducts.findIndex(p => p.id === product.id)
-    if (index !== -1) {
-      itemsField.update(index, {
-        ...selectedProducts[index],
-        quantity: quantity ?? product.quantity,
-        receivedQuantity: receivedQuantity ?? product.receivedQuantity ?? 0,
-      })
-    }
-  }
+  // const changeQuantity = (product, { quantity, receivedQuantity }: { quantity?: number, receivedQuantity?: number }) => {
+  //   const selectedProducts = informationForm.getValues('items')
+  //   const index = selectedProducts.findIndex(p => p.id === product.id)
+  //   if (index !== -1) {
+  //     itemsField.update(index, {
+  //       ...selectedProducts[index],
+  //       quantity: quantity ?? product.quantity,
+  //       receivedQuantity: receivedQuantity ?? product.receivedQuantity ?? 0,
+  //     })
+  //   }
+  // }
 
-  const changePrice = (product, { selectedPrice }: { selectedPrice?: number }) => {
-    const selectedProducts = informationForm.getValues('items')
-    const index = selectedProducts.findIndex(p => p.id === product.id)
-    if (index !== -1) {
-      itemsField.update(index, { ...selectedProducts[index], selectedPrice })
-    }
-  }
+  // const changePrice = (product, { selectedPrice }: { selectedPrice?: number }) => {
+  //   const selectedProducts = informationForm.getValues('items')
+  //   const index = selectedProducts.findIndex(p => p.id === product.id)
+  //   if (index !== -1) {
+  //     itemsField.update(index, { ...selectedProducts[index], selectedPrice })
+  //   }
+  // }
 
-  const changeDiscount = (product, { discountPercent = 0, discountAmount = 0 }: { discountPercent?: number, discountAmount?: number }) => {
-    const selectedProducts = informationForm.getValues('items')
-    const index = selectedProducts.findIndex(p => p.id === product.id)
-    if (index !== -1) {
-      const product = selectedProducts[index]
+  // const changeDiscount = (product, { discountPercent = 0, discountAmount = 0 }: { discountPercent?: number, discountAmount?: number }) => {
+  //   const selectedProducts = informationForm.getValues('items')
+  //   const index = selectedProducts.findIndex(p => p.id === product.id)
+  //   if (index !== -1) {
+  //     const product = selectedProducts[index]
 
-      let discountPrice = product.price
+  //     let discountPrice = product.price
+  //     if (discountPercent > 0) {
+  //       discountPrice = product.price - (product.price * discountPercent) / 100
+  //     }
+  //     else if (discountAmount > 0) {
+  //       discountPrice = product.price - discountAmount
+  //     }
+
+  //     itemsField.update(index, {
+  //       ...product,
+  //       discountPercent,
+  //       discountAmount,
+  //       selectedPrice: discountPrice,
+  //     })
+  //   }
+  // }
+
+  // const changeCurrency = (product, { selectedCurrency }: { selectedCurrency?: string }) => {
+  //   const selectedProducts = informationForm.getValues('items')
+  //   const index = selectedProducts.findIndex(p => p.id === product.id)
+  //   if (index !== -1) {
+  //     itemsField.update(index, { ...selectedProducts[index], selectedCurrency })
+  //   }
+  // }
+
+  const updateProduct = ({ productId, field, value }: { productId: string, field: string, value: any }) => {
+    const selectedProducts = informationForm.getValues('items')
+    const index = selectedProducts.findIndex(p => p.id === productId)
+
+    if (index === -1)
+      return
+
+    const current = selectedProducts[index]
+    const updated = { ...current, [field]: value }
+
+    if (field === 'discountPercent' || field === 'discountAmount') {
+      const discountPercent = value ?? current.discountPercent ?? 0
+      const discountAmount = value ?? current.discountAmount ?? 0
+
       if (discountPercent > 0) {
-        discountPrice = product.price - (product.price * discountPercent) / 100
+        updated.selectedPrice = current.price - (current.price * discountPercent) / 100
       }
       else if (discountAmount > 0) {
-        discountPrice = product.price - discountAmount
+        updated.selectedPrice = current.price - discountAmount
+      }
+      else {
+        updated.selectedPrice = current.price
       }
 
-      itemsField.update(index, {
-        ...product,
-        discountPercent,
-        discountAmount,
-        selectedPrice: discountPrice,
-      })
+      updated.discountPercent = discountPercent
+      updated.discountAmount = discountAmount
     }
+
+    if (field === 'quantity' || field === 'receivedQuantity') {
+      updated.quantity = value ?? current.quantity
+      updated.receivedQuantity = value ?? current.receivedQuantity ?? 0
+    }
+
+    itemsField.update(index, updated)
   }
 
   useBarcodeScanned(async (barcode: string) => {
@@ -121,9 +166,7 @@ export function DataTable() {
         products={informationForm.getValues('items') || []}
         removeProduct={removeProduct}
         isLoading={isLoading}
-        changeQuantity={changeQuantity}
-        changePrice={changePrice}
-        changeDiscount={changeDiscount}
+        changeProduct={updateProduct}
         isReceiving={false}
         isSelectedPrice={true}
         isDiscount={true}

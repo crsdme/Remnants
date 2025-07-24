@@ -134,6 +134,105 @@ export async function get(payload: OrderTypes.getOrdersParams): Promise<OrderTyp
       },
     },
     {
+      $lookup: {
+        from: 'order-items',
+        localField: '_id',
+        foreignField: 'order',
+        as: 'orderItems',
+      },
+    },
+    {
+      $addFields: {
+        orderItems: {
+          $filter: {
+            input: '$orderItems',
+            as: 'item',
+            cond: { $ne: ['$$item.removed', true] },
+          },
+        },
+      },
+    },
+    {
+      $addFields: {
+        totals: {
+          $map: {
+            input: {
+              $reduce: {
+                input: '$orderItems',
+                initialValue: [],
+                in: {
+                  $let: {
+                    vars: {
+                      existing: {
+                        $filter: {
+                          input: '$$value',
+                          cond: { $eq: ['$$this.currency', '$$this.currency'] },
+                        },
+                      },
+                      currentItem: '$$this',
+                      totalPrice: {
+                        $multiply: [
+                          '$$this.quantity',
+                          {
+                            $subtract: [
+                              '$$this.price',
+                              { $ifNull: ['$$this.discountAmount', 0] },
+                            ],
+                          },
+                        ],
+                      },
+                    },
+                    in: {
+                      $cond: [
+                        {
+                          $gt: [
+                            {
+                              $size: {
+                                $filter: {
+                                  input: '$$value',
+                                  as: 'val',
+                                  cond: { $eq: ['$$val.currency', '$$this.currency'] },
+                                },
+                              },
+                            },
+                            0,
+                          ],
+                        },
+                        {
+                          $map: {
+                            input: '$$value',
+                            as: 'val',
+                            in: {
+                              $cond: [
+                                { $eq: ['$$val.currency', '$$this.currency'] },
+                                {
+                                  currency: '$$val.currency',
+                                  total: { $add: ['$$val.total', '$$totalPrice'] },
+                                },
+                                '$$val',
+                              ],
+                            },
+                          },
+                        },
+                        {
+                          $concatArrays: [
+                            '$$value',
+                            [{ currency: '$$this.currency', total: '$$totalPrice' }],
+                          ],
+                        },
+                      ],
+                    },
+                  },
+                },
+              },
+            },
+            as: 'item',
+            in: '$$item',
+          },
+        },
+      },
+    },
+    {
       $addFields: {
         client: { $arrayElemAt: ['$client', 0] },
         deliveryService: { $arrayElemAt: ['$deliveryService', 0] },
@@ -152,6 +251,7 @@ export async function get(payload: OrderTypes.getOrdersParams): Promise<OrderTyp
         orderSource: { id: '$orderSource._id', names: 1, type: 1, color: 1 },
         orderStatus: { id: '$orderStatus._id', names: 1, type: 1, color: 1, isLocked: 1 },
         warehouse: { id: '$warehouse._id', names: 1 },
+        totals: 1,
         orderPayments: 1,
         comment: 1,
         createdAt: 1,
@@ -209,6 +309,14 @@ export async function getItems(payload: OrderTypes.getOrderItemsParams): Promise
   const pipeline = [
     {
       $match: query,
+    },
+    {
+      $lookup: {
+        from: 'currencies',
+        localField: 'currency',
+        foreignField: '_id',
+        as: 'currency',
+      },
     },
     {
       $lookup: {
@@ -421,6 +529,7 @@ export async function getItems(payload: OrderTypes.getOrderItemsParams): Promise
         product: {
           $first: '$product',
         },
+        currency: { $arrayElemAt: ['$currency', 0] },
       },
     },
     {
@@ -430,6 +539,7 @@ export async function getItems(payload: OrderTypes.getOrderItemsParams): Promise
         product: 1,
         quantity: 1,
         price: 1,
+        currency: { id: '$currency._id', names: 1, symbols: 1 },
         discountAmount: 1,
         discountPercent: 1,
         transactionId: 1,

@@ -10,6 +10,7 @@ import { toast } from 'sonner'
 import { z } from 'zod'
 
 import {
+  useCurrencyQuery,
   useOrderCreate,
   useOrderEdit,
   useOrderRemove,
@@ -26,6 +27,7 @@ interface OrderContextType {
   closeModal: () => void
   submitOrderForm: (params) => void
   removeOrder: (params: { ids: string[] }) => void
+  currencies: Currency[]
 }
 
 const OrderContext = createContext<OrderContextType | undefined>(undefined)
@@ -63,6 +65,13 @@ export function OrderProvider({ children }: OrderProviderProps) {
   })
 
   const queryClient = useQueryClient()
+
+  const { data: { currencies = [] } = {} } = useCurrencyQuery(
+    {},
+    { options: { select: response => ({
+      currencies: response.data.currencies,
+    }) } },
+  )
 
   function getOrderFormValues(order) {
     if (!order) {
@@ -164,8 +173,9 @@ export function OrderProvider({ children }: OrderProviderProps) {
       closeModal,
       submitOrderForm,
       removeOrder,
+      currencies,
     }),
-    [selectedOrder, isModalOpen, isLoading, isEdit, form],
+    [selectedOrder, isModalOpen, isLoading, isEdit, form, currencies],
   )
 
   return <OrderContext.Provider value={value}>{children}</OrderContext.Provider>

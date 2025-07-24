@@ -15,13 +15,11 @@ export function DataTable() {
         products={informationForm.getValues('items') || []}
         removeProduct={() => {}}
         disabled={true}
-        changeQuantity={() => {}}
         isReceiving={false}
         isSelectedPrice={true}
         isDiscount={true}
         includeTotal={true}
-        changePrice={() => {}}
-        changeDiscount={() => {}}
+        changeProduct={() => {}}
       />
       <ProductSelectedTotal />
       <InformationForm form={informationForm} onSubmit={() => {}} />

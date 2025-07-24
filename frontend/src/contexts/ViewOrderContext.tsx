@@ -150,6 +150,8 @@ export function ViewOrderProvider({ children }: ViewOrderProviderProps) {
             selectedPrice: discountPrice,
             discountAmount: item.discountAmount || 0,
             discountPercent: item.discountPercent || 0,
+            selectedCurrency: item.currency,
+            currency: item.product.currency,
           }
         }),
         comment: order.comment,

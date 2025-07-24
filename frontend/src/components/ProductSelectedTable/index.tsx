@@ -14,9 +14,7 @@ import { useColumns } from './columns'
 interface ProductSelectedTableProps {
   products: any[]
   removeProduct: (product: any) => void
-  changeQuantity: (product: any, options: { quantity?: number, receivedQuantity?: number }) => void
-  changePrice?: (product: any, options: { selectedPrice?: number }) => void
-  changeDiscount?: (product: any, options: { discountPercent?: number, discountAmount?: number }) => void
+  changeProduct: (options: { productId: string, field: string, value: any }) => void
   isReceiving?: boolean
   isSelectedPrice?: boolean
   isDiscount?: boolean
@@ -32,13 +30,11 @@ export function ProductSelectedTable(
     removeProduct,
     isLoading = false,
     className,
-    changeQuantity,
-    changePrice,
+    changeProduct,
     isReceiving = false,
     isSelectedPrice = false,
     isDiscount = false,
     disabled = false,
-    changeDiscount,
     includeTotal,
   }: ProductSelectedTableProps,
 ) {
@@ -47,36 +43,21 @@ export function ProductSelectedTable(
   const [columnVisibility, setColumnVisibility] = useState({})
   const [sorting, setSorting] = useState<ColumnSort[]>([])
 
-  // const [editedValues, setEditedValues] = useState<EditedValues>({})
-
-  const debouncedUpdate = useDebounceCallback((productId: string, field: string, value: number) => {
-    const product = products.find(p => p.id === productId)
-    if (!product)
-      return
-
-    switch (field) {
-      case 'selectedPrice':
-        changePrice?.(product, { selectedPrice: value })
-        break
-      case 'quantity':
-        changeQuantity?.(product, { quantity: value })
-        break
-      case 'discountPercent':
-        changeDiscount?.(product, { discountPercent: value })
-        break
-      case 'discountAmount':
-        changeDiscount?.(product, { discountAmount: value })
-        break
-    }
+  const debouncedUpdate = useDebounceCallback(({ productId, field, value }) => {
+    changeProduct?.({ productId, field, value })
   }, 500)
 
-  function handleChange(productId: string, field: string, value: number) {
-    debouncedUpdate(productId, field, value)
+  function handleChange({ productId, field, value, isDebounced = false }: { productId: string, field: string, value: number, isDebounced?: boolean }) {
+    if (isDebounced) {
+      debouncedUpdate({ productId, field, value })
+    }
+    else {
+      changeProduct?.({ productId, field, value })
+    }
   }
 
   const columns = useColumns({
     removeProduct,
-    changeQuantity,
     isReceiving,
     isSelectedPrice,
     disabled,
