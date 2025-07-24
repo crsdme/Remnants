@@ -16,11 +16,20 @@ import {
 import { useCurrencyContext } from '@/contexts'
 import { downloadCsv } from '@/utils/helpers/download'
 
-import { CurrencyForm } from './form'
+import { CurrencyForm, ExchangeRateForm } from './form'
 
 export function ActionBar() {
   const { t } = useTranslation()
-  const { isModalOpen, isLoading, isEdit, openModal, closeModal, importCurrencies } = useCurrencyContext()
+  const {
+    isModalOpen,
+    isLoading,
+    isEdit,
+    isExchangeRateModalOpen,
+    openModal,
+    closeModal,
+    importCurrencies,
+    closeExchangeRateModal,
+  } = useCurrencyContext()
   const [file, setFile] = useState<File | null>(null)
 
   const { data: { languages = [] } = {} } = useLanguageQuery(
@@ -99,6 +108,21 @@ export function ActionBar() {
               </SheetHeader>
               <div className="w-full pb-4 px-4">
                 <CurrencyForm />
+              </div>
+            </SheetContent>
+          </Sheet>
+        </PermissionGate>
+        <PermissionGate permission={['exchange-rate.edit']}>
+          <Sheet open={isExchangeRateModalOpen} onOpenChange={() => closeExchangeRateModal()}>
+            <SheetContent className="sm:max-w-xl w-full overflow-y-auto" side="right">
+              <SheetHeader>
+                <SheetTitle>{t(`page.currencies.form.title.edit-exchange-rate`)}</SheetTitle>
+                <SheetDescription>
+                  {t(`page.currencies.form.description.edit-exchange-rate`)}
+                </SheetDescription>
+              </SheetHeader>
+              <div className="w-full pb-4 px-4">
+                <ExchangeRateForm />
               </div>
             </SheetContent>
           </Sheet>

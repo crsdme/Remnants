@@ -468,5 +468,8 @@
   "response.description.AUTOMATIONS_REMOVED": "Selected automations have been deleted",
 
   "response.title.AUTOMATIONS_FETCHED": "Automations fetched",
-  "response.description.AUTOMATIONS_FETCHED": "Automations list successfully fetched"
+  "response.description.AUTOMATIONS_FETCHED": "Automations list successfully fetched",
+
+  "response.title.EXCHANGE_RATE_EDITED": "Exchange rate edited",
+  "response.description.EXCHANGE_RATE_EDITED": "Exchange rate has been updated"
 }

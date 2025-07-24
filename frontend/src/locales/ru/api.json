@@ -468,5 +468,8 @@
   "response.description.AUTOMATIONS_REMOVED": "Выбранные автоматизации были удалены",
 
   "response.title.AUTOMATIONS_FETCHED": "Автоматизации получены",
-  "response.description.AUTOMATIONS_FETCHED": "Список автоматизаций успешно получен"
+  "response.description.AUTOMATIONS_FETCHED": "Список автоматизаций успешно получен",
+
+  "response.title.EXCHANGE_RATE_EDITED": "Курс обновлен",
+  "response.description.EXCHANGE_RATE_EDITED": "Курс был обновлен"
 }

@@ -76,6 +76,11 @@
   "page.currencies.form.active": "Active",
   "page.currencies.form.active.description": "Active currency",
 
+  "page.currencies.form.title.edit-exchange-rate": "Edit Exchange Rate",
+  "page.currencies.form.description.edit-exchange-rate": "Edit exchange rate",
+  "page.currencies.form.rate": "Rate",
+  "page.currencies.form.comment": "Comment",
+
   "page.cashregisters.title": "Cashregisters",
   "page.cashregisters.description": "Manage cashregisters here",
   "page.cashregisters.filter.names": "Filter by name",

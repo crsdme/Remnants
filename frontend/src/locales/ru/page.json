@@ -76,6 +76,11 @@
   "page.currencies.form.active": "Активная",
   "page.currencies.form.active.description": "Активная валюта",
 
+  "page.currencies.form.title.edit-exchange-rate": "Редактирование курса валюты",
+  "page.currencies.form.description.edit-exchange-rate": "Редактирование курса валюты",
+  "page.currencies.form.rate": "Курс",
+  "page.currencies.form.comment": "Комментарий",
+
   "page.cashregisters.title": "Кассы",
   "page.cashregisters.description": "Управление кассами",
   "page.cashregisters.filter.names": "Фильтр по названию",

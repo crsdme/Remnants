@@ -99,6 +99,19 @@ async function createCurrencies() {
     priority: 2,
     active: true,
   })
+
+  await CurrencyService.create({
+    names: {
+      en: 'Euro',
+      ru: 'Евро',
+    },
+    symbols: {
+      en: '€',
+      ru: '€',
+    },
+    priority: 3,
+    active: true,
+  })
 }
 
 async function createUnits() {

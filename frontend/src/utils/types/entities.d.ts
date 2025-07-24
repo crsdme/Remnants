@@ -278,3 +278,13 @@ interface Automation {
   createdAt: Date
   updatedAt: Date
 }
+
+interface ExchangeRate {
+  id: string
+  fromCurrency: Currency
+  toCurrency: Currency
+  rate: number
+  comment: string
+  createdAt: Date
+  updatedAt: Date
+}

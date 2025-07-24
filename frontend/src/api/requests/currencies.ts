@@ -4,7 +4,9 @@ import type {
   CurrenciesResponse,
   duplicateCurrencyParams,
   editCurrencyParams,
+  editExchangeRateParams,
   getCurrenciesParams,
+  getExchangeRatesParams,
   importCurrenciesParams,
   removeCurrencyParams,
 } from '@/api/types'
@@ -14,12 +16,20 @@ export async function getCurrencies(params: getCurrenciesParams) {
   return api.get<CurrenciesResponse>('currencies/get', { params })
 }
 
+export async function getExchangeRates(params: getExchangeRatesParams) {
+  return api.get<CurrenciesResponse>('currencies/get-exchange-rates', { params })
+}
+
 export async function createCurrency(params: createCurrenciesParams) {
   return api.post<CurrenciesResponse>('currencies/create', { ...params })
 }
 
 export async function editCurrency(params: editCurrencyParams) {
   return api.post<CurrenciesResponse>('currencies/edit', params)
+}
+
+export async function editExchangeRate(params: editExchangeRateParams) {
+  return api.post<CurrenciesResponse>('currencies/edit-exchange-rate', params)
 }
 
 export async function removeCurrency(params: removeCurrencyParams) {

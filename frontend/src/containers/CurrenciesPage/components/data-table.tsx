@@ -1,10 +1,11 @@
-import { flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table'
+import { flexRender, getCoreRowModel, getExpandedRowModel, useReactTable } from '@tanstack/react-table'
+import { Pencil } from 'lucide-react'
 import { Fragment, useMemo, useState } from 'react'
-import { useTranslation } from 'react-i18next'
 
-import { useCurrencyQuery, useLanguageQuery } from '@/api/hooks'
+import { useTranslation } from 'react-i18next'
+import { useCurrencyExcangeRateQuery, useCurrencyQuery, useLanguageQuery } from '@/api/hooks'
 import { AdvancedFilters, AdvancedSorters, BatchEdit, ColumnVisibilityMenu, PermissionGate, TablePagination, TableSelectionDropdown } from '@/components'
-import { Separator, Skeleton, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui'
+import { Badge, Button, Separator, Skeleton, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui'
 import { useCurrencyContext } from '@/contexts'
 import { downloadCsv } from '@/utils/helpers/download'
 import { useDebounceCallback } from '@/utils/hooks'
@@ -14,7 +15,7 @@ import { DataTableFilters } from './data-table-filters'
 
 export function DataTable() {
   const { t, i18n } = useTranslation()
-  const { batchCurrency, removeCurrency, duplicateCurrencies } = useCurrencyContext()
+  const { batchCurrency, removeCurrency, duplicateCurrencies, openExchangeRateModal } = useCurrencyContext()
 
   const filtersInitialState = {
     names: '',
@@ -34,6 +35,7 @@ export function DataTable() {
     pageSize: 10,
   })
   const [filters, setFilters] = useState(filtersInitialState)
+  const [expanded, setExpanded] = useState({})
   const columns = useColumns()
 
   const sorters = useMemo(() => (
@@ -65,6 +67,8 @@ export function DataTable() {
     onColumnVisibilityChange: setColumnVisibility,
     onRowSelectionChange: setRowSelection,
     onSortingChange: setSorting,
+    getExpandedRowModel: getExpandedRowModel(),
+    onExpandedChange: setExpanded,
     manualSorting: true,
     enableSortingRemoval: true,
     state: {
@@ -75,6 +79,7 @@ export function DataTable() {
         pageIndex: pagination.current - 1,
         pageSize: pagination.pageSize,
       },
+      expanded,
     },
   })
 
@@ -127,6 +132,13 @@ export function DataTable() {
               </TableCell>
             ))}
           </TableRow>
+          {row.getIsExpanded() && (
+            <SubRowExchangeRates
+              property={row.original}
+              columnsLength={columns.length}
+              editExchangeRate={exchangeRate => openExchangeRateModal(exchangeRate)}
+            />
+          )}
         </Fragment>
       ))
     }
@@ -267,5 +279,61 @@ export function DataTable() {
         totalCount={currenciesCount}
       />
     </>
+  )
+}
+
+function SubRowExchangeRates({ property, columnsLength, editExchangeRate }) {
+  const { data, isLoading, isFetching, error } = useCurrencyExcangeRateQuery(
+    { filters: { fromCurrency: property.id } },
+    { options: { placeholderData: prevData => prevData } },
+  )
+
+  const { i18n } = useTranslation()
+
+  const exchangeRates = data?.data?.exchangeRates || []
+
+  if (isLoading || isFetching) {
+    return (
+      <TableRow className="animate-pulse">
+        <TableCell colSpan={columnsLength}>
+          <Skeleton className="h-8 w-full" />
+        </TableCell>
+      </TableRow>
+    )
+  }
+  if (error) {
+    return (
+      <TableRow>
+        <TableCell colSpan={columnsLength}>ERROR</TableCell>
+      </TableRow>
+    )
+  }
+
+  return (
+    <TableRow>
+      <TableCell colSpan={columnsLength} className="w-full">
+        <div className="flex flex-wrap gap-2 w-full">
+          {exchangeRates.map(exchangeRate => (
+            <Badge
+              key={exchangeRate.id}
+              className="inline-flex items-center gap-1 pr-1 pl-2"
+            >
+              <span className="truncate">
+                {`${exchangeRate.rate} ${exchangeRate.toCurrency.symbols[i18n.language]} (${exchangeRate.toCurrency.names[i18n.language]})`}
+              </span>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-4 w-4 p-0 hover:bg-transparent focus-visible:ring-0"
+                onClick={() => editExchangeRate(exchangeRate)}
+              >
+                <Pencil className="text-muted-foreground" />
+              </Button>
+            </Badge>
+
+          ))}
+        </div>
+      </TableCell>
+    </TableRow>
   )
 }

@@ -89,3 +89,25 @@ export interface CurrenciesResponse {
   currencies: Currency[]
   currenciesCount: number
 }
+
+export interface getExchangeRatesParams {
+  filters?: {
+    ids?: string[]
+    fromCurrency?: string
+    toCurrency?: string
+  }
+}
+
+export interface getExchangeRatesResponse {
+  status: string
+  code: string
+  message: string
+  description: string
+  exchangeRates: ExchangeRate[]
+}
+
+export interface editExchangeRateParams {
+  id: string
+  rate: number
+  comment?: string
+}

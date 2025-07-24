@@ -15,6 +15,7 @@ import {
   useCurrencyCreate,
   useCurrencyDuplicate,
   useCurrencyEdit,
+  useCurrencyExchangeRateEdit,
   useCurrencyImport,
   useCurrencyRemove,
 } from '@/api/hooks/'
@@ -24,9 +25,11 @@ import { SUPPORTED_LANGUAGES } from '@/utils/constants'
 interface CurrencyContextType {
   selectedCurrency: Currency
   isModalOpen: boolean
+  isExchangeRateModalOpen: boolean
   isLoading: boolean
   isEdit: boolean
   form: UseFormReturn
+  exchangeRateForm: UseFormReturn
   openModal: (currency?: Currency) => void
   closeModal: () => void
   submitCurrencyForm: (params) => void
@@ -34,6 +37,9 @@ interface CurrencyContextType {
   removeCurrency: (params: { ids: string[] }) => void
   importCurrencies: (params) => void
   duplicateCurrencies: (params: { ids: string[] }) => void
+  openExchangeRateModal: (exchangeRate: ExchangeRate) => void
+  closeExchangeRateModal: () => void
+  submitExchangeRateForm: (params) => void
 }
 
 const CurrencyContext = createContext<CurrencyContextType | undefined>(undefined)
@@ -44,9 +50,11 @@ interface CurrencyProviderProps {
 
 export function CurrencyProvider({ children }: CurrencyProviderProps) {
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [isExchangeRateModalOpen, setIsExchangeRateModalOpen] = useState(false)
   const [isEdit, setIsEdit] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [selectedCurrency, setSelectedCurrency] = useState(null)
+  const [selectedExchangeRate, setSelectedExchangeRate] = useState(null)
 
   const { t } = useTranslation()
 
@@ -75,6 +83,20 @@ export function CurrencyProvider({ children }: CurrencyProviderProps) {
       symbols: defaultLanguageValues,
       priority: 0,
       active: true,
+    },
+  })
+
+  const exchangeRateFormSchema = useMemo(() =>
+    z.object({
+      rate: z.number().default(0),
+      comment: z.string().optional(),
+    }), [t])
+
+  const exchangeRateForm = useForm({
+    resolver: zodResolver(exchangeRateFormSchema),
+    defaultValues: {
+      rate: 0,
+      comment: '',
     },
   })
 
@@ -112,6 +134,24 @@ export function CurrencyProvider({ children }: CurrencyProviderProps) {
     form.reset(getCurrencyFormValues(currency))
   }
 
+  const closeExchangeRateModal = () => {
+    if (!isExchangeRateModalOpen)
+      return
+    setIsExchangeRateModalOpen(false)
+    setIsLoading(false)
+    setSelectedExchangeRate(null)
+    exchangeRateForm.reset()
+  }
+
+  const openExchangeRateModal = (exchangeRate) => {
+    setIsExchangeRateModalOpen(true)
+    setSelectedExchangeRate(exchangeRate)
+    exchangeRateForm.reset({
+      rate: exchangeRate?.rate,
+      comment: exchangeRate?.comment,
+    })
+  }
+
   const queryClient = useQueryClient()
 
   const useMutateCreateCurrency = useCurrencyCreate({
@@ -137,6 +177,21 @@ export function CurrencyProvider({ children }: CurrencyProviderProps) {
       },
       onError: ({ response }) => {
         const error = response.data.error
+        toast.error(t(`error.title.${error.code}`), { description: `${t(`error.description.${error.code}`)} ${error.description || ''}` })
+      },
+    },
+  })
+
+  const useMutateEditExchangeRate = useCurrencyExchangeRateEdit({
+    options: {
+      onSuccess: ({ data }) => {
+        closeExchangeRateModal()
+        queryClient.invalidateQueries({ queryKey: ['currencies', 'get', 'exchange-rate'] })
+        toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description || ''}` })
+      },
+      onError: ({ response }) => {
+        const error = response.data.error
+        closeExchangeRateModal()
         toast.error(t(`error.title.${error.code}`), { description: `${t(`error.description.${error.code}`)} ${error.description || ''}` })
       },
     },
@@ -204,6 +259,12 @@ export function CurrencyProvider({ children }: CurrencyProviderProps) {
     return useMutateEditCurrency.mutate({ ...params, id: selectedCurrency.id })
   }
 
+  const submitExchangeRateForm = (params) => {
+    setIsLoading(true)
+    params.id = selectedExchangeRate.id
+    useMutateEditExchangeRate.mutate(params)
+  }
+
   const removeCurrency = (params) => {
     useMutateRemoveCurrency.mutate(params)
   }
@@ -226,6 +287,9 @@ export function CurrencyProvider({ children }: CurrencyProviderProps) {
       isModalOpen,
       isLoading,
       isEdit,
+      isExchangeRateModalOpen,
+      selectedExchangeRate,
+      exchangeRateForm,
       form,
       openModal,
       closeModal,
@@ -234,8 +298,11 @@ export function CurrencyProvider({ children }: CurrencyProviderProps) {
       batchCurrency,
       importCurrencies,
       duplicateCurrencies,
+      openExchangeRateModal,
+      closeExchangeRateModal,
+      submitExchangeRateForm,
     }),
-    [selectedCurrency, isModalOpen, isLoading, isEdit],
+    [selectedCurrency, isModalOpen, isLoading, isEdit, isExchangeRateModalOpen, selectedExchangeRate],
   )
 
   return <CurrencyContext.Provider value={value}>{children}</CurrencyContext.Provider>

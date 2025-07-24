@@ -12,6 +12,15 @@ export interface Currency {
   updatedAt: Date
 }
 
+export interface ExchangeRate {
+  id: IdType
+  fromCurrency: IdType
+  toCurrency: IdType
+  rate: number
+  comment: string
+  removed: boolean
+}
+
 export interface getCurrenciesResult {
   status: Status
   code: Code
@@ -120,4 +129,34 @@ export interface duplicateCurrencyResult {
 
 export interface duplicateCurrencyParams {
   ids: IdType[]
+}
+
+export interface getExchangeRatesResult {
+  status: Status
+  code: Code
+  message: Message
+  exchangeRates: ExchangeRate[]
+}
+
+export interface getExchangeRatesFilters {
+  ids: IdType[]
+  fromCurrency: IdType
+  toCurrency: IdType
+}
+
+export interface getExchangeRatesParams {
+  filters?: Partial<getExchangeRatesFilters>
+}
+
+export interface editExchangeRateResult {
+  status: Status
+  code: Code
+  message: Message
+  exchangeRate: ExchangeRate
+}
+
+export interface editExchangeRateParams {
+  id: IdType
+  rate: number
+  comment?: string
 }
