@@ -591,7 +591,7 @@ async function print55x40(payload: { barcode: any, size: string, language: strin
     { width: contentWidth, height: 25, align: 'center', ellipsis: true, lineBreak: false },
   )
 
-  doc.fontSize(70)
+  doc.fontSize(68)
 
   let length = ''
   let weight = ''
