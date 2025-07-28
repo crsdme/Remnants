@@ -591,7 +591,7 @@ async function print55x40(payload: { barcode: any, size: string, language: strin
     { width: contentWidth, height: 25, align: 'center', ellipsis: true, lineBreak: false },
   )
 
-  doc.fontSize(68)
+  doc.fontSize(70)
 
   let length = ''
   let weight = ''
@@ -631,7 +631,7 @@ async function print55x40(payload: { barcode: any, size: string, language: strin
     size: [w * 8.49, h * 8.49],
   })
 
-  doc.fontSize(180)
+  doc.fontSize(175)
   doc.text(
     product.names[language].split('#')[1] || '4054',
     padding,
