@@ -288,3 +288,30 @@ interface ExchangeRate {
   createdAt: Date
   updatedAt: Date
 }
+
+interface Expense {
+  id: string
+  seq: number
+  amount: number
+  currency: string
+  cashregister: string
+  cashregisterAccount: string
+  categories: string[]
+  sourceModel: string
+  sourceId: string
+  type: string
+  comment: string
+  createdBy: string
+  removedBy: string
+  createdAt: Date
+  updatedAt: Date
+}
+
+interface ExpenseCategory {
+  id: string
+  names: LanguageString
+  color: string
+  comment: string
+  createdAt: Date
+  updatedAt: Date
+}

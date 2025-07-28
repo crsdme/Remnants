@@ -142,6 +142,7 @@ export const NAV_MENU_ITEMS = [
       { id: 'languages', url: '/settings/languages', permissions: ['language.page'] },
       { id: 'orderSources', url: '/settings/order-sources', permissions: ['orderSource.page'] },
       { id: 'orderStatuses', url: '/settings/order-statuses', permissions: ['orderStatus.page'] },
+      { id: 'expenseCategories', url: '/settings/expense-categories', permissions: ['expense-category.page'] },
       { id: 'settings', url: '/settings', permissions: ['settings.page'] },
       { id: 'units', url: '/settings/units', permissions: ['unit.page'] },
     ],

@@ -762,5 +762,47 @@
   "page.clients.form.lastName": "Фамилия",
   "page.clients.form.middleName": "Отчество",
   "page.clients.form.phones": "Телефоны",
-  "page.clients.form.emails": "Emails"
+  "page.clients.form.emails": "Emails",
+
+  "page.expense-categories.title": "Категории расходов",
+  "page.expense-categories.description": "Управление категориями расходов",
+  "page.expense-categories.filter.name": "Фильтр по названию",
+  "page.expense-categories.button.create": "Создать категорию расходов",
+
+  "page.expense-categories.table.names": "Название",
+  "page.expense-categories.table.priority": "Приоритет",
+  "page.expense-categories.table.color": "Цвет",
+  "page.expense-categories.table.comment": "Комментарий",
+
+  "page.expense-categories.form.title.create": "Создание новой категории расходов",
+  "page.expense-categories.form.description.create": "Добавить новую категорию расходов в систему",
+  "page.expense-categories.form.title.edit": "Редактирование категории расходов",
+  "page.expense-categories.form.description.edit": "Редактирование существующей категории расходов",
+  "page.expense-categories.form.names": "Название ({{language}})",
+  "page.expense-categories.form.priority": "Приоритет",
+  "page.expense-categories.form.color": "Цвет",
+  "page.expense-categories.form.comment": "Комментарий",
+
+  "page.expenses.title": "Расходы",
+  "page.expenses.description": "Управление расходами",
+  "page.expenses.filter.name": "Фильтр по названию",
+  "page.expenses.button.create": "Создать расход",
+
+  "page.expenses.table.amount": "Сумма",
+  "page.expenses.table.cashregister": "Касса",
+  "page.expenses.table.cashregisterAccount": "Счет",
+  "page.expenses.table.categories": "Категории",
+  "page.expenses.table.type": "Тип",
+  "page.expenses.table.comment": "Комментарий",
+
+  "page.expenses.form.title.create": "Создание нового расхода",
+  "page.expenses.form.description.create": "Добавить новый расход в систему",
+  "page.expenses.form.title.edit": "Редактирование расхода",
+  "page.expenses.form.description.edit": "Редактирование существующего расхода",
+  "page.expenses.form.amount": "Сумма",
+  "page.expenses.form.cashregister": "Касса",
+  "page.expenses.form.cashregisterAccount": "Счет",
+  "page.expenses.form.categories": "Категории",
+  "page.expenses.form.type": "Тип",
+  "page.expenses.form.comment": "Комментарий"
 }

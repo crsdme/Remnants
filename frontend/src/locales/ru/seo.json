@@ -78,5 +78,11 @@
   "description.page.view-order": "Просмотр заказа в Remnant",
 
   "title.page.clients": "Клиенты - Remnant",
-  "description.page.clients": "Управление клиентами в Remnant"
+  "description.page.clients": "Управление клиентами в Remnant",
+
+  "title.page.expense-categories": "Категории расходов - Remnant",
+  "description.page.expense-categories": "Управление категориями расходов в Remnant",
+
+  "title.page.expenses": "Расходы - Remnant",
+  "description.page.expenses": "Управление расходами в Remnant"
 }

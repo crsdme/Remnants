@@ -155,6 +155,9 @@ export async function create(payload: any) {
   if (payload.type === 'income') {
     return createIncome(payload)
   }
+  if (payload.type === 'expense') {
+    return createExpense(payload)
+  }
 
   throw new HttpError(400, 'Money transaction type not supported', 'MONEY_TRANSACTION_TYPE_NOT_SUPPORTED')
 }
@@ -224,6 +227,12 @@ async function createTransferCashregister(payload: MoneyTransactionTypes.createM
 }
 
 async function createIncome(payload: MoneyTransactionTypes.createMoneyTransactionParams): Promise<MoneyTransactionTypes.createMoneyTransactionResult> {
+  const moneyTransaction = await MoneyTransactionModel.create(payload)
+
+  return { status: 'success', code: 'MONEY_TRANSACTION_CREATED', message: 'Money transaction created', moneyTransaction }
+}
+
+async function createExpense(payload: MoneyTransactionTypes.createMoneyTransactionParams): Promise<MoneyTransactionTypes.createMoneyTransactionResult> {
   const moneyTransaction = await MoneyTransactionModel.create(payload)
 
   return { status: 'success', code: 'MONEY_TRANSACTION_CREATED', message: 'Money transaction created', moneyTransaction }

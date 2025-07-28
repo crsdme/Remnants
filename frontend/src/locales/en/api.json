@@ -471,5 +471,41 @@
   "response.description.AUTOMATIONS_FETCHED": "Automations list successfully fetched",
 
   "response.title.EXCHANGE_RATE_EDITED": "Exchange rate edited",
-  "response.description.EXCHANGE_RATE_EDITED": "Exchange rate has been updated"
+  "response.description.EXCHANGE_RATE_EDITED": "Exchange rate has been updated",
+
+  "response.title.EXPENSE_CATEGORY_CREATED": "Expense category created",
+  "response.description.EXPENSE_CATEGORY_CREATED": "New expense category has been created",
+
+  "response.title.EXPENSE_CATEGORY_NOT_EDITED": "Expense category not edited",
+  "response.description.EXPENSE_CATEGORY_NOT_EDITED": "Unable to edit expense category",
+
+  "response.title.EXPENSE_CATEGORY_EDITED": "Expense category edited",
+  "response.description.EXPENSE_CATEGORY_EDITED": "Expense category has been updated",
+
+  "response.title.EXPENSE_CATEGORIES_NOT_REMOVED": "Expense categories not removed",
+  "response.description.EXPENSE_CATEGORIES_NOT_REMOVED": "Unable to remove selected expense categories",
+
+  "response.title.EXPENSE_CATEGORIES_REMOVED": "Expense categories removed",
+  "response.description.EXPENSE_CATEGORIES_REMOVED": "Selected expense categories have been deleted",
+
+  "response.title.EXPENSE_CATEGORIES_FETCHED": "Expense categories fetched",
+  "response.description.EXPENSE_CATEGORIES_FETCHED": "Expense categories list successfully fetched",
+
+  "response.title.EXPENSE_CREATED": "Expense created",
+  "response.description.EXPENSE_CREATED": "New expense has been created",
+
+  "response.title.EXPENSE_NOT_EDITED": "Expense not edited",
+  "response.description.EXPENSE_NOT_EDITED": "Unable to edit expense",
+
+  "response.title.EXPENSE_EDITED": "Expense edited",
+  "response.description.EXPENSE_EDITED": "Expense has been updated",
+
+  "response.title.EXPENSES_NOT_REMOVED": "Expenses not removed",
+  "response.description.EXPENSES_NOT_REMOVED": "Unable to remove selected expenses",
+
+  "response.title.EXPENSES_REMOVED": "Expenses removed",
+  "response.description.EXPENSES_REMOVED": "Selected expenses have been deleted",
+
+  "response.title.EXPENSES_FETCHED": "Expenses fetched",
+  "response.description.EXPENSES_FETCHED": "Expenses list successfully fetched"
 }

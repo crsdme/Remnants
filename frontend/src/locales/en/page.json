@@ -758,5 +758,47 @@
   "page.clients.form.lastName": "Last Name",
   "page.clients.form.middleName": "Middle Name",
   "page.clients.form.phones": "Phones",
-  "page.clients.form.emails": "Emails"
+  "page.clients.form.emails": "Emails",
+
+  "page.expense-categories.title": "Expense Categories",
+  "page.expense-categories.description": "Manage expense categories",
+  "page.expense-categories.filter.name": "Filter by name",
+  "page.expense-categories.button.create": "Create expense category",
+
+  "page.expense-categories.table.names": "Name",
+  "page.expense-categories.table.priority": "Priority",
+  "page.expense-categories.table.color": "Color",
+  "page.expense-categories.table.comment": "Comment",
+
+  "page.expense-categories.form.title.create": "Create new expense category",
+  "page.expense-categories.form.description.create": "Add new expense category to the system",
+  "page.expense-categories.form.title.edit": "Edit expense category",
+  "page.expense-categories.form.description.edit": "Edit existing expense category",
+  "page.expense-categories.form.names": "Name ({{language}})",
+  "page.expense-categories.form.priority": "Priority",
+  "page.expense-categories.form.color": "Color",
+  "page.expense-categories.form.comment": "Comment",
+
+  "page.expenses.title": "Expenses",
+  "page.expenses.description": "Manage expenses",
+  "page.expenses.filter.name": "Filter by name",
+  "page.expenses.button.create": "Create expense",
+
+  "page.expenses.table.amount": "Amount",
+  "page.expenses.table.cashregister": "Cashregister",
+  "page.expenses.table.cashregisterAccount": "Cashregister Account",
+  "page.expenses.table.categories": "Categories",
+  "page.expenses.table.type": "Type",
+  "page.expenses.table.comment": "Comment",
+
+  "page.expenses.form.title.create": "Create new expense",
+  "page.expenses.form.description.create": "Add new expense to the system",
+  "page.expenses.form.title.edit": "Edit expense",
+  "page.expenses.form.description.edit": "Edit existing expense",
+  "page.expenses.form.amount": "Amount",
+  "page.expenses.form.cashregister": "Cashregister",
+  "page.expenses.form.cashregisterAccount": "Cashregister Account",
+  "page.expenses.form.categories": "Categories",
+  "page.expenses.form.type": "Type",
+  "page.expenses.form.comment": "Comment"
 }

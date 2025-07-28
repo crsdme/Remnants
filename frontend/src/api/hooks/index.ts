@@ -68,6 +68,19 @@ export * from './delivery-service/useDeliveryServiceOptions'
 export * from './delivery-service/useDeliveryServiceQuery'
 export * from './delivery-service/useDeliveryServiceRemove'
 
+// Expense Category Management
+export * from './expense-category/useExpenseCategoryCreate'
+export * from './expense-category/useExpenseCategoryEdit'
+export * from './expense-category/useExpenseCategoryOptions'
+export * from './expense-category/useExpenseCategoryQuery'
+export * from './expense-category/useExpenseCategoryRemove'
+
+// Expense Management
+export * from './expense/useExpenseCreate'
+export * from './expense/useExpenseEdit'
+export * from './expense/useExpenseQuery'
+export * from './expense/useExpenseRemove'
+
 // Language Management
 export * from './language/useLanguageBatch'
 export * from './language/useLanguageCreate'

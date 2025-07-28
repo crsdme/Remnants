@@ -6,6 +6,8 @@ import * as CategoryService from '../../services/category.service'
 import * as ClientService from '../../services/client.service'
 import * as CurrencyService from '../../services/currency.service'
 import * as DeliveryService from '../../services/delivery-service.service'
+import * as ExpenseCategoryService from '../../services/expense-category.service'
+import * as ExpenseService from '../../services/expense.service'
 import * as LanguageService from '../../services/language.service'
 import * as OrderSourceService from '../../services/order-source.service'
 import * as OrderStatusService from '../../services/order-status.service'
@@ -17,6 +19,7 @@ import * as UnitService from '../../services/unit.service'
 import * as UserRoleService from '../../services/user-role.service'
 import * as UserService from '../../services/user.service'
 import * as WarehouseService from '../../services/warehouse.service'
+
 import { backupDB } from './backup'
 import { clearDB } from './clear'
 
@@ -45,6 +48,7 @@ async function seedData() {
       completed: statuses.completed,
     })
     await createClients()
+    await createExpenseCategories()
 
     console.log('✅ Test data seeded successfully!')
     process.exit(0)
@@ -813,6 +817,71 @@ async function createClients() {
     lastName: 'Kovalenko',
     emails: ['dmytro@example.com', 'dmytro@example.com'],
     phones: ['+1234567890', '+1234567890'],
+  })
+}
+
+async function createExpenseCategories() {
+  await ExpenseCategoryService.create({
+    names: {
+      en: 'Store #1',
+      ru: 'Склад #1',
+    },
+    color: '#FF0000',
+    priority: 1,
+  })
+
+  await ExpenseCategoryService.create({
+    names: {
+      en: 'Store #2',
+      ru: 'Склад #2',
+    },
+    color: '#00FF00',
+    priority: 2,
+  })
+
+  await ExpenseCategoryService.create({
+    names: {
+      en: 'Fee',
+      ru: 'Комиссия',
+    },
+    color: '#00FF00',
+    priority: 3,
+  })
+
+  await ExpenseCategoryService.create({
+    names: {
+      en: 'Salary',
+      ru: 'Зарплата',
+    },
+    color: '#00FF00',
+    priority: 4,
+  })
+
+  await ExpenseCategoryService.create({
+    names: {
+      en: 'Consumables',
+      ru: 'Расходники',
+    },
+    color: '#00FF00',
+    priority: 5,
+  })
+
+  await ExpenseCategoryService.create({
+    names: {
+      en: 'Utilities',
+      ru: 'Комунальные платежи',
+    },
+    color: '#00FF00',
+    priority: 6,
+  })
+
+  await ExpenseCategoryService.create({
+    names: {
+      en: 'Other',
+      ru: 'Другое',
+    },
+    color: '#00FF00',
+    priority: 7,
   })
 }
 

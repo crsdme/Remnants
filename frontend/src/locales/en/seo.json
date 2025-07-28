@@ -78,5 +78,11 @@
   "description.page.view-order": "View order in Remnant",
 
   "title.page.clients": "Clients - Remnant",
-  "description.page.clients": "Manage clients in Remnant"
+  "description.page.clients": "Manage clients in Remnant",
+
+  "title.page.expense-categories": "Expense Categories - Remnant",
+  "description.page.expense-categories": "Manage expense categories in Remnant",
+
+  "title.page.expenses": "Expenses - Remnant",
+  "description.page.expenses": "Manage expenses in Remnant"
 }

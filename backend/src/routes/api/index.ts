@@ -9,6 +9,8 @@ import categoryRoutes from './category.route'
 import clientRoutes from './client.route'
 import currencyRoutes from './currency.route'
 import deliveryServiceRoutes from './delivery-service.route'
+import expenseCategoryRoutes from './expense-category.route'
+import expenseRoutes from './expense.route'
 import languageRoutes from './language.route'
 import moneyTransactionRoutes from './money-transaction.route'
 import orderPaymentRoutes from './order-payment.route'
@@ -56,5 +58,7 @@ router.use('/orders', authenticateJWT, orderRoutes)
 router.use('/warehouse-transactions', authenticateJWT, warehouseTransactionRoutes)
 router.use('/test', authenticateJWT, testRoutes)
 router.use('/automations', authenticateJWT, automationRoutes)
+router.use('/expenses', authenticateJWT, expenseRoutes)
+router.use('/expense-categories', authenticateJWT, expenseCategoryRoutes)
 
 export default router

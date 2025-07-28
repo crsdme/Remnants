@@ -97,6 +97,15 @@ export default function App() {
           />
 
           <Route
+            path="/expenses"
+            element={<ProtectedRoute children={<Pages.ExpensesPage />} permissions={['expense.page']} />}
+          />
+          <Route
+            path="/settings/expense-categories"
+            element={<ProtectedRoute children={<Pages.ExpenseCategoriesPage />} permissions={['expense-category.page']} />}
+          />
+
+          <Route
             path="/settings"
             element={<ProtectedRoute children={<Pages.SettingsLayout />} permissions={['settings.page']} />}
           >

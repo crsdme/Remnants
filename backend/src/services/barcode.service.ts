@@ -148,8 +148,13 @@ export async function get(payload: BarcodeTypes.getBarcodesParams): Promise<Barc
         as: 'product.currency',
       },
     },
-    { $addFields: { 'product.currency': { $arrayElemAt: ['$product.currency', 0] } } },
-
+    {
+      $addFields: {
+        'product.currency': {
+          $arrayElemAt: ['$product.currency', 0],
+        },
+      },
+    },
     {
       $lookup: {
         from: 'currencies',

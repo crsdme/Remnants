@@ -471,5 +471,41 @@
   "response.description.AUTOMATIONS_FETCHED": "Список автоматизаций успешно получен",
 
   "response.title.EXCHANGE_RATE_EDITED": "Курс обновлен",
-  "response.description.EXCHANGE_RATE_EDITED": "Курс был обновлен"
+  "response.description.EXCHANGE_RATE_EDITED": "Курс был обновлен",
+
+  "response.title.EXPENSE_CATEGORY_CREATED": "Категория расходов создана",
+  "response.description.EXPENSE_CATEGORY_CREATED": "Новая категория расходов была создана",
+
+  "response.title.EXPENSE_CATEGORY_NOT_EDITED": "Категория расходов не обновлена",
+  "response.description.EXPENSE_CATEGORY_NOT_EDITED": "Не удалось обновить категорию расходов",
+
+  "response.title.EXPENSE_CATEGORY_EDITED": "Категория расходов обновлена",
+  "response.description.EXPENSE_CATEGORY_EDITED": "Категория расходов была обновлена",
+
+  "response.title.EXPENSE_CATEGORIES_NOT_REMOVED": "Категории расходов не удалены",
+  "response.description.EXPENSE_CATEGORIES_NOT_REMOVED": "Не удалось удалить выбранные категории расходов",
+
+  "response.title.EXPENSE_CATEGORIES_REMOVED": "Категории расходов удалены",
+  "response.description.EXPENSE_CATEGORIES_REMOVED": "Выбранные категории расходов были удалены",
+
+  "response.title.EXPENSE_CATEGORIES_FETCHED": "Категории расходов получены",
+  "response.description.EXPENSE_CATEGORIES_FETCHED": "Список категорий расходов успешно получен",
+
+  "response.title.EXPENSE_CREATED": "Расход создан",
+  "response.description.EXPENSE_CREATED": "Новый расход был создан",
+
+  "response.title.EXPENSE_NOT_EDITED": "Расход не обновлен",
+  "response.description.EXPENSE_NOT_EDITED": "Не удалось обновить расход",
+
+  "response.title.EXPENSE_EDITED": "Расход обновлен",
+  "response.description.EXPENSE_EDITED": "Расход был обновлен",
+
+  "response.title.EXPENSES_NOT_REMOVED": "Расходы не удалены",
+  "response.description.EXPENSES_NOT_REMOVED": "Не удалось удалить выбранные расходы",
+
+  "response.title.EXPENSES_REMOVED": "Расходы удалены",
+  "response.description.EXPENSES_REMOVED": "Выбранные расходы были удалены",
+
+  "response.title.EXPENSES_FETCHED": "Расходы получены",
+  "response.description.EXPENSES_FETCHED": "Список расходов успешно получен"
 }
