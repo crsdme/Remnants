@@ -607,7 +607,7 @@ async function print55x40(payload: { barcode: any, size: string, language: strin
       }
     }
     if (property.id === '25144e64-5c4c-47fd-842d-c0a2393f972e' && property.value === '822ec142-d144-44fb-ba96-582cff8757b3') {
-      curls = 'Curls'
+      curls = 'Curly'
     }
   }
 
