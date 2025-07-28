@@ -62,7 +62,7 @@ export interface createUserParams {
   name: string
   login: string
   password: string
-  role: string
+  role: IdType
   active?: boolean
 }
 

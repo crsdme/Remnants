@@ -1,5 +1,5 @@
 import type * as CurrencyTypes from '../types/currency.type'
-import { CurrencyModel } from '../models/'
+import { CurrencyModel, ExchangeRateModel } from '../models/'
 import { HttpError } from '../utils/httpError'
 import {
   extractLangMap,
@@ -19,6 +19,7 @@ export async function get(payload: CurrencyTypes.getCurrenciesParams): Promise<C
     language = 'en',
     active = undefined,
     priority = undefined,
+    cashregisterAccount = [],
     createdAt = {
       from: undefined,
       to: undefined,
@@ -55,6 +56,44 @@ export async function get(payload: CurrencyTypes.getCurrenciesParams): Promise<C
       $sort: sorters,
     },
     {
+      $lookup: {
+        from: 'cashregister-accounts',
+        let: { currencyId: '$_id' },
+        pipeline: [
+          {
+            $match: {
+              $expr: {
+                $and: [
+                  { $isArray: '$currencies' },
+                  { $in: ['$$currencyId', '$currencies'] },
+                ],
+              },
+              ...(Array.isArray(cashregisterAccount) && cashregisterAccount.length > 0
+                ? { _id: { $in: cashregisterAccount } }
+                : {}),
+            },
+          },
+          { $project: { _id: 1 } },
+        ],
+        as: 'matchedCashregisterAccounts',
+      },
+    },
+    ...(cashregisterAccount.length > 0
+      ? [{ $match: { 'matchedCashregisterAccounts.0': { $exists: true } } }]
+      : []),
+    {
+      $project: {
+        _id: 0,
+        id: '$_id',
+        names: 1,
+        symbols: 1,
+        active: 1,
+        priority: 1,
+        createdAt: 1,
+        updatedAt: 1,
+      },
+    },
+    {
       $facet: {
         currencies: [
           { $skip: (current - 1) * pageSize },
@@ -69,14 +108,112 @@ export async function get(payload: CurrencyTypes.getCurrenciesParams): Promise<C
 
   const currenciesRaw = await CurrencyModel.aggregate(pipeline).exec()
 
-  const currencies = currenciesRaw[0].currencies.map((doc: any) => CurrencyModel.hydrate(doc))
+  const currencies = currenciesRaw[0].currencies
   const currenciesCount = currenciesRaw[0].totalCount[0]?.count || 0
 
   return { status: 'success', code: 'CURRENCIES_FETCHED', message: 'Currencies fetched', currencies, currenciesCount }
 }
 
+export async function getExchangeRates(payload: CurrencyTypes.getExchangeRatesParams): Promise<CurrencyTypes.getExchangeRatesResult> {
+  const {
+    ids = [],
+    fromCurrency = '',
+    toCurrency = '',
+  } = payload.filters || {}
+
+  const filterRules = {
+    _id: { type: 'array' },
+    fromCurrency: { type: 'exact' },
+    toCurrency: { type: 'exact' },
+  } as const
+
+  const query = buildQuery({
+    filters: { _id: ids, fromCurrency, toCurrency },
+    rules: filterRules,
+  })
+
+  const pipeline = [
+    {
+      $match: query,
+    },
+    {
+      $lookup: {
+        from: 'currencies',
+        localField: 'fromCurrency',
+        foreignField: '_id',
+        as: 'fromCurrency',
+      },
+    },
+    {
+      $lookup: {
+        from: 'currencies',
+        localField: 'toCurrency',
+        foreignField: '_id',
+        as: 'toCurrency',
+      },
+    },
+    {
+      $unwind: '$fromCurrency',
+    },
+    {
+      $unwind: '$toCurrency',
+    },
+    {
+      $project: {
+        _id: 0,
+        id: '$_id',
+        fromCurrency: {
+          id: '$fromCurrency._id',
+          names: '$fromCurrency.names',
+          symbols: '$fromCurrency.symbols',
+        },
+        toCurrency: {
+          id: '$toCurrency._id',
+          names: '$toCurrency.names',
+          symbols: '$toCurrency.symbols',
+        },
+        rate: 1,
+        comment: 1,
+        removed: 1,
+      },
+    },
+  ]
+
+  const exchangeRatesRaw = await ExchangeRateModel.aggregate(pipeline).exec()
+
+  const exchangeRates = exchangeRatesRaw
+
+  console.log(exchangeRatesRaw)
+
+  return { status: 'success', code: 'CURRENCIES_FETCHED', message: 'Currencies fetched', exchangeRates }
+}
+
 export async function create(payload: CurrencyTypes.createCurrencyParams): Promise<CurrencyTypes.createCurrenciesResult> {
+  const currencies = await CurrencyModel.find({})
+
   const currency = await CurrencyModel.create(payload)
+
+  const exchangeRates = []
+
+  for (const other of currencies) {
+    exchangeRates.push(
+      {
+        fromCurrency: currency._id,
+        toCurrency: other._id,
+        rate: 1,
+        comment: 'Auto-created on currency creation',
+      },
+      {
+        fromCurrency: other._id,
+        toCurrency: currency._id,
+        rate: 1,
+        comment: 'Auto-created on currency creation',
+      },
+    )
+  }
+
+  if (exchangeRates.length > 0)
+    await ExchangeRateModel.insertMany(exchangeRates)
 
   return { status: 'success', code: 'CURRENCY_CREATED', message: 'Currency created', currency }
 }
@@ -93,11 +230,33 @@ export async function edit(payload: CurrencyTypes.editCurrencyParams): Promise<C
   return { status: 'success', code: 'CURRENCY_EDITED', message: 'Currency edited', currency }
 }
 
+export async function editExchangeRate(payload: CurrencyTypes.editExchangeRateParams): Promise<CurrencyTypes.editExchangeRateResult> {
+  const { id } = payload
+
+  const exchangeRate = await ExchangeRateModel.findOneAndUpdate({ _id: id }, { $set: payload })
+
+  if (!exchangeRate) {
+    throw new HttpError(400, 'Exchange rate not edited', 'EXCHANGE_RATE_NOT_EDITED')
+  }
+
+  return { status: 'success', code: 'EXCHANGE_RATE_EDITED', message: 'Exchange rate edited', exchangeRate }
+}
+
 export async function remove(payload: CurrencyTypes.removeCurrenciesParams): Promise<CurrencyTypes.removeCurrenciesResult> {
   const { ids } = payload
 
   const currencies = await CurrencyModel.updateMany(
     { _id: { $in: ids } },
+    { $set: { removed: true } },
+  )
+
+  await ExchangeRateModel.updateMany(
+    {
+      $or: [
+        { fromCurrency: { $in: ids } },
+        { toCurrency: { $in: ids } },
+      ],
+    },
     { $set: { removed: true } },
   )
 

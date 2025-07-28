@@ -1,5 +1,4 @@
-import type { SUPPORTED_LANGUAGES_TYPE } from '../config/constants'
-import type { Code, DateRange, IdType, LanguageString, Message, Pagination, Sorter, Status } from './common.type'
+import type { Code, DateRange, IdType, Message, Pagination, Sorter, Status } from './common.type'
 
 export interface MoneyTransaction {
   id: IdType
@@ -50,7 +49,6 @@ export interface getMoneyTransactionsParams {
   filters?: Partial<getMoneyTransactionsFilters>
   sorters?: Partial<getMoneyTransactionsSorters>
   pagination?: Partial<Pagination>
-  isTree?: boolean
 }
 
 export interface createMoneyTransactionResult {

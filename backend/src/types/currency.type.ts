@@ -3,13 +3,22 @@ import type { Code, DateRange, IdType, LanguageString, Message, Pagination, Sort
 
 export interface Currency {
   id: IdType
-  names: string
-  symbols: string
+  names: LanguageString
+  symbols: LanguageString
   priority: number
   active: boolean
   removed: boolean
   createdAt: Date
   updatedAt: Date
+}
+
+export interface ExchangeRate {
+  id: IdType
+  fromCurrency: IdType
+  toCurrency: IdType
+  rate: number
+  comment: string
+  removed: boolean
 }
 
 export interface getCurrenciesResult {
@@ -27,6 +36,7 @@ export interface getCurrenciesFilters {
   language: SUPPORTED_LANGUAGES_TYPE
   active: boolean[]
   priority: number
+  cashregisterAccount: IdType[]
   createdAt: DateRange
   updatedAt: DateRange
 }
@@ -104,7 +114,7 @@ export interface importCurrenciesResult {
   status: Status
   code: Code
   message: Message
-  currencyIds: IdType[]
+  currencyIds: any[]
 }
 
 export interface importCurrenciesParams {
@@ -119,4 +129,34 @@ export interface duplicateCurrencyResult {
 
 export interface duplicateCurrencyParams {
   ids: IdType[]
+}
+
+export interface getExchangeRatesResult {
+  status: Status
+  code: Code
+  message: Message
+  exchangeRates: ExchangeRate[]
+}
+
+export interface getExchangeRatesFilters {
+  ids: IdType[]
+  fromCurrency: IdType
+  toCurrency: IdType
+}
+
+export interface getExchangeRatesParams {
+  filters?: Partial<getExchangeRatesFilters>
+}
+
+export interface editExchangeRateResult {
+  status: Status
+  code: Code
+  message: Message
+  exchangeRate: ExchangeRate
+}
+
+export interface editExchangeRateParams {
+  id: IdType
+  rate: number
+  comment?: string
 }

@@ -7,6 +7,7 @@ export async function get(payload: WarehouseTypes.getWarehousesParams): Promise<
   const { current = 1, pageSize = 10 } = payload.pagination || {}
 
   const {
+    ids = [],
     names = '',
     active = undefined,
     priority = undefined,
@@ -14,13 +15,14 @@ export async function get(payload: WarehouseTypes.getWarehousesParams): Promise<
   } = payload.filters || {}
 
   const filterRules = {
+    _id: { type: 'array' },
     names: { type: 'string', langAware: true },
     active: { type: 'array' },
     priority: { type: 'exact' },
   } as const
 
   const query = buildQuery({
-    filters: { names, active, priority },
+    filters: { _id: ids, names, active, priority },
     rules: filterRules,
     language,
   })

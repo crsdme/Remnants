@@ -96,6 +96,7 @@
   "component.sidemenu.label.procurements": "Закупки",
   "component.sidemenu.label.production": "Производство",
   "component.sidemenu.label.inventories": "Инвентаризация",
+  "component.sidemenu.label.warehouseTransactions": "Транзакции складов",
   "component.sidemenu.label.money": "Финансы",
   "component.sidemenu.label.cashregisters": "Кассы",
   "component.sidemenu.label.cashregisterAccounts": "Счета касс",
@@ -113,9 +114,11 @@
   "component.sidemenu.label.currencies": "Валюты",
   "component.sidemenu.label.sources": "Источники",
   "component.sidemenu.label.orderStatuses": "Статусы заказов",
+  "component.sidemenu.label.orderSources": "Источники заказов",
   "component.sidemenu.label.deliveryServices": "Сервисы доставки",
   "component.sidemenu.label.units": "Единицы измерения",
   "component.sidemenu.label.settings": "Настройки",
+  "component.sidemenu.label.automations": "Автоматизация",
   "component.sidemenu.label.logs": "Логи",
   "component.sidemenu.label.documents": "Документы",
   "component.sidemenu.label.logout": "Выйти",
@@ -140,5 +143,9 @@
   "component.productTable.table.productProperties": "Свойства",
   "component.productTable.table.quantity": "Количество",
   "component.productTable.table.selectedQuantity": "Выбранное количество",
-  "component.productTable.table.unit": "Единица измерения"
+  "component.productTable.table.unit": "Единица измерения",
+  "component.productTable.table.discount": "Скидка",
+  "component.productTable.table.selectedPrice": "Цена",
+  "component.productTable.table.receivedQuantity": "Полученное количество",
+  "component.productTable.table.total": "Итого"
 }

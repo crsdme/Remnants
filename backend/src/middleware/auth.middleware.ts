@@ -1,4 +1,5 @@
 import type { NextFunction, Request, Response } from 'express'
+import type { RequestUser } from '../types/common.type'
 import dotenv from 'dotenv'
 import jwt from 'jsonwebtoken'
 
@@ -17,7 +18,7 @@ export function authenticateJWT(req: Request, res: Response, next: NextFunction)
         return res.sendStatus(401)
       }
 
-      (req as any).user = decoded
+      req.user = decoded as RequestUser
       next()
     })
   }

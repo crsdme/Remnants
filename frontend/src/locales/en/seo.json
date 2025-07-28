@@ -48,5 +48,41 @@
   "description.page.cashregisters": "Manage cash registers in Remnant",
 
   "title.page.cashregister-accounts": "Cash Register Accounts - Remnant",
-  "description.page.cashregister-accounts": "Manage cash register accounts in Remnant"
+  "description.page.cashregister-accounts": "Manage cash register accounts in Remnant",
+
+  "title.page.warehouse-transactions": "Warehouse Transactions - Remnant",
+  "description.page.warehouse-transactions": "Manage warehouse transactions in Remnant",
+
+  "title.page.order-statuses": "Order Statuses - Remnant",
+  "description.page.order-statuses": "Manage order statuses in Remnant",
+
+  "title.page.order-sources": "Order Sources - Remnant",
+  "description.page.order-sources": "Manage order sources in Remnant",
+
+  "title.page.delivery-services": "Delivery Services - Remnant",
+  "description.page.delivery-services": "Manage delivery services in Remnant",
+
+  "title.page.orders": "Orders - Remnant",
+  "description.page.orders": "Manage orders in Remnant",
+
+  "title.page.create-order": "Create Order - Remnant",
+  "description.page.create-order": "Create order in Remnant",
+
+  "title.page.automations": "Automations - Remnant",
+  "description.page.automations": "Manage automations in Remnant",
+
+  "title.page.edit-order": "Edit Order - Remnant",
+  "description.page.edit-order": "Edit order in Remnant",
+
+  "title.page.view-order": "View Order - Remnant",
+  "description.page.view-order": "View order in Remnant",
+
+  "title.page.clients": "Clients - Remnant",
+  "description.page.clients": "Manage clients in Remnant",
+
+  "title.page.expense-categories": "Expense Categories - Remnant",
+  "description.page.expense-categories": "Manage expense categories in Remnant",
+
+  "title.page.expenses": "Expenses - Remnant",
+  "description.page.expenses": "Manage expenses in Remnant"
 }

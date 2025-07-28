@@ -11,6 +11,7 @@ import {
   FormLabel,
   FormMessage,
   Input,
+  Textarea,
 } from '@/components/ui'
 import { useCurrencyContext } from '@/contexts'
 
@@ -142,6 +143,84 @@ export function CurrencyForm() {
             type="button"
             variant="secondary"
             onClick={() => closeModal()}
+            disabled={isLoading}
+          >
+            {t('button.cancel')}
+          </Button>
+          <Button type="submit" disabled={isLoading} loading={isLoading}>
+            {t('button.submit')}
+          </Button>
+        </div>
+      </form>
+    </Form>
+  )
+}
+
+export function ExchangeRateForm() {
+  const { t } = useTranslation()
+  const { isLoading, exchangeRateForm, closeExchangeRateModal, submitExchangeRateForm } = useCurrencyContext()
+
+  const onSubmit = (values) => {
+    submitExchangeRateForm(values)
+  }
+
+  return (
+    <Form {...exchangeRateForm}>
+      <form className="w-full space-y-1" onSubmit={exchangeRateForm.handleSubmit(onSubmit)}>
+        <FormField
+          control={exchangeRateForm.control}
+          name="rate"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>
+                <p>
+                  {t('page.currencies.form.rate')}
+                  <span className="text-destructive ml-1">*</span>
+                </p>
+              </FormLabel>
+              <FormControl>
+                <Input
+                  type="number"
+                  placeholder={t('page.currencies.form.rate')}
+                  className="w-full"
+                  disabled={isLoading}
+                  {...field}
+                  onChange={e => field.onChange(Number(e.target.value))}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={exchangeRateForm.control}
+          name="comment"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>
+                <p>
+                  {t('page.currencies.form.comment')}
+                </p>
+              </FormLabel>
+              <FormControl>
+                <Textarea
+                  placeholder={t('page.currencies.form.comment')}
+                  className="w-full"
+                  {...field}
+                  disabled={isLoading}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <div className="flex gap-2">
+          <Button
+            type="button"
+            variant="secondary"
+            onClick={() => closeExchangeRateModal()}
             disabled={isLoading}
           >
             {t('button.cancel')}

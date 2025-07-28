@@ -1,4 +1,4 @@
-import type { Currency } from '../types/currency.type'
+import type { Currency, ExchangeRate } from '../types/currency.type'
 import mongoose, { Schema } from 'mongoose'
 import { v4 as uuidv4 } from 'uuid'
 
@@ -27,7 +27,7 @@ const CurrencySchema: Schema = new Schema(
             SUPPORTED_LANGUAGES.includes(key as any),
           )
         },
-        message: 'ru en keys only',
+        message: 'Supported languages only',
       },
     },
     symbols: {
@@ -40,7 +40,7 @@ const CurrencySchema: Schema = new Schema(
             SUPPORTED_LANGUAGES.includes(key as any),
           )
         },
-        message: 'ru en keys only',
+        message: 'Supported languages only',
       },
     },
     priority: {
@@ -50,6 +50,41 @@ const CurrencySchema: Schema = new Schema(
     active: {
       type: Boolean,
       default: true,
+    },
+    removed: {
+      type: Boolean,
+      default: false,
+    },
+  },
+  { timestamps: true },
+)
+
+const ExchangeRateSchema: Schema = new Schema(
+  {
+    _id: {
+      type: String,
+      default: uuidv4,
+      validate: uuidValidator,
+    },
+    fromCurrency: {
+      type: String,
+      required: true,
+      ref: 'Currency',
+      validate: uuidValidator,
+    },
+    toCurrency: {
+      type: String,
+      required: true,
+      ref: 'Currency',
+      validate: uuidValidator,
+    },
+    rate: {
+      type: Number,
+      required: true,
+      min: 0,
+    },
+    comment: {
+      type: String,
     },
     removed: {
       type: Boolean,
@@ -94,3 +129,4 @@ CurrencySchema.pre('save', async function (next) {
 })
 
 export const CurrencyModel = mongoose.model<Currency>('Currency', CurrencySchema)
+export const ExchangeRateModel = mongoose.model<ExchangeRate>('Exchange-Rate', ExchangeRateSchema)

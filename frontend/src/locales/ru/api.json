@@ -324,5 +324,188 @@
   "response.description.PRODUCTS_IMPORTED": "Товары были импортированы успешно",
 
   "response.title.PRODUCTS_EXPORTED": "Товары экспортированы",
-  "response.description.PRODUCTS_EXPORTED": "Товары были экспортированы успешно"
+  "response.description.PRODUCTS_EXPORTED": "Товары были экспортированы успешно",
+
+  "response.title.ORDER_STATUSES_FETCHED": "Статусы заказов получены",
+  "response.description.ORDER_STATUSES_FETCHED": "Список статусов заказов успешно получен",
+
+  "response.title.ORDER_STATUS_CREATED": "Статус заказа создан",
+  "response.description.ORDER_STATUS_CREATED": "Новый статус заказа был создан",
+
+  "response.title.ORDER_STATUS_NOT_EDITED": "Статус заказа не обновлен",
+  "response.description.ORDER_STATUS_NOT_EDITED": "Не удалось обновить статус заказа",
+
+  "response.title.ORDER_STATUS_EDITED": "Статус заказа обновлен",
+  "response.description.ORDER_STATUS_EDITED": "Статус заказа был обновлен",
+
+  "response.title.ORDER_STATUSES_NOT_REMOVED": "Статусы заказов не удалены",
+  "response.description.ORDER_STATUSES_NOT_REMOVED": "Не удалось удалить выбранные статусы заказов",
+
+  "response.title.ORDER_STATUSES_REMOVED": "Статусы заказов удалены",
+  "response.description.ORDER_STATUSES_REMOVED": "Выбранные статусы заказов были удалены",
+
+  "response.title.WAREHOUSE_TRANSACTIONS_FETCHED": "Транзакции складов получены",
+  "response.description.WAREHOUSE_TRANSACTIONS_FETCHED": "Список транзакций складов успешно получен",
+
+  "response.title.WAREHOUSE_TRANSACTIONS_ITEMS_FETCHED": "Товары транзакций складов получены",
+  "response.description.WAREHOUSE_TRANSACTIONS_ITEMS_FETCHED": "Список товаров транзакций складов успешно получен",
+
+  "response.title.WAREHOUSE_TRANSACTION_CREATED": "Транзакция склада создана",
+  "response.description.WAREHOUSE_TRANSACTION_CREATED": "Новая транзакция склада была создана",
+
+  "response.title.WAREHOUSE_TRANSACTION_EDITED": "Транзакция склада обновлена",
+  "response.description.WAREHOUSE_TRANSACTION_EDITED": "Транзакция склада была обновлена",
+
+  "response.title.WAREHOUSE_TRANSACTION_RECEIVED": "Транзакция склада принята",
+  "response.description.WAREHOUSE_TRANSACTION_RECEIVED": "Транзакция склада была принята",
+
+  "response.title.WAREHOUSE_TRANSACTIONS_NOT_REMOVED": "Транзакции складов не удалены",
+  "response.description.WAREHOUSE_TRANSACTIONS_NOT_REMOVED": "Не удалось удалить выбранные транзакции складов",
+
+  "response.title.ORDER_SOURCES_FETCHED": "Источники заказов получены",
+  "response.description.ORDER_SOURCES_FETCHED": "Список источников заказов успешно получен",
+
+  "response.title.ORDER_SOURCE_CREATED": "Источник заказа создан",
+  "response.description.ORDER_SOURCE_CREATED": "Новый источник заказа был создан",
+
+  "response.title.ORDER_SOURCE_NOT_EDITED": "Источник заказа не обновлен",
+  "response.description.ORDER_SOURCE_NOT_EDITED": "Не удалось обновить источник заказа",
+
+  "response.title.ORDER_SOURCE_EDITED": "Источник заказа обновлен",
+  "response.description.ORDER_SOURCE_EDITED": "Источник заказа был обновлен",
+
+  "response.title.ORDER_SOURCES_NOT_REMOVED": "Источники заказов не удалены",
+  "response.description.ORDER_SOURCES_NOT_REMOVED": "Не удалось удалить выбранные источники заказов",
+
+  "response.title.ORDER_SOURCES_REMOVED": "Источники заказов удалены",
+  "response.description.ORDER_SOURCES_REMOVED": "Выбранные источники заказов были удалены",
+
+  "response.title.DELIVERY_SERVICES_FETCHED": "Службы доставки получены",
+  "response.description.DELIVERY_SERVICES_FETCHED": "Список служб доставки успешно получен",
+
+  "response.title.DELIVERY_SERVICE_CREATED": "Служба доставки создана",
+  "response.description.DELIVERY_SERVICE_CREATED": "Новая служба доставки была создана",
+
+  "response.title.DELIVERY_SERVICE_NOT_EDITED": "Служба доставки не обновлена",
+  "response.description.DELIVERY_SERVICE_NOT_EDITED": "Не удалось обновить службу доставки",
+
+  "response.title.DELIVERY_SERVICE_EDITED": "Служба доставки обновлена",
+  "response.description.DELIVERY_SERVICE_EDITED": "Служба доставки была обновлена",
+
+  "response.title.DELIVERY_SERVICES_NOT_REMOVED": "Службы доставки не удалены",
+  "response.description.DELIVERY_SERVICES_NOT_REMOVED": "Не удалось удалить выбранные службы доставки",
+
+  "response.title.DELIVERY_SERVICES_REMOVED": "Службы доставки удалены",
+  "response.description.DELIVERY_SERVICES_REMOVED": "Выбранные службы доставки были удалены",
+
+  "response.title.ORDERS_FETCHED": "Заказы получены",
+  "response.description.ORDERS_FETCHED": "Список заказов успешно получен",
+
+  "response.title.ORDER_CREATED": "Заказ создан",
+  "response.description.ORDER_CREATED": "Новый заказ был создан",
+
+  "response.title.ORDER_NOT_EDITED": "Заказ не обновлен",
+  "response.description.ORDER_NOT_EDITED": "Не удалось обновить заказ",
+
+  "response.title.ORDER_EDITED": "Заказ обновлен",
+  "response.description.ORDER_EDITED": "Заказ был обновлен",
+
+  "response.title.ORDERS_NOT_REMOVED": "Заказы не удалены",
+  "response.description.ORDERS_NOT_REMOVED": "Не удалось удалить выбранные заказы",
+
+  "response.title.ORDERS_REMOVED": "Заказы удалены",
+  "response.description.ORDERS_REMOVED": "Выбранные заказы были удалены",
+
+  "response.title.MONEY_TRANSACTION_CREATED": "Транзакция денег создана",
+  "response.description.MONEY_TRANSACTION_CREATED": "Новая транзакция денег была создана",
+
+  "response.title.MONEY_TRANSACTION_EDITED": "Транзакция денег обновлена",
+  "response.description.MONEY_TRANSACTION_EDITED": "Транзакция денег была обновлена",
+
+  "response.title.MONEY_TRANSACTIONS_NOT_REMOVED": "Транзакции денег не удалены",
+  "response.description.MONEY_TRANSACTIONS_NOT_REMOVED": "Не удалось удалить выбранные транзакции денег",
+
+  "response.title.MONEY_TRANSACTIONS_REMOVED": "Транзакции денег удалены",
+  "response.description.MONEY_TRANSACTIONS_REMOVED": "Выбранные транзакции денег были удалены",
+
+  "response.title.MONEY_TRANSACTION_NOT_EDITED": "Транзакция денег не обновлена",
+  "response.description.MONEY_TRANSACTION_NOT_EDITED": "Не удалось обновить транзакцию денег",
+
+  "response.title.MONEY_TRANSACTIONS_FETCHED": "Транзакции денег получены",
+  "response.description.MONEY_TRANSACTIONS_FETCHED": "Список транзакций денег успешно получен",
+
+  "response.title.CLIENTS_FETCHED": "Клиенты получены",
+  "response.description.CLIENTS_FETCHED": "Список клиентов успешно получен",
+
+  "response.title.CLIENT_CREATED": "Клиент создан",
+  "response.description.CLIENT_CREATED": "Новый клиент был создан",
+
+  "response.title.CLIENT_NOT_EDITED": "Клиент не обновлен",
+  "response.description.CLIENT_NOT_EDITED": "Не удалось обновить клиента",
+
+  "response.title.CLIENT_EDITED": "Клиент обновлен",
+  "response.description.CLIENT_EDITED": "Клиент был обновлен",
+
+  "response.title.CLIENTS_NOT_REMOVED": "Клиенты не удалены",
+  "response.description.CLIENTS_NOT_REMOVED": "Не удалось удалить выбранные клиенты",
+
+  "response.title.CLIENTS_REMOVED": "Клиенты удалены",
+  "response.description.CLIENTS_REMOVED": "Выбранные клиенты были удалены",
+
+  "response.title.AUTOMATION_CREATED": "Автоматизация создана",
+  "response.description.AUTOMATION_CREATED": "Новая автоматизация была создана",
+
+  "response.title.AUTOMATION_NOT_EDITED": "Автоматизация не обновлена",
+  "response.description.AUTOMATION_NOT_EDITED": "Не удалось обновить автоматизацию",
+
+  "response.title.AUTOMATION_EDITED": "Автоматизация обновлена",
+  "response.description.AUTOMATION_EDITED": "Автоматизация была обновлена",
+
+  "response.title.AUTOMATIONS_NOT_REMOVED": "Автоматизации не удалены",
+  "response.description.AUTOMATIONS_NOT_REMOVED": "Не удалось удалить выбранные автоматизации",
+
+  "response.title.AUTOMATIONS_REMOVED": "Автоматизации удалены",
+  "response.description.AUTOMATIONS_REMOVED": "Выбранные автоматизации были удалены",
+
+  "response.title.AUTOMATIONS_FETCHED": "Автоматизации получены",
+  "response.description.AUTOMATIONS_FETCHED": "Список автоматизаций успешно получен",
+
+  "response.title.EXCHANGE_RATE_EDITED": "Курс обновлен",
+  "response.description.EXCHANGE_RATE_EDITED": "Курс был обновлен",
+
+  "response.title.EXPENSE_CATEGORY_CREATED": "Категория расходов создана",
+  "response.description.EXPENSE_CATEGORY_CREATED": "Новая категория расходов была создана",
+
+  "response.title.EXPENSE_CATEGORY_NOT_EDITED": "Категория расходов не обновлена",
+  "response.description.EXPENSE_CATEGORY_NOT_EDITED": "Не удалось обновить категорию расходов",
+
+  "response.title.EXPENSE_CATEGORY_EDITED": "Категория расходов обновлена",
+  "response.description.EXPENSE_CATEGORY_EDITED": "Категория расходов была обновлена",
+
+  "response.title.EXPENSE_CATEGORIES_NOT_REMOVED": "Категории расходов не удалены",
+  "response.description.EXPENSE_CATEGORIES_NOT_REMOVED": "Не удалось удалить выбранные категории расходов",
+
+  "response.title.EXPENSE_CATEGORIES_REMOVED": "Категории расходов удалены",
+  "response.description.EXPENSE_CATEGORIES_REMOVED": "Выбранные категории расходов были удалены",
+
+  "response.title.EXPENSE_CATEGORIES_FETCHED": "Категории расходов получены",
+  "response.description.EXPENSE_CATEGORIES_FETCHED": "Список категорий расходов успешно получен",
+
+  "response.title.EXPENSE_CREATED": "Расход создан",
+  "response.description.EXPENSE_CREATED": "Новый расход был создан",
+
+  "response.title.EXPENSE_NOT_EDITED": "Расход не обновлен",
+  "response.description.EXPENSE_NOT_EDITED": "Не удалось обновить расход",
+
+  "response.title.EXPENSE_EDITED": "Расход обновлен",
+  "response.description.EXPENSE_EDITED": "Расход был обновлен",
+
+  "response.title.EXPENSES_NOT_REMOVED": "Расходы не удалены",
+  "response.description.EXPENSES_NOT_REMOVED": "Не удалось удалить выбранные расходы",
+
+  "response.title.EXPENSES_REMOVED": "Расходы удалены",
+  "response.description.EXPENSES_REMOVED": "Выбранные расходы были удалены",
+
+  "response.title.EXPENSES_FETCHED": "Расходы получены",
+  "response.description.EXPENSES_FETCHED": "Список расходов успешно получен"
 }

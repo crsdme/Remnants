@@ -7,7 +7,12 @@ interface LoadOptionsParams {
   selectedValue?: string[]
 }
 
-export function useCashregisterAccountOptions({ defaultFilters }: { defaultFilters?: { ids?: string[] } } = {}) {
+interface DefaultFilters {
+  ids?: string[]
+  cashregister?: string[]
+}
+
+export function useCashregisterAccountOptions({ defaultFilters }: { defaultFilters?: DefaultFilters } = {}) {
   const queryClient = useQueryClient()
   const { i18n } = useTranslation()
 

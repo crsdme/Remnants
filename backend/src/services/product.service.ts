@@ -13,7 +13,6 @@ import {
 } from '../utils/parseTools'
 import { buildQuery, buildSortQuery } from '../utils/queryBuilder'
 import * as BarcodeService from './barcode.service'
-import * as LanguageService from './language.service'
 import * as ProductPropertyOptionService from './product-property-option.service'
 
 export async function get(payload: ProductTypes.getProductsParams): Promise<ProductTypes.getProductsResult> {
@@ -66,20 +65,12 @@ export async function get(payload: ProductTypes.getProductsParams): Promise<Prod
     language,
   })
 
-  const { languages } = await LanguageService.get({})
-
-  const fields = languages.map(language => [
-    { field: `names.${language.code}`, langAware: true },
-    { field: `categories.names.${language.code}`, langAware: true },
-  ]).flat()
-
   const filterRulesLast: any = {
     search: {
       type: 'multiFieldSearch',
       multiFields: [
-        ...fields,
-        { field: 'barcodes.code' },
-        { field: 'price' },
+        { field: `names`, langAware: true },
+        { field: `categories.names`, langAware: true, isArray: true },
       ],
     },
   }
@@ -87,6 +78,7 @@ export async function get(payload: ProductTypes.getProductsParams): Promise<Prod
   const queryLast = buildQuery({
     filters: { barcodes, categories, unit, productPropertiesGroup, productProperties, search },
     rules: filterRulesLast,
+    language,
     removed: false,
   })
 

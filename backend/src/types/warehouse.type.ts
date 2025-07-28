@@ -20,6 +20,7 @@ export interface getWarehousesResult {
 }
 
 export interface getWarehousesFilters {
+  ids?: IdType[]
   names: LanguageString
   language: SUPPORTED_LANGUAGES_TYPE
   priority: number
@@ -51,7 +52,7 @@ export interface createWarehousesResult {
 
 export interface createWarehousesParams {
   names: LanguageString
-  priority: number
+  priority?: number
   active: boolean
 }
 
@@ -65,7 +66,7 @@ export interface editWarehousesResult {
 export interface editWarehousesParams {
   id: IdType
   names: LanguageString
-  priority: number
+  priority?: number
   active: boolean
 }
 

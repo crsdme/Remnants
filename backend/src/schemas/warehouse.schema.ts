@@ -7,6 +7,7 @@ extendZodWithOpenApi(z)
 export const getWarehousesSchema = z.object({
   pagination: paginationSchema.optional(),
   filters: z.object({
+    ids: z.array(idSchema).optional(),
     names: z.string().optional(),
     priority: numberFromStringSchema.optional(),
     active: booleanArraySchema.optional(),

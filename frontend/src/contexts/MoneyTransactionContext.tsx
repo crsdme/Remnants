@@ -178,7 +178,7 @@ export function MoneyTransactionProvider({ children }: MoneyTransactionProviderP
         cashregister: params.cashregister,
         currency: params.currency,
         amount: params.amount,
-        sourceModel: 'Manual',
+        sourceModel: 'manual',
         description: params.description,
       })
     }
@@ -191,7 +191,7 @@ export function MoneyTransactionProvider({ children }: MoneyTransactionProviderP
         cashregister: params.cashregister,
         currency: params.currency[0],
         amount: params.amount,
-        sourceModel: 'Manual',
+        sourceModel: 'manual',
         description: params.description,
       })
     }
@@ -205,7 +205,7 @@ export function MoneyTransactionProvider({ children }: MoneyTransactionProviderP
         cashregisterTo: params.cashregisterTo[0],
         currency: params.currency[0],
         amount: params.amount,
-        sourceModel: 'Manual',
+        sourceModel: 'manual',
         description: params.description,
       })
     }

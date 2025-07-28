@@ -2,7 +2,7 @@ interface Rule {
   type: 'string' | 'array' | 'exact' | 'number' | 'dateRange' | 'multiFieldSearch'
   field?: string
   langAware?: boolean
-  multiFields?: { field: string, langAware?: boolean }[]
+  multiFields?: { field: string, langAware?: boolean, isArray?: boolean }[]
 }
 
 interface BuildQueryOptions {
@@ -55,9 +55,28 @@ export function buildQuery({ filters, rules, language = 'en', removed = true, ba
         const terms = String(value).trim().toLowerCase().split(/\s+/)
 
         const searchConditions = terms.map(term => ({
-          $or: rule.multiFields!.map(({ field, langAware = false }) => ({
-            [langAware ? `${field}.${language}` : field]: { $regex: term, $options: 'i' },
-          })),
+          $or: rule.multiFields!.map(({ field, langAware = false, isArray = false }) => {
+            const path = langAware ? `${field}.${language}` : field
+            const regex = { $regex: term, $options: 'i' }
+
+            if (isArray) {
+              const [arrayRoot, ...subFieldParts] = path.split('.')
+              const subField = subFieldParts.join('.')
+
+              return {
+                [arrayRoot]: {
+                  $elemMatch: {
+                    [subField]: regex,
+                  },
+                },
+              }
+            }
+            else {
+              return {
+                [path]: regex,
+              }
+            }
+          }),
         }))
 
         query.$and = query.$and || []

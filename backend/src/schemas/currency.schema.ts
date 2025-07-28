@@ -18,6 +18,7 @@ export const getCurrencySchema = z.object({
     symbols: z.string().trim().optional(),
     language: z.string().optional().default('en'),
     priority: numberFromStringSchema.optional(),
+    cashregisterAccount: z.array(idSchema).optional(),
     createdAt: dateRangeSchema.optional(),
     updatedAt: dateRangeSchema.optional(),
     active: booleanArraySchema.optional(),
@@ -79,4 +80,18 @@ export const batchCurrencySchema = z.object({
 
 export const importCurrenciesSchema = z.object({
   file: z.instanceof(File),
+})
+
+export const getExchangeRatesSchema = z.object({
+  filters: z.object({
+    ids: z.array(idSchema).optional(),
+    fromCurrency: idSchema.optional(),
+    toCurrency: idSchema.optional(),
+  }).optional().default({}),
+})
+
+export const editExchangeRateSchema = z.object({
+  id: idSchema,
+  rate: z.number(),
+  comment: z.string().optional(),
 })

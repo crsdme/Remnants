@@ -1,8 +1,8 @@
 export interface getProductPropertiesOptionsParams {
   filters: {
-    ids?: string[]
+    ids?: any
     names?: string
-    language: string
+    language?: string
     active?: boolean[]
     productProperty?: string
     priority?: number

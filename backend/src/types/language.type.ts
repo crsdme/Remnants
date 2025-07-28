@@ -106,7 +106,7 @@ export interface importLanguagesResult {
   status: Status
   code: Code
   message: Message
-  languageIds: IdType[]
+  languageIds: any[]
 }
 
 export interface importLanguagesParams {

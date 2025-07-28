@@ -219,7 +219,7 @@ export function useColumns() {
           sortable: true,
           defaultVisible: true,
           options: [
-            { label: t('page.money-transactions.table.sourceModel.manual'), value: 'Manual' },
+            { label: t('page.money-transactions.table.sourceModel.manual'), value: 'manual' },
           ],
         },
         header: ({ column }) => sortHeader(column, t('page.money-transactions.table.sourceModel')),

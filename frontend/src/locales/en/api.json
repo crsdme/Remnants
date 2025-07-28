@@ -324,5 +324,188 @@
   "response.description.PRODUCTS_IMPORTED": "Products have been imported successfully",
 
   "response.title.PRODUCTS_EXPORTED": "Products exported",
-  "response.description.PRODUCTS_EXPORTED": "Products have been exported successfully"
+  "response.description.PRODUCTS_EXPORTED": "Products have been exported successfully",
+
+  "response.title.ORDER_STATUSES_FETCHED": "Order statuses fetched",
+  "response.description.ORDER_STATUSES_FETCHED": "Order statuses list successfully fetched",
+
+  "response.title.ORDER_STATUS_CREATED": "Order status created",
+  "response.description.ORDER_STATUS_CREATED": "New order status has been created",
+
+  "response.title.ORDER_STATUS_NOT_EDITED": "Order status not edited",
+  "response.description.ORDER_STATUS_NOT_EDITED": "Unable to edit order status",
+
+  "response.title.ORDER_STATUS_EDITED": "Order status edited",
+  "response.description.ORDER_STATUS_EDITED": "Order status has been updated",
+
+  "response.title.ORDER_STATUSES_NOT_REMOVED": "Order statuses not removed",
+  "response.description.ORDER_STATUSES_NOT_REMOVED": "Unable to remove selected order statuses",
+
+  "response.title.ORDER_STATUSES_REMOVED": "Order statuses removed",
+  "response.description.ORDER_STATUSES_REMOVED": "Selected order statuses have been deleted",
+
+  "response.title.WAREHOUSE_TRANSACTIONS_FETCHED": "Warehouse transactions fetched",
+  "response.description.WAREHOUSE_TRANSACTIONS_FETCHED": "Warehouse transactions list successfully fetched",
+
+  "response.title.WAREHOUSE_TRANSACTIONS_ITEMS_FETCHED": "Warehouse transactions items fetched",
+  "response.description.WAREHOUSE_TRANSACTIONS_ITEMS_FETCHED": "Warehouse transactions items list successfully fetched",
+
+  "response.title.WAREHOUSE_TRANSACTION_CREATED": "Warehouse transaction created",
+  "response.description.WAREHOUSE_TRANSACTION_CREATED": "New warehouse transaction has been created",
+
+  "response.title.WAREHOUSE_TRANSACTION_EDITED": "Warehouse transaction edited",
+  "response.description.WAREHOUSE_TRANSACTION_EDITED": "Warehouse transaction has been updated",
+
+  "response.title.WAREHOUSE_TRANSACTION_RECEIVED": "Warehouse transaction received",
+  "response.description.WAREHOUSE_TRANSACTION_RECEIVED": "Warehouse transaction has been received",
+
+  "response.title.WAREHOUSE_TRANSACTIONS_NOT_REMOVED": "Warehouse transactions not removed",
+  "response.description.WAREHOUSE_TRANSACTIONS_NOT_REMOVED": "Unable to remove selected warehouse transactions",
+
+  "response.title.ORDER_SOURCES_FETCHED": "Order sources fetched",
+  "response.description.ORDER_SOURCES_FETCHED": "Order sources list successfully fetched",
+
+  "response.title.ORDER_SOURCE_CREATED": "Order source created",
+  "response.description.ORDER_SOURCE_CREATED": "New order source has been created",
+
+  "response.title.ORDER_SOURCE_NOT_EDITED": "Order source not edited",
+  "response.description.ORDER_SOURCE_NOT_EDITED": "Unable to edit order source",
+
+  "response.title.ORDER_SOURCE_EDITED": "Order source edited",
+  "response.description.ORDER_SOURCE_EDITED": "Order source has been updated",
+
+  "response.title.ORDER_SOURCES_NOT_REMOVED": "Order sources not removed",
+  "response.description.ORDER_SOURCES_NOT_REMOVED": "Unable to remove selected order sources",
+
+  "response.title.ORDER_SOURCES_REMOVED": "Order sources removed",
+  "response.description.ORDER_SOURCES_REMOVED": "Selected order sources have been deleted",
+
+  "response.title.DELIVERY_SERVICES_FETCHED": "Delivery services fetched",
+  "response.description.DELIVERY_SERVICES_FETCHED": "Delivery services list successfully fetched",
+
+  "response.title.DELIVERY_SERVICE_CREATED": "Delivery service created",
+  "response.description.DELIVERY_SERVICE_CREATED": "New delivery service has been created",
+
+  "response.title.DELIVERY_SERVICE_NOT_EDITED": "Delivery service not edited",
+  "response.description.DELIVERY_SERVICE_NOT_EDITED": "Unable to edit delivery service",
+
+  "response.title.DELIVERY_SERVICE_EDITED": "Delivery service edited",
+  "response.description.DELIVERY_SERVICE_EDITED": "Delivery service has been updated",
+
+  "response.title.DELIVERY_SERVICES_NOT_REMOVED": "Delivery services not removed",
+  "response.description.DELIVERY_SERVICES_NOT_REMOVED": "Unable to remove selected delivery services",
+
+  "response.title.DELIVERY_SERVICES_REMOVED": "Delivery services removed",
+  "response.description.DELIVERY_SERVICES_REMOVED": "Selected delivery services have been deleted",
+
+  "response.title.ORDERS_FETCHED": "Orders fetched",
+  "response.description.ORDERS_FETCHED": "Orders list successfully fetched",
+
+  "response.title.ORDER_CREATED": "Order created",
+  "response.description.ORDER_CREATED": "New order has been created",
+
+  "response.title.ORDER_NOT_EDITED": "Order not edited",
+  "response.description.ORDER_NOT_EDITED": "Unable to update order",
+
+  "response.title.ORDER_EDITED": "Order edited",
+  "response.description.ORDER_EDITED": "Order has been updated",
+
+  "response.title.ORDERS_NOT_REMOVED": "Order not removed",
+  "response.description.ORDERS_NOT_REMOVED": "Unable to remove selected order",
+
+  "response.title.ORDERS_REMOVED": "Order removed",
+  "response.description.ORDERS_REMOVED": "Selected order has been deleted",
+
+  "response.title.MONEY_TRANSACTION_CREATED": "Money transaction created",
+  "response.description.MONEY_TRANSACTION_CREATED": "New money transaction has been created",
+
+  "response.title.MONEY_TRANSACTION_EDITED": "Money transaction edited",
+  "response.description.MONEY_TRANSACTION_EDITED": "Money transaction has been updated",
+
+  "response.title.MONEY_TRANSACTIONS_NOT_REMOVED": "Money transactions not removed",
+  "response.description.MONEY_TRANSACTIONS_NOT_REMOVED": "Unable to remove selected money transactions",
+
+  "response.title.MONEY_TRANSACTIONS_REMOVED": "Money transactions removed",
+  "response.description.MONEY_TRANSACTIONS_REMOVED": "Selected money transactions have been deleted",
+
+  "response.title.MONEY_TRANSACTION_NOT_EDITED": "Money transaction not edited",
+  "response.description.MONEY_TRANSACTION_NOT_EDITED": "Unable to edit money transaction",
+
+  "response.title.MONEY_TRANSACTIONS_FETCHED": "Money transactions fetched",
+  "response.description.MONEY_TRANSACTIONS_FETCHED": "Money transactions list successfully fetched",
+
+  "response.title.CLIENTS_FETCHED": "Clients fetched",
+  "response.description.CLIENTS_FETCHED": "Clients list successfully fetched",
+
+  "response.title.CLIENT_CREATED": "Client created",
+  "response.description.CLIENT_CREATED": "New client has been created",
+
+  "response.title.CLIENT_NOT_EDITED": "Client not edited",
+  "response.description.CLIENT_NOT_EDITED": "Unable to edit client",
+
+  "response.title.CLIENT_EDITED": "Client edited",
+  "response.description.CLIENT_EDITED": "Client has been updated",
+
+  "response.title.CLIENTS_NOT_REMOVED": "Clients not removed",
+  "response.description.CLIENTS_NOT_REMOVED": "Unable to remove selected clients",
+
+  "response.title.CLIENTS_REMOVED": "Clients removed",
+  "response.description.CLIENTS_REMOVED": "Selected clients have been deleted",
+
+  "response.title.AUTOMATION_CREATED": "Automation created",
+  "response.description.AUTOMATION_CREATED": "New automation has been created",
+
+  "response.title.AUTOMATION_NOT_EDITED": "Automation not edited",
+  "response.description.AUTOMATION_NOT_EDITED": "Unable to edit automation",
+
+  "response.title.AUTOMATION_EDITED": "Automation edited",
+  "response.description.AUTOMATION_EDITED": "Automation has been updated",
+
+  "response.title.AUTOMATIONS_NOT_REMOVED": "Automations not removed",
+  "response.description.AUTOMATIONS_NOT_REMOVED": "Unable to remove selected automations",
+
+  "response.title.AUTOMATIONS_REMOVED": "Automations removed",
+  "response.description.AUTOMATIONS_REMOVED": "Selected automations have been deleted",
+
+  "response.title.AUTOMATIONS_FETCHED": "Automations fetched",
+  "response.description.AUTOMATIONS_FETCHED": "Automations list successfully fetched",
+
+  "response.title.EXCHANGE_RATE_EDITED": "Exchange rate edited",
+  "response.description.EXCHANGE_RATE_EDITED": "Exchange rate has been updated",
+
+  "response.title.EXPENSE_CATEGORY_CREATED": "Expense category created",
+  "response.description.EXPENSE_CATEGORY_CREATED": "New expense category has been created",
+
+  "response.title.EXPENSE_CATEGORY_NOT_EDITED": "Expense category not edited",
+  "response.description.EXPENSE_CATEGORY_NOT_EDITED": "Unable to edit expense category",
+
+  "response.title.EXPENSE_CATEGORY_EDITED": "Expense category edited",
+  "response.description.EXPENSE_CATEGORY_EDITED": "Expense category has been updated",
+
+  "response.title.EXPENSE_CATEGORIES_NOT_REMOVED": "Expense categories not removed",
+  "response.description.EXPENSE_CATEGORIES_NOT_REMOVED": "Unable to remove selected expense categories",
+
+  "response.title.EXPENSE_CATEGORIES_REMOVED": "Expense categories removed",
+  "response.description.EXPENSE_CATEGORIES_REMOVED": "Selected expense categories have been deleted",
+
+  "response.title.EXPENSE_CATEGORIES_FETCHED": "Expense categories fetched",
+  "response.description.EXPENSE_CATEGORIES_FETCHED": "Expense categories list successfully fetched",
+
+  "response.title.EXPENSE_CREATED": "Expense created",
+  "response.description.EXPENSE_CREATED": "New expense has been created",
+
+  "response.title.EXPENSE_NOT_EDITED": "Expense not edited",
+  "response.description.EXPENSE_NOT_EDITED": "Unable to edit expense",
+
+  "response.title.EXPENSE_EDITED": "Expense edited",
+  "response.description.EXPENSE_EDITED": "Expense has been updated",
+
+  "response.title.EXPENSES_NOT_REMOVED": "Expenses not removed",
+  "response.description.EXPENSES_NOT_REMOVED": "Unable to remove selected expenses",
+
+  "response.title.EXPENSES_REMOVED": "Expenses removed",
+  "response.description.EXPENSES_REMOVED": "Selected expenses have been deleted",
+
+  "response.title.EXPENSES_FETCHED": "Expenses fetched",
+  "response.description.EXPENSES_FETCHED": "Expenses list successfully fetched"
 }

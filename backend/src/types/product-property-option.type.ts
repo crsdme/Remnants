@@ -57,7 +57,7 @@ export interface createProductPropertyOptionParams {
   productProperty: IdType
   active: boolean
   priority: number
-  color: string
+  color?: string
 }
 
 export interface editProductPropertyOptionResult {

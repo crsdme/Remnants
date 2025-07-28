@@ -1,4 +1,3 @@
-import type { Buffer } from 'node:buffer'
 import type { SUPPORTED_LANGUAGES_TYPE } from '../config/constants'
 import type { Code, DateRange, IdType, LanguageString, Message, Pagination, Sorter, Status } from './common.type'
 
@@ -47,7 +46,6 @@ export interface getCashregistersParams {
   filters?: Partial<getCashregistersFilters>
   sorters?: Partial<getCashregistersSorters>
   pagination?: Partial<Pagination>
-  isTree?: boolean
 }
 
 export interface createCashregisterResult {
@@ -60,10 +58,7 @@ export interface createCashregisterResult {
 export interface createCashregisterParams {
   names: LanguageString
   priority?: number
-  accounts?: Array<{
-    name: string
-    amount: number
-  }>
+  accounts?: IdType[]
   active?: boolean
 }
 

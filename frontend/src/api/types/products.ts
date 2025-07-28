@@ -2,7 +2,7 @@ export interface getProductsParams {
   filters: {
     seq?: number
     names?: string
-    language: string
+    language?: string
     active?: boolean[]
     priority?: number
     createdAt?: {

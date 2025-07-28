@@ -100,6 +100,7 @@
   "component.sidemenu.label.procurements": "Procurements",
   "component.sidemenu.label.production": "Production",
   "component.sidemenu.label.inventories": "Inventory",
+  "component.sidemenu.label.warehouseTransactions": "Warehouse Transactions",
   "component.sidemenu.label.money": "Finance",
   "component.sidemenu.label.cashregisters": "Cash Registers",
   "component.sidemenu.label.cashregisterAccounts": "Cash Register Accounts",
@@ -117,6 +118,8 @@
   "component.sidemenu.label.currencies": "Currencies",
   "component.sidemenu.label.sources": "Sources",
   "component.sidemenu.label.orderStatuses": "Order Statuses",
+  "component.sidemenu.label.automations": "Automations",
+  "component.sidemenu.label.orderSources": "Order Sources",
   "component.sidemenu.label.deliveryServices": "Delivery Services",
   "component.sidemenu.label.units": "Units of Measure",
   "component.sidemenu.label.settings": "Settings",
@@ -140,5 +143,9 @@
   "component.productTable.table.productProperties": "Product Properties",
   "component.productTable.table.quantity": "Quantity",
   "component.productTable.table.selectedQuantity": "Selected Quantity",
-  "component.productTable.table.unit": "Unit"
+  "component.productTable.table.unit": "Unit",
+  "component.productTable.table.discount": "Discount",
+  "component.productTable.table.selectedPrice": "Price",
+  "component.productTable.table.receivedQuantity": "Received Quantity",
+  "component.productTable.table.total": "Total"
 }

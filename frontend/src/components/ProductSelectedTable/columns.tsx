@@ -1,25 +1,48 @@
 import {
   ArrowDown,
   ArrowUp,
+  Check,
   ChevronsUpDown,
   Minus,
   Plus,
   Trash2,
+  X,
 } from 'lucide-react'
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import { useProductPropertyQuery } from '@/api/hooks'
+import { useCurrencyOptions, useCurrencyQuery, useProductPropertyQuery } from '@/api/hooks'
 import { ImageGallery } from '@/components'
-import { Badge, Button, Input } from '@/components/ui'
+import { Badge, Button, Input, Popover, PopoverContent, PopoverTrigger, Separator } from '@/components/ui'
 import { useAuthContext } from '@/contexts'
 import { formatDate } from '@/utils/helpers'
 import { hasPermission } from '@/utils/helpers/permission'
-import { useDebounceCallback } from '@/utils/hooks'
+import { AsyncSelectNew } from '../AsyncSelectNew'
+import { EditableCell } from './cells'
 
 const sortIcons = { asc: ArrowUp, desc: ArrowDown }
 
-export function useColumns({ removeProduct, changeQuantity }: { removeProduct: (product: any) => void, changeQuantity: (product: any, quantity: number) => void }) {
+interface ProductSelectedTableProps {
+  removeProduct: (product: any) => void
+  isReceiving: boolean
+  isSelectedPrice: boolean
+  isDiscount: boolean
+  disabled: boolean
+  handleChange: (options: { productId: string, field: string, value: string | number | string[], isDebounced?: boolean }) => void
+  includeTotal: boolean
+}
+
+export function useColumns(
+  {
+    removeProduct,
+    isReceiving,
+    isSelectedPrice,
+    isDiscount,
+    disabled,
+    handleChange,
+    includeTotal,
+  }: ProductSelectedTableProps,
+) {
   const { t, i18n } = useTranslation()
   const { permissions } = useAuthContext()
 
@@ -28,7 +51,16 @@ export function useColumns({ removeProduct, changeQuantity }: { removeProduct: (
 
   const isLoading = false
 
-  const debounceChangeQuantity = useDebounceCallback((product: any, quantity: number) => changeQuantity(product, quantity), 1000)
+  const loadCurrencyOptions = useCurrencyOptions()
+
+  const { data: { currencies = [] } = {} } = useCurrencyQuery(
+    {},
+    { options: {
+      select: response => ({
+        currencies: response.data.currencies,
+      }),
+    } },
+  )
 
   const columns = useMemo(() => {
     function sortHeader(column, label) {
@@ -36,7 +68,7 @@ export function useColumns({ removeProduct, changeQuantity }: { removeProduct: (
 
       return (
         <Button
-          disabled={isLoading}
+          disabled={isLoading || disabled}
           variant="ghost"
           onClick={() => column.toggleSorting()}
           className="my-2 flex items-center gap-2"
@@ -46,65 +78,6 @@ export function useColumns({ removeProduct, changeQuantity }: { removeProduct: (
         </Button>
       )
     }
-
-    // function selectColumn() {
-    //   return ({
-    //     id: 'select',
-    //     size: 35,
-    //     meta: { title: t('component.columnMenu.columns.select') },
-    //     header: ({ table }) => {
-    //       const isChecked = table.getIsAllPageRowsSelected()
-    //         ? true
-    //         : table.getIsSomePageRowsSelected()
-    //           ? 'indeterminate'
-    //           : false
-
-    //       return (
-    //         <Checkbox
-    //           checked={isChecked}
-    //           onCheckedChange={value => table.toggleAllPageRowsSelected(!!value)}
-    //           aria-label="Select all"
-    //         />
-    //       )
-    //     },
-    //     cell: ({ row }) => (
-    //       <Checkbox
-    //         checked={row.getIsSelected()}
-    //         onCheckedChange={value => row.toggleSelected(!!value)}
-    //         aria-label="Select row"
-    //       />
-    //     ),
-    //     enableSorting: false,
-    //     enableHiding: false,
-    //   })
-    // }
-
-    // function expanderColumn() {
-    //   return ({
-    //     id: 'expander',
-    //     header: '',
-    //     cell: ({ row }) => {
-    //       if (row.getCanExpand()) {
-    //         return (
-    //           <Button
-    //             variant="ghost"
-    //             size="icon"
-    //             onClick={row.getToggleExpandedHandler()}
-    //             style={{ width: 24, height: 24, padding: 0 }}
-    //           >
-    //             {row.getIsExpanded()
-    //               ? <ChevronDown size={16} />
-    //               : <ChevronRight size={16} />}
-    //           </Button>
-    //         )
-    //       }
-    //       return null
-    //     },
-    //     size: 24,
-    //     enableSorting: false,
-    //     enableHiding: false,
-    //   })
-    // }
 
     function actionColumn() {
       return ({
@@ -116,42 +89,14 @@ export function useColumns({ removeProduct, changeQuantity }: { removeProduct: (
         enableHiding: false,
         cell: ({ row }) => {
           const item = row.original
-
           return (
             <div className="flex gap-2 justify-end">
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={() => changeQuantity(item, item.selectedQuantity - 1)}
-                >
-                  <Minus className="h-4 w-4" />
-                </Button>
-                <div className="relative min-w-5">
-                  <Input
-                    placeholder={t('component.product-select-table.quantity.placeholder')}
-                    value={item.selectedQuantity}
-                    className="pr-10 w-20"
-                    disabled={true}
-                    onChange={event => debounceChangeQuantity(item, Number.parseInt(event.target.value))}
-                  />
-                  <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                    <p>{item.unit.symbols[i18n.language]}</p>
-                  </div>
-                </div>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={() => changeQuantity(item, item.selectedQuantity + 1)}
-                >
-                  <Plus className="h-4 w-4" />
-                </Button>
-              </div>
               <Button
                 onClick={() => removeProduct(item)}
                 variant="ghost"
                 size="icon"
                 className="h-8 w-8 p-0 text-destructive hover:text-destructive hover:bg-destructive/10"
+                disabled={isLoading || disabled}
               >
                 <Trash2 className="h-4 w-4" />
               </Button>
@@ -235,8 +180,6 @@ export function useColumns({ removeProduct, changeQuantity }: { removeProduct: (
     }
 
     return [
-      // selectColumn(),
-      // expanderColumn(),
       {
         id: 'images',
         size: 100,
@@ -280,41 +223,6 @@ export function useColumns({ removeProduct, changeQuantity }: { removeProduct: (
         accessorFn: row => `${row.price} ${row.currency.symbols[i18n.language]}`,
       },
       ...permissionColumns(),
-      // {
-      //   id: 'quantity',
-      //   size: 150,
-      //   meta: {
-      //     title: t('component.productTable.table.quantity'),
-      //     filterable: true,
-      //     filterType: 'number',
-      //     sortable: true,
-      //   },
-      //   header: ({ column }) => sortHeader(column, t('component.productTable.table.quantity')),
-      //   cell: ({ row }) => {
-      //     const quantity = row.original.quantity.find(q => q.warehouse === '622b4c21-4937-4afe-b9df-d63b250c4555')
-      //     const unit = row.original.unit.symbols[i18n.language]
-
-      //     return quantity ? `${quantity.count} ${unit}` : `0 ${unit}`
-      //   },
-      // },
-      {
-        id: 'selectedQuantity',
-        size: 150,
-        meta: {
-          title: t('component.productTable.table.selectedQuantity'),
-          filterable: true,
-          filterType: 'number',
-          sortable: true,
-          defaultVisible: true,
-        },
-        header: ({ column }) => sortHeader(column, t('component.productTable.table.selectedQuantity')),
-        cell: ({ row }) => {
-          const selectedQuantity = row.original.selectedQuantity
-          const unit = row.original.unit.symbols[i18n.language]
-
-          return `${selectedQuantity || 0} ${unit}`
-        },
-      },
       {
         id: 'unit',
         size: 150,
@@ -381,8 +289,286 @@ export function useColumns({ removeProduct, changeQuantity }: { removeProduct: (
         header: ({ column }) => sortHeader(column, t('table.updatedAt')),
         cell: ({ row }) => formatDate(row.getValue('updatedAt'), 'MMMM dd, yyyy', i18n.language),
       },
+      ...(isDiscount
+        ? [
+            {
+              id: 'discount',
+              meta: {
+                title: t('component.productTable.table.discount'),
+                filterable: true,
+                filterType: 'number',
+                sortable: true,
+              },
+              header: () => t('component.productTable.table.discount'),
+              cell: ({ row }) => {
+                const product = row.original
+                const currency = currencies.find(c => c.id === product.selectedCurrency.id)?.symbols[i18n.language]
+
+                let discountPrice = 0
+                if (product.discountPercent > 0) {
+                  discountPrice = product.price - (product.price * product.discountPercent) / 100 - product.price
+                }
+                else if (product.discountAmount > 0) {
+                  discountPrice = (product.price - product.discountAmount - product.price)
+                }
+
+                return (
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <div className="flex gap-2 relative">
+                        <Button variant="outline" className="w-full justify-start">
+                          {discountPrice.toFixed(2)}
+                        </Button>
+                        <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                          <p>{currency}</p>
+                        </div>
+                      </div>
+                    </PopoverTrigger>
+
+                    <PopoverContent className="w-30 space-y-3 p-2" onOpenAutoFocus={e => e.preventDefault()}>
+                      <div className="flex gap-2 relative min-w-5">
+                        <EditableCell
+                          product={product}
+                          onChange={val => handleChange({
+                            productId: product.id,
+                            field: 'discountAmount',
+                            value: val,
+                            isDebounced: true,
+                          })}
+                          field="discountAmount"
+                          className="w-full"
+                          disabled={isLoading || disabled}
+                        />
+                        <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                          <p>{currency}</p>
+                        </div>
+                      </div>
+                      <div className="flex gap-2 relative min-w-5">
+                        <EditableCell
+                          product={product}
+                          onChange={val => handleChange({
+                            productId: product.id,
+                            field: 'discountPercent',
+                            value: val,
+                            isDebounced: true,
+                          })}
+                          field="discountPercent"
+                          className="w-full"
+                          disabled={isLoading || disabled}
+                        />
+                        <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                          <p>%</p>
+                        </div>
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+                )
+              },
+            },
+          ]
+        : []),
+      ...(isSelectedPrice
+        ? [
+            {
+              id: 'selectedPrice',
+              meta: {
+                title: t('component.productTable.table.selectedPrice'),
+                filterable: true,
+                filterType: 'number',
+                sortable: true,
+              },
+              header: () => t('component.productTable.table.selectedPrice'),
+              cell: ({ row }) => {
+                const product = row.original
+                return (
+                  <div className="flex gap-2">
+                    <EditableCell
+                      product={product}
+                      onChange={value => handleChange({
+                        productId: product.id,
+                        field: 'selectedPrice',
+                        value,
+                        isDebounced: true,
+                      })}
+                      field="selectedPrice"
+                      className="w-20 pr-2"
+                      disabled={isLoading || disabled}
+                    />
+                    <AsyncSelectNew
+                      loadOptions={loadCurrencyOptions}
+                      value={[product.selectedCurrency.id]}
+                      renderOption={e => `${e.symbols[i18n.language]}`}
+                      getDisplayValue={e => `${e.symbols[i18n.language]}`}
+                      getOptionValue={e => e.id}
+                      disabled={isLoading || disabled}
+                      onChange={val => handleChange({
+                        productId: product.id,
+                        field: 'selectedCurrency',
+                        value: currencies.find(c => c.id === val),
+                      })}
+                      triggerClassName="w-15"
+                      placeholder="..."
+                      clearable
+                      isForm={false}
+                    />
+                  </div>
+                )
+              },
+            },
+          ]
+        : []),
+      {
+        id: 'selectedQuantity',
+        size: 150,
+        meta: {
+          title: t('component.productTable.table.selectedQuantity'),
+          filterable: true,
+          filterType: 'number',
+          sortable: true,
+          defaultVisible: true,
+        },
+        header: ({ column }) => sortHeader(column, t('component.productTable.table.selectedQuantity')),
+        cell: ({ row }) => {
+          const item = row.original
+
+          return (
+            <div className="flex gap-2">
+              {!isReceiving && (
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => handleChange({ productId: item.id, field: 'quantity', value: item.quantity - 1 })}
+                  disabled={isLoading || isReceiving || disabled}
+                >
+                  <Minus className="h-4 w-4" />
+                </Button>
+              )}
+              <div className="relative min-w-5">
+                <EditableCell
+                  product={item}
+                  onChange={val => handleChange({
+                    productId: item.id,
+                    field: 'quantity',
+                    value: val,
+                    isDebounced: true,
+                  })}
+                  field="quantity"
+                  className="w-20"
+                  disabled={isLoading || isReceiving || disabled}
+                />
+                <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                  <p>{item.unit.symbols[i18n.language]}</p>
+                </div>
+              </div>
+              {!isReceiving && (
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => handleChange({ productId: item.id, field: 'quantity', value: item.quantity + 1 })}
+                  disabled={isLoading || isReceiving || disabled}
+                >
+                  <Plus className="h-4 w-4" />
+                </Button>
+              )}
+            </div>
+          )
+        },
+      },
+      ...(isReceiving
+        ? [{
+            id: 'selectedPrice',
+            meta: {
+              title: t('component.productTable.table.receivedQuantity'),
+              filterable: true,
+              filterType: 'number',
+              sortable: true,
+            },
+            header: () => t('component.productTable.table.receivedQuantity'),
+            cell: ({ row }) => {
+              const product = row.original
+              const hasMismatch = product.receivedQuantity !== product.quantity
+
+              return (
+                <div className="flex items-center gap-2">
+                  <Badge variant={hasMismatch ? 'destructive' : 'success'}>
+                    {hasMismatch ? <X /> : <Check />}
+                  </Badge>
+                  <Separator orientation="vertical" className="h-8" />
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => handleChange({ productId: product.id, field: 'receivedQuantity', value: product.receivedQuantity - 1 })}
+                      disabled={isLoading || disabled}
+                    >
+                      <Minus className="h-4 w-4" />
+                    </Button>
+                    <div className="relative min-w-5">
+                      {/* <Input
+                        placeholder={t('component.product-select-table.quantity.placeholder')}
+                        value={product.receivedQuantity}
+                        className="pr-10 w-20"
+                        disabled={isLoading || disabled}
+                        onChange={event => handleChange({
+                          productId: product.id,
+                          field: 'receivedQuantity',
+                          value: Number.parseInt(event.target.value),
+                          isDebounced: true,
+                        })}
+                      /> */}
+                      <EditableCell
+                        product={product}
+                        onChange={value => handleChange({
+                          productId: product.id,
+                          field: 'receivedQuantity',
+                          value,
+                          isDebounced: true,
+                        })}
+                        field="receivedQuantity"
+                        className="w-20"
+                        disabled={isLoading || disabled}
+                      />
+                      <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                        <p>{product.unit.symbols[i18n.language]}</p>
+                      </div>
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => handleChange({ productId: product.id, field: 'receivedQuantity', value: product.receivedQuantity + 1 })}
+                      disabled={isLoading || disabled}
+                    >
+                      <Plus className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              )
+            },
+          }]
+        : []),
+      ...(includeTotal
+        ? [
+            {
+              id: 'total',
+              meta: {
+                title: t('component.productTable.table.total'),
+              },
+              cell: ({ row }) => {
+                const item = row.original
+
+                return (
+                  <div className="flex items-center gap-2">
+                    <p className="font-bold">
+                      {`${(item.quantity * item.selectedPrice).toFixed(2)} ${currencies.find(c => c.id === item.selectedCurrency.id)?.symbols[i18n.language]}`}
+                    </p>
+                  </div>
+                )
+              },
+            },
+          ]
+        : []),
       actionColumn(),
     ]
-  }, [i18n.language, productProperties])
+  }, [i18n.language, productProperties, currencies])
   return columns
 }

@@ -1,9 +1,11 @@
 export interface getCashregistersParams {
-  filters: {
+  filters?: {
     names?: string
     active?: boolean[]
     priority?: number
     language?: string
+    ids?: string[]
+    cashregisterAccounts?: string[]
   }
   sorters?: {
     priority?: string

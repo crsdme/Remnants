@@ -26,6 +26,7 @@ export interface Product {
   productProperties: {
     id: IdType
     options: IdType[]
+    value: any
   }[]
   removed: boolean
   createdAt: Date
@@ -95,7 +96,7 @@ export interface createProductParams {
   productPropertiesGroup: IdType
   productProperties: {
     id: IdType
-    value: IdType[]
+    value: IdType[] | string | number | boolean
   }[]
   images: {
     filename: string

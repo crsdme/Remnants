@@ -23,7 +23,6 @@ export function DataTable() {
     priority: undefined,
     active: [],
     createdAt: { from: undefined, to: undefined },
-    language: i18n.language,
   }
 
   const [columnVisibility, setColumnVisibility] = useState({})

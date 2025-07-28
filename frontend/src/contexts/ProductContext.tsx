@@ -430,10 +430,10 @@ function getFormPropertiesSchema(selectedGroup, productPropertiesGroups, t) {
                 base = z.boolean({ required_error: t('form.errors.required') })
                 break
               case 'select':
-                base = z.array(z.string()).min(1, { message: t('form.errors.required') })
+                base = z.string({ required_error: t('form.errors.required') })
                 break
               case 'color':
-                base = z.array(z.string()).min(1, { message: t('form.errors.required') })
+                base = z.string({ required_error: t('form.errors.required') })
                 break
               case 'multiSelect':
                 base = z.array(z.string()).min(1, { message: t('form.errors.required') })
@@ -478,13 +478,13 @@ function getPropertiesDefaultValues(selectedGroup, productPropertiesGroups): Rec
           defaultValue = ''
           break
         case 'select':
-          defaultValue = []
+          defaultValue = ''
           break
         case 'multiSelect':
           defaultValue = []
           break
         case 'color':
-          defaultValue = []
+          defaultValue = ''
           break
         case 'number':
           defaultValue = 0

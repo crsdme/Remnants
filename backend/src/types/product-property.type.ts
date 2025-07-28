@@ -66,7 +66,6 @@ export interface createProductPropertyParams {
   names: LanguageString
   priority?: number
   type: string
-  isMultiple: boolean
   showInTable: boolean
   isRequired: boolean
   active?: boolean

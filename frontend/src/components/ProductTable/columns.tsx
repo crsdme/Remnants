@@ -108,10 +108,8 @@ export function useColumns({ isLoading, addProduct }: { isLoading: boolean, addP
         },
         enableHiding: false,
         cell: ({ row }) => {
-          const item = row.original
-
           return (
-            <Button onClick={() => addProduct([item])} variant="default" size="icon">
+            <Button onClick={() => addProduct(row.original)} variant="default" size="icon">
               <Plus className="h-4 w-4" />
             </Button>
           )

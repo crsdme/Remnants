@@ -5,28 +5,7 @@ import { LogoIcon } from '@/components/ui'
 import { useAuthContext } from '@/contexts'
 import { usePermission } from '@/utils/hooks/usePermission/usePermission'
 
-import {
-  BarcodesPage,
-  CashregisterAccountsPage,
-  CashregistersPage,
-  CategoriesPage,
-  CurrenciesPage,
-  DashboardPage,
-  ErrorPage,
-  LanguagesPage,
-  LoginPage,
-  MainSettingsPage,
-  MoneyTransactionsPage,
-  ProductPropertiesGroupsPage,
-  ProductPropertiesPage,
-  ProductsPage,
-  SettingsLayout,
-  TestPage,
-  UnitsPage,
-  UserRolesPage,
-  UsersPage,
-  WarehousesPage,
-} from '../containers'
+import * as Pages from '../containers'
 
 import '@/app/App.css'
 
@@ -49,88 +28,138 @@ export default function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={authContenxt.state.isAuthenticated ? <Layout /> : <LoginPage />}>
-          <Route path="/" element={<DashboardPage />} />
+        <Route path="/" element={authContenxt.state.isAuthenticated ? <Layout /> : <Pages.LoginPage />}>
+          <Route path="/" element={<Pages.DashboardPage />} />
+
           <Route
             path="/test"
-            element={(<ProtectedRoute children={<TestPage />} permissions={['user.page']} />)}
+            element={(<ProtectedRoute children={<Pages.TestPage />} permissions={['user.page']} />)}
+          />
+
+          <Route
+            path="/orders"
+            element={<ProtectedRoute children={<Pages.OrdersPage />} permissions={['order.page']} />}
+          />
+          <Route
+            path="/orders/create"
+            element={<ProtectedRoute children={<Pages.CreateOrderPage />} permissions={['order.page']} />}
+          />
+          <Route
+            path="/orders/edit/:id"
+            element={<ProtectedRoute children={<Pages.EditOrderPage />} permissions={['order.page']} />}
+          />
+          <Route
+            path="/orders/view/:id"
+            element={<ProtectedRoute children={<Pages.ViewOrderPage />} permissions={['order.page']} />}
           />
 
           <Route
             path="/categories"
-            element={<ProtectedRoute children={<CategoriesPage />} permissions={['category.page']} />}
+            element={<ProtectedRoute children={<Pages.CategoriesPage />} permissions={['category.page']} />}
           />
           <Route
             path="/products"
-            element={<ProtectedRoute children={<ProductsPage />} permissions={['product.page']} />}
+            element={<ProtectedRoute children={<Pages.ProductsPage />} permissions={['product.page']} />}
           />
           <Route
             path="/product-properties-groups"
-            element={<ProtectedRoute children={<ProductPropertiesGroupsPage />} permissions={['product-properties-groups.page']} />}
+            element={<ProtectedRoute children={<Pages.ProductPropertiesGroupsPage />} permissions={['product-properties-groups.page']} />}
           />
           <Route
             path="/product-properties"
-            element={<ProtectedRoute children={<ProductPropertiesPage />} permissions={['product-properties.page']} />}
+            element={<ProtectedRoute children={<Pages.ProductPropertiesPage />} permissions={['product-properties.page']} />}
           />
 
           <Route
+            path="/clients"
+            element={<ProtectedRoute children={<Pages.ClientsPage />} permissions={['client.page']} />}
+          />
+          <Route
             path="/users"
-            element={(<ProtectedRoute children={<UsersPage />} permissions={['user.page']} />)}
+            element={(<ProtectedRoute children={<Pages.UsersPage />} permissions={['user.page']} />)}
           />
           <Route
             path="/users/roles"
-            element={<ProtectedRoute children={<UserRolesPage />} permissions={['userRole.page']} />}
+            element={<ProtectedRoute children={<Pages.UserRolesPage />} permissions={['userRole.page']} />}
           />
 
           <Route
             path="/cashregisters"
-            element={<ProtectedRoute children={<CashregistersPage />} permissions={['cashregister.page']} />}
+            element={<ProtectedRoute children={<Pages.CashregistersPage />} permissions={['cashregister.page']} />}
           />
           <Route
             path="/cashregister-accounts"
-            element={<ProtectedRoute children={<CashregisterAccountsPage />} permissions={['cashregister-account.page']} />}
+            element={<ProtectedRoute children={<Pages.CashregisterAccountsPage />} permissions={['cashregister-account.page']} />}
           />
           <Route
             path="/money-transactions"
-            element={<ProtectedRoute children={<MoneyTransactionsPage />} permissions={['money-transaction.page']} />}
+            element={<ProtectedRoute children={<Pages.MoneyTransactionsPage />} permissions={['money-transaction.page']} />}
+          />
+
+          <Route
+            path="/expenses"
+            element={<ProtectedRoute children={<Pages.ExpensesPage />} permissions={['expense.page']} />}
+          />
+          <Route
+            path="/settings/expense-categories"
+            element={<ProtectedRoute children={<Pages.ExpenseCategoriesPage />} permissions={['expense-category.page']} />}
           />
 
           <Route
             path="/settings"
-            element={<ProtectedRoute children={<SettingsLayout />} permissions={['settings.page']} />}
+            element={<ProtectedRoute children={<Pages.SettingsLayout />} permissions={['settings.page']} />}
           >
             <Route
               path="/settings"
-              element={<ProtectedRoute children={<MainSettingsPage />} permissions={['settings.page']} />}
+              element={<ProtectedRoute children={<Pages.MainSettingsPage />} permissions={['settings.page']} />}
             />
           </Route>
 
           <Route
             path="/settings/currencies"
-            element={<ProtectedRoute children={<CurrenciesPage />} permissions={['currency.page']} />}
+            element={<ProtectedRoute children={<Pages.CurrenciesPage />} permissions={['currency.page']} />}
           />
           <Route
             path="/settings/languages"
-            element={<ProtectedRoute children={<LanguagesPage />} permissions={['language.page']} />}
+            element={<ProtectedRoute children={<Pages.LanguagesPage />} permissions={['language.page']} />}
           />
           <Route
             path="/settings/units"
-            element={<ProtectedRoute children={<UnitsPage />} permissions={['unit.page']} />}
+            element={<ProtectedRoute children={<Pages.UnitsPage />} permissions={['unit.page']} />}
           />
-
+          <Route
+            path="/settings/delivery-services"
+            element={<ProtectedRoute children={<Pages.DeliveryServicesPage />} permissions={['delivery-service.page']} />}
+          />
+          <Route
+            path="/settings/order-statuses"
+            element={<ProtectedRoute children={<Pages.OrderStatusesPage />} permissions={['order-status.page']} />}
+          />
+          <Route
+            path="/settings/order-sources"
+            element={<ProtectedRoute children={<Pages.OrderSourcesPage />} permissions={['order-source.page']} />}
+          />
+          <Route
+            path="/settings/automations"
+            element={<ProtectedRoute children={<Pages.AutomationsPage />} permissions={['automation.page']} />}
+          />
           <Route
             path="/warehouses"
-            element={<ProtectedRoute children={<WarehousesPage />} permissions={['warehouse.page']} />}
+            element={<ProtectedRoute children={<Pages.WarehousesPage />} permissions={['warehouse.page']} />}
+          />
+          <Route
+            path="/warehouse-transactions"
+            element={<ProtectedRoute children={<Pages.WarehouseTransactionsPage />} permissions={['warehouse-transaction.page']} />}
           />
           <Route
             path="/barcodes"
-            element={<ProtectedRoute children={<BarcodesPage />} permissions={['barcode.page']} />}
+            element={<ProtectedRoute children={<Pages.BarcodesPage />} permissions={['barcode.page']} />}
           />
 
-          <Route path="*" element={<ErrorPage status={404} />} />
+          <Route path="*" element={<Pages.ErrorPage status={404} />} />
         </Route>
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="*" element={<ErrorPage status={404} />} />
+        <Route path="/login" element={<Pages.LoginPage />} />
+        <Route path="*" element={<Pages.ErrorPage status={404} />} />
       </Routes>
     </BrowserRouter>
   )
@@ -140,7 +169,7 @@ export function ProtectedRoute({ children, permissions }) {
   const hasAccess = usePermission(permissions)
 
   if (!hasAccess)
-    return <ErrorPage status={403} />
+    return <Pages.ErrorPage status={403} />
 
   return children
 }

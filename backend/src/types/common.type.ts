@@ -1,4 +1,3 @@
-import type mongoose from 'mongoose'
 import type { SUPPORTED_LANGUAGES } from '../config/constants'
 
 export type LanguageString = Partial<{
@@ -19,9 +18,19 @@ export interface Pagination {
   full?: boolean
 }
 
-export type IdType = mongoose.Types.ObjectId | string
+export type IdType = string
 
 export interface DateRange {
   from: Date
   to: Date
+}
+
+export interface RequestUser {
+  id: IdType
+  login: string
+  name: string
+  role: string
+  active: boolean
+  createdAt: Date
+  updatedAt: Date
 }

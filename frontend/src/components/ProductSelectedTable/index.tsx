@@ -7,19 +7,67 @@ import { useTranslation } from 'react-i18next'
 import { ColumnVisibilityMenu } from '@/components'
 import { Skeleton, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui'
 
+import { useDebounceCallback } from '@/utils/hooks'
 import { cn } from '@/utils/lib/utils'
 import { useColumns } from './columns'
+import { ProductSelectedTotal } from './product-selected-total'
+
+interface ProductSelectedTableProps {
+  products: any[]
+  removeProduct: (product: any) => void
+  changeProduct: (options: { productId: string, field: string, value: any }) => void
+  isReceiving?: boolean
+  isSelectedPrice?: boolean
+  isDiscount?: boolean
+  disabled?: boolean
+  isLoading?: boolean
+  className?: string
+  includeTotal?: boolean
+  includeFooterTotal?: boolean
+}
 
 export function ProductSelectedTable(
-  { products, removeProduct, isLoading = false, className, changeQuantity }:
-  { products: any[], removeProduct: (product: any) => void, isLoading?: boolean, className?: string, changeQuantity: (product: any, quantity: number) => void },
+  {
+    products,
+    removeProduct,
+    isLoading = false,
+    className,
+    changeProduct,
+    isReceiving = false,
+    isSelectedPrice = false,
+    isDiscount = false,
+    disabled = false,
+    includeTotal = false,
+    includeFooterTotal = false,
+  }: ProductSelectedTableProps,
 ) {
   const { t } = useTranslation()
 
   const [columnVisibility, setColumnVisibility] = useState({})
   const [sorting, setSorting] = useState<ColumnSort[]>([])
 
-  const columns = useColumns({ removeProduct, changeQuantity })
+  const debouncedUpdate = useDebounceCallback(({ productId, field, value }) => {
+    changeProduct?.({ productId, field, value })
+  }, 500)
+
+  function handleChange({ productId, field, value, isDebounced = false }: { productId: string, field: string, value: number, isDebounced?: boolean }) {
+    if (isDebounced) {
+      debouncedUpdate({ productId, field, value })
+    }
+    else {
+      changeProduct?.({ productId, field, value })
+    }
+  }
+
+  const columns = useColumns({
+    removeProduct,
+    isReceiving,
+    isSelectedPrice,
+    disabled,
+    handleChange,
+    isDiscount,
+    includeTotal,
+  })
 
   const table = useReactTable({
     data: products,
@@ -108,7 +156,7 @@ export function ProductSelectedTable(
       <div className="flex justify-between items-center max-md:flex-col gap-2 py-2">
         <h3 className="text-lg font-medium flex items-center gap-2">
           <Package className="size-5" />
-          <p className="text-lg font-medium">{t('component.productTable.table.selectedProducts', { count: products.reduce((acc, product) => acc + product.selectedQuantity, 0) })}</p>
+          <p className="text-lg font-medium">{t('component.productTable.table.selectedProducts', { count: products.reduce((acc, product) => acc + product.quantity, 0) })}</p>
         </h3>
         <ColumnVisibilityMenu
           table={table}
@@ -122,6 +170,7 @@ export function ProductSelectedTable(
           <TableBody>{renderTableBody()}</TableBody>
         </Table>
       </div>
+      {includeFooterTotal && <ProductSelectedTotal products={products} />}
     </div>
   )
 }

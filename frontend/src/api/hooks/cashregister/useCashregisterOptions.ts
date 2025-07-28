@@ -1,26 +1,29 @@
 import { useQueryClient } from '@tanstack/react-query'
-import { useTranslation } from 'react-i18next'
 import { getCashregisters } from '@/api/requests'
+
+interface DefaultFilters {
+  ids?: string[]
+  cashregisterAccounts?: string[]
+}
 
 interface LoadOptionsParams {
   query: string
   selectedValue?: string[]
 }
 
-export function useCashregisterOptions() {
+export function useCashregisterOptions({ defaultFilters }: { defaultFilters?: DefaultFilters } = {}) {
   const queryClient = useQueryClient()
-  const { i18n } = useTranslation()
 
   return async function loadCashregisterOptions({ query, selectedValue }: LoadOptionsParams): Promise<Cashregister[]> {
     const filters = {
       ...(selectedValue ? { ids: selectedValue } : { names: query }),
-      active: [true],
-      language: i18n.language,
+      ...defaultFilters,
     }
+    const pagination = { full: true }
 
     const data = await queryClient.fetchQuery({
-      queryKey: ['cashregisters', 'get', { full: true }, filters],
-      queryFn: () => getCashregisters({ pagination: { full: true }, filters }),
+      queryKey: ['cashregisters', 'get', pagination, filters],
+      queryFn: () => getCashregisters({ pagination, filters }),
       staleTime: 60000,
     })
 

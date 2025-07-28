@@ -48,5 +48,41 @@
   "description.page.cashregisters": "Управление кассами в Remnant",
 
   "title.page.cashregister-accounts": "Счета касс - Remnant",
-  "description.page.cashregister-accounts": "Управление счетами касс в Remnant"
+  "description.page.cashregister-accounts": "Управление счетами касс в Remnant",
+
+  "title.page.warehouse-transactions": "Транзакции складов - Remnant",
+  "description.page.warehouse-transactions": "Управление транзакциями складов в Remnant",
+
+  "title.page.order-statuses": "Статусы заказов - Remnant",
+  "description.page.order-statuses": "Управление статусами заказов в Remnant",
+
+  "title.page.order-sources": "Источники заказов - Remnant",
+  "description.page.order-sources": "Управление источниками заказов в Remnant",
+
+  "title.page.delivery-services": "Службы доставки - Remnant",
+  "description.page.delivery-services": "Управление службами доставки в Remnant",
+
+  "title.page.orders": "Заказы - Remnant",
+  "description.page.orders": "Управление заказами в Remnant",
+
+  "title.page.create-order": "Создание заказа - Remnant",
+  "description.page.create-order": "Создание заказа в Remnant",
+
+  "title.page.automations": "Автоматизация - Remnant",
+  "description.page.automations": "Управление автоматизацией в Remnant",
+
+  "title.page.edit-order": "Редактирование заказа - Remnant",
+  "description.page.edit-order": "Редактирование заказа в Remnant",
+
+  "title.page.view-order": "Просмотр заказа - Remnant",
+  "description.page.view-order": "Просмотр заказа в Remnant",
+
+  "title.page.clients": "Клиенты - Remnant",
+  "description.page.clients": "Управление клиентами в Remnant",
+
+  "title.page.expense-categories": "Категории расходов - Remnant",
+  "description.page.expense-categories": "Управление категориями расходов в Remnant",
+
+  "title.page.expenses": "Расходы - Remnant",
+  "description.page.expenses": "Управление расходами в Remnant"
 }

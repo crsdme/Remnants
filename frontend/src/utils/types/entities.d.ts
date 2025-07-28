@@ -168,3 +168,150 @@ interface Setting {
   createdAt: Date
   updatedAt: Date
 }
+
+interface WarehouseTransaction {
+  id: string
+  type: string
+  sourceWarehouseId: string
+  destinationWarehouseId: string
+  requiresReceiving: boolean
+  status: string
+  createdBy: string
+  comment: string
+  createdAt: Date
+  updatedAt: Date
+}
+
+interface WarehouseTransactionItem {
+  id: string
+  transactionId: string
+  productId: string
+  product: Product
+  quantity: number
+  createdAt: Date
+  updatedAt: Date
+}
+
+interface OrderStatus {
+  id: string
+  names: LanguageString
+  priority: number
+  color: string
+  createdAt: Date
+  updatedAt: Date
+}
+
+interface OrderSource {
+  id: string
+  names: LanguageString
+  priority: number
+  color: string
+  createdAt: Date
+  updatedAt: Date
+}
+
+interface DeliveryService {
+  id: string
+  names: LanguageString
+  priority: number
+  color: string
+  type: 'novaposhta' | 'selfpickup'
+  createdAt: Date
+  updatedAt: Date
+}
+
+interface Client {
+  id: string
+  name: string
+  middleName: string
+  lastName: string
+  emails: string[]
+  phones: string[]
+  addresses: string[]
+}
+
+interface Order {
+  id: string
+  warehouse: string
+  deliveryService: string
+  orderSource: string
+  orderStatus: string
+  orderPayments: string
+  client: string
+  comment: string
+  items: OrderItem[]
+  createdAt: Date
+  updatedAt: Date
+}
+
+interface OrderItem {
+  id: string
+  order: string
+  product: string
+  quantity: number
+  price: number
+  currency: string
+  discountAmount: number
+  discountPercent: number
+}
+
+interface OrderPayment {
+  id: string
+  order: string
+  cashregister: string
+  cashregisterAccount: string
+  amount: number
+  currency: string
+  paymentStatus: string
+  paymentDate: Date
+  comment: string
+  createdAt: Date
+  updatedAt: Date
+}
+
+interface Automation {
+  id: string
+  name: string
+  trigger: string
+  conditions: string[]
+  actions: string[]
+  createdAt: Date
+  updatedAt: Date
+}
+
+interface ExchangeRate {
+  id: string
+  fromCurrency: Currency
+  toCurrency: Currency
+  rate: number
+  comment: string
+  createdAt: Date
+  updatedAt: Date
+}
+
+interface Expense {
+  id: string
+  seq: number
+  amount: number
+  currency: string
+  cashregister: string
+  cashregisterAccount: string
+  categories: string[]
+  sourceModel: string
+  sourceId: string
+  type: string
+  comment: string
+  createdBy: string
+  removedBy: string
+  createdAt: Date
+  updatedAt: Date
+}
+
+interface ExpenseCategory {
+  id: string
+  names: LanguageString
+  color: string
+  comment: string
+  createdAt: Date
+  updatedAt: Date
+}
