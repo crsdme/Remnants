@@ -596,7 +596,7 @@ async function print55x40(payload: { barcode: any, size: string, language: strin
 
   for (const property of product.productProperties || []) {
     if (typeof property.value === 'number') {
-      if (property.id === 'baad1168-e6bd-48e1-a610-0fd60ffcfc4d') {
+      if (property.id === 'efcc3c51-a146-4975-bc5b-196745f76891') {
         length = `${property.value} cm`
       }
       else {
