@@ -636,7 +636,7 @@ async function print55x40(payload: { barcode: any, size: string, language: strin
     product.names[language].split('#')[1] || '4054',
     padding,
     doc.y - 30,
-    { width: contentWidth, height: 50, ellipsis: true, lineBreak: false, align: 'center' },
+    { width: contentWidth, height: 50, lineBreak: false, align: 'center' },
   )
 
   return { status: 'success', code: 'BARCODE_PRINTED', message: 'Barcode printed', doc }
