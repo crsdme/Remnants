@@ -36,7 +36,7 @@ export async function edit(req: Request, res: Response, next: NextFunction) {
 
 export async function remove(req: Request, res: Response, next: NextFunction) {
   try {
-    const serviceResponse = await OrderService.remove(req.body)
+    const serviceResponse = await OrderService.remove(req.body, req.user)
 
     res.status(200).json(serviceResponse)
   }
