@@ -41,6 +41,8 @@ export async function get(payload: BarcodeTypes.getBarcodesParams): Promise<Barc
     rules: filterRules,
   })
 
+  console.log(query)
+
   const sorters = buildSortQuery(payload.sorters || {}, { code: 1 })
 
   // const pipeline = [
@@ -589,18 +591,22 @@ async function print55x40(payload: { barcode: any, size: string, language: strin
     { width: contentWidth, height: 25, align: 'center', ellipsis: true, lineBreak: false },
   )
 
-  doc.fontSize(75)
+  doc.fontSize(70)
 
   let length = ''
   let weight = ''
+  let curls = ''
 
   for (const property of product.productProperties || []) {
     if (typeof property.value === 'number') {
       if (property.id === 'efcc3c51-a146-4975-bc5b-196745f76891') {
         length = `${property.value} cm`
       }
-      else {
+      else if (property.id === '7c3e2c1b-f2bf-4639-baf2-7b1101fa7bf2') {
         weight = `${property.value} g`
+      }
+      else if (property.id === '25144e64-5c4c-47fd-842d-c0a2393f972e') {
+        curls = 'Curls'
       }
     }
   }
@@ -608,7 +614,16 @@ async function print55x40(payload: { barcode: any, size: string, language: strin
   doc.text(
     `${length}, ${weight}`,
     padding,
-    doc.y,
+    doc.y - 10,
+    { width: contentWidth, height: 50, ellipsis: true, lineBreak: false, align: 'center' },
+  )
+
+  doc.fontSize(56)
+
+  doc.text(
+    `${curls}`,
+    padding,
+    doc.y - 25,
     { width: contentWidth, height: 50, ellipsis: true, lineBreak: false, align: 'center' },
   )
 
