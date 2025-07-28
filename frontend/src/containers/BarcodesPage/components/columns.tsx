@@ -139,6 +139,13 @@ export function useColumns() {
               icon: <Barcode className="h-4 w-4" />,
             },
             {
+              permission: 'barcode.print',
+              link: `${backendUrl}api/barcodes/print?id=${item.id}&size=55x40&language=${i18n.language}`,
+              type: 'link' as const,
+              label: t('table.print', { size: '55x40' }),
+              icon: <Barcode className="h-4 w-4" />,
+            },
+            {
               permission: 'barcode.delete',
               onClick: () => removeBarcodes({ ids: [item.id] }),
               label: t('table.delete'),

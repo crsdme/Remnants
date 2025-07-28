@@ -412,6 +412,10 @@ export async function print(payload: BarcodeTypes.printBarcodeParams): Promise<B
     return await print60x30({ barcode, size, language })
   }
 
+  if (size === '55x40') {
+    return await print55x40({ barcode, size, language })
+  }
+
   const [w, h] = size.split('x').map(Number)
   const padding = 10
   const contentWidth = w * 8.49 - padding * 2
@@ -539,6 +543,85 @@ async function print60x30(payload: { barcode: any, size: string, language: strin
     padding,
     doc.y,
     { width: contentWidth, height: 50, ellipsis: true, lineBreak: false },
+  )
+
+  return { status: 'success', code: 'BARCODE_PRINTED', message: 'Barcode printed', doc }
+}
+
+async function print55x40(payload: { barcode: any, size: string, language: string }): Promise<BarcodeTypes.printBarcodeResult> {
+  const { barcode, size, language } = payload
+  const [w, h] = size.split('x').map(Number)
+  const padding = 10
+  const contentWidth = w * 8.49 - padding * 2
+  const contentHeight = h * 8.49 - padding * 2
+
+  const product = barcode.products[0]
+
+  const doc = new PDFDocument({ autoFirstPage: false })
+
+  doc.registerFont('Manrope', path.resolve(__dirname, '../utils/fonts/Manrope-Regular.ttf'))
+  doc.font('Manrope')
+  doc.fontSize(26)
+  doc.addPage({
+    size: [w * 8.49, h * 8.49],
+  })
+
+  const barcodePng = await bwipjs.toBuffer({
+    bcid: 'code128',
+    text: barcode.code,
+    scale: 8,
+    height: 20,
+    includetext: false,
+    textxalign: 'center',
+  })
+
+  doc.image(
+    barcodePng,
+    padding,
+    padding,
+    { width: contentWidth, height: contentHeight / 2 },
+  )
+
+  doc.text(
+    barcode.code,
+    padding,
+    contentHeight / 2 + 10,
+    { width: contentWidth, height: 25, align: 'center', ellipsis: true, lineBreak: false },
+  )
+
+  doc.fontSize(75)
+
+  let length = ''
+  let weight = ''
+
+  for (const property of product.productProperties || []) {
+    if (typeof property.value === 'number') {
+      if (property.id === 'baad1168-e6bd-48e1-a610-0fd60ffcfc4d') {
+        length = `${property.value} cm`
+      }
+      else {
+        weight = `${property.value} g`
+      }
+    }
+  }
+
+  doc.text(
+    `${length}, ${weight}`,
+    padding,
+    doc.y,
+    { width: contentWidth, height: 50, ellipsis: true, lineBreak: false, align: 'center' },
+  )
+
+  doc.addPage({
+    size: [w * 8.49, h * 8.49],
+  })
+
+  doc.fontSize(180)
+  doc.text(
+    product.names[language].split('#')[1] || '4054',
+    padding,
+    doc.y - 30,
+    { width: contentWidth, height: 50, ellipsis: true, lineBreak: false, align: 'center' },
   )
 
   return { status: 'success', code: 'BARCODE_PRINTED', message: 'Barcode printed', doc }
