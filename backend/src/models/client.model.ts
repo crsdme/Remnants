@@ -34,6 +34,10 @@ const ClientSchema: Schema = new Schema(
       type: String,
       required: true,
     }],
+    comment: {
+      type: String,
+      required: true,
+    },
     removed: {
       type: Boolean,
       default: false,

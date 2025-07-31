@@ -6,9 +6,7 @@ extendZodWithOpenApi(z)
 
 export const getClientsSchema = z.object({
   filters: z.object({
-    name: z.string().trim().optional(),
-    middleName: z.string().trim().optional(),
-    lastName: z.string().trim().optional(),
+    search: z.string().trim().optional(),
     emails: z.array(z.string()).optional(),
     phones: z.array(z.string()).optional(),
     addresses: z.array(z.string()).optional(),
@@ -16,9 +14,6 @@ export const getClientsSchema = z.object({
     updatedAt: dateRangeSchema.optional(),
   }).optional().default({}),
   sorters: z.object({
-    name: sorterParamsSchema.optional(),
-    middleName: sorterParamsSchema.optional(),
-    lastName: sorterParamsSchema.optional(),
     updatedAt: sorterParamsSchema.optional(),
     createdAt: sorterParamsSchema.optional(),
   }).optional().default({}),

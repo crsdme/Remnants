@@ -21,7 +21,7 @@ export function useClientOptions({ defaultFilters, mapFn }: UseClientOptionsPara
 
     if (query) {
       filters = {
-        ...(selectedValue ? { ids: selectedValue } : { names: query }),
+        ...(selectedValue ? { ids: selectedValue } : { search: query }),
       }
     }
 

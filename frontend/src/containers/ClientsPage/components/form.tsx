@@ -11,6 +11,7 @@ import {
   FormLabel,
   FormMessage,
   Input,
+  Textarea,
 } from '@/components/ui'
 import { useClientContext } from '@/contexts'
 
@@ -134,6 +135,20 @@ export function ClientForm() {
 
           <FormMessage />
         </FormItem>
+
+        <FormField
+          control={form.control}
+          name="comment"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>{t('page.clients.form.comment')}</FormLabel>
+              <FormControl>
+                <Textarea {...field} disabled={isLoading} placeholder={t('page.clients.form.comment')} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
         <div className="flex gap-2">
           <Button

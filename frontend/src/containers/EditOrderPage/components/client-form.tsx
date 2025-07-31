@@ -17,6 +17,7 @@ import {
   SheetDescription,
   SheetHeader,
   SheetTitle,
+  Textarea,
 } from '@/components/ui'
 import { useEditOrderContext } from '@/contexts'
 
@@ -160,6 +161,20 @@ function FullForm({ form, onSubmit }: { form: UseFormReturn, onSubmit: (payments
 
           <FormMessage />
         </FormItem>
+
+        <FormField
+          control={form.control}
+          name="comment"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>{t('page.edit-order.form.comment')}</FormLabel>
+              <FormControl>
+                <Textarea {...field} disabled={isLoading} placeholder={t('page.edit-order.form.comment')} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
         <div className="flex justify-end gap-2">
           <Button type="submit" disabled={isLoading} loading={isLoading}>

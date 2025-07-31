@@ -153,6 +153,7 @@ export function EditOrderProvider({ children }: EditOrderProviderProps) {
       lastName: z.string({ required_error: t('error.required') }).min(1, { message: t('error.required') }),
       phones: z.array(z.string().min(7)).min(1),
       emails: z.array(z.string().email()).optional(),
+      comment: z.string().optional(),
     }), [t])
 
   const clientForm = useForm({
@@ -163,6 +164,7 @@ export function EditOrderProvider({ children }: EditOrderProviderProps) {
       lastName: '',
       phones: [],
       emails: [],
+      comment: '',
     },
   })
 

@@ -163,6 +163,7 @@ export function InformationForm({ form, onSubmit }: { form: UseFormReturn, onSub
                         getOptionValue={e => e.id}
                         disabled={isLoading}
                         triggerClassName="flex-1"
+                        searchable
                         clearable
                       />
                     </FormControl>

@@ -8,6 +8,7 @@ export interface Client {
   emails: string[]
   phones: string[]
   addresses: string[]
+  comment: string
   removed: boolean
   createdAt: Date
   updatedAt: Date
@@ -22,9 +23,7 @@ export interface getClientsResult {
 }
 
 export interface getClientsFilters {
-  name: string
-  middleName: string
-  lastName: string
+  search: string
   emails: string[]
   phones: string[]
   addresses: string[]
@@ -33,9 +32,6 @@ export interface getClientsFilters {
 }
 
 export interface getClientsSorters {
-  name: Sorter
-  middleName: Sorter
-  lastName: Sorter
   emails: Sorter
   phones: Sorter
   addresses: Sorter
@@ -62,6 +58,7 @@ export interface createClientParams {
   lastName: string
   emails: string[]
   phones: string[]
+  comment: string
 }
 
 export interface editClientResult {
@@ -79,6 +76,7 @@ export interface editClientParams {
   emails: string[]
   phones: string[]
   addresses: string[]
+  comment: string
 }
 
 export interface removeClientsResult {

@@ -48,6 +48,7 @@ export function ClientProvider({ children }: ClientProviderProps) {
       lastName: z.string().optional(),
       phones: z.array(z.string().min(10, { message: t('form.errors.min_length', { count: 10 }) })).optional(),
       emails: z.array(z.string().email()).optional(),
+      comment: z.string().optional(),
     }), [t])
 
   const form = useForm({
@@ -58,6 +59,7 @@ export function ClientProvider({ children }: ClientProviderProps) {
       lastName: '',
       phones: [],
       emails: [],
+      comment: '',
     },
   })
 
@@ -71,6 +73,7 @@ export function ClientProvider({ children }: ClientProviderProps) {
         lastName: '',
         phones: [],
         emails: [],
+        comment: '',
       }
     }
     return {
@@ -79,6 +82,7 @@ export function ClientProvider({ children }: ClientProviderProps) {
       lastName: client.lastName,
       phones: client.phones,
       emails: client.emails,
+      comment: client.comment,
     }
   }
 

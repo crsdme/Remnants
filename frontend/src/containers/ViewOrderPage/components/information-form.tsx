@@ -164,6 +164,7 @@ export function InformationForm({ form, onSubmit }: { form: UseFormReturn, onSub
                         getDisplayValue={e => `${e.name} ${e.middleName} ${e.lastName} (${e.emails.join(', ')}) (${e.phones.join(', ')})`}
                         getOptionValue={e => e.id}
                         disabled={isLoading || disabled}
+                        searchable
                         clearable
                       />
                     </FormControl>

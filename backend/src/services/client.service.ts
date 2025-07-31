@@ -7,9 +7,7 @@ export async function get(payload: ClientTypes.getClientsParams): Promise<Client
   const { current = 1, pageSize = 10 } = payload.pagination || {}
 
   const {
-    name = '',
-    middleName = '',
-    lastName = '',
+    search = '',
     emails = [],
     phones = [],
     addresses = [],
@@ -25,9 +23,7 @@ export async function get(payload: ClientTypes.getClientsParams): Promise<Client
 
   const filterRules = {
     _id: { type: 'array' },
-    name: { type: 'string' },
-    middleName: { type: 'string' },
-    lastName: { type: 'string' },
+    search: { type: 'string' },
     emails: { type: 'array' },
     phones: { type: 'array' },
     addresses: { type: 'array' },
@@ -36,8 +32,27 @@ export async function get(payload: ClientTypes.getClientsParams): Promise<Client
   } as const
 
   const query = buildQuery({
-    filters: { name, middleName, lastName, emails, phones, addresses, createdAt, updatedAt },
+    filters: { emails, phones, addresses, createdAt, updatedAt },
     rules: filterRules,
+  })
+
+  const filterRulesLast: any = {
+    search: {
+      type: 'multiFieldSearch',
+      multiFields: [
+        { field: `name` },
+        { field: `middleName` },
+        { field: `lastName` },
+        { field: `emails`, isArray: true, isArrayPrimitive: true },
+        { field: `phones`, isArray: true, isArrayPrimitive: true },
+      ],
+    },
+  }
+
+  const queryLast = buildQuery({
+    filters: { search },
+    rules: filterRulesLast,
+    removed: false,
   })
 
   const sorters = buildSortQuery(payload.sorters || {}, { createdAt: 1 })
@@ -48,6 +63,9 @@ export async function get(payload: ClientTypes.getClientsParams): Promise<Client
     },
     {
       $sort: sorters,
+    },
+    {
+      $match: queryLast,
     },
     {
       $facet: {

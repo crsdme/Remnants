@@ -2,7 +2,7 @@ interface Rule {
   type: 'string' | 'array' | 'exact' | 'number' | 'dateRange' | 'multiFieldSearch'
   field?: string
   langAware?: boolean
-  multiFields?: { field: string, langAware?: boolean, isArray?: boolean }[]
+  multiFields?: { field: string, langAware?: boolean, isArray?: boolean, isArrayPrimitive?: boolean }[]
 }
 
 interface BuildQueryOptions {
@@ -13,6 +13,10 @@ interface BuildQueryOptions {
   batch?: {
     ids: string[]
   }
+}
+
+function escapeRegex(value: string) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 }
 
 export function buildQuery({ filters, rules, language = 'en', removed = true, batch }: BuildQueryOptions): Record<string, any> {
@@ -32,7 +36,7 @@ export function buildQuery({ filters, rules, language = 'en', removed = true, ba
     switch (rule.type) {
       case 'string':
         query[rule.langAware ? `${field}.${language}` : field] = {
-          $regex: `^${value}`,
+          $regex: `^${escapeRegex(value)}`,
           $options: 'i',
         }
         break
@@ -55,11 +59,11 @@ export function buildQuery({ filters, rules, language = 'en', removed = true, ba
         const terms = String(value).trim().toLowerCase().split(/\s+/)
 
         const searchConditions = terms.map(term => ({
-          $or: rule.multiFields!.map(({ field, langAware = false, isArray = false }) => {
+          $or: rule.multiFields!.map(({ field, langAware = false, isArray = false, isArrayPrimitive = false }) => {
             const path = langAware ? `${field}.${language}` : field
-            const regex = { $regex: term, $options: 'i' }
+            const regex = { $regex: `^${escapeRegex(term)}`, $options: 'i' }
 
-            if (isArray) {
+            if (isArray && !isArrayPrimitive) {
               const [arrayRoot, ...subFieldParts] = path.split('.')
               const subField = subFieldParts.join('.')
 
@@ -69,6 +73,11 @@ export function buildQuery({ filters, rules, language = 'en', removed = true, ba
                     [subField]: regex,
                   },
                 },
+              }
+            }
+            else if (isArray && isArrayPrimitive) {
+              return {
+                [path]: { $elemMatch: regex },
               }
             }
             else {
