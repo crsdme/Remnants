@@ -58,7 +58,7 @@ export interface createClientParams {
   lastName: string
   emails: string[]
   phones: string[]
-  comment: string
+  comment?: string
 }
 
 export interface editClientResult {
@@ -76,7 +76,7 @@ export interface editClientParams {
   emails: string[]
   phones: string[]
   addresses: string[]
-  comment: string
+  comment?: string
 }
 
 export interface removeClientsResult {

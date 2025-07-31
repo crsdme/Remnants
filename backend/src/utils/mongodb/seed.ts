@@ -809,6 +809,7 @@ async function createClients() {
     lastName: 'Kovalenko',
     emails: ['sergii@example.com'],
     phones: ['+1234567890'],
+    comment: 'From website',
   })
 
   await ClientService.create({
@@ -817,6 +818,7 @@ async function createClients() {
     lastName: 'Kovalenko',
     emails: ['dmytro@example.com', 'dmytro@example.com'],
     phones: ['+1234567890', '+1234567890'],
+    comment: 'Regular customer',
   })
 }
 
