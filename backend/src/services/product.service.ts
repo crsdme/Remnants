@@ -82,6 +82,8 @@ export async function get(payload: ProductTypes.getProductsParams): Promise<Prod
     removed: false,
   })
 
+  console.log(JSON.stringify(queryLast, null, 2))
+
   const pipeline = [
     {
       $match: query,

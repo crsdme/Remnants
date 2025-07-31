@@ -36,7 +36,7 @@ export function buildQuery({ filters, rules, language = 'en', removed = true, ba
     switch (rule.type) {
       case 'string':
         query[rule.langAware ? `${field}.${language}` : field] = {
-          $regex: `^${escapeRegex(value)}`,
+          $regex: escapeRegex(value),
           $options: 'i',
         }
         break
@@ -61,7 +61,7 @@ export function buildQuery({ filters, rules, language = 'en', removed = true, ba
         const searchConditions = terms.map(term => ({
           $or: rule.multiFields!.map(({ field, langAware = false, isArray = false, isArrayPrimitive = false }) => {
             const path = langAware ? `${field}.${language}` : field
-            const regex = { $regex: `^${escapeRegex(term)}`, $options: 'i' }
+            const regex = { $regex: term, $options: 'i' }
 
             if (isArray && !isArrayPrimitive) {
               const [arrayRoot, ...subFieldParts] = path.split('.')
