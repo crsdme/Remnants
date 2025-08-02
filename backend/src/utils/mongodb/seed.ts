@@ -15,6 +15,7 @@ import * as ProductPropertyGroupService from '../../services/product-property-gr
 import * as ProductPropertyOptionService from '../../services/product-property-option.service'
 import * as ProductPropertyService from '../../services/product-property.service'
 import * as ProductService from '../../services/product.service'
+import * as SiteService from '../../services/site.service'
 import * as UnitService from '../../services/unit.service'
 import * as UserRoleService from '../../services/user-role.service'
 import * as UserService from '../../services/user.service'
@@ -49,6 +50,7 @@ async function seedData() {
     })
     await createClients()
     await createExpenseCategories()
+    await createSites()
 
     console.log('✅ Test data seeded successfully!')
     process.exit(0)
@@ -57,6 +59,19 @@ async function seedData() {
     console.error('❌ Error seeding data:', err)
     process.exit(1)
   }
+}
+
+async function createSites() {
+  await SiteService.create({
+    names: {
+      en: 'Example',
+      ru: 'Example',
+    },
+    url: 'http://example.com/',
+    key: 'example',
+    priority: 1,
+    active: true,
+  })
 }
 
 async function createLanguages() {

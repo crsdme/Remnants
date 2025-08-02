@@ -507,5 +507,23 @@
   "response.description.EXPENSES_REMOVED": "Выбранные расходы были удалены",
 
   "response.title.EXPENSES_FETCHED": "Расходы получены",
-  "response.description.EXPENSES_FETCHED": "Список расходов успешно получен"
+  "response.description.EXPENSES_FETCHED": "Список расходов успешно получен",
+
+  "response.title.SITE_CREATED": "Сайт создан",
+  "response.description.SITE_CREATED": "Новый сайт был создан",
+
+  "response.title.SITE_NOT_EDITED": "Сайт не обновлен",
+  "response.description.SITE_NOT_EDITED": "Не удалось обновить сайт",
+
+  "response.title.SITE_EDITED": "Сайт обновлен",
+  "response.description.SITE_EDITED": "Сайт был обновлен",
+
+  "response.title.SITES_NOT_REMOVED": "Сайты не удалены",
+  "response.description.SITES_NOT_REMOVED": "Не удалось удалить выбранные сайты",
+
+  "response.title.SITES_REMOVED": "Сайты удалены",
+  "response.description.SITES_REMOVED": "Выбранные сайты были удалены",
+
+  "response.title.SITES_FETCHED": "Сайты получены",
+  "response.description.SITES_FETCHED": "Список сайтов успешно получен"
 }

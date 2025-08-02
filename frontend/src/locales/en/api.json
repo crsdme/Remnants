@@ -507,5 +507,23 @@
   "response.description.EXPENSES_REMOVED": "Selected expenses have been deleted",
 
   "response.title.EXPENSES_FETCHED": "Expenses fetched",
-  "response.description.EXPENSES_FETCHED": "Expenses list successfully fetched"
+  "response.description.EXPENSES_FETCHED": "Expenses list successfully fetched",
+
+  "response.title.SITE_CREATED": "Site created",
+  "response.description.SITE_CREATED": "New site has been created",
+
+  "response.title.SITE_NOT_EDITED": "Site not edited",
+  "response.description.SITE_NOT_EDITED": "Unable to edit site",
+
+  "response.title.SITE_EDITED": "Site edited",
+  "response.description.SITE_EDITED": "Site has been updated",
+
+  "response.title.SITES_NOT_REMOVED": "Sites not removed",
+  "response.description.SITES_NOT_REMOVED": "Unable to remove selected sites",
+
+  "response.title.SITES_REMOVED": "Sites removed",
+  "response.description.SITES_REMOVED": "Selected sites have been deleted",
+
+  "response.title.SITES_FETCHED": "Sites fetched",
+  "response.description.SITES_FETCHED": "Sites list successfully fetched"
 }

@@ -119,7 +119,7 @@ export function AsyncSelect<T>({
         setError(null)
         const data = await fetcher({ selectedValue: value })
         setOptions(data)
-        setSelectedOptions(data.filter(option => (selectedValues || []).includes(getOptionValue(option))))
+        // setSelectedOptions(data.filter(option => (selectedValues || []).includes(getOptionValue(option))))
       }
       catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to fetch options')
@@ -130,7 +130,7 @@ export function AsyncSelect<T>({
     }
 
     initializeOptions()
-  }, [mounted, fetcher, value, selectedValues, getOptionValue])
+  }, [mounted, value, fetcher])
 
   useEffect(() => {
     let ignore = false

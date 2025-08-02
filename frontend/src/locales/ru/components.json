@@ -124,6 +124,7 @@
   "component.sidemenu.label.logout": "Выйти",
   "component.sidemenu.label.userRoles": "Роли пользователей",
   "component.sidemenu.label.expenseCategories": "Категории расходов",
+  "component.sidemenu.label.sites": "Сайты",
 
   "component.asyncSelect.searchPlaceholder": "Поиск",
   "component.asyncSelect.noResultsMessage": "Ничего не найдено",

@@ -144,6 +144,7 @@ export const NAV_MENU_ITEMS = [
       { id: 'orderStatuses', url: '/settings/order-statuses', permissions: ['orderStatus.page'] },
       { id: 'expenseCategories', url: '/settings/expense-categories', permissions: ['expense-category.page'] },
       { id: 'settings', url: '/settings', permissions: ['settings.page'] },
+      { id: 'sites', url: '/settings/sites', permissions: ['site.page'] },
       { id: 'units', url: '/settings/units', permissions: ['unit.page'] },
     ],
   },

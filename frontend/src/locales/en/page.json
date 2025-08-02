@@ -759,6 +759,7 @@
   "page.clients.form.middleName": "Middle Name",
   "page.clients.form.phones": "Phones",
   "page.clients.form.emails": "Emails",
+  "page.clients.form.comment": "Comment",
 
   "page.expense-categories.title": "Expense Categories",
   "page.expense-categories.description": "Manage expense categories",
@@ -800,5 +801,28 @@
   "page.expenses.form.cashregisterAccount": "Cashregister Account",
   "page.expenses.form.categories": "Categories",
   "page.expenses.form.type": "Type",
-  "page.expenses.form.comment": "Comment"
+  "page.expenses.form.comment": "Comment",
+
+  "page.sites.title": "Sites",
+  "page.sites.description": "Manage sites",
+  "page.sites.filter.names": "Filter by name",
+  "page.sites.button.create": "Create site",
+
+  "page.sites.table.names": "Name",
+  "page.sites.table.url": "URL",
+  "page.sites.table.priority": "Priority",
+  "page.sites.table.active": "Active",
+  "page.sites.table.createdAt": "Created At",
+  "page.sites.table.updatedAt": "Updated At",
+
+  "page.sites.form.title.create": "Create new site",
+  "page.sites.form.description.create": "Add new site to the system",
+  "page.sites.form.title.edit": "Edit site",
+  "page.sites.form.description.edit": "Edit existing site",
+  "page.sites.form.names": "Name ({{language}})",
+  "page.sites.form.url": "URL",
+  "page.sites.form.key": "Key",
+  "page.sites.form.priority": "Priority",
+  "page.sites.form.active": "Active",
+  "page.sites.form.active.description": "Active site"
 }

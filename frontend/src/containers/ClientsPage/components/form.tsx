@@ -41,9 +41,9 @@ export function ClientForm() {
           name="name"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>{t('page.create-order.form.name')}</FormLabel>
+              <FormLabel>{t('page.clients.form.name')}</FormLabel>
               <FormControl>
-                <Input {...field} disabled={isLoading} placeholder={t('page.create-order.form.name')} />
+                <Input {...field} disabled={isLoading} placeholder={t('page.clients.form.name')} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -55,9 +55,9 @@ export function ClientForm() {
           name="middleName"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>{t('page.create-order.form.middleName')}</FormLabel>
+              <FormLabel>{t('page.clients.form.middleName')}</FormLabel>
               <FormControl>
-                <Input {...field} disabled={isLoading} placeholder={t('page.create-order.form.middleName')} />
+                <Input {...field} disabled={isLoading} placeholder={t('page.clients.form.middleName')} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -69,9 +69,9 @@ export function ClientForm() {
           name="lastName"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>{t('page.create-order.form.lastName')}</FormLabel>
+              <FormLabel>{t('page.clients.form.lastName')}</FormLabel>
               <FormControl>
-                <Input {...field} disabled={isLoading} placeholder={t('page.create-order.form.lastName')} />
+                <Input {...field} disabled={isLoading} placeholder={t('page.clients.form.lastName')} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -79,13 +79,13 @@ export function ClientForm() {
         />
 
         <FormItem>
-          <FormLabel>{t('page.create-order.form.phones')}</FormLabel>
+          <FormLabel>{t('page.clients.form.phones')}</FormLabel>
 
           {phoneFields.map((field, index) => (
             <div key={field.id} className="flex items-center gap-2 mb-2">
               <Input
                 {...form.register(`phones.${index}`)}
-                placeholder={t('page.create-order.form.phones')}
+                placeholder={t('page.clients.form.phones')}
                 disabled={isLoading}
               />
               <Button
@@ -108,13 +108,13 @@ export function ClientForm() {
         </FormItem>
 
         <FormItem>
-          <FormLabel>{t('page.create-order.form.emails')}</FormLabel>
+          <FormLabel>{t('page.clients.form.emails')}</FormLabel>
 
           {emailFields.map((field, index) => (
             <div key={field.id} className="flex items-center gap-2 mb-2">
               <Input
                 {...form.register(`emails.${index}`)}
-                placeholder={t('page.create-order.form.emails')}
+                placeholder={t('page.clients.form.emails')}
                 disabled={isLoading}
               />
               <Button

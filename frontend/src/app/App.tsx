@@ -144,6 +144,11 @@ export default function App() {
             element={<ProtectedRoute children={<Pages.AutomationsPage />} permissions={['automation.page']} />}
           />
           <Route
+            path="/settings/sites"
+            element={<ProtectedRoute children={<Pages.SitesPage />} permissions={['site.page']} />}
+          />
+
+          <Route
             path="/warehouses"
             element={<ProtectedRoute children={<Pages.WarehousesPage />} permissions={['warehouse.page']} />}
           />

@@ -128,6 +128,7 @@
   "component.sidemenu.label.logout": "Logout",
   "component.sidemenu.label.userRoles": "User Roles",
   "component.sidemenu.label.expenseCategories": "Expense Categories",
+  "component.sidemenu.label.sites": "Sites",
 
   "component.fileUploadDnd.upload": "Upload file",
   "component.fileUploadDnd.noFilesUploaded": "No files uploaded",

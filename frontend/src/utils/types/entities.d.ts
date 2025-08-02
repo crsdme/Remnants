@@ -315,3 +315,13 @@ interface ExpenseCategory {
   createdAt: Date
   updatedAt: Date
 }
+
+interface Site {
+  id: string
+  names: LanguageString
+  url: string
+  key: string
+  priority: number
+  createdAt: Date
+  updatedAt: Date
+}

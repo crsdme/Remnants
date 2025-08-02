@@ -763,6 +763,7 @@
   "page.clients.form.middleName": "Отчество",
   "page.clients.form.phones": "Телефоны",
   "page.clients.form.emails": "Emails",
+  "page.clients.form.comment": "Комментарий",
 
   "page.expense-categories.title": "Категории расходов",
   "page.expense-categories.description": "Управление категориями расходов",
@@ -804,5 +805,28 @@
   "page.expenses.form.cashregisterAccount": "Счет",
   "page.expenses.form.categories": "Категории",
   "page.expenses.form.type": "Тип",
-  "page.expenses.form.comment": "Комментарий"
+  "page.expenses.form.comment": "Комментарий",
+
+  "page.sites.title": "Сайты",
+  "page.sites.description": "Управление сайтами",
+  "page.sites.filter.names": "Фильтр по имени",
+  "page.sites.button.create": "Создать сайт",
+
+  "page.sites.table.names": "Имя",
+  "page.sites.table.url": "URL",
+  "page.sites.table.priority": "Приоритет",
+  "page.sites.table.active": "Активность",
+  "page.sites.table.createdAt": "Дата создания",
+  "page.sites.table.updatedAt": "Дата обновления",
+
+  "page.sites.form.title.create": "Создание нового сайта",
+  "page.sites.form.description.create": "Добавить нового сайта в систему",
+  "page.sites.form.title.edit": "Редактирование сайта",
+  "page.sites.form.description.edit": "Редактирование существующего сайта",
+  "page.sites.form.names": "Имя ({{language}})",
+  "page.sites.form.url": "URL",
+  "page.sites.form.key": "Ключ",
+  "page.sites.form.priority": "Приоритет",
+  "page.sites.form.active": "Активность",
+  "page.sites.form.active.description": "Активный сайт"
 }
