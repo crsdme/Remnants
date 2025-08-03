@@ -172,7 +172,23 @@ export async function createSiteSync(payload: SyncEntryTypes.createSiteSyncParam
         product_attribute_description: [
           {
             text: `${weightProperty?.value} g`,
-            language_code: 'en-gb',
+            language_code: 'ru-ru',
+          },
+          {
+            text: `${weightProperty?.value} g`,
+            language_code: 'uk-ua',
+          },
+          {
+            text: `${weightProperty?.value} g`,
+            language_code: 'en',
+          },
+          {
+            text: `${weightProperty?.value} g`,
+            language_code: 'it',
+          },
+          {
+            text: `${weightProperty?.value} g`,
+            language_code: 'pl',
           },
         ],
       },
@@ -181,7 +197,23 @@ export async function createSiteSync(payload: SyncEntryTypes.createSiteSyncParam
         product_attribute_description: [
           {
             text: `${lengthProperty?.value} cm`,
-            language_code: 'en-gb',
+            language_code: 'ru-ru',
+          },
+          {
+            text: `${lengthProperty?.value} cm`,
+            language_code: 'uk-ua',
+          },
+          {
+            text: `${lengthProperty?.value} cm`,
+            language_code: 'en',
+          },
+          {
+            text: `${lengthProperty?.value} cm`,
+            language_code: 'it',
+          },
+          {
+            text: `${lengthProperty?.value} cm`,
+            language_code: 'pl',
           },
         ],
       },
@@ -293,13 +325,55 @@ export async function editSiteSync(payload: SyncEntryTypes.editSiteSyncParams): 
     if (weightProperty) {
       syncProduct.attributes.push({
         attribute_id: 77,
-        product_attribute_description: [{ text: `${weightProperty.value} g`, language_code: 'en-gb' }],
+        product_attribute_description: [
+          {
+            text: `${weightProperty.value} g`,
+            language_code: 'ru-ru',
+          },
+          {
+            text: `${weightProperty.value} g`,
+            language_code: 'uk-ua',
+          },
+          {
+            text: `${weightProperty.value} g`,
+            language_code: 'pl',
+          },
+          {
+            text: `${weightProperty.value} g`,
+            language_code: 'en',
+          },
+          {
+            text: `${weightProperty.value} g`,
+            language_code: 'it',
+          },
+        ],
       })
     }
     if (lengthProperty) {
       syncProduct.attributes.push({
         attribute_id: 78,
-        product_attribute_description: [{ text: `${lengthProperty.value} cm`, language_code: 'en-gb' }],
+        product_attribute_description: [
+          {
+            text: `${lengthProperty.value} cm`,
+            language_code: 'ru-ru',
+          },
+          {
+            text: `${lengthProperty.value} cm`,
+            language_code: 'uk-ua',
+          },
+          {
+            text: `${lengthProperty.value} cm`,
+            language_code: 'pl',
+          },
+          {
+            text: `${lengthProperty.value} cm`,
+            language_code: 'en',
+          },
+          {
+            text: `${lengthProperty.value} cm`,
+            language_code: 'it',
+          },
+        ],
       })
     }
   }
