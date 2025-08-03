@@ -1,7 +1,9 @@
+import { useWatch } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
-import { useCurrencyQuery, useLanguageQuery, useProductPropertyGroupQuery, useUnitQuery } from '@/api/hooks'
+import { useCurrencyQuery, useLanguageQuery, useProductPropertyGroupQuery, useSiteOptions, useUnitQuery } from '@/api/hooks'
 import { getProductPropertiesOptions } from '@/api/requests'
 import { AsyncSelect, FileUploadDnd } from '@/components'
+import { AsyncSelectNew } from '@/components/AsyncSelectNew'
 import {
   Button,
   Checkbox,
@@ -301,6 +303,13 @@ function CreateForm({ languages, currencies, units, productPropertiesGroups, onS
     getPropertiesDefaultValues,
   } = useProductContext()
 
+  const isAutoSyncEnabled = useWatch({
+    control: form.control,
+    name: 'isAutoSyncEnabled',
+  })
+
+  const loadSitesOptions = useSiteOptions()
+
   return (
     <Form {...form}>
       <form
@@ -587,6 +596,59 @@ function CreateForm({ languages, currencies, units, productPropertiesGroups, onS
           />
         </div>
 
+        <div className="flex gap-2 flex-wrap pb-2">
+          <FormField
+            control={form.control}
+            name="isAutoSyncEnabled"
+            render={({ field }) => (
+              <FormItem className="flex items-center justify-between rounded-md border p-4 grow">
+                <div className="space-y-1">
+                  <FormLabel className="text-sm">{t('page.products.form.isAutoSyncEnabled')}</FormLabel>
+                  <FormDescription className="text-xs text-muted-foreground">
+                    {t('page.products.form.isAutoSyncEnabled.description')}
+                  </FormDescription>
+                </div>
+                <FormControl>
+                  <Checkbox
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                    disabled={isLoading}
+                  />
+                </FormControl>
+              </FormItem>
+            )}
+          />
+        </div>
+
+        {!isAutoSyncEnabled && (
+          <FormField
+            control={form.control}
+            name="syncSites"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>
+                  {t('page.products.form.syncSites')}
+                </FormLabel>
+                <FormControl>
+                  <AsyncSelectNew
+                    {...field}
+                    loadOptions={loadSitesOptions}
+                    renderOption={e => `${e.names[i18n.language]}`}
+                    getDisplayValue={e => `${e.names[i18n.language]}`}
+                    getOptionValue={e => e.id}
+                    disabled={isLoading}
+                    triggerClassName="flex-1"
+                    searchable
+                    clearable
+                    multi
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        )}
+
         <div className="flex gap-2">
           <Button
             type="button"
@@ -617,6 +679,13 @@ function EditForm({ languages, currencies, units, productPropertiesGroups, onSub
     closeModal,
     loadCategoryOptions,
   } = useProductContext()
+
+  const isAutoSyncEnabled = useWatch({
+    control: form.control,
+    name: 'isAutoSyncEnabled',
+  })
+
+  const loadSitesOptions = useSiteOptions()
 
   return (
     <Form {...form}>
@@ -862,6 +931,59 @@ function EditForm({ languages, currencies, units, productPropertiesGroups, onSub
             </FormItem>
           )}
         />
+
+        <div className="flex gap-2 flex-wrap pb-2">
+          <FormField
+            control={form.control}
+            name="isAutoSyncEnabled"
+            render={({ field }) => (
+              <FormItem className="flex items-center justify-between rounded-md border p-4 grow">
+                <div className="space-y-1">
+                  <FormLabel className="text-sm">{t('page.products.form.isAutoSyncEnabled')}</FormLabel>
+                  <FormDescription className="text-xs text-muted-foreground">
+                    {t('page.products.form.isAutoSyncEnabled.description')}
+                  </FormDescription>
+                </div>
+                <FormControl>
+                  <Checkbox
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                    disabled={isLoading}
+                  />
+                </FormControl>
+              </FormItem>
+            )}
+          />
+        </div>
+
+        {!isAutoSyncEnabled && (
+          <FormField
+            control={form.control}
+            name="syncSites"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>
+                  {t('page.products.form.syncSites')}
+                </FormLabel>
+                <FormControl>
+                  <AsyncSelectNew
+                    {...field}
+                    loadOptions={loadSitesOptions}
+                    renderOption={e => `${e.names[i18n.language]}`}
+                    getDisplayValue={e => `${e.names[i18n.language]}`}
+                    getOptionValue={e => e.id}
+                    disabled={isLoading}
+                    triggerClassName="flex-1"
+                    searchable
+                    clearable
+                    multi
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        )}
 
         <div className="flex gap-2">
           <Button

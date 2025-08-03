@@ -5,6 +5,8 @@ import ExcelJS from 'exceljs'
 import { v4 as uuidv4 } from 'uuid'
 import { STORAGE_PATHS, STORAGE_URLS } from '../config/constants'
 import { CategoryModel, CurrencyModel, LanguageModel, ProductModel, ProductPropertyGroupModel, ProductPropertyModel, UnitModel } from '../models'
+import { SiteModel } from '../models/site.model'
+import { getDifferenceDeep } from '../utils/getDiff'
 import { HttpError } from '../utils/httpError'
 import {
   extractLangMap,
@@ -14,6 +16,7 @@ import {
 import { buildQuery, buildSortQuery } from '../utils/queryBuilder'
 import * as BarcodeService from './barcode.service'
 import * as ProductPropertyOptionService from './product-property-option.service'
+import * as SyncEntryService from './sync-entry.service'
 
 export async function get(payload: ProductTypes.getProductsParams): Promise<ProductTypes.getProductsResult> {
   const { current = 1, pageSize = 10 } = payload.pagination || {}
@@ -81,8 +84,6 @@ export async function get(payload: ProductTypes.getProductsParams): Promise<Prod
     language,
     removed: false,
   })
-
-  console.log(JSON.stringify(queryLast, null, 2))
 
   const pipeline = [
     {
@@ -335,6 +336,8 @@ export async function create(payload: ProductTypes.createProductParams): Promise
     unit,
     uploadedImages,
     generateBarcode,
+    isAutoSyncEnabled,
+    syncSites,
   } = payload
 
   const parsedProductProperties = productProperties.map(property => ({
@@ -362,6 +365,20 @@ export async function create(payload: ProductTypes.createProductParams): Promise
     images: parsedUploadedImages,
   })
 
+  let syncSitesId = syncSites
+
+  if (isAutoSyncEnabled) {
+    const autoSyncSites = await SiteModel.find({})
+    syncSitesId = autoSyncSites.map(site => site.id)
+  }
+
+  for (const site of syncSitesId || []) {
+    await SyncEntryService.createSiteSync({
+      siteId: site,
+      productId: product._id.toString(),
+    })
+  }
+
   if (generateBarcode) {
     await BarcodeService.create({
       products: [{ id: product._id.toString(), quantity: 1 }],
@@ -387,7 +404,11 @@ export async function edit(payload: ProductTypes.editProductParams): Promise<Pro
     id,
     uploadedImages,
     uploadedImagesIds,
+    isAutoSyncEnabled,
+    syncSites,
   } = payload
+
+  const oldProduct = await ProductModel.findOne({ _id: id })
 
   const parsedProductProperties = productProperties.map(property => ({
     _id: property.id,
@@ -430,7 +451,7 @@ export async function edit(payload: ProductTypes.editProductParams): Promise<Pro
     })
   })
 
-  const product = await ProductModel.findOneAndUpdate({ _id: id }, {
+  const newProduct = {
     names,
     price,
     purchasePrice,
@@ -441,10 +462,28 @@ export async function edit(payload: ProductTypes.editProductParams): Promise<Pro
     productProperties: parsedProductProperties,
     unit,
     images: parsedImages,
-  })
+  }
+
+  const product = await ProductModel.findOneAndUpdate({ _id: id }, newProduct)
 
   if (!product) {
     throw new HttpError(400, 'Product not edited', 'PRODUCT_NOT_EDITED')
+  }
+
+  let syncSitesId = syncSites
+
+  if (isAutoSyncEnabled) {
+    const autoSyncSites = await SiteModel.find({})
+    syncSitesId = autoSyncSites.map(site => site.id)
+  }
+
+  for (const site of syncSitesId || []) {
+    const difference = getDifferenceDeep(normalizeProduct(oldProduct?.toObject()), normalizeProduct(newProduct))
+    await SyncEntryService.editSiteSync({
+      siteId: site,
+      productId: product._id.toString(),
+      difference,
+    })
   }
 
   return { status: 'success', code: 'PRODUCT_EDITED', message: 'Product edited', product }
@@ -788,4 +827,48 @@ export async function exportHandler(payload: ProductTypes.exportProductsParams):
   const buffer = await workbook.xlsx.writeBuffer()
 
   return { status: 'success', code: 'PRODUCTS_EXPORTED', message: 'Products exported', buffer: Buffer.from(buffer) }
+}
+
+function normalizeProduct(product: any) {
+  if (!product)
+    return null
+
+  // оставляем только нужные для синка поля
+  const {
+    names,
+    price,
+    purchasePrice,
+    currency,
+    categories,
+    purchaseCurrency,
+    productPropertiesGroup,
+    productProperties,
+    unit,
+    images,
+  } = product
+
+  return {
+    names: names instanceof Map ? Object.fromEntries(names) : names,
+    price,
+    purchasePrice,
+    currency,
+    categories: Array.isArray(categories) ? [...categories].sort() : [],
+    purchaseCurrency,
+    productPropertiesGroup,
+    productProperties: Array.isArray(productProperties)
+      ? productProperties
+          .map((p: any) => ({ _id: p._id, value: p.value }))
+          .sort((a, b) => a._id.localeCompare(b._id))
+      : [],
+    unit,
+    images: Array.isArray(images)
+      ? images.map((img: any) => ({
+          id: img.id,
+          path: img.path,
+          filename: img.filename,
+          name: img.name,
+          type: img.type,
+        }))
+      : [],
+  }
 }

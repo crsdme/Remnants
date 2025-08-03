@@ -111,6 +111,8 @@ export interface createProductParams {
     path: string
   }[]
   generateBarcode?: boolean
+  isAutoSyncEnabled?: boolean
+  syncSites?: IdType[]
 }
 
 export interface editProductResult {
@@ -147,6 +149,8 @@ export interface editProductParams {
     path: string
   }[]
   uploadedImagesIds?: IdType[]
+  isAutoSyncEnabled?: boolean
+  syncSites?: IdType[]
 }
 
 export interface removeProductsResult {

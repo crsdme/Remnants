@@ -80,13 +80,25 @@ export interface removeSyncEntriesParams {
   ids: IdType[]
 }
 
-export interface syncProductToSiteResult {
+export interface createSiteSyncResult {
   status: Status
   code: Code
   message: Message
 }
 
-export interface syncProductToSiteParams {
-  site: IdType
+export interface createSiteSyncParams {
+  siteId: IdType
   productId: IdType
+}
+
+export interface editSiteSyncResult {
+  status: Status
+  code: Code
+  message: Message
+}
+
+export interface editSiteSyncParams {
+  siteId: IdType
+  productId: IdType
+  difference: Record<string, any>
 }

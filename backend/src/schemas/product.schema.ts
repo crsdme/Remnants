@@ -60,6 +60,8 @@ export const createProductSchema = z.object({
   uploadedImages: z.any().optional(),
   uploadedImagesIds: z.any().optional(),
   generateBarcode: z.boolean().optional().default(false),
+  isAutoSyncEnabled: z.boolean().optional().default(false),
+  syncSites: z.array(idSchema).optional().default([]),
 })
 
 export const editProductSchema = z.object({
@@ -79,6 +81,8 @@ export const editProductSchema = z.object({
   images: z.any().optional(),
   uploadedImages: z.any().optional(),
   uploadedImagesIds: z.any().optional(),
+  isAutoSyncEnabled: z.boolean().optional().default(false),
+  syncSites: z.array(idSchema).optional().default([]),
 })
 
 export const removeProductSchema = z.object({

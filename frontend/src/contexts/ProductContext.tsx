@@ -99,6 +99,8 @@ export function ProductProvider({ children }: ProductProviderProps) {
     unit: z.string().min(1, { message: t('form.errors.required') }),
     productProperties: productPropertiesSchema,
     generateBarcode: z.boolean().optional(),
+    isAutoSyncEnabled: z.boolean().optional(),
+    syncSites: z.array(z.string()).optional(),
   }).superRefine((data, ctx) => {
     if (
       data.purchasePrice !== undefined
@@ -126,6 +128,8 @@ export function ProductProvider({ children }: ProductProviderProps) {
       productPropertiesGroup: '',
       unit: '',
       generateBarcode: false,
+      isAutoSyncEnabled: true,
+      syncSites: [],
     },
   })
 
@@ -150,6 +154,8 @@ export function ProductProvider({ children }: ProductProviderProps) {
         productProperties: product.productProperties.reduce((acc, property) => ({ ...acc, [`${property.id}`]: property.value }), {}),
         productPropertiesGroup: product.productPropertiesGroup.id,
         unit: product.unit.id,
+        isAutoSyncEnabled: true,
+        syncSites: [],
       }
     }
     else {
@@ -166,6 +172,8 @@ export function ProductProvider({ children }: ProductProviderProps) {
         productPropertiesGroup: productPropertiesGroups[0]?.id || '',
         unit: units[0]?.id || '',
         generateBarcode: false,
+        isAutoSyncEnabled: true,
+        syncSites: [],
       }
     }
   }
@@ -190,6 +198,8 @@ export function ProductProvider({ children }: ProductProviderProps) {
       productPropertiesGroup: '',
       unit: '',
       generateBarcode: false,
+      isAutoSyncEnabled: true,
+      syncSites: [],
     })
   }
 

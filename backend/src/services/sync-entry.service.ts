@@ -2,7 +2,8 @@ import type * as SyncEntryTypes from '../types/sync-entry.type'
 import axios from 'axios'
 import slugify from 'slugify'
 import { STORAGE_URLS } from '../config/constants'
-import { SyncEntryModel } from '../models'
+import { SiteModel, SyncEntryModel } from '../models'
+import { buildUrl } from '../utils/buildUrl'
 import { HttpError } from '../utils/httpError'
 import { buildQuery, buildSortQuery } from '../utils/queryBuilder'
 import * as ProductService from './product.service'
@@ -107,13 +108,19 @@ export async function remove(payload: SyncEntryTypes.removeSyncEntriesParams): P
   return { status: 'success', code: 'SYNC_ENTRIES_REMOVED', message: 'Sync entries removed' }
 }
 
-export async function syncProductToSite(payload: SyncEntryTypes.syncProductToSiteParams): Promise<SyncEntryTypes.syncProductToSiteResult> {
-  const { site, productId } = payload
+export async function createSiteSync(payload: SyncEntryTypes.createSiteSyncParams): Promise<SyncEntryTypes.createSiteSyncResult> {
+  const { siteId, productId } = payload
 
-  const syncEntry = await SyncEntryModel.findOne({ sourceType: 'product', sourceId: productId, site })
+  const site = await SiteModel.findOne({ _id: siteId })
+
+  if (!site) {
+    throw new HttpError(400, 'Site not found', 'SITE_NOT_FOUND')
+  }
+
+  const syncEntry = await SyncEntryModel.findOne({ sourceType: 'product', sourceId: productId, site: siteId })
 
   if (!syncEntry) {
-    await SyncEntryModel.create({ sourceType: 'product', sourceId: productId, site, status: 'pending' })
+    await SyncEntryModel.create({ sourceType: 'product', sourceId: productId, site: siteId, status: 'pending' })
   }
 
   const { products: [product] } = await ProductService.get({
@@ -136,7 +143,22 @@ export async function syncProductToSite(payload: SyncEntryTypes.syncProductToSit
       {
         name: product.names.en,
         url: slugify(product.names.en || '', { lower: true }),
-        language_code: 'en-gb',
+        language_code: 'uk-ua',
+      },
+      {
+        name: product.names.en,
+        url: slugify(product.names.en || '', { lower: true }),
+        language_code: 'en',
+      },
+      {
+        name: product.names.en,
+        url: slugify(product.names.en || '', { lower: true }),
+        language_code: 'it',
+      },
+      {
+        name: product.names.en,
+        url: slugify(product.names.en || '', { lower: true }),
+        language_code: 'pl',
       },
     ],
     categories: [72],
@@ -169,14 +191,19 @@ export async function syncProductToSite(payload: SyncEntryTypes.syncProductToSit
     // },
   }
 
+  const apiUrl = buildUrl(
+    site.url,
+    '/index.php',
+    {
+      route: 'extension/remnant/remnant/createProduct',
+      key: process.env.REMNANT_API_KEY || '',
+    },
+  )
+
   try {
-    const response = await axios.post(
-      `https://raw-hair-wholesale.com/index.php?route=extension/remnant/remnant/createProduct&key=${process.env.REMNANT_API_KEY}`,
-      syncProduct,
-      { headers: { 'Content-Type': 'application/json' } },
-    )
-    console.log(response.data)
-    await SyncEntryModel.updateOne({ sourceType: 'product', sourceId: productId, site }, {
+    const response = await axios.post(apiUrl, syncProduct, { headers: { 'Content-Type': 'application/json' } })
+
+    await SyncEntryModel.updateOne({ sourceType: 'product', sourceId: productId, site: siteId }, {
       status: 'synced',
       syncedAt: new Date(),
       externalId: response.data.product_id,
@@ -184,11 +211,127 @@ export async function syncProductToSite(payload: SyncEntryTypes.syncProductToSit
     })
   }
   catch (error) {
-    await SyncEntryModel.updateOne({ sourceType: 'product', sourceId: product.id, site }, {
+    await SyncEntryModel.updateOne({ sourceType: 'product', sourceId: product.id, site: siteId }, {
       status: 'error',
       lastError: (error || '').toString(),
     })
   }
 
   return { status: 'success', code: 'SYNC_ENTRY_CREATED', message: 'Sync entry created' }
+}
+
+export async function editSiteSync(payload: SyncEntryTypes.editSiteSyncParams): Promise<SyncEntryTypes.editSiteSyncResult> {
+  const { siteId, productId, difference } = payload
+
+  if (!difference || Object.keys(difference).length === 0)
+    return { status: 'success', code: 'NO_CHANGES', message: 'No changes to sync' }
+
+  const site = await SiteModel.findOne({ _id: siteId })
+
+  if (!site)
+    throw new HttpError(400, 'Site not found', 'SITE_NOT_FOUND')
+
+  const syncEntry = await SyncEntryModel.findOne({ sourceType: 'product', sourceId: productId, site: siteId })
+
+  if (!syncEntry)
+    return { status: 'error', code: 'SYNC_ENTRY_NOT_FOUND', message: 'Sync entry not found' }
+
+  const { products: [product] } = await ProductService.get({
+    filters: { ids: [productId] },
+  })
+
+  const syncProduct: Record<string, any> = {
+    external_id: productId,
+  }
+
+  if (difference.price) {
+    syncProduct.price = difference.price
+  }
+
+  if (difference.names) {
+    syncProduct.translations = [
+      {
+        name: difference.names.ru ?? product.names.ru,
+        url: slugify((difference.names.ru ?? product.names.ru) || '', { lower: true }),
+        language_code: 'ru-ru',
+      },
+      {
+        name: difference.names.en ?? product.names.en,
+        url: slugify((difference.names.en ?? product.names.en) || '', { lower: true }),
+        language_code: 'uk-ua',
+      },
+      {
+        name: difference.names.en ?? product.names.en,
+        url: slugify((difference.names.en ?? product.names.en) || '', { lower: true }),
+        language_code: 'en',
+      },
+      {
+        name: difference.names.en ?? product.names.en,
+        url: slugify((difference.names.en ?? product.names.en) || '', { lower: true }),
+        language_code: 'it',
+      },
+      {
+        name: difference.names.en ?? product.names.en,
+        url: slugify((difference.names.en ?? product.names.en) || '', { lower: true }),
+        language_code: 'pl',
+      },
+    ]
+  }
+
+  if (difference.images) {
+    syncProduct.images = difference.images.map((image: any) => ({
+      image: `${STORAGE_URLS.productImages}/${image.filename}`,
+      name: image.filename || '',
+    }))
+  }
+
+  if (difference.productProperties) {
+    const weightProperty = difference.productProperties.find((p: any) => p._id === '7c3e2c1b-f2bf-4639-baf2-7b1101fa7bf2')
+    const lengthProperty = difference.productProperties.find((p: any) => p._id === 'efcc3c51-a146-4975-bc5b-196745f76891')
+
+    syncProduct.attributes = []
+    if (weightProperty) {
+      syncProduct.attributes.push({
+        attribute_id: 77,
+        product_attribute_description: [{ text: `${weightProperty.value} g`, language_code: 'en-gb' }],
+      })
+    }
+    if (lengthProperty) {
+      syncProduct.attributes.push({
+        attribute_id: 78,
+        product_attribute_description: [{ text: `${lengthProperty.value} cm`, language_code: 'en-gb' }],
+      })
+    }
+  }
+
+  if (Object.keys(syncProduct).length === 0)
+    return { status: 'success', code: 'NO_RELEVANT_CHANGES', message: 'No relevant fields to sync' }
+
+  const apiUrl = buildUrl(
+    site.url,
+    '/index.php',
+    {
+      route: 'extension/remnant/remnant/editProduct',
+      key: process.env.REMNANT_API_KEY || '',
+    },
+  )
+
+  try {
+    const response = await axios.post(apiUrl, syncProduct, { headers: { 'Content-Type': 'application/json' } })
+
+    await SyncEntryModel.updateOne({ sourceType: 'product', sourceId: productId, site: siteId }, {
+      status: 'synced',
+      syncedAt: new Date(),
+      externalId: response.data.product_id,
+      lastError: null,
+    })
+  }
+  catch (error) {
+    await SyncEntryModel.updateOne({ sourceType: 'product', sourceId: product.id, site: siteId }, {
+      status: 'error',
+      lastError: (error || '').toString(),
+    })
+  }
+
+  return { status: 'success', code: 'SYNC_ENTRY_EDITED', message: 'Sync entry edited' }
 }
