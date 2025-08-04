@@ -30,6 +30,7 @@ export const createSiteSchema = z.object({
   key: z.string().trim(),
   priority: z.number().optional().default(0),
   active: z.boolean().optional().default(true),
+  warehouses: z.array(idSchema).optional().default([]),
 })
 
 export const editSiteSchema = z.object({
@@ -39,6 +40,7 @@ export const editSiteSchema = z.object({
   key: z.string().trim(),
   priority: z.number().optional().default(0),
   active: z.boolean().optional().default(true),
+  warehouses: z.array(idSchema).optional().default([]),
 })
 
 export const removeSitesSchema = z.object({

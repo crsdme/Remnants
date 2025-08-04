@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next'
+import { toast } from 'sonner'
 import { useTestStart } from '@/api/hooks/test/useTestStart'
 import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Switch } from '@/components/ui'
 import { useSettingContext } from '@/contexts/SettingContext'
@@ -9,8 +10,8 @@ export function MainSettingsPage() {
 
   const { mutate: startTest } = useTestStart({
     options: {
-      onError: (error) => {
-        console.error(error)
+      onSuccess: () => {
+        toast.success(t('page.settings.main.startTestSuccess'))
       },
     },
   })
@@ -60,7 +61,21 @@ export function MainSettingsPage() {
               <p className="text-sm">{t('page.settings.main.isPropertyGroupRequired.label')}</p>
               <p className="text-sm text-muted-foreground ">{t('page.settings.main.isPropertyGroupRequired.description')}</p>
             </div>
-            <Button onClick={() => startTest()}>{t('page.settings.main.startTest')}</Button>
+            <Button onClick={() => startTest({ key: 'createProducts' })}>{t('page.settings.main.createProducts')}</Button>
+          </div>
+          <div className="flex justify-between">
+            <div>
+              <p className="text-sm">{t('page.settings.main.isPropertyGroupRequired.label')}</p>
+              <p className="text-sm text-muted-foreground ">{t('page.settings.main.isPropertyGroupRequired.description')}</p>
+            </div>
+            <Button onClick={() => startTest({ key: 'createTelegramProducts' })}>{t('page.settings.main.createTelegramProducts')}</Button>
+          </div>
+          <div className="flex justify-between">
+            <div>
+              <p className="text-sm">{t('page.settings.main.isPropertyGroupRequired.label')}</p>
+              <p className="text-sm text-muted-foreground ">{t('page.settings.main.isPropertyGroupRequired.description')}</p>
+            </div>
+            <Button onClick={() => startTest({ key: 'quantityProducts' })}>{t('page.settings.main.quantityProducts')}</Button>
           </div>
         </CardContent>
       </Card>

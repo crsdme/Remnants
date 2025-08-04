@@ -41,6 +41,11 @@ const SiteSchema: Schema = new Schema(
       type: Boolean,
       default: true,
     },
+    warehouses: [{
+      type: String,
+      ref: 'warehouse',
+      default: [],
+    }],
     removed: {
       type: Boolean,
       default: false,

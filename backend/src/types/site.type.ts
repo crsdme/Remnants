@@ -8,6 +8,7 @@ export interface Site {
   key: string
   priority: number
   active: boolean
+  warehouses: IdType[]
   createdAt: Date
   updatedAt: Date
 }
@@ -55,6 +56,7 @@ export interface createSiteParams {
   key: string
   priority?: number
   active?: boolean
+  warehouses?: IdType[]
 }
 
 export interface editSiteResult {
@@ -71,6 +73,7 @@ export interface editSiteParams {
   key: string
   priority?: number
   active?: boolean
+  warehouses?: IdType[]
 }
 
 export interface removeSitesResult {

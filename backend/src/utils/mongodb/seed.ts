@@ -41,7 +41,7 @@ async function seedData() {
     await createOrderSources()
     const statuses = await createOrderStatuses()
     await createCashregisters()
-    await createWarehouses()
+    const warehouses = await createWarehouses()
     await createUserRoles()
     await createAutomations({
       removed: statuses.removed,
@@ -50,7 +50,7 @@ async function seedData() {
     })
     await createClients()
     await createExpenseCategories()
-    await createSites()
+    await createSites(warehouses)
 
     console.log('✅ Test data seeded successfully!')
     process.exit(0)
@@ -61,7 +61,7 @@ async function seedData() {
   }
 }
 
-async function createSites() {
+async function createSites(warehouses: any) {
   await SiteService.create({
     names: {
       en: 'Example',
@@ -71,6 +71,7 @@ async function createSites() {
     key: 'example',
     priority: 1,
     active: true,
+    warehouses: [warehouses.warehouse1.id, warehouses.warehouse2.id],
   })
 }
 
@@ -694,7 +695,7 @@ async function createCashregisters() {
 }
 
 async function createWarehouses() {
-  await WarehouseService.create({
+  const { warehouse: warehouse1 } = await WarehouseService.create({
     names: {
       en: 'Warehouse 1',
       ru: 'Склад 1',
@@ -703,7 +704,7 @@ async function createWarehouses() {
     active: true,
   })
 
-  await WarehouseService.create({
+  const { warehouse: warehouse2 } = await WarehouseService.create({
     names: {
       en: 'Warehouse 2',
       ru: 'Склад 2',
@@ -711,6 +712,8 @@ async function createWarehouses() {
     priority: 2,
     active: true,
   })
+
+  return { warehouse1, warehouse2 }
 }
 
 async function createUserRoles() {

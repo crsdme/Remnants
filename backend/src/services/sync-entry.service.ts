@@ -2,7 +2,7 @@ import type * as SyncEntryTypes from '../types/sync-entry.type'
 import axios from 'axios'
 import slugify from 'slugify'
 import { STORAGE_URLS } from '../config/constants'
-import { SiteModel, SyncEntryModel } from '../models'
+import { QuantityModel, SiteModel, SyncEntryModel } from '../models'
 import { buildUrl } from '../utils/buildUrl'
 import { HttpError } from '../utils/httpError'
 import { buildQuery, buildSortQuery } from '../utils/queryBuilder'
@@ -108,7 +108,7 @@ export async function remove(payload: SyncEntryTypes.removeSyncEntriesParams): P
   return { status: 'success', code: 'SYNC_ENTRIES_REMOVED', message: 'Sync entries removed' }
 }
 
-export async function createSiteSync(payload: SyncEntryTypes.createSiteSyncParams): Promise<SyncEntryTypes.createSiteSyncResult> {
+export async function syncProductCreate(payload: SyncEntryTypes.syncProductCreateParams): Promise<SyncEntryTypes.syncProductCreateResult> {
   const { siteId, productId } = payload
 
   const site = await SiteModel.findOne({ _id: siteId })
@@ -252,7 +252,7 @@ export async function createSiteSync(payload: SyncEntryTypes.createSiteSyncParam
   return { status: 'success', code: 'SYNC_ENTRY_CREATED', message: 'Sync entry created' }
 }
 
-export async function editSiteSync(payload: SyncEntryTypes.editSiteSyncParams): Promise<SyncEntryTypes.editSiteSyncResult> {
+export async function syncProductEdit(payload: SyncEntryTypes.syncProductEditParams): Promise<SyncEntryTypes.syncProductEditResult> {
   const { siteId, productId, difference } = payload
 
   if (!difference || Object.keys(difference).length === 0)
@@ -408,4 +408,58 @@ export async function editSiteSync(payload: SyncEntryTypes.editSiteSyncParams): 
   }
 
   return { status: 'success', code: 'SYNC_ENTRY_EDITED', message: 'Sync entry edited' }
+}
+
+export async function syncProductQuantity(payload: SyncEntryTypes.syncProductQuantityParams): Promise<SyncEntryTypes.syncProductQuantityResult> {
+  const { siteId, productId } = payload
+
+  const site = await SiteModel.findOne({ _id: siteId })
+
+  if (!site)
+    throw new HttpError(400, 'Site not found', 'SITE_NOT_FOUND')
+
+  const syncEntry = await SyncEntryModel.findOne({ sourceType: 'product', sourceId: productId, site: siteId })
+
+  if (!syncEntry)
+    return { status: 'success', code: 'SYNC_ENTRY_NOT_FOUND', message: 'Sync entry not found' }
+
+  const quantities = await QuantityModel.find({ product: productId, warehouse: { $in: site.warehouses } })
+
+  if (quantities.length === 0)
+    return { status: 'success', code: 'QUANTITY_NOT_FOUND', message: 'Quantity not found' }
+
+  const quantity = quantities.reduce((acc, quantity) => acc + quantity.count, 0)
+
+  const syncProduct: Record<string, any> = {
+    external_id: productId,
+    quantity,
+  }
+
+  const apiUrl = buildUrl(
+    site.url,
+    '/index.php',
+    {
+      route: 'extension/remnant/remnant/editProductQuantity',
+      key: process.env.REMNANT_API_KEY || '',
+    },
+  )
+
+  try {
+    const response = await axios.post(apiUrl, syncProduct, { headers: { 'Content-Type': 'application/json' } })
+
+    await SyncEntryModel.updateOne({ sourceType: 'product', sourceId: productId, site: siteId }, {
+      status: 'synced',
+      syncedAt: new Date(),
+      externalId: response.data.product_id,
+      lastError: null,
+    })
+  }
+  catch (error) {
+    await SyncEntryModel.updateOne({ sourceType: 'product', sourceId: productId, site: siteId }, {
+      status: 'error',
+      lastError: (error || '').toString(),
+    })
+  }
+
+  return { status: 'success', code: 'SYNC_ENTRY_QUANTITY_EDITED', message: 'Sync entry quantity edited' }
 }

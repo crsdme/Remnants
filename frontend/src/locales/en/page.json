@@ -824,5 +824,6 @@
   "page.sites.form.key": "Key",
   "page.sites.form.priority": "Priority",
   "page.sites.form.active": "Active",
-  "page.sites.form.active.description": "Active site"
+  "page.sites.form.active.description": "Active site",
+  "page.sites.form.warehouses": "Warehouses"
 }

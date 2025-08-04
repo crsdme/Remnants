@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next'
-import { useLanguageQuery } from '@/api/hooks'
+import { useLanguageQuery, useWarehouseOptions } from '@/api/hooks'
+import { AsyncSelectNew } from '@/components/AsyncSelectNew'
 import {
   Button,
   Checkbox,
@@ -17,6 +18,7 @@ import { useSiteContext } from '@/contexts'
 export function SiteForm() {
   const { t } = useTranslation()
   const { isLoading, form, closeModal, submitSiteForm } = useSiteContext()
+  const { i18n } = useTranslation()
 
   const { data: { languages = [] } = {} } = useLanguageQuery(
     { pagination: { full: true } },
@@ -26,6 +28,8 @@ export function SiteForm() {
       }),
     } },
   )
+
+  const loadWarehouseOptions = useWarehouseOptions()
 
   const onSubmit = (values) => {
     submitSiteForm(values)
@@ -88,6 +92,29 @@ export function SiteForm() {
               <FormLabel>{t('page.sites.form.key')}</FormLabel>
               <FormControl>
                 <Input {...field} disabled={isLoading} placeholder={t('page.sites.form.key')} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="warehouses"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>{t('page.sites.form.warehouses')}</FormLabel>
+              <FormControl>
+                <AsyncSelectNew
+                  {...field}
+                  loadOptions={loadWarehouseOptions}
+                  renderOption={e => e.names[i18n.language]}
+                  getDisplayValue={e => e.names[i18n.language]}
+                  getOptionValue={e => e.id}
+                  disabled={isLoading}
+                  clearable
+                  multi
+                />
               </FormControl>
               <FormMessage />
             </FormItem>

@@ -828,5 +828,6 @@
   "page.sites.form.key": "Ключ",
   "page.sites.form.priority": "Приоритет",
   "page.sites.form.active": "Активность",
-  "page.sites.form.active.description": "Активный сайт"
+  "page.sites.form.active.description": "Активный сайт",
+  "page.sites.form.warehouses": "Склады"
 }

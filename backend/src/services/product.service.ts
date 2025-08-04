@@ -373,7 +373,7 @@ export async function create(payload: ProductTypes.createProductParams): Promise
   }
 
   for (const site of syncSitesId || []) {
-    await SyncEntryService.createSiteSync({
+    await SyncEntryService.syncProductCreate({
       siteId: site,
       productId: product._id.toString(),
     })
@@ -479,7 +479,7 @@ export async function edit(payload: ProductTypes.editProductParams): Promise<Pro
 
   for (const site of syncSitesId || []) {
     const difference = getDifferenceDeep(normalizeProduct(oldProduct?.toObject()), normalizeProduct(newProduct))
-    await SyncEntryService.editSiteSync({
+    await SyncEntryService.syncProductEdit({
       siteId: site,
       productId: product._id.toString(),
       difference,

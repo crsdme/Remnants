@@ -50,6 +50,7 @@ export function SiteProvider({ children }: SiteProviderProps) {
       key: z.string().trim(),
       priority: z.number().optional().default(0),
       active: z.boolean().optional().default(true),
+      warehouses: z.array(z.string()).optional().default([]),
     }), [t])
 
   const form = useForm({
@@ -60,6 +61,7 @@ export function SiteProvider({ children }: SiteProviderProps) {
       key: '',
       priority: 0,
       active: true,
+      warehouses: [],
     },
   })
 
@@ -73,6 +75,7 @@ export function SiteProvider({ children }: SiteProviderProps) {
         key: '',
         priority: 0,
         active: true,
+        warehouses: [],
       }
     }
     return {
@@ -81,6 +84,7 @@ export function SiteProvider({ children }: SiteProviderProps) {
       key: site.key,
       priority: site.priority,
       active: site.active,
+      warehouses: site.warehouses,
     }
   }
 
