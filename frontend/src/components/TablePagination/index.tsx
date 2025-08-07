@@ -17,7 +17,7 @@ export function TablePagination({
   pagination,
   totalPages,
   changePagination,
-  selectedCount,
+  selectedCount = 0,
   totalCount,
 }) {
   const { t } = useTranslation()

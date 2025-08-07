@@ -84,5 +84,17 @@
   "description.page.expense-categories": "Manage expense categories in Remnant",
 
   "title.page.expenses": "Expenses - Remnant",
-  "description.page.expenses": "Manage expenses in Remnant"
+  "description.page.expenses": "Manage expenses in Remnant",
+
+  "title.page.inventories": "Inventories - Remnant",
+  "description.page.inventories": "Manage inventories in Remnant",
+
+  "title.page.create-inventory": "Create Inventory - Remnant",
+  "description.page.create-inventory": "Create inventory in Remnant",
+
+  "title.page.edit-inventory": "Edit Inventory - Remnant",
+  "description.page.edit-inventory": "Edit inventory in Remnant",
+
+  "title.page.view-inventory": "View Inventory - Remnant",
+  "description.page.view-inventory": "View inventory in Remnant"
 }

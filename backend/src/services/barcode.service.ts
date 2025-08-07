@@ -562,6 +562,7 @@ async function print55x40(payload: { barcode: any, size: string, language: strin
   const doc = new PDFDocument({ autoFirstPage: false })
 
   doc.registerFont('Manrope', path.resolve(__dirname, '../utils/fonts/Manrope-Regular.ttf'))
+  doc.registerFont('Manrope-Bold', path.resolve(__dirname, '../utils/fonts/Manrope-Bold.ttf'))
   doc.font('Manrope')
   doc.fontSize(26)
   doc.addPage({
@@ -630,7 +631,7 @@ async function print55x40(payload: { barcode: any, size: string, language: strin
   doc.addPage({
     size: [w * 8.49, h * 8.49],
   })
-
+  doc.font('Manrope-Bold')
   doc.fontSize(175)
   doc.text(
     product.names[language].split('#')[1] || '4054',

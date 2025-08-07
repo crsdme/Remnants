@@ -47,8 +47,11 @@
 
   "form.errors.required": "Обязательное поле",
   "form.errors.required.products": "Необходимо выбрать хотя бы один товар",
+  "form.errors.required.product": "Товар не найден",
   "form.errors.min_length": "Минимальная длина {{count}} символов",
   "form.errors.max_length": "Максимальная длина {{count}} символов",
+
+  "form.success.productAdded": "Товар добавлен",
 
   "permission.category.create": "Создать категорию",
   "permission.category.read": "Прочитать категорию",

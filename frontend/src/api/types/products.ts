@@ -5,6 +5,7 @@ export interface getProductsParams {
     language?: string
     active?: boolean[]
     priority?: number
+    categories?: string[]
     createdAt?: {
       from?: Date
       to?: Date

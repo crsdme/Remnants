@@ -78,9 +78,15 @@ export async function count(payload: QuantityTypes.countQuantitiesParams): Promi
     count,
     product,
     warehouse,
+    mode = 'inc',
   } = payload
 
-  const quantity = await QuantityModel.findOneAndUpdate({ product, warehouse }, { $inc: { count } }, { new: true })
+  const update = {
+    set: { $set: { count } },
+    inc: { $inc: { count } },
+  }
+
+  const quantity = await QuantityModel.findOneAndUpdate({ product, warehouse }, update[mode], { new: true })
 
   if (!quantity) {
     await create({ count, product, warehouse })

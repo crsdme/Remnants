@@ -60,6 +60,7 @@ export interface countQuantitiesParams {
   count: number
   product: IdType
   warehouse: IdType
+  mode?: 'inc' | 'set'
 }
 
 export interface editQuantitiesResult {

@@ -161,6 +161,15 @@ export default function App() {
             element={<ProtectedRoute children={<Pages.BarcodesPage />} permissions={['barcode.page']} />}
           />
 
+          <Route
+            path="/inventories"
+            element={<ProtectedRoute children={<Pages.InventoriesPage />} permissions={['inventory.page']} />}
+          />
+          <Route
+            path="/inventories/create"
+            element={<ProtectedRoute children={<Pages.CreateInventoryPage />} permissions={['inventory.create']} />}
+          />
+
           <Route path="*" element={<Pages.ErrorPage status={404} />} />
         </Route>
         <Route path="/login" element={<Pages.LoginPage />} />

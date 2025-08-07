@@ -323,6 +323,91 @@ export async function get(payload: ProductTypes.getProductsParams): Promise<Prod
   return { status: 'success', code: 'PRODUCTS_FETCHED', message: 'Products fetched', products, productsCount }
 }
 
+export async function getIndex(payload: ProductTypes.getProductsIndexParams): Promise<ProductTypes.getProductsIndexResult> {
+  const {
+    productId,
+    search = '',
+    ids = [],
+    seq = undefined,
+    names = '',
+    language = 'en',
+    price = undefined,
+    purchasePrice = undefined,
+    barcodes = undefined,
+    categories = undefined,
+    unit = undefined,
+    productPropertiesGroup = undefined,
+    productProperties = undefined,
+    createdAt = {
+      from: undefined,
+      to: undefined,
+    },
+    updatedAt = {
+      from: undefined,
+      to: undefined,
+    },
+  } = payload.filters || {}
+
+  const sorters = buildSortQuery(payload.sorters || {}, { seq: 1 })
+
+  const filterRules: any = {
+    _id: { type: 'array' },
+    seq: { type: 'exact' },
+    names: { type: 'string', langAware: true },
+    active: { type: 'array' },
+    price: { type: 'exact' },
+    purchasePrice: { type: 'exact' },
+    barcodes: { type: 'array' },
+    categories: { type: 'array' },
+    unit: { type: 'exact' },
+    productPropertiesGroup: { type: 'exact' },
+    productProperties: { type: 'array' },
+    createdAt: { type: 'dateRange' },
+    updatedAt: { type: 'dateRange' },
+  }
+
+  const query = buildQuery({
+    filters: { _id: ids, seq, names, price, purchasePrice, barcodes, categories, unit, productPropertiesGroup, productProperties, createdAt, updatedAt },
+    rules: filterRules,
+    language,
+  })
+
+  const filterRulesLast: any = {
+    search: {
+      type: 'multiFieldSearch',
+      multiFields: [
+        { field: `names`, langAware: true },
+        { field: `categories.names`, langAware: true, isArray: true },
+      ],
+    },
+  }
+
+  const queryLast = buildQuery({
+    filters: { barcodes, categories, unit, productPropertiesGroup, productProperties, search },
+    rules: filterRulesLast,
+    language,
+    removed: false,
+  })
+
+  const pipeline = [
+    {
+      $match: query,
+    },
+    {
+      $match: queryLast,
+    },
+    {
+      $sort: sorters,
+    },
+  ]
+
+  const productsRaw = await ProductModel.aggregate(pipeline).exec()
+
+  const productIndex = productsRaw.findIndex(doc => String(doc._id) === String(productId))
+
+  return { status: 'success', code: 'PRODUCTS_FETCHED', message: 'Products fetched', productIndex }
+}
+
 export async function create(payload: ProductTypes.createProductParams): Promise<ProductTypes.createProductResult> {
   const {
     names,

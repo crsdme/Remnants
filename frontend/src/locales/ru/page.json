@@ -829,5 +829,26 @@
   "page.sites.form.priority": "Приоритет",
   "page.sites.form.active": "Активность",
   "page.sites.form.active.description": "Активный сайт",
-  "page.sites.form.warehouses": "Склады"
+  "page.sites.form.warehouses": "Склады",
+
+  "page.inventories.title": "Инвентаризация",
+  "page.inventories.description": "Управление инвентаризацией",
+  "page.inventories.button.create": "Создать инвентаризацию",
+
+  "page.inventories.table.category": "Категория",
+  "page.inventories.table.warehouse": "Склад",
+  "page.inventories.table.status": "Статус",
+  "page.inventories.table.comment": "Комментарий",
+  "page.inventories.table.status.confirmed": "Подтвержден",
+  "page.inventories.table.status.draft": "Черновик",
+
+  "page.create-inventory.title": "Создание инвентаризации",
+  "page.create-inventory.description": "Создание инвентаризации",
+  "page.create-inventory.button.create": "Создать инвентаризацию",
+
+  "page.create-inventory.form.category": "Категория",
+  "page.create-inventory.form.warehouse": "Склад",
+  "page.create-inventory.form.comment": "Комментарий",
+
+  "page.create-inventory.form.category.required": "Категория не выбрана"
 }

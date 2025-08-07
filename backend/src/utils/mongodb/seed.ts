@@ -549,6 +549,591 @@ async function createProducts(productProperties: any) {
         },
       ],
     },
+    {
+      names: {
+        en: 'Product 6',
+        ru: 'Продукт 6',
+      },
+      price: 100,
+      currency: currencies[0].id,
+      purchasePrice: 50,
+      purchaseCurrency: currencies[1].id,
+      categories: [categories[0].id],
+      unit: units[1].id,
+      productPropertiesGroup: productPropertyGroups[0].id,
+      productProperties: [
+        {
+          id: productProperties.sku.id,
+          value: '123456789',
+        },
+        {
+          id: productProperties.boxes.id,
+          value: 100000,
+        },
+        {
+          id: productProperties.isNew.id,
+          value: false,
+        },
+        {
+          id: productProperties.color.id,
+          value: colorOptions[4].id,
+        },
+        {
+          id: productProperties.model.id,
+          value: modelOptions[4].id,
+        },
+        {
+          id: productProperties.parameters.id,
+          value: [parametersOptions[4].id, parametersOptions[1].id],
+        },
+      ],
+    },
+    {
+      names: {
+        en: 'Product 7',
+        ru: 'Продукт 7',
+      },
+      price: 100,
+      currency: currencies[0].id,
+      purchasePrice: 50,
+      purchaseCurrency: currencies[1].id,
+      categories: [categories[0].id],
+      unit: units[1].id,
+      productPropertiesGroup: productPropertyGroups[0].id,
+      productProperties: [
+        {
+          id: productProperties.sku.id,
+          value: '123456789',
+        },
+        {
+          id: productProperties.boxes.id,
+          value: 100000,
+        },
+        {
+          id: productProperties.isNew.id,
+          value: false,
+        },
+        {
+          id: productProperties.color.id,
+          value: colorOptions[4].id,
+        },
+        {
+          id: productProperties.model.id,
+          value: modelOptions[4].id,
+        },
+        {
+          id: productProperties.parameters.id,
+          value: [parametersOptions[4].id, parametersOptions[1].id],
+        },
+      ],
+    },
+    {
+      names: {
+        en: 'Product 8',
+        ru: 'Продукт 8',
+      },
+      price: 100,
+      currency: currencies[0].id,
+      purchasePrice: 50,
+      purchaseCurrency: currencies[1].id,
+      categories: [categories[0].id],
+      unit: units[1].id,
+      productPropertiesGroup: productPropertyGroups[0].id,
+      productProperties: [
+        {
+          id: productProperties.sku.id,
+          value: '123456789',
+        },
+        {
+          id: productProperties.boxes.id,
+          value: 100000,
+        },
+        {
+          id: productProperties.isNew.id,
+          value: false,
+        },
+        {
+          id: productProperties.color.id,
+          value: colorOptions[4].id,
+        },
+        {
+          id: productProperties.model.id,
+          value: modelOptions[4].id,
+        },
+        {
+          id: productProperties.parameters.id,
+          value: [parametersOptions[4].id, parametersOptions[1].id],
+        },
+      ],
+    },
+    {
+      names: {
+        en: 'Product 9',
+        ru: 'Продукт 9',
+      },
+      price: 100,
+      currency: currencies[0].id,
+      purchasePrice: 50,
+      purchaseCurrency: currencies[1].id,
+      categories: [categories[0].id],
+      unit: units[1].id,
+      productPropertiesGroup: productPropertyGroups[0].id,
+      productProperties: [
+        {
+          id: productProperties.sku.id,
+          value: '123456789',
+        },
+        {
+          id: productProperties.boxes.id,
+          value: 100000,
+        },
+        {
+          id: productProperties.isNew.id,
+          value: false,
+        },
+        {
+          id: productProperties.color.id,
+          value: colorOptions[4].id,
+        },
+        {
+          id: productProperties.model.id,
+          value: modelOptions[4].id,
+        },
+        {
+          id: productProperties.parameters.id,
+          value: [parametersOptions[4].id, parametersOptions[1].id],
+        },
+      ],
+    },
+    {
+      names: {
+        en: 'Product 10',
+        ru: 'Продукт 10',
+      },
+      price: 100,
+      currency: currencies[0].id,
+      purchasePrice: 50,
+      purchaseCurrency: currencies[1].id,
+      categories: [categories[0].id],
+      unit: units[1].id,
+      productPropertiesGroup: productPropertyGroups[0].id,
+      productProperties: [
+        {
+          id: productProperties.sku.id,
+          value: '123456789',
+        },
+        {
+          id: productProperties.boxes.id,
+          value: 100000,
+        },
+        {
+          id: productProperties.isNew.id,
+          value: false,
+        },
+        {
+          id: productProperties.color.id,
+          value: colorOptions[4].id,
+        },
+        {
+          id: productProperties.model.id,
+          value: modelOptions[4].id,
+        },
+        {
+          id: productProperties.parameters.id,
+          value: [parametersOptions[4].id, parametersOptions[1].id],
+        },
+      ],
+    },
+    {
+      names: {
+        en: 'Product 11',
+        ru: 'Продукт 11',
+      },
+      price: 100,
+      currency: currencies[0].id,
+      purchasePrice: 50,
+      purchaseCurrency: currencies[1].id,
+      categories: [categories[0].id],
+      unit: units[1].id,
+      productPropertiesGroup: productPropertyGroups[0].id,
+      productProperties: [
+        {
+          id: productProperties.sku.id,
+          value: '123456',
+        },
+        {
+          id: productProperties.boxes.id,
+          value: 10,
+        },
+        {
+          id: productProperties.isNew.id,
+          value: true,
+        },
+        {
+          id: productProperties.color.id,
+          value: colorOptions[0].id,
+        },
+        {
+          id: productProperties.model.id,
+          value: modelOptions[0].id,
+        },
+        {
+          id: productProperties.parameters.id,
+          value: [parametersOptions[0].id, parametersOptions[1].id],
+        },
+      ],
+    },
+    {
+      names: {
+        en: 'Product 12',
+        ru: 'Продукт 12',
+      },
+      price: 100,
+      currency: currencies[0].id,
+      purchasePrice: 50,
+      purchaseCurrency: currencies[1].id,
+      categories: [categories[1].id],
+      unit: units[1].id,
+      productPropertiesGroup: productPropertyGroups[0].id,
+      productProperties: [
+        {
+          id: productProperties.sku.id,
+          value: '312523',
+        },
+        {
+          id: productProperties.boxes.id,
+          value: 100,
+        },
+        {
+          id: productProperties.isNew.id,
+          value: false,
+        },
+        {
+          id: productProperties.color.id,
+          value: colorOptions[1].id,
+        },
+        {
+          id: productProperties.model.id,
+          value: modelOptions[1].id,
+        },
+        {
+          id: productProperties.parameters.id,
+          value: [parametersOptions[1].id, parametersOptions[2].id],
+        },
+      ],
+    },
+    {
+      names: {
+        en: 'Product 13',
+        ru: 'Продукт 13',
+      },
+      price: 100,
+      currency: currencies[0].id,
+      purchasePrice: 50,
+      purchaseCurrency: currencies[1].id,
+      categories: [categories[1].id],
+      unit: units[1].id,
+      productPropertiesGroup: productPropertyGroups[0].id,
+      productProperties: [
+        {
+          id: productProperties.sku.id,
+          value: '1234567',
+        },
+        {
+          id: productProperties.boxes.id,
+          value: 1000,
+        },
+        {
+          id: productProperties.isNew.id,
+          value: false,
+        },
+        {
+          id: productProperties.color.id,
+          value: colorOptions[2].id,
+        },
+        {
+          id: productProperties.model.id,
+          value: modelOptions[2].id,
+        },
+        {
+          id: productProperties.parameters.id,
+          value: [parametersOptions[2].id, parametersOptions[3].id],
+        },
+      ],
+    },
+    {
+      names: {
+        en: 'Product 14',
+        ru: 'Продукт 14',
+      },
+      price: 100,
+      currency: currencies[0].id,
+      purchasePrice: 50,
+      purchaseCurrency: currencies[1].id,
+      categories: [categories[1].id],
+      unit: units[1].id,
+      productPropertiesGroup: productPropertyGroups[0].id,
+      productProperties: [
+        {
+          id: productProperties.sku.id,
+          value: '12345678',
+        },
+        {
+          id: productProperties.boxes.id,
+          value: 10000,
+        },
+        {
+          id: productProperties.isNew.id,
+          value: false,
+        },
+        {
+          id: productProperties.color.id,
+          value: colorOptions[3].id,
+        },
+        {
+          id: productProperties.model.id,
+          value: modelOptions[3].id,
+        },
+        {
+          id: productProperties.parameters.id,
+          value: [parametersOptions[3].id, parametersOptions[4].id],
+        },
+      ],
+    },
+    {
+      names: {
+        en: 'Product 15',
+        ru: 'Продукт 15',
+      },
+      price: 100,
+      currency: currencies[0].id,
+      purchasePrice: 50,
+      purchaseCurrency: currencies[1].id,
+      categories: [categories[0].id],
+      unit: units[1].id,
+      productPropertiesGroup: productPropertyGroups[0].id,
+      productProperties: [
+        {
+          id: productProperties.sku.id,
+          value: '123456789',
+        },
+        {
+          id: productProperties.boxes.id,
+          value: 100000,
+        },
+        {
+          id: productProperties.isNew.id,
+          value: false,
+        },
+        {
+          id: productProperties.color.id,
+          value: colorOptions[4].id,
+        },
+        {
+          id: productProperties.model.id,
+          value: modelOptions[4].id,
+        },
+        {
+          id: productProperties.parameters.id,
+          value: [parametersOptions[4].id, parametersOptions[1].id],
+        },
+      ],
+    },
+    {
+      names: {
+        en: 'Product 16',
+        ru: 'Продукт 16',
+      },
+      price: 100,
+      currency: currencies[0].id,
+      purchasePrice: 50,
+      purchaseCurrency: currencies[1].id,
+      categories: [categories[0].id],
+      unit: units[1].id,
+      productPropertiesGroup: productPropertyGroups[0].id,
+      productProperties: [
+        {
+          id: productProperties.sku.id,
+          value: '123456789',
+        },
+        {
+          id: productProperties.boxes.id,
+          value: 100000,
+        },
+        {
+          id: productProperties.isNew.id,
+          value: false,
+        },
+        {
+          id: productProperties.color.id,
+          value: colorOptions[4].id,
+        },
+        {
+          id: productProperties.model.id,
+          value: modelOptions[4].id,
+        },
+        {
+          id: productProperties.parameters.id,
+          value: [parametersOptions[4].id, parametersOptions[1].id],
+        },
+      ],
+    },
+    {
+      names: {
+        en: 'Product 17',
+        ru: 'Продукт 17',
+      },
+      price: 100,
+      currency: currencies[0].id,
+      purchasePrice: 50,
+      purchaseCurrency: currencies[1].id,
+      categories: [categories[0].id],
+      unit: units[1].id,
+      productPropertiesGroup: productPropertyGroups[0].id,
+      productProperties: [
+        {
+          id: productProperties.sku.id,
+          value: '123456789',
+        },
+        {
+          id: productProperties.boxes.id,
+          value: 100000,
+        },
+        {
+          id: productProperties.isNew.id,
+          value: false,
+        },
+        {
+          id: productProperties.color.id,
+          value: colorOptions[4].id,
+        },
+        {
+          id: productProperties.model.id,
+          value: modelOptions[4].id,
+        },
+        {
+          id: productProperties.parameters.id,
+          value: [parametersOptions[4].id, parametersOptions[1].id],
+        },
+      ],
+    },
+    {
+      names: {
+        en: 'Product 18',
+        ru: 'Продукт 18',
+      },
+      price: 100,
+      currency: currencies[0].id,
+      purchasePrice: 50,
+      purchaseCurrency: currencies[1].id,
+      categories: [categories[0].id],
+      unit: units[1].id,
+      productPropertiesGroup: productPropertyGroups[0].id,
+      productProperties: [
+        {
+          id: productProperties.sku.id,
+          value: '123456789',
+        },
+        {
+          id: productProperties.boxes.id,
+          value: 100000,
+        },
+        {
+          id: productProperties.isNew.id,
+          value: false,
+        },
+        {
+          id: productProperties.color.id,
+          value: colorOptions[4].id,
+        },
+        {
+          id: productProperties.model.id,
+          value: modelOptions[4].id,
+        },
+        {
+          id: productProperties.parameters.id,
+          value: [parametersOptions[4].id, parametersOptions[1].id],
+        },
+      ],
+    },
+    {
+      names: {
+        en: 'Product 19',
+        ru: 'Продукт 19',
+      },
+      price: 100,
+      currency: currencies[0].id,
+      purchasePrice: 50,
+      purchaseCurrency: currencies[1].id,
+      categories: [categories[0].id],
+      unit: units[1].id,
+      productPropertiesGroup: productPropertyGroups[0].id,
+      productProperties: [
+        {
+          id: productProperties.sku.id,
+          value: '123456789',
+        },
+        {
+          id: productProperties.boxes.id,
+          value: 100000,
+        },
+        {
+          id: productProperties.isNew.id,
+          value: false,
+        },
+        {
+          id: productProperties.color.id,
+          value: colorOptions[4].id,
+        },
+        {
+          id: productProperties.model.id,
+          value: modelOptions[4].id,
+        },
+        {
+          id: productProperties.parameters.id,
+          value: [parametersOptions[4].id, parametersOptions[1].id],
+        },
+      ],
+    },
+    {
+      names: {
+        en: 'Product 20',
+        ru: 'Продукт 20',
+      },
+      price: 100,
+      currency: currencies[0].id,
+      purchasePrice: 50,
+      purchaseCurrency: currencies[1].id,
+      categories: [categories[0].id],
+      unit: units[1].id,
+      productPropertiesGroup: productPropertyGroups[0].id,
+      productProperties: [
+        {
+          id: productProperties.sku.id,
+          value: '123456789',
+        },
+        {
+          id: productProperties.boxes.id,
+          value: 100000,
+        },
+        {
+          id: productProperties.isNew.id,
+          value: false,
+        },
+        {
+          id: productProperties.color.id,
+          value: colorOptions[4].id,
+        },
+        {
+          id: productProperties.model.id,
+          value: modelOptions[4].id,
+        },
+        {
+          id: productProperties.parameters.id,
+          value: [parametersOptions[4].id, parametersOptions[1].id],
+        },
+      ],
+    },
   ]
 
   for (const product of products) {

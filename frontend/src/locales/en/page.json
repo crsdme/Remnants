@@ -825,5 +825,26 @@
   "page.sites.form.priority": "Priority",
   "page.sites.form.active": "Active",
   "page.sites.form.active.description": "Active site",
-  "page.sites.form.warehouses": "Warehouses"
+  "page.sites.form.warehouses": "Warehouses",
+
+  "page.inventories.title": "Inventories",
+  "page.inventories.description": "Manage inventories",
+  "page.inventories.button.create": "Create inventory",
+
+  "page.inventories.table.category": "Category",
+  "page.inventories.table.warehouse": "Warehouse",
+  "page.inventories.table.status": "Status",
+  "page.inventories.table.comment": "Comment",
+  "page.inventories.table.status.confirmed": "Confirmed",
+  "page.inventories.table.status.draft": "Draft",
+
+  "page.create-inventory.title": "Create Inventory",
+  "page.create-inventory.description": "Create inventory",
+  "page.create-inventory.button.create": "Create inventory",
+
+  "page.create-inventory.form.category": "Category",
+  "page.create-inventory.form.warehouse": "Warehouse",
+  "page.create-inventory.form.comment": "Comment",
+
+  "page.create-inventory.form.category.required": "Category not selected"
 }

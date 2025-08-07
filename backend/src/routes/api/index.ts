@@ -11,6 +11,7 @@ import currencyRoutes from './currency.route'
 import deliveryServiceRoutes from './delivery-service.route'
 import expenseCategoryRoutes from './expense-category.route'
 import expenseRoutes from './expense.route'
+import inventoriesRoutes from './inventories.route'
 import languageRoutes from './language.route'
 import moneyTransactionRoutes from './money-transaction.route'
 import orderPaymentRoutes from './order-payment.route'
@@ -64,5 +65,6 @@ router.use('/test', testRoutes)
 router.use('/automations', automationRoutes)
 router.use('/expenses', expenseRoutes)
 router.use('/expense-categories', expenseCategoryRoutes)
+router.use('/inventories', inventoriesRoutes)
 
 export default router

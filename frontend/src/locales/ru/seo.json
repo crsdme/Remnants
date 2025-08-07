@@ -84,5 +84,17 @@
   "description.page.expense-categories": "Управление категориями расходов в Remnant",
 
   "title.page.expenses": "Расходы - Remnant",
-  "description.page.expenses": "Управление расходами в Remnant"
+  "description.page.expenses": "Управление расходами в Remnant",
+
+  "title.page.inventories": "Инвентаризация - Remnant",
+  "description.page.inventories": "Управление инвентаризацией в Remnant",
+
+  "title.page.create-inventory": "Создание инвентаризации - Remnant",
+  "description.page.create-inventory": "Создание инвентаризации в Remnant",
+
+  "title.page.edit-inventory": "Редактирование инвентаризации - Remnant",
+  "description.page.edit-inventory": "Редактирование инвентаризации в Remnant",
+
+  "title.page.view-inventory": "Просмотр инвентаризации - Remnant",
+  "description.page.view-inventory": "Просмотр инвентаризации в Remnant"
 }

@@ -47,8 +47,11 @@
 
   "form.errors.required": "Required field",
   "form.errors.required.products": "You must select at least one product",
+  "form.errors.required.product": "Product not found",
   "form.errors.min_length": "Minimum length {{count}} characters",
   "form.errors.max_length": "Maximum length {{count}} characters",
+
+  "form.success.productAdded": "Product added",
 
   "permission.category.create": "Create category",
   "permission.category.read": "Read category",

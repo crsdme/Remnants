@@ -28,6 +28,10 @@ export interface Product {
     options: IdType[]
     value: any
   }[]
+  quantity: {
+    warehouse: IdType
+    count: number
+  }[]
   removed: boolean
   createdAt: Date
   updatedAt: Date
@@ -75,6 +79,51 @@ export interface getProductsSorters {
 export interface getProductsParams {
   filters?: Partial<getProductsFilters>
   sorters?: Partial<getProductsSorters>
+  pagination?: Partial<Pagination>
+}
+
+export interface getProductsIndexResult {
+  status: Status
+  code: Code
+  message: Message
+  productIndex: number
+}
+
+export interface getProductsIndexFilters {
+  search?: string
+  productId?: IdType
+  ids?: IdType[]
+  seq?: number
+  names?: LanguageString
+  language?: SUPPORTED_LANGUAGES_TYPE
+  price?: number
+  purchasePrice?: number
+  barcodes?: string[]
+  categories?: IdType[]
+  unit?: IdType
+  productPropertiesGroup?: IdType
+  productProperties?: IdType[]
+  createdAt?: DateRange
+  updatedAt?: DateRange
+}
+
+export interface getProductsIndexSorters {
+  seq?: Sorter
+  names?: Sorter
+  price?: Sorter
+  purchasePrice?: Sorter
+  barcodes?: Sorter
+  categories?: Sorter
+  unit?: Sorter
+  productPropertiesGroup?: Sorter
+  productProperties?: Sorter
+  createdAt?: Sorter
+  updatedAt?: Sorter
+}
+
+export interface getProductsIndexParams {
+  filters?: Partial<getProductsIndexFilters>
+  sorters?: Partial<getProductsIndexSorters>
   pagination?: Partial<Pagination>
 }
 

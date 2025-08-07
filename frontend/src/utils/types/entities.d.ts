@@ -325,3 +325,24 @@ interface Site {
   createdAt: Date
   updatedAt: Date
 }
+
+interface Inventory {
+  id: string
+  status: string
+  warehouse: string
+  createdBy: string
+  comment: string
+  createdAt: Date
+  updatedAt: Date
+}
+
+interface InventoryItem {
+  id: string
+  inventoryId: string
+  productId: string
+  product: Product
+  quantity: number
+  receivedQuantity: number
+  createdAt: Date
+  updatedAt: Date
+}

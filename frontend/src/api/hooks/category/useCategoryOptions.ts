@@ -7,7 +7,7 @@ interface LoadOptionsParams {
   selectedValue?: string[]
 }
 
-export function useCategoryOptions({ mapFn }: { mapFn?: (category: Category) => { value: string, label: string } } = {}) {
+export function useCategoryOptions({ mapFn, isTree = false }: { mapFn?: (category: Category) => { value: string, label: string }, isTree?: boolean } = {}) {
   const queryClient = useQueryClient()
   const { i18n } = useTranslation()
 
@@ -16,6 +16,7 @@ export function useCategoryOptions({ mapFn }: { mapFn?: (category: Category) => 
       ...(selectedValue ? { ids: selectedValue } : { names: query }),
       active: [true],
       language: i18n.language,
+      isTree,
     }
 
     const data = await queryClient.fetchQuery({
