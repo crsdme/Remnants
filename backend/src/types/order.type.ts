@@ -30,6 +30,10 @@ export interface OrderItem {
   currency: IdType
   removedBy: string
   removed: boolean
+  profit: number
+  exchangeRate: number
+  purchasePrice: number
+  purchaseCurrency: string
 }
 
 export interface getOrdersResult {
@@ -126,7 +130,8 @@ export interface removeOrdersParams {
 }
 
 export interface getOrderItemsFilters {
-  order: IdType
+  order: IdType[]
+  showFullData?: boolean
 }
 
 export interface getOrderItemsParams {

@@ -2,9 +2,19 @@ import type * as SiteTypes from '../types/site.type'
 import { SiteModel } from '../models/site.model'
 import { HttpError } from '../utils/httpError'
 import { buildQuery, buildSortQuery } from '../utils/queryBuilder'
+import * as StatisticService from './statistic.service'
 
 export async function get(payload: SiteTypes.getSitesParams): Promise<SiteTypes.getSitesResult> {
   const { current = 1, pageSize = 10 } = payload.pagination || {}
+
+  await StatisticService.get({
+    filters: {
+      date: {
+        from: new Date('2025-08-01'),
+        to: new Date('2025-08-31'),
+      },
+    },
+  })
 
   const {
     names = '',
@@ -36,7 +46,7 @@ export async function get(payload: SiteTypes.getSitesParams): Promise<SiteTypes.
     rules: filterRules,
   })
   const sorters = buildSortQuery(payload.sorters || {}, { createdAt: 1 })
-  console.log(query)
+
   const pipeline = [
     {
       $match: query,

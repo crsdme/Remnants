@@ -21,7 +21,7 @@ const sortIcons = { asc: ArrowUp, desc: ArrowDown }
 
 export function useColumns() {
   const { t, i18n } = useTranslation()
-  const { isLoading, receiveModal, editModal } = useCreateInventoryContext()
+  const { isLoading } = useCreateInventoryContext()
 
   const columns = useMemo(() => {
     function sortHeader(column, label) {
@@ -60,14 +60,14 @@ export function useColumns() {
             },
             {
               permission: 'warehouse-transaction.edit',
-              onClick: async () => await editModal(item),
+              onClick: async () => {},
               label: t('table.edit'),
               icon: <Pencil className="h-4 w-4" />,
             },
             ...(item.status === 'awaiting'
               ? [{
                   permission: 'warehouse-transaction.receive',
-                  onClick: async () => await receiveModal(item),
+                  onClick: async () => {},
                   label: t('table.receive'),
                   icon: <Check className="h-4 w-4" />,
                 }]

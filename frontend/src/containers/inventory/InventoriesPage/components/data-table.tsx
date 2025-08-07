@@ -12,7 +12,7 @@ import { useColumns } from './columns'
 
 export function DataTable() {
   const { t } = useTranslation()
-  const { removeInventory } = useInventoryContext()
+  // const { removeInventory } = useInventoryContext()
 
   const [columnVisibility, setColumnVisibility] = useState({})
   const [rowSelection, setRowSelection] = useState({})
@@ -125,8 +125,8 @@ export function DataTable() {
   }
 
   const handleBulkRemove = () => {
-    const ids = inventories.filter((_, index) => rowSelection[index]).map(item => item.id)
-    removeInventory({ ids })
+    // const ids = inventories.filter((_, index) => rowSelection[index]).map(item => item.id)
+    // removeInventory({ ids })
     setRowSelection({})
   }
 

@@ -310,7 +310,7 @@ export async function get(payload: OrderTypes.getOrdersParams): Promise<OrderTyp
   const ordersCount = ordersRaw[0].totalCount[0]?.count || 0
 
   for (const order of orders) {
-    const orderItems = await getItems({ filters: { order: order.id } })
+    const orderItems = await getItems({ filters: { order: [order.id] } })
     order.items = orderItems.orderItems
 
     const orderPayments = await getOrderPayments({ filters: { order: order.id } })
@@ -325,16 +325,40 @@ export async function getItems(payload: OrderTypes.getOrderItemsParams): Promise
 
   const {
     order,
+    showFullData = false,
   } = payload.filters || {}
 
   const filterRules = {
-    order: { type: 'string' },
+    order: { type: 'array' },
   } as const
 
   const query = buildQuery({
     filters: { order },
     rules: filterRules,
   })
+
+  let commonProjection: any = {
+    _id: 0,
+    id: '$_id',
+    product: 1,
+    quantity: 1,
+    price: 1,
+    currency: { id: '$currency._id', names: 1, symbols: 1 },
+    discountAmount: 1,
+    discountPercent: 1,
+    transactionId: 1,
+    createdAt: 1,
+  }
+
+  if (showFullData) {
+    commonProjection = {
+      ...commonProjection,
+      profit: 1,
+      exchangeRate: 1,
+      purchasePrice: 1,
+      purchaseCurrency: { id: '$purchaseCurrency._id', names: 1, symbols: 1 },
+    }
+  }
 
   const pipeline = [
     {
@@ -563,18 +587,7 @@ export async function getItems(payload: OrderTypes.getOrderItemsParams): Promise
       },
     },
     {
-      $project: {
-        _id: 0,
-        id: '$_id',
-        product: 1,
-        quantity: 1,
-        price: 1,
-        currency: { id: '$currency._id', names: 1, symbols: 1 },
-        discountAmount: 1,
-        discountPercent: 1,
-        transactionId: 1,
-        createdAt: 1,
-      },
+      $project: commonProjection,
     },
     {
       $facet: {
