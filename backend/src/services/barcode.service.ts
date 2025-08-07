@@ -591,7 +591,7 @@ async function print55x40(payload: { barcode: any, size: string, language: strin
   )
 
   doc.text(
-    `${barcode.code} ${providerPrice[barcode.products[0].categories[0].id as keyof typeof providerPrice] || ''}`,
+    `${barcode.code}-${providerPrice[barcode.products[0].categories[0].id as keyof typeof providerPrice] || ''}`,
     padding,
     contentHeight / 2 + 10,
     { width: contentWidth, height: 25, align: 'center', ellipsis: true, lineBreak: false },
