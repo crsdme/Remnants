@@ -561,6 +561,11 @@ async function print55x40(payload: { barcode: any, size: string, language: strin
 
   const doc = new PDFDocument({ autoFirstPage: false })
 
+  const providerPrice = {
+    '9bd76cab-821f-4bd1-8428-9deae1a79da2': 900,
+    '6ea945b4-d6cb-4059-a3e3-fde3f9b25443': 1000,
+  }
+
   doc.registerFont('Manrope', path.resolve(__dirname, '../utils/fonts/Manrope-Regular.ttf'))
   doc.registerFont('Manrope-Bold', path.resolve(__dirname, '../utils/fonts/Manrope-Bold.ttf'))
   doc.font('Manrope')
@@ -586,7 +591,7 @@ async function print55x40(payload: { barcode: any, size: string, language: strin
   )
 
   doc.text(
-    barcode.code,
+    `${barcode.code} ${providerPrice[barcode.products[0].categories[0].id] || ''}`,
     padding,
     contentHeight / 2 + 10,
     { width: contentWidth, height: 25, align: 'center', ellipsis: true, lineBreak: false },
