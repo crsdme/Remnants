@@ -22,6 +22,7 @@ interface ProductSelectedTableProps {
     pageSize: number
   }
   changePagination: (pagination: { current: number, pageSize: number }) => void
+  lastAddedProductId: string | null
 }
 
 export function ProductSelectedTable(
@@ -33,6 +34,7 @@ export function ProductSelectedTable(
     pagination,
     changePagination,
     changeProduct,
+    lastAddedProductId,
   }: ProductSelectedTableProps,
 ) {
   const { t } = useTranslation()
@@ -108,6 +110,7 @@ export function ProductSelectedTable(
     <Fragment key={row.id}>
       <TableRow
         data-state={row.getIsSelected() && 'selected'}
+        className={row.original.id === lastAddedProductId ? 'bg-yellow-100' : ''}
       >
         {row.getVisibleCells().map(cell => (
           <TableCell

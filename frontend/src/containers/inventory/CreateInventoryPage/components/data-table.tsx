@@ -25,6 +25,7 @@ export function DataTable() {
   const { t, i18n } = useTranslation()
   const navigate = useNavigate()
   const { form, isLoading, submitInventoryForm } = useCreateInventoryContext()
+  const [lastAddedProductId, setLastAddedProductId] = useState(null)
   const [pagination, setPagination] = useState({
     current: 1,
     pageSize: 10,
@@ -79,6 +80,7 @@ export function DataTable() {
 
     if (product.index === -1) {
       toast.error(t('form.errors.required.product'))
+      setLastAddedProductId(null)
       return
     }
 
@@ -97,6 +99,7 @@ export function DataTable() {
         id: product.id,
       })
     }
+    setLastAddedProductId(product.id)
     toast.success(t('form.success.productAdded'))
     setPagination(state => ({ ...state, current: Math.ceil(product.index / 10) }))
   }
@@ -162,6 +165,7 @@ export function DataTable() {
         changeProduct={changeProduct}
         pagination={pagination}
         changePagination={changePagination}
+        lastAddedProductId={lastAddedProductId}
       />
       <Separator className="my-4" />
       <form className="w-full space-y-1 mt-4" onSubmit={form.handleSubmit(onSubmit)}>
