@@ -61,7 +61,7 @@ export function toBoolean(value?: string): boolean {
   return value.toString().toLowerCase() === 'true'
 }
 
-export const toNumber = (value?: string): number => Number(value ?? 0) || 0
+export const toNumber = (value?: string): number => Number(value?.replace(',', '.') ?? 0) || 0
 
 export function getId(value?: string): string {
   if (!value)
