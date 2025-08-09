@@ -564,6 +564,8 @@ async function print55x40(payload: { barcode: any, size: string, language: strin
   const providerPrice = {
     '9bd76cab-821f-4bd1-8428-9deae1a79da2': 900,
     '6ea945b4-d6cb-4059-a3e3-fde3f9b25443': 1000,
+    '21c3f26a-cc0d-495e-8d17-ed7bfba391f6': 600,
+    '0ba601b3-bcd5-4c13-b71d-ad3f9d597d23': 910,
   }
 
   doc.registerFont('Manrope', path.resolve(__dirname, '../utils/fonts/Manrope-Regular.ttf'))

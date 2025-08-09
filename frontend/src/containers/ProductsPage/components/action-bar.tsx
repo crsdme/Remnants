@@ -23,7 +23,7 @@ export function ActionBar() {
     isLoading,
     isModalOpen,
     isEdit,
-    exportProducts,
+    downloadTemplate,
     importProducts,
     openModal,
     closeModal,
@@ -37,7 +37,7 @@ export function ActionBar() {
   }
 
   const handleDownloadTemplate = async () => {
-    exportProducts({ ids: [] })
+    downloadTemplate()
   }
 
   const onImport = async () => {

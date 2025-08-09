@@ -56,5 +56,9 @@ router.post(
   checkPermissions('product.duplicate'),
   ProductController.duplicate,
 )
+router.get(
+  '/download-template',
+  ProductController.downloadTemplate,
+)
 
 export default router

@@ -98,3 +98,17 @@ export async function exportHandler(req: Request, res: Response, next: NextFunct
     next(err)
   }
 }
+
+export async function downloadTemplate(req: Request, res: Response, next: NextFunction) {
+  try {
+    const serviceResponse = await ProductService.downloadTemplate()
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    res.setHeader('X-Export-Code', serviceResponse.code)
+    res.setHeader('X-Export-Message', serviceResponse.message)
+    res.setHeader('Access-Control-Expose-Headers', 'x-export-code, x-export-message')
+    res.send(serviceResponse.buffer)
+  }
+  catch (err) {
+    next(err)
+  }
+}

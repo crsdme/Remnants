@@ -24,7 +24,7 @@ export async function start(payload: { key: string }) {
 
 async function createProducts() {
   const { products } = await ProductService.get({
-    pagination: { current: 1, pageSize: 400 },
+    pagination: { current: 1, pageSize: 1000 },
   })
 
   const sites = await SiteModel.find({})

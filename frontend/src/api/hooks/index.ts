@@ -151,9 +151,9 @@ export * from './product-property/useProductPropertyRemove'
 // Product Management
 export * from './product/useProductBatch'
 export * from './product/useProductCreate'
+export * from './product/useProductDownloadTemplate'
 export * from './product/useProductDuplicate'
 export * from './product/useProductEdit'
-
 export * from './product/useProductExport'
 export * from './product/useProductImport'
 export * from './product/useProductQuery'

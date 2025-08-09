@@ -14,6 +14,7 @@ import {
   useCurrencyQuery,
   useProductBatch,
   useProductCreate,
+  useProductDownloadTemplate,
   useProductDuplicate,
   useProductEdit,
   useProductExport,
@@ -54,6 +55,7 @@ interface ProductContextType {
   importProducts: (params) => void
   duplicateProducts: (params: { ids: string[] }) => void
   exportProducts: (params: { ids: string[] }) => void
+  downloadTemplate: () => void
   loadCategoryOptions: (params: { query: string, selectedValue: string[] }) => Promise<Category[]>
   loadUnitsOptions: (params: { query: string, selectedValue: string[] }) => Promise<Unit[]>
 }
@@ -308,6 +310,19 @@ export function ProductProvider({ children }: ProductProviderProps) {
     },
   })
 
+  const useMutateDownloadTemplate = useProductDownloadTemplate({
+    options: {
+      onSuccess: ({ data, headers }) => {
+        downloadBlob(data, 'products-template.xlsx')
+        toast.success(t(`response.title.${headers['x-export-code']}`), { description: `${t(`response.description.${headers['x-export-code']}`)} ${headers['x-export-message'] || ''}` })
+      },
+      onError: ({ response }) => {
+        const error = response.data.error
+        toast.error(t(`error.title.${error.code}`), { description: `${t(`error.description.${error.code}`)} ${error.description || ''}` })
+      },
+    },
+  })
+
   const submitProductForm = (params) => {
     setIsLoading(true)
     if (params.productProperties) {
@@ -365,6 +380,10 @@ export function ProductProvider({ children }: ProductProviderProps) {
     useMutateExportProduct.mutate(params)
   }
 
+  const downloadTemplate = () => {
+    useMutateDownloadTemplate.mutate()
+  }
+
   const loadCategoryOptions = useCallback(async ({ query, selectedValue }) => {
     const response = await getCategories({
       pagination: { full: true },
@@ -411,6 +430,7 @@ export function ProductProvider({ children }: ProductProviderProps) {
       importProducts,
       duplicateProducts,
       exportProducts,
+      downloadTemplate,
       loadCategoryOptions,
       loadUnitsOptions,
     }),

@@ -270,3 +270,10 @@ export interface exportProductsResult {
 export interface exportProductsParams {
   ids?: IdType[]
 }
+
+export interface downloadTemplateResult {
+  status: Status
+  code: Code
+  message: Message
+  buffer: Buffer
+}

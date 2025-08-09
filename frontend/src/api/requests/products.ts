@@ -56,3 +56,9 @@ export async function exportProducts(params: exportProductsParams) {
     responseType: 'blob',
   })
 }
+
+export async function downloadTemplate() {
+  return api.get<Blob>('products/download-template', {
+    responseType: 'blob',
+  })
+}
