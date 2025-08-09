@@ -856,14 +856,14 @@ export async function exportHandler(payload: ProductTypes.exportProductsParams):
       dynamicKeys.forEach(({ id, type, key }) => {
         const property = product.productProperties.find((item: any) => item.id === id)
         if (type === 'multiSelect') {
-          const options = property.optionData || []
+          const options = property?.optionData || []
           const index = Number.parseInt(key.split('_')[1], 10) - 1
           const option = options[index]
           row[key] = option ? `${option.names?.[language]} (${option.id})` : ''
         }
         else if (type === 'select' || type === 'color') {
-          row[key] = property.optionData?.[0]
-            ? `${property.optionData[0].names?.[language]} (${property.optionData[0].id})`
+          row[key] = property?.optionData?.[0]
+            ? `${property?.optionData[0].names?.[language]} (${property?.optionData[0].id})`
             : ''
         }
         else {
@@ -1046,14 +1046,14 @@ export async function downloadTemplate(): Promise<ProductTypes.downloadTemplateR
       dynamicKeys.forEach(({ id, type, key }) => {
         const property = product.productProperties.find((item: any) => item.id === id)
         if (type === 'multiSelect') {
-          const options = property.optionData || []
+          const options = property?.optionData || []
           const index = Number.parseInt(key.split('_')[1], 10) - 1
           const option = options[index]
           row[key] = option ? `${option.names?.[language]} (${option.id})` : ''
         }
         else if (type === 'select' || type === 'color') {
-          row[key] = property.optionData?.[0]
-            ? `${property.optionData[0].names?.[language]} (${property.optionData[0].id})`
+          row[key] = property?.optionData?.[0]
+            ? `${property?.optionData[0].names?.[language]} (${property?.optionData[0].id})`
             : ''
         }
         else {
