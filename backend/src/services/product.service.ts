@@ -113,7 +113,7 @@ export async function get(payload: ProductTypes.getProductsParams): Promise<Prod
     {
       $lookup: {
         from: 'product-property-options',
-        let: { valueArr: '$productProperties.value' },
+        let: { valueArr: { $ifNull: ['$productProperties.value', []] } },
         pipeline: [
           {
             $match: {
