@@ -13,7 +13,7 @@ export async function get(payload: BarcodeTypes.getBarcodesParams): Promise<Barc
   const { current = 1, pageSize = 10 } = payload.pagination || {}
 
   const {
-    id = '',
+    ids = [],
     code = '',
     products = [],
     active = undefined,
@@ -28,7 +28,7 @@ export async function get(payload: BarcodeTypes.getBarcodesParams): Promise<Barc
   } = payload.filters || {}
 
   const filterRules = {
-    _id: { type: 'string' },
+    _id: { type: 'array' },
     code: { type: 'string' },
     products: { type: 'array' },
     active: { type: 'array' },
@@ -37,11 +37,9 @@ export async function get(payload: BarcodeTypes.getBarcodesParams): Promise<Barc
   } as const
 
   const query = buildQuery({
-    filters: { _id: id, code, products, active, createdAt, updatedAt },
+    filters: { _id: ids, code, products, active, createdAt, updatedAt },
     rules: filterRules,
   })
-
-  console.log(query)
 
   const sorters = buildSortQuery(payload.sorters || {}, { code: 1 })
 
@@ -401,23 +399,27 @@ export async function remove(payload: BarcodeTypes.removeBarcodesParams): Promis
 }
 
 export async function print(payload: BarcodeTypes.printBarcodeParams): Promise<BarcodeTypes.printBarcodeResult> {
-  const { id, size = '20x30', language = 'en' } = payload
+  const { ids, size = '20x30', language = 'en' } = payload
 
-  const { barcodes } = await get({ filters: { id }, pagination: { full: true }, sorters: {} })
-  const barcode = barcodes[0]
+  const { barcodes } = await get({ filters: { ids }, pagination: { full: true }, sorters: {} })
 
-  if (!barcode) {
-    throw new HttpError(400, 'Barcode not found', 'BARCODE_NOT_FOUND')
+  if (barcodes.length === 0) {
+    throw new HttpError(400, 'Barcodes not found', 'BARCODES_NOT_FOUND')
   }
 
   if (size === '60x30') {
-    return await print60x30({ barcode, size, language })
+    return await print60x30({ barcodes, size, language })
   }
 
   if (size === '55x40') {
-    return await print55x40({ barcode, size, language })
+    return await print55x40({ barcodes, size, language })
   }
 
+  return await print20x30({ barcodes, size, language })
+}
+
+async function print20x30(payload: { barcodes: any[], size: string, language: string }): Promise<BarcodeTypes.printBarcodeResult> {
+  const { barcodes, size, language } = payload
   const [w, h] = size.split('x').map(Number)
   const padding = 10
   const contentWidth = w * 8.49 - padding * 2
@@ -427,225 +429,241 @@ export async function print(payload: BarcodeTypes.printBarcodeParams): Promise<B
 
   doc.registerFont('Manrope', path.resolve(__dirname, '../utils/fonts/Manrope-Regular.ttf'))
   doc.font('Manrope')
-  doc.fontSize(18)
-  doc.addPage({
-    size: [w * 8.49, h * 8.49],
-  })
 
-  const barcodePng = await bwipjs.toBuffer({
-    bcid: 'code128',
-    text: barcode.code,
-    scale: 8,
-    height: 20,
-    includetext: false,
-    textxalign: 'center',
-  })
+  for (const barcode of barcodes) {
+    const product = barcode?.products?.[0]
+    if (!product)
+      continue
 
-  doc.image(
-    barcodePng,
-    padding,
-    padding,
-    { width: contentWidth, height: contentHeight / 2 },
-  )
+    doc.fontSize(18)
+    doc.addPage({
+      size: [w * 8.49, h * 8.49],
+    })
 
-  doc.text(
-    barcode.code,
-    padding,
-    contentHeight / 2 + 15,
-    { width: contentWidth, height: 25, align: 'center', ellipsis: true, lineBreak: false },
-  )
+    const barcodePng = await bwipjs.toBuffer({
+      bcid: 'code128',
+      text: barcode.code,
+      scale: 8,
+      height: 20,
+      includetext: false,
+      textxalign: 'center',
+    })
 
-  const productsText = barcode.products.map((product: any) => product.names[language] || '').join(', ')
+    doc.image(
+      barcodePng,
+      padding,
+      padding,
+      { width: contentWidth, height: contentHeight / 2 },
+    )
 
-  doc.text(
-    productsText,
-    padding,
-    doc.y,
-    { width: contentWidth, height: 50, ellipsis: true, lineBreak: false },
-  )
+    doc.text(
+      barcode.code,
+      padding,
+      contentHeight / 2 + 15,
+      { width: contentWidth, height: 25, align: 'center', ellipsis: true, lineBreak: false },
+    )
+
+    const productsText = barcode.products.map((product: any) => product.names[language] || '').join(', ')
+
+    doc.text(
+      productsText,
+      padding,
+      doc.y,
+      { width: contentWidth, height: 50, ellipsis: true, lineBreak: false },
+    )
+  }
 
   return { status: 'success', code: 'BARCODE_PRINTED', message: 'Barcode printed', doc }
 }
 
-async function print60x30(payload: { barcode: any, size: string, language: string }): Promise<BarcodeTypes.printBarcodeResult> {
-  const { barcode, size, language } = payload
+async function print60x30(payload: { barcodes: any[], size: string, language: string }): Promise<BarcodeTypes.printBarcodeResult> {
+  const { barcodes, size, language } = payload
   const [w, h] = size.split('x').map(Number)
   const padding = 10
   const contentWidth = w * 8.49 - padding * 2
   const contentHeight = h * 8.49 - padding * 2
 
-  const product = barcode.products[0]
-
   const doc = new PDFDocument({ autoFirstPage: false })
 
   doc.registerFont('Manrope', path.resolve(__dirname, '../utils/fonts/Manrope-Regular.ttf'))
   doc.font('Manrope')
-  doc.fontSize(26)
-  doc.addPage({
-    size: [w * 8.49, h * 8.49],
-  })
 
-  const barcodePng = await bwipjs.toBuffer({
-    bcid: 'code128',
-    text: barcode.code,
-    scale: 8,
-    height: 20,
-    includetext: false,
-    textxalign: 'center',
-  })
+  for (const barcode of barcodes) {
+    const product = barcode?.products?.[0]
+    if (!product) {
+      continue
+    }
 
-  doc.image(
-    barcodePng,
-    padding,
-    padding,
-    { width: contentWidth, height: contentHeight / 2 },
-  )
+    doc.fontSize(26)
+    doc.addPage({
+      size: [w * 8.49, h * 8.49],
+    })
 
-  doc.text(
-    barcode.code,
-    padding,
-    contentHeight / 2 + 10,
-    { width: contentWidth, height: 25, align: 'center', ellipsis: true, lineBreak: false },
-  )
+    const barcodePng = await bwipjs.toBuffer({
+      bcid: 'code128',
+      text: barcode.code,
+      scale: 8,
+      height: 20,
+      includetext: false,
+      textxalign: 'center',
+    })
 
-  doc.text(
-    product.names[language],
-    padding,
-    doc.y,
-    { width: contentWidth, height: 50, ellipsis: true, lineBreak: false },
-  )
+    doc.image(
+      barcodePng,
+      padding,
+      padding,
+      { width: contentWidth, height: contentHeight / 2 },
+    )
 
-  // doc.text(
-  //   `${product.price} ${product.currency.symbols[language] || ''}`,
-  //   padding,
-  //   doc.y,
-  //   { width: contentWidth, height: 50, ellipsis: true, lineBreak: false },
-  // )
+    doc.text(
+      barcode.code,
+      padding,
+      contentHeight / 2 + 10,
+      { width: contentWidth, height: 25, align: 'center', ellipsis: true, lineBreak: false },
+    )
 
-  const result = (product.productProperties || []).map((property: any) => {
-    let value = ''
+    doc.text(
+      product.names[language],
+      padding,
+      doc.y,
+      { width: contentWidth, height: 50, ellipsis: true, lineBreak: false },
+    )
 
-    if (typeof property.value === 'number') {
-      if (property.id === 'baad1168-e6bd-48e1-a610-0fd60ffcfc4d') {
-        value = `${property.value} cm`
+    // doc.text(
+    //   `${product.price} ${product.currency.symbols[language] || ''}`,
+    //   padding,
+    //   doc.y,
+    //   { width: contentWidth, height: 50, ellipsis: true, lineBreak: false },
+    // )
+
+    const result = (product.productProperties || []).map((property: any) => {
+      let value = ''
+
+      if (typeof property.value === 'number') {
+        if (property.id === 'baad1168-e6bd-48e1-a610-0fd60ffcfc4d') {
+          value = `${property.value} cm`
+        }
+        else {
+          value = `${property.value} g`
+        }
       }
       else {
-        value = `${property.value} g`
+        value = property.optionData.map((option: any) => option.names[language]).join(', ')
       }
-    }
-    else {
-      value = property.optionData.map((option: any) => option.names[language]).join(', ')
-    }
 
-    return value
-  }).join(', ')
+      return value
+    }).join(', ')
 
-  doc.text(
-    result,
-    padding,
-    doc.y,
-    { width: contentWidth, height: 50, ellipsis: true, lineBreak: false },
-  )
+    doc.text(
+      result,
+      padding,
+      doc.y,
+      { width: contentWidth, height: 50, ellipsis: true, lineBreak: false },
+    )
+  }
 
   return { status: 'success', code: 'BARCODE_PRINTED', message: 'Barcode printed', doc }
 }
 
-async function print55x40(payload: { barcode: any, size: string, language: string }): Promise<BarcodeTypes.printBarcodeResult> {
-  const { barcode, size, language } = payload
+async function print55x40(payload: { barcodes: any[], size: string, language: string }): Promise<BarcodeTypes.printBarcodeResult> {
+  const { barcodes, size, language } = payload
   const [w, h] = size.split('x').map(Number)
   const padding = 10
   const contentWidth = w * 8.49 - padding * 2
   const contentHeight = h * 8.49 - padding * 2
 
-  const product = barcode.products[0]
-
   const doc = new PDFDocument({ autoFirstPage: false })
 
-  const providerPrice = {
+  const providerPrice: Record<string, number> = {
     '9bd76cab-821f-4bd1-8428-9deae1a79da2': 900,
     '6ea945b4-d6cb-4059-a3e3-fde3f9b25443': 1000,
     '21c3f26a-cc0d-495e-8d17-ed7bfba391f6': 600,
     '0ba601b3-bcd5-4c13-b71d-ad3f9d597d23': 910,
   }
 
+  // Шрифты регистрируем один раз
   doc.registerFont('Manrope', path.resolve(__dirname, '../utils/fonts/Manrope-Regular.ttf'))
   doc.registerFont('Manrope-Bold', path.resolve(__dirname, '../utils/fonts/Manrope-Bold.ttf'))
-  doc.font('Manrope')
-  doc.fontSize(26)
-  doc.addPage({
-    size: [w * 8.49, h * 8.49],
-  })
 
-  const barcodePng = await bwipjs.toBuffer({
-    bcid: 'code128',
-    text: barcode.code,
-    scale: 8,
-    height: 20,
-    includetext: false,
-    textxalign: 'center',
-  })
+  for (const barcode of barcodes) {
+    const product = barcode?.products?.[0]
+    if (!product) {
+      continue
+    }
 
-  doc.image(
-    barcodePng,
-    padding,
-    padding,
-    { width: contentWidth, height: contentHeight / 2 },
-  )
+    doc.font('Manrope')
+    doc.fontSize(26)
+    doc.addPage({ size: [w * 8.49, h * 8.49] })
 
-  doc.text(
-    `${barcode.code}-${providerPrice[barcode.products[0].categories[0].id as keyof typeof providerPrice] || ''}`,
-    padding,
-    contentHeight / 2 + 10,
-    { width: contentWidth, height: 25, align: 'center', ellipsis: true, lineBreak: false },
-  )
+    const barcodePng = await bwipjs.toBuffer({
+      bcid: 'code128',
+      text: barcode.code,
+      scale: 8,
+      height: 20,
+      includetext: false,
+      textxalign: 'center',
+    })
 
-  doc.fontSize(70)
+    doc.image(barcodePng, padding, padding, {
+      width: contentWidth,
+      height: contentHeight / 2,
+    })
 
-  let length = ''
-  let weight = ''
-  let curls = ''
+    const providerKey = product?.categories?.[0]?.id as string | undefined
+    const providerSuffix = providerKey ? (providerPrice[providerKey] || '') : ''
 
-  for (const property of product.productProperties || []) {
-    if (typeof property.value === 'number') {
-      if (property.id === 'efcc3c51-a146-4975-bc5b-196745f76891') {
+    doc.text(
+      `${barcode.code}${providerSuffix ? `-${providerSuffix}` : ''}`,
+      padding,
+      contentHeight / 2 + 10,
+      { width: contentWidth, height: 25, align: 'center', ellipsis: true, lineBreak: false },
+    )
+
+    doc.fontSize(70)
+
+    let length = ''
+    let weight = ''
+    let curls = ''
+
+    for (const property of product.productProperties || []) {
+      if (typeof property.value === 'number' && property.id === 'efcc3c51-a146-4975-bc5b-196745f76891') {
         length = `${property.value} cm`
       }
-      else if (property.id === '7c3e2c1b-f2bf-4639-baf2-7b1101fa7bf2') {
+      else if (typeof property.value === 'number' && property.id === '7c3e2c1b-f2bf-4639-baf2-7b1101fa7bf2') {
         weight = `${property.value} g`
       }
+      if (property.id === '25144e64-5c4c-47fd-842d-c0a2393f972e' && property.value === '822ec142-d144-44fb-ba96-582cff8757b3') {
+        curls = 'Curly'
+      }
     }
-    if (property.id === '25144e64-5c4c-47fd-842d-c0a2393f972e' && property.value === '822ec142-d144-44fb-ba96-582cff8757b3') {
-      curls = 'Curly'
-    }
+
+    const lenWgt = [length, weight].filter(Boolean).join(', ')
+    doc.text(
+      lenWgt,
+      padding,
+      doc.y - 10,
+      { width: contentWidth, height: 50, ellipsis: true, lineBreak: false, align: 'center' },
+    )
+
+    doc.fontSize(56)
+    doc.text(
+      curls,
+      padding,
+      doc.y - 25,
+      { width: contentWidth, height: 50, ellipsis: true, lineBreak: false, align: 'center' },
+    )
+
+    doc.addPage({ size: [w * 8.49, h * 8.49] })
+    doc.font('Manrope-Bold').fontSize(175)
+
+    const bigCode = (product.names?.[language] || '').split('#')[1] || '4054'
+    doc.text(
+      bigCode,
+      padding,
+      doc.y - 30,
+      { width: contentWidth, height: 50, lineBreak: false, align: 'center' },
+    )
   }
 
-  doc.text(
-    `${length}, ${weight}`,
-    padding,
-    doc.y - 10,
-    { width: contentWidth, height: 50, ellipsis: true, lineBreak: false, align: 'center' },
-  )
-
-  doc.fontSize(56)
-
-  doc.text(
-    `${curls}`,
-    padding,
-    doc.y - 25,
-    { width: contentWidth, height: 50, ellipsis: true, lineBreak: false, align: 'center' },
-  )
-
-  doc.addPage({
-    size: [w * 8.49, h * 8.49],
-  })
-  doc.font('Manrope-Bold')
-  doc.fontSize(175)
-  doc.text(
-    product.names[language].split('#')[1] || '4054',
-    padding,
-    doc.y - 30,
-    { width: contentWidth, height: 50, lineBreak: false, align: 'center' },
-  )
-
-  return { status: 'success', code: 'BARCODE_PRINTED', message: 'Barcode printed', doc }
+  return { status: 'success', code: 'BARCODE_PRINTED', message: 'Barcodes printed', doc }
 }

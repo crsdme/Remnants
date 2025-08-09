@@ -1,4 +1,4 @@
-import { ClipboardList, Copy, Download, MoreVertical, Trash } from 'lucide-react'
+import { ClipboardList, Copy, Download, MoreVertical, Printer, Trash } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 
 import {
@@ -15,6 +15,7 @@ interface SelectionDropdownProps {
   onCopy?: () => void
   onDuplicate?: () => void
   onExport?: () => void
+  onPrint?: () => void
 }
 
 export function TableSelectionDropdown({
@@ -23,6 +24,7 @@ export function TableSelectionDropdown({
   onCopy,
   onDuplicate,
   onExport,
+  onPrint,
 }: SelectionDropdownProps) {
   const { t } = useTranslation()
 
@@ -64,6 +66,12 @@ export function TableSelectionDropdown({
           >
             <Trash className="w-4 h-4" />
             {t('component.tableSelection.delete')}
+          </DropdownMenuItem>
+        )}
+        {onPrint && (
+          <DropdownMenuItem onClick={onPrint} className="flex items-center gap-2">
+            <Printer className="w-4 h-4" />
+            {t('component.tableSelection.print')}
           </DropdownMenuItem>
         )}
       </DropdownMenuContent>

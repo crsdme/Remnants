@@ -10,12 +10,16 @@ import { getDifferenceDeep } from '../utils/getDiff'
 import { HttpError } from '../utils/httpError'
 import {
   extractLangMap,
+  parseCategories,
   parseFile,
+  parseId,
+  parseProductProperties,
   toNumber,
 } from '../utils/parseTools'
 import { buildQuery, buildSortQuery } from '../utils/queryBuilder'
 import * as BarcodeService from './barcode.service'
 import * as ProductPropertyOptionService from './product-property-option.service'
+import * as ProductService from './product.service'
 import * as SyncEntryService from './sync-entry.service'
 
 export async function get(payload: ProductTypes.getProductsParams): Promise<ProductTypes.getProductsResult> {
@@ -425,6 +429,8 @@ export async function create(payload: ProductTypes.createProductParams): Promise
     syncSites,
   } = payload
 
+  console.log(JSON.stringify(payload, null, 2))
+
   const parsedProductProperties = productProperties.map(property => ({
     _id: property.id,
     value: property.value,
@@ -682,12 +688,20 @@ export async function importHandler(payload: ProductTypes.importProductsParams):
     _id: row.id || undefined,
     names: extractLangMap(row, 'name'),
     price: toNumber(row.price),
+    currency: parseId(row.currency),
     purchasePrice: toNumber(row.purchasePrice),
+    purchaseCurrency: parseId(row.purchaseCurrency),
     barcodes: row.barcodes,
-    categories: row.categories,
-    unit: row.unit,
-    productPropertiesGroup: row.productPropertiesGroup,
-    productProperties: row.productProperties,
+    categories: parseCategories(row),
+    unit: parseId(row.unit),
+    productPropertiesGroup: parseId(row.productPropertiesGroup),
+    productProperties: parseProductProperties(row).map(property => ({
+      id: property._id,
+      value: property.value,
+    })) || [],
+    images: [],
+    uploadedImages: [],
+    generateBarcode: true,
   }))
 
   const productsForEdit = parsedProducts.filter(product => product._id)
@@ -701,7 +715,9 @@ export async function importHandler(payload: ProductTypes.importProductsParams):
           $set: {
             names: product.names,
             price: product.price,
+            currency: product.currency,
             purchasePrice: product.purchasePrice,
+            purchaseCurrency: product.purchaseCurrency,
             barcodes: product.barcodes,
             categories: product.categories,
             unit: product.unit,
@@ -714,8 +730,17 @@ export async function importHandler(payload: ProductTypes.importProductsParams):
 
     await ProductModel.bulkWrite(bulkProducts)
   }
+
   if (productsForCreate.length > 0) {
-    await ProductModel.create(productsForCreate)
+    for (const product of productsForCreate) {
+      await ProductService.create({
+        ...product,
+        productProperties: product.productProperties.map(property => ({
+          id: property.id,
+          value: property.value as string | number | boolean | string[],
+        })),
+      })
+    }
   }
 
   const productIds = [...productsForEdit, ...productsForCreate].map(product => product?._id)

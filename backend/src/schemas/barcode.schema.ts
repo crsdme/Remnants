@@ -45,8 +45,12 @@ export const removeBarcodeSchema = z.object({
   ids: z.array(idSchema).min(1),
 })
 
+const idsFromQuery = z
+  .union([z.array(z.string()), z.string()])
+  .transform(v => Array.isArray(v) ? v : v.split(',').map(s => s.trim()).filter(Boolean))
+
 export const printBarcodeSchema = z.object({
-  id: idSchema,
+  ids: idsFromQuery.pipe(z.array(idSchema).min(1)),
   size: z.string().optional().default('20x30'),
   language: z.string().optional().default('en'),
 })

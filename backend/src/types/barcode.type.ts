@@ -22,7 +22,7 @@ export interface getBarcodesResult {
 }
 
 export interface getBarcodesFilters {
-  id?: IdType
+  ids?: IdType[]
   code?: string
   products?: IdType[]
   active?: boolean[]
@@ -94,7 +94,7 @@ export interface printBarcodeResult {
 }
 
 export interface printBarcodeParams {
-  id: IdType
+  ids: IdType[]
   size?: string
   language?: string
 }

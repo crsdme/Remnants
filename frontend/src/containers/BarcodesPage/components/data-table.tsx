@@ -12,9 +12,10 @@ import { useDebounceCallback } from '@/utils/hooks'
 
 import { useColumns } from './columns'
 import { DataTableFilters } from './data-table-filters'
+import { backendUrl } from '@/utils/constants'
 
 export function DataTable() {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const { removeBarcodes } = useBarcodeContext()
 
   const filtersInitialState = {
@@ -151,6 +152,12 @@ export function DataTable() {
     setRowSelection({})
   }
 
+  const handleBulkPrint = () => {
+    const selectedIds = Object.keys(rowSelection)
+    const path = `${backendUrl}api/barcodes/print?ids=${selectedIds.join(',')}&size=55x40&language=${i18n.language}`
+    window.open(path, '_blank', 'noopener,noreferrer')
+  }
+
   const advancedFiltersSubmit = (filters) => {
     const filterValues = Object.fromEntries(filters.map(({ column, value }) => [column, value]))
     setFilters(state => ({
@@ -197,6 +204,7 @@ export function DataTable() {
           <TableSelectionDropdown
             selectedCount={Object.keys(rowSelection).length}
             onRemove={handleBulkRemove}
+            onPrint={handleBulkPrint}
           />
           <ColumnVisibilityMenu table={table} tableId="barcode" />
         </div>
