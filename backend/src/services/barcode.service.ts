@@ -579,7 +579,7 @@ async function print55x40(payload: { barcodes: any[], size: string, language: st
     '6ea945b4-d6cb-4059-a3e3-fde3f9b25443': 1000,
     '21c3f26a-cc0d-495e-8d17-ed7bfba391f6': 600,
     '0ba601b3-bcd5-4c13-b71d-ad3f9d597d23': 910,
-    '01b8e779-4b62-4058-ae7a-d4b36835960b': 1200,
+    '01b8e779-4b62-4058-ae7a-d4b36835960b': 1020,
   }
 
   // Шрифты регистрируем один раз
