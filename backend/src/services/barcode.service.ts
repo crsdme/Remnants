@@ -624,7 +624,7 @@ async function print55x40(payload: { barcodes: any[], size: string, language: st
 
     let length = ''
     let weight = ''
-    let curls = ''
+    let type = ''
 
     for (const property of product.productProperties || []) {
       if (typeof property.value === 'number' && property.id === 'efcc3c51-a146-4975-bc5b-196745f76891') {
@@ -633,8 +633,11 @@ async function print55x40(payload: { barcodes: any[], size: string, language: st
       else if (typeof property.value === 'number' && property.id === '7c3e2c1b-f2bf-4639-baf2-7b1101fa7bf2') {
         weight = `${property.value} g`
       }
-      if (property.id === '25144e64-5c4c-47fd-842d-c0a2393f972e' && property.value === '822ec142-d144-44fb-ba96-582cff8757b3') {
-        curls = 'Curly'
+      if (property.id === '25144e64-5c4c-47fd-842d-c0a2393f972e' && property.value.includes('822ec142-d144-44fb-ba96-582cff8757b3')) {
+        type = 'Curly'
+      }
+      if (property.id === '25144e64-5c4c-47fd-842d-c0a2393f972e' && property.value.includes('b930fb75-61a6-41c0-88de-0c69082b7f06')) {
+        type += ', Virgin'
       }
     }
 
@@ -648,7 +651,7 @@ async function print55x40(payload: { barcodes: any[], size: string, language: st
 
     doc.fontSize(56)
     doc.text(
-      curls,
+      type,
       padding,
       doc.y - 25,
       { width: contentWidth, height: 50, ellipsis: true, lineBreak: false, align: 'center' },
