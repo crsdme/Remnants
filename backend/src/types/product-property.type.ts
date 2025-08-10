@@ -7,7 +7,6 @@ export interface ProductProperty {
   options: IdType[]
   priority: number
   type: string
-  isMultiple: boolean
   isRequired: boolean
   showInTable: boolean
   active: boolean
@@ -31,7 +30,6 @@ export interface getProductPropertiesFilters {
   options: IdType[]
   type: string
   priority: number
-  isMultiple: boolean
   isRequired: boolean
   showInTable: boolean
   active: boolean[]
@@ -43,7 +41,6 @@ export interface getProductPropertiesSorters {
   names: Sorter
   priority: Sorter
   type: Sorter
-  isMultiple: Sorter
   isRequired: Sorter
   showInTable: Sorter
   active: Sorter
@@ -83,7 +80,6 @@ export interface editProductPropertyParams {
   names: LanguageString
   priority?: number
   type: string
-  isMultiple: boolean
   showInTable: boolean
   isRequired: boolean
   active?: boolean

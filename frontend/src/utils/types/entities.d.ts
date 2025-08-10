@@ -59,7 +59,6 @@ interface ProductProperty {
   names: LanguageString
   priority: number
   type: string
-  isMultiple: boolean
   active: boolean
   createdAt: Date
   updatedAt: Date

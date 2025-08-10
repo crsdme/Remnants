@@ -59,7 +59,6 @@ export function ProductPropertiesProvider({ children }: ProductPropertiesProvide
     z.object({
       names: z.record(z.string({ required_error: t('form.errors.required') }).min(3, { message: t('form.errors.min_length', { count: 3 }) }).trim()),
       priority: z.number().optional(),
-      isMultiple: z.boolean().optional(),
       isRequired: z.boolean().optional(),
       showInTable: z.boolean().optional(),
       type: z.string().optional(),
@@ -74,7 +73,6 @@ export function ProductPropertiesProvider({ children }: ProductPropertiesProvide
         ru: '',
       },
       priority: 0,
-      isMultiple: false,
       isRequired: false,
       showInTable: false,
       type: '',
@@ -108,7 +106,6 @@ export function ProductPropertiesProvider({ children }: ProductPropertiesProvide
       return {
         names: {},
         priority: 0,
-        isMultiple: false,
         isRequired: false,
         showInTable: false,
         type: '',

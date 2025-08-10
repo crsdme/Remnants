@@ -36,7 +36,6 @@ export interface createProductPropertiesParams {
   names: LanguageString
   priority: number
   type: string
-  isMultiple: boolean
   showInTable?: boolean
   active?: boolean
 }
@@ -46,7 +45,6 @@ export interface editProductPropertyParams {
   names: LanguageString
   priority: number
   type: string
-  isMultiple: boolean
   showInTable?: boolean
   active?: boolean
 }

@@ -19,7 +19,6 @@ export function DataTable() {
 
   const filtersInitialState = {
     names: '',
-    isMultiple: undefined,
     isRequired: undefined,
     type: undefined,
     priority: undefined,
