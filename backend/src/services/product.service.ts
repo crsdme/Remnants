@@ -1044,7 +1044,9 @@ export async function downloadTemplate(): Promise<ProductTypes.downloadTemplateR
         row[`categories_${i}`] = product?.categories[i - 1] ? `${product?.categories[i - 1]?.names[language] || 'NO_NAME'} (${product?.categories[i - 1]?.id})` : ''
       }
       dynamicKeys.forEach(({ id, type, key }) => {
-        const property = product.productProperties.find((item: any) => item.id === id)
+        const property = product.productProperties.find(
+          (item: any) => (item.id || item._id)?.toString() === id.toString(),
+        )
         if (type === 'multiSelect') {
           const options = property?.optionData || []
           const index = Number.parseInt(key.split('_')[1], 10) - 1
