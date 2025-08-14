@@ -429,8 +429,6 @@ export async function create(payload: ProductTypes.createProductParams): Promise
     syncSites,
   } = payload
 
-  console.log(JSON.stringify(payload, null, 2))
-
   const parsedProductProperties = productProperties.map(property => ({
     _id: property.id,
     value: property.value,

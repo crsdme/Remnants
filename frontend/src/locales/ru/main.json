@@ -24,6 +24,7 @@
   "table.mismatch": "Несоответствие",
   "table.match": "Соответствие",
   "table.view": "Просмотр",
+  "table.export": "Экспортировать",
 
   "order-status.all": "Все",
 
@@ -44,6 +45,7 @@
   "button.generate": "Сгенерировать",
   "button.create": "Создать",
   "button.add": "Добавить",
+  "button.send": "Отправить",
 
   "form.errors.required": "Обязательное поле",
   "form.errors.required.products": "Необходимо выбрать хотя бы один товар",

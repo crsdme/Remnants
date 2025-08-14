@@ -59,7 +59,7 @@ export const NAV_MENU_ITEMS = [
     icon: 'BarChart3',
     permissions: ['statistic.page', 'orderStatistic.page', 'productStatistic.page', 'stockStatistic.page'],
     items: [
-      { id: 'orderStatistic', url: '/statistic/order', permissions: ['orderStatistic.page'] },
+      { id: 'orderStatistic', url: '/statistics/orders', permissions: ['orderStatistic.page'] },
       { id: 'productStatistic', url: '/statistic/product', permissions: ['productStatistic.page'] },
       { id: 'stockStatistic', url: '/statistic/stock', permissions: ['stockStatistic.page'] },
       { id: 'productionStatistic', url: '/statistic/production', permissions: ['productionStatistic.page'] },

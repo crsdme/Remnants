@@ -96,5 +96,8 @@
   "description.page.edit-inventory": "Редактирование инвентаризации в Remnant",
 
   "title.page.view-inventory": "Просмотр инвентаризации - Remnant",
-  "description.page.view-inventory": "Просмотр инвентаризации в Remnant"
+  "description.page.view-inventory": "Просмотр инвентаризации в Remnant",
+
+  "title.page.order-statistic": "Статистика заказов - Remnant",
+  "description.page.order-statistic": "Статистика заказов в Remnant"
 }

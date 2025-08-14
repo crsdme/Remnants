@@ -24,6 +24,7 @@
   "table.mismatch": "Mismatch",
   "table.match": "Match",
   "table.view": "View",
+  "table.export": "Export",
 
   "order-status.all": "All",
 
@@ -44,6 +45,7 @@
   "button.generate": "Generate",
   "button.create": "Create",
   "button.add": "Add",
+  "button.send": "Send",
 
   "form.errors.required": "Required field",
   "form.errors.required.products": "You must select at least one product",

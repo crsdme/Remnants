@@ -46,7 +46,7 @@ export async function get(payload: MoneyTransactionTypes.getMoneyTransactionsPar
     rules: filterRules,
     removed: false,
   })
-  console.log(payload.filters)
+
   const sorters = buildSortQuery(payload.sorters || {}, { createdAt: -1 })
 
   const pipeline = [

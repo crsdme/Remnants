@@ -115,15 +115,19 @@ export async function get(payload: ExpenseTypes.getExpensesParams): Promise<Expe
         _id: 0,
         id: '$_id',
         amount: 1,
-        currency: 1,
+        currency: {
+          id: '$currency._id',
+          names: 1,
+          symbols: 1,
+        },
         cashregister: {
-          id: 1,
+          id: '$cashregister._id',
           names: 1,
           priority: 1,
           active: 1,
         },
         cashregisterAccount: {
-          id: 1,
+          id: '$cashregisterAccount._id',
           names: 1,
           priority: 1,
           active: 1,

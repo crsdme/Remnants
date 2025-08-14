@@ -17,5 +17,12 @@
     "lib": "@/lib",
     "hooks": "@/hooks"
   },
+  "ignores": [
+    "**/node_modules",
+    "**/dist",
+    "**/build",
+    "**/coverage",
+    "**/.vite"
+  ],
   "iconLibrary": "lucide"
 }

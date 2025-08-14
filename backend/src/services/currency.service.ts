@@ -183,8 +183,6 @@ export async function getExchangeRates(payload: CurrencyTypes.getExchangeRatesPa
 
   const exchangeRates = exchangeRatesRaw
 
-  console.log(exchangeRatesRaw)
-
   return { status: 'success', code: 'CURRENCIES_FETCHED', message: 'Currencies fetched', exchangeRates }
 }
 

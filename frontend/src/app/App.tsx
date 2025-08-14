@@ -170,6 +170,11 @@ export default function App() {
             element={<ProtectedRoute children={<Pages.CreateInventoryPage />} permissions={['inventory.create']} />}
           />
 
+          <Route
+            path="/statistics/orders"
+            element={<ProtectedRoute children={<Pages.OrderStatisticPage />} permissions={['order-statistic.page']} />}
+          />
+
           <Route path="*" element={<Pages.ErrorPage status={404} />} />
         </Route>
         <Route path="/login" element={<Pages.LoginPage />} />

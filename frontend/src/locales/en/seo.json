@@ -96,5 +96,8 @@
   "description.page.edit-inventory": "Edit inventory in Remnant",
 
   "title.page.view-inventory": "View Inventory - Remnant",
-  "description.page.view-inventory": "View inventory in Remnant"
+  "description.page.view-inventory": "View inventory in Remnant",
+
+  "title.page.order-statistic": "Order Statistic - Remnant",
+  "description.page.order-statistic": "Order statistic in Remnant"
 }

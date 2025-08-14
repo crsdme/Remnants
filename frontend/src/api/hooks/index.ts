@@ -170,6 +170,9 @@ export * from './site/useSiteOptions'
 export * from './site/useSiteQuery'
 export * from './site/useSiteRemove'
 
+// Statistics Management
+export * from './statistic/useOrderStatisticQuery'
+
 // Test Management
 export * from './test/useTestStart'
 

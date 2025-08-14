@@ -846,5 +846,23 @@
   "page.create-inventory.form.warehouse": "Warehouse",
   "page.create-inventory.form.comment": "Comment",
 
-  "page.create-inventory.form.category.required": "Category not selected"
+  "page.create-inventory.form.category.required": "Category not selected",
+
+  "page.order-statistic.title": "Order Statistic",
+  "page.order-statistic.description": "Manage order statistic",
+  "page.order-statistic.filter.names": "Filter by name",
+  "page.order-statistic.button.create": "Create order statistic",
+
+  "page.order-statistic.form.cashregister": "Cashregister",
+  "page.order-statistic.form.cashregister-account": "Cashregister Account",
+  "page.order-statistic.form.date": "Date",
+
+  "page.order-statistic.total-amount": "Total amount",
+  "page.order-statistic.orders": "orders",
+  "page.order-statistic.paid": "Paid",
+  "page.order-statistic.unpaid": "Unpaid",
+  "page.order-statistic.average-check": "Average check",
+  "page.order-statistic.expenses": "Expenses",
+  "page.order-statistic.income": "Income",
+  "page.order-statistic.profit": "Profit"
 }

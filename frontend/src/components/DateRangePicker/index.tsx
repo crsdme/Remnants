@@ -13,9 +13,10 @@ import { cn } from '@/utils/lib/utils'
 type DateRangePickerProps = Omit<HTMLAttributes<HTMLDivElement>, 'onChange'> & {
   onSelect?: (date: DateRange | undefined) => void
   value?: DateRange | undefined
+  disabled?: boolean
 }
 
-export function DateRangePicker({ className, onSelect, value }: DateRangePickerProps) {
+export function DateRangePicker({ className, onSelect, value, disabled }: DateRangePickerProps) {
   const { t, i18n } = useTranslation()
   const [date, setDate] = useState<DateRange | undefined>(
     value || {
@@ -58,6 +59,7 @@ export function DateRangePicker({ className, onSelect, value }: DateRangePickerP
               'w-[240px] justify-start text-left font-normal',
               !date && 'text-muted-foreground',
               'w-full',
+              disabled && 'opacity-50 cursor-not-allowed',
             )}
           >
             <CalendarIcon />

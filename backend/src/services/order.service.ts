@@ -1033,7 +1033,8 @@ async function convertCurrency({
   }
 
   const rate = exchangeRates[0].rate
-  return { convertedAmount: amount * rate, rate }
+
+  return { convertedAmount: Number.parseFloat((amount * rate).toFixed(2)), rate }
 }
 
 async function calculateProfit({
@@ -1045,6 +1046,7 @@ async function calculateProfit({
   purchasePrice: number
   purchaseCurrency: string
 }): Promise<{ profit: number, exchangeRate: number }> {
+  const sellingCurrency = item.currency
   let sellingPrice = item.price
 
   if (item.discountPercent && item.discountPercent > 0) {
@@ -1057,12 +1059,13 @@ async function calculateProfit({
   let convertedPurchasePrice = purchasePrice
   let exchangeRate = 1
 
-  if (purchaseCurrency !== item.currency) {
+  if (purchaseCurrency !== sellingCurrency) {
     const { convertedAmount, rate } = await convertCurrency({
       amount: purchasePrice,
       fromCurrencyId: purchaseCurrency,
-      toCurrencyId: item.currency,
+      toCurrencyId: sellingCurrency,
     })
+
     convertedPurchasePrice = convertedAmount
     exchangeRate = rate
   }

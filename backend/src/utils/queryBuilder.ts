@@ -95,7 +95,7 @@ export function buildQuery({ filters, rules, language = 'en', removed = true, ba
 
       case 'dateRange':
         if (value.from && value.to) {
-          query[field] = { $gte: value.from, $lte: value.to }
+          query[field] = { $gte: new Date(value.from), $lte: new Date(value.to) }
         }
         break
     }

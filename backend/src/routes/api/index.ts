@@ -24,6 +24,7 @@ import productPropertyRoutes from './product-property.route'
 import productRoutes from './product.route'
 import settingRoutes from './setting.route'
 import siteRoutes from './site.route'
+import statisticRoutes from './statistic.route'
 import testRoutes from './test.route'
 import unitRoutes from './unit.route'
 import userRoleRoutes from './user-role.route'
@@ -66,5 +67,6 @@ router.use('/automations', automationRoutes)
 router.use('/expenses', expenseRoutes)
 router.use('/expense-categories', expenseCategoryRoutes)
 router.use('/inventories', inventoriesRoutes)
+router.use('/statistics', statisticRoutes)
 
 export default router
