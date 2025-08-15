@@ -120,6 +120,7 @@ export interface getWarehouseTransactionsItemsParams {
   pagination?: {
     current?: number
     pageSize?: number
+    full?: boolean
   }
 }
 

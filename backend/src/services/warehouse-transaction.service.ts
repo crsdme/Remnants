@@ -118,7 +118,7 @@ export async function get(payload: WarehouseTransactionTypes.getWarehouseTransac
 }
 
 export async function getItems(payload: WarehouseTransactionTypes.getWarehouseTransactionsItemsParams): Promise<WarehouseTransactionTypes.getWarehouseTransactionsItemsResult> {
-  const { current = 1, pageSize = 10 } = payload.pagination || {}
+  const { current = 1, pageSize = 10, full = false } = payload.pagination || {}
 
   const {
     transactionId,
@@ -363,10 +363,12 @@ export async function getItems(payload: WarehouseTransactionTypes.getWarehouseTr
     },
     {
       $facet: {
-        warehouseTransactionsItems: [
-          { $skip: (current - 1) * pageSize },
-          { $limit: pageSize },
-        ],
+        warehouseTransactionsItems: full
+          ? []
+          : [
+              { $skip: (current - 1) * pageSize },
+              { $limit: pageSize },
+            ],
         totalCount: [
           { $count: 'count' },
         ],

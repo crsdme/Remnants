@@ -314,7 +314,7 @@ export async function get(payload: OrderTypes.getOrdersParams): Promise<OrderTyp
   const ordersCount = ordersRaw[0].totalCount[0]?.count || 0
 
   for (const order of orders) {
-    const orderItems = await getItems({ filters: { order: [order.id] } })
+    const orderItems = await getItems({ filters: { order: [order.id] }, pagination: { full: true } })
     order.items = orderItems.orderItems
 
     const orderPayments = await getOrderPayments({ filters: { order: order.id } })
@@ -325,7 +325,7 @@ export async function get(payload: OrderTypes.getOrdersParams): Promise<OrderTyp
 }
 
 export async function getItems(payload: OrderTypes.getOrderItemsParams): Promise<OrderTypes.getOrderItemsResult> {
-  const { current = 1, pageSize = 10 } = payload.pagination || {}
+  const { current = 1, pageSize = 10, full = false } = payload.pagination || {}
 
   const {
     order,
@@ -595,10 +595,12 @@ export async function getItems(payload: OrderTypes.getOrderItemsParams): Promise
     },
     {
       $facet: {
-        orderItems: [
-          { $skip: (current - 1) * pageSize },
-          { $limit: pageSize },
-        ],
+        orderItems: full
+          ? []
+          : [
+              { $skip: (current - 1) * pageSize },
+              { $limit: pageSize },
+            ],
         totalCount: [
           { $count: 'count' },
         ],

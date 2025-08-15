@@ -13,7 +13,7 @@ export function useWarehouseTransactionItemsOptions({ mapFn }: { mapFn?: (wareho
 
     const data = await queryClient.fetchQuery({
       queryKey: ['warehouse-transactions', 'get', 'items', filters],
-      queryFn: () => getWarehouseTransactionsItems({ filters }),
+      queryFn: () => getWarehouseTransactionsItems({ filters, pagination: { full: true } }),
       staleTime: 60000,
     })
 
