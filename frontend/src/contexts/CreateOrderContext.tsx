@@ -110,6 +110,7 @@ export function CreateOrderProvider({ children }: CreateOrderProviderProps) {
       selectedCurrency: z.object({
         id: z.string(),
       }),
+      selectedPrice: z.number(),
       discountAmount: z.number().optional(),
       discountPercent: z.number().optional(),
       price: z.number(),

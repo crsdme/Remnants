@@ -123,6 +123,7 @@ export function EditOrderProvider({ children }: EditOrderProviderProps) {
         id: z.string(),
       }),
       price: z.number(),
+      selectedPrice: z.number(),
       discountAmount: z.number().optional(),
       discountPercent: z.number().optional(),
       // receivedQuantity: z.number({ required_error: t('error.required') }).min(1, { message: t('error.required') }),

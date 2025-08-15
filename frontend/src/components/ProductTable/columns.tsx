@@ -306,7 +306,7 @@ export function useColumns({ isLoading, addProduct }: { isLoading: boolean, addP
           sortable: true,
         },
         header: ({ column }) => sortHeader(column, t('table.createdAt')),
-        cell: ({ row }) => formatDate(row.getValue('createdAt'), 'MMMM dd, yyyy', i18n.language),
+        cell: ({ row }) => formatDate(row.getValue('createdAt'), 'dd.MM.yyyy HH:mm', i18n.language),
       },
       {
         id: 'updatedAt',
@@ -318,7 +318,7 @@ export function useColumns({ isLoading, addProduct }: { isLoading: boolean, addP
           sortable: true,
         },
         header: ({ column }) => sortHeader(column, t('table.updatedAt')),
-        cell: ({ row }) => formatDate(row.getValue('updatedAt'), 'MMMM dd, yyyy', i18n.language),
+        cell: ({ row }) => formatDate(row.getValue('updatedAt'), 'dd.MM.yyyy HH:mm', i18n.language),
       },
       actionColumn(),
     ]
