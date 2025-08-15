@@ -909,7 +909,7 @@ export async function edit(payload: OrderTypes.editOrderParams, user: RequestUse
   const { id, orderPayments, items } = payload
   const createdOrderPayments = []
 
-  const oldOrderPayments = await OrderPaymentModel.find({ order: id })
+  const oldOrderPayments = await OrderPaymentModel.find({ order: id, removed: false })
 
   // CANCELLED OLD PAYMENTS
   if (oldOrderPayments.length > 0) {
@@ -962,7 +962,7 @@ export async function edit(payload: OrderTypes.editOrderParams, user: RequestUse
     }
   }
 
-  const oldOrderItems = await OrderItemModel.find({ order: id })
+  const oldOrderItems = await OrderItemModel.find({ order: id, removed: false })
 
   // CANCELLED OLD ITEMS
   if (oldOrderItems.length > 0) {
