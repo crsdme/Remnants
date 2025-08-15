@@ -60,6 +60,7 @@ export interface getOrdersFilters {
   createdAt: DateRange
   updatedAt: DateRange
   removedAt: DateRange
+  removed: boolean
 }
 
 export interface getOrdersSorters {

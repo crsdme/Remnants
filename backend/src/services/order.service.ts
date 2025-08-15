@@ -37,6 +37,7 @@ export async function get(payload: OrderTypes.getOrdersParams): Promise<OrderTyp
       from: undefined,
       to: undefined,
     },
+    removed = false,
   } = payload.filters || {}
 
   let orderStatusQuery = orderStatus
@@ -58,6 +59,7 @@ export async function get(payload: OrderTypes.getOrdersParams): Promise<OrderTyp
     removedBy: { type: 'string' },
     createdAt: { type: 'dateRange' },
     updatedAt: { type: 'dateRange' },
+    removed: { type: 'exact' },
   } as const
 
   const query = buildQuery({
@@ -76,6 +78,7 @@ export async function get(payload: OrderTypes.getOrdersParams): Promise<OrderTyp
       removedBy,
       createdAt,
       updatedAt,
+      removed,
     },
     rules: filterRules,
     removed: false,

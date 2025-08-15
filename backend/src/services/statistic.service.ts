@@ -10,6 +10,7 @@ export async function get(payload: StatisticTypes.getStatisticParams): Promise<S
   const { orders, ordersCount } = await OrderService.get({
     filters: {
       createdAt: date,
+      removed: false,
     },
     pagination: { full: true },
   })
@@ -44,6 +45,46 @@ export async function get(payload: StatisticTypes.getStatisticParams): Promise<S
       return acc
     }, {}),
   )
+
+  // PAID UNPAID
+
+  let paidCount = 0
+  let unpaidCount = 0
+
+  const paidAmountMap = {} as any
+  const unpaidAmountMap = {} as any
+
+  for (const order of orders) {
+    const { orderPayments } = await OrderService.getOrderPayments({ filters: { order: order.id } })
+    const { orderItems } = await OrderService.getItems({ filters: { order: [order.id], showFullData: true } })
+
+    const orderCurrency = orderItems[0]?.currency as any
+    const orderTotal = orderItems.reduce((sum, item) => sum + item.price * item.quantity, 0)
+    const paymentTotal = orderPayments.reduce((sum, p) => sum + p.amount, 0)
+
+    const currencyId = orderCurrency.id
+
+    if (paymentTotal > 0) {
+      if (!paidAmountMap[currencyId]) {
+        paidAmountMap[currencyId] = { currency: orderCurrency, total: 0 }
+      }
+      paidAmountMap[currencyId].total += paymentTotal
+      paidCount++
+    }
+
+    if (paymentTotal < orderTotal) {
+      if (!unpaidAmountMap[currencyId]) {
+        unpaidAmountMap[currencyId] = { currency: orderCurrency, total: 0 }
+      }
+      unpaidAmountMap[currencyId].total += (orderTotal - paymentTotal)
+      unpaidCount++
+    }
+  }
+
+  const paidAmount = Object.values(paidAmountMap)
+  const unpaidAmount = Object.values(unpaidAmountMap)
+
+  // PAID UNPAID
 
   const income = Object.values(
     products.reduce((acc, item) => {
@@ -132,62 +173,6 @@ export async function get(payload: StatisticTypes.getStatisticParams): Promise<S
   }
 
   const mappedExpenses = groupExpensesByCategoryAndCurrency(expenses)
-
-  const paidIds = orders.filter((order: any) => ['paid', 'partially_paid', 'overpaid'].includes(order.orderPaymentStatus)).map(order => order.id)
-
-  const paidCount = paidIds.length
-
-  let paidAmount: any[] = []
-
-  if (paidIds.length > 0) {
-    const { orderItems: paidOrderItems } = await OrderService.getItems({
-      filters: {
-        order: paidIds,
-        showFullData: true,
-      },
-    })
-
-    paidAmount = Object.values(
-      paidOrderItems.reduce((acc: any, item: any) => {
-        const { currency, price, quantity } = item
-
-        if (!acc[currency.id]) {
-          acc[currency.id] = { currency, total: 0 }
-        }
-
-        acc[currency.id].total += price * quantity
-        return acc
-      }, {}),
-    )
-  }
-
-  const unpaidIds = orders.filter((order: any) => ['unpaid'].includes(order.orderPaymentStatus)).map(order => order.id)
-
-  const unpaidCount = unpaidIds.length
-
-  let unpaidAmount: any[] = []
-
-  if (paidIds.length > 0) {
-    const { orderItems: unpaidOrderItems } = await OrderService.getItems({
-      filters: {
-        order: unpaidIds,
-        showFullData: true,
-      },
-    })
-
-    unpaidAmount = Object.values(
-      unpaidOrderItems.reduce((acc: any, item: any) => {
-        const { currency, price, quantity } = item
-
-        if (!acc[currency.id]) {
-          acc[currency.id] = { currency, total: 0 }
-        }
-
-        acc[currency.id].total += price * quantity
-        return acc
-      }, {}),
-    )
-  }
 
   const statistics = {
     ordersCount,
