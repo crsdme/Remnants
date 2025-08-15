@@ -494,6 +494,7 @@ export function AutomationActionsForm() {
                     getOptionValue={e => e.id}
                     disabled={isLoading}
                     clearable
+                    multi
                   />
                 </FormControl>
                 <FormMessage />
