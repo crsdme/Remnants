@@ -14,7 +14,7 @@ import * as QuantityService from './quantity.service'
 // import * as UserService from './user.service'
 
 export async function get(payload: OrderTypes.getOrdersParams): Promise<OrderTypes.getOrdersResult> {
-  const { current = 1, pageSize = 10 } = payload.pagination || {}
+  const { current = 1, pageSize = 10, full = false } = payload.pagination || {}
 
   const {
     ids = [],
@@ -297,10 +297,12 @@ export async function get(payload: OrderTypes.getOrdersParams): Promise<OrderTyp
     },
     {
       $facet: {
-        orders: [
-          { $skip: (current - 1) * pageSize },
-          { $limit: pageSize },
-        ],
+        orders: full
+          ? []
+          : [
+              { $skip: (current - 1) * pageSize },
+              { $limit: pageSize },
+            ],
         totalCount: [
           { $count: 'count' },
         ],

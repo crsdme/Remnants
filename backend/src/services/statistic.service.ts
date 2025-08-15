@@ -86,18 +86,50 @@ export async function get(payload: StatisticTypes.getStatisticParams): Promise<S
 
   // PAID UNPAID
 
-  const income = Object.values(
-    products.reduce((acc, item) => {
-      const { currency, profit } = item
+  // INCOME
 
-      if (!acc[currency.id]) {
-        acc[currency.id] = { currency, total: 0 }
+  const incomeMap = {} as Record<string, { currency: any, total: number }>
+
+  for (const order of orders) {
+    if ((order as any).paymentStatus === 'paid')
+      continue
+
+    const { orderItems } = await OrderService.getItems({
+      filters: {
+        order: [order.id],
+        showFullData: true,
+      },
+    })
+
+    for (const item of orderItems) {
+      const { currency, profit } = item as any
+      const currencyId = currency.id
+
+      if (!incomeMap[currencyId]) {
+        incomeMap[currencyId] = { currency, total: 0 }
       }
 
-      acc[currency.id].total += profit
-      return acc
-    }, {}),
-  )
+      incomeMap[currencyId].total += profit
+    }
+  }
+
+  const income = Object.values(incomeMap)
+
+  // PAID UNPAID
+
+  // const income = Object.values(
+  //   products.reduce((acc, item) => {
+  //     console.log(item)
+  //     const { currency, profit } = item
+
+  //     if (!acc[currency.id]) {
+  //       acc[currency.id] = { currency, total: 0 }
+  //     }
+
+  //     acc[currency.id].total += profit
+  //     return acc
+  //   }, {}),
+  // )
 
   const expensesTotal = Object.values(
     expenses.reduce((acc: any, item: any) => {
