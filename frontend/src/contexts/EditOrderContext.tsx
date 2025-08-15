@@ -295,13 +295,15 @@ export function EditOrderProvider({ children }: EditOrderProviderProps) {
   const editOrder = (params) => {
     setIsLoading(true)
     params.id = order.id
-    params.items = params.items.map(item => ({
+
+    const mappedItems = params.items.map(item => ({
       ...item,
       currency: item.selectedCurrency.id,
       price: item.selectedPrice || item.price,
       discountAmount: item.discountAmount || 0,
       discountPercent: item.discountPercent || 0,
     }))
+    params.items = mappedItems
 
     params.orderPayments = payments.map(payment => ({
       ...payment,

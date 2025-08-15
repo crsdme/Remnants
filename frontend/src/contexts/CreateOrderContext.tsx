@@ -239,14 +239,15 @@ export function CreateOrderProvider({ children }: CreateOrderProviderProps) {
   const createOrder = (params) => {
     setIsLoading(true)
 
-    params.items = params.items.map(item => ({
+    const mappedItems = params.items.map(item => ({
       ...item,
       currency: item.selectedCurrency.id,
       price: item.selectedPrice || item.price,
       discountAmount: item.discountAmount || 0,
       discountPercent: item.discountPercent || 0,
     }))
-
+    params.items = mappedItems
+    
     params.orderPayments = payments.map(payment => ({
       ...payment,
       cashregister: payment.cashregister.id,
