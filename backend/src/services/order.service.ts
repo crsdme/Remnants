@@ -37,7 +37,7 @@ export async function get(payload: OrderTypes.getOrdersParams): Promise<OrderTyp
       from: undefined,
       to: undefined,
     },
-    removed = false,
+    removed = '',
   } = payload.filters || {}
 
   let orderStatusQuery = orderStatus
