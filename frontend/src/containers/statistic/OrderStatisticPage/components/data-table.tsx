@@ -142,8 +142,12 @@ export function DataTable() {
             <CardTitle className="text-sm font-medium">{t('page.order-statistic.paid')}</CardTitle>
             <Badge>{statistics.paidCount} {t('page.order-statistic.orders')}</Badge>
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-green-600">{statistics.paidAmount} грн.</div>
+          <CardContent className='flex items-center gap-2'>
+          { statistics.paidAmount.map((item) => {
+              return (
+                <span className='text-2xl font-bold mr-4 text-green-600' key={item.currency}>{`${item.total} ${item.currency.symbols[i18n.language]}`}</span>
+              )
+            }) }
             {/* <p className="text-xs text-muted-foreground">
               <TrendingUp className="inline w-3 h-3 mr-1" />
               +12% с прошлого месяца
@@ -155,8 +159,12 @@ export function DataTable() {
             <CardTitle className="text-sm font-medium">{t('page.order-statistic.unpaid')}</CardTitle>
             <Badge>{statistics.unpaidCount} {t('page.order-statistic.orders')}</Badge>
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-red-600">{statistics.unpaidAmount} грн.</div>
+          <CardContent className='flex items-center gap-2'>
+          { statistics.unpaidAmount.map((item) => {
+              return (
+                <span className='text-2xl font-bold mr-4 text-red-600' key={item.currency}>{`${item.total} ${item.currency.symbols[i18n.language]}`}</span>
+              )
+            }) }
             {/* <p className="text-xs text-muted-foreground">
               <TrendingUp className="inline w-3 h-3 mr-1" />
               +12% с прошлого месяца

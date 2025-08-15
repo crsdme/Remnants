@@ -40,6 +40,11 @@ const OrderSchema: Schema = new Schema(
       ref: 'OrderPayment',
       required: true,
     }],
+    orderPaymentStatus: {
+      type: String,
+      enum: ['paid', 'unpaid', 'partially_paid', 'overpaid'],
+      default: 'unpaid',
+    },
     client: {
       type: String,
       ref: 'Client',

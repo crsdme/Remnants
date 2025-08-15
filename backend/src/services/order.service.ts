@@ -283,6 +283,7 @@ export async function get(payload: OrderTypes.getOrdersParams): Promise<OrderTyp
         warehouse: { id: '$warehouse._id', names: 1 },
         totals: 1,
         orderPayments: 1,
+        orderPaymentStatus: 1,
         comment: 1,
         createdAt: 1,
         updatedAt: 1,
@@ -784,7 +785,40 @@ export async function create(payload: OrderTypes.createOrderParams, user: Reques
     })
   }
 
-  const order = await OrderModel.create({ ...payload, _id: id, orderPayments: createdOrderPayments })
+  const totalPrice = Object.values(
+    payload.items.reduce((acc: any, item: any) => {
+      const { currency, price, quantity } = item
+
+      if (!acc[currency]) {
+        acc[currency] = { currency, total: 0 }
+      }
+
+      acc[currency].total += price * quantity
+      return acc
+    }, {}),
+  )
+
+  const totalPayments = Object.values(
+    orderPayments.reduce((acc: any, payment: any) => {
+      const { currency, amount } = payment
+
+      if (!acc[currency]) {
+        acc[currency] = { currency, total: 0 }
+      }
+
+      acc[currency].total += amount
+      return acc
+    }, {}),
+  )
+
+  const orderPaymentStatus = getPaymentStatus(totalPrice as any, totalPayments as any)
+
+  const order = await OrderModel.create({
+    ...payload,
+    _id: id,
+    orderPayments: createdOrderPayments,
+    orderPaymentStatus,
+  })
 
   await AutomationService.run({ type: 'order-created', entityId: order.id, user })
 
@@ -866,7 +900,7 @@ export async function payOrder(payload: OrderTypes.payOrderParams, user: Request
     return payments
   }
 
-  await OrderModel.findOneAndUpdate({ _id: id }, { orderPayments: createdOrderPayments })
+  await OrderModel.findOneAndUpdate({ _id: id }, { orderPayments: createdOrderPayments, orderPaymentStatus: 'paid' })
 
   return { status: 'success', code: 'ORDER_PAYED', message: 'Order payed' }
 }
@@ -981,7 +1015,37 @@ export async function edit(payload: OrderTypes.editOrderParams, user: RequestUse
     }
   }
 
-  const order = await OrderModel.findOneAndUpdate({ _id: id }, { ...payload, orderPayments: createdOrderPayments }, { new: true })
+  // PAYMENT STATUS
+
+  const totalPrice = Object.values(
+    payload.items.reduce((acc: any, item: any) => {
+      const { currency, price, quantity } = item
+
+      if (!acc[currency]) {
+        acc[currency] = { currency, total: 0 }
+      }
+
+      acc[currency].total += price * quantity
+      return acc
+    }, {}),
+  )
+
+  const totalPayments = Object.values(
+    orderPayments.reduce((acc: any, payment: any) => {
+      const { currency, amount } = payment
+
+      if (!acc[currency]) {
+        acc[currency] = { currency, total: 0 }
+      }
+
+      acc[currency].total += amount
+      return acc
+    }, {}),
+  )
+
+  const orderPaymentStatus = getPaymentStatus(totalPrice as any, totalPayments as any)
+
+  const order = await OrderModel.findOneAndUpdate({ _id: id }, { ...payload, orderPayments: createdOrderPayments, orderPaymentStatus }, { new: true })
 
   if (!order) {
     throw new HttpError(400, 'Order not edited', 'ORDER_NOT_EDITED')
@@ -1074,4 +1138,43 @@ async function calculateProfit({
   const profit = unitProfit * item.quantity
 
   return { profit, exchangeRate }
+}
+
+export function getPaymentStatus(
+  prices: { currency: string, total: number }[],
+  payments: { currency: string, total: number }[],
+  epsilon = 0,
+): 'paid' | 'unpaid' | 'partially_paid' | 'overpaid' {
+  const priceByCurrency = new Map(prices.map(p => [p.currency, p.total]))
+  const paymentByCurrency = new Map(payments.map(p => [p.currency, p.total]))
+
+  let hasPayments = false
+  let allMatch = true
+  let hasOver = false
+
+  for (const [currency, priceTotal] of priceByCurrency) {
+    const paymentTotal = paymentByCurrency.get(currency) ?? 0
+
+    if (paymentTotal > 0)
+      hasPayments = true
+
+    if (Math.abs(priceTotal - paymentTotal) <= epsilon) {
+      continue
+    }
+    else if (paymentTotal < priceTotal) {
+      allMatch = false
+    }
+    else if (paymentTotal > priceTotal) {
+      hasOver = true
+      allMatch = false
+    }
+  }
+
+  if (allMatch && hasPayments)
+    return 'paid'
+  if (!hasPayments)
+    return 'unpaid'
+  if (hasOver)
+    return 'overpaid'
+  return 'partially_paid'
 }

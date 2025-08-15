@@ -601,8 +601,9 @@
   "page.orders.table.client": "Client",
   "page.orders.table.warehouse": "Warehouse",
   "page.orders.table.deliveryService": "Delivery Service",
-  "page.orders.table.orderSource": "Order Source",
+  "page.orders.table.orderSource": "Source",
   "page.orders.table.orderStatus": "Order Status",
+  "page.orders.table.orderPaymentStatus": "Payment Status",
   "page.orders.table.totals": "Totals",
 
   "page.create-order.title": "Create Order",

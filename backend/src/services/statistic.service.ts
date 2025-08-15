@@ -133,13 +133,69 @@ export async function get(payload: StatisticTypes.getStatisticParams): Promise<S
 
   const mappedExpenses = groupExpensesByCategoryAndCurrency(expenses)
 
+  const paidIds = orders.filter((order: any) => ['paid', 'partially_paid', 'overpaid'].includes(order.orderPaymentStatus)).map(order => order.id)
+
+  const paidCount = paidIds.length
+
+  let paidAmount: any[] = []
+
+  if (paidIds.length > 0) {
+    const { orderItems: paidOrderItems } = await OrderService.getItems({
+      filters: {
+        order: paidIds,
+        showFullData: true,
+      },
+    })
+
+    paidAmount = Object.values(
+      paidOrderItems.reduce((acc: any, item: any) => {
+        const { currency, price, quantity } = item
+
+        if (!acc[currency.id]) {
+          acc[currency.id] = { currency, total: 0 }
+        }
+
+        acc[currency.id].total += price * quantity
+        return acc
+      }, {}),
+    )
+  }
+
+  const unpaidIds = orders.filter((order: any) => ['unpaid'].includes(order.orderPaymentStatus)).map(order => order.id)
+
+  const unpaidCount = unpaidIds.length
+
+  let unpaidAmount: any[] = []
+
+  if (paidIds.length > 0) {
+    const { orderItems: unpaidOrderItems } = await OrderService.getItems({
+      filters: {
+        order: unpaidIds,
+        showFullData: true,
+      },
+    })
+
+    unpaidAmount = Object.values(
+      unpaidOrderItems.reduce((acc: any, item: any) => {
+        const { currency, price, quantity } = item
+
+        if (!acc[currency.id]) {
+          acc[currency.id] = { currency, total: 0 }
+        }
+
+        acc[currency.id].total += price * quantity
+        return acc
+      }, {}),
+    )
+  }
+
   const statistics = {
     ordersCount,
     ordersAmount: totalPrice,
-    paidCount: 0,
-    paidAmount: 0,
-    unpaidCount: 0,
-    unpaidAmount: 0,
+    paidCount,
+    paidAmount,
+    unpaidCount,
+    unpaidAmount,
     averageCheck: 0,
     income,
     profit,

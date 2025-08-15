@@ -38,6 +38,11 @@
   "payment-status.cancelled": "Отменен",
   "payment-status.refunded": "Возвращен",
 
+  "order-payment.paid": "Оплачен",
+  "order-payment.unpaid": "Неоплачен",
+  "order-payment.partially_paid": "Частично оплачен",
+  "order-payment.overpaid": "Переплачен",
+
   "button.cancel": "Отмена",
   "button.submit": "Сохранить",
   "button.import": "Импортировать",

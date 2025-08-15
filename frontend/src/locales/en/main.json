@@ -38,6 +38,11 @@
   "payment-status.cancelled": "Cancelled",
   "payment-status.refunded": "Refunded",
 
+  "order-payment.paid": "Paid",
+  "order-payment.unpaid": "Unpaid",
+  "order-payment.partially_paid": "Partially paid",
+  "order-payment.overpaid": "Overpaid",
+
   "button.cancel": "Cancel",
   "button.submit": "Submit",
   "button.import": "Import",

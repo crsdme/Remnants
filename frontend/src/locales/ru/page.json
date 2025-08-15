@@ -607,6 +607,7 @@
   "page.orders.table.deliveryService": "Служба доставки",
   "page.orders.table.orderSource": "Источник заказа",
   "page.orders.table.orderStatus": "Статус заказа",
+  "page.orders.table.orderPaymentStatus": "Статус оплаты",
   "page.orders.table.totals": "Суммы",
 
   "page.create-order.title": "Создание заказа",

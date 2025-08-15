@@ -243,6 +243,34 @@ export function useColumns() {
         },
       },
       {
+        id: 'orderPaymentStatus',
+        size: 150,
+        meta: {
+          title: t('page.orders.table.orderPaymentStatus'),
+          batchEdit: true,
+          batchEditType: 'textMultiLanguage',
+          filterable: true,
+          filterType: 'text',
+          sortable: true,
+          defaultVisible: true,
+        },
+        header: ({ column }) => sortHeader(column, t('page.orders.table.orderPaymentStatus')),
+        cell: ({ row }) => {
+          const orderPaymentStatus = row.original.orderPaymentStatus
+
+          const badgeVariant = {
+            paid: 'success',
+            unpaid: 'destructive',
+            partially_paid: 'warning',
+            overpaid: 'warning',
+          }
+
+          return (
+            <Badge variant={badgeVariant[orderPaymentStatus]}>{t(`order-payment.${orderPaymentStatus}`)}</Badge>
+          )
+        },
+      },
+      {
         id: 'totals',
         size: 150,
         meta: {
