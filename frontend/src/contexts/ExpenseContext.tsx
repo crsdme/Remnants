@@ -104,6 +104,8 @@ export function ExpenseProvider({ children }: ExpenseProviderProps) {
       onSuccess: ({ data }) => {
         closeModal()
         queryClient.invalidateQueries({ queryKey: ['expenses'] })
+        queryClient.invalidateQueries({ queryKey: ['money-transactions'] })
+        queryClient.invalidateQueries({ queryKey: ['statistics'] })
         toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description || ''}` })
       },
       onError: ({ response }) => {

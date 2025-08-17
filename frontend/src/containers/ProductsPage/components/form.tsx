@@ -181,7 +181,7 @@ export function ProductForm() {
                     {property.isRequired && <span className="text-destructive ml-1">*</span>}
                   </p>
                 </FormLabel>
-                <AsyncSelect
+                {/* <AsyncSelect
                   fetcher={async ({ query, selectedValue }) => {
                     const response = await getProductPropertiesOptions({
                       pagination: { full: true },
@@ -204,6 +204,29 @@ export function ProductForm() {
                   onChange={field.onChange}
                   multi
                   disabled={isLoading}
+                /> */}
+                <AsyncSelectNew
+                  loadOptions={async ({ query, selectedValue }) => {
+                    const response = await getProductPropertiesOptions({
+                      pagination: { full: true },
+                      filters: {
+                        ...(selectedValue ? { ids: selectedValue } : { names: query }),
+                        productProperty: property.id,
+                        active: [true],
+                        language: i18n.language,
+                      },
+                    })
+                    return response?.data?.productPropertiesOptions || []
+                  }}
+                  field={field}
+                  value={field.value || []}
+                  renderOption={e => e.names[i18n.language]}
+                  getDisplayValue={e => e.names[i18n.language]}
+                  getOptionValue={e => e.id}
+                  triggerClassName="w-full"
+                  searchable
+                  clearable
+                  multi
                 />
               </FormItem>
             )}

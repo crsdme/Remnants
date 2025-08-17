@@ -61,6 +61,7 @@ export function CreateInventoryProvider({ children }: CreateInventoryProviderPro
     options: {
       onSuccess: ({ data }) => {
         queryClient.invalidateQueries({ queryKey: ['inventories'] })
+        queryClient.invalidateQueries({ queryKey: ['products'] })
         toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description || ''}` })
         navigate(`/inventories/`)
       },

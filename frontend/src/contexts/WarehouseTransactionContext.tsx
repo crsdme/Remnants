@@ -209,6 +209,7 @@ export function WarehouseTransactionProvider({ children }: WarehouseTransactionP
         closeModal()
         queryClient.invalidateQueries({ queryKey: ['warehouse-transactions'] })
         queryClient.invalidateQueries({ queryKey: ['warehouses'] })
+        queryClient.invalidateQueries({ queryKey: ['products'] })
         toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description || ''}` })
       },
       onError: ({ response }) => {
@@ -225,6 +226,7 @@ export function WarehouseTransactionProvider({ children }: WarehouseTransactionP
         closeModal()
         queryClient.invalidateQueries({ queryKey: ['warehouse-transactions'] })
         queryClient.invalidateQueries({ queryKey: ['warehouses'] })
+        queryClient.invalidateQueries({ queryKey: ['products'] })
         toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description || ''}` })
       },
       onError: ({ response }) => {
@@ -256,6 +258,7 @@ export function WarehouseTransactionProvider({ children }: WarehouseTransactionP
       onSuccess: ({ data }) => {
         queryClient.invalidateQueries({ queryKey: ['warehouse-transactions'] })
         queryClient.invalidateQueries({ queryKey: ['warehouses'] })
+        queryClient.invalidateQueries({ queryKey: ['products'] })
         toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description || ''}` })
       },
       onError: ({ response }) => {
