@@ -1146,7 +1146,7 @@ async function calculateProfit({
   const unitProfit = sellingPrice - convertedPurchasePrice
   const profit = unitProfit * item.quantity
 
-  return { profit, exchangeRate }
+  return { profit: Number.parseFloat(profit.toFixed(2)), exchangeRate }
 }
 
 export function getPaymentStatus(
