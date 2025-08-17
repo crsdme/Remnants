@@ -91,7 +91,7 @@ export async function get(payload: StatisticTypes.getStatisticParams): Promise<S
   const incomeMap = {} as Record<string, { currency: any, total: number }>
 
   for (const order of orders) {
-    if ((order as any).paymentStatus === 'paid')
+    if ((order as any).paymentStatus === 'unpaid')
       continue
 
     const { orderItems } = await OrderService.getItems({
