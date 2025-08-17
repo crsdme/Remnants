@@ -30,6 +30,24 @@ export function ProductSelectedTotal() {
     return acc
   }, {} as Record<string, number>)
 
+  const totalsByNumericProps = items.reduce((acc, item) => {
+    const qty = Number(item?.quantity ?? 0) || 0
+
+    ;(item?.productProperties ?? []).forEach((pp: any) => {
+      if (pp?.data?.type !== 'number') return
+
+      const raw = pp?.value
+      const num = typeof raw === 'number' ? raw : Number(raw)
+      if (!Number.isFinite(num)) return
+
+      const key = pp?.data?.names?.[i18n.language] || t('common.unknown-property')
+
+      acc[key] = (acc[key] || 0) + num * (qty || 1)
+    })
+
+    return acc
+  }, {} as Record<string, number>)
+
   return (
     <div className="flex flex-col items-end gap-2 mt-2">
       <div className="flex items-center flex-wrap gap-2">
@@ -46,6 +64,14 @@ export function ProductSelectedTotal() {
             {`${category}: ${quantity}`}
           </Badge>
         ))}
+      </div>
+
+      <div className="flex items-center flex-wrap gap-2">
+        {Object.entries(totalsByNumericProps)
+          .sort((a: any, b: any) => b[1] - a[1])
+          .map(([propName, total]) => (
+            <Badge key={propName}>{`${propName}: ${total}`}</Badge>
+          ))}
       </div>
     </div>
   )
