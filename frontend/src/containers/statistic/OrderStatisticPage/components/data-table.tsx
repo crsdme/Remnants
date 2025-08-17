@@ -223,7 +223,7 @@ export function DataTable() {
       <Card className='gap-0'>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">{t('page.order-statistic.income')}</CardTitle>
-            <Badge>{statistics.ordersCount} {t('page.order-statistic.orders')}</Badge>
+            <Badge>{statistics.incomeCount} {t('page.order-statistic.orders')}</Badge>
           </CardHeader>
           <CardContent className='flex items-center gap-2'>
           { statistics.income.map((item) => {
@@ -240,7 +240,7 @@ export function DataTable() {
         <Card className='gap-0'>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">{t('page.order-statistic.profit')}</CardTitle>
-            <Badge>{`${statistics.ordersCount} ${t('page.order-statistic.orders')} - ${statistics.expensesCount} ${t('page.order-statistic.expenses')}`}</Badge>
+            <Badge>{`${statistics.incomeCount} ${t('page.order-statistic.orders')} - ${statistics.expensesCount} ${t('page.order-statistic.expenses')}`}</Badge>
           </CardHeader>
           <CardContent className='flex items-center gap-2'>
           { statistics.profit.map((item) => {

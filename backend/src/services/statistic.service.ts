@@ -218,6 +218,7 @@ export async function get(payload: StatisticTypes.getStatisticParams): Promise<S
     unpaidAmount,
     averageCheck: 0,
     income,
+    incomeCount: orders.filter((order: any) => order.orderPaymentStatus === 'paid').length,
     profit,
     expenses: mappedExpenses,
     expensesCount,
