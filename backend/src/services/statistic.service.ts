@@ -19,6 +19,7 @@ export async function get(payload: StatisticTypes.getStatisticParams): Promise<S
     filters: {
       createdAt: date,
     },
+    pagination: { full: true },
   })
 
   let products: any[] = []
@@ -29,6 +30,7 @@ export async function get(payload: StatisticTypes.getStatisticParams): Promise<S
         order: orders.map(order => order.id),
         showFullData: true,
       },
+      pagination: { full: true },
     })
     products = orderItems
   }
@@ -55,8 +57,8 @@ export async function get(payload: StatisticTypes.getStatisticParams): Promise<S
   const unpaidAmountMap = {} as any
 
   for (const order of orders) {
-    const { orderPayments } = await OrderService.getOrderPayments({ filters: { order: order.id } })
-    const { orderItems } = await OrderService.getItems({ filters: { order: [order.id], showFullData: true } })
+    const { orderPayments } = await OrderService.getOrderPayments({ filters: { order: order.id }, pagination: { full: true } })
+    const { orderItems } = await OrderService.getItems({ filters: { order: [order.id], showFullData: true }, pagination: { full: true } })
 
     const orderCurrency = orderItems[0]?.currency as any
     const orderTotal = orderItems.reduce((sum, item) => sum + item.price * item.quantity, 0)
@@ -99,6 +101,7 @@ export async function get(payload: StatisticTypes.getStatisticParams): Promise<S
         order: [order.id],
         showFullData: true,
       },
+      pagination: { full: true },
     })
 
     for (const item of orderItems) {

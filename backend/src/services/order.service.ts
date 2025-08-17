@@ -633,7 +633,7 @@ export async function getItems(payload: OrderTypes.getOrderItemsParams): Promise
 }
 
 export async function getOrderPayments(payload: OrderTypes.getOrderPaymentsParams): Promise<OrderTypes.getOrderPaymentsResult> {
-  const { current = 1, pageSize = 10 } = payload.pagination || {}
+  const { current = 1, pageSize = 10, full = false } = payload.pagination || {}
 
   const {
     order,
@@ -711,10 +711,12 @@ export async function getOrderPayments(payload: OrderTypes.getOrderPaymentsParam
     },
     {
       $facet: {
-        orderPayments: [
-          { $skip: (current - 1) * pageSize },
-          { $limit: pageSize },
-        ],
+        orderPayments: full
+          ? []
+          : [
+              { $skip: (current - 1) * pageSize },
+              { $limit: pageSize },
+            ],
         totalCount: [
           { $count: 'count' },
         ],

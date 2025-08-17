@@ -5,7 +5,7 @@ import { buildQuery, buildSortQuery } from '../utils/queryBuilder'
 import * as MoneyTransactionService from './money-transaction.service'
 
 export async function get(payload: ExpenseTypes.getExpensesParams): Promise<ExpenseTypes.getExpensesResult> {
-  const { current = 1, pageSize = 10 } = payload.pagination || {}
+  const { current = 1, pageSize = 10, full = false } = payload.pagination || {}
 
   const {
     ids = [],
@@ -143,10 +143,12 @@ export async function get(payload: ExpenseTypes.getExpensesParams): Promise<Expe
     },
     {
       $facet: {
-        expenses: [
-          { $skip: (current - 1) * pageSize },
-          { $limit: pageSize },
-        ],
+        expenses: full
+          ? []
+          : [
+              { $skip: (current - 1) * pageSize },
+              { $limit: pageSize },
+            ],
         totalCount: [
           { $count: 'count' },
         ],
