@@ -200,6 +200,9 @@
   "page.products.form.images": "Images",
   "page.products.form.generateBarcode": "Generate Barcode",
   "page.products.form.generateBarcode.description": "Generate barcode for product",
+  "page.products.form.isAutoSyncEnabled": "Auto sync",
+  "page.products.form.isAutoSyncEnabled.description": "Auto sync product on all sites",
+  "page.products.form.syncSites": "Sites for sync",
 
   "page.userRoles.title": "User Roles",
   "page.userRoles.description": "Manage user roles here",

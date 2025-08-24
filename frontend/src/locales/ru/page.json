@@ -200,6 +200,9 @@
   "page.products.form.images": "Изображения",
   "page.products.form.generateBarcode": "Генерировать штрих-код",
   "page.products.form.generateBarcode.description": "Генерировать штрих-код для товара",
+  "page.products.form.isAutoSyncEnabled": "Автоматическая синхронизация",
+  "page.products.form.isAutoSyncEnabled.description": "Автоматическая синхронизация товара на всех сайтах",
+  "page.products.form.syncSites": "Сайты для синхронизации",
 
   "page.userRoles.title": "Роли пользователей",
   "page.userRoles.description": "Управление ролями пользователей",
