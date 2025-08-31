@@ -1146,16 +1146,40 @@ export async function printInvoice(payload: OrderTypes.printInvoiceOrderParams):
     }
   }
 
-  const drawHr = (doc: any, gapTop = 0.3, gapBottom = 0.3) => {
+  const drawHr = (doc: any, gapTopPx = 6, gapBottomPx = 6) => {
+    const y = doc.y + gapTopPx
     doc
-      .fontSize(12)
-      .moveDown(gapTop)
       .strokeColor('#D9D9D9')
       .lineWidth(1)
-      .moveTo(margins, doc.y)
-      .lineTo(params.size[0] - margins, doc.y)
+      .moveTo(margins, y)
+      .lineTo(params.size[0] - margins, y)
       .stroke()
-      .moveDown(gapBottom)
+    doc.y = y + gapBottomPx
+  }
+
+  const ensureSpace = (doc: any, needPx: number, onNewPage?: () => void) => {
+    const pageBottom = doc.page.height - doc.page.margins.bottom
+    if (doc.y + needPx > pageBottom) {
+      doc.addPage(params)
+      if (onNewPage)
+        onNewPage()
+    }
+  }
+
+  const renderTableHeader = (doc: any) => {
+    doc.fontSize(10).font('Manrope-Bold')
+    const headerRow = [
+      { key: 'name', width: 100, x: margins, value: 'Name', align: 'left', type: 'text' },
+      { key: 'length', width: 60, x: margins + 100, value: 'Length', align: 'left', type: 'text' },
+      { key: 'weight', width: 60, x: margins + 160, value: 'Weight', align: 'left', type: 'text' },
+      { key: 'type', width: 100, x: margins + 220, value: 'Type', align: 'left', type: 'text' },
+      { key: 'price', width: 80, x: margins + 320, value: 'Price', align: 'left', type: 'text' },
+      { key: 'quantity', width: 60, x: margins + 400, value: 'Quantity', align: 'left', type: 'text' },
+      { key: 'total', width: 120, x: params.size[0] - margins - 120, value: 'Total', align: 'right', type: 'text' },
+    ]
+    drawTableRow(doc, headerRow)
+    drawHr(doc, 8, 8)
+    doc.font('Manrope')
   }
 
   const doc = new PDFDocument({ autoFirstPage: false })
@@ -1174,13 +1198,13 @@ export async function printInvoice(payload: OrderTypes.printInvoiceOrderParams):
     { width: contentWidth, height: 25, align: 'right', ellipsis: true, lineBreak: false },
   )
 
-  drawHr(doc, 0.4, 0.4)
+  drawHr(doc, 8, 8)
 
   // PRODUCTS
 
-  const { orderItems } = await getItems({ filters: { order: [order.id] } }) as any
+  const { orderItems } = await getItems({ filters: { order: [order.id] }, pagination: { full: true } }) as any
 
-  const products = orderItems.map((item: any) => ({
+  const productsData = orderItems.map((item: any) => ({
     name: item.product.names[language],
     length: item.product.productProperties.find((property: any) => property.id === 'baad1168-e6bd-48e1-a610-0fd60ffcfc4d')?.value || 0,
     weight: item.product.productProperties.find((property: any) => property.id === '7c3e2c1b-f2bf-4639-baf2-7b1101fa7bf2')?.value || 0,
@@ -1191,68 +1215,70 @@ export async function printInvoice(payload: OrderTypes.printInvoiceOrderParams):
     currency: item.currency,
   })).sort((a: any, b: any) => a.length - b.length)
 
-  doc.fontSize(10)
-  const row = [
-    {
-      key: 'name',
-      width: 80,
-      x: margins,
-      value: 'Name',
-      align: 'left',
-      type: 'text',
-    },
-    {
-      key: 'length',
-      width: 80,
-      x: margins + 80,
-      value: 'Length',
-      align: 'left',
-      type: 'text',
-    },
-    {
-      key: 'weight',
-      width: 80,
-      x: margins + 80 + 80,
-      value: 'Weight',
-      align: 'left',
-      type: 'text',
-    },
-    {
-      key: 'type',
-      width: 80,
-      x: margins + 80 + 80 + 80,
-      value: 'Type',
-      align: 'left',
-      type: 'text',
-    },
-    {
-      key: 'price',
-      width: 80,
-      x: margins + 80 + 80 + 80 + 80,
-      value: 'Price',
-      align: 'left',
-      type: 'text',
-    },
-    {
-      key: 'quantity',
-      width: 80,
-      x: params.size[0] - margins - 160,
-      align: 'right',
-      value: 'Quantity',
-      type: 'text',
-    },
-    {
-      key: 'total',
-      width: 80,
-      x: params.size[0] - margins - 80,
-      align: 'right',
-      value: 'Total',
-      type: 'text',
-    },
-  ]
-  drawTableRow(doc, row)
+  const products = [...productsData, ...productsData, ...productsData]
 
-  drawHr(doc, 0.5, 0.5)
+  doc.fontSize(10)
+  // const row = [
+  //   {
+  //     key: 'name',
+  //     width: 100,
+  //     x: margins,
+  //     value: 'Name',
+  //     align: 'left',
+  //     type: 'text',
+  //   },
+  //   {
+  //     key: 'length',
+  //     width: 60,
+  //     x: margins + 100,
+  //     value: 'Length',
+  //     align: 'left',
+  //     type: 'text',
+  //   },
+  //   {
+  //     key: 'weight',
+  //     width: 60,
+  //     x: margins + 100 + 60,
+  //     value: 'Weight',
+  //     align: 'left',
+  //     type: 'text',
+  //   },
+  //   {
+  //     key: 'type',
+  //     width: 100,
+  //     x: margins + 100 + 60 + 60,
+  //     value: 'Type',
+  //     align: 'left',
+  //     type: 'text',
+  //   },
+  //   {
+  //     key: 'price',
+  //     width: 80,
+  //     x: margins + 100 + 60 + 60 + 100,
+  //     value: 'Price',
+  //     align: 'left',
+  //     type: 'text',
+  //   },
+  //   {
+  //     key: 'quantity',
+  //     width: 60,
+  //     x: margins + 100 + 60 + 60 + 100 + 80,
+  //     align: 'left',
+  //     value: 'Quantity',
+  //     type: 'text',
+  //   },
+  //   {
+  //     key: 'total',
+  //     width: 120,
+  //     x: params.size[0] - margins - 120,
+  //     align: 'right',
+  //     value: 'Total',
+  //     type: 'text',
+  //   },
+  // ]
+  // drawTableRow(doc, row)
+
+  renderTableHeader(doc)
 
   const totals = { count: 0, weight: 0, amount: {} } as any
   for (const product of products) {
@@ -1261,7 +1287,7 @@ export async function printInvoice(payload: OrderTypes.printInvoiceOrderParams):
     const row = [
       {
         key: 'name',
-        width: 80,
+        width: 100,
         x: margins,
         value: product.name,
         align: 'left',
@@ -1269,24 +1295,24 @@ export async function printInvoice(payload: OrderTypes.printInvoiceOrderParams):
       },
       {
         key: 'length',
-        width: 80,
-        x: margins + 80,
+        width: 60,
+        x: margins + 100,
         value: `${product.length} cm`,
         align: 'left',
         type: 'text',
       },
       {
         key: 'weight',
-        width: 80,
-        x: margins + 80 + 80,
+        width: 60,
+        x: margins + 100 + 60,
         value: `${product.weight} g`,
         align: 'left',
         type: 'text',
       },
       {
         key: 'type',
-        width: 80,
-        x: margins + 80 + 80 + 80,
+        width: 100,
+        x: margins + 100 + 60 + 60,
         value: `${product.type}`,
         align: 'left',
         type: 'text',
@@ -1294,28 +1320,35 @@ export async function printInvoice(payload: OrderTypes.printInvoiceOrderParams):
       {
         key: 'price',
         width: 80,
-        x: margins + 80 + 80 + 80 + 80,
+        x: margins + 100 + 60 + 60 + 100,
         value: `${product.price} ${product.currency.symbols[language] || ''}`,
         align: 'left',
         type: 'text',
       },
       {
         key: 'quantity',
-        width: 80,
-        x: params.size[0] - margins - 160,
+        width: 60,
+        x: margins + 100 + 60 + 60 + 100 + 80,
         value: `${product.quantity} pcs`,
-        align: 'right',
+        align: 'left',
         type: 'text',
       },
       {
         key: 'total',
-        width: 80,
-        x: params.size[0] - margins - 80,
+        width: 120,
+        x: params.size[0] - margins - 120,
         value: `${product.total} ${product.currency.symbols[language] || ''}`,
         align: 'right',
         type: 'text',
       },
     ]
+
+    const rowH = measureRowHeight(doc, row, { imgMaxH: 70, minH: 22 })
+    const hrH = 12
+    const need = rowH + hrH
+
+    ensureSpace(doc, need, () => renderTableHeader(doc))
+
     totals.count += product.quantity
     totals.weight += product.weight
     if (!totals.amount[product.currency.id]) {
@@ -1323,13 +1356,13 @@ export async function printInvoice(payload: OrderTypes.printInvoiceOrderParams):
     }
     totals.amount[product.currency.id].total += product.price * product.quantity
     drawTableRow(doc, row)
-    drawHr(doc, 0.5, 0.5)
+    drawHr(doc, 8, 8)
   }
 
   const totalRow = [
     {
       key: 'name',
-      width: 80,
+      width: 100,
       x: margins,
       value: '',
       align: 'left',
@@ -1337,24 +1370,24 @@ export async function printInvoice(payload: OrderTypes.printInvoiceOrderParams):
     },
     {
       key: 'length',
-      width: 80,
-      x: margins + 80,
+      width: 60,
+      x: margins + 100,
       value: '',
       align: 'left',
       type: 'text',
     },
     {
       key: 'weight',
-      width: 80,
-      x: margins + 80 + 80,
+      width: 60,
+      x: margins + 100 + 60,
       value: `${totals.weight} g`,
       align: 'left',
       type: 'text',
     },
     {
       key: 'type',
-      width: 80,
-      x: margins + 80 + 80 + 80,
+      width: 100,
+      x: margins + 100 + 60 + 60,
       value: '',
       align: 'left',
       type: 'text',
@@ -1362,23 +1395,23 @@ export async function printInvoice(payload: OrderTypes.printInvoiceOrderParams):
     {
       key: 'price',
       width: 80,
-      x: margins + 80 + 80 + 80 + 80,
+      x: margins + 100 + 60 + 60 + 100,
       value: ``,
       align: 'left',
       type: 'text',
     },
     {
       key: 'quantity',
-      width: 80,
-      x: params.size[0] - margins - 160,
-      align: 'right',
+      width: 60,
+      x: margins + 100 + 60 + 60 + 100 + 80,
+      align: 'left',
       value: `${totals.count} pcs`,
       type: 'text',
     },
     {
       key: 'total',
-      width: 80,
-      x: params.size[0] - margins - 80,
+      width: 120,
+      x: params.size[0] - margins - 120,
       align: 'right',
       value: Object.values(totals.amount).map((amount: any) => `${amount.total} ${amount.currency.symbols[language] || ''}`).join(', '),
       type: 'text',
