@@ -1206,7 +1206,7 @@ export async function printInvoice(payload: OrderTypes.printInvoiceOrderParams):
 
   const products = orderItems.map((item: any) => ({
     name: item.product.names[language],
-    length: item.product.productProperties.find((property: any) => property.id === 'baad1168-e6bd-48e1-a610-0fd60ffcfc4d')?.value || 0,
+    length: item.product.productProperties.find((property: any) => property.id === 'efcc3c51-a146-4975-bc5b-196745f76891')?.value || 0,
     weight: item.product.productProperties.find((property: any) => property.id === '7c3e2c1b-f2bf-4639-baf2-7b1101fa7bf2')?.value || 0,
     type: item.product.productProperties.find((property: any) => property.id === '25144e64-5c4c-47fd-842d-c0a2393f972e')?.optionData.map((option: any) => option.names[language]).join(', ') || '',
     price: item.price,
