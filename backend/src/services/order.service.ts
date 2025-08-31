@@ -1192,7 +1192,7 @@ export async function printInvoice(payload: OrderTypes.printInvoiceOrderParams):
   doc.fontSize(32)
   doc.font('Manrope-Bold')
   doc.text(
-    `#${order.seq}`,
+    `#${order.seq + 1000}`,
     margins,
     doc.y,
     { width: contentWidth, height: 25, align: 'right', ellipsis: true, lineBreak: false },
@@ -1222,14 +1222,14 @@ export async function printInvoice(payload: OrderTypes.printInvoiceOrderParams):
 
     let multiply = 1
 
-    if (type.includes('822ec142-d144-44fb-ba96-582cff8757b3')) {
-      multiply = 1.2
+    if (type.includes('822ec142-d144-44fb-ba96-582cff8757b3') && type.includes('b930fb75-61a6-41c0-88de-0c69082b7f06')) {
+      multiply = 1.5
     }
     else if (type.includes('b930fb75-61a6-41c0-88de-0c69082b7f06')) {
       multiply = 1.3
     }
-    else if (type.includes('822ec142-d144-44fb-ba96-582cff8757b3') && type.includes('b930fb75-61a6-41c0-88de-0c69082b7f06')) {
-      multiply = 1.5
+    else if (type.includes('822ec142-d144-44fb-ba96-582cff8757b3')) {
+      multiply = 1.2
     }
 
     for (const row of table) {
