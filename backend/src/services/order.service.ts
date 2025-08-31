@@ -1204,7 +1204,7 @@ export async function printInvoice(payload: OrderTypes.printInvoiceOrderParams):
 
   const { orderItems } = await getItems({ filters: { order: [order.id] }, pagination: { full: true } }) as any
 
-  function getProductPrice(lengthCm: number): number | null {
+  function getProductPrice(lengthCm: number, type: any[]): number | null {
     const table = [
       { min: 40, max: 44, price: 900 },
       { min: 45, max: 49, price: 950 },
@@ -1220,24 +1220,45 @@ export async function printInvoice(payload: OrderTypes.printInvoiceOrderParams):
       { min: 95, max: 99, price: 1700 },
     ]
 
+    let multiply = 1
+
+    if (type.includes('822ec142-d144-44fb-ba96-582cff8757b3')) {
+      multiply = 1.2
+    }
+    else if (type.includes('b930fb75-61a6-41c0-88de-0c69082b7f06')) {
+      multiply = 1.3
+    }
+    else if (type.includes('822ec142-d144-44fb-ba96-582cff8757b3') && type.includes('b930fb75-61a6-41c0-88de-0c69082b7f06')) {
+      multiply = 1.5
+    }
+
     for (const row of table) {
       if (lengthCm >= row.min && lengthCm <= row.max) {
-        return row.price
+        return row.price * multiply
       }
     }
     return null
   }
 
-  const products = orderItems.map((item: any) => ({
-    name: item.product.names[language],
-    length: item.product.productProperties.find((property: any) => property.id === 'efcc3c51-a146-4975-bc5b-196745f76891')?.value || 0,
-    weight: item.product.productProperties.find((property: any) => property.id === '7c3e2c1b-f2bf-4639-baf2-7b1101fa7bf2')?.value || 0,
-    type: item.product.productProperties.find((property: any) => property.id === '25144e64-5c4c-47fd-842d-c0a2393f972e')?.optionData.map((option: any) => option.names[language]).join(', ') || '',
-    price: getProductPrice(item.product.productProperties.find((property: any) => property.id === 'efcc3c51-a146-4975-bc5b-196745f76891')?.value || 0),
-    quantity: item.quantity,
-    total: item.price * item.quantity,
-    currency: item.currency,
-  })).sort((a: any, b: any) => a.length - b.length)
+  const products = orderItems.map((item: any) => {
+    const type = item.product.productProperties.find((property: any) => property.id === '25144e64-5c4c-47fd-842d-c0a2393f972e')
+    const weight = item.product.productProperties.find((property: any) => property.id === '7c3e2c1b-f2bf-4639-baf2-7b1101fa7bf2')?.value
+    const length = item.product.productProperties.find((property: any) => property.id === 'efcc3c51-a146-4975-bc5b-196745f76891')?.value
+
+    return {
+      name: item.product.names[language],
+      length: length || 0,
+      weight: weight || 0,
+      type: type?.optionData.map((option: any) => option.names[language]).join(', ') || '',
+      price: getProductPrice(
+        length || 0,
+        type?.optionData.map((option: any) => option.value),
+      ),
+      quantity: item.quantity,
+      total: item.price * item.quantity,
+      currency: item.currency,
+    }
+  }).sort((a: any, b: any) => a.length - b.length)
 
   doc.fontSize(10)
   // const row = [
@@ -1376,7 +1397,7 @@ export async function printInvoice(payload: OrderTypes.printInvoiceOrderParams):
     if (!totals.amount[product.currency.id]) {
       totals.amount[product.currency.id] = { currency: product.currency, total: 0 }
     }
-    totals.amount[product.currency.id].total += product.price * product.quantity
+    totals.amount[product.currency.id].total += product.total
     drawTableRow(doc, row)
     drawHr(doc, 8, 8)
   }
