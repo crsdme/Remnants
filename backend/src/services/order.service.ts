@@ -1204,7 +1204,7 @@ export async function printInvoice(payload: OrderTypes.printInvoiceOrderParams):
 
   const { orderItems } = await getItems({ filters: { order: [order.id] }, pagination: { full: true } }) as any
 
-  const productsData = orderItems.map((item: any) => ({
+  const products = orderItems.map((item: any) => ({
     name: item.product.names[language],
     length: item.product.productProperties.find((property: any) => property.id === 'baad1168-e6bd-48e1-a610-0fd60ffcfc4d')?.value || 0,
     weight: item.product.productProperties.find((property: any) => property.id === '7c3e2c1b-f2bf-4639-baf2-7b1101fa7bf2')?.value || 0,
@@ -1214,8 +1214,6 @@ export async function printInvoice(payload: OrderTypes.printInvoiceOrderParams):
     total: item.price * item.quantity,
     currency: item.currency,
   })).sort((a: any, b: any) => a.length - b.length)
-
-  const products = [...productsData, ...productsData, ...productsData]
 
   doc.fontSize(10)
   // const row = [
