@@ -1252,7 +1252,7 @@ export async function printInvoice(payload: OrderTypes.printInvoiceOrderParams):
       type: type?.optionData.map((option: any) => option.names[language]).join(', ') || '',
       price: getProductPrice(
         length || 0,
-        type?.optionData.map((option: any) => option.value) || [],
+        type?.optionData.map((option: any) => option.id) || [],
       ),
       quantity: item.quantity,
       total: item.price * item.quantity,
