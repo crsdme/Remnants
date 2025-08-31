@@ -1204,12 +1204,36 @@ export async function printInvoice(payload: OrderTypes.printInvoiceOrderParams):
 
   const { orderItems } = await getItems({ filters: { order: [order.id] }, pagination: { full: true } }) as any
 
+  function getProductPrice(lengthCm: number): number | null {
+    const table = [
+      { min: 40, max: 44, price: 900 },
+      { min: 45, max: 49, price: 950 },
+      { min: 50, max: 54, price: 1000 },
+      { min: 55, max: 59, price: 1150 },
+      { min: 60, max: 64, price: 1200 },
+      { min: 65, max: 69, price: 1250 },
+      { min: 70, max: 74, price: 1300 },
+      { min: 75, max: 79, price: 1350 },
+      { min: 80, max: 84, price: 1400 },
+      { min: 85, max: 89, price: 1500 },
+      { min: 90, max: 94, price: 1600 },
+      { min: 95, max: 99, price: 1700 },
+    ]
+
+    for (const row of table) {
+      if (lengthCm >= row.min && lengthCm <= row.max) {
+        return row.price
+      }
+    }
+    return null
+  }
+
   const products = orderItems.map((item: any) => ({
     name: item.product.names[language],
     length: item.product.productProperties.find((property: any) => property.id === 'efcc3c51-a146-4975-bc5b-196745f76891')?.value || 0,
     weight: item.product.productProperties.find((property: any) => property.id === '7c3e2c1b-f2bf-4639-baf2-7b1101fa7bf2')?.value || 0,
     type: item.product.productProperties.find((property: any) => property.id === '25144e64-5c4c-47fd-842d-c0a2393f972e')?.optionData.map((option: any) => option.names[language]).join(', ') || '',
-    price: item.price,
+    price: getProductPrice(item.product.productProperties.find((property: any) => property.id === 'efcc3c51-a146-4975-bc5b-196745f76891')?.value || 0),
     quantity: item.quantity,
     total: item.price * item.quantity,
     currency: item.currency,
