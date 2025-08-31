@@ -2,7 +2,7 @@ import { Router } from 'express'
 import * as OrderController from '../../controllers/order.controller'
 import { validateBodyRequest, validateQueryRequest } from '../../middleware'
 import { checkPermissions } from '../../middleware/permission.middleware'
-import { createOrderSchema, editOrderSchema, getOrdersSchema, removeOrdersSchema } from '../../schemas/order.schema'
+import { createOrderSchema, editOrderSchema, getOrdersSchema, printInvoiceOrderSchema, removeOrdersSchema } from '../../schemas/order.schema'
 
 const router = Router()
 
@@ -28,6 +28,12 @@ router.post(
   validateBodyRequest(removeOrdersSchema),
   checkPermissions('order.remove'),
   OrderController.remove,
+)
+router.get(
+  '/print/invoice',
+  validateQueryRequest(printInvoiceOrderSchema),
+  checkPermissions('order.print.invoice'),
+  OrderController.printInvoice,
 )
 
 export default router

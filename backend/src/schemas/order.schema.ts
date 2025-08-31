@@ -1,6 +1,6 @@
 import { extendZodWithOpenApi } from '@asteasolutions/zod-to-openapi'
 import { z } from 'zod'
-import { dateRangeSchema, idSchema, paginationSchema, sorterParamsSchema } from './common'
+import { dateRangeSchema, idSchema, numberFromStringSchema, paginationSchema, sorterParamsSchema } from './common'
 
 extendZodWithOpenApi(z)
 
@@ -82,4 +82,9 @@ export const editOrderSchema = z.object({
 
 export const removeOrdersSchema = z.object({
   ids: z.array(idSchema).min(1),
+})
+
+export const printInvoiceOrderSchema = z.object({
+  seq: numberFromStringSchema,
+  language: z.string().optional().default('en'),
 })

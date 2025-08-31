@@ -1,6 +1,10 @@
 import type { Buffer } from 'node:buffer'
 import type { SUPPORTED_LANGUAGES_TYPE } from '../config/constants'
 import type { Code, DateRange, IdType, LanguageString, Message, Pagination, Sorter, Status } from './common.type'
+import type { Currency } from './currency.type'
+import type { ProductProperty } from './product-property.type'
+import type { Unit } from './unit.type'
+import type { Warehouse } from './warehouse.type'
 
 export interface Product {
   id: IdType

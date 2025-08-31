@@ -44,3 +44,17 @@ export async function remove(req: Request, res: Response, next: NextFunction) {
     next(err)
   }
 }
+
+export async function printInvoice(req: Request, res: Response, next: NextFunction) {
+  try {
+    const { doc } = await OrderService.printInvoice(req.body)
+
+    res.setHeader('Content-Type', 'application/pdf')
+    res.setHeader('Content-Disposition', 'inline; filename=invoice.pdf')
+    doc.pipe(res)
+    doc.end()
+  }
+  catch (err) {
+    next(err)
+  }
+}

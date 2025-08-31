@@ -1,8 +1,11 @@
+import type PDFDocument from 'pdfkit'
+import type { SUPPORTED_LANGUAGES_TYPE } from '../config/constants'
 import type { Code, DateRange, IdType, Message, Pagination, Sorter, Status } from './common.type'
 import type { OrderPayment, OrderPaymentParams } from './order-payment.type'
 
 export interface Order {
   id: IdType
+  seq: number
   warehouse: string
   deliveryService: string
   orderSource: string
@@ -24,7 +27,7 @@ export interface Order {
 
 export interface OrderItem {
   order: IdType
-  product: string
+  product: IdType
   quantity: number
   price: number
   currency: IdType
@@ -138,6 +141,14 @@ export interface getOrderItemsFilters {
 export interface getOrderItemsParams {
   filters?: Partial<getOrderItemsFilters>
   pagination?: Partial<Pagination>
+  sorters?: Partial<getOrderItemsSorters>
+}
+
+export interface getOrderItemsSorters {
+  seq: Sorter
+  names: Sorter
+  price: Sorter
+  purchasePrice: Sorter
 }
 
 export interface getOrderItemsResult {
@@ -173,4 +184,16 @@ export interface payOrderResult {
 
 export interface payOrderParams {
   id: IdType
+}
+
+export interface printInvoiceOrderParams {
+  seq: number
+  language: SUPPORTED_LANGUAGES_TYPE
+}
+
+export interface printInvoiceOrderResult {
+  status: Status
+  code: Code
+  message: Message
+  doc: typeof PDFDocument
 }

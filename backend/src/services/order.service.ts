@@ -1,7 +1,11 @@
 import type { RequestUser } from '../types/common.type'
 import type * as OrderTypes from '../types/order.type'
+import path from 'node:path'
+import bwipjs from 'bwip-js'
+import { values } from 'lodash'
+import PDFDocument, { y } from 'pdfkit'
 import { v4 as uuidv4 } from 'uuid'
-import { STORAGE_URLS } from '../config/constants'
+import { STORAGE_PATHS, STORAGE_URLS } from '../config/constants'
 import { OrderItemModel, OrderModel, OrderPaymentModel, ProductModel } from '../models'
 import { HttpError } from '../utils/httpError'
 import { buildQuery, buildSortQuery } from '../utils/queryBuilder'
@@ -1082,6 +1086,318 @@ export async function remove(payload: OrderTypes.removeOrdersParams, user: Reque
   }
 
   return { status: 'success', code: 'ORDERS_REMOVED', message: 'Orders removed' }
+}
+
+export async function printInvoice(payload: OrderTypes.printInvoiceOrderParams): Promise<OrderTypes.printInvoiceOrderResult> {
+  const { seq, language } = payload
+  const mm = 2.83464567
+  const params = {
+    size: [210 * mm, 297 * mm],
+    margins: {
+      top: 50,
+      bottom: 50,
+      left: 30,
+      right: 30,
+    },
+  }
+
+  const margins = 30
+  const contentWidth = params.size[0] - margins * 2
+  // const contentHeight = size.h - padding * 2
+
+  const order = await OrderModel.findOne({ seq })
+  if (!order) {
+    throw new HttpError(400, 'Order not found', 'ORDER_NOT_FOUND')
+  }
+
+  const measureRowHeight = (doc: any, columns: any[], opts?: { pad?: number, imgMaxH?: number, minH?: number }) => {
+    const pad = opts?.pad ?? 6
+    const imgMaxH = opts?.imgMaxH ?? 70
+    let h = opts?.minH ?? 18
+
+    for (const col of columns) {
+      if (col.type === 'text') {
+        const textH = doc.heightOfString(String(col.value ?? ''), {
+          width: Math.max(0, col.width - pad * 2),
+          align: col.align || 'left',
+        })
+        h = Math.max(h, textH + pad * 2)
+      }
+      else if (col.type === 'image') {
+        h = Math.max(h, imgMaxH)
+      }
+    }
+    return h
+  }
+
+  const drawTableRow = (doc: any, columns: any[]) => {
+    const y = doc.y
+    const rowH = measureRowHeight(doc, columns, { imgMaxH: 70, minH: 22 })
+    for (const column of columns) {
+      if (column.type === 'text') {
+        doc.text(column.value, column.x, y, { width: column.width, align: column.align })
+      }
+      else if (column.type === 'image') {
+        doc.image(column.value, column.x, y, {
+          width: column.width,
+          fit: [Math.max(0, column.width - 6 * 2), Math.max(0, rowH - 6 * 2)],
+        })
+      }
+    }
+  }
+
+  const drawHr = (doc: any, gapTop = 0.3, gapBottom = 0.3) => {
+    doc
+      .fontSize(12)
+      .moveDown(gapTop)
+      .strokeColor('#D9D9D9')
+      .lineWidth(1)
+      .moveTo(margins, doc.y)
+      .lineTo(params.size[0] - margins, doc.y)
+      .stroke()
+      .moveDown(gapBottom)
+  }
+
+  const doc = new PDFDocument({ autoFirstPage: false })
+
+  doc.addPage(params)
+
+  doc.registerFont('Manrope', path.resolve(__dirname, '../utils/fonts/Manrope-Regular.ttf'))
+  doc.registerFont('Manrope-Bold', path.resolve(__dirname, '../utils/fonts/Manrope-ExtraBold.ttf'))
+
+  doc.fontSize(32)
+  doc.font('Manrope-Bold')
+  doc.text(
+    `#${order.seq}`,
+    margins,
+    doc.y,
+    { width: contentWidth, height: 25, align: 'right', ellipsis: true, lineBreak: false },
+  )
+
+  drawHr(doc, 0.4, 0.4)
+
+  // PRODUCTS
+
+  const { orderItems } = await getItems({ filters: { order: [order.id] } }) as any
+
+  const products = orderItems.map((item: any) => ({
+    name: item.product.names[language],
+    length: item.product.productProperties.find((property: any) => property.id === 'baad1168-e6bd-48e1-a610-0fd60ffcfc4d')?.value || 0,
+    weight: item.product.productProperties.find((property: any) => property.id === '7c3e2c1b-f2bf-4639-baf2-7b1101fa7bf2')?.value || 0,
+    type: item.product.productProperties.find((property: any) => property.id === '25144e64-5c4c-47fd-842d-c0a2393f972e')?.optionData.map((option: any) => option.names[language]).join(', ') || '',
+    price: item.price,
+    quantity: item.quantity,
+    total: item.price * item.quantity,
+    currency: item.currency,
+  })).sort((a: any, b: any) => a.length - b.length)
+
+  doc.fontSize(10)
+  const row = [
+    {
+      key: 'name',
+      width: 80,
+      x: margins,
+      value: 'Name',
+      align: 'left',
+      type: 'text',
+    },
+    {
+      key: 'length',
+      width: 80,
+      x: margins + 80,
+      value: 'Length',
+      align: 'left',
+      type: 'text',
+    },
+    {
+      key: 'weight',
+      width: 80,
+      x: margins + 80 + 80,
+      value: 'Weight',
+      align: 'left',
+      type: 'text',
+    },
+    {
+      key: 'type',
+      width: 80,
+      x: margins + 80 + 80 + 80,
+      value: 'Type',
+      align: 'left',
+      type: 'text',
+    },
+    {
+      key: 'price',
+      width: 80,
+      x: margins + 80 + 80 + 80 + 80,
+      value: 'Price',
+      align: 'left',
+      type: 'text',
+    },
+    {
+      key: 'quantity',
+      width: 80,
+      x: params.size[0] - margins - 160,
+      align: 'right',
+      value: 'Quantity',
+      type: 'text',
+    },
+    {
+      key: 'total',
+      width: 80,
+      x: params.size[0] - margins - 80,
+      align: 'right',
+      value: 'Total',
+      type: 'text',
+    },
+  ]
+  drawTableRow(doc, row)
+
+  drawHr(doc, 0.5, 0.5)
+
+  const totals = { count: 0, weight: 0, amount: {} } as any
+  for (const product of products) {
+    doc.font('Manrope')
+    doc.fontSize(10)
+    const row = [
+      {
+        key: 'name',
+        width: 80,
+        x: margins,
+        value: product.name,
+        align: 'left',
+        type: 'text',
+      },
+      {
+        key: 'length',
+        width: 80,
+        x: margins + 80,
+        value: `${product.length} cm`,
+        align: 'left',
+        type: 'text',
+      },
+      {
+        key: 'weight',
+        width: 80,
+        x: margins + 80 + 80,
+        value: `${product.weight} g`,
+        align: 'left',
+        type: 'text',
+      },
+      {
+        key: 'type',
+        width: 80,
+        x: margins + 80 + 80 + 80,
+        value: `${product.type}`,
+        align: 'left',
+        type: 'text',
+      },
+      {
+        key: 'price',
+        width: 80,
+        x: margins + 80 + 80 + 80 + 80,
+        value: `${product.price} ${product.currency.symbols[language] || ''}`,
+        align: 'left',
+        type: 'text',
+      },
+      {
+        key: 'quantity',
+        width: 80,
+        x: params.size[0] - margins - 160,
+        value: `${product.quantity} pcs`,
+        align: 'right',
+        type: 'text',
+      },
+      {
+        key: 'total',
+        width: 80,
+        x: params.size[0] - margins - 80,
+        value: `${product.total} ${product.currency.symbols[language] || ''}`,
+        align: 'right',
+        type: 'text',
+      },
+    ]
+    totals.count += product.quantity
+    totals.weight += product.weight
+    if (!totals.amount[product.currency.id]) {
+      totals.amount[product.currency.id] = { currency: product.currency, total: 0 }
+    }
+    totals.amount[product.currency.id].total += product.price * product.quantity
+    drawTableRow(doc, row)
+    drawHr(doc, 0.5, 0.5)
+  }
+
+  const totalRow = [
+    {
+      key: 'name',
+      width: 80,
+      x: margins,
+      value: '',
+      align: 'left',
+      type: 'text',
+    },
+    {
+      key: 'length',
+      width: 80,
+      x: margins + 80,
+      value: '',
+      align: 'left',
+      type: 'text',
+    },
+    {
+      key: 'weight',
+      width: 80,
+      x: margins + 80 + 80,
+      value: `${totals.weight} g`,
+      align: 'left',
+      type: 'text',
+    },
+    {
+      key: 'type',
+      width: 80,
+      x: margins + 80 + 80 + 80,
+      value: '',
+      align: 'left',
+      type: 'text',
+    },
+    {
+      key: 'price',
+      width: 80,
+      x: margins + 80 + 80 + 80 + 80,
+      value: ``,
+      align: 'left',
+      type: 'text',
+    },
+    {
+      key: 'quantity',
+      width: 80,
+      x: params.size[0] - margins - 160,
+      align: 'right',
+      value: `${totals.count} pcs`,
+      type: 'text',
+    },
+    {
+      key: 'total',
+      width: 80,
+      x: params.size[0] - margins - 80,
+      align: 'right',
+      value: Object.values(totals.amount).map((amount: any) => `${amount.total} ${amount.currency.symbols[language] || ''}`).join(', '),
+      type: 'text',
+    },
+  ]
+
+  doc.font('Manrope-Bold')
+  drawTableRow(doc, totalRow)
+
+  // const productsText = barcode.products.map((product: any) => product.names[language] || '').join(', ')
+
+  // doc.text(
+  //   productsText,
+  //   padding,
+  //   doc.y,
+  //   { width: contentWidth, height: 50, ellipsis: true, lineBreak: false },
+  // )
+
+  return { status: 'success', code: 'INVOICE_PRINTED', message: 'Invoice printed', doc }
 }
 
 async function convertCurrency({
