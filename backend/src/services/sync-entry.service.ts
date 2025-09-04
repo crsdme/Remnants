@@ -131,7 +131,7 @@ export async function syncProductCreate(payload: SyncEntryTypes.syncProductCreat
   const lengthProperty = product.productProperties.find(property => property.id === 'efcc3c51-a146-4975-bc5b-196745f76891')
   const typeProperty = product.productProperties.find(property => property.id === '25144e64-5c4c-47fd-842d-c0a2393f972e')
 
-  const isCurly = typeProperty?.value === '822ec142-d144-44fb-ba96-582cff8757b3'
+  const isCurly = (typeProperty?.value || []).includes('822ec142-d144-44fb-ba96-582cff8757b3')
 
   const syncProduct = {
     model: `REMNANT NEW PRODUCT`,
@@ -350,6 +350,9 @@ export async function syncProductEdit(payload: SyncEntryTypes.syncProductEditPar
   if (difference.productProperties) {
     const weightProperty = difference.productProperties.find((p: any) => p._id === '7c3e2c1b-f2bf-4639-baf2-7b1101fa7bf2')
     const lengthProperty = difference.productProperties.find((p: any) => p._id === 'efcc3c51-a146-4975-bc5b-196745f76891')
+    const typeProperty = difference.productProperties.find((p: any) => p._id === '25144e64-5c4c-47fd-842d-c0a2393f972e')
+
+    const isCurly = (typeProperty?.value || []).includes('822ec142-d144-44fb-ba96-582cff8757b3')
 
     syncProduct.attributes = []
     if (weightProperty) {
@@ -402,6 +405,33 @@ export async function syncProductEdit(payload: SyncEntryTypes.syncProductEditPar
           {
             text: `${lengthProperty.value} cm`,
             language_code: 'it',
+          },
+        ],
+      })
+    }
+    if (isCurly) {
+      syncProduct.attributes.push({
+        attribute_id: 79,
+        product_attribute_description: [
+          {
+            text: `Curly`,
+            language_code: 'ru-ru',
+          },
+          {
+            text: `Curly`,
+            language_code: 'uk-ua',
+          },
+          {
+            text: `Curly`,
+            language_code: 'en',
+          },
+          {
+            text: `Riccia`,
+            language_code: 'it',
+          },
+          {
+            text: `Kręcony`,
+            language_code: 'pl',
           },
         ],
       })
