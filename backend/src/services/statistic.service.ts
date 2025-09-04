@@ -120,20 +120,6 @@ export async function get(payload: StatisticTypes.getStatisticParams): Promise<S
 
   // PAID UNPAID
 
-  // const income = Object.values(
-  //   products.reduce((acc, item) => {
-  //     console.log(item)
-  //     const { currency, profit } = item
-
-  //     if (!acc[currency.id]) {
-  //       acc[currency.id] = { currency, total: 0 }
-  //     }
-
-  //     acc[currency.id].total += profit
-  //     return acc
-  //   }, {}),
-  // )
-
   const expensesTotal = Object.values(
     expenses.reduce((acc: any, item: any) => {
       const { currency, amount } = item
@@ -209,6 +195,10 @@ export async function get(payload: StatisticTypes.getStatisticParams): Promise<S
 
   const mappedExpenses = groupExpensesByCategoryAndCurrency(expenses)
 
+  const productAttributes = aggregateProductAttributes(products)
+
+  console.log(JSON.stringify(productAttributes, null, 2))
+
   const statistics = {
     ordersCount,
     ordersAmount: totalPrice,
@@ -223,6 +213,7 @@ export async function get(payload: StatisticTypes.getStatisticParams): Promise<S
     expenses: mappedExpenses,
     expensesCount,
     expensesTotal,
+    productAttributes,
   }
 
   return {
@@ -231,4 +222,157 @@ export async function get(payload: StatisticTypes.getStatisticParams): Promise<S
     message: 'Statistics fetched',
     statistics,
   }
+}
+
+type PropType = 'number' | 'boolean' | 'select' | 'multiSelect' | 'color'
+
+function aggregateProductAttributes(products: any[]) {
+  const acc = new Map<string, any>()
+
+  for (const item of products) {
+    const qty = Number(item.quantity) || 1
+    const props = item?.product?.productProperties as any[] | undefined
+    if (!props?.length)
+      continue
+
+    for (const prop of props) {
+      const propId = prop.id || prop.data?.id || prop.data?._id
+      const type = prop.data?.type as PropType
+      const nameRu = prop.data?.names?.ru || prop.data?.names?.en || propId
+
+      if (!propId || !type)
+        continue
+
+      if (!acc.has(propId)) {
+        acc.set(propId, {
+          id: propId,
+          name: { ru: nameRu, en: prop.data?.names?.en },
+          type,
+          sum: 0,
+          min: Infinity,
+          max: -Infinity,
+          count: 0,
+          trueCount: 0,
+          falseCount: 0,
+          options: new Map<string, { id: string, name: any, color?: string, count: number }>(),
+        })
+      }
+
+      const agg = acc.get(propId)
+
+      const optionById = new Map<string, any>()
+      if (Array.isArray(prop.optionData)) {
+        for (const o of prop.optionData) {
+          optionById.set(String(o.id), o)
+        }
+      }
+
+      switch (type) {
+        case 'number': {
+          const v = Number(prop.value)
+          if (Number.isFinite(v)) {
+            agg.sum += v * qty
+            agg.min = Math.min(agg.min, v)
+            agg.max = Math.max(agg.max, v)
+            agg.count += qty
+          }
+          break
+        }
+
+        case 'boolean': {
+          const v = Boolean(prop.value)
+          if (v)
+            agg.trueCount += qty
+          else
+            agg.falseCount += qty
+          break
+        }
+
+        case 'select':
+        case 'color': {
+          const optId = String(prop.value)
+          if (!optId)
+            break
+          if (!agg.options.has(optId)) {
+            const meta = optionById.get(optId)
+            agg.options.set(optId, {
+              id: optId,
+              name: meta?.names || { ru: optId },
+              color: meta?.color,
+              count: 0,
+            })
+          }
+          agg.options.get(optId)!.count += qty
+          break
+        }
+
+        case 'multiSelect': {
+          const values = Array.isArray(prop.value) ? prop.value : (prop.value ? [prop.value] : [])
+          for (const raw of values) {
+            const optId = String(raw)
+            if (!optId)
+              continue
+            if (!agg.options.has(optId)) {
+              const meta = optionById.get(optId)
+              agg.options.set(optId, {
+                id: optId,
+                name: meta?.names || { ru: optId },
+                color: meta?.color,
+                count: 0,
+              })
+            }
+            agg.options.get(optId)!.count += qty
+          }
+          break
+        }
+      }
+    }
+  }
+
+  const result = []
+  for (const [, a] of acc) {
+    const out: any = {
+      id: a.id,
+      name: a.name,
+      type: a.type as PropType,
+    }
+
+    if (a.type === 'number') {
+      const avg = a.count > 0 ? a.sum / a.count : 0
+      out.number = {
+        sum: a.sum,
+        min: a.count > 0 ? a.min : 0,
+        max: a.count > 0 ? a.max : 0,
+        avg,
+        count: a.count,
+      }
+    }
+
+    if (a.type === 'boolean') {
+      out.boolean = {
+        true: a.trueCount,
+        false: a.falseCount,
+      }
+    }
+
+    if (a.type === 'select' || a.type === 'multiSelect' || a.type === 'color') {
+      out.options = Array.from(a.options.values())
+        .sort((x: any, y: any) => y.count - x.count)
+    }
+
+    result.push(out)
+  }
+
+  return result.sort((x: any, y: any) => {
+    const getScore = (o: any) => {
+      if (o.type === 'number')
+        return o.number?.sum ?? 0
+      if (o.type === 'boolean')
+        return (o.boolean?.true ?? 0) + (o.boolean?.false ?? 0)
+      if (o.options)
+        return o.options.reduce((s: number, v: any) => s + v.count, 0)
+      return 0
+    }
+    return getScore(y) - getScore(x)
+  })
 }

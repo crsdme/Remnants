@@ -52,6 +52,7 @@ export function OrderStatisticProvider({ children }: OrderStatisticProviderProps
     expensesTotal: [],
     unpaidAmount: [], 
     unpaidCount: 0,
+    productAttributes: [],
   } } = {}, isLoading, isFetching } = useOrderStatisticQuery(
     { pagination: { full: true }, filters },
     { options: {
