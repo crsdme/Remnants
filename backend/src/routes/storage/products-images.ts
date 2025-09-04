@@ -12,7 +12,8 @@ router.get('/:filename', async (req: any, res: any) => {
   const width = Number.parseInt(req.query.width)
   const height = Number.parseInt(req.query.height)
   const imagePath = path.join(STORAGE_PATHS.productImages, filename)
-
+  console.log(imagePath)
+  console.log(STORAGE_PATHS.productImages, filename)
   if (!fs.existsSync(imagePath))
     throw new HttpError(404, 'Image not found')
 
