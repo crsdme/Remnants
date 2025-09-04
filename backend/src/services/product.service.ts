@@ -567,6 +567,7 @@ export async function edit(payload: ProductTypes.editProductParams): Promise<Pro
   }
 
   for (const site of syncSitesId || []) {
+    console.log(normalizeProduct(oldProduct?.toObject()), normalizeProduct(newProduct))
     const difference = getDifferenceDeep(normalizeProduct(oldProduct?.toObject()), normalizeProduct(newProduct))
     await SyncEntryService.syncProductEdit({
       siteId: site,
