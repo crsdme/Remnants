@@ -112,7 +112,7 @@ export async function get(payload: StatisticTypes.getStatisticParams): Promise<S
         incomeMap[currencyId] = { currency, total: 0 }
       }
 
-      incomeMap[currencyId].total += profit
+      incomeMap[currencyId].total += Number.parseFloat(profit.toFixed(2))
     }
   }
 
@@ -128,7 +128,7 @@ export async function get(payload: StatisticTypes.getStatisticParams): Promise<S
         acc[currency.id] = { currency, total: 0 }
       }
 
-      acc[currency.id].total += amount
+      acc[currency.id].total += Number.parseFloat(amount.toFixed(2))
       return acc
     }, {}),
   )
@@ -138,7 +138,7 @@ export async function get(payload: StatisticTypes.getStatisticParams): Promise<S
     const expensesSum = expense?.total || 0
     return {
       currency: inc.currency,
-      total: inc.total - expensesSum,
+      total: Number.parseFloat((inc.total - expensesSum).toFixed(2)),
     }
   })
 
@@ -146,7 +146,7 @@ export async function get(payload: StatisticTypes.getStatisticParams): Promise<S
     if (!profit.find((p: any) => p.currency?.id === exp.currency?.id)) {
       profit.push({
         currency: exp.currency,
-        total: 0 - exp.total,
+        total: Number.parseFloat((0 - exp.total).toFixed(2)),
       })
     }
   })
@@ -170,7 +170,7 @@ export async function get(payload: StatisticTypes.getStatisticParams): Promise<S
           }
         }
 
-        result[catId].total += amount
+        result[catId].total += Number.parseFloat(amount.toFixed(2))
         result[catId].count += 1
 
         if (!result[catId].currencies[currencyId]) {
@@ -180,7 +180,7 @@ export async function get(payload: StatisticTypes.getStatisticParams): Promise<S
             count: 0,
           }
         }
-        result[catId].currencies[currencyId].total += amount
+        result[catId].currencies[currencyId].total += Number.parseFloat(amount.toFixed(2))
         result[catId].currencies[currencyId].count += 1
       }
     }
