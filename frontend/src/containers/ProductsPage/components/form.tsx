@@ -206,6 +206,7 @@ export function ProductForm() {
                   disabled={isLoading}
                 /> */}
                 <AsyncSelectNew
+                  {...field}
                   loadOptions={async ({ query, selectedValue }) => {
                     const response = await getProductPropertiesOptions({
                       pagination: { full: true },

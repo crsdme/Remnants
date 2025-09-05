@@ -114,6 +114,7 @@ export function AsyncSelectNew<T>({
 
       setSelectedValues(nextValues)
       setSelectedOptions(nextOptions)
+      console.log(nextValues)
       onChange?.(nextValues)
       return
     }
@@ -234,14 +235,14 @@ export function AsyncSelectNew<T>({
     fetchOptions()
   }, [loadOptions])
 
-  // useEffect(() => { // CHANGE FORM VALUE
-  //   if (options.length > 0) {
-  //     setSelectedOptions(options.filter(option =>
-  //       (value || []).includes(getOptionValue(option)),
-  //     ))
-  //     setSelectedValues(value || [])
-  //   }
-  // }, [options, value, getOptionValue])
+  useEffect(() => { // CHANGE FORM VALUE
+    if (options.length > 0) {
+      setSelectedOptions(options.filter(option =>
+        (value || []).includes(getOptionValue(option)),
+      ))
+      setSelectedValues(value || [])
+    }
+  }, [options, value, getOptionValue])
 
   return (
     <>
