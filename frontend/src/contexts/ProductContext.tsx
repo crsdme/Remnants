@@ -465,7 +465,7 @@ function getFormPropertiesSchema(selectedGroup, productPropertiesGroups, t) {
                 base = z.string({ required_error: t('form.errors.required') })
                 break
               case 'multiSelect':
-                base = z.array(z.string()).min(1, { message: t('form.errors.required') })
+                base = z.array(z.string())
                 break
               default:
                 base = z.any()
@@ -482,6 +482,8 @@ function getFormPropertiesSchema(selectedGroup, productPropertiesGroups, t) {
             else {
               base = base.optional()
             }
+
+            console.log(prop, base)
 
             return [prop.id, base]
           }),
