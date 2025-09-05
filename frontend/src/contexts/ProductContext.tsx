@@ -330,7 +330,6 @@ export function ProductProvider({ children }: ProductProviderProps) {
     }
 
     params.images = images.map(image => ({
-      id: image.id,
       filename: image.filename,
       name: image.name,
       type: image.type,
