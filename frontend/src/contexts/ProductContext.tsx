@@ -330,6 +330,7 @@ export function ProductProvider({ children }: ProductProviderProps) {
     }
 
     params.images = images.map(image => ({
+      id: image.id,
       filename: image.filename,
       name: image.name,
       type: image.type,
@@ -475,15 +476,10 @@ function getFormPropertiesSchema(selectedGroup, productPropertiesGroups, t) {
               if (base instanceof z.ZodString) {
                 base = base.min(1, { message: t('form.errors.required') })
               }
-              // else if (base instanceof z.ZodArray) {
-              //   base = base.min(1, { message: t('form.errors.required') }).refine(value => value.length > 0, { message: t('form.errors.required') })
-              // }
             }
             else {
               base = base.optional()
             }
-
-            console.log(prop, base)
 
             return [prop.id, base]
           }),

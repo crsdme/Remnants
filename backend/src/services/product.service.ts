@@ -518,12 +518,13 @@ export async function edit(payload: ProductTypes.editProductParams): Promise<Pro
     type: uploadedImages[index].mimetype,
   }))
 
+  console.log(uploadedImages, parsedUploadedImages)
+
   const parsedImages = images.map((image: any) => {
     if (image.isNew) {
       const newImage = parsedUploadedImages.find((uploadedImage: any) => uploadedImage.id === image.id) as any
 
       return ({
-        id: uuidv4(),
         path: newImage.path,
         filename: newImage.filename,
         name: newImage.name,
@@ -532,7 +533,6 @@ export async function edit(payload: ProductTypes.editProductParams): Promise<Pro
     }
     const pathName = new URL(image.path).pathname
     return ({
-      id: image.id,
       path: path.join(path.resolve(), pathName),
       filename: image.filename,
       name: image.name,
