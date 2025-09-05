@@ -138,9 +138,9 @@ export function ProductProvider({ children }: ProductProviderProps) {
   const getProductFormValues = (product) => {
     if (product) {
       setSelectedGroup(product.productPropertiesGroup.id)
-      setImages(product.images.map(image => ({
+      setImages(product.images.map((image, index) => ({
         ...image,
-        id: image.id,
+        id: index,
         file: image.path,
         preview: image.path,
         path: image.path,

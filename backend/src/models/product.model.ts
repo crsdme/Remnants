@@ -58,6 +58,7 @@ const ProductSchema: Schema = new Schema(
       required: true,
     },
     images: [{
+      _id: false,
       path: {
         type: String,
         required: true,

@@ -20,5 +20,6 @@ export default (async () => {
       // "no-constant-condition": "warn",
       // "no-unused-vars": ["warn", { "argsIgnorePattern": "req|res|next|__" }],
     },
+    ignores: ['dist', 'node_modules', 'public', 'dist-test'],
   })
 })()

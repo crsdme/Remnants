@@ -9,4 +9,5 @@ export default antfu({
     'react/no-context-provider': 'off',
     'react-hooks/exhaustive-deps': 'off',
   },
+  ignores: ['dist', 'node_modules', 'public', 'dist-test'],
 })
