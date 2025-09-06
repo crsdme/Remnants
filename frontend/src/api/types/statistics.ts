@@ -3,8 +3,8 @@ export interface getOrderStatisticParams {
     ids?: string[]
     amount?: number
     currency?: string
-    cashregister?: string
-    cashregisterAccount?: string
+    cashregister?: string[]
+    cashregisterAccount?: string[]
     categories?: string[]
     sourceModel?: string
     sourceId?: string
