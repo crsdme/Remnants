@@ -347,9 +347,6 @@ export async function syncProductEdit(payload: SyncEntryTypes.syncProductEditPar
     }))
   }
 
-  console.log(difference)
-  console.log(syncProduct.images)
-
   if (difference.productProperties) {
     const weightProperty = difference.productProperties.find((p: any) => p._id === '7c3e2c1b-f2bf-4639-baf2-7b1101fa7bf2')
     const lengthProperty = difference.productProperties.find((p: any) => p._id === 'efcc3c51-a146-4975-bc5b-196745f76891')
@@ -452,6 +449,8 @@ export async function syncProductEdit(payload: SyncEntryTypes.syncProductEditPar
       key: process.env.REMNANT_API_KEY || '',
     },
   )
+
+  console.log('@@@@  6', syncProduct)
 
   try {
     const response = await axios.post(apiUrl, syncProduct, { headers: { 'Content-Type': 'application/json' } })

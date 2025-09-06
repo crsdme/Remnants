@@ -55,6 +55,7 @@ export function DataTable() {
                       name="cashregister"
                       clearable
                       selectFirstOption
+                      multi
                     />
                   </FormControl>
                   <FormMessage />
@@ -83,6 +84,7 @@ export function DataTable() {
                       name="cashregisterAccount"
                       clearable
                       selectFirstOption
+                      multi
                     />
                   </FormControl>
                   <FormMessage />
@@ -177,11 +179,7 @@ export function DataTable() {
             <Badge>{statistics.ordersCount} {t('page.order-statistic.orders')}</Badge>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{statistics.averageCheck} грн.</div>
-            {/* <p className="text-xs text-muted-foreground">
-              <TrendingUp className="inline w-3 h-3 mr-1" />
-              +12% с прошлого месяца
-            </p> */}
+            <div className="text-2xl font-bold">{statistics.averageCheck}</div>
           </CardContent>
         </Card>
       </div>

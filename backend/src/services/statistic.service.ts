@@ -5,6 +5,8 @@ import * as OrderService from './order.service'
 export async function get(payload: StatisticTypes.getStatisticParams): Promise<StatisticTypes.getStatisticResult> {
   const {
     date,
+    cashregister,
+    cashregisterAccount,
   } = payload.filters || {}
 
   const { orders, ordersCount } = await OrderService.get({

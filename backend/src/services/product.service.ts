@@ -518,8 +518,6 @@ export async function edit(payload: ProductTypes.editProductParams): Promise<Pro
     type: uploadedImages[index].mimetype,
   }))
 
-  console.log(uploadedImages, parsedUploadedImages)
-
   const parsedImages = images.map((image: any) => {
     if (image.isNew) {
       const newImage = parsedUploadedImages.find((uploadedImage: any) => uploadedImage.id === image.id) as any
@@ -566,11 +564,10 @@ export async function edit(payload: ProductTypes.editProductParams): Promise<Pro
     syncSitesId = autoSyncSites.map(site => site.id)
   }
 
-  for (const site of syncSitesId || []) {
-    console.log(normalizeProduct(oldProduct?.toObject()), normalizeProduct(newProduct))
+  for (const siteId of syncSitesId || []) {
     const difference = getDifferenceDeep(normalizeProduct(oldProduct?.toObject()), normalizeProduct(newProduct))
     await SyncEntryService.syncProductEdit({
-      siteId: site,
+      siteId,
       productId: product._id.toString(),
       difference,
     })

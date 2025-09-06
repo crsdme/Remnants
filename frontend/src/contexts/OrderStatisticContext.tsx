@@ -31,8 +31,8 @@ export function OrderStatisticProvider({ children }: OrderStatisticProviderProps
       from: new Date(new Date().setHours(0, 0, 0, 0)),
       to: new Date(new Date().setHours(23, 59, 59, 999)),
     },
-    cashregister: '',
-    cashregisterAccount: '',
+    cashregister: [],
+    cashregisterAccount: [],
     currency: '',
   })
 
@@ -70,8 +70,8 @@ export function OrderStatisticProvider({ children }: OrderStatisticProviderProps
   const formSchema = useMemo(() =>
     z.object({
       date: z.record(z.date()),
-      cashregister: z.string().optional(),
-      cashregisterAccount: z.string().optional(),
+      cashregister: z.array(z.string()).optional(),
+      cashregisterAccount: z.array(z.string()).optional(),
     }), [t])
 
   const form = useForm({
@@ -81,8 +81,8 @@ export function OrderStatisticProvider({ children }: OrderStatisticProviderProps
         from: new Date(new Date().setHours(0, 0, 0, 0)),
         to: new Date(new Date().setHours(23, 59, 59, 999)),
       },
-      cashregister: '',
-      cashregisterAccount: '',
+      cashregister: [],
+      cashregisterAccount: [],
     },
   })
   
