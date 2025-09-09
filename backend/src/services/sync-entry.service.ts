@@ -641,5 +641,5 @@ function getCategoryIds(path: string) {
     }
   }
 
-  return [72, ...ids]
+  return [221, ...ids]
 }
