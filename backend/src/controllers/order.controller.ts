@@ -50,7 +50,7 @@ export async function printInvoice(req: Request, res: Response, next: NextFuncti
     const { doc } = await OrderService.printInvoice(req.body)
 
     res.setHeader('Content-Type', 'application/pdf')
-    res.setHeader('Content-Disposition', 'inline; filename=invoice.pdf')
+    res.setHeader('Content-Disposition', `inline; filename=order-invoice-${req.body.seq}.pdf`)
     doc.pipe(res)
     doc.end()
   }
