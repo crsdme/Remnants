@@ -1,11 +1,11 @@
+import type { Client } from '../types/client.type'
 import type { RequestUser } from '../types/common.type'
+import type { Order } from '../types/order.type'
 import type * as OrderTypes from '../types/order.type'
 import path from 'node:path'
-import bwipjs from 'bwip-js'
-import { values } from 'lodash'
-import PDFDocument, { y } from 'pdfkit'
+import PDFDocument from 'pdfkit'
 import { v4 as uuidv4 } from 'uuid'
-import { STORAGE_PATHS, STORAGE_URLS } from '../config/constants'
+import { STORAGE_URLS } from '../config/constants'
 import { OrderItemModel, OrderModel, OrderPaymentModel, ProductModel } from '../models'
 import { HttpError } from '../utils/httpError'
 import { buildQuery, buildSortQuery } from '../utils/queryBuilder'
@@ -1105,7 +1105,7 @@ export async function printInvoice(payload: OrderTypes.printInvoiceOrderParams):
   const contentWidth = params.size[0] - margins * 2
   // const contentHeight = size.h - padding * 2
 
-  const order = await OrderModel.findOne({ seq })
+  const order = await OrderModel.findOne({ seq }).populate('client') as unknown as Order & { client: Client }
   if (!order) {
     throw new HttpError(400, 'Order not found', 'ORDER_NOT_FOUND')
   }
@@ -1191,6 +1191,12 @@ export async function printInvoice(payload: OrderTypes.printInvoiceOrderParams):
 
   doc.fontSize(32)
   doc.font('Manrope-Bold')
+  doc.image(
+    path.resolve(__dirname, '../utils/invoice/logo.png'),
+    margins,
+    doc.y,
+    { width: 141.67, height: 50 },
+  )
   doc.text(
     `#${order.seq + 1000}`,
     margins,
@@ -1199,6 +1205,52 @@ export async function printInvoice(payload: OrderTypes.printInvoiceOrderParams):
   )
 
   drawHr(doc, 8, 8)
+
+  // CLIENT
+
+  if (order.client) {
+    doc.fontSize(12)
+    doc.font('Manrope-Bold')
+    doc.text(
+      'Client:',
+      margins,
+      doc.y,
+      { width: contentWidth, height: 25, align: 'left', ellipsis: true, lineBreak: false },
+    )
+
+    doc.fontSize(10)
+    doc.font('Manrope')
+    if (order.client.name || order.client.lastName || order.client.middleName) {
+      doc.text(
+        `${order.client.name || ''} ${order.client.lastName || ''} ${order.client.middleName || ''}`,
+        margins,
+        doc.y,
+        { width: contentWidth, height: 25, align: 'left', ellipsis: true, lineBreak: false },
+      )
+    }
+
+    if (order.client.phones.length > 0) {
+      doc.text(
+        `${order.client.phones.join(', ')}`,
+        margins,
+        doc.y,
+        { width: contentWidth, height: 25, align: 'left', ellipsis: true, lineBreak: false },
+      )
+    }
+
+    if (order.client.emails.length > 0) {
+      doc.text(
+        `${order.client.emails.join(', ')}`,
+        margins,
+        doc.y,
+        { width: contentWidth, height: 25, align: 'left', ellipsis: true, lineBreak: false },
+      )
+    }
+
+    drawHr(doc, 8, 8)
+  }
+
+  // CLIENT
 
   // PRODUCTS
 
