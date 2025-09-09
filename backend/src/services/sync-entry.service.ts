@@ -132,6 +132,119 @@ export async function syncProductCreate(payload: SyncEntryTypes.syncProductCreat
   const typeProperty = product.productProperties.find(property => property.id === '25144e64-5c4c-47fd-842d-c0a2393f972e')
 
   const isCurly = (typeProperty?.value || []).includes('822ec142-d144-44fb-ba96-582cff8757b3')
+  const isVirgin = (typeProperty?.value || []).includes('b930fb75-61a6-41c0-88de-0c69082b7f06')
+  const isSilky = (typeProperty?.value || []).includes('aeb36d06-1a12-4319-9313-51abcbed38fb')
+
+  function getProductCategory(lengthCm: number): string | null {
+    const table = [
+      { min: 40, max: 44, category: '40-44' },
+      { min: 45, max: 49, category: '45-49' },
+      { min: 50, max: 54, category: '50-54' },
+      { min: 55, max: 59, category: '55-59' },
+      { min: 60, max: 64, category: '60-64' },
+      { min: 65, max: 69, category: '65-69' },
+      { min: 70, max: 74, category: '70-74' },
+      { min: 75, max: 79, category: '75-79' },
+      { min: 80, max: 84, category: '80-84' },
+      { min: 85, max: 89, category: '85-89' },
+      { min: 90, max: 94, category: '90-94' },
+      { min: 95, max: 99, category: '95-99' },
+    ]
+
+    for (const row of table) {
+      if (lengthCm >= row.min && lengthCm <= row.max) {
+        return row.category
+      }
+    }
+    return null
+  }
+
+  const categoriesIds = {
+    'Silky': 222,
+    'Silky.50-54': 229,
+    'Silky.55-59': 238,
+    'Silky.60-64': 239,
+    'Silky.65-69': 240,
+    'Silky.70-74': 241,
+    'Silky.75-79': 242,
+    'Silky.80-84': 243,
+    'Silky.85-89': 244,
+    'Silky.90-94': 245,
+    'Silky.95-99': 246,
+    'Silky.Curly': 226,
+    'Silky.Curly.50-54': 277,
+    'Silky.Curly.55-59': 278,
+    'Silky.Curly.60-64': 279,
+    'Silky.Curly.65-69': 280,
+    'Silky.Curly.70-74': 281,
+    'Silky.Curly.75-79': 282,
+    'Silky.Curly.80-84': 283,
+    'Silky.Curly.85-89': 284,
+    'Silky.Curly.90-94': 285,
+    'Silky.Curly.95-99': 286,
+
+    'Virgin': 223,
+    'Virgin.50-54': 247,
+    'Virgin.55-59': 248,
+    'Virgin.60-64': 249,
+    'Virgin.65-69': 250,
+    'Virgin.70-74': 251,
+    'Virgin.75-79': 252,
+    'Virgin.80-84': 253,
+    'Virgin.85-89': 254,
+    'Virgin.90-94': 255,
+    'Virgin.95-99': 256,
+    'Virgin.Curly': 225,
+    'Virgin.Curly.50-54': 257,
+    'Virgin.Curly.55-59': 258,
+    'Virgin.Curly.60-64': 259,
+    'Virgin.Curly.65-69': 260,
+    'Virgin.Curly.70-74': 261,
+    'Virgin.Curly.75-79': 262,
+    'Virgin.Curly.80-84': 263,
+    'Virgin.Curly.85-89': 264,
+    'Virgin.Curly.90-94': 265,
+    'Virgin.Curly.95-99': 266,
+
+    'RawHair': 72,
+    'RawHair.50-54': 227,
+    'RawHair.55-59': 228,
+    'RawHair.60-64': 230,
+    'RawHair.65-69': 231,
+    'RawHair.70-74': 232,
+    'RawHair.75-79': 233,
+    'RawHair.80-84': 234,
+    'RawHair.85-89': 235,
+    'RawHair.90-94': 236,
+    'RawHair.95-99': 237,
+    'RawHair.Curly': 224,
+    'RawHair.Curly.50-54': 267,
+    'RawHair.Curly.55-59': 268,
+    'RawHair.Curly.60-64': 269,
+    'RawHair.Curly.65-69': 270,
+    'RawHair.Curly.70-74': 271,
+    'RawHair.Curly.75-79': 272,
+    'RawHair.Curly.80-84': 273,
+    'RawHair.Curly.85-89': 274,
+    'RawHair.Curly.90-94': 275,
+    'RawHair.Curly.95-99': 276,
+  }
+
+  function getCategoryIds(path: string) {
+    const parts = path.split('.')
+    const ids = []
+
+    for (let i = 0; i < parts.length; i++) {
+      const key = parts.slice(0, i + 1).join('.')
+      if (categoriesIds[key as keyof typeof categoriesIds]) {
+        ids.push(categoriesIds[key as keyof typeof categoriesIds])
+      }
+    }
+
+    return [72, ...ids]
+  }
+
+  const categories = getCategoryIds(`${isVirgin ? 'Virgin' : isSilky ? 'Silky' : 'RawHair'}${isCurly ? '.Curly' : ''}.${getProductCategory(lengthProperty?.value || 0)}`)
 
   const syncProduct = {
     model: `REMNANT NEW PRODUCT`,
@@ -164,7 +277,7 @@ export async function syncProductCreate(payload: SyncEntryTypes.syncProductCreat
         language_code: 'pl',
       },
     ],
-    categories: [72],
+    categories,
     images: product.images.map(image => ({
       image: `${STORAGE_URLS.productImages}/${image.filename}`,
       name: image.filename || '',
