@@ -500,7 +500,7 @@ export async function syncProductQuantity(payload: SyncEntryTypes.syncProductQua
     return { status: 'success', code: 'QUANTITY_NOT_FOUND', message: 'Quantity not found' }
 
   const quantity = quantities.reduce((acc, quantity) => acc + quantity.count, 0)
-
+  console.log(productId, syncEntry.externalId, quantity)
   const syncProduct: Record<string, any> = {
     external_id: productId,
     product_id: syncEntry.externalId,

@@ -42,7 +42,7 @@ async function createProducts() {
 
 async function quantityProducts() {
   const { products } = await ProductService.get({
-    pagination: { current: 1, pageSize: 400 },
+    pagination: { full: true },
   })
 
   const sites = await SiteModel.find({})
