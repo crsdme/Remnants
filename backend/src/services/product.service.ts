@@ -23,7 +23,7 @@ import * as ProductService from './product.service'
 import * as SyncEntryService from './sync-entry.service'
 
 export async function get(payload: ProductTypes.getProductsParams): Promise<ProductTypes.getProductsResult> {
-  const { current = 1, pageSize = 10 } = payload.pagination || {}
+  const { current = 1, pageSize = 10, full = false } = payload.pagination || {}
 
   const {
     search = '',
@@ -377,10 +377,12 @@ export async function get(payload: ProductTypes.getProductsParams): Promise<Prod
     },
     {
       $facet: {
-        products: [
-          { $skip: (current - 1) * pageSize },
-          { $limit: pageSize },
-        ],
+        products: full
+          ? []
+          : [
+              { $skip: (current - 1) * pageSize },
+              { $limit: pageSize },
+            ],
         totalCount: [
           { $count: 'count' },
         ],
