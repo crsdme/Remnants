@@ -867,6 +867,7 @@
 
   "page.order-statistic.total-amount": "Общая сумма",
   "page.order-statistic.orders": "заказов",
+  "page.order-statistic.products": "товаров",
   "page.order-statistic.paid": "Оплачено",
   "page.order-statistic.unpaid": "Не оплачено",
   "page.order-statistic.average-check": "Средний чек",

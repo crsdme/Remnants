@@ -863,6 +863,7 @@
 
   "page.order-statistic.total-amount": "Total amount",
   "page.order-statistic.orders": "orders",
+  "page.order-statistic.products": "products",
   "page.order-statistic.paid": "Paid",
   "page.order-statistic.unpaid": "Unpaid",
   "page.order-statistic.average-check": "Average check",

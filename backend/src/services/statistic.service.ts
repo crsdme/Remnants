@@ -197,6 +197,10 @@ export async function get(payload: StatisticTypes.getStatisticParams): Promise<S
 
   const productAttributes = aggregateProductAttributes(products)
 
+  const productCategories = aggregateProductCategories(products)
+
+  console.log(productCategories)
+
   const statistics = {
     ordersCount,
     ordersAmount: totalPrice,
@@ -212,6 +216,7 @@ export async function get(payload: StatisticTypes.getStatisticParams): Promise<S
     expensesCount,
     expensesTotal,
     productAttributes,
+    productCategories,
   }
 
   return {
@@ -279,10 +284,14 @@ function aggregateProductAttributes(products: any[]) {
 
         case 'boolean': {
           const v = Boolean(prop.value)
-          if (v)
+          if (v) {
             agg.trueCount += qty
-          else
+            agg.count += qty
+          }
+          else {
             agg.falseCount += qty
+            agg.count += qty
+          }
           break
         }
 
@@ -301,6 +310,7 @@ function aggregateProductAttributes(products: any[]) {
             })
           }
           agg.options.get(optId)!.count += qty
+          agg.count += qty
           break
         }
 
@@ -321,6 +331,7 @@ function aggregateProductAttributes(products: any[]) {
             }
             agg.options.get(optId)!.count += qty
           }
+          agg.count += qty
           break
         }
       }
@@ -333,6 +344,7 @@ function aggregateProductAttributes(products: any[]) {
       id: a.id,
       name: a.name,
       type: a.type as PropType,
+      count: a.count,
     }
 
     if (a.type === 'number') {
@@ -373,4 +385,68 @@ function aggregateProductAttributes(products: any[]) {
     }
     return getScore(y) - getScore(x)
   })
+}
+
+function aggregateProductCategories(products: any[]) {
+  const acc = new Map<string, any>()
+
+  for (const item of products) {
+    const categories = item.product.categories as any[]
+    const unit = item.product.unit
+
+    if (!categories?.length)
+      continue
+
+    for (const category of categories) {
+      const categoryId = String(category.id ?? category._id ?? category)
+      if (!categoryId)
+        continue
+
+      if (!acc.has(categoryId)) {
+        acc.set(categoryId, {
+          id: categoryId,
+          names: category.names,
+          count: 0,
+          units: new Map(),
+        })
+      }
+      const cat = acc.get(categoryId)!
+
+      cat.count += 1
+
+      if (!cat.units.has(unit.id)) {
+        cat.units.set(unit.id, {
+          id: unit.id,
+          symbols: unit.symbols,
+          count: 0,
+          quantity: 0,
+        })
+      }
+      const u = cat.units.get(unit.id)!
+      u.count += 1
+      u.quantity += Number(item.quantity)
+    }
+  }
+
+  const result = []
+  for (const [, cat] of acc) {
+    const units = Array.from(cat.units.values())
+      .map((u: any) => ({
+        id: u.id,
+        symbols: u.symbols,
+        count: u.count,
+        quantity: u.quantity,
+      }))
+      .sort((a, b) => (b.count - a.count) || (b.quantity - a.quantity))
+
+    result.push({
+      id: cat.id,
+      names: cat.names,
+      count: cat.count,
+      units,
+    })
+  }
+
+  // крупные категории сверху
+  return result.sort((a, b) => (b.count - a.count) || (b.count - a.count))
 }

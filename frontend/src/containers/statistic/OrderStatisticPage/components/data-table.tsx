@@ -121,6 +121,7 @@ export function DataTable() {
           </div>
         </form>
       </Form>
+
       <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4'>
         <Card className='gap-0'>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -256,28 +257,21 @@ export function DataTable() {
       
       <Separator className='my-4'/>
       <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-4'>
-        {/* <Card className='gap-0'>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">{t('page.order-statistic.product-attributes')}</CardTitle>
-            <Badge>{statistics.expensesCount} {t('page.order-statistic.expenses')}</Badge>
-          </CardHeader>
-          <CardContent className='flex items-center gap-2'>
-          { statistics.productAttributesTo.map((item) => {
-              return (
-                <span className='text-2xl font-bold mr-4' key={item.currency}>{`${item.total} ${item.currency.symbols[i18n.language]}`}</span>
-              )
-            }) }
-          </CardContent>
-        </Card> */}
         { statistics.productAttributes.map(attribute => {
           return (
             <Card className='gap-0' key={attribute.id}>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">{attribute.name[i18n.language]}</CardTitle>
+                { attribute?.count > 0 && (
+                  <Badge>{`${attribute.count} ${t('page.order-statistic.products')}`}</Badge>
+                )}
               </CardHeader>
               <CardContent className='flex items-center gap-2 flex-wrap'>
               {attribute.type === 'number' && (
-                <span className='text-2xl font-bold mr-4'>{`${attribute.number.sum}`}</span>
+                <>
+                  <span className='text-2xl font-bold mr-4'>{`${attribute.number.sum}`}</span>
+                  {/* <p className="text-xs text-muted-foreground">{`${t('page.order-statistic.all')}: ${attribute.number.count}`}</p> */}
+                </>
               )}
               {attribute.type === 'boolean' && (
                 <div className='flex items-center gap-2'>
@@ -300,6 +294,26 @@ export function DataTable() {
                   <Badge key={option.id}>{`${option.name[i18n.language]} (${option.count})`}</Badge>
                 ))
               )}
+              </CardContent>
+            </Card>
+          )
+        }) }
+      </div>
+      <Separator className='my-4'/>
+      <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-4'>
+        { statistics.productCategories.map(category => {
+          return (
+            <Card className='gap-0' key={category.id}>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">{category.names[i18n.language]}</CardTitle>
+                { category?.man > 0 && (
+                  <Badge>{`${category.count} ${t('page.order-statistic.products')}`}</Badge>
+                )}
+              </CardHeader>
+              <CardContent className='flex items-center gap-2 flex-wrap'>
+                { category.units.map(unit => (
+                  <span className='text-2xl font-bold mr-4' key={unit.id}>{`${unit.quantity} ${unit.symbols[i18n.language]}`}</span>
+                )) }
               </CardContent>
             </Card>
           )
