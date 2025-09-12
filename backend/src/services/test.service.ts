@@ -2,7 +2,7 @@ import { SiteModel } from '../models'
 import * as ProductService from '../services/product.service'
 import * as SyncEntryService from '../services/sync-entry.service'
 import * as TelegramBotService from '../services/telegram-bot.service'
-import * as WarehouseTransactionService from '../services/warehouse-transaction.service'
+// import * as WarehouseTransactionService from '../services/warehouse-transaction.service'
 import { HttpError } from '../utils/httpError'
 
 export async function start(payload: { key: string }) {
