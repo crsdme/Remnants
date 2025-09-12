@@ -4,10 +4,6 @@ import { HttpError } from '../utils/httpError'
 
 export async function get(req: Request, res: Response, next: NextFunction) {
   try {
-    if (req.body.sorters?.productProperties) {
-      req.body.sorters.productPropertiesSort = req.body.sorters.productProperties
-      delete req.body.sorters.productProperties
-    }
     const serviceResponse = await ProductService.get(req.body)
 
     res.status(200).json(serviceResponse)

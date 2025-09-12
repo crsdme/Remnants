@@ -21,6 +21,7 @@ export function DataTable() {
     names: '',
     symbols: '',
     priority: undefined,
+    selectedWarehouse: undefined,
     active: [],
     createdAt: { from: undefined, to: undefined },
   }
@@ -84,6 +85,10 @@ export function DataTable() {
   useEffect(() => {
     if (!productContext.selectedWarehouse && warehouses.length > 0) {
       productContext.setSelectedWarehouse(warehouses[0].id)
+      setFilters(state => ({
+        ...state,
+        selectedWarehouse: warehouses[0].id,
+      }))
     }
   }, [warehouses])
 
@@ -272,7 +277,13 @@ export function DataTable() {
           <DataTableFilters filters={filters} setFilters={setFilters} />
           <Select
             value={productContext.selectedWarehouse}
-            onValueChange={productContext.setSelectedWarehouse}
+            onValueChange={v => {
+              productContext.setSelectedWarehouse(v)
+              setFilters(state => ({
+                ...state,
+                selectedWarehouse: v,
+              }))
+            }}
           >
             <SelectTrigger className="w-[150px]">
               <Warehouse className="h-4 w-4 text-gray-400" />

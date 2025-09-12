@@ -62,6 +62,7 @@ export interface getProductsFilters {
   unit?: IdType
   productPropertiesGroup?: IdType
   productProperties?: IdType[]
+  selectedWarehouse?: IdType
   createdAt?: DateRange
   updatedAt?: DateRange
 }
@@ -76,6 +77,9 @@ export interface getProductsSorters {
   unit?: Sorter
   productPropertiesGroup?: Sorter
   productProperties?: Sorter
+  productPropertiesSort?: Sorter
+  quantity?: Sorter
+  quantitySort?: Sorter
   createdAt?: Sorter
   updatedAt?: Sorter
 }

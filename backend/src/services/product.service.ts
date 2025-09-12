@@ -46,10 +46,21 @@ export async function get(payload: ProductTypes.getProductsParams): Promise<Prod
       from: undefined,
       to: undefined,
     },
+    selectedWarehouse = undefined,
   } = payload.filters || {}
 
-  const sorters = buildSortQuery(payload.sorters || {}, { seq: 1 })
+  if (payload.sorters?.productProperties) {
+    payload.sorters.productPropertiesSort = payload.sorters.productProperties
+    delete payload.sorters.productProperties
+  }
 
+  if (payload.sorters?.quantity) {
+    payload.sorters.quantitySort = payload.sorters.quantity
+    delete payload.sorters.quantity
+  }
+
+  const sorters = buildSortQuery(payload.sorters || {}, { seq: 1 })
+  console.log(sorters)
   const filterRules: any = {
     _id: { type: 'array' },
     seq: { type: 'exact' },
@@ -314,6 +325,22 @@ export async function get(payload: ProductTypes.getProductsParams): Promise<Prod
             },
           },
         },
+        quantitySort: {
+          $let: {
+            vars: {
+              hit: {
+                $first: {
+                  $filter: {
+                    input: '$quantity',
+                    as: 'q',
+                    cond: { $eq: ['$$q.warehouse', selectedWarehouse] },
+                  },
+                },
+              },
+            },
+            in: { $ifNull: ['$$hit.count', 0] },
+          },
+        },
       },
     },
     {
@@ -328,6 +355,7 @@ export async function get(payload: ProductTypes.getProductsParams): Promise<Prod
         barcodes: { id: 1, code: 1 },
         categories: { id: 1, names: 1 },
         unit: { id: '$unit._id', names: 1, symbols: 1 },
+        quantitySort: 1,
         quantity: { count: 1, warehouse: 1, status: 1 },
         images: 1,
         productProperties: { id: 1, value: 1, data: { names: 1, type: 1, isRequired: 1, showInTable: 1 }, optionData: { id: 1, names: 1, color: 1 } },

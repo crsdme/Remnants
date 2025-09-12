@@ -503,6 +503,7 @@ export async function syncProductQuantity(payload: SyncEntryTypes.syncProductQua
 
   const syncProduct: Record<string, any> = {
     external_id: productId,
+    product_id: syncEntry.externalId,
     quantity,
   }
 
