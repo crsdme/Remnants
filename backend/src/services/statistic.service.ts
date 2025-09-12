@@ -199,8 +199,6 @@ export async function get(payload: StatisticTypes.getStatisticParams): Promise<S
 
   const productCategories = aggregateProductCategories(products)
 
-  console.log(productCategories)
-
   const statistics = {
     ordersCount,
     ordersAmount: totalPrice,

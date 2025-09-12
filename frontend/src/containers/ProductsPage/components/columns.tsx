@@ -23,7 +23,7 @@ const sortIcons = { asc: ArrowUp, desc: ArrowDown }
 
 export function useColumns() {
   const { t, i18n } = useTranslation()
-  const { isLoading, selectedWarehouse, openModal, duplicateProducts, removeProduct } = useProductContext()
+  const { isLoading, selectedWarehouse, openModal, duplicateProducts, removeProduct, loadCategoryOptions } = useProductContext()
   const { permissions } = useAuthContext()
 
   const { data: { productProperties = [] } = {} } = useProductPropertyQuery(
@@ -34,6 +34,18 @@ export function useColumns() {
       }),
     } },
   )
+  
+  const loadCategoryOptionsMapped = async (value) => {
+    const res = await loadCategoryOptions(value)
+    console.log(res.map((item: any) => ({
+      value: item.id,
+      label: item.names[i18n.language],
+    })))
+    return res.map((item: any) => ({
+      value: item.id,
+      label: item.names[i18n.language],
+    }))
+  }
 
   const columns = useMemo(() => {
     function sortHeader(column, label) {
@@ -158,13 +170,13 @@ export function useColumns() {
 
     function productPropertyColumn() {
       return productProperties.map(property => ({
-        id: property.id,
+        id: ['productProperties', property.id],
         size: 150,
         meta: {
           title: property.names[i18n.language],
-          batchEdit: true,
+          batchEdit: false,
           batchEditType: 'textMultiLanguage',
-          filterable: true,
+          filterable: false,
           filterType: 'text',
           sortable: true,
         },
@@ -328,6 +340,9 @@ export function useColumns() {
         size: 150,
         meta: {
           title: t('page.products.table.categories'),
+          batchEdit: true,
+          batchEditType: 'asyncValue',
+          loadOptions: loadCategoryOptionsMapped,
           filterable: true,
           filterType: 'text',
           sortable: true,

@@ -269,6 +269,54 @@ export async function get(payload: ProductTypes.getProductsParams): Promise<Prod
       },
     },
     {
+      $addFields: {
+        productPropertiesSort: {
+          $arrayToObject: {
+            $map: {
+              input: '$productProperties',
+              as: 'pp',
+              in: {
+                k: { $toString: '$$pp.id' },
+                v: {
+                  $switch: {
+                    branches: [
+                      { case: { $in: ['$$pp.data.type', ['text', 'number']] }, then: '$$pp.value' },
+                      { case: { $eq: ['$$pp.data.type', 'boolean'] }, then: { $cond: [{ $eq: ['$$pp.value', true] }, 1, 0] } },
+                      { case: { $in: ['$$pp.data.type', ['select', 'color']] }, then: {
+                        $let: {
+                          vars: {
+                            names: {
+                              $map: { input: '$$pp.optionData', as: 'opt', in: { $ifNull: [`$$opt.names.${language}`, ''] } },
+                            },
+                          },
+                          in: { $ifNull: [{ $arrayElemAt: ['$$names', 0] }, ''] },
+                        },
+                      } },
+                      { case: { $eq: ['$$pp.data.type', 'multiSelect'] }, then: {
+                        $let: {
+                          vars: {
+                            names: { $map: { input: '$$pp.optionData', as: 'opt', in: { $ifNull: [`$$opt.names.${language}`, ''] } } },
+                          },
+                          in: {
+                            $reduce: {
+                              input: { $sortArray: { input: '$$names', sortBy: 1 } },
+                              initialValue: '',
+                              in: { $concat: [{ $cond: [{ $eq: ['$$value', ''] }, '', { $concat: ['$$value', ','] }] }, '$$this'] },
+                            },
+                          },
+                        },
+                      } },
+                    ],
+                    default: '',
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+    {
       $project: {
         _id: 0,
         seq: 1,
@@ -283,6 +331,7 @@ export async function get(payload: ProductTypes.getProductsParams): Promise<Prod
         quantity: { count: 1, warehouse: 1, status: 1 },
         images: 1,
         productProperties: { id: 1, value: 1, data: { names: 1, type: 1, isRequired: 1, showInTable: 1 }, optionData: { id: 1, names: 1, color: 1 } },
+        productPropertiesSort: 1,
         productPropertiesGroup: { id: '$productPropertiesGroup._id', names: 1 },
         createdAt: 1,
         updatedAt: 1,
@@ -294,6 +343,9 @@ export async function get(payload: ProductTypes.getProductsParams): Promise<Prod
     },
     {
       $sort: sorters,
+    },
+    {
+      $unset: ['productPropertiesSort'],
     },
     {
       $facet: {

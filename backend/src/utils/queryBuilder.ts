@@ -108,20 +108,47 @@ export function buildQuery({ filters, rules, language = 'en', removed = true, ba
   return query
 }
 
-export function buildSortQuery(sort: Record<string, string>, defaultSorters: Record<string, any> = { _id: 1, id: 1 }): Record<string, any> {
-  let sortersQuery: Record<string, any> = defaultSorters
+export function buildSortQuery(
+  sort: Record<string, any> | undefined,
+  defaultSorters: Record<string, any> = { _id: 1, id: 1 },
+): Record<string, any> {
+  if (!sort || Object.keys(sort).length === 0)
+    return defaultSorters
 
-  if (!sort)
-    return sortersQuery
+  const flatten = (obj: Record<string, any>, parentKey = ''): Record<string, any> => {
+    const result: Record<string, any> = {}
 
-  if (Object.entries(sort).length > 0) {
-    sortersQuery = Object.fromEntries(
-      Object.entries(sort).map(([key, value]) => [
-        key,
-        value === 'asc' ? 1 : -1,
-      ]),
-    )
+    for (const [key, value] of Object.entries(obj)) {
+      const newKey = parentKey ? `${parentKey}.${key}` : key
+
+      if (value && typeof value === 'object' && !Array.isArray(value)) {
+        Object.assign(result, flatten(value, newKey))
+      }
+      else {
+        result[newKey] = value === 'asc' ? 1 : value === 'desc' ? -1 : value
+      }
+    }
+
+    return result
   }
 
-  return sortersQuery
+  return flatten(sort)
 }
+
+// export function buildSortQuery(sort: Record<string, string>, defaultSorters: Record<string, any> = { _id: 1, id: 1 }): Record<string, any> {
+//   let sortersQuery: Record<string, any> = defaultSorters
+
+//   if (!sort)
+//     return sortersQuery
+
+//   if (Object.entries(sort).length > 0) {
+//     sortersQuery = Object.fromEntries(
+//       Object.entries(sort).map(([key, value]) => [
+//         key,
+//         value === 'asc' ? 1 : -1,
+//       ]),
+//     )
+//   }
+
+//   return sortersQuery
+// }

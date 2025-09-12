@@ -36,7 +36,7 @@ export const getProductSchema = z.object({
     currency: sorterParamsSchema.optional(),
     purchaseCurrency: sorterParamsSchema.optional(),
     productPropertiesGroup: sorterParamsSchema.optional(),
-    productProperties: sorterParamsSchema.optional(),
+    productProperties: z.any().optional(),
     updatedAt: sorterParamsSchema.optional(),
     createdAt: sorterParamsSchema.optional(),
   }).optional().default({}),

@@ -27,6 +27,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui'
+import { AsyncSelectNew } from '../AsyncSelectNew'
 
 interface BatchEditItem {
   id: string
@@ -197,20 +198,24 @@ export function BatchEdit({
         )
       case 'asyncValue':
         return (
-          <AsyncSelect
-            fetcher={column.loadOptions}
-            value={item.value as string[]}
+          <AsyncSelectNew
+            loadOptions={column.loadOptions}
+            renderOption={e => e.label}
+            getDisplayValue={e => e.label}
+            getOptionValue={e => e.value}
+            disabled={isLoading}
+            value={[item.value] as string[]}
             onChange={(value) => {
               const currentItems = form.getValues('items')
-              currentItems[index].value = value as string
+              currentItems[index].value = value[0]
               form.setValue('items', currentItems)
             }}
-            getOptionValue={option => option.value}
-            getDisplayValue={option => option.label}
-            renderOption={option => option.label}
+            clearable
             placeholder={t('component.batchEdit.selectValue')}
-            width="100%"
+            searchable
+            multi
           />
+
         )
       case 'textMultiLanguage':
         return (

@@ -36,9 +36,21 @@ export function DataTable() {
   const [filters, setFilters] = useState(filtersInitialState)
   const [expanded, setExpanded] = useState({})
 
-  const sorters = useMemo(() => (
-    Object.fromEntries(sorting.map(({ id, desc }) => [id, desc ? 'desc' : 'asc']))
-  ), [sorting])
+  const sorters = useMemo(() => {
+    return sorting.reduce<Record<string, any>>((acc, { id, desc }) => {
+      const dir = desc ? 'desc' : 'asc'
+      const parts = Array.isArray(id) ? id : String(id).split(/[,.]/)
+  
+      if (parts.length === 2) {
+        const [scope, key] = parts
+        ;(acc[scope] ??= {})[key] = dir
+      } else {
+        acc[parts[0]] = dir
+      }
+  
+      return acc
+    }, {})
+  }, [sorting])  
 
   const { data: { products = [], productsCount = 0 } = {}, isLoading, isFetching } = useProductQuery(
     { pagination, filters, sorters },
