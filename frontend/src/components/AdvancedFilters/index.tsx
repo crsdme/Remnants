@@ -10,6 +10,7 @@ import { z } from 'zod'
 import { DateRangePicker, MultiSelect } from '@/components'
 import { Badge, Button, Form, FormField, FormItem, FormMessage, Input, Popover, PopoverContent, PopoverTrigger, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui'
 import { AsyncSelect } from '../AsyncSelect'
+import { AsyncSelectNew } from '../AsyncSelectNew'
 
 interface FilterItem {
   id: string
@@ -165,19 +166,21 @@ export function AdvancedFilters({ columns, onSubmit, onCancel, className, align 
         )
       case 'asyncValue':
         return (
-          <AsyncSelect
-            fetcher={column.loadOptions}
-            getOptionValue={option => option.value}
-            getDisplayValue={option => option.label}
-            renderOption={option => option.label}
+          <AsyncSelectNew
+            loadOptions={column.loadOptions}
+            renderOption={e => e.label}
+            getDisplayValue={e => e.label}
+            getOptionValue={e => e.value}
             value={item.value as string[]}
             onChange={(value) => {
               const currentItems = form.getValues('items')
-              currentItems[index].value = value
+              currentItems[index].value = value as string
               form.setValue('items', currentItems)
             }}
+            clearable
             placeholder={t('component.batchEdit.selectValue')}
-            width="100%"
+            searchable
+            multi
           />
         )
       case 'select':

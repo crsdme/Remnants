@@ -32,7 +32,7 @@ import { AsyncSelectNew } from '../AsyncSelectNew'
 interface BatchEditItem {
   id: string
   column: string
-  value: string | number | boolean | Record<string, string> | { value: string, label: string }
+  value: string | number | boolean | Record<string, string> | { value: string, label: string } | string[]
 }
 
 interface BatchEditProps {
@@ -53,6 +53,7 @@ const batchEditItemSchema = z.object({
     z.boolean(),
     z.record(z.string()),
     z.object({ value: z.string(), label: z.string() }),
+    z.array(z.string()),
   ]),
 })
 
@@ -204,10 +205,10 @@ export function BatchEdit({
             getDisplayValue={e => e.label}
             getOptionValue={e => e.value}
             disabled={isLoading}
-            value={[item.value] as string[]}
+            value={item.value as string[]}
             onChange={(value) => {
               const currentItems = form.getValues('items')
-              currentItems[index].value = value[0]
+              currentItems[index].value = value as string
               form.setValue('items', currentItems)
             }}
             clearable
@@ -215,7 +216,6 @@ export function BatchEdit({
             searchable
             multi
           />
-
         )
       case 'textMultiLanguage':
         return (
@@ -269,7 +269,7 @@ export function BatchEdit({
                     control={form.control}
                     name={`items.${index}.column`}
                     render={({ field }) => (
-                      <FormItem>
+                      <FormItem className="pb-0">
                         <Select
                           value={field.value}
                           onValueChange={(v) => {

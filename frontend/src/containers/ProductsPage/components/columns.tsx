@@ -38,10 +38,12 @@ export function useColumns() {
   const loadCategoryOptionsMapped = async (value) => {
     const res = await loadCategoryOptions(value)
     console.log(res.map((item: any) => ({
+      id: item.id,
       value: item.id,
       label: item.names[i18n.language],
     })))
     return res.map((item: any) => ({
+      id: item.id,
       value: item.id,
       label: item.names[i18n.language],
     }))
@@ -344,7 +346,7 @@ export function useColumns() {
           batchEditType: 'asyncValue',
           loadOptions: loadCategoryOptionsMapped,
           filterable: true,
-          filterType: 'text',
+          filterType: 'asyncValue',
           sortable: true,
           defaultVisible: true,
         },
