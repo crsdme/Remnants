@@ -1252,6 +1252,34 @@ export async function printInvoice(payload: OrderTypes.printInvoiceOrderParams):
 
   // CLIENT
 
+  // INVOICE DATE
+
+  const fmt = new Intl.DateTimeFormat('ru-RU', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  })
+
+  doc.fontSize(12)
+  doc.font('Manrope-Bold')
+  doc.text(
+    'Invoice date:',
+    margins,
+    doc.y,
+  )
+  doc.fontSize(10)
+  doc.font('Manrope')
+  doc.text(
+    `${fmt.format(order.createdAt)}`,
+    margins,
+    doc.y,
+  )
+  doc.font('Manrope-Bold')
+
+  drawHr(doc, 8, 8)
+
+  // INVOICE DATE
+
   // PRODUCTS
 
   const { orderItems } = await getItems({ filters: { order: [order.id] }, pagination: { full: true } }) as any
