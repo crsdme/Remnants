@@ -60,7 +60,7 @@ function FullForm({ form, onSubmit }: { form: UseFormReturn, onSubmit: (payments
 
   return (
     <Form {...form}>
-      <form onSubmit={onSubmit}>
+      <form onSubmit={form.handleSubmit(onSubmit)}>
 
         <FormField
           control={form.control}

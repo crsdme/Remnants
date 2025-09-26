@@ -15,9 +15,9 @@ import { useNavigate } from 'react-router-dom'
 import { TableActionDropdown } from '@/components'
 import { Badge, Button, Checkbox } from '@/components/ui'
 import { useAuthContext, useOrderContext } from '@/contexts'
+import { backendUrl } from '@/utils/constants'
 import { formatDate } from '@/utils/helpers'
 import { hasPermission } from '@/utils/helpers/permission'
-import { backendUrl } from '@/utils/constants'
 
 const sortIcons = { asc: ArrowUp, desc: ArrowDown }
 
@@ -89,18 +89,19 @@ export function useColumns() {
 
           const actions = [
             {
-            permission: 'order.page',
-            onClick: () => navigate(`/orders/view/${item.seq}`),
-            label: t('table.view'),
-            icon: <Eye className="h-4 w-4" />,
-          },
-          { 
-            permission: 'order.print.invoice',
-            link: `${backendUrl}api/orders/print/invoice?seq=${item.seq}&language=${i18n.language}`,
-            type: 'link' as const,
-            label: t('table.printInvoice'),
-            icon: <Printer className="h-4 w-4" />,
-          }] as any
+              permission: 'order.page',
+              onClick: () => navigate(`/orders/view/${item.seq}`),
+              label: t('table.view'),
+              icon: <Eye className="h-4 w-4" />,
+            },
+            {
+              permission: 'order.print.invoice',
+              link: `${backendUrl}api/orders/print/invoice?seq=${item.seq}&language=${i18n.language}`,
+              type: 'link' as const,
+              label: t('table.printInvoice'),
+              icon: <Printer className="h-4 w-4" />,
+            },
+          ] as any
 
           if (!item.orderStatus.isLocked || hasPermission(permissions, ['order.editLocked', 'order.removeLocked'])) {
             actions.push({

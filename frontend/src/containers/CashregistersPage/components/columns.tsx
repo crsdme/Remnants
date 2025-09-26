@@ -5,7 +5,6 @@ import {
   ChevronRight,
   ChevronsUpDown,
   Copy,
-  CopyPlus,
   Pencil,
   Trash,
 } from 'lucide-react'

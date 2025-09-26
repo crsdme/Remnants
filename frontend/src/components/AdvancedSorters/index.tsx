@@ -165,7 +165,7 @@ export function AdvancedSorters({ columns, onSubmit, onCancel }: AdvancedSorters
                     control={form.control}
                     name={`items.${index}.column`}
                     render={({ field }) => (
-                      <FormItem>
+                      <FormItem className="pb-0">
                         <Select value={field.value} onValueChange={field.onChange}>
                           <SelectTrigger className="w-[180px]">
                             <SelectValue

@@ -178,7 +178,9 @@
   "page.products.table.categories": "Категории",
   "page.products.table.unit": "Единица измерения",
   "page.products.table.price": "Цена",
+  "page.products.table.currency": "Валюта",
   "page.products.table.purchasePrice": "Цена закупки",
+  "page.products.table.purchaseCurrency": "Валюта закупки",
   "page.products.table.quantity": "Количество",
   "page.products.table.productPropertyGroup": "Группа свойств",
 

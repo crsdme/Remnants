@@ -32,7 +32,9 @@ export async function get(payload: ProductTypes.getProductsParams): Promise<Prod
     names = '',
     language = 'en',
     price = undefined,
+    currency = undefined,
     purchasePrice = undefined,
+    purchaseCurrency = undefined,
     barcodes = undefined,
     categories = undefined,
     unit = undefined,
@@ -59,8 +61,8 @@ export async function get(payload: ProductTypes.getProductsParams): Promise<Prod
     delete payload.sorters.quantity
   }
 
-  const sorters = buildSortQuery(payload.sorters || {}, { seq: 1 })
-  console.log(sorters)
+  const sorters = buildSortQuery(payload.sorters || {}, { seq: 1, _id: 1 }, { seq: 1 })
+
   const filterRules: any = {
     _id: { type: 'array' },
     seq: { type: 'exact' },
@@ -68,17 +70,19 @@ export async function get(payload: ProductTypes.getProductsParams): Promise<Prod
     active: { type: 'array' },
     price: { type: 'exact' },
     purchasePrice: { type: 'exact' },
-    barcodes: { type: 'array' },
+    currency: { type: 'array' },
+    purchaseCurrency: { type: 'array' },
+    barcodes: { type: 'string' },
     categories: { type: 'array' },
-    unit: { type: 'exact' },
-    productPropertiesGroup: { type: 'exact' },
+    unit: { type: 'array' },
+    productPropertiesGroup: { type: 'array' },
     productProperties: { type: 'array' },
     createdAt: { type: 'dateRange' },
     updatedAt: { type: 'dateRange' },
   }
 
   const query = buildQuery({
-    filters: { _id: ids, seq, names, price, purchasePrice, barcodes, categories, unit, productPropertiesGroup, productProperties, createdAt, updatedAt },
+    filters: { _id: ids, seq, names, price, purchasePrice, barcodes, categories, unit, productPropertiesGroup, productProperties, createdAt, updatedAt, currency, purchaseCurrency },
     rules: filterRules,
     language,
   })
@@ -89,6 +93,7 @@ export async function get(payload: ProductTypes.getProductsParams): Promise<Prod
       multiFields: [
         { field: `names`, langAware: true },
         { field: `categories.names`, langAware: true, isArray: true },
+        { field: `barcodes.code`, isArray: true },
       ],
     },
   }
@@ -696,7 +701,7 @@ export async function batch(payload: ProductTypes.batchProductsParams): Promise<
     },
   } = filters || {}
 
-  const allowedParams = ['names', 'price', 'purchasePrice', 'barcodes', 'categories', 'unit', 'productPropertiesGroup', 'productProperties']
+  const allowedParams = ['names', 'price', 'purchasePrice', 'barcodes', 'categories', 'unit', 'currency', 'purchaseCurrency', 'productPropertiesGroup', 'productProperties']
 
   const batchParams = params
     .filter(item => item.column && item.value && allowedParams.includes(item.column))
@@ -710,7 +715,7 @@ export async function batch(payload: ProductTypes.batchProductsParams): Promise<
     purchasePrice: { type: 'exact' },
     barcodes: { type: 'array' },
     categories: { type: 'array' },
-    unit: { type: 'exact' },
+    unit: { type: 'array' },
     productPropertiesGroup: { type: 'exact' },
     productProperties: { type: 'array' },
     createdAt: { type: 'dateRange' },

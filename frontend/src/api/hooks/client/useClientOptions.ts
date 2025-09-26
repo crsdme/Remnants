@@ -19,7 +19,7 @@ export function useClientOptions({ defaultFilters, mapFn }: UseClientOptionsPara
     const params: getClientsParams = {}
     let filters = {}
 
-    if (query) {
+    if (query || selectedValue) {
       filters = {
         ...(selectedValue ? { ids: selectedValue } : { search: query }),
       }

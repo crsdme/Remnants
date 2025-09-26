@@ -23,7 +23,17 @@ const sortIcons = { asc: ArrowUp, desc: ArrowDown }
 
 export function useColumns() {
   const { t, i18n } = useTranslation()
-  const { isLoading, selectedWarehouse, openModal, duplicateProducts, removeProduct, loadCategoryOptions } = useProductContext()
+  const {
+    isLoading,
+    selectedWarehouse,
+    openModal,
+    duplicateProducts,
+    removeProduct,
+    loadCategoryOptions,
+    loadUnitsOptions,
+    loadCurrencyOptions,
+    loadProductPropertyGroupOptions,
+  } = useProductContext()
   const { permissions } = useAuthContext()
 
   const { data: { productProperties = [] } = {} } = useProductPropertyQuery(
@@ -34,14 +44,40 @@ export function useColumns() {
       }),
     } },
   )
-  
+
   const loadCategoryOptionsMapped = async (value) => {
     const res = await loadCategoryOptions(value)
-    console.log(res.map((item: any) => ({
+
+    return res.map((item: any) => ({
       id: item.id,
       value: item.id,
       label: item.names[i18n.language],
-    })))
+    }))
+  }
+
+  const loadUnitOptionsMapped = async (value) => {
+    const res = await loadUnitsOptions(value)
+
+    return res.map((item: any) => ({
+      id: item.id,
+      value: item.id,
+      label: item.names[i18n.language],
+    }))
+  }
+
+  const loadCurrencyOptionsMapped = async (value) => {
+    const res = await loadCurrencyOptions(value)
+
+    return res.map((item: any) => ({
+      id: item.id,
+      value: item.id,
+      label: item.names[i18n.language],
+    }))
+  }
+
+  const loadProductPropertyGroupOptionsMapped = async (value) => {
+    const res = await loadProductPropertyGroupOptions(value)
+
     return res.map((item: any) => ({
       id: item.id,
       value: item.id,
@@ -244,6 +280,22 @@ export function useColumns() {
           header: ({ column }) => sortHeader(column, t('page.products.table.purchasePrice')),
           accessorFn: row => `${row.purchasePrice} ${row.purchaseCurrency.symbols[i18n.language]}`,
         },
+        {
+          id: 'purchaseCurrency',
+          size: 150,
+          meta: {
+            title: t('page.products.table.purchaseCurrency'),
+            batchEdit: true,
+            batchEditType: 'asyncValue',
+            loadOptions: loadCurrencyOptionsMapped,
+            filterable: true,
+            filterType: 'asyncValue',
+            filterMultiple: true,
+            sortable: true,
+          },
+          header: ({ column }) => sortHeader(column, t('page.products.table.purchaseCurrency')),
+          accessorFn: row => row.purchaseCurrency.symbols[i18n.language],
+        },
       ]
     }
 
@@ -307,14 +359,30 @@ export function useColumns() {
         header: ({ column }) => sortHeader(column, t('page.products.table.price')),
         accessorFn: row => `${row.price} ${row.currency.symbols[i18n.language]}`,
       },
+      {
+        id: 'currency',
+        size: 150,
+        meta: {
+          title: t('page.products.table.currency'),
+          batchEdit: true,
+          batchEditType: 'asyncValue',
+          loadOptions: loadCurrencyOptionsMapped,
+          filterable: true,
+          filterType: 'asyncValue',
+          sortable: true,
+          filterMultiple: true,
+        },
+        header: ({ column }) => sortHeader(column, t('page.products.table.currency')),
+        accessorFn: row => row.currency.symbols[i18n.language],
+      },
       ...permissionColumns(),
       {
         id: 'quantity',
         size: 150,
         meta: {
           title: t('page.products.table.quantity'),
-          filterable: true,
-          filterType: 'number',
+          // filterable: true,
+          // filterType: 'number',
           sortable: true,
           defaultVisible: true,
         },
@@ -330,8 +398,12 @@ export function useColumns() {
         size: 150,
         meta: {
           title: t('page.products.table.unit'),
+          batchEdit: true,
+          batchEditType: 'asyncValue',
+          loadOptions: loadUnitOptionsMapped,
           filterable: true,
-          filterType: 'text',
+          filterType: 'asyncValue',
+          multiFilterable: true,
           sortable: true,
         },
         header: ({ column }) => sortHeader(column, t('page.products.table.unit')),
@@ -347,6 +419,7 @@ export function useColumns() {
           loadOptions: loadCategoryOptionsMapped,
           filterable: true,
           filterType: 'asyncValue',
+          multiFilterable: true,
           sortable: true,
           defaultVisible: true,
         },
@@ -358,13 +431,15 @@ export function useColumns() {
         ),
       },
       {
-        id: 'productPropertyGroup',
+        id: 'productPropertiesGroup',
         size: 150,
         meta: {
           title: t('page.products.table.productPropertyGroup'),
-          filterable: true,
-          filterType: 'text',
           sortable: true,
+          loadOptions: loadProductPropertyGroupOptionsMapped,
+          filterable: true,
+          filterType: 'asyncValue',
+          multiFilterable: true,
         },
         header: ({ column }) => sortHeader(column, t('page.products.table.productPropertyGroup')),
         accessorFn: row => `${row.productPropertiesGroup.names[i18n.language]}`,
@@ -374,8 +449,6 @@ export function useColumns() {
         size: 150,
         meta: {
           title: t('page.products.table.barcodes'),
-          filterable: true,
-          filterType: 'text',
           sortable: true,
         },
         header: ({ column }) => sortHeader(column, t('page.products.table.barcodes')),

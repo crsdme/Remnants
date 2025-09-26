@@ -178,7 +178,9 @@
   "page.products.table.categories": "Categories",
   "page.products.table.unit": "Unit",
   "page.products.table.price": "Price",
+  "page.products.table.currency": "Currency",
   "page.products.table.purchasePrice": "Purchase Price",
+  "page.products.table.purchaseCurrency": "Purchase Currency",
   "page.products.table.quantity": "Quantity",
   "page.products.table.productPropertyGroup": "Product Properties Group",
 

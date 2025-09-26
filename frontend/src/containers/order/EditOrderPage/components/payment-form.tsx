@@ -82,7 +82,7 @@ export function FullForm({ form, onSubmit }: { form: UseFormReturn, onSubmit: (p
   return (
     <div className="flex flex-col gap-4 flex-1">
       <Form {...form}>
-        <form onSubmit={onSubmit}>
+        <form onSubmit={form.handleSubmit(onSubmit)}>
           <div className="flex gap-2 w-full">
             <FormField
               control={form.control}

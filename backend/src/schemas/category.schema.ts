@@ -13,6 +13,7 @@ function hasIdsOrFilters(data: {
 
 export const getCategorySchema = z.object({
   filters: z.object({
+    ids: z.array(idSchema).optional(),
     names: z.string().trim().optional(),
     language: z.string().optional().default('en'),
     priority: numberFromStringSchema.optional(),

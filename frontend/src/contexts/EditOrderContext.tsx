@@ -30,6 +30,7 @@ interface EditOrderContextType {
   paymentForm: UseFormReturn
   informationForm: UseFormReturn
   clientForm: UseFormReturn
+  permissions: string[]
   openClientModal: () => void
   closeClientModal: () => void
   openPaymentModal: () => void
@@ -172,6 +173,7 @@ export function EditOrderProvider({ children }: EditOrderProviderProps) {
   // CAN BE REWORKED
   useEffect(() => {
     setIsLoading(true)
+
     if (order.id) {
       if (order.orderStatus.isLocked && !hasPermission(permissions, 'order.editLocked')) {
         navigate('/orders')
@@ -208,9 +210,9 @@ export function EditOrderProvider({ children }: EditOrderProviderProps) {
         comment: order.comment,
       })
       setPayments(order.payments)
-      setIsLoading(false)
     }
-  }, [order])
+    setIsLoading(false)
+  }, [order.id])
 
   const queryClient = useQueryClient()
 
@@ -259,7 +261,7 @@ export function EditOrderProvider({ children }: EditOrderProviderProps) {
   const useMutateEditOrder = useOrderEdit({
     options: {
       onSuccess: ({ data }) => {
-        queryClient.invalidateQueries({ queryKey: ['orders'] })
+        queryClient.invalidateQueries({ queryKey: ['orders', 'get'] })
         queryClient.invalidateQueries({ queryKey: ['products'] })
         queryClient.invalidateQueries({ queryKey: ['statistics'] })
         queryClient.invalidateQueries({ queryKey: ['money-transactions'] })
@@ -320,6 +322,7 @@ export function EditOrderProvider({ children }: EditOrderProviderProps) {
   }
 
   const loadBarcodeOptions = useBarcodeOptions()
+
   const getBarcode = async (code: string) => {
     const barcode = await loadBarcodeOptions({ query: code })
     return barcode[0]?.products
@@ -334,6 +337,7 @@ export function EditOrderProvider({ children }: EditOrderProviderProps) {
       informationForm,
       payments,
       clientForm,
+      permissions,
       openClientModal,
       closeClientModal,
       openPaymentModal,
@@ -344,7 +348,7 @@ export function EditOrderProvider({ children }: EditOrderProviderProps) {
       editOrder,
       getBarcode,
     }),
-    [isClientModalOpen, isPaymentModalOpen, isLoading, paymentForm, informationForm, clientForm, payments],
+    [isClientModalOpen, isPaymentModalOpen, isLoading, paymentForm, informationForm, clientForm, payments, permissions],
   )
 
   return <EditOrderContext.Provider value={value}>{children}</EditOrderContext.Provider>

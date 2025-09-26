@@ -1,4 +1,3 @@
-import { useEffect, useState } from 'react'
 import { useWatch } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { useCashregisterAccountOptions, useCashregisterAccountQuery, useCashregisterOptions, useCashregisterQuery, useCurrencyOptions, useCurrencyQuery } from '@/api/hooks'

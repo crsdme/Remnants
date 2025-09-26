@@ -51,7 +51,7 @@ export function DataTable() {
         selectedPrice: product.price,
         discountAmount: 0,
         discountPercent: 0,
-        selectedCurrency: product.currency.id,
+        selectedCurrency: product.currency,
       })
     }
   }
@@ -175,9 +175,9 @@ export function DataTable() {
         includeTotal={true}
       />
       <ProductSelectedTotal />
-      <InformationForm form={informationForm} onSubmit={informationForm.handleSubmit(onSubmitInformation)} />
-      <PaymentForm form={paymentForm} onSubmit={paymentForm.handleSubmit(onSubmitPayment)} />
-      <ClientForm form={clientForm} onSubmit={clientForm.handleSubmit(onSubmitClient)} />
+      <InformationForm form={informationForm} onSubmit={onSubmitInformation} />
+      <PaymentForm form={paymentForm} onSubmit={onSubmitPayment} />
+      <ClientForm form={clientForm} onSubmit={onSubmitClient} />
     </>
   )
 }

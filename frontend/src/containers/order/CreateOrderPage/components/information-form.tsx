@@ -153,22 +153,20 @@ export function InformationForm({ form, onSubmit }: { form: UseFormReturn, onSub
                   <FormLabel>
                     {t('page.create-order.form.client')}
                   </FormLabel>
-                  <div className="flex items-center gap-2">
-                    <FormControl>
-                      <AsyncSelectNew
-                        {...field}
-                        loadOptions={loadClientsOptions}
-                        renderOption={e => `${e.name} ${e.middleName} ${e.lastName} (${e.emails.join(', ')}) (${e.phones.join(', ')})`}
-                        getDisplayValue={e => `${e.name} ${e.middleName} ${e.lastName} (${e.emails.join(', ')}) (${e.phones.join(', ')})`}
-                        getOptionValue={e => e.id}
-                        disabled={isLoading}
-                        triggerClassName="flex-1"
-                        searchable
-                        clearable
-                      />
-                    </FormControl>
-                    <Button type="button" variant="outline" onClick={openClientModal}>{t('button.create')}</Button>
-                  </div>
+                  <FormControl>
+                    <AsyncSelectNew
+                      {...field}
+                      loadOptions={loadClientsOptions}
+                      renderOption={e => `${e.name} ${e.middleName} ${e.lastName} (${e.emails.join(', ')}) (${e.phones.join(', ')})`}
+                      getDisplayValue={e => `${e.name} ${e.middleName} ${e.lastName} (${e.emails.join(', ')}) (${e.phones.join(', ')})`}
+                      getOptionValue={e => e.id}
+                      disabled={isLoading}
+                      triggerClassName="flex-1"
+                      searchable
+                      clearable
+                    />
+                  </FormControl>
+                  <Button type="button" variant="outline" onClick={openClientModal}>{t('button.create')}</Button>
                   <FormMessage />
                 </FormItem>
               )}

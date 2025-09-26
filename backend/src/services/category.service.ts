@@ -49,6 +49,7 @@ export async function get(payload: CategoryTypes.getCategoriesParams): Promise<C
   const { current = 1, pageSize = 10 } = payload.pagination || {}
 
   const {
+    ids = [],
     names = '',
     language = 'en',
     active = undefined,
@@ -67,6 +68,7 @@ export async function get(payload: CategoryTypes.getCategoriesParams): Promise<C
   const sorters = buildSortQuery(payload.sorters || {}, { level: 1 })
 
   const filterRules = {
+    _id: { type: 'array' },
     names: { type: 'string', langAware: true },
     active: { type: 'array' },
     priority: { type: 'exact' },
@@ -76,7 +78,7 @@ export async function get(payload: CategoryTypes.getCategoriesParams): Promise<C
   } as const
 
   const query = buildQuery({
-    filters: { names, active, priority, createdAt, updatedAt, parent },
+    filters: { _id: ids, names, active, priority, createdAt, updatedAt, parent },
     rules: filterRules,
     language,
   })

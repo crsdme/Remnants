@@ -5,16 +5,14 @@ import {
   ChevronsUpDown,
   Minus,
   Plus,
-  Trash2,
   X,
 } from 'lucide-react'
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import { useCurrencyOptions, useCurrencyQuery, useProductPropertyQuery } from '@/api/hooks'
+import { useCurrencyQuery, useProductPropertyQuery } from '@/api/hooks'
 import { ImageGallery } from '@/components'
-import { AsyncSelectNew } from '@/components/AsyncSelectNew'
-import { Badge, Button, Input, Popover, PopoverContent, PopoverTrigger, Separator } from '@/components/ui'
+import { Badge, Button, Separator } from '@/components/ui'
 import { useAuthContext } from '@/contexts'
 import { formatDate } from '@/utils/helpers'
 import { hasPermission } from '@/utils/helpers/permission'

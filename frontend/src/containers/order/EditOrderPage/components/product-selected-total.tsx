@@ -34,11 +34,13 @@ export function ProductSelectedTotal() {
     const qty = Number(item?.quantity ?? 0) || 0
 
     ;(item?.productProperties ?? []).forEach((pp: any) => {
-      if (pp?.data?.type !== 'number') return
+      if (pp?.data?.type !== 'number')
+        return
 
       const raw = pp?.value
       const num = typeof raw === 'number' ? raw : Number(raw)
-      if (!Number.isFinite(num)) return
+      if (!Number.isFinite(num))
+        return
 
       const key = pp?.data?.names?.[i18n.language] || t('common.unknown-property')
 

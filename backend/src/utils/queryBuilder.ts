@@ -111,6 +111,7 @@ export function buildQuery({ filters, rules, language = 'en', removed = true, ba
 export function buildSortQuery(
   sort: Record<string, any> | undefined,
   defaultSorters: Record<string, any> = { _id: 1, id: 1 },
+  additionalSorters: Record<string, any> = { _id: 1 },
 ): Record<string, any> {
   if (!sort || Object.keys(sort).length === 0)
     return defaultSorters
@@ -132,7 +133,7 @@ export function buildSortQuery(
     return result
   }
 
-  return flatten(sort)
+  return { ...flatten(sort), ...additionalSorters }
 }
 
 // export function buildSortQuery(sort: Record<string, string>, defaultSorters: Record<string, any> = { _id: 1, id: 1 }): Record<string, any> {

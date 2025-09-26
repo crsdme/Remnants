@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 
 import { useFieldArray, useWatch } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
@@ -101,7 +101,7 @@ export function DataTable() {
     }
     setLastAddedProductId(product.id)
     toast.success(t('form.success.productAdded'))
-    setPagination(state => ({ ...state, current: Math.ceil(product.index / 10) }))
+    setPagination(state => ({ ...state, current: Math.ceil((product.index + 1) / 10) }))
   }
 
   const changeProduct = ({ productId, field, value }) => {

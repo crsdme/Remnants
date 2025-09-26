@@ -16,27 +16,21 @@ const ClientSchema: Schema = new Schema(
     },
     middleName: {
       type: String,
-      required: true,
     },
     lastName: {
       type: String,
-      required: true,
     },
     emails: [{
       type: String,
-      required: true,
     }],
     phones: [{
       type: String,
-      required: true,
     }],
     addresses: [{
       type: String,
-      required: true,
     }],
     comment: {
       type: String,
-      required: true,
     },
     removed: {
       type: Boolean,

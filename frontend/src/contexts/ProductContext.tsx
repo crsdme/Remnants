@@ -23,7 +23,7 @@ import {
   useProductRemove,
   useUnitQuery,
 } from '@/api/hooks/'
-import { getCategories, getUnits } from '@/api/requests'
+import { getCategories, getCurrencies, getProductPropertiesGroups, getUnits } from '@/api/requests'
 import { downloadBlob } from '@/utils/helpers/download'
 
 interface UploadedFile {
@@ -58,6 +58,8 @@ interface ProductContextType {
   downloadTemplate: () => void
   loadCategoryOptions: (params: { query: string, selectedValue: string[] }) => Promise<Category[]>
   loadUnitsOptions: (params: { query: string, selectedValue: string[] }) => Promise<Unit[]>
+  loadCurrencyOptions: (params: { query: string, selectedValue: string[] }) => Promise<Currency[]>
+  loadProductPropertyGroupOptions: (params: { query: string, selectedValue: string[] }) => Promise<ProductPropertyGroup[]>
 }
 
 const ProductContext = createContext<ProductContextType | undefined>(undefined)
@@ -408,6 +410,30 @@ export function ProductProvider({ children }: ProductProviderProps) {
     return response?.data?.units || []
   }, [i18n.language])
 
+  const loadCurrencyOptions = useCallback(async ({ query, selectedValue }) => {
+    const response = await getCurrencies({
+      pagination: { full: true },
+      filters: {
+        ...(selectedValue ? { ids: selectedValue } : { names: query }),
+        active: [true],
+        language: i18n.language,
+      },
+    })
+    return response?.data?.currencies || []
+  }, [i18n.language])
+
+  const loadProductPropertyGroupOptions = useCallback(async ({ query, selectedValue }) => {
+    const response = await getProductPropertiesGroups({
+      pagination: { full: true },
+      filters: {
+        ...(selectedValue ? { ids: selectedValue } : { names: query }),
+        active: [true],
+        language: i18n.language,
+      },
+    })
+    return response?.data?.productPropertyGroups || []
+  }, [i18n.language])
+
   const value: ProductContextType = useMemo(
     () => ({
       selectedProduct,
@@ -433,6 +459,8 @@ export function ProductProvider({ children }: ProductProviderProps) {
       downloadTemplate,
       loadCategoryOptions,
       loadUnitsOptions,
+      loadCurrencyOptions,
+      loadProductPropertyGroupOptions,
     }),
     [selectedProduct, isModalOpen, selectedWarehouse, isLoading, isEdit, form, images, selectedGroup],
   )

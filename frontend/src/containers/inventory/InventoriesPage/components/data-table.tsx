@@ -5,7 +5,6 @@ import { useTranslation } from 'react-i18next'
 import { useInventoryQuery } from '@/api/hooks'
 import { ColumnVisibilityMenu, TablePagination, TableSelectionDropdown } from '@/components'
 import { Skeleton, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui'
-import { useInventoryContext } from '@/contexts'
 
 import { useDebounceCallback } from '@/utils/hooks'
 import { useColumns } from './columns'

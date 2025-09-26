@@ -13,7 +13,7 @@ import { useTranslation } from 'react-i18next'
 
 import { useCurrencyOptions, useCurrencyQuery, useProductPropertyQuery } from '@/api/hooks'
 import { ImageGallery } from '@/components'
-import { Badge, Button, Input, Popover, PopoverContent, PopoverTrigger, Separator } from '@/components/ui'
+import { Badge, Button, Popover, PopoverContent, PopoverTrigger, Separator } from '@/components/ui'
 import { useAuthContext } from '@/contexts'
 import { formatDate } from '@/utils/helpers'
 import { hasPermission } from '@/utils/helpers/permission'
@@ -408,7 +408,6 @@ export function useColumns(
                       })}
                       triggerClassName="w-15"
                       placeholder="..."
-                      clearable
                       isForm={false}
                     />
                   </div>

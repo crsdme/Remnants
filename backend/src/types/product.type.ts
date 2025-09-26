@@ -1,10 +1,10 @@
 import type { Buffer } from 'node:buffer'
 import type { SUPPORTED_LANGUAGES_TYPE } from '../config/constants'
 import type { Code, DateRange, IdType, LanguageString, Message, Pagination, Sorter, Status } from './common.type'
-import type { Currency } from './currency.type'
-import type { ProductProperty } from './product-property.type'
-import type { Unit } from './unit.type'
-import type { Warehouse } from './warehouse.type'
+// import type { Currency } from './currency.type'
+// import type { ProductProperty } from './product-property.type'
+// import type { Unit } from './unit.type'
+// import type { Warehouse } from './warehouse.type'
 
 export interface Product {
   id: IdType
@@ -56,11 +56,13 @@ export interface getProductsFilters {
   names?: LanguageString
   language?: SUPPORTED_LANGUAGES_TYPE
   price?: number
+  currency?: IdType[]
+  purchaseCurrency?: IdType[]
   purchasePrice?: number
   barcodes?: string[]
   categories?: IdType[]
-  unit?: IdType
-  productPropertiesGroup?: IdType
+  unit?: IdType[]
+  productPropertiesGroup?: IdType[]
   productProperties?: IdType[]
   selectedWarehouse?: IdType
   createdAt?: DateRange

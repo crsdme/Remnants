@@ -2,7 +2,7 @@ import { flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-tabl
 import { Fragment, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import { useClientQuery, useExpenseQuery } from '@/api/hooks'
+import { useExpenseQuery } from '@/api/hooks'
 import { AdvancedFilters, AdvancedSorters, ColumnVisibilityMenu, TablePagination, TableSelectionDropdown } from '@/components'
 import { Separator, Skeleton, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui'
 import { useExpenseContext } from '@/contexts'
@@ -30,7 +30,7 @@ export function DataTable() {
   ), [sorting])
 
   const { data: { expenses = [], expensesCount = 0 } = {}, isLoading, isFetching } = useExpenseQuery(
-  { pagination, filters, sorters },
+    { pagination, filters, sorters },
     { options: {
       select: response => ({
         expenses: response.data.expenses,

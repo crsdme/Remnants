@@ -8,11 +8,11 @@ import { useBarcodeQuery } from '@/api/hooks'
 import { AdvancedFilters, AdvancedSorters, ColumnVisibilityMenu, TablePagination, TableSelectionDropdown } from '@/components'
 import { Separator, Skeleton, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui'
 import { useBarcodeContext } from '@/contexts'
-import { useDebounceCallback } from '@/utils/hooks'
+import { backendUrl } from '@/utils/constants'
 
+import { useDebounceCallback } from '@/utils/hooks'
 import { useColumns } from './columns'
 import { DataTableFilters } from './data-table-filters'
-import { backendUrl } from '@/utils/constants'
 
 export function DataTable() {
   const { t, i18n } = useTranslation()

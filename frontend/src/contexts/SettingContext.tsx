@@ -5,7 +5,6 @@ import { createContext, useContext, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import {
-  useCashregisterAccountQuery,
   useSettingEdit,
   useSettingQuery,
 } from '@/api/hooks'

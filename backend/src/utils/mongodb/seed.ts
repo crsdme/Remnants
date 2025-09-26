@@ -7,7 +7,7 @@ import * as ClientService from '../../services/client.service'
 import * as CurrencyService from '../../services/currency.service'
 import * as DeliveryService from '../../services/delivery-service.service'
 import * as ExpenseCategoryService from '../../services/expense-category.service'
-import * as ExpenseService from '../../services/expense.service'
+// import * as ExpenseService from '../../services/expense.service'
 import * as LanguageService from '../../services/language.service'
 import * as OrderSourceService from '../../services/order-source.service'
 import * as OrderStatusService from '../../services/order-status.service'
@@ -21,7 +21,7 @@ import * as UserRoleService from '../../services/user-role.service'
 import * as UserService from '../../services/user.service'
 import * as WarehouseService from '../../services/warehouse.service'
 
-import { backupDB } from './backup'
+// import { backupDB } from './backup'
 import { clearDB } from './clear'
 
 async function seedData() {
@@ -1136,7 +1136,7 @@ async function createProducts(productProperties: any) {
     },
   ]
 
-  for (const product of products) {
+  for (const product of [...products, ...products, ...products]) {
     await ProductService.create({
       names: product.names,
       price: product.price,
@@ -1406,23 +1406,172 @@ async function createAutomations({ removed, selfpickup, completed }: { removed: 
 }
 
 async function createClients() {
-  await ClientService.create({
-    name: 'Sergii',
-    middleName: 'Oleksii',
-    lastName: 'Kovalenko',
-    emails: ['sergii@example.com'],
-    phones: ['+1234567890'],
-    comment: 'From website',
-  })
+  const clients = [
+    {
+      name: 'Dmytro',
+      middleName: 'Vladimirovich',
+      lastName: 'Kovalenko',
+      emails: ['dmytro@example.com', 'd.kovalenko@gmail.com'],
+      phones: ['+380931234567', '+380671234567'],
+      comment: 'Regular customer',
+    },
+    {
+      name: 'Olena',
+      middleName: 'Petrovna',
+      lastName: 'Shevchenko',
+      emails: ['olena.shevchenko@example.com'],
+      phones: ['+380501112233'],
+      comment: 'Prefers email contact',
+    },
+    {
+      name: 'Mykola',
+      middleName: 'Ivanovych',
+      lastName: 'Tkachenko',
+      emails: ['m.tkachenko@gmail.com', 'mykola@example.com'],
+      phones: ['+380931112233', '+380991112233'],
+      comment: 'Wholesale buyer',
+    },
+    {
+      name: 'Iryna',
+      middleName: 'Serhiivna',
+      lastName: 'Melnyk',
+      emails: ['iryna.melnyk@ukr.net'],
+      phones: ['+380971234567'],
+      comment: 'Asks for discounts',
+    },
+    {
+      name: 'Andriy',
+      middleName: 'Olehovič',
+      lastName: 'Bondar',
+      emails: ['andriy@example.com'],
+      phones: ['+380631112233', '+380731112233'],
+      comment: 'VIP client',
+    },
+    {
+      name: 'Yuliia',
+      middleName: 'Anatoliivna',
+      lastName: 'Savchenko',
+      emails: ['y.savchenko@gmail.com'],
+      phones: ['+380671231231'],
+      comment: 'Likes new products',
+    },
+    {
+      name: 'Oleksandr',
+      middleName: 'Stepanovych',
+      lastName: 'Hrytsenko',
+      emails: ['oleksandr.h@example.com'],
+      phones: ['+380931231231'],
+      comment: 'Corporate orders',
+    },
+    {
+      name: 'Tetiana',
+      middleName: 'Volodymyrivna',
+      lastName: 'Kravchenko',
+      emails: ['tetiana.kravch@gmail.com'],
+      phones: ['+380981112244', '+380671112244'],
+      comment: 'Sometimes inactive',
+    },
+    {
+      name: 'Roman',
+      middleName: 'Mykhailovych',
+      lastName: 'Polishchuk',
+      emails: ['roman.polishchuk@example.com'],
+      phones: ['+380931223344'],
+      comment: 'Referral from friend',
+    },
+    {
+      name: 'Kateryna',
+      middleName: 'Yurivna',
+      lastName: 'Zakharchenko',
+      emails: ['katya.zakhar@gmail.com'],
+      phones: ['+380991234321'],
+      comment: 'Interested in promos',
+    },
+    {
+      name: 'Petro',
+      middleName: 'Danylovych',
+      lastName: 'Horobets',
+      emails: ['petro.h@example.com'],
+      phones: ['+380671223344'],
+      comment: 'Pays cash only',
+    },
+    {
+      name: 'Halyna',
+      middleName: 'Oleksandrivna',
+      lastName: 'Levchenko',
+      emails: ['halyna.levchenko@example.com'],
+      phones: ['+380981223344'],
+      comment: 'Regular weekend buyer',
+    },
+    {
+      name: 'Viktor',
+      middleName: 'Borysovych',
+      lastName: 'Marchenko',
+      emails: ['viktor.marchenko@example.com'],
+      phones: ['+380931998877'],
+      comment: 'Loyal for 3 years',
+    },
+    {
+      name: 'Nadiia',
+      middleName: 'Serhiivna',
+      lastName: 'Prokopenko',
+      emails: ['nadiia.prok@gmail.com'],
+      phones: ['+380971112255'],
+      comment: 'Prefers online orders',
+    },
+    {
+      name: 'Oleh',
+      middleName: 'Vasylovych',
+      lastName: 'Chernenko',
+      emails: ['oleh.ch@example.com'],
+      phones: ['+380631123321'],
+      comment: 'Always late pickup',
+    },
+    {
+      name: 'Mariia',
+      middleName: 'Fedorivna',
+      lastName: 'Lysenko',
+      emails: ['mariia.lys@example.com'],
+      phones: ['+380981145678'],
+      comment: 'Asks for loyalty bonuses',
+    },
+    {
+      name: 'Serhii',
+      middleName: 'Volodymyrovych',
+      lastName: 'Bilan',
+      emails: ['serhii.bilan@example.com'],
+      phones: ['+380671234000'],
+      comment: 'Corporate manager',
+    },
+    {
+      name: 'Anna',
+      middleName: 'Vitaliivna',
+      lastName: 'Danylchenko',
+      emails: ['anna.danyl@example.com'],
+      phones: ['+380991111555'],
+      comment: 'Young customer',
+    },
+    {
+      name: 'Yaroslav',
+      middleName: 'Andriiovych',
+      lastName: 'Petrenko',
+      emails: ['yaroslav.petrenko@example.com'],
+      phones: ['+380931122334'],
+      comment: 'Referred 5 new clients',
+    },
+    {
+      name: 'Oksana',
+      middleName: 'Ihorivna',
+      lastName: 'Klymenko',
+      emails: ['oksana.klymenko@example.com'],
+      phones: ['+380981221122'],
+      comment: 'Leaves detailed feedback',
+    },
+  ]
 
-  await ClientService.create({
-    name: 'Dmytro',
-    middleName: 'Vladimirovich',
-    lastName: 'Kovalenko',
-    emails: ['dmytro@example.com', 'dmytro@example.com'],
-    phones: ['+1234567890', '+1234567890'],
-    comment: 'Regular customer',
-  })
+  for (const client of clients) {
+    await ClientService.create(client)
+  }
 }
 
 async function createExpenseCategories() {

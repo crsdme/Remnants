@@ -22,6 +22,7 @@ export interface getCategoriesResult {
 }
 
 export interface getCategoriesFilters {
+  ids: IdType[]
   names: LanguageString
   language: SUPPORTED_LANGUAGES_TYPE
   active: boolean[]

@@ -7,6 +7,7 @@ export async function get(payload: ClientTypes.getClientsParams): Promise<Client
   const { current = 1, pageSize = 10 } = payload.pagination || {}
 
   const {
+    ids = [],
     search = '',
     emails = [],
     phones = [],
@@ -32,7 +33,7 @@ export async function get(payload: ClientTypes.getClientsParams): Promise<Client
   } as const
 
   const query = buildQuery({
-    filters: { emails, phones, addresses, createdAt, updatedAt },
+    filters: { _id: ids, emails, phones, addresses, createdAt, updatedAt },
     rules: filterRules,
   })
 

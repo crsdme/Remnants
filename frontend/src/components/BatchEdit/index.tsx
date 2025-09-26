@@ -7,7 +7,6 @@ import { useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { z } from 'zod'
 
-import { AsyncSelect } from '@/components'
 import {
   Button,
   Form,
@@ -69,6 +68,7 @@ interface ColumnMeta {
   batchEdit: boolean
   batchEditType: 'textMultiLanguage' | 'number' | 'boolean' | 'text' | 'asyncValue'
   loadOptions?: (query?: { query?: string, selectedValue?: string[] }) => Promise<Array<{ value: string, label: string }>>
+  multiBatchEdit?: boolean
 }
 
 export function BatchEdit({
@@ -102,6 +102,7 @@ export function BatchEdit({
         type: (column.meta as ColumnMeta)?.batchEditType,
         loadOptions: (column.meta as ColumnMeta)?.loadOptions,
         disabled: isDisabled,
+        multiBatchEdit: (column.meta as ColumnMeta)?.multiBatchEdit || false,
       }
     })
 
@@ -211,10 +212,10 @@ export function BatchEdit({
               currentItems[index].value = value as string
               form.setValue('items', currentItems)
             }}
-            clearable
+            multi={column.multiBatchEdit}
             placeholder={t('component.batchEdit.selectValue')}
             searchable
-            multi
+            clearable
           />
         )
       case 'textMultiLanguage':

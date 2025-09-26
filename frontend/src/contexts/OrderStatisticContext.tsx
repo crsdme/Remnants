@@ -38,28 +38,29 @@ export function OrderStatisticProvider({ children }: OrderStatisticProviderProps
 
   const { t } = useTranslation()
 
-  const { data: { 
+  const { data: {
     statistics = {
-    averageCheck: 0,
-    ordersAmount: [],
-    ordersCount: 0, 
-    paidAmount: [],
-    paidCount: 0, 
-    income: [],
-    profit: [],
-    expenses: [],
-    expensesCount: 0,
-    expensesTotal: [],
-    unpaidAmount: [], 
-    unpaidCount: 0,
-    productAttributes: [],
-    productCategories: [],
-  } } = {}, isLoading, isFetching } = useOrderStatisticQuery(
+      averageCheck: 0,
+      ordersAmount: [],
+      ordersCount: 0,
+      paidAmount: [],
+      paidCount: 0,
+      income: [],
+      profit: [],
+      expenses: [],
+      expensesCount: 0,
+      expensesTotal: [],
+      unpaidAmount: [],
+      unpaidCount: 0,
+      productAttributes: [],
+      productCategories: [],
+    },
+  } = {}, isLoading, isFetching } = useOrderStatisticQuery(
     { pagination: { full: true }, filters },
     { options: {
       select: response => ({
         statistics: response.data.statistics,
-      }),  
+      }),
       placeholderData: prevData => prevData,
     } },
   )
@@ -86,7 +87,7 @@ export function OrderStatisticProvider({ children }: OrderStatisticProviderProps
       cashregisterAccount: [],
     },
   })
-  
+
   const value: OrderStatisticContextType = useMemo(
     () => ({
       isLoading,

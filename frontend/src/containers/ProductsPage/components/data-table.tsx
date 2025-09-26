@@ -41,17 +41,18 @@ export function DataTable() {
     return sorting.reduce<Record<string, any>>((acc, { id, desc }) => {
       const dir = desc ? 'desc' : 'asc'
       const parts = Array.isArray(id) ? id : String(id).split(/[,.]/)
-  
+
       if (parts.length === 2) {
         const [scope, key] = parts
         ;(acc[scope] ??= {})[key] = dir
-      } else {
+      }
+      else {
         acc[parts[0]] = dir
       }
-  
+
       return acc
     }, {})
-  }, [sorting])  
+  }, [sorting])
 
   const { data: { products = [], productsCount = 0 } = {}, isLoading, isFetching } = useProductQuery(
     { pagination, filters, sorters },
@@ -277,7 +278,7 @@ export function DataTable() {
           <DataTableFilters filters={filters} setFilters={setFilters} />
           <Select
             value={productContext.selectedWarehouse}
-            onValueChange={v => {
+            onValueChange={(v) => {
               productContext.setSelectedWarehouse(v)
               setFilters(state => ({
                 ...state,

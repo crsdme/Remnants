@@ -23,6 +23,7 @@ export interface getClientsResult {
 }
 
 export interface getClientsFilters {
+  ids: string[]
   search: string
   emails: string[]
   phones: string[]

@@ -1,9 +1,21 @@
-/* eslint-disable react-hooks-extra/no-direct-set-state-in-use-effect */
 import { Check, ChevronDown, Loader2 } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import { Button, Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList, FormControl, FormMessage, Popover, PopoverContent, PopoverTrigger } from '@/components/ui'
+import {
+  Button,
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+  FormControl,
+  FormMessage,
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui'
 import { useDebounceValue } from '@/utils/hooks/useDebounceValue/useDebounceValue'
 import { cn } from '@/utils/lib/utils'
 
@@ -20,23 +32,33 @@ export interface AsyncSelectProps<T> {
   renderOption: (option: T) => React.ReactNode
   getOptionValue: (option: T) => string
   getDisplayValue: (option: T) => React.ReactNode
+  // CONTROLS
   onChange?: (value: string | string[]) => void
-  value?: string[]
+  value?: string | string[]
+  defaultValue?: string | string[]
+  // PROPS
   name?: string
-  label?: string
+  field?: any
   placeholder?: string
-  disabled?: boolean
   className?: string
   triggerClassName?: string
+  notFound?: React.ReactNode
+  loadingSkeleton?: React.ReactNode
+  // FLAGS
+  isForm?: boolean
   multi?: boolean
   clearable?: boolean
   searchable?: boolean
-  field?: any
-  notFound?: React.ReactNode
-  loadingSkeleton?: React.ReactNode
+  disabled?: boolean
   selectFirstOption?: boolean
-  isForm?: boolean
-  // noResultsMessage?: string
+}
+
+function toIdArray(v: unknown): string[] {
+  if (Array.isArray(v))
+    return v.filter((x): x is string => typeof x === 'string' && x.length > 0)
+  if (typeof v === 'string')
+    return v.length ? [v] : []
+  return []
 }
 
 export function AsyncSelectNew<T>({
@@ -59,191 +81,189 @@ export function AsyncSelectNew<T>({
   loadingSkeleton,
   notFound,
   selectFirstOption = false,
+  defaultValue,
 }: AsyncSelectProps<T>) {
-  const [mounted, setMounted] = useState(false)
+  const { t } = useTranslation()
+
   const [open, setOpen] = useState(false)
-  const [options, setOptions] = useState([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const { t } = useTranslation()
+  const [selectedIds, setSelectedIds] = useState<string[]>([])
+  const cacheRef = useRef<Map<string, T>>(new Map())
 
-  const [selectedValues, setSelectedValues] = useState([])
-  const [selectedOptions, setSelectedOptions] = useState([])
+  const [cacheTick, setCacheTick] = useState(0)
+  const requestIdRef = useRef(0)
+
+  const [menuOptionIds, setMenuOptionIds] = useState<string[]>([])
+
   const [search, setSearch] = useState('')
   const debouncedSearch = useDebounceValue(search, 200)
-
-  const normalizedValue = useMemo(
-    () => Array.isArray(value) ? value : value ? [value] : [],
-    [value],
-  )
 
   const triggerRef = useRef<HTMLButtonElement>(null)
   const [popoverWidth, setPopoverWidth] = useState<number>()
 
-  useEffect(() => {
-    setMounted(true)
+  const setSelectedSafe = useCallback((next: string[] | string) => {
+    setSelectedIds(toIdArray(next))
+  }, [])
 
+  // LIFECYCLE 1
+  useEffect(() => {
     const el = triggerRef.current
     if (!el)
       return
-
-    const resizeObserver = new ResizeObserver(() => {
-      setPopoverWidth(el.offsetWidth)
-    })
-
-    resizeObserver.observe(el)
-
-    return () => resizeObserver.disconnect()
+    const ro = new ResizeObserver(() => setPopoverWidth(el.offsetWidth))
+    ro.observe(el)
+    return () => ro.disconnect()
   }, [])
 
-  const handleSelect = useCallback((id: string) => {
-    const isAlreadySelected = selectedValues.includes(id)
+  // LIFECYCLE 2
+  const controlled = value !== undefined
+  const normalizedValue = useMemo<string[]>(
+    () => toIdArray(controlled ? value! : defaultValue),
+    [controlled, value, defaultValue],
+  )
 
+  useEffect(() => {
+    setSelectedSafe(normalizedValue)
+  }, [normalizedValue])
+
+  // LIFECYCLE 3
+
+  const mergeIntoCache = useCallback((list: T[]) => {
+    if (!list || list.length === 0)
+      return
+    const map = cacheRef.current
+    let changed = false
+    for (const opt of list) {
+      const id = getOptionValue(opt)
+      const prev = map.get(id)
+      if (!prev) {
+        map.set(id, opt)
+        changed = true
+      }
+      else {
+        // Можно обновлять всегда; если строгая экономия — сравнивайте поля
+        map.set(id, opt)
+        changed = true
+      }
+    }
+    if (changed)
+      setCacheTick(t => t + 1)
+  }, [getOptionValue])
+
+  const selectId = useCallback((id: string) => {
+    const exists = selectedIds.includes(id)
     if (multi) {
-      const nextValues = isAlreadySelected
-        ? selectedValues.filter(v => v !== id)
-        : [...selectedValues, id]
-
-      const nextOptions = isAlreadySelected
-        ? selectedOptions.filter(opt => getOptionValue(opt) !== id)
-        : [
-            ...selectedOptions,
-            options.find(opt => getOptionValue(opt) === id)!,
-          ]
-
-      setSelectedValues(nextValues)
-      setSelectedOptions(nextOptions)
-
-      onChange?.(nextValues)
+      const next = exists ? selectedIds.filter(v => v !== id) : [...selectedIds, id]
+      setSelectedSafe(next)
+      onChange?.(next)
       return
     }
-
-    const shouldClear = clearable && isAlreadySelected
-    const nextValue = shouldClear ? [] : [id]
-    const nextOption = options.find(opt => getOptionValue(opt) === id)
-
-    setSelectedValues(nextValue)
-    setSelectedOptions(nextOption ? [nextOption] : [])
-    onChange?.(shouldClear ? '' : id)
+    if (clearable && exists) {
+      setSelectedSafe([])
+      onChange?.('')
+      return
+    }
+    setSelectedSafe([id])
+    onChange?.(id)
     setOpen(false)
-  }, [
-    multi,
-    clearable,
-    options,
-    selectedValues,
-    selectedOptions,
-    getOptionValue,
-    onChange,
-  ])
+  }, [multi, clearable, selectedIds, onChange, setSelectedSafe])
 
-  const handleRemoveTag = (id: string) => {
-    const updated = selectedValues.filter(v => v !== id)
-    const updatedOptions = selectedOptions.filter(o => getOptionValue(o) !== id)
-    setSelectedValues(updated)
-    setSelectedOptions(updatedOptions)
-    onChange?.(updated)
-  }
-
-  useEffect(() => { // INITIAL
-    if (!mounted)
+  const removeTag = useCallback((id: string) => {
+    if (!multi)
       return
+    const next = selectedIds.filter(v => v !== id)
+    setSelectedSafe(next)
+    onChange?.(next)
+  }, [multi, selectedIds, onChange])
 
-    const fetchInitialOptions = async () => {
-      setLoading(true)
-      try {
-        const result = await loadOptions({ selectedValue: normalizedValue })
-        setOptions(result)
+  // LIFECYCLE 4
 
-        if (
-          selectFirstOption
-          && normalizedValue.length === 0
-          && result.length > 0
-        ) {
-          const first = result[0]
-          const firstValue = getOptionValue(first)
-
-          setSelectedValues([firstValue])
-          setSelectedOptions([first])
-          onChange?.(multi ? [firstValue] : firstValue)
-          return
-        }
-
-        const selected = result.filter(opt => normalizedValue?.includes(getOptionValue(opt)))
-        setSelectedOptions(selected)
-        setSelectedValues(selected.map(getOptionValue))
-      }
-      catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to fetch options')
-      }
-      finally {
+  const fetchMenu = useCallback(async (q: string) => {
+    const rid = ++requestIdRef.current
+    setLoading(true)
+    setError(null)
+    try {
+      const result = await loadOptions({ query: q })
+      if (rid !== requestIdRef.current)
+        return
+      mergeIntoCache(result)
+      setMenuOptionIds(result.map(getOptionValue))
+    }
+    catch (e) {
+      if (rid !== requestIdRef.current)
+        return
+      setError(e instanceof Error ? e.message : 'Failed to fetch options')
+      setMenuOptionIds([])
+    }
+    finally {
+      if (rid === requestIdRef.current)
         setLoading(false)
-      }
     }
+  }, [loadOptions, mergeIntoCache, getOptionValue])
 
-    fetchInitialOptions()
-  }, [mounted])
+  useEffect(() => {
+    if (!open)
+      return
+    fetchMenu(debouncedSearch || '')
+  }, [open, debouncedSearch, fetchMenu])
 
-  useEffect(() => { // SEARCH
-    if (!searchable)
+  // LIFECYCLE 5
+
+  useEffect(() => {
+    if (selectedIds.length === 0)
+      return
+    const missing = selectedIds.filter(id => !cacheRef.current.has(id))
+    if (missing.length === 0)
       return
 
-    let isCancelled = false
-
-    const fetchSearch = async () => {
-      setLoading(true)
+    let cancelled = false
+    const hydrate = async () => {
       try {
-        const result = await loadOptions({ query: debouncedSearch })
-        if (!isCancelled)
-          setOptions(result)
+        const res = await loadOptions({ selectedValue: missing })
+        if (!cancelled)
+          mergeIntoCache(res)
       }
-      catch (err) {
-        if (!isCancelled)
-          setError(err instanceof Error ? err.message : 'Failed to fetch options')
-      }
-      finally {
-        if (!isCancelled)
-          setLoading(false)
-      }
+      catch { /* ignore */ }
     }
 
-    fetchSearch()
+    hydrate()
 
     return () => {
-      isCancelled = true
+      cancelled = true
     }
-  }, [debouncedSearch, loadOptions])
+  }, [selectedIds, loadOptions, mergeIntoCache])
 
-  useEffect(() => { // CHANGE LOAD OPTIONS
-    if (!mounted)
+  // LIFECYCLE 6
+
+  const menuOptions: T[] = useMemo(() => {
+    const map = cacheRef.current
+    return menuOptionIds.map(id => map.get(id)).filter(Boolean) as T[]
+  }, [menuOptionIds, cacheTick])
+
+  const selectedOptions: T[] = useMemo(() => {
+    const map = cacheRef.current
+    return selectedIds.map(id => map.get(id)).filter(Boolean) as T[]
+  }, [selectedIds, cacheTick])
+
+  // LIFECYCLE 7
+
+  useEffect(() => {
+    if (!selectFirstOption)
       return
-
-    const fetchOptions = async () => {
-      setLoading(true)
-      try {
-        const result = await loadOptions({ query: '' })
-        setOptions(result)
-      }
-      catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to fetch options')
-      }
-      finally {
-        setLoading(false)
-      }
-    }
-
-    fetchOptions()
-  }, [loadOptions])
-
-  useEffect(() => { // CHANGE FORM VALUE
-    if (options.length > 0) {
-      // setSelectedOptions(options.filter(option =>
-      //   (value || []).includes(getOptionValue(option)),
-      // ))
-      console.log(value, selectedOptions)
-      setSelectedValues(value || [])
-    }
-  }, [options, value, getOptionValue])
+    if (controlled)
+      return
+    if (!open)
+      return
+    if (selectedIds.length > 0)
+      return
+    if (menuOptionIds.length === 0)
+      return
+    const firstId = menuOptionIds[0]
+    setSelectedSafe([firstId])
+    onChange?.(multi ? [firstId] : firstId)
+  }, [selectFirstOption, controlled, open, selectedIds.length, menuOptionIds, onChange, multi])
 
   return (
     <>
@@ -261,10 +281,12 @@ export function AsyncSelectNew<T>({
             getOptionValue,
             getDisplayValue,
             placeholder,
-            handleRemoveTag,
+            handleRemoveTag: removeTag,
           })}
         </PopoverTrigger>
+
         {isForm && <FormMessage />}
+
         <PopoverContent style={{ width: popoverWidth }} className={cn('p-0', className)}>
           <Command shouldFilter={false}>
             {searchable && (
@@ -272,50 +294,51 @@ export function AsyncSelectNew<T>({
                 <CommandInput
                   placeholder={t('component.asyncSelect.searchPlaceholder')}
                   value={search}
-                  onValueChange={value => setSearch(value)}
+                  onValueChange={setSearch}
                   className="w-full"
                 />
-                {loading && options.length > 0 && (
-                  <div className="absolute right-2 top-1/2 transform -translate-y-1/2 flex items-center">
+                {loading && menuOptions.length > 0 && (
+                  <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center">
                     <Loader2 className="h-4 w-4 animate-spin" />
                   </div>
                 )}
               </div>
             )}
+
             <CommandList className="w-full">
-              {error && (
-                <div className="p-4 text-destructive text-center">
-                  {error}
-                </div>
-              )}
-              {loading && options.length === 0 && (
-                loadingSkeleton || <DefaultLoadingSkeleton />
-              )}
-              {!loading && !error && options.length === 0 && (
-                notFound || <CommandEmpty>{t('component.asyncSelect.noResultsMessage')}</CommandEmpty>
-              )}
+              {error && <div className="p-4 text-destructive text-center">{error}</div>}
+              {loading && menuOptions.length === 0 && (loadingSkeleton || <DefaultLoadingSkeleton />)}
+              {!loading && !error && menuOptions.length === 0 && (notFound || <CommandEmpty>{t('component.asyncSelect.noResultsMessage')}</CommandEmpty>)}
+
               <CommandGroup>
-                {options.map(option => (
-                  <CommandItem
-                    key={getOptionValue(option)}
-                    value={getOptionValue(option)}
-                    onSelect={handleSelect}
-                  >
-                    {renderOption(option)}
-                    <Check
-                      className={cn(
-                        'ml-auto h-3 w-3',
-                        selectedOptions.find(item => item.id === option.id) ? 'opacity-100' : 'opacity-0',
-                      )}
-                    />
-                  </CommandItem>
-                ))}
+                {menuOptions.map((option) => {
+                  const id = getOptionValue(option)
+                  const isSelected = selectedIds.includes(id)
+                  return (
+                    <CommandItem
+                      key={id}
+                      value={id}
+                      onSelect={selectId}
+                    >
+                      {renderOption ? renderOption(option) : getDisplayValue(option)}
+                      <Check className={cn('ml-auto h-3 w-3', isSelected ? 'opacity-100' : 'opacity-0')} />
+                    </CommandItem>
+                  )
+                })}
               </CommandGroup>
             </CommandList>
           </Command>
         </PopoverContent>
       </Popover>
-      <input type="hidden" name={name} value={selectedValues} />
+
+      { name && (
+        <input
+          type="hidden"
+          name={name}
+          value={Array.isArray(selectedIds) ? selectedIds.join(',') : ''}
+          readOnly
+        />
+      )}
     </>
   )
 }
@@ -352,14 +375,13 @@ function renderSelectedOptions<T>({
   getDisplayValue: (opt: T) => React.ReactNode
   placeholder?: React.ReactNode
   onRemove?: (val: string) => void
-
 }) {
   if (selectedOptions.length === 0)
     return placeholder
 
   if (!multi) {
     return (
-      <span className="block overflow-hidden text-ellipsis whitespace-nowrap max-w-full">
+      <span className="block overflow-hidden whitespace-nowrap max-w-full truncate">
         {getDisplayValue(selectedOptions[0])}
       </span>
     )
@@ -407,38 +429,7 @@ function RenderSelectTrigger({
 }) {
   const { t } = useTranslation()
 
-  if (isForm) {
-    return (
-      <FormControl>
-        <Button
-          variant="outline"
-          role="combobox"
-          aria-expanded={open}
-          className={cn(
-            'w-full max-w-full min-w-0 justify-between min-h-9',
-            disabled && 'opacity-50 cursor-not-allowed',
-            (multi && selectedOptions.length > 0) && 'h-auto p-1 has-[>svg]:pl-1',
-            triggerClassName,
-          )}
-          disabled={disabled}
-          {...field}
-          ref={triggerRef}
-        >
-          { renderSelectedOptions({
-            selectedOptions,
-            multi,
-            getOptionValue,
-            getDisplayValue,
-            placeholder: placeholder || <p className="text-muted-foreground">{t('component.asyncSelect.placeholder')}</p>,
-            onRemove: handleRemoveTag,
-          }) }
-          <ChevronDown className="opacity-50" size={10} />
-        </Button>
-      </FormControl>
-    )
-  }
-
-  return (
+  const btn = (
     <Button
       variant="outline"
       role="combobox"
@@ -452,16 +443,18 @@ function RenderSelectTrigger({
       disabled={disabled}
       {...field}
       ref={triggerRef}
+      // type="button"
     >
-      { renderSelectedOptions({
+      {renderSelectedOptions({
         selectedOptions,
         multi,
         getOptionValue,
         getDisplayValue,
         placeholder: placeholder || <p className="text-muted-foreground">{t('component.asyncSelect.placeholder')}</p>,
         onRemove: handleRemoveTag,
-      }) }
+      })}
       <ChevronDown className="opacity-50" size={10} />
     </Button>
   )
+  return isForm ? <FormControl>{btn}</FormControl> : btn
 }

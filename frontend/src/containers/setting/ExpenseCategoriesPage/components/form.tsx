@@ -3,10 +3,8 @@ import { useLanguageQuery } from '@/api/hooks'
 import { ColorPicker } from '@/components/ColorPicker'
 import {
   Button,
-  Checkbox,
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,

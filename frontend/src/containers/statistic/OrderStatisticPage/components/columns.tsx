@@ -18,7 +18,7 @@ const sortIcons = { asc: ArrowUp, desc: ArrowDown }
 
 export function useColumns() {
   const { t, i18n } = useTranslation()
-  const { isLoading  } = useOrderStatisticContext()
+  const { isLoading } = useOrderStatisticContext()
 
   const columns = useMemo(() => {
     function sortHeader(column, label) {

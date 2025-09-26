@@ -250,7 +250,7 @@ export function CreateOrderProvider({ children }: CreateOrderProviderProps) {
       discountPercent: item.discountPercent || 0,
     }))
     params.items = mappedItems
-    
+
     params.orderPayments = payments.map(payment => ({
       ...payment,
       cashregister: payment.cashregister.id,

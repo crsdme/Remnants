@@ -17,15 +17,16 @@ import {
   Textarea,
 } from '@/components/ui'
 import { useEditOrderContext } from '@/contexts'
+import { hasPermission } from '@/utils/helpers'
 import { formatDate } from '@/utils/helpers/formatDate'
 
 export function InformationForm({ form, onSubmit }: { form: UseFormReturn, onSubmit: (payments: any) => void }) {
   const { t, i18n } = useTranslation()
-  const { isLoading, openClientModal, openPaymentModal, payments, removePayment } = useEditOrderContext()
+  const { isLoading, openClientModal, openPaymentModal, payments, removePayment, permissions } = useEditOrderContext()
 
   const loadWarehouseOptions = useWarehouseOptions()
   const loadOrderSourceOptions = useOrderSourceOptions()
-  const loadOrderStatusOptions = useOrderStatusOptions({ defaultFilters: { isSelectable: true } })
+  const loadOrderStatusOptions = useOrderStatusOptions({ defaultFilters: !hasPermission(permissions, 'order.editLocked') ? { isSelectable: true } : {} })
   const loadDeliveryServiceOptions = useDeliveryServiceOptions()
   const loadClientsOptions = useClientOptions()
 
@@ -36,7 +37,7 @@ export function InformationForm({ form, onSubmit }: { form: UseFormReturn, onSub
         <Separator className="flex-1" />
       </div>
       <Form {...form}>
-        <form onSubmit={onSubmit}>
+        <form onSubmit={form.handleSubmit(onSubmit)}>
           <div className="grid gap-2 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
             <FormField
               control={form.control}
@@ -57,7 +58,6 @@ export function InformationForm({ form, onSubmit }: { form: UseFormReturn, onSub
                       getDisplayValue={e => e.names[i18n.language]}
                       getOptionValue={e => e.id}
                       disabled={isLoading}
-                      selectFirstOption
                     />
                   </FormControl>
                   <FormMessage />
@@ -84,7 +84,6 @@ export function InformationForm({ form, onSubmit }: { form: UseFormReturn, onSub
                       getDisplayValue={e => e.names[i18n.language]}
                       getOptionValue={e => e.id}
                       disabled={isLoading}
-                      selectFirstOption
                     />
                   </FormControl>
                   <FormMessage />
@@ -111,7 +110,6 @@ export function InformationForm({ form, onSubmit }: { form: UseFormReturn, onSub
                       getDisplayValue={e => e.names[i18n.language]}
                       getOptionValue={e => e.id}
                       disabled={isLoading}
-                      selectFirstOption
                     />
                   </FormControl>
                   <FormMessage />
@@ -138,7 +136,6 @@ export function InformationForm({ form, onSubmit }: { form: UseFormReturn, onSub
                       getDisplayValue={e => e.names[i18n.language]}
                       getOptionValue={e => e.id}
                       disabled={isLoading}
-                      selectFirstOption
                     />
                   </FormControl>
                   <FormMessage />
@@ -153,21 +150,27 @@ export function InformationForm({ form, onSubmit }: { form: UseFormReturn, onSub
                   <FormLabel>
                     {t('page.edit-order.form.client')}
                   </FormLabel>
-                  <div className="flex items-center gap-2">
-                    <FormControl>
-                      <AsyncSelectNew
-                        {...field}
-                        loadOptions={loadClientsOptions}
-                        renderOption={e => `${e.name} ${e.middleName} ${e.lastName} (${e.emails.join(', ')}) (${e.phones.join(', ')})`}
-                        getDisplayValue={e => `${e.name} ${e.middleName} ${e.lastName} (${e.emails.join(', ')}) (${e.phones.join(', ')})`}
-                        getOptionValue={e => e.id}
-                        disabled={isLoading}
-                        searchable
-                        clearable
-                      />
-                    </FormControl>
-                    <Button type="button" variant="outline" onClick={openClientModal}>{t('button.create')}</Button>
-                  </div>
+                  <FormControl>
+                    <AsyncSelectNew
+                      {...field}
+                      loadOptions={loadClientsOptions}
+                      renderOption={e => (
+                        <div className="flex flex-col gap-1">
+                          <p>{`${e.name} ${e.middleName} ${e.lastName}`}</p>
+                          <hr />
+                          <p>{`${e.emails.join(', ')}`}</p>
+                          <hr />
+                          <p>{`${e.phones.join(', ')}`}</p>
+                        </div>
+                      )}
+                      getDisplayValue={e => `${e.name} ${e.middleName} ${e.lastName} (${e.emails.join(', ')}) (${e.phones.join(', ')})`}
+                      getOptionValue={e => e.id}
+                      disabled={isLoading}
+                      searchable
+                      clearable
+                    />
+                  </FormControl>
+                  <Button type="button" variant="outline" onClick={openClientModal}>{t('button.create')}</Button>
                   <FormMessage />
                 </FormItem>
               )}

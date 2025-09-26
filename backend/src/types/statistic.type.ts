@@ -1,4 +1,4 @@
-import type { Code, DateRange, Message, Sorter, Status } from './common.type'
+import type { Code, DateRange, Message, Status } from './common.type'
 
 export interface getStatisticResult {
   status: Status

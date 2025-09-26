@@ -155,20 +155,18 @@ export function InformationForm({ form, onSubmit }: { form: UseFormReturn, onSub
                   <FormLabel>
                     {t('page.view-order.form.client')}
                   </FormLabel>
-                  <div className="flex items-center gap-2">
-                    <FormControl>
-                      <AsyncSelectNew
-                        {...field}
-                        loadOptions={loadClientsOptions}
-                        renderOption={e => `${e.name} ${e.middleName} ${e.lastName} (${e.emails.join(', ')}) (${e.phones.join(', ')})`}
-                        getDisplayValue={e => `${e.name} ${e.middleName} ${e.lastName} (${e.emails.join(', ')}) (${e.phones.join(', ')})`}
-                        getOptionValue={e => e.id}
-                        disabled={isLoading || disabled}
-                        searchable
-                        clearable
-                      />
-                    </FormControl>
-                  </div>
+                  <FormControl>
+                    <AsyncSelectNew
+                      {...field}
+                      loadOptions={loadClientsOptions}
+                      renderOption={e => `${e.name} ${e.middleName} ${e.lastName} (${e.emails.join(', ')}) (${e.phones.join(', ')})`}
+                      getDisplayValue={e => `${e.name} ${e.middleName} ${e.lastName} (${e.emails.join(', ')}) (${e.phones.join(', ')})`}
+                      getOptionValue={e => e.id}
+                      disabled={isLoading || disabled}
+                      searchable
+                      clearable
+                    />
+                  </FormControl>
                   <FormMessage />
                 </FormItem>
               )}

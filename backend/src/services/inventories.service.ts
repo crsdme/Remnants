@@ -742,11 +742,11 @@ export async function create(payload: InventoriesTypes.createInventoryParams, us
 }
 
 export async function edit(payload: InventoriesTypes.editInventoryParams) {
-  const { id, status, warehouse, comment, items } = payload
+  const { id, status, warehouse, comment } = payload
 
-  const oldInventory = await InventoryModel.findById(id)
+  // const oldInventory = await InventoryModel.findById(id)
 
-  const oldItems = await InventoryItemModel.find({ inventoryId: id })
+  // const oldItems = await InventoryItemModel.find({ inventoryId: id })
 
   const inventory = await InventoryModel.findByIdAndUpdate(id, {
     status,
@@ -771,7 +771,7 @@ export async function remove(payload: InventoriesTypes.removeInventoriesParams, 
     if (!inventory)
       continue
 
-    const items = await InventoryItemModel.find({ inventoryId: id })
+    // const items = await InventoryItemModel.find({ inventoryId: id })
   }
 
   return { status: 'success', code: 'WAREHOUSE_TRANSACTION_REMOVED', message: 'Warehouse transaction removed' }

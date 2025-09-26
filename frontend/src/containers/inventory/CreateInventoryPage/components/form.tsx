@@ -1,7 +1,7 @@
 import { useFieldArray, useWatch } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { useWarehouseOptions } from '@/api/hooks'
-import { AsyncSelect, ProductSelectedTable, ProductTable } from '@/components'
+import { ProductSelectedTable, ProductTable } from '@/components'
 import { AsyncSelectNew } from '@/components/AsyncSelectNew'
 import {
   Button,

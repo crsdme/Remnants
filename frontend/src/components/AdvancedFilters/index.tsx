@@ -8,8 +8,23 @@ import { useTranslation } from 'react-i18next'
 import { z } from 'zod'
 
 import { DateRangePicker, MultiSelect } from '@/components'
-import { Badge, Button, Form, FormField, FormItem, FormMessage, Input, Popover, PopoverContent, PopoverTrigger, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui'
-import { AsyncSelect } from '../AsyncSelect'
+import {
+  Badge,
+  Button,
+  Form,
+  FormField,
+  FormItem,
+  FormMessage,
+  Input,
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui'
 import { AsyncSelectNew } from '../AsyncSelectNew'
 
 interface FilterItem {
@@ -32,6 +47,7 @@ interface ColumnMeta {
   filterType: 'text' | 'number' | 'boolean' | 'date' | 'asyncValue' | 'select'
   loadOptions?: (query?: { query?: string, selectedValue?: string[] }) => Promise<{ value: string, label: string }[]>
   options?: { value: string, label: string }[]
+  multiFilterable?: boolean
 }
 
 const filterItemSchema = z.object({
@@ -70,6 +86,7 @@ export function AdvancedFilters({ columns, onSubmit, onCancel, className, align 
         type: (column.meta as ColumnMeta)?.filterType,
         loadOptions: (column.meta as ColumnMeta)?.loadOptions,
         options: (column.meta as ColumnMeta)?.options,
+        multiFilterable: (column.meta as ColumnMeta)?.multiFilterable || false,
         disabled: isDisabled,
       }
     })
@@ -180,7 +197,7 @@ export function AdvancedFilters({ columns, onSubmit, onCancel, className, align 
             clearable
             placeholder={t('component.batchEdit.selectValue')}
             searchable
-            multi
+            multi={column.multiFilterable}
           />
         )
       case 'select':
