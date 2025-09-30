@@ -494,7 +494,7 @@ async function print60x30(payload: { barcodes: any[], size: string, language: st
       continue
     }
 
-    doc.fontSize(26)
+    doc.fontSize(25)
     doc.addPage({
       size: [w * 8.49, h * 8.49],
     })
@@ -593,7 +593,7 @@ async function print55x40(payload: { barcodes: any[], size: string, language: st
     }
 
     doc.font('Manrope')
-    doc.fontSize(26)
+    doc.fontSize(25)
     doc.addPage({ size: [w * 8.49, h * 8.49] })
 
     const barcodePng = await bwipjs.toBuffer({
@@ -638,6 +638,9 @@ async function print55x40(payload: { barcodes: any[], size: string, language: st
       }
       if (property.id === '25144e64-5c4c-47fd-842d-c0a2393f972e' && (property?.value || []).includes('b930fb75-61a6-41c0-88de-0c69082b7f06')) {
         type.push('Virgin')
+      }
+      if (property.id === '25144e64-5c4c-47fd-842d-c0a2393f972e' && (property?.value || []).includes('aeb36d06-1a12-4319-9313-51abcbed38fb')) {
+        type.push('Silky')
       }
     }
 
