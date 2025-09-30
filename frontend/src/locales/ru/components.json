@@ -149,5 +149,14 @@
   "component.productTable.table.discount": "Скидка",
   "component.productTable.table.selectedPrice": "Цена",
   "component.productTable.table.receivedQuantity": "Полученное количество",
-  "component.productTable.table.total": "Итого"
+  "component.productTable.table.total": "Итого",
+
+  "component.tableActionDropdown.deleteTitle": "Удалить",
+  "component.tableActionDropdown.confirmTitle": "Подтвердить",
+  "component.tableActionDropdown.deleteDescription": "Вы уверены, что хотите удалить это?",
+  "component.tableActionDropdown.confirmDescription": "Вы уверены, что хотите сделать это?",
+  "component.tableActionDropdown.confirm": "Подтвердить",
+  "component.tableActionDropdown.delete": "Удалить",
+  "component.tableActionDropdown.cancel": "Отменить"
+
 }

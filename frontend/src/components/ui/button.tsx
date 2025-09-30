@@ -1,7 +1,5 @@
-import type { VariantProps } from 'class-variance-authority'
-
-import { Slot } from '@radix-ui/react-slot'
-import { cva } from 'class-variance-authority'
+import { Slot } from "radix-ui"
+import { cva, type VariantProps } from "class-variance-authority"
 import { Loader2 } from 'lucide-react'
 import * as React from 'react'
 
@@ -40,7 +38,7 @@ function Button({ ref, className, variant, size, asChild = false, loading = fals
     asChild?: boolean
     loading?: boolean
   } & { ref?: React.RefObject<HTMLButtonElement | null> }) {
-  const Comp = asChild ? Slot : 'button'
+  const Comp = asChild ? Slot.Slot : 'button'
 
   return (
     <Comp

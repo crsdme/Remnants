@@ -144,6 +144,7 @@ export function useColumns() {
               label: t('table.delete'),
               icon: <Trash className="h-4 w-4" />,
               isDestructive: true,
+              isConfirm: true,
             },
           ]
 

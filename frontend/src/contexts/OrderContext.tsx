@@ -141,6 +141,7 @@ export function OrderProvider({ children }: OrderProviderProps) {
     options: {
       onSuccess: ({ data }) => {
         queryClient.invalidateQueries({ queryKey: ['orders'] })
+        queryClient.invalidateQueries({ queryKey: ['order-statuses'] })
         toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description || ''}` })
       },
       onError: ({ response }) => {

@@ -149,5 +149,13 @@
   "component.productTable.table.discount": "Discount",
   "component.productTable.table.selectedPrice": "Price",
   "component.productTable.table.receivedQuantity": "Received Quantity",
-  "component.productTable.table.total": "Total"
+  "component.productTable.table.total": "Total",
+
+  "component.tableActionDropdown.deleteTitle": "Delete",
+  "component.tableActionDropdown.confirmTitle": "Confirm",
+  "component.tableActionDropdown.deleteDescription": "Are you sure you want to delete this?",
+  "component.tableActionDropdown.confirmDescription": "Are you sure you want to do this?",
+  "component.tableActionDropdown.confirm": "Confirm",
+  "component.tableActionDropdown.delete": "Delete",
+  "component.tableActionDropdown.cancel": "Cancel"
 }
