@@ -58,28 +58,39 @@ export async function get(payload: StatisticTypes.getStatisticParams): Promise<S
 
   for (const order of orders) {
     const { orderPayments } = await OrderService.getOrderPayments({ filters: { order: order.id }, pagination: { full: true } })
-    const { orderItems } = await OrderService.getItems({ filters: { order: [order.id], showFullData: true }, pagination: { full: true } })
+    const { orderItems } = await OrderService.getItems({ filters: { order: [order.id], showFullData: true }, pagination: { full: true } }) as any
 
-    const orderCurrency = orderItems[0]?.currency as any
-    const orderTotal = orderItems.reduce((sum, item) => sum + item.price * item.quantity, 0)
-    const paymentTotal = orderPayments.reduce((sum, p) => sum + p.amount, 0)
+    const itemsByCurrency = new Map<string, { currency: any, total: number }>()
 
-    const currencyId = orderCurrency.id
-
-    if (paymentTotal > 0) {
-      if (!paidAmountMap[currencyId]) {
-        paidAmountMap[currencyId] = { currency: orderCurrency, total: 0 }
+    for (const item of orderItems) {
+      const currencyId = item.currency.id
+      if (!itemsByCurrency.has(currencyId)) {
+        itemsByCurrency.set(currencyId, { currency: item.currency, total: 0 })
       }
-      paidAmountMap[currencyId].total += paymentTotal
-      paidCount++
+      const entry = itemsByCurrency.get(currencyId)!
+      entry.total += item.price * item.quantity
     }
 
-    if (paymentTotal < orderTotal) {
-      if (!unpaidAmountMap[currencyId]) {
-        unpaidAmountMap[currencyId] = { currency: orderCurrency, total: 0 }
+    const paymentTotal = orderPayments.reduce((sum, p) => sum + p.amount, 0)
+
+    for (const [currencyId, { currency, total: orderTotal }] of itemsByCurrency.entries()) {
+      const remaining = orderTotal - paymentTotal
+
+      if (paymentTotal > 0) {
+        if (!paidAmountMap[currencyId]) {
+          paidAmountMap[currencyId] = { currency, total: 0 }
+        }
+        paidAmountMap[currencyId].total += Math.min(paymentTotal, orderTotal)
+        paidCount++
       }
-      unpaidAmountMap[currencyId].total += (orderTotal - paymentTotal)
-      unpaidCount++
+
+      if (remaining > 0) {
+        if (!unpaidAmountMap[currencyId]) {
+          unpaidAmountMap[currencyId] = { currency, total: 0 }
+        }
+        unpaidAmountMap[currencyId].total += remaining
+        unpaidCount++
+      }
     }
   }
 
