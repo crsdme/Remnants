@@ -181,3 +181,17 @@ export async function duplicate(payload: UserTypes.duplicateUsersParams): Promis
 
   return { status: 'success', code: 'USERS_DUPLICATED', message: 'Users duplicated' }
 }
+
+export async function checkUserPermissions(permission: string, user: any) {
+  let isAccess = false
+
+  if (!user || !user.permissions) {
+    return false
+  }
+
+  if (user?.permissions?.includes(permission) || user?.permissions?.includes('other.admin')) {
+    isAccess = true
+  }
+
+  return isAccess
+}

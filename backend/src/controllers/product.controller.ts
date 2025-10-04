@@ -4,7 +4,7 @@ import { HttpError } from '../utils/httpError'
 
 export async function get(req: Request, res: Response, next: NextFunction) {
   try {
-    const serviceResponse = await ProductService.get(req.body)
+    const serviceResponse = await ProductService.get(req.body, req.user)
 
     res.status(200).json(serviceResponse)
   }

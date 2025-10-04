@@ -2,6 +2,7 @@ import type { Client } from '../types/client.type'
 import type { RequestUser } from '../types/common.type'
 import type { Order } from '../types/order.type'
 import type * as OrderTypes from '../types/order.type'
+import type * as UserTypes from '../types/user.type'
 import path from 'node:path'
 import PDFDocument from 'pdfkit'
 import { v4 as uuidv4 } from 'uuid'
@@ -15,10 +16,12 @@ import * as ExchangeRateService from './currency.service'
 import * as MoneyTransactionService from './money-transaction.service'
 import * as OrderPaymentService from './order-payment.service'
 import * as QuantityService from './quantity.service'
-// import * as UserService from './user.service'
+import * as UserService from './user.service'
 
-export async function get(payload: OrderTypes.getOrdersParams): Promise<OrderTypes.getOrdersResult> {
+export async function get(payload: OrderTypes.getOrdersParams, user?: UserTypes.User): Promise<OrderTypes.getOrdersResult> {
   const { current = 1, pageSize = 10, full = false } = payload.pagination || {}
+
+  const hasProfitPermission = await UserService.checkUserPermissions('order.profit', user)
 
   const {
     ids = [],
@@ -269,6 +272,28 @@ export async function get(payload: OrderTypes.getOrdersParams): Promise<OrderTyp
         },
       },
     },
+    ...(hasProfitPermission
+      ? [{
+          $lookup: {
+            from: 'order-items',
+            let: { oid: '$_id' },
+            pipeline: [
+              { $match: { $expr: { $and: [{ $eq: ['$order', '$$oid'] }, { $ne: ['$removed', true] }] } } },
+              { $addFields: {
+                curKey: { $ifNull: ['$currency.id', { $ifNull: ['$currency._id', '$currency'] }] },
+                profitNum: { $toDouble: { $ifNull: ['$profit', 0] } },
+              } },
+              { $group: {
+                _id: '$curKey',
+                currency: { $last: '$currency' },
+                total: { $sum: { $round: ['$profitNum', 2] } },
+              } },
+              { $project: { _id: 0, currency: 1, total: 1 } },
+            ],
+            as: 'profit',
+          },
+        }]
+      : []),
     {
       $addFields: {
         client: { $arrayElemAt: ['$client', 0] },
@@ -290,6 +315,7 @@ export async function get(payload: OrderTypes.getOrdersParams): Promise<OrderTyp
         warehouse: { id: '$warehouse._id', names: 1 },
         totals: 1,
         orderPayments: 1,
+        profit: 1,
         orderPaymentStatus: 1,
         comment: 1,
         createdAt: 1,

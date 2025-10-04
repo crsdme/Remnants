@@ -1,4 +1,5 @@
 import type * as ProductTypes from '../types/product.type'
+import type * as UserTypes from '../types/user.type'
 import { Buffer } from 'node:buffer'
 import path from 'node:path'
 import ExcelJS from 'exceljs'
@@ -21,9 +22,12 @@ import * as BarcodeService from './barcode.service'
 import * as ProductPropertyOptionService from './product-property-option.service'
 import * as ProductService from './product.service'
 import * as SyncEntryService from './sync-entry.service'
+import * as UserService from './user.service'
 
-export async function get(payload: ProductTypes.getProductsParams): Promise<ProductTypes.getProductsResult> {
+export async function get(payload: ProductTypes.getProductsParams, user?: UserTypes.User): Promise<ProductTypes.getProductsResult> {
   const { current = 1, pageSize = 10, full = false } = payload.pagination || {}
+
+  const hasPurchasePricePermission = await UserService.checkUserPermissions('product.purchasePrice', user)
 
   const {
     search = '',
@@ -355,8 +359,8 @@ export async function get(payload: ProductTypes.getProductsParams): Promise<Prod
         names: 1,
         price: 1,
         currency: { id: '$currency._id', names: 1, symbols: 1 },
-        purchasePrice: 1,
-        purchaseCurrency: { id: '$purchaseCurrency._id', names: 1, symbols: 1 },
+        purchasePrice: hasPurchasePricePermission ? 1 : 0,
+        purchaseCurrency: hasPurchasePricePermission ? { id: '$purchaseCurrency._id', names: 1, symbols: 1 } : 0,
         barcodes: { id: 1, code: 1 },
         categories: { id: 1, names: 1 },
         unit: { id: '$unit._id', names: 1, symbols: 1 },

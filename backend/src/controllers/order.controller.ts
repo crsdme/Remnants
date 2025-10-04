@@ -3,7 +3,7 @@ import * as OrderService from '../services/order.service'
 
 export async function get(req: Request, res: Response, next: NextFunction) {
   try {
-    const serviceResponse = await OrderService.get(req.body)
+    const serviceResponse = await OrderService.get(req.body, req.user)
 
     res.status(200).json(serviceResponse)
   }
