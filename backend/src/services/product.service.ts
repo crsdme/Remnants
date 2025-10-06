@@ -783,7 +783,7 @@ export async function importHandler(payload: ProductTypes.importProductsParams):
     unit: parseId(row.unit),
     productPropertiesGroup: parseId(row.productPropertiesGroup),
     productProperties: parseProductProperties(row).map(property => ({
-      id: property._id,
+      _id: property._id,
       value: property.value,
     })) || [],
     images: [],
