@@ -82,9 +82,12 @@ export function EditOrderProvider({ children }: EditOrderProviderProps) {
 
   const { data: { order = {} } = {} } = useOrderQuery(
     { filters: { seq: id } },
-    { options: { select: response => ({
-      order: response.data.orders[0],
-    }) } },
+    { options: {
+      select: response => ({ order: response.data.orders[0] }),
+      refetchOnMount: 'always',
+      refetchOnReconnect: true,
+      refetchOnWindowFocus: false,
+    } },
   )
 
   const paymentFormSchema = useMemo(() =>
@@ -261,16 +264,18 @@ export function EditOrderProvider({ children }: EditOrderProviderProps) {
   const useMutateEditOrder = useOrderEdit({
     options: {
       onSuccess: ({ data }) => {
-        queryClient.invalidateQueries({ queryKey: ['orders', 'get'] })
+        queryClient.invalidateQueries({ queryKey: ['orders', 'get', { filters: { seq: id } }] })
         queryClient.invalidateQueries({ queryKey: ['products'] })
         queryClient.invalidateQueries({ queryKey: ['statistics'] })
         queryClient.invalidateQueries({ queryKey: ['money-transactions'] })
         queryClient.invalidateQueries({ queryKey: ['order-statuses', 'get', { filters: { includeAll: true, includeCount: true } }] })
         toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description || ''}` })
+        navigate('/orders')
       },
       onError: ({ response }) => {
         const error = response.data.error
         toast.error(t(`error.title.${error.code}`), { description: `${t(`error.description.${error.code}`)} ${error.description || ''}` })
+        navigate('/orders')
       },
     },
   })
@@ -318,7 +323,6 @@ export function EditOrderProvider({ children }: EditOrderProviderProps) {
     }))
 
     useMutateEditOrder.mutate(params)
-    navigate('/orders')
   }
 
   const loadBarcodeOptions = useBarcodeOptions()

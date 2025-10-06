@@ -131,6 +131,36 @@ export function useColumns() {
       })
     }
 
+    function permissionColumns() {
+      if (!hasPermission(permissions, 'order.profit'))
+        return []
+
+      return [
+        {
+          id: 'profit',
+          size: 150,
+          meta: {
+            title: t('page.orders.table.profit'),
+            sortable: false,
+            filterable: false,
+          },
+          header: () => t('page.orders.table.profit'),
+          cell: ({ row }) => {
+            const profit = row.original.profit
+            return (
+              <div className="flex flex-col gap-2">
+                {profit.map(item => (
+                  <Badge key={item.currency}>
+                    {`${item.total} ${currencies.find(currency => currency.id === item.currency)?.symbols[i18n.language] || ''}`}
+                  </Badge>
+                ))}
+              </div>
+            )
+          },
+        },
+      ]
+    }
+
     return [
       selectColumn(),
       {
@@ -282,13 +312,16 @@ export function useColumns() {
           )
         },
       },
+      ...permissionColumns(),
       {
         id: 'totals',
         size: 150,
         meta: {
           title: t('page.orders.table.totals'),
+          sortable: false,
+          filterable: false,
         },
-        header: ({ column }) => sortHeader(column, t('page.orders.table.totals')),
+        header: () => t('page.orders.table.totals'),
         cell: ({ row }) => {
           const totals = row.original.totals
           return (

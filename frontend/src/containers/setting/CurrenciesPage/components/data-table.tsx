@@ -244,7 +244,7 @@ export function DataTable() {
             onSubmit={advancedSortersSubmit}
             onCancel={advancedSortersCancel}
           />
-          <PermissionGate permission="currency.batchEdit">
+          <PermissionGate permission="other.admin">
             <BatchEdit
               columns={columns}
               languages={languages}

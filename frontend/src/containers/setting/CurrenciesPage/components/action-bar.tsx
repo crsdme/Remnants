@@ -82,7 +82,7 @@ export function ActionBar() {
         <p className="text-muted-foreground">{t('page.currencies.description')}</p>
       </div>
       <div className="flex items-center flex-wrap gap-2">
-        <PermissionGate permission="currency.import">
+        <PermissionGate permission="other.admin">
           <ImportButton
             handleFileChange={handleFileChange}
             handleDownloadTemplate={handleDownloadTemplate}

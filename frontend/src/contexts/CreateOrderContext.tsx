@@ -209,10 +209,12 @@ export function CreateOrderProvider({ children }: CreateOrderProviderProps) {
         queryClient.invalidateQueries({ queryKey: ['money-transactions'] })
         queryClient.invalidateQueries({ queryKey: ['order-statuses', 'get', { filters: { includeAll: true, includeCount: true } }] })
         toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description || ''}` })
+        navigate('/orders')
       },
       onError: ({ response }) => {
         const error = response.data.error
         toast.error(t(`error.title.${error.code}`), { description: `${t(`error.description.${error.code}`)} ${error.description || ''}` })
+        navigate('/orders')
       },
     },
   })
@@ -258,7 +260,6 @@ export function CreateOrderProvider({ children }: CreateOrderProviderProps) {
       currency: payment.currency.id,
     }))
     useMutateCreateOrder.mutate(params)
-    navigate('/orders')
   }
 
   // useEffect(() => {
