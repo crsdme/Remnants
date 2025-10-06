@@ -359,8 +359,24 @@ export async function get(payload: ProductTypes.getProductsParams, user?: UserTy
         names: 1,
         price: 1,
         currency: { id: '$currency._id', names: 1, symbols: 1 },
-        purchasePrice: hasPurchasePricePermission ? 1 : 0,
-        purchaseCurrency: hasPurchasePricePermission ? { id: '$purchaseCurrency._id', names: 1, symbols: 1 } : 0,
+        purchasePrice: {
+          $cond: [
+            hasPurchasePricePermission,
+            '$purchasePrice',
+            '$$REMOVE',
+          ],
+        },
+        purchaseCurrency: {
+          $cond: [
+            hasPurchasePricePermission,
+            {
+              id: '$purchaseCurrency._id',
+              names: '$purchaseCurrency.names',
+              symbols: '$purchaseCurrency.symbols',
+            },
+            '$$REMOVE',
+          ],
+        },
         barcodes: { id: 1, code: 1 },
         categories: { id: 1, names: 1 },
         unit: { id: '$unit._id', names: 1, symbols: 1 },
@@ -823,7 +839,7 @@ export async function importHandler(payload: ProductTypes.importProductsParams):
       await ProductService.create({
         ...product,
         productProperties: product.productProperties.map(property => ({
-          id: property.id,
+          id: property._id,
           value: property.value as string | number | boolean | string[],
         })),
       })
@@ -1040,7 +1056,7 @@ export async function downloadTemplate(): Promise<ProductTypes.downloadTemplateR
   const hiddenSheet = workbook.addWorksheet('hidden')
   hiddenSheet.state = 'veryHidden'
 
-  const selectedProducts = await get({ pagination: { current: 1, pageSize: 1 }, sorters: { seq: 'asc' } })
+  const selectedProducts = await get({ pagination: { current: 1, pageSize: 1 }, sorters: {} })
 
   const groupedProducts: Record<string, any[]> = {}
   for (const product of selectedProducts.products) {
@@ -1210,6 +1226,8 @@ export async function downloadTemplate(): Promise<ProductTypes.downloadTemplateR
       return letter
     }
   }
+
+  console.log(4)
 
   await workbook.xlsx.writeFile(path.join(STORAGE_PATHS.exportProducts, `${uuidv4()}.xlsx`))
 
