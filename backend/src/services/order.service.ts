@@ -1590,7 +1590,7 @@ export async function printInvoice(payload: OrderTypes.printInvoiceOrderParams):
       width: 120,
       x: params.size[0] - margins - 120,
       align: 'right',
-      value: Object.values(totals.amount).map((amount: any) => `${amount.total} ${amount.currency.symbols[language] || ''}`).join(', '),
+      value: Object.values(totals.amount).map((amount: any) => `${amount.total.toFixed(2)} ${amount.currency.symbols[language] || ''}`).join(', '),
       type: 'text',
     },
   ]
