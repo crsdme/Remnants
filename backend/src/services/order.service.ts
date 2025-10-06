@@ -1349,7 +1349,7 @@ export async function printInvoice(payload: OrderTypes.printInvoiceOrderParams):
       ]
     }
 
-    if (type.includes('aeb36d06-1a12-4319-9313-51abcbed38fb')) {
+    if (type.includes('aeb36d06-1a12-4319-9313-51abcbed38fb') || type.includes('44307e30-0fb8-4ab1-af56-6d8d724dd204')) {
       table = [
         { min: 40, max: 44, price: 1300 },
         { min: 45, max: 49, price: 1400 },

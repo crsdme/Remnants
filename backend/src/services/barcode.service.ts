@@ -642,6 +642,9 @@ async function print55x40(payload: { barcodes: any[], size: string, language: st
       if (property.id === '25144e64-5c4c-47fd-842d-c0a2393f972e' && (property?.value || []).includes('aeb36d06-1a12-4319-9313-51abcbed38fb')) {
         type.push('Silky')
       }
+      if (property.id === '25144e64-5c4c-47fd-842d-c0a2393f972e' && (property?.value || []).includes('44307e30-0fb8-4ab1-af56-6d8d724dd204')) {
+        type.push('Brown')
+      }
     }
 
     const lenWgt = [length, weight].filter(Boolean).join(', ')
