@@ -1374,10 +1374,21 @@ export async function printInvoice(payload: OrderTypes.printInvoiceOrderParams):
     return null
   }
 
+  function countPriceDiscounts(price: any, discountAmount: any, discountPercent: any) {
+    if (discountPercent > 0) {
+      return price - (price * discountPercent) / 100
+    }
+    else if (discountAmount > 0) {
+      return price - discountAmount
+    }
+    return price
+  }
+
   const products = orderItems.map((item: any) => {
     const type = item.product.productProperties.find((property: any) => property.id === '25144e64-5c4c-47fd-842d-c0a2393f972e')
     const weight = item.product.productProperties.find((property: any) => property.id === '7c3e2c1b-f2bf-4639-baf2-7b1101fa7bf2')?.value
     const length = item.product.productProperties.find((property: any) => property.id === 'efcc3c51-a146-4975-bc5b-196745f76891')?.value
+    const totalPrice = countPriceDiscounts(item.price, item.discountAmount, item.discountPercent)
 
     return {
       name: item.product.names[language],
@@ -1389,7 +1400,7 @@ export async function printInvoice(payload: OrderTypes.printInvoiceOrderParams):
         type?.optionData.map((option: any) => option.id) || [],
       ),
       quantity: item.quantity,
-      total: item.price * item.quantity,
+      total: totalPrice * item.quantity,
       currency: item.currency,
     }
   }).sort((a: any, b: any) => a.length - b.length)
