@@ -89,7 +89,14 @@ const OrderItemSchema: Schema = new Schema({
     required: true,
     min: 1,
   },
-  price: {
+  manualPrice: { // ЦЕНА КОТОРАЯ БЫЛА ОТРЕДАКТИРОВАНА ВРУЧНУЮ
+    type: Number,
+  },
+  basePrice: { // ЦЕНА ИЗ ТОВАРА
+    type: Number,
+    required: true,
+  },
+  price: { // ЦЕНА ЗА ЕДИНИЦУ ТОВАРА С УЧЕТОМ СКИДКИ И ОТРЕДАКТИРОВАННОЙ ЦЕНЫ
     type: Number,
     required: true,
   },
@@ -102,7 +109,7 @@ const OrderItemSchema: Schema = new Schema({
     ref: 'Currency',
     required: true,
   },
-  profit: {
+  profit: { // ПРИБЫЛЬ ЗА ЕДИНИЦУ ТОВАРА
     type: Number,
     required: true,
   },

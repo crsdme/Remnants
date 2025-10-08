@@ -14,7 +14,7 @@
     "lint": "eslint . --fix",
     "init": "ts-node src/utils/mongodb/init.ts",
     "backup": "ts-node src/utils/mongodb/backup.ts",
-    "seed": "ts-node src/utils/mongodb/seed.ts"
+    "db:seed": "ts-node src/utils/mongodb/seed.ts"
   },
   "dependencies": {
     "@asteasolutions/zod-to-openapi": "^7.3.0",

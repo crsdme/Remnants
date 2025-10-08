@@ -123,7 +123,7 @@ export async function get(payload: StatisticTypes.getStatisticParams): Promise<S
         incomeMap[currencyId] = { currency, total: 0 }
       }
 
-      incomeMap[currencyId].total += Number.parseFloat(profit.toFixed(2))
+      incomeMap[currencyId].total += Number.parseFloat((profit * item.quantity).toFixed(2))
     }
   }
 

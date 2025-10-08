@@ -168,108 +168,28 @@ export async function get(payload: OrderTypes.getOrdersParams, user?: UserTypes.
       },
     },
     {
-      $addFields: {
-        totals: {
-          $map: {
-            input: {
-              $reduce: {
-                input: '$orderItems',
-                initialValue: [],
-                in: {
-                  $let: {
-                    vars: {
-                      existing: {
-                        $filter: {
-                          input: '$$value',
-                          cond: { $eq: ['$$this.currency', '$$this.currency'] },
-                        },
-                      },
-                      currentItem: '$$this',
-                      totalPrice: {
-                        $round: [
-                          {
-                            $multiply: [
-                              '$$this.quantity',
-                              {
-                                $let: {
-                                  vars: {
-                                    basePrice: '$$this.price',
-                                    discountAmount: { $ifNull: ['$$this.discountAmount', 0] },
-                                    discountPercent: { $ifNull: ['$$this.discountPercent', 0] },
-                                  },
-                                  in: {
-                                    $cond: [
-                                      { $gt: ['$$discountPercent', 0] },
-                                      {
-                                        $subtract: [
-                                          '$$basePrice',
-                                          {
-                                            $divide: [
-                                              { $multiply: ['$$basePrice', '$$discountPercent'] },
-                                              100,
-                                            ],
-                                          },
-                                        ],
-                                      },
-                                      { $subtract: ['$$basePrice', '$$discountAmount'] },
-                                    ],
-                                  },
-                                },
-                              },
-                            ],
-                          },
-                          2,
-                        ],
-                      },
-                    },
-                    in: {
-                      $cond: [
-                        {
-                          $gt: [
-                            {
-                              $size: {
-                                $filter: {
-                                  input: '$$value',
-                                  as: 'val',
-                                  cond: { $eq: ['$$val.currency', '$$this.currency'] },
-                                },
-                              },
-                            },
-                            0,
-                          ],
-                        },
-                        {
-                          $map: {
-                            input: '$$value',
-                            as: 'val',
-                            in: {
-                              $cond: [
-                                { $eq: ['$$val.currency', '$$this.currency'] },
-                                {
-                                  currency: '$$val.currency',
-                                  total: { $add: ['$$val.total', '$$totalPrice'] },
-                                },
-                                '$$val',
-                              ],
-                            },
-                          },
-                        },
-                        {
-                          $concatArrays: [
-                            '$$value',
-                            [{ currency: '$$this.currency', total: '$$totalPrice' }],
-                          ],
-                        },
-                      ],
-                    },
-                  },
-                },
-              },
+      $lookup: {
+        from: 'order-items',
+        let: { oid: '$_id' },
+        pipeline: [
+          { $match: { $expr: { $and: [{ $eq: ['$order', '$$oid'] }, { $ne: ['$removed', true] }] } } },
+          { $addFields: {
+            curKey: { $ifNull: ['$currency.id', { $ifNull: ['$currency._id', '$currency'] }] },
+            lineTotal: {
+              $multiply: [
+                { $toDouble: { $ifNull: ['$price', 0] } },
+                { $toDouble: { $ifNull: ['$quantity', 0] } },
+              ],
             },
-            as: 'item',
-            in: '$$item',
-          },
-        },
+          } },
+          { $group: {
+            _id: '$curKey',
+            currency: { $last: '$currency' },
+            total: { $sum: '$lineTotal' },
+          } },
+          { $project: { _id: 0, currency: 1, total: 1 } },
+        ],
+        as: 'totals',
       },
     },
     ...(hasProfitPermission
@@ -281,12 +201,17 @@ export async function get(payload: OrderTypes.getOrdersParams, user?: UserTypes.
               { $match: { $expr: { $and: [{ $eq: ['$order', '$$oid'] }, { $ne: ['$removed', true] }] } } },
               { $addFields: {
                 curKey: { $ifNull: ['$currency.id', { $ifNull: ['$currency._id', '$currency'] }] },
-                profitNum: { $toDouble: { $ifNull: ['$profit', 0] } },
+                lineTotal: {
+                  $multiply: [
+                    { $toDouble: { $ifNull: ['$profit', 0] } },
+                    { $toDouble: { $ifNull: ['$quantity', 0] } },
+                  ],
+                },
               } },
               { $group: {
                 _id: '$curKey',
                 currency: { $last: '$currency' },
-                total: { $sum: { $round: ['$profitNum', 2] } },
+                total: { $sum: '$lineTotal' },
               } },
               { $project: { _id: 0, currency: 1, total: 1 } },
             ],
@@ -379,6 +304,8 @@ export async function getItems(payload: OrderTypes.getOrderItemsParams): Promise
     product: 1,
     quantity: 1,
     price: 1,
+    manualPrice: 1,
+    basePrice: 1,
     currency: { id: '$currency._id', names: 1, symbols: 1 },
     discountAmount: 1,
     discountPercent: 1,
@@ -1657,14 +1584,14 @@ async function calculateProfit({
   purchaseCurrency: string
 }): Promise<{ profit: number, exchangeRate: number }> {
   const sellingCurrency = item.currency
-  let sellingPrice = item.price
+  // let sellingPrice = item.price
 
-  if (item.discountPercent && item.discountPercent > 0) {
-    sellingPrice -= (sellingPrice * item.discountPercent) / 100
-  }
-  else if (item.discountAmount && item.discountAmount > 0) {
-    sellingPrice -= item.discountAmount
-  }
+  // if (item.discountPercent && item.discountPercent > 0) {
+  //   sellingPrice -= (sellingPrice * item.discountPercent) / 100
+  // }
+  // else if (item.discountAmount && item.discountAmount > 0) {
+  //   sellingPrice -= item.discountAmount
+  // }
 
   let convertedPurchasePrice = purchasePrice
   let exchangeRate = 1
@@ -1680,8 +1607,8 @@ async function calculateProfit({
     exchangeRate = rate
   }
 
-  const unitProfit = sellingPrice - convertedPurchasePrice
-  const profit = unitProfit * item.quantity
+  const profit = item.price - convertedPurchasePrice
+  // const profit = unitProfit * item.quantity
 
   return { profit: Number.parseFloat(profit.toFixed(2)), exchangeRate }
 }
