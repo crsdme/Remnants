@@ -5,6 +5,7 @@ import { Separator } from '@/components/ui'
 
 import { useEditOrderContext } from '@/contexts'
 
+import { roundNumber } from '@/utils/helpers'
 import { useBarcodeScanned } from '@/utils/hooks'
 import { ClientForm } from './client-form'
 import { InformationForm } from './information-form'
@@ -48,6 +49,9 @@ export function DataTable() {
         product: product.id,
         quantity: selectedQuantity,
         receivedQuantity: 0,
+        manualPrice: undefined,
+        basePrice: product.price,
+        price: product.price,
         selectedPrice: product.price,
         discountAmount: 0,
         discountPercent: 0,
@@ -115,39 +119,46 @@ export function DataTable() {
       return
 
     const current = selectedProducts[index]
-    const updated = { ...current, [field]: value }
+    const updated = { ...current }
+
+    updated[field] = value
+
+    if (field === 'quantity' || field === 'receivedQuantity') {
+      updated.quantity = value ?? current.quantity
+      updated.receivedQuantity = value ?? current.receivedQuantity ?? 0
+    }
+
+    if (field === 'selectedPrice') {
+      if (current.price === value)
+        return
+
+      updated.manualPrice = value
+    }
 
     if (field === 'discountPercent') {
       const discountPercent = value ?? current.discountPercent ?? 0
-
-      if (discountPercent > 0) {
-        updated.selectedPrice = current.price - (current.price * discountPercent) / 100
-      }
-      else {
-        updated.selectedPrice = current.price
-      }
-
-      updated.discountPercent = discountPercent
+      updated.discountPercent = roundNumber(discountPercent)
       updated.discountAmount = 0
     }
 
     if (field === 'discountAmount') {
       const discountAmount = value ?? current.discountAmount ?? 0
-
-      if (discountAmount > 0) {
-        updated.selectedPrice = current.price - discountAmount
-      }
-      else {
-        updated.selectedPrice = current.price
-      }
-
-      updated.discountAmount = discountAmount.toFixed(2)
+      updated.discountAmount = roundNumber(discountAmount)
       updated.discountPercent = 0
     }
 
-    if (field === 'quantity' || field === 'receivedQuantity') {
-      updated.quantity = value ?? current.quantity
-      updated.receivedQuantity = value ?? current.receivedQuantity ?? 0
+    if (['selectedPrice', 'discountPercent', 'discountAmount'].includes(field)) {
+      const currentPrice = (updated.manualPrice ?? updated.basePrice) || 0
+
+      const discountPercent = updated.discountPercent ?? current.discountPercent ?? 0
+      const discountAmount = updated.discountAmount ?? current.discountAmount ?? 0
+
+      const byPercent = discountPercent > 0 ? currentPrice * (discountPercent / 100) : 0
+      const rawDisc = discountAmount > 0 ? discountAmount : byPercent
+      const discount = Math.min(Math.max(rawDisc, 0), currentPrice)
+
+      updated.price = roundNumber(currentPrice - discount)
+      updated.selectedPrice = updated.price
     }
 
     itemsField.update(index, updated)

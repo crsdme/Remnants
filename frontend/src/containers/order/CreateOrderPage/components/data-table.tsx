@@ -5,6 +5,7 @@ import { Separator } from '@/components/ui'
 
 import { useCreateOrderContext } from '@/contexts'
 
+import { roundNumber } from '@/utils/helpers/'
 import { useBarcodeScanned } from '@/utils/hooks'
 import { ClientForm } from './client-form'
 import { InformationForm } from './information-form'
@@ -49,6 +50,9 @@ export function DataTable() {
         quantity: selectedQuantity,
         receivedQuantity: 0,
         selectedPrice: product.price,
+        price: product.price,
+        manualPrice: undefined,
+        basePrice: product.price,
         selectedCurrency: product.currency,
         discountAmount: 0,
         discountPercent: 0,
@@ -64,57 +68,6 @@ export function DataTable() {
     }
   }
 
-  // const changeQuantity = (product, { quantity, receivedQuantity }: { quantity?: number, receivedQuantity?: number }) => {
-  //   const selectedProducts = informationForm.getValues('items')
-  //   const index = selectedProducts.findIndex(p => p.id === product.id)
-  //   if (index !== -1) {
-  //     itemsField.update(index, {
-  //       ...selectedProducts[index],
-  //       quantity: quantity ?? product.quantity,
-  //       receivedQuantity: receivedQuantity ?? product.receivedQuantity ?? 0,
-  //     })
-  //   }
-  // }
-
-  // const changePrice = (product, { selectedPrice }: { selectedPrice?: number }) => {
-  //   const selectedProducts = informationForm.getValues('items')
-  //   const index = selectedProducts.findIndex(p => p.id === product.id)
-  //   if (index !== -1) {
-  //     itemsField.update(index, { ...selectedProducts[index], selectedPrice })
-  //   }
-  // }
-
-  // const changeDiscount = (product, { discountPercent = 0, discountAmount = 0 }: { discountPercent?: number, discountAmount?: number }) => {
-  //   const selectedProducts = informationForm.getValues('items')
-  //   const index = selectedProducts.findIndex(p => p.id === product.id)
-  //   if (index !== -1) {
-  //     const product = selectedProducts[index]
-
-  //     let discountPrice = product.price
-  //     if (discountPercent > 0) {
-  //       discountPrice = product.price - (product.price * discountPercent) / 100
-  //     }
-  //     else if (discountAmount > 0) {
-  //       discountPrice = product.price - discountAmount
-  //     }
-
-  //     itemsField.update(index, {
-  //       ...product,
-  //       discountPercent,
-  //       discountAmount,
-  //       selectedPrice: discountPrice,
-  //     })
-  //   }
-  // }
-
-  // const changeCurrency = (product, { selectedCurrency }: { selectedCurrency?: string }) => {
-  //   const selectedProducts = informationForm.getValues('items')
-  //   const index = selectedProducts.findIndex(p => p.id === product.id)
-  //   if (index !== -1) {
-  //     itemsField.update(index, { ...selectedProducts[index], selectedCurrency })
-  //   }
-  // }
-
   const updateProduct = ({ productId, field, value }: { productId: string, field: string, value: any }) => {
     const selectedProducts = informationForm.getValues('items')
     const index = selectedProducts.findIndex(p => p.id === productId)
@@ -123,39 +76,46 @@ export function DataTable() {
       return
 
     const current = selectedProducts[index]
-    const updated = { ...current, [field]: value }
+    const updated = { ...current }
+
+    updated[field] = value
+
+    if (field === 'quantity' || field === 'receivedQuantity') {
+      updated.quantity = value ?? current.quantity
+      updated.receivedQuantity = value ?? current.receivedQuantity ?? 0
+    }
+
+    if (field === 'selectedPrice') {
+      if (current.price === value)
+        return
+
+      updated.manualPrice = value
+    }
 
     if (field === 'discountPercent') {
       const discountPercent = value ?? current.discountPercent ?? 0
-
-      if (discountPercent > 0) {
-        updated.selectedPrice = current.price - (current.price * discountPercent) / 100
-      }
-      else {
-        updated.selectedPrice = current.price
-      }
-
-      updated.discountPercent = discountPercent
+      updated.discountPercent = roundNumber(discountPercent)
       updated.discountAmount = 0
     }
 
     if (field === 'discountAmount') {
       const discountAmount = value ?? current.discountAmount ?? 0
-
-      if (discountAmount > 0) {
-        updated.selectedPrice = current.price - discountAmount
-      }
-      else {
-        updated.selectedPrice = current.price
-      }
-
-      updated.discountAmount = discountAmount.toFixed(2)
+      updated.discountAmount = roundNumber(discountAmount)
       updated.discountPercent = 0
     }
 
-    if (field === 'quantity' || field === 'receivedQuantity') {
-      updated.quantity = value ?? current.quantity
-      updated.receivedQuantity = value ?? current.receivedQuantity ?? 0
+    if (['selectedPrice', 'discountPercent', 'discountAmount'].includes(field)) {
+      const currentPrice = (updated.manualPrice ?? updated.basePrice) || 0
+
+      const discountPercent = updated.discountPercent ?? current.discountPercent ?? 0
+      const discountAmount = updated.discountAmount ?? current.discountAmount ?? 0
+
+      const byPercent = discountPercent > 0 ? currentPrice * (discountPercent / 100) : 0
+      const rawDisc = discountAmount > 0 ? discountAmount : byPercent
+      const discount = Math.min(Math.max(rawDisc, 0), currentPrice)
+
+      updated.price = roundNumber(currentPrice - discount)
+      updated.selectedPrice = updated.price
     }
 
     itemsField.update(index, updated)

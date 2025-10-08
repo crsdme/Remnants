@@ -303,13 +303,14 @@ export function useColumns(
               cell: ({ row }) => {
                 const product = row.original
                 const currency = currencies.find(c => c.id === product.selectedCurrency.id)?.symbols[i18n.language]
+                const currentPrice = (product.manualPrice ?? product.basePrice) || 0
 
                 let discountPrice = 0
                 if (product.discountPercent > 0) {
-                  discountPrice = product.price - (product.price * product.discountPercent) / 100 - product.price
+                  discountPrice = currentPrice - (currentPrice * product.discountPercent) / 100 - currentPrice
                 }
                 else if (product.discountAmount > 0) {
-                  discountPrice = (product.price - product.discountAmount - product.price)
+                  discountPrice = (currentPrice - product.discountAmount - currentPrice)
                 }
 
                 return (

@@ -127,6 +127,8 @@ export function EditOrderProvider({ children }: EditOrderProviderProps) {
         id: z.string(),
       }),
       price: z.number(),
+      manualPrice: z.number().optional(),
+      basePrice: z.number(),
       selectedPrice: z.number(),
       discountAmount: z.number().optional(),
       discountPercent: z.number().optional(),
@@ -190,20 +192,22 @@ export function EditOrderProvider({ children }: EditOrderProviderProps) {
         deliveryService: order.deliveryService.id,
         client: order.client.id,
         items: order.items.map((item) => {
-          let discountPrice = item.price || item.product.price
-          if (item.discountPercent > 0) {
-            discountPrice = item.price - (item.price * item.discountPercent) / 100
-          }
-          else if (item.discountAmount > 0) {
-            discountPrice = item.price - item.discountAmount
-          }
+          // let discountPrice = item.price
+          // if (item.discountPercent > 0) {
+          //   discountPrice = item.price - (item.price * item.discountPercent) / 100
+          // }
+          // else if (item.discountAmount > 0) {
+          //   discountPrice = item.price - item.discountAmount
+          // }
 
           return {
             ...item.product,
             product: item.product.id,
             quantity: item.quantity,
-            price: item.price || item.product.price,
-            selectedPrice: discountPrice,
+            price: item.price,
+            manualPrice: item.manualPrice || undefined,
+            basePrice: item.basePrice,
+            selectedPrice: item.price,
             discountAmount: item.discountAmount || 0,
             discountPercent: item.discountPercent || 0,
             selectedCurrency: item.currency,
@@ -264,7 +268,7 @@ export function EditOrderProvider({ children }: EditOrderProviderProps) {
   const useMutateEditOrder = useOrderEdit({
     options: {
       onSuccess: ({ data }) => {
-        queryClient.invalidateQueries({ queryKey: ['orders', 'get', { filters: { seq: id } }] })
+        queryClient.invalidateQueries({ queryKey: ['orders'] })
         queryClient.invalidateQueries({ queryKey: ['products'] })
         queryClient.invalidateQueries({ queryKey: ['statistics'] })
         queryClient.invalidateQueries({ queryKey: ['money-transactions'] })
@@ -309,7 +313,9 @@ export function EditOrderProvider({ children }: EditOrderProviderProps) {
     const mappedItems = params.items.map(item => ({
       ...item,
       currency: item.selectedCurrency.id,
-      price: item.selectedPrice || item.price,
+      price: item.price,
+      manualPrice: item.manualPrice || undefined,
+      basePrice: item.basePrice,
       discountAmount: item.discountAmount || 0,
       discountPercent: item.discountPercent || 0,
     }))

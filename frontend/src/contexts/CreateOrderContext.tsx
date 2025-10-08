@@ -110,10 +110,11 @@ export function CreateOrderProvider({ children }: CreateOrderProviderProps) {
       selectedCurrency: z.object({
         id: z.string(),
       }),
-      selectedPrice: z.number(),
+      basePrice: z.number(),
+      price: z.number(),
+      manualPrice: z.number().optional(),
       discountAmount: z.number().optional(),
       discountPercent: z.number().optional(),
-      price: z.number(),
     })).min(1, { message: t('error.required') }),
     comment: z.string().optional(),
   }).superRefine((data) => {
@@ -247,7 +248,9 @@ export function CreateOrderProvider({ children }: CreateOrderProviderProps) {
     const mappedItems = params.items.map(item => ({
       ...item,
       currency: item.selectedCurrency.id,
-      price: item.selectedPrice || item.price,
+      price: item.price,
+      manualPrice: item.manualPrice || undefined,
+      basePrice: item.basePrice,
       discountAmount: item.discountAmount || 0,
       discountPercent: item.discountPercent || 0,
     }))
@@ -259,35 +262,12 @@ export function CreateOrderProvider({ children }: CreateOrderProviderProps) {
       cashregisterAccount: payment.cashregisterAccount.id,
       currency: payment.currency.id,
     }))
+
     useMutateCreateOrder.mutate(params)
   }
 
-  // useEffect(() => {
-  //   if (warehouses.length > 0 && orderSources.length > 0 && orderStatuses.length > 0 && deliveryServices.length > 0) {
-  //     informationForm.reset({
-  //       warehouse: warehouses[0].id || '',
-  //       orderSource: orderSources[0].id || '',
-  //       orderStatus: orderStatuses[0].id || '',
-  //       deliveryService: deliveryServices[0].id || '',
-  //       client: '',
-  //       items: [],
-  //       comment: '',
-  //     })
-  //   }
-  // }, [warehouses, orderSources, orderStatuses, deliveryServices])
-
-  // useEffect(() => {
-  //   if (currencies.length > 0 && cashregisters.length > 0) {
-  //     paymentForm.reset({
-  //       cashregister: cashregisters[0].id || '',
-  //       amount: 0,
-  //       paymentStatus: PAYMENT_STATUSES[0].id,
-  //       paymentDate: new Date(),
-  //     })
-  //   }
-  // }, [currencies, cashregisters])
-
   const loadBarcodeOptions = useBarcodeOptions()
+
   const getBarcode = async (code: string) => {
     const barcode = await loadBarcodeOptions({ query: code })
     return barcode[0]?.products

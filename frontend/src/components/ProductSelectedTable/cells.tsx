@@ -21,11 +21,13 @@ export function EditableCell({ product, field, onChange, className, disabled }: 
       value={localValue}
       className={`pr-10 w-30 ${className}`}
       onChange={(e) => {
-        const val = Number.parseFloat(e.target.value)
-        setLocalValue(Number.isNaN(val) ? 0 : val)
+        setLocalValue(e.target.value)
       }}
       onBlur={() => {
-        onChange(localValue)
+        const val = Number.parseFloat(localValue)
+        if (!Number.isNaN(val)) {
+          onChange(val)
+        }
       }}
       disabled={disabled}
     />
@@ -55,13 +57,6 @@ export function EditableQuantityCell({ isReceiving, changeQuantity, item, isLoad
           </Button>
         )}
         <div className="relative min-w-5">
-          {/* <Input
-            placeholder={t('component.product-select-table.quantity.placeholder')}
-            value={item.quantity}
-            className="pr-10 w-20"
-            disabled={true}
-            onChange={event => handleChange(item.id, 'quantity', Number.parseInt(event.target.value))}
-          /> */}
           <EditableCell
             product={item}
             onChange={val => handleChange(item.id, 'quantity', val)}
