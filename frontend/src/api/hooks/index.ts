@@ -1,3 +1,5 @@
+// Audit Logs Management
+export * from './audit-log/useAuditLogQuery'
 // Authentication
 export * from './auth/useAuthLogin'
 export * from './auth/useAuthLogout'

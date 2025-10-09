@@ -8,6 +8,7 @@ import { BarcodeModel, CounterModel } from '../models/'
 import { ProductModel } from '../models/product.model'
 import { HttpError } from '../utils/httpError'
 import { buildQuery, buildSortQuery } from '../utils/queryBuilder'
+import * as AuditLogsService from './audit-logs.service'
 
 export async function get(payload: BarcodeTypes.getBarcodesParams): Promise<BarcodeTypes.getBarcodesResult> {
   const { current = 1, pageSize = 10 } = payload.pagination || {}
@@ -348,6 +349,17 @@ export async function create(payload: BarcodeTypes.createBarcodeParams): Promise
 
   await ProductModel.updateMany({ _id: { $in: parsedProducts.map(product => product._id) } }, { $push: { barcodes: barcode._id } })
 
+  AuditLogsService.create({
+    resourceType: 'barcode',
+    resourceId: barcode._id.toString(),
+    action: 'create',
+    changes: [
+      { path: 'code', before: null, after: code },
+      { path: 'products', before: null, after: parsedProducts },
+      { path: 'active', before: null, after: active },
+    ],
+  })
+
   return { status: 'success', code: 'BARCODE_CREATED', message: 'Barcode created', barcode }
 }
 
@@ -378,6 +390,17 @@ export async function edit(payload: BarcodeTypes.editBarcodeParams): Promise<Bar
     throw new HttpError(400, 'Barcode not edited', 'BARCODE_NOT_EDITED')
   }
 
+  AuditLogsService.create({
+    resourceType: 'barcode',
+    resourceId: id.toString(),
+    action: 'edit',
+    changes: [
+      { path: 'code', before: barcode.code, after: code },
+      { path: 'products', before: barcode.products, after: parsedProducts },
+      { path: 'active', before: barcode.active, after: active },
+    ],
+  })
+
   return { status: 'success', code: 'BARCODE_EDITED', message: 'Barcode edited', barcode }
 }
 
@@ -393,6 +416,26 @@ export async function remove(payload: BarcodeTypes.removeBarcodesParams): Promis
 
   if (!barcodes) {
     throw new HttpError(400, 'Barcodes not removed', 'BARCODES_NOT_REMOVED')
+  }
+
+  for (const id of ids) {
+    const barcode = await BarcodeModel.findOneAndUpdate({ _id: id }, { removed: true })
+
+    if (!barcode) {
+      continue
+    }
+
+    AuditLogsService.create({
+      resourceType: 'barcode',
+      resourceId: id.toString(),
+      action: 'remove',
+      changes: [
+        { path: 'code', before: barcode.code, after: null },
+        { path: 'products', before: barcode.products, after: null },
+        { path: 'active', before: barcode.active, after: null },
+        { path: 'removed', before: false, after: true },
+      ],
+    })
   }
 
   return { status: 'success', code: 'BARCODES_REMOVED', message: 'Barcodes removed' }

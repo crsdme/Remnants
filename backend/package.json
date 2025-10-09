@@ -12,8 +12,8 @@
     "start": "node dist/server.js",
     "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
     "lint": "eslint . --fix",
-    "init": "ts-node src/utils/mongodb/init.ts",
-    "backup": "ts-node src/utils/mongodb/backup.ts",
+    "db:init": "ts-node src/utils/mongodb/init.ts",
+    "db:backup": "ts-node src/utils/mongodb/backup.ts",
     "db:seed": "ts-node src/utils/mongodb/seed.ts"
   },
   "dependencies": {

@@ -345,3 +345,18 @@ interface InventoryItem {
   createdAt: Date
   updatedAt: Date
 }
+
+interface AuditLog {
+  id: string
+  resourceType: string
+  resourceId: string
+  action: string
+  changes: {
+    path: string
+    before: any
+    after: any
+  }[]
+  comment: string
+  createdAt: Date
+  updatedAt: Date
+}

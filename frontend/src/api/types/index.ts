@@ -1,3 +1,4 @@
+export * from './audit-logs'
 export * from './auth'
 export * from './automation'
 export * from './barcodes'

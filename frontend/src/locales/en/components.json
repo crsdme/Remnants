@@ -116,6 +116,7 @@
   "component.sidemenu.label.timetable": "Schedule",
   "component.sidemenu.label.languages": "Languages",
   "component.sidemenu.label.currencies": "Currencies",
+  "component.sidemenu.label.auditLogs": "Audit Logs",
   "component.sidemenu.label.sources": "Sources",
   "component.sidemenu.label.orderStatuses": "Order Statuses",
   "component.sidemenu.label.automations": "Automations",

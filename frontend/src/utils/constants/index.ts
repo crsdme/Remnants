@@ -139,6 +139,7 @@ export const NAV_MENU_ITEMS = [
         url: '/settings/delivery-services',
         permissions: ['deliveryService.page'],
       },
+      { id: 'auditLogs', url: '/settings/audit-logs', permissions: ['audit-log.page'] },
       { id: 'languages', url: '/settings/languages', permissions: ['language.page'] },
       { id: 'orderSources', url: '/settings/order-sources', permissions: ['orderSource.page'] },
       { id: 'orderStatuses', url: '/settings/order-statuses', permissions: ['orderStatus.page'] },

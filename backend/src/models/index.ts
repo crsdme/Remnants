@@ -1,3 +1,4 @@
+export * from './audit-logs.model'
 export * from './automation.model'
 export * from './barcode.model'
 export * from './cashregister-account.model'

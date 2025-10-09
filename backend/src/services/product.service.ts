@@ -7,7 +7,7 @@ import { v4 as uuidv4 } from 'uuid'
 import { STORAGE_PATHS, STORAGE_URLS } from '../config/constants'
 import { CategoryModel, CurrencyModel, LanguageModel, ProductModel, ProductPropertyGroupModel, ProductPropertyModel, UnitModel } from '../models'
 import { SiteModel } from '../models/site.model'
-import { getDifferenceDeep } from '../utils/getDiff'
+import { diffToChangesFromDeep, getDifferenceDeep } from '../utils/getDiff'
 import { HttpError } from '../utils/httpError'
 import {
   extractLangMap,
@@ -18,6 +18,7 @@ import {
   toNumber,
 } from '../utils/parseTools'
 import { buildQuery, buildSortQuery } from '../utils/queryBuilder'
+import * as AuditLogsService from './audit-logs.service'
 import * as BarcodeService from './barcode.service'
 import * as ProductPropertyOptionService from './product-property-option.service'
 import * as ProductService from './product.service'
@@ -582,6 +583,27 @@ export async function create(payload: ProductTypes.createProductParams): Promise
     })
   }
 
+  AuditLogsService.create({
+    resourceType: 'product',
+    resourceId: product._id.toString(),
+    action: 'create',
+    changes: diffToChangesFromDeep(
+      normalizeProduct(null),
+      normalizeProduct({
+        names,
+        price,
+        purchasePrice,
+        currency,
+        categories,
+        purchaseCurrency,
+        productPropertiesGroup,
+        productProperties: parsedProductProperties,
+        unit,
+        images: parsedUploadedImages,
+      }),
+    ),
+  })
+
   return { status: 'success', code: 'PRODUCT_CREATED', message: 'Product created', product }
 }
 
@@ -680,6 +702,16 @@ export async function edit(payload: ProductTypes.editProductParams): Promise<Pro
     })
   }
 
+  AuditLogsService.create({
+    resourceType: 'product',
+    resourceId: product._id.toString(),
+    action: 'edit',
+    changes: diffToChangesFromDeep(
+      normalizeProduct(oldProduct?.toObject()),
+      normalizeProduct(newProduct),
+    ),
+  })
+
   return { status: 'success', code: 'PRODUCT_EDITED', message: 'Product edited', product }
 }
 
@@ -693,6 +725,20 @@ export async function remove(payload: ProductTypes.removeProductsParams): Promis
 
   if (!products) {
     throw new HttpError(400, 'Products not removed', 'PRODUCTS_NOT_REMOVED')
+  }
+
+  for (const id of ids) {
+    const product = await ProductModel.findOne({ _id: id })
+
+    AuditLogsService.create({
+      resourceType: 'product',
+      resourceId: id.toString(),
+      action: 'remove',
+      changes: diffToChangesFromDeep(
+        normalizeProduct(product?.toObject()),
+        normalizeProduct(null),
+      ),
+    })
   }
 
   return { status: 'success', code: 'PRODUCTS_REMOVED', message: 'Products removed' }

@@ -1,4 +1,5 @@
 export * from './AppSettingsContext'
+export * from './AuditLogsContext'
 export * from './AuthContext'
 export * from './AutomationContext'
 export * from './BarcodeContext'

@@ -1,5 +1,6 @@
 import { Router } from 'express'
 import { authMiddleware } from '../../middleware/auth.middleware'
+import auditLogsRoutes from './audit-logs.route'
 import authRoutes from './auth.route'
 import automationRoutes from './automation.route'
 import barcodeRoutes from './barcode.route'
@@ -68,5 +69,6 @@ router.use('/expenses', expenseRoutes)
 router.use('/expense-categories', expenseCategoryRoutes)
 router.use('/inventories', inventoriesRoutes)
 router.use('/statistics', statisticRoutes)
+router.use('/audit-logs', auditLogsRoutes)
 
 export default router

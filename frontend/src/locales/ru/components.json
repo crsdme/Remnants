@@ -112,6 +112,7 @@
   "component.sidemenu.label.timetable": "Расписание",
   "component.sidemenu.label.languages": "Языки",
   "component.sidemenu.label.currencies": "Валюты",
+  "component.sidemenu.label.auditLogs": "Логи изменений",
   "component.sidemenu.label.sources": "Источники",
   "component.sidemenu.label.orderStatuses": "Статусы заказов",
   "component.sidemenu.label.orderSources": "Источники заказов",

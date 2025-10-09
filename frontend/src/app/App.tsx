@@ -120,6 +120,10 @@ export default function App() {
             element={<ProtectedRoute children={<Pages.CurrenciesPage />} permissions={['currency.page']} />}
           />
           <Route
+            path="/settings/audit-logs"
+            element={<ProtectedRoute children={<Pages.AuditLogsPage />} permissions={['audit-log.page']} />}
+          />
+          <Route
             path="/settings/languages"
             element={<ProtectedRoute children={<Pages.LanguagesPage />} permissions={['language.page']} />}
           />

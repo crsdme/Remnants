@@ -60,3 +60,58 @@ export function getDifferenceDeep(prev: any, next: any) {
 
   return result
 }
+
+// --------------AI BRUH---------------
+
+interface Change { path: string, before: any, after: any }
+
+// утилита для чтения значения по пути "a.b.c"
+function getByPath(obj: any, path: string) {
+  if (!path)
+    return obj
+  return path.split('.').reduce((o, k) => (o == null ? o : o[k]), obj)
+}
+
+// обёртка: делает changes[] на основе результата getDifferenceDeep
+export function diffToChangesFromDeep(prev: any, next: any): Change[] {
+  const diff = getDifferenceDeep(prev, next)
+  const changes: Change[] = []
+
+  const isPlainObject = (v: any) =>
+    Object.prototype.toString.call(v) === '[object Object]'
+
+  const walk = (node: any, basePath: string) => {
+    // если в diff лежит не объект (примитив/массив) — это «замена целиком» по basePath
+    if (!isPlainObject(node)) {
+      if (!basePath)
+        return // корень без пути нам не нужен
+      changes.push({
+        path: basePath,
+        before: getByPath(prev, basePath),
+        after: getByPath(next, basePath),
+      })
+      return
+    }
+
+    for (const key of Object.keys(node)) {
+      const child = node[key]
+      const path = basePath ? `${basePath}.${key}` : key
+
+      if (isPlainObject(child)) {
+        // в diff остались вложенные различия — спускаемся
+        walk(child, path)
+      }
+      else {
+        // в diff лежит «final» значение (массив/примитив) — фиксируем изменение по этому пути
+        changes.push({
+          path,
+          before: getByPath(prev, path),
+          after: getByPath(next, path),
+        })
+      }
+    }
+  }
+
+  walk(diff, '')
+  return changes
+}
