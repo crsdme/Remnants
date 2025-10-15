@@ -707,9 +707,9 @@ async function print55x40(payload: { barcodes: any[], size: string, language: st
     )
 
     doc.addPage({ size: [w * 8.49, h * 8.49] })
-    doc.font('Manrope-Bold').fontSize(175)
+    doc.font('Manrope-Bold').fontSize(170)
 
-    const bigCode = (product.names?.[language] || '').split('#')[1] || '4054'
+    const bigCode = (product.names?.[language] || '').split('#')[1] || 'ERROR'
     doc.text(
       bigCode,
       padding,
