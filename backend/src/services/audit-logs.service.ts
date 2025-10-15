@@ -1,3 +1,4 @@
+import type { PipelineStage } from 'mongoose'
 import type * as AuditLogsTypes from '../types/audit-logs.type'
 import { AuditLogsModel } from '../models'
 import { HttpError } from '../utils/httpError'
@@ -30,7 +31,7 @@ export async function get(payload: AuditLogsTypes.getAuditLogsParams): Promise<A
     removed: false,
   })
 
-  const pipeline = [
+  const pipeline: PipelineStage[] = [
     {
       $match: query,
     },
@@ -76,8 +77,6 @@ export async function get(payload: AuditLogsTypes.getAuditLogsParams): Promise<A
       },
     },
   ]
-
-  console.log(pipeline)
 
   const auditLogsRaw = await AuditLogsModel.aggregate(pipeline).exec()
 
