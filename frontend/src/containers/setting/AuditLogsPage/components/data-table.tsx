@@ -1,11 +1,10 @@
 import { flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table'
-import { Fragment, useMemo, useState } from 'react'
+import { Fragment, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { useAuditLogQuery } from '@/api/hooks'
 import { AdvancedFilters, ColumnVisibilityMenu, TablePagination } from '@/components'
 import { Separator, Skeleton, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui'
-import { useAuditLogsContext } from '@/contexts'
 import { useDebounceCallback } from '@/utils/hooks'
 
 import { useColumns } from './columns'
@@ -13,7 +12,6 @@ import { DataTableFilters } from './data-table-filters'
 
 export function DataTable() {
   const { t, i18n } = useTranslation()
-  const { removeAuditLog } = useAuditLogsContext()
 
   const filtersInitialState = {
     names: '',
