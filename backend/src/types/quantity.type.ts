@@ -61,6 +61,9 @@ export interface countQuantitiesParams {
   product: IdType
   warehouse: IdType
   mode?: 'inc' | 'set'
+  userId: IdType
+  refType: 'inventory' | 'warehouse-transaction' | 'order' | 'order-item'
+  refId: IdType
 }
 
 export interface editQuantitiesResult {

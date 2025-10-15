@@ -733,6 +733,9 @@ export async function create(payload: InventoriesTypes.createInventoryParams, us
       warehouse,
       count: item.receivedQuantity,
       mode: 'set',
+      userId: createdBy,
+      refType: 'inventory',
+      refId: inventoryId,
     })
   }
 

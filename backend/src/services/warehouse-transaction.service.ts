@@ -1,5 +1,6 @@
 import type { RequestUser } from '../types/common.type'
 import type * as WarehouseTransactionTypes from '../types/warehouse-transaction.type'
+import { userInfo } from 'node:os'
 import { STORAGE_URLS } from '../config/constants'
 import { BarcodeModel, WarehouseTransactionItemModel, WarehouseTransactionModel } from '../models'
 import { buildQuery, buildSortQuery } from '../utils/queryBuilder'
@@ -706,6 +707,9 @@ export async function create(payload: WarehouseTransactionTypes.createWarehouseT
         product: product.productId,
         warehouse: fromWarehouse,
         count: -product.quantity,
+        userId: createdBy,
+        refType: 'warehouse-transaction',
+        refId: warehouseTransaction._id.toString(),
       })
     })
   }
@@ -716,6 +720,9 @@ export async function create(payload: WarehouseTransactionTypes.createWarehouseT
         product: product.productId,
         warehouse: toWarehouse,
         count: product.quantity,
+        userId: createdBy,
+        refType: 'warehouse-transaction',
+        refId: warehouseTransaction._id.toString(),
       })
     })
   }
@@ -725,7 +732,7 @@ export async function create(payload: WarehouseTransactionTypes.createWarehouseT
   return { status: 'success', code: 'WAREHOUSE_TRANSACTION_CREATED', message: 'Warehouse transaction created', warehouseTransaction }
 }
 
-export async function edit(payload: WarehouseTransactionTypes.editWarehouseTransactionParams) {
+export async function edit(payload: WarehouseTransactionTypes.editWarehouseTransactionParams, user: RequestUser) {
   const { id, type, fromWarehouse = null, toWarehouse = null, requiresReceiving = false, comment, products } = payload
 
   const oldTransaction = await WarehouseTransactionModel.findById(id)
@@ -747,6 +754,9 @@ export async function edit(payload: WarehouseTransactionTypes.editWarehouseTrans
         product: product.productId,
         warehouse: oldTransaction.fromWarehouse,
         count: product.quantity,
+        userId: user.id,
+        refType: 'warehouse-transaction',
+        refId: id,
       })
     }
     if (oldTransaction?.toWarehouse && !oldTransaction.requiresReceiving) {
@@ -754,6 +764,9 @@ export async function edit(payload: WarehouseTransactionTypes.editWarehouseTrans
         product: product.productId,
         warehouse: oldTransaction.toWarehouse,
         count: -product.quantity,
+        userId: user.id,
+        refType: 'warehouse-transaction',
+        refId: id,
       })
     }
   }
@@ -764,6 +777,9 @@ export async function edit(payload: WarehouseTransactionTypes.editWarehouseTrans
         product: product.id,
         warehouse: fromWarehouse,
         count: -product.quantity,
+        userId: user.id,
+        refType: 'warehouse-transaction',
+        refId: id,
       })
     }
     if (toWarehouse && !requiresReceiving) {
@@ -771,6 +787,9 @@ export async function edit(payload: WarehouseTransactionTypes.editWarehouseTrans
         product: product.id,
         warehouse: toWarehouse,
         count: product.quantity,
+        userId: user.id,
+        refType: 'warehouse-transaction',
+        refId: id,
       })
     }
   }
@@ -801,6 +820,9 @@ export async function remove(payload: WarehouseTransactionTypes.removeWarehouseT
             product: product.productId,
             warehouse: transaction.toWarehouse,
             count: -product.quantity,
+            userId: user.id,
+            refType: 'warehouse-transaction',
+            refId: id,
           })
           break
 
@@ -809,6 +831,9 @@ export async function remove(payload: WarehouseTransactionTypes.removeWarehouseT
             product: product.productId,
             warehouse: transaction.fromWarehouse,
             count: product.quantity,
+            userId: user.id,
+            refType: 'warehouse-transaction',
+            refId: id,
           })
           break
 
@@ -817,6 +842,9 @@ export async function remove(payload: WarehouseTransactionTypes.removeWarehouseT
             product: product.productId,
             warehouse: transaction.fromWarehouse,
             count: product.quantity,
+            userId: user.id,
+            refType: 'warehouse-transaction',
+            refId: id,
           })
 
           if (transaction.accepted) {
@@ -824,6 +852,9 @@ export async function remove(payload: WarehouseTransactionTypes.removeWarehouseT
               product: product.productId,
               warehouse: transaction.toWarehouse,
               count: -product.quantity,
+              userId: user.id,
+              refType: 'warehouse-transaction',
+              refId: id,
             })
           }
           break
@@ -858,6 +889,9 @@ export async function receive(payload: WarehouseTransactionTypes.receiveWarehous
         product: product.productId,
         warehouse: warehouseTransaction.toWarehouse,
         count: product.receivedQuantity,
+        userId: user.id,
+        refType: 'warehouse-transaction',
+        refId: id,
       })
     })
   }

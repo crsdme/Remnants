@@ -231,6 +231,17 @@
   "page.products.form.isAutoSyncEnabled.description": "Автоматическая синхронизация товара на всех сайтах",
   "page.products.form.syncSites": "Сайты для синхронизации",
 
+  "page.products.quantity.logs.title": "Логи количества",
+  "page.products.quantity.logs.description": "Логи количества товара",
+  "page.products.quantity.logs.type.order": "Заказ",
+  "page.products.quantity.logs.type.warehouse": "Склад",
+  "page.products.quantity.logs.type.warehouseTransaction": "Транзакция склада",
+  "page.products.quantity.logs.noLogs": "Логов не найдено",
+
+  "page.products.audit.logs.title": "Логи изменений",
+  "page.products.audit.logs.description": "Логи изменений товара",
+  "page.products.audit.logs.noLogs": "Логов не найдено",
+
   "page.userRoles.title": "Роли пользователей",
   "page.userRoles.description": "Управление ролями пользователей",
   "page.userRoles.filter.name": "Фильтр по названию",
@@ -268,6 +279,8 @@
   "page.userRoles.permissions.description.order.export": "Экспорт заказов в файл",
   "page.userRoles.permissions.title.order.profit": "Прибыль заказов",
   "page.userRoles.permissions.description.order.profit": "Просмотр прибыли заказов",
+  "page.userRoles.permissions.title.order.auditLogs": "Логи изменений заказов",
+  "page.userRoles.permissions.description.order.auditLogs": "Просмотр логи изменений заказов",
 
   "page.userRoles.permissions.title.categories": "Категории",
   "page.userRoles.permissions.description.categories": "Управление категориями",
@@ -288,6 +301,8 @@
   "page.userRoles.permissions.description.category.import": "Импорт категорий из файла",
   "page.userRoles.permissions.title.category.export": "Экспорт категорий",
   "page.userRoles.permissions.description.category.export": "Экспорт категорий в файл",
+  "page.userRoles.permissions.title.category.auditLogs": "Логи изменений категорий",
+  "page.userRoles.permissions.description.category.auditLogs": "Просмотр логи изменений категорий",
 
   "page.userRoles.permissions.title.products": "Товары",
   "page.userRoles.permissions.description.products": "Управление товарами",
@@ -310,6 +325,10 @@
   "page.userRoles.permissions.description.product.batchEdit": "Массовое редактирование существующих товаров",
   "page.userRoles.permissions.title.product.purchasePrice": "Цена закупки товаров",
   "page.userRoles.permissions.description.product.purchasePrice": "Просмотр цены закупки товаров",
+  "page.userRoles.permissions.title.product.quantityLogs": "Логи количества товаров",
+  "page.userRoles.permissions.description.product.quantityLogs": "Просмотр логи количества товаров",
+  "page.userRoles.permissions.title.product.auditLogs": "Логи изменений товаров",
+  "page.userRoles.permissions.description.product.auditLogs": "Просмотр логи изменений товаров",
 
   "page.userRoles.permissions.title.product-property-group": "Группы свойств товаров",
   "page.userRoles.permissions.description.product-property-group": "Управление группами свойств товаров",
@@ -324,6 +343,8 @@
   "page.userRoles.permissions.description.productPropertyGroup.edit": "Редактирование существующих групп свойств товаров",
   "page.userRoles.permissions.title.productPropertyGroup.remove": "Удаление групп свойств товаров",
   "page.userRoles.permissions.description.productPropertyGroup.remove": "Удаление существующих групп свойств товаров",
+  "page.userRoles.permissions.title.productPropertyGroup.auditLogs": "Логи изменений групп свойств товаров",
+  "page.userRoles.permissions.description.productPropertyGroup.auditLogs": "Просмотр логи изменений групп свойств товаров",
 
   "page.userRoles.permissions.title.product-property": "Свойства товаров",
   "page.userRoles.permissions.description.product-property": "Управление свойствами товаров",
@@ -338,6 +359,8 @@
   "page.userRoles.permissions.description.productProperty.edit": "Редактирование существующих свойств товаров",
   "page.userRoles.permissions.title.productProperty.remove": "Удаление свойств товаров",
   "page.userRoles.permissions.description.productProperty.remove": "Удаление существующих свойств товаров",
+  "page.userRoles.permissions.title.productProperty.auditLogs": "Логи изменений свойств товаров",
+  "page.userRoles.permissions.description.productProperty.auditLogs": "Просмотр логи изменений свойств товаров",
 
   "page.userRoles.permissions.title.barcode": "Штрихкоды",
   "page.userRoles.permissions.description.barcode": "Управление штрихкодами",
@@ -352,6 +375,8 @@
   "page.userRoles.permissions.description.barcode.edit": "Редактирование существующих штрихкодов",
   "page.userRoles.permissions.title.barcode.remove": "Удаление штрихкодов",
   "page.userRoles.permissions.description.barcode.remove": "Удаление существующих штрихкодов",
+  "page.userRoles.permissions.title.barcode.auditLogs": "Логи изменений штрихкодов",
+  "page.userRoles.permissions.description.barcode.auditLogs": "Просмотр логи изменений штрихкодов",
 
   "page.userRoles.permissions.title.order-statistic": "Статистика заказов",
   "page.userRoles.permissions.description.order-statistic": "Управление статистикой заказов",
@@ -380,6 +405,8 @@
   "page.userRoles.permissions.description.client.remove": "Удаление существующих клиентов",
   "page.userRoles.permissions.title.client.export": "Экспорт клиентов",
   "page.userRoles.permissions.description.client.export": "Экспорт клиентов в файл",
+  "page.userRoles.permissions.title.client.auditLogs": "Логи изменений клиентов",
+  "page.userRoles.permissions.description.client.auditLogs": "Просмотр логи изменений клиентов",
 
   "page.userRoles.permissions.title.warehouse": "Склады",
   "page.userRoles.permissions.description.warehouse": "Управление складами",
@@ -394,6 +421,8 @@
   "page.userRoles.permissions.description.warehouse.edit": "Редактирование существующих складов",
   "page.userRoles.permissions.title.warehouse.remove": "Удаление складов",
   "page.userRoles.permissions.description.warehouse.remove": "Удаление существующих складов",
+  "page.userRoles.permissions.title.warehouse.auditLogs": "Логи изменений складов",
+  "page.userRoles.permissions.description.warehouse.auditLogs": "Просмотр логи изменений складов",
 
   "page.userRoles.permissions.title.warehouseTransaction": "Операции по складам",
   "page.userRoles.permissions.description.warehouseTransaction": "Управление операциями по складам",
@@ -410,6 +439,8 @@
   "page.userRoles.permissions.description.warehouseTransaction.remove": "Удаление существующих операций по складам",
   "page.userRoles.permissions.title.warehouseTransaction.export": "Экспорт операций по складам",
   "page.userRoles.permissions.description.warehouseTransaction.export": "Экспорт операций по складам в файл",
+  "page.userRoles.permissions.title.warehouseTransaction.auditLogs": "Логи изменений операций по складам",
+  "page.userRoles.permissions.description.warehouseTransaction.auditLogs": "Просмотр логи изменений операций по складам",
 
   "page.userRoles.permissions.title.unit": "Единицы измерения",
   "page.userRoles.permissions.description.unit": "Управление единицами измерения",
@@ -424,6 +455,8 @@
   "page.userRoles.permissions.description.unit.edit": "Редактирование существующих единиц измерения",
   "page.userRoles.permissions.title.unit.remove": "Удаление единиц измерения",
   "page.userRoles.permissions.description.unit.remove": "Удаление существующих единиц измерения",
+  "page.userRoles.permissions.title.unit.auditLogs": "Логи изменений единиц измерения",
+  "page.userRoles.permissions.description.unit.auditLogs": "Просмотр логи изменений единиц измерения",
 
   "page.userRoles.permissions.title.cashregister": "Кассы",
   "page.userRoles.permissions.description.cashregister": "Управление кассами",
@@ -438,6 +471,8 @@
   "page.userRoles.permissions.description.cashregister.edit": "Редактирование существующих касс",
   "page.userRoles.permissions.title.cashregister.remove": "Удаление касс",
   "page.userRoles.permissions.description.cashregister.remove": "Удаление существующих касс",
+  "page.userRoles.permissions.title.cashregister.auditLogs": "Логи изменений касс",
+  "page.userRoles.permissions.description.cashregister.auditLogs": "Просмотр логи изменений касс",
 
   "page.userRoles.permissions.title.cashregisterAccount": "Счета касс",
   "page.userRoles.permissions.description.cashregisterAccount": "Управление счетами касс",
@@ -452,6 +487,8 @@
   "page.userRoles.permissions.description.cashregisterAccount.edit": "Редактирование существующих счетов касс",
   "page.userRoles.permissions.title.cashregisterAccount.remove": "Удаление счетов касс",
   "page.userRoles.permissions.description.cashregisterAccount.remove": "Удаление существующих счетов касс",
+  "page.userRoles.permissions.title.cashregisterAccount.auditLogs": "Логи изменений счетов касс",
+  "page.userRoles.permissions.description.cashregisterAccount.auditLogs": "Просмотр логи изменений счетов касс",
 
   "page.userRoles.permissions.title.expense": "Расходы",
   "page.userRoles.permissions.description.expense": "Управление расходами",
@@ -468,6 +505,8 @@
   "page.userRoles.permissions.description.expense.remove": "Удаление существующих расходов",
   "page.userRoles.permissions.title.expense.export": "Экспорт расходов",
   "page.userRoles.permissions.description.expense.export": "Экспорт расходов в файл",
+  "page.userRoles.permissions.title.expense.auditLogs": "Логи изменений расходов",
+  "page.userRoles.permissions.description.expense.auditLogs": "Просмотр логи изменений расходов",
 
   "page.userRoles.permissions.title.moneyTransaction": "Денежные операции",
   "page.userRoles.permissions.description.moneyTransaction": "Управление денежными операциями",
@@ -484,6 +523,8 @@
   "page.userRoles.permissions.description.moneyTransaction.remove": "Удаление существующих денежных операций",
   "page.userRoles.permissions.title.moneyTransaction.export": "Экспорт денежных операций",
   "page.userRoles.permissions.description.moneyTransaction.export": "Экспорт денежных операций в файл",
+  "page.userRoles.permissions.title.moneyTransaction.auditLogs": "Логи изменений денежных операций",
+  "page.userRoles.permissions.description.moneyTransaction.auditLogs": "Просмотр логи изменений денежных операций",
 
   "page.userRoles.permissions.title.user": "Пользователи",
   "page.userRoles.permissions.description.user": "Управление пользователями",
@@ -498,6 +539,8 @@
   "page.userRoles.permissions.description.user.edit": "Редактирование существующих пользователей",
   "page.userRoles.permissions.title.user.remove": "Удаление пользователей",
   "page.userRoles.permissions.description.user.remove": "Удаление существующих пользователей",
+  "page.userRoles.permissions.title.user.auditLogs": "Логи изменений пользователей",
+  "page.userRoles.permissions.description.user.auditLogs": "Просмотр логи изменений пользователей",
 
   "page.userRoles.permissions.title.userRole": "Роли пользователей",
   "page.userRoles.permissions.description.userRole": "Управление ролями пользователей",
@@ -512,6 +555,8 @@
   "page.userRoles.permissions.description.userRole.edit": "Редактирование существующих ролей пользователей",
   "page.userRoles.permissions.title.userRole.remove": "Удаление ролей пользователей",
   "page.userRoles.permissions.description.userRole.remove": "Удаление существующих ролей пользователей",
+  "page.userRoles.permissions.title.userRole.auditLogs": "Логи изменений ролей пользователей",
+  "page.userRoles.permissions.description.userRole.auditLogs": "Просмотр логи изменений ролей пользователей",
 
   "page.userRoles.permissions.title.language": "Языки",
   "page.userRoles.permissions.description.language": "Управление языками",
@@ -526,6 +571,8 @@
   "page.userRoles.permissions.description.language.edit": "Редактирование существующих языков",
   "page.userRoles.permissions.title.language.remove": "Удаление языков",
   "page.userRoles.permissions.description.language.remove": "Удаление существующих языков",
+  "page.userRoles.permissions.title.language.auditLogs": "Логи изменений языков",
+  "page.userRoles.permissions.description.language.auditLogs": "Просмотр логи изменений языков",
 
   "page.userRoles.permissions.title.currency": "Валюты",
   "page.userRoles.permissions.description.currency": "Управление валютами",
@@ -540,6 +587,8 @@
   "page.userRoles.permissions.description.currency.edit": "Редактирование существующих валют",
   "page.userRoles.permissions.title.currency.remove": "Удаление валют",
   "page.userRoles.permissions.description.currency.remove": "Удаление существующих валют",
+  "page.userRoles.permissions.title.currency.auditLogs": "Логи изменений валют",
+  "page.userRoles.permissions.description.currency.auditLogs": "Просмотр логи изменений валют",
 
   "page.userRoles.permissions.title.orderStatus": "Статусы заказов",
   "page.userRoles.permissions.description.orderStatus": "Управление статусами заказов",
@@ -554,6 +603,8 @@
   "page.userRoles.permissions.description.orderStatus.edit": "Редактирование существующих статусов заказов",
   "page.userRoles.permissions.title.orderStatus.remove": "Удаление статусов заказов",
   "page.userRoles.permissions.description.orderStatus.remove": "Удаление существующих статусов заказов",
+  "page.userRoles.permissions.title.orderStatus.auditLogs": "Логи изменений статусов заказов",
+  "page.userRoles.permissions.description.orderStatus.auditLogs": "Просмотр логи изменений статусов заказов",
 
   "page.userRoles.permissions.title.orderSource": "Источники заказов",
   "page.userRoles.permissions.description.orderSource": "Управление источниками заказов",
@@ -568,6 +619,8 @@
   "page.userRoles.permissions.description.orderSource.edit": "Редактирование существующих источников заказов",
   "page.userRoles.permissions.title.orderSource.remove": "Удаление источников заказов",
   "page.userRoles.permissions.description.orderSource.remove": "Удаление существующих источников заказов",
+  "page.userRoles.permissions.title.orderSource.auditLogs": "Логи изменений источников заказов",
+  "page.userRoles.permissions.description.orderSource.auditLogs": "Просмотр логи изменений источников заказов",
 
   "page.userRoles.permissions.title.deliveryService": "Службы доставки",
   "page.userRoles.permissions.description.deliveryService": "Управление службами доставки",
@@ -582,6 +635,8 @@
   "page.userRoles.permissions.description.deliveryService.edit": "Редактирование существующих служб доставки",
   "page.userRoles.permissions.title.deliveryService.remove": "Удаление служб доставки",
   "page.userRoles.permissions.description.deliveryService.remove": "Удаление существующих служб доставки",
+  "page.userRoles.permissions.title.deliveryService.auditLogs": "Логи изменений служб доставки",
+  "page.userRoles.permissions.description.deliveryService.auditLogs": "Просмотр логи изменений служб доставки",
 
   "page.userRoles.permissions.title.expenseCategory": "Категории расходов",
   "page.userRoles.permissions.description.expenseCategory": "Управление категориями расходов",
@@ -596,6 +651,8 @@
   "page.userRoles.permissions.description.expenseCategory.edit": "Редактирование существующих категорий расходов",
   "page.userRoles.permissions.title.expenseCategory.remove": "Удаление категорий расходов",
   "page.userRoles.permissions.description.expenseCategory.remove": "Удаление существующих категорий расходов",
+  "page.userRoles.permissions.title.expenseCategory.auditLogs": "Логи изменений категорий расходов",
+  "page.userRoles.permissions.description.expenseCategory.auditLogs": "Просмотр логи изменений категорий расходов",
 
   "page.userRoles.permissions.title.automation": "Автоматизации",
   "page.userRoles.permissions.description.automation": "Управление автоматизациями",
@@ -624,6 +681,8 @@
   "page.userRoles.permissions.description.site.edit": "Редактирование существующих сайтов",
   "page.userRoles.permissions.title.site.remove": "Удаление сайтов",
   "page.userRoles.permissions.description.site.remove": "Удаление существующих сайтов",
+  "page.userRoles.permissions.title.site.auditLogs": "Логи изменений сайтов",
+  "page.userRoles.permissions.description.site.auditLogs": "Просмотр логи изменений сайтов",
 
   "page.userRoles.permissions.title.settings": "Настройки",
   "page.userRoles.permissions.description.settings": "Управление настройками",

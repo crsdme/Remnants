@@ -1,10 +1,6 @@
 import type { ReactNode } from 'react'
 
-import { useQueryClient } from '@tanstack/react-query'
 import { createContext, useContext, useMemo, useState } from 'react'
-import { useTranslation } from 'react-i18next'
-
-import { SUPPORTED_LANGUAGES } from '@/utils/constants'
 
 interface AuditLogsContextType {
   selectedAuditLog: AuditLog

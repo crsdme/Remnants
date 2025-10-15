@@ -47,7 +47,7 @@ export async function create(req: Request, res: Response, next: NextFunction) {
 
 export async function edit(req: Request, res: Response, next: NextFunction) {
   try {
-    const serviceResponse = await WarehouseTransactionService.edit(req.body)
+    const serviceResponse = await WarehouseTransactionService.edit(req.body, req.user)
 
     res.status(200).json(serviceResponse)
   }

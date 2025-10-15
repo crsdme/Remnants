@@ -2,6 +2,9 @@
   "title.page.login": "Вход в Remnant",
   "description.page.login": "Вход в Remnant",
 
+  "title.page.audit-logs": "Логи изменений - Remnant",
+  "description.page.audit-logs": "Управление логи изменений в Remnant",
+
   "title.page.currencies": "Валюты - Remnant",
   "description.page.currencies": "Управление валютами в Remnant",
 

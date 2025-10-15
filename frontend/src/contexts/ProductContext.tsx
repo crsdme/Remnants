@@ -37,11 +37,13 @@ interface UploadedFile {
 interface ProductContextType {
   selectedProduct: Product
   isModalOpen: boolean
+  isLogsModalOpen: boolean
   isLoading: boolean
   form: UseFormReturn
   images: UploadedFile[]
   selectedGroup: string
   selectedWarehouse: string
+  selectedProductLogs: { type: 'quantity' | 'audit', id: string } | null
   isEdit: boolean
   getPropertiesDefaultValues: (selectedGroup: string, productPropertiesGroups: ProductPropertyGroup[]) => Record<string, any>
   setSelectedWarehouse: (warehouse: string) => void
@@ -49,6 +51,8 @@ interface ProductContextType {
   setImages: (images: UploadedFile[]) => void
   openModal: (product?: Product) => void
   closeModal: () => void
+  openLogsModal: (type: 'quantity' | 'audit', id: string) => void
+  closeLogsModal: () => void
   submitProductForm: (params) => void
   batchProduct: (params) => void
   removeProduct: (params: { ids: string[] }) => void
@@ -70,6 +74,8 @@ interface ProductProviderProps {
 
 export function ProductProvider({ children }: ProductProviderProps) {
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [isLogsModalOpen, setIsLogsModalOpen] = useState(false)
+  const [selectedProductLogs, setSelectedProductLogs] = useState<{ type: 'quantity' | 'audit', id: string } | null>({ type: null, id: null })
   const [isEdit, setIsEdit] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [selectedProduct, setSelectedProduct] = useState(null)
@@ -212,6 +218,16 @@ export function ProductProvider({ children }: ProductProviderProps) {
     setIsEdit(!!product)
     setSelectedProduct(product)
     form.reset(getProductFormValues(product))
+  }
+
+  const openLogsModal = (type: 'quantity' | 'audit', id: string) => {
+    setIsLogsModalOpen(true)
+    setSelectedProductLogs({ type, id })
+  }
+
+  const closeLogsModal = () => {
+    setIsLogsModalOpen(false)
+    setSelectedProductLogs(null)
   }
 
   const queryClient = useQueryClient()
@@ -438,11 +454,13 @@ export function ProductProvider({ children }: ProductProviderProps) {
     () => ({
       selectedProduct,
       isModalOpen,
+      isLogsModalOpen,
       isLoading,
       form,
       images,
       selectedGroup,
       selectedWarehouse,
+      selectedProductLogs,
       isEdit,
       getPropertiesDefaultValues,
       setImages,
@@ -450,6 +468,8 @@ export function ProductProvider({ children }: ProductProviderProps) {
       setSelectedWarehouse,
       openModal,
       closeModal,
+      openLogsModal,
+      closeLogsModal,
       submitProductForm,
       removeProduct,
       batchProduct,
@@ -462,7 +482,7 @@ export function ProductProvider({ children }: ProductProviderProps) {
       loadCurrencyOptions,
       loadProductPropertyGroupOptions,
     }),
-    [selectedProduct, isModalOpen, selectedWarehouse, isLoading, isEdit, form, images, selectedGroup],
+    [selectedProduct, isModalOpen, selectedWarehouse, isLoading, isEdit, form, images, selectedGroup, selectedProductLogs],
   )
 
   return <ProductContext.Provider value={value}>{children}</ProductContext.Provider>

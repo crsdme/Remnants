@@ -26,6 +26,8 @@
   "table.view": "Просмотр",
   "table.export": "Экспортировать",
   "table.printInvoice": "Печатать счет",
+  "table.quantityLogs": "Логи количества",
+  "table.auditLogs": "Логи изменений",
 
   "order-status.all": "Все",
 

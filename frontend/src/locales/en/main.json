@@ -26,6 +26,8 @@
   "table.view": "View",
   "table.export": "Export",
   "table.printInvoice": "Print Invoice",
+  "table.quantityLogs": "Quantity Logs",
+  "table.auditLogs": "Audit Logs",
 
   "order-status.all": "All",
 

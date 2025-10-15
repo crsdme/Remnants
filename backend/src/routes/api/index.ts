@@ -30,6 +30,7 @@ import testRoutes from './test.route'
 import unitRoutes from './unit.route'
 import userRoleRoutes from './user-role.route'
 import userRoutes from './user.route'
+import warehouseTransactionLogsRoutes from './warehouse-transaction-log.route'
 import warehouseTransactionRoutes from './warehouse-transaction.route'
 import warehouseRoutes from './warehouse.route'
 
@@ -70,5 +71,5 @@ router.use('/expense-categories', expenseCategoryRoutes)
 router.use('/inventories', inventoriesRoutes)
 router.use('/statistics', statisticRoutes)
 router.use('/audit-logs', auditLogsRoutes)
-
+router.use('/warehouse-transactions-logs', warehouseTransactionLogsRoutes)
 export default router

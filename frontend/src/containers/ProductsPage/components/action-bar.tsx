@@ -14,6 +14,7 @@ import {
 } from '@/components/ui'
 import { useProductContext } from '@/contexts'
 import { ProductForm } from './form'
+import { LogsSheet } from './logs-sheet'
 
 export function ActionBar() {
   const { t } = useTranslation()
@@ -83,6 +84,9 @@ export function ActionBar() {
               </div>
             </SheetContent>
           </Sheet>
+        </PermissionGate>
+        <PermissionGate permission={['product.quantity-logs']}>
+          <LogsSheet />
         </PermissionGate>
       </div>
     </div>

@@ -360,3 +360,15 @@ interface AuditLog {
   createdAt: Date
   updatedAt: Date
 }
+
+interface WarehouseTransactionLog {
+  id: string
+  productId: string
+  warehouseId: string
+  deltaCount: number
+  refType: string
+  refId: string
+  userId: string
+  createdAt: Date
+  updatedAt: Date
+}

@@ -2,6 +2,7 @@ import type * as QuantityTypes from '../types/quantity.type'
 import { ProductModel, QuantityModel } from '../models'
 import { HttpError } from '../utils/httpError'
 import { buildQuery, buildSortQuery } from '../utils/queryBuilder'
+import * as WarehouseTransactionLogService from './warehouse-transaction-log.service'
 
 export async function get(payload: QuantityTypes.getQuantitiesParams): Promise<QuantityTypes.getQuantitiesResult> {
   const { current = 1, pageSize = 10 } = payload.pagination || {}
@@ -79,6 +80,9 @@ export async function count(payload: QuantityTypes.countQuantitiesParams): Promi
     product,
     warehouse,
     mode = 'inc',
+    userId,
+    refType,
+    refId,
   } = payload
 
   const update = {
@@ -87,6 +91,15 @@ export async function count(payload: QuantityTypes.countQuantitiesParams): Promi
   }
 
   const quantity = await QuantityModel.findOneAndUpdate({ product, warehouse }, update[mode], { new: true })
+
+  await WarehouseTransactionLogService.create({
+    productId: product,
+    warehouseId: warehouse,
+    deltaCount: count,
+    refType,
+    refId,
+    userId,
+  })
 
   if (!quantity) {
     await create({ count, product, warehouse })

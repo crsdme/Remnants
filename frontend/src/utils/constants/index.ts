@@ -241,32 +241,32 @@ export const AUTOMATION_ACTIONS = [
 export const USER_ROLE_PERMISSIONS = [
   {
     group: 'orders',
-    permissions: ['order.page', 'order.read', 'order.remove', 'order.create', 'order.edit', 'order.export', 'order.profit'],
+    permissions: ['order.page', 'order.read', 'order.remove', 'order.create', 'order.edit', 'order.export', 'order.profit', 'order.auditLogs'],
   },
   {
     group: 'products',
     dependencies: ['language.read', 'category.read', 'unit.read', 'currency.read'],
-    permissions: ['product.page', 'product.read', 'product.remove', 'product.create', 'product.edit', 'product.batchEdit', 'product.import', 'product.export', 'product.purchasePrice'],
+    permissions: ['product.page', 'product.read', 'product.remove', 'product.create', 'product.edit', 'product.batchEdit', 'product.import', 'product.export', 'product.purchasePrice', 'product.quantityLogs', 'product.auditLogs'],
   },
   {
     group: 'categories',
     dependencies: ['language.read'],
-    permissions: ['category.page', 'category.read', 'category.remove', 'category.create', 'category.edit', 'category.batchEdit', 'category.import', 'category.export'],
+    permissions: ['category.page', 'category.read', 'category.remove', 'category.create', 'category.edit', 'category.batchEdit', 'category.import', 'category.export', 'category.auditLogs'],
   },
   {
     group: 'product-property-group',
     dependencies: ['language.read'],
-    permissions: ['productPropertyGroup.page', 'productPropertyGroup.read', 'productPropertyGroup.remove', 'productPropertyGroup.create', 'productPropertyGroup.edit'],
+    permissions: ['productPropertyGroup.page', 'productPropertyGroup.read', 'productPropertyGroup.remove', 'productPropertyGroup.create', 'productPropertyGroup.edit', 'productPropertyGroup.auditLogs'],
   },
   {
     group: 'product-property',
     dependencies: ['language.read', 'productPropertyGroup.read'],
-    permissions: ['productProperty.page', 'productProperty.read', 'productProperty.remove', 'productProperty.create', 'productProperty.edit'],
+    permissions: ['productProperty.page', 'productProperty.read', 'productProperty.remove', 'productProperty.create', 'productProperty.edit', 'productProperty.auditLogs'],
   },
   {
     group: 'barcode',
     dependencies: ['language.read'],
-    permissions: ['barcode.page', 'barcode.read', 'barcode.remove', 'barcode.create', 'barcode.edit'],
+    permissions: ['barcode.page', 'barcode.read', 'barcode.remove', 'barcode.create', 'barcode.edit', 'barcode.auditLogs'],
   },
   {
     group: 'order-statistic',
@@ -276,37 +276,37 @@ export const USER_ROLE_PERMISSIONS = [
   {
     group: 'client',
     dependencies: ['language.read', 'client.read'],
-    permissions: ['client.page', 'client.read', 'client.remove', 'client.create', 'client.edit', 'client.export'],
+    permissions: ['client.page', 'client.read', 'client.remove', 'client.create', 'client.edit', 'client.export', 'client.auditLogs'],
   },
   {
     group: 'warehouse',
     dependencies: ['language.read'],
-    permissions: ['warehouse.page', 'warehouse.read', 'warehouse.remove', 'warehouse.create', 'warehouse.edit'],
+    permissions: ['warehouse.page', 'warehouse.read', 'warehouse.remove', 'warehouse.create', 'warehouse.edit', 'warehouse.auditLogs'],
   },
   {
     group: 'warehouseTransaction',
     dependencies: ['language.read', 'warehouse.read'],
-    permissions: ['warehouseTransaction.page', 'warehouseTransaction.read', 'warehouseTransaction.remove', 'warehouseTransaction.create', 'warehouseTransaction.edit', 'warehouseTransaction.export'],
+    permissions: ['warehouseTransaction.page', 'warehouseTransaction.read', 'warehouseTransaction.remove', 'warehouseTransaction.create', 'warehouseTransaction.edit', 'warehouseTransaction.export', 'warehouseTransaction.auditLogs'],
   },
   {
     group: 'unit',
     dependencies: ['language.read'],
-    permissions: ['unit.page', 'unit.read', 'unit.remove', 'unit.create', 'unit.edit'],
+    permissions: ['unit.page', 'unit.read', 'unit.remove', 'unit.create', 'unit.edit', 'unit.auditLogs'],
   },
   {
     group: 'cashregister',
     dependencies: ['language.read'],
-    permissions: ['cashregister.page', 'cashregister.read', 'cashregister.remove', 'cashregister.create', 'cashregister.edit'],
+    permissions: ['cashregister.page', 'cashregister.read', 'cashregister.remove', 'cashregister.create', 'cashregister.edit', 'cashregister.auditLogs'],
   },
   {
     group: 'cashregisterAccount',
     dependencies: ['language.read', 'cashregister.read'],
-    permissions: ['cashregisterAccount.page', 'cashregisterAccount.read', 'cashregisterAccount.remove', 'cashregisterAccount.create', 'cashregisterAccount.edit'],
+    permissions: ['cashregisterAccount.page', 'cashregisterAccount.read', 'cashregisterAccount.remove', 'cashregisterAccount.create', 'cashregisterAccount.edit', 'cashregisterAccount.auditLogs'],
   },
   {
     group: 'expense',
     dependencies: ['language.read'],
-    permissions: ['expense.page', 'expense.read', 'expense.remove', 'expense.create', 'expense.edit', 'expense.export'],
+    permissions: ['expense.page', 'expense.read', 'expense.remove', 'expense.create', 'expense.edit', 'expense.export', 'expense.auditLogs'],
   },
   {
     group: 'moneyTransaction',
@@ -316,31 +316,31 @@ export const USER_ROLE_PERMISSIONS = [
   {
     group: 'user',
     dependencies: ['language.read', 'user-role.read'],
-    permissions: ['user.page', 'user.read', 'user.remove', 'user.create', 'user.edit'],
+    permissions: ['user.page', 'user.read', 'user.remove', 'user.create', 'user.edit', 'user.auditLogs'],
   },
   {
     group: 'userRole',
     dependencies: ['language.read'],
-    permissions: ['userRole.page', 'userRole.read', 'userRole.remove', 'userRole.create', 'userRole.edit'],
+    permissions: ['userRole.page', 'userRole.read', 'userRole.remove', 'userRole.create', 'userRole.edit', 'userRole.auditLogs'],
   },
   {
     group: 'language',
-    permissions: ['language.page', 'language.read', 'language.remove', 'language.create', 'language.edit'],
+    permissions: ['language.page', 'language.read', 'language.remove', 'language.create', 'language.edit', 'language.auditLogs'],
   },
   {
     group: 'currency',
     dependencies: ['language.read'],
-    permissions: ['currency.page', 'currency.read', 'currency.remove', 'currency.create', 'currency.edit'],
+    permissions: ['currency.page', 'currency.read', 'currency.remove', 'currency.create', 'currency.edit', 'currency.auditLogs'],
   },
   {
     group: 'orderStatus',
     dependencies: ['language.read'],
-    permissions: ['orderStatus.page', 'orderStatus.read', 'orderStatus.remove', 'orderStatus.create', 'orderStatus.edit'],
+    permissions: ['orderStatus.page', 'orderStatus.read', 'orderStatus.remove', 'orderStatus.create', 'orderStatus.edit', 'orderStatus.auditLogs'],
   },
   {
     group: 'orderSource',
     dependencies: ['language.read'],
-    permissions: ['orderSource.page', 'orderSource.read', 'orderSource.remove', 'orderSource.create', 'orderSource.edit'],
+    permissions: ['orderSource.page', 'orderSource.read', 'orderSource.remove', 'orderSource.create', 'orderSource.edit', 'orderSource.auditLogs'],
   },
   {
     group: 'automation',
@@ -350,17 +350,17 @@ export const USER_ROLE_PERMISSIONS = [
   {
     group: 'deliveryService',
     dependencies: ['language.read'],
-    permissions: ['deliveryService.page', 'deliveryService.read', 'deliveryService.remove', 'deliveryService.create', 'deliveryService.edit'],
+    permissions: ['deliveryService.page', 'deliveryService.read', 'deliveryService.remove', 'deliveryService.create', 'deliveryService.edit', 'deliveryService.auditLogs'],
   },
   {
     group: 'expenseCategory',
     dependencies: ['language.read'],
-    permissions: ['expenseCategory.page', 'expenseCategory.read', 'expenseCategory.remove', 'expenseCategory.create', 'expenseCategory.edit'],
+    permissions: ['expenseCategory.page', 'expenseCategory.read', 'expenseCategory.remove', 'expenseCategory.create', 'expenseCategory.edit', 'expenseCategory.auditLogs'],
   },
   {
     group: 'site',
     dependencies: ['language.read'],
-    permissions: ['site.page', 'site.read', 'site.remove', 'site.create', 'site.edit'],
+    permissions: ['site.page', 'site.read', 'site.remove', 'site.create', 'site.edit', 'site.auditLogs'],
   },
   {
     group: 'settings',

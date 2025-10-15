@@ -7,9 +7,9 @@ extendZodWithOpenApi(z)
 export const getAuditLogsSchema = z.object({
   filters: z.object({
     id: idSchema.optional(),
-    resourceType: z.string().trim().optional(),
-    resourceId: z.string().trim().optional(),
-    action: z.string().trim().optional(),
+    resourceType: z.array(z.string().trim()).optional(),
+    resourceId: z.array(z.string().trim()).optional(),
+    action: z.array(z.string().trim()).optional(),
     createdAt: dateRangeSchema.optional(),
     updatedAt: dateRangeSchema.optional(),
   }).optional().default({}),

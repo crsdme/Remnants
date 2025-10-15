@@ -748,6 +748,9 @@ export async function create(payload: OrderTypes.createOrderParams, user: Reques
       product: item.product,
       count: -item.quantity,
       warehouse: payload.warehouse,
+      userId: user.id.toString(),
+      refType: 'order',
+      refId: id,
     })
   }
 
@@ -945,6 +948,9 @@ export async function edit(payload: OrderTypes.editOrderParams, user: RequestUse
         product: item.product,
         count: item.quantity,
         warehouse: payload.warehouse,
+        userId: user.id.toString(),
+        refType: 'order',
+        refId: id,
       })
     }
   }
@@ -977,6 +983,9 @@ export async function edit(payload: OrderTypes.editOrderParams, user: RequestUse
         product: item.product,
         count: -item.quantity,
         warehouse: payload.warehouse,
+        userId: user.id.toString(),
+        refType: 'order',
+        refId: id,
       })
     }
   }

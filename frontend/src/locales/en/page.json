@@ -231,6 +231,17 @@
   "page.products.form.isAutoSyncEnabled.description": "Auto sync product on all sites",
   "page.products.form.syncSites": "Sites for sync",
 
+  "page.products.quantity.logs.title": "Quantity logs",
+  "page.products.quantity.logs.description": "Quantity logs of product",
+  "page.products.quantity.logs.type.order": "Order",
+  "page.products.quantity.logs.type.warehouse": "Warehouse",
+  "page.products.quantity.logs.type.warehouseTransaction": "Warehouse transaction",
+  "page.products.quantity.logs.noLogs": "No logs found",
+
+  "page.products.audit.logs.title": "Audit logs",
+  "page.products.audit.logs.description": "Audit logs of product",
+  "page.products.audit.logs.noLogs": "No logs found",
+
   "page.userRoles.title": "User Roles",
   "page.userRoles.description": "Manage user roles here",
   "page.userRoles.filter.name": "Filter by name",
@@ -268,6 +279,8 @@
   "page.userRoles.permissions.description.order.export": "Export orders to file",
   "page.userRoles.permissions.title.order.profit": "Profit orders",
   "page.userRoles.permissions.description.order.profit": "View profit orders",
+  "page.userRoles.permissions.title.order.auditLogs": "Audit logs orders",
+  "page.userRoles.permissions.description.order.auditLogs": "View audit logs orders",
 
   "page.userRoles.permissions.title.categories": "Categories",
   "page.userRoles.permissions.description.categories": "Manage categories",
@@ -288,6 +301,8 @@
   "page.userRoles.permissions.description.category.import": "Import categories from file",
   "page.userRoles.permissions.title.category.export": "Export categories",
   "page.userRoles.permissions.description.category.export": "Export categories to file",
+  "page.userRoles.permissions.title.category.auditLogs": "Audit logs categories",
+  "page.userRoles.permissions.description.category.auditLogs": "View audit logs categories",
 
   "page.userRoles.permissions.title.products": "Products",
   "page.userRoles.permissions.description.products": "Manage products",
@@ -310,6 +325,10 @@
   "page.userRoles.permissions.description.product.batchEdit": "Batch edit existing products",
   "page.userRoles.permissions.title.product.purchasePrice": "Purchase price products",
   "page.userRoles.permissions.description.product.purchasePrice": "View purchase price products",
+  "page.userRoles.permissions.title.product.auditLogs": "Audit logs products",
+  "page.userRoles.permissions.description.product.auditLogs": "View audit logs products",
+  "page.userRoles.permissions.title.product.quantityLogs": "Quantity logs products",
+  "page.userRoles.permissions.description.product.quantityLogs": "View quantity logs products",
 
   "page.userRoles.permissions.title.product-property-group": "Product properties groups",
   "page.userRoles.permissions.description.product-property-group": "Manage product properties groups",
@@ -324,6 +343,8 @@
   "page.userRoles.permissions.description.productPropertyGroup.edit": "Edit existing product properties groups",
   "page.userRoles.permissions.title.productPropertyGroup.remove": "Remove product properties groups",
   "page.userRoles.permissions.description.productPropertyGroup.remove": "Remove existing product properties groups",
+  "page.userRoles.permissions.title.productPropertyGroup.auditLogs": "Audit logs product properties groups",
+  "page.userRoles.permissions.description.productPropertyGroup.auditLogs": "View audit logs product properties groups",
 
   "page.userRoles.permissions.title.product-property": "Product properties",
   "page.userRoles.permissions.description.product-property": "Manage product properties",
@@ -338,6 +359,8 @@
   "page.userRoles.permissions.description.productProperty.edit": "Edit existing product properties",
   "page.userRoles.permissions.title.productProperty.remove": "Remove product properties",
   "page.userRoles.permissions.description.productProperty.remove": "Remove existing product properties",
+  "page.userRoles.permissions.title.productProperty.auditLogs": "Audit logs product properties",
+  "page.userRoles.permissions.description.productProperty.auditLogs": "View audit logs product properties",
 
   "page.userRoles.permissions.title.barcode": "Barcodes",
   "page.userRoles.permissions.description.barcode": "Manage barcodes",
@@ -352,6 +375,8 @@
   "page.userRoles.permissions.description.barcode.edit": "Edit existing barcodes",
   "page.userRoles.permissions.title.barcode.remove": "Remove barcodes",
   "page.userRoles.permissions.description.barcode.remove": "Remove existing barcodes",
+  "page.userRoles.permissions.title.barcode.auditLogs": "Audit logs barcodes",
+  "page.userRoles.permissions.description.barcode.auditLogs": "View audit logs barcodes",
 
   "page.userRoles.permissions.title.order-statistic": "Order statistic",
   "page.userRoles.permissions.description.order-statistic": "Manage order statistic",
@@ -380,6 +405,8 @@
   "page.userRoles.permissions.description.client.remove": "Remove existing clients",
   "page.userRoles.permissions.title.client.export": "Export clients",
   "page.userRoles.permissions.description.client.export": "Export clients to file",
+  "page.userRoles.permissions.title.client.auditLogs": "Audit logs clients",
+  "page.userRoles.permissions.description.client.auditLogs": "View audit logs clients",
 
   "page.userRoles.permissions.title.warehouse": "Warehouses",
   "page.userRoles.permissions.description.warehouse": "Manage warehouses",
@@ -394,6 +421,8 @@
   "page.userRoles.permissions.description.warehouse.edit": "Edit existing warehouses",
   "page.userRoles.permissions.title.warehouse.remove": "Remove warehouses",
   "page.userRoles.permissions.description.warehouse.remove": "Remove existing warehouses",
+  "page.userRoles.permissions.title.warehouse.auditLogs": "Audit logs warehouses",
+  "page.userRoles.permissions.description.warehouse.auditLogs": "View audit logs warehouses",
 
   "page.userRoles.permissions.title.warehouseTransaction": "Warehouses Transactions",
   "page.userRoles.permissions.description.warehouseTransaction": "Manage warehouses transactions",
@@ -410,6 +439,8 @@
   "page.userRoles.permissions.description.warehouseTransaction.remove": "Remove existing warehouses transactions",
   "page.userRoles.permissions.title.warehouseTransaction.export": "Export warehouses transactions",
   "page.userRoles.permissions.description.warehouseTransaction.export": "Export warehouses transactions to file",
+  "page.userRoles.permissions.title.warehouseTransaction.auditLogs": "Audit logs warehouses transactions",
+  "page.userRoles.permissions.description.warehouseTransaction.auditLogs": "View audit logs warehouses transactions",
 
   "page.userRoles.permissions.title.unit": "Units",
   "page.userRoles.permissions.description.unit": "Manage units",
@@ -424,6 +455,8 @@
   "page.userRoles.permissions.description.unit.edit": "Edit existing units",
   "page.userRoles.permissions.title.unit.remove": "Remove units",
   "page.userRoles.permissions.description.unit.remove": "Remove existing units",
+  "page.userRoles.permissions.title.unit.auditLogs": "Audit logs units",
+  "page.userRoles.permissions.description.unit.auditLogs": "View audit logs units",
 
   "page.userRoles.permissions.title.cashregister": "Cashregisters",
   "page.userRoles.permissions.description.cashregister": "Manage cashregisters",
@@ -438,6 +471,8 @@
   "page.userRoles.permissions.description.cashregister.edit": "Edit existing cashregisters",
   "page.userRoles.permissions.title.cashregister.remove": "Remove cashregisters",
   "page.userRoles.permissions.description.cashregister.remove": "Remove existing cashregisters",
+  "page.userRoles.permissions.title.cashregister.auditLogs": "Audit logs cashregisters",
+  "page.userRoles.permissions.description.cashregister.auditLogs": "View audit logs cashregisters",
 
   "page.userRoles.permissions.title.cashregisterAccount": "Cashregisters Accounts",
   "page.userRoles.permissions.description.cashregisterAccount": "Manage cashregisters accounts",
@@ -452,6 +487,8 @@
   "page.userRoles.permissions.description.cashregisterAccount.edit": "Edit existing cashregisters accounts",
   "page.userRoles.permissions.title.cashregisterAccount.remove": "Remove cashregisters accounts",
   "page.userRoles.permissions.description.cashregisterAccount.remove": "Remove existing cashregisters accounts",
+  "page.userRoles.permissions.title.cashregisterAccount.auditLogs": "Audit logs cashregisters accounts",
+  "page.userRoles.permissions.description.cashregisterAccount.auditLogs": "View audit logs cashregisters accounts",
 
   "page.userRoles.permissions.title.expense": "Expenses",
   "page.userRoles.permissions.description.expense": "Manage expenses",
@@ -468,6 +505,8 @@
   "page.userRoles.permissions.description.expense.remove": "Remove existing expenses",
   "page.userRoles.permissions.title.expense.export": "Export expenses",
   "page.userRoles.permissions.description.expense.export": "Export expenses to file",
+  "page.userRoles.permissions.title.expense.auditLogs": "Audit logs expenses",
+  "page.userRoles.permissions.description.expense.auditLogs": "View audit logs expenses",
 
   "page.userRoles.permissions.title.moneyTransaction": "Money Transactions",
   "page.userRoles.permissions.description.moneyTransaction": "Manage money transactions",
@@ -498,6 +537,8 @@
   "page.userRoles.permissions.description.user.edit": "Edit existing users",
   "page.userRoles.permissions.title.user.remove": "Remove users",
   "page.userRoles.permissions.description.user.remove": "Remove existing users",
+  "page.userRoles.permissions.title.user.auditLogs": "Audit logs users",
+  "page.userRoles.permissions.description.user.auditLogs": "View audit logs users",
 
   "page.userRoles.permissions.title.userRole": "User Roles",
   "page.userRoles.permissions.description.userRole": "Manage user roles",
@@ -512,6 +553,8 @@
   "page.userRoles.permissions.description.userRole.edit": "Edit existing user roles",
   "page.userRoles.permissions.title.userRole.remove": "Remove user roles",
   "page.userRoles.permissions.description.userRole.remove": "Remove existing user roles",
+  "page.userRoles.permissions.title.userRole.auditLogs": "Audit logs user roles",
+  "page.userRoles.permissions.description.userRole.auditLogs": "View audit logs user roles",
 
   "page.userRoles.permissions.title.language": "Languages",
   "page.userRoles.permissions.description.language": "Manage languages",
@@ -526,6 +569,8 @@
   "page.userRoles.permissions.description.language.edit": "Edit existing languages",
   "page.userRoles.permissions.title.language.remove": "Remove languages",
   "page.userRoles.permissions.description.language.remove": "Remove existing languages",
+  "page.userRoles.permissions.title.language.auditLogs": "Audit logs languages",
+  "page.userRoles.permissions.description.language.auditLogs": "View audit logs languages",
 
   "page.userRoles.permissions.title.currency": "Currencies",
   "page.userRoles.permissions.description.currency": "Manage currencies",
@@ -540,6 +585,8 @@
   "page.userRoles.permissions.description.currency.edit": "Edit existing currencies",
   "page.userRoles.permissions.title.currency.remove": "Remove currencies",
   "page.userRoles.permissions.description.currency.remove": "Remove existing currencies",
+  "page.userRoles.permissions.title.currency.auditLogs": "Audit logs currencies",
+  "page.userRoles.permissions.description.currency.auditLogs": "View audit logs currencies",
 
   "page.userRoles.permissions.title.orderStatus": "Order Statuses",
   "page.userRoles.permissions.description.orderStatus": "Manage order statuses",
@@ -554,6 +601,8 @@
   "page.userRoles.permissions.description.orderStatus.edit": "Edit existing order statuses",
   "page.userRoles.permissions.title.orderStatus.remove": "Remove order statuses",
   "page.userRoles.permissions.description.orderStatus.remove": "Remove existing order statuses",
+  "page.userRoles.permissions.title.orderStatus.auditLogs": "Audit logs order statuses",
+  "page.userRoles.permissions.description.orderStatus.auditLogs": "View audit logs order statuses",
 
   "page.userRoles.permissions.title.orderSource": "Order Sources",
   "page.userRoles.permissions.description.orderSource": "Manage order sources",
@@ -568,6 +617,8 @@
   "page.userRoles.permissions.description.orderSource.edit": "Edit existing order sources",
   "page.userRoles.permissions.title.orderSource.remove": "Remove order sources",
   "page.userRoles.permissions.description.orderSource.remove": "Remove existing order sources",
+  "page.userRoles.permissions.title.orderSource.auditLogs": "Audit logs order sources",
+  "page.userRoles.permissions.description.orderSource.auditLogs": "View audit logs order sources",
 
   "page.userRoles.permissions.title.deliveryService": "Delivery Services",
   "page.userRoles.permissions.description.deliveryService": "Manage delivery services",
@@ -582,6 +633,8 @@
   "page.userRoles.permissions.description.deliveryService.edit": "Edit existing delivery services",
   "page.userRoles.permissions.title.deliveryService.remove": "Remove delivery services",
   "page.userRoles.permissions.description.deliveryService.remove": "Remove existing delivery services",
+  "page.userRoles.permissions.title.deliveryService.auditLogs": "Audit logs delivery services",
+  "page.userRoles.permissions.description.deliveryService.auditLogs": "View audit logs delivery services",
 
   "page.userRoles.permissions.title.expenseCategory": "Expense Categories",
   "page.userRoles.permissions.description.expenseCategory": "Manage expense categories",
@@ -596,6 +649,8 @@
   "page.userRoles.permissions.description.expenseCategory.edit": "Edit existing expense categories",
   "page.userRoles.permissions.title.expenseCategory.remove": "Remove expense categories",
   "page.userRoles.permissions.description.expenseCategory.remove": "Remove existing expense categories",
+  "page.userRoles.permissions.title.expenseCategory.auditLogs": "Audit logs expense categories",
+  "page.userRoles.permissions.description.expenseCategory.auditLogs": "View audit logs expense categories",
 
   "page.userRoles.permissions.title.automation": "Automations",
   "page.userRoles.permissions.description.automation": "Manage automations",
@@ -624,6 +679,8 @@
   "page.userRoles.permissions.description.site.edit": "Edit existing sites",
   "page.userRoles.permissions.title.site.remove": "Remove sites",
   "page.userRoles.permissions.description.site.remove": "Remove existing sites",
+  "page.userRoles.permissions.title.site.auditLogs": "Audit logs sites",
+  "page.userRoles.permissions.description.site.auditLogs": "View audit logs sites",
 
   "page.userRoles.permissions.title.settings": "Settings",
   "page.userRoles.permissions.description.settings": "Manage settings",

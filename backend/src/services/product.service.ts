@@ -1088,7 +1088,7 @@ export async function exportHandler(payload: ProductTypes.exportProductsParams):
   return { status: 'success', code: 'PRODUCTS_EXPORTED', message: 'Products exported', buffer: Buffer.from(buffer) }
 }
 
-export async function downloadTemplate(): Promise<ProductTypes.downloadTemplateResult> {
+export async function downloadTemplate(user?: UserTypes.User): Promise<ProductTypes.downloadTemplateResult> {
   const language = 'en'
 
   const languages = await LanguageModel.find({ active: true, removed: false })
@@ -1098,11 +1098,13 @@ export async function downloadTemplate(): Promise<ProductTypes.downloadTemplateR
   const productPropertiesGroups = await ProductPropertyGroupModel.find({ active: true, removed: false })
   const productProperties = await ProductPropertyModel.find({ active: true, removed: false })
 
+  const hasPurchasePricePermission = await UserService.checkUserPermissions('product.purchasePrice', user)
+
   const workbook = new ExcelJS.Workbook()
   const hiddenSheet = workbook.addWorksheet('hidden')
   hiddenSheet.state = 'veryHidden'
 
-  const selectedProducts = await get({ pagination: { current: 1, pageSize: 1 }, sorters: {} })
+  const selectedProducts = await get({ pagination: { current: 1, pageSize: 1 }, sorters: {} }, user)
 
   const groupedProducts: Record<string, any[]> = {}
   for (const product of selectedProducts.products) {
@@ -1186,7 +1188,12 @@ export async function downloadTemplate(): Promise<ProductTypes.downloadTemplateR
       row.price = product.price
       row.purchasePrice = product.purchasePrice
       row.currency = `${product.currency.names[language] || 'NO_NAME'} (${product.currency.id})`
-      row.purchaseCurrency = `${product.purchaseCurrency.names[language] || 'NO_NAME'} (${product.purchaseCurrency.id})`
+      if (hasPurchasePricePermission) {
+        row.purchaseCurrency = `${product.purchaseCurrency.names[language] || 'NO_NAME'} (${product.purchaseCurrency.id})`
+      }
+      else {
+        row.purchaseCurrency = ''
+      }
       row.unit = `${product.unit.names[language] || 'NO_NAME'} (${product.unit.id})`
       row.productPropertiesGroup = `${product.productPropertiesGroup.names[language] || 'NO_NAME'} (${product.productPropertiesGroup.id})`
       for (let i = 1; i <= 5; i++) {

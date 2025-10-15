@@ -19,6 +19,7 @@
   "component.tableSelection.downloadCSV": "Download table",
   "component.tableSelection.delete": "Delete",
   "component.tableSelection.duplicate": "Duplicate",
+  "component.tableSelection.print": "Print",
 
   "component.asyncSelect.searchPlaceholder": "Search",
   "component.asyncSelect.noResultsMessage": "No results found",

@@ -6,6 +6,8 @@ import {
   ChevronsUpDown,
   Copy,
   CopyPlus,
+  History,
+  PackageIcon,
   Pencil,
   Trash,
 } from 'lucide-react'
@@ -27,6 +29,7 @@ export function useColumns() {
     isLoading,
     selectedWarehouse,
     openModal,
+    openLogsModal,
     duplicateProducts,
     removeProduct,
     loadCategoryOptions,
@@ -175,16 +178,28 @@ export function useColumns() {
 
           const actions = [
             {
+              permission: 'product.edit',
+              onClick: () => openModal(item),
+              label: t('table.edit'),
+              icon: <Pencil className="h-4 w-4" />,
+            },
+            {
               permission: 'product.copy',
               onClick: () => navigator.clipboard.writeText(item.id),
               label: t('table.copy'),
               icon: <Copy className="h-4 w-4" />,
             },
             {
-              permission: 'product.edit',
-              onClick: () => openModal(item),
-              label: t('table.edit'),
-              icon: <Pencil className="h-4 w-4" />,
+              permission: 'product.quantity-logs',
+              onClick: () => openLogsModal('quantity', item.id),
+              label: t('table.quantityLogs'),
+              icon: <PackageIcon className="h-4 w-4" />,
+            },
+            {
+              permission: 'product.audit-logs',
+              onClick: () => openLogsModal('audit', item.id),
+              label: t('table.auditLogs'),
+              icon: <History className="h-4 w-4" />,
             },
             {
               permission: 'product.duplicate',

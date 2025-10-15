@@ -1,0 +1,56 @@
+import type { WarehouseTransactionLog } from '../types/warehouse-transaction-log.type'
+import mongoose, { Schema } from 'mongoose'
+
+import { v4 as uuidv4 } from 'uuid'
+import { uuidValidator } from '../utils/uuidValidator'
+
+const WarehouseTransactionLogSchema: Schema = new Schema(
+  {
+    _id: {
+      type: String,
+      default: uuidv4,
+      validate: uuidValidator,
+    },
+    productId: {
+      type: String,
+      ref: 'Product',
+      required: true,
+    },
+    warehouseId: {
+      type: String,
+      ref: 'Warehouse',
+      required: true,
+    },
+    deltaCount: {
+      type: Number,
+      required: true,
+    },
+    refType: {
+      type: String,
+      required: true,
+    },
+    refId: {
+      type: String,
+      required: true,
+    },
+    userId: {
+      type: String,
+      ref: 'User',
+      required: true,
+    },
+  },
+  { timestamps: true },
+)
+
+WarehouseTransactionLogSchema.index({ productId: 1, warehouseId: 1, createdAt: 1 })
+
+WarehouseTransactionLogSchema.set('toJSON', {
+  virtuals: true,
+  versionKey: false,
+  transform: (_, ret) => {
+    ret.id = ret._id
+    delete ret._id
+  },
+})
+
+export const WarehouseTransactionLogModel = mongoose.model<WarehouseTransactionLog>('warehouse-transaction-log', WarehouseTransactionLogSchema)

@@ -2,6 +2,9 @@
   "title.page.login": "Login - Remnant",
   "description.page.login": "Login to Remnant application",
 
+  "title.page.audit-logs": "Audit logs - Remnant",
+  "description.page.audit-logs": "Manage audit logs in Remnant",
+
   "title.page.currencies": "Currencies - Remnant",
   "description.page.currencies": "Manage currencies in Remnant application",
 
