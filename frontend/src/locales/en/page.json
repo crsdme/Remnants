@@ -744,6 +744,7 @@
   "page.product-properties.table.active": "Active",
   "page.product-properties.table.isRequired": "Required",
   "page.product-properties.table.showInTable": "Show in table",
+  "page.product-properties.table.showInStatistics": "Show in statistics",
   "page.product-properties.table.productProperties": "Product Properties",
 
   "page.product-properties.form.title.create": "Create New Product Property",
@@ -758,6 +759,8 @@
   "page.product-properties.form.active.description": "Active product property",
   "page.product-properties.form.showInTable": "Show in table",
   "page.product-properties.form.showInTable.description": "Show property in table",
+  "page.product-properties.form.showInStatistics": "Show in statistics",
+  "page.product-properties.form.showInStatistics.description": "Show property in statistics",
   "page.product-properties.form.productProperties": "Product Properties",
   "page.product-properties.form.type": "Type",
   "page.product-properties.form.color": "Color",

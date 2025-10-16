@@ -252,7 +252,7 @@ function aggregateProductAttributes(products: any[]) {
       const type = prop.data?.type as PropType
       const nameRu = prop.data?.names?.ru || prop.data?.names?.en || propId
 
-      if (!propId || !type)
+      if (!propId || !type || !prop.data?.showInStatistics)
         continue
 
       if (!acc.has(propId)) {

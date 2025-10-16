@@ -61,6 +61,7 @@ export function ProductPropertiesProvider({ children }: ProductPropertiesProvide
       priority: z.number().optional(),
       isRequired: z.boolean().optional(),
       showInTable: z.boolean().optional(),
+      showInStatistics: z.boolean().optional(),
       type: z.string().optional(),
       active: z.boolean().optional(),
     }), [t])
@@ -75,6 +76,7 @@ export function ProductPropertiesProvider({ children }: ProductPropertiesProvide
       priority: 0,
       isRequired: false,
       showInTable: false,
+      showInStatistics: true,
       type: '',
       active: true,
     },
@@ -108,6 +110,7 @@ export function ProductPropertiesProvider({ children }: ProductPropertiesProvide
         priority: 0,
         isRequired: false,
         showInTable: false,
+        showInStatistics: true,
         type: '',
         active: true,
       }
@@ -117,6 +120,7 @@ export function ProductPropertiesProvider({ children }: ProductPropertiesProvide
       priority: property.priority,
       isRequired: property.isRequired,
       showInTable: property.showInTable,
+      showInStatistics: property.showInStatistics,
       type: property.type,
       active: property.active,
     }

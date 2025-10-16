@@ -9,6 +9,7 @@ export interface ProductProperty {
   type: string
   isRequired: boolean
   showInTable: boolean
+  showInStatistics: boolean
   active: boolean
   removed: boolean
   createdAt: Date
@@ -32,6 +33,7 @@ export interface getProductPropertiesFilters {
   priority: number
   isRequired: boolean
   showInTable: boolean
+  showInStatistics: boolean
   active: boolean[]
   createdAt: DateRange
   updatedAt: DateRange
@@ -43,6 +45,7 @@ export interface getProductPropertiesSorters {
   type: Sorter
   isRequired: Sorter
   showInTable: Sorter
+  showInStatistics: Sorter
   active: Sorter
 }
 
@@ -65,6 +68,7 @@ export interface createProductPropertyParams {
   type: string
   showInTable: boolean
   isRequired: boolean
+  showInStatistics: boolean
   active?: boolean
 }
 
@@ -82,6 +86,7 @@ export interface editProductPropertyParams {
   type: string
   showInTable: boolean
   isRequired: boolean
+  showInStatistics: boolean
   active?: boolean
 }
 

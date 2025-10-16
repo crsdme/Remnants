@@ -15,6 +15,7 @@ export async function get(payload: ProductPropertyTypes.getProductPropertiesPara
     priority = undefined,
     active = undefined,
     showInTable = undefined,
+    showInStatistics = undefined,
     createdAt = {
       from: undefined,
       to: undefined,
@@ -35,12 +36,13 @@ export async function get(payload: ProductPropertyTypes.getProductPropertiesPara
     type: { type: 'exact' },
     priority: { type: 'exact' },
     showInTable: { type: 'exact' },
+    showInStatistics: { type: 'exact' },
     createdAt: { type: 'dateRange' },
     updatedAt: { type: 'dateRange' },
   } as const
 
   const query = buildQuery({
-    filters: { _id: ids, names, options, type, priority, active, showInTable, createdAt, updatedAt },
+    filters: { _id: ids, names, options, type, priority, active, showInTable, showInStatistics, createdAt, updatedAt },
     rules: filterRules,
     language,
   })

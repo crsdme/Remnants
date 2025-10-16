@@ -746,6 +746,7 @@
   "page.product-properties.table.type": "Тип",
   "page.product-properties.table.isRequired": "Обязательное",
   "page.product-properties.table.showInTable": "Показывать в таблице",
+  "page.product-properties.table.showInStatistics": "Показывать в статистике",
   "page.product-properties.table.productProperties": "Свойства",
 
   "page.product-properties.form.title.create": "Создание нового свойства товара",
@@ -760,6 +761,8 @@
   "page.product-properties.form.active.description": "Активное свойство товара",
   "page.product-properties.form.showInTable": "Показывать в таблице",
   "page.product-properties.form.showInTable.description": "Показывать свойство в таблице",
+  "page.product-properties.form.showInStatistics": "Показывать в статистике",
+  "page.product-properties.form.showInStatistics.description": "Показывать свойство в статистике",
   "page.product-properties.form.productProperties": "Свойства",
   "page.product-properties.form.type": "Тип",
   "page.product-properties.form.color": "Цвет",

@@ -275,6 +275,27 @@ export function ProductPropertyForm({ form, languages, isLoading, onSubmit, clos
           />
           <FormField
             control={form.control}
+            name="showInStatistics"
+            render={({ field }) => (
+              <FormItem className="flex items-center justify-between rounded-md border p-4 grow">
+                <div className="space-y-1">
+                  <FormLabel className="text-sm">{t('page.product-properties.form.showInStatistics')}</FormLabel>
+                  <FormDescription className="text-xs text-muted-foreground">
+                    {t('page.product-properties.form.showInStatistics.description')}
+                  </FormDescription>
+                </div>
+                <FormControl>
+                  <Checkbox
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                    disabled={isLoading}
+                  />
+                </FormControl>
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
             name="isRequired"
             render={({ field }) => (
               <FormItem className="flex items-center justify-between rounded-md border p-4 grow">

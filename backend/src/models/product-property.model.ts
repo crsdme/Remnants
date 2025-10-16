@@ -44,6 +44,10 @@ const ProductPropertySchema: Schema = new Schema(
       type: Boolean,
       default: false,
     },
+    showInStatistics: {
+      type: Boolean,
+      default: true,
+    },
     active: {
       type: Boolean,
       default: true,

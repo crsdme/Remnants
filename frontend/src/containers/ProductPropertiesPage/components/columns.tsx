@@ -224,6 +224,21 @@ export function useColumns() {
         cell: ({ row }) => <Badge variant={row.original.showInTable ? 'success' : 'destructive'}>{t(`table.active.${row.original.showInTable}`)}</Badge>,
       },
       {
+        id: 'showInStatistics',
+        accessorKey: 'showInStatistics',
+        meta: {
+          title: t('page.product-properties.table.showInStatistics'),
+          batchEdit: true,
+          batchEditType: 'boolean',
+          filterable: true,
+          filterType: 'boolean',
+          sortable: true,
+          defaultVisible: true,
+        },
+        header: t('page.product-properties.table.showInStatistics'),
+        cell: ({ row }) => <Badge variant={row.original.showInStatistics ? 'success' : 'destructive'}>{t(`table.active.${row.original.showInStatistics}`)}</Badge>,
+      },
+      {
         id: 'active',
         accessorKey: 'active',
         meta: {

@@ -12,6 +12,7 @@ export const getProductPropertySchema = z.object({
     options: idSchema.optional(),
     isRequired: stringToBooleanSchema.optional(),
     showInTable: stringToBooleanSchema.optional(),
+    showInStatistics: stringToBooleanSchema.optional(),
     type: z.string().optional(),
     createdAt: dateRangeSchema.optional(),
     updatedAt: dateRangeSchema.optional(),
@@ -24,6 +25,7 @@ export const getProductPropertySchema = z.object({
     isRequired: sorterParamsSchema.optional(),
     showInTable: sorterParamsSchema.optional(),
     type: sorterParamsSchema.optional(),
+    showInStatistics: sorterParamsSchema.optional(),
     updatedAt: sorterParamsSchema.optional(),
     createdAt: sorterParamsSchema.optional(),
   }).optional().default({}),
@@ -35,6 +37,7 @@ export const createProductPropertySchema = z.object({
   priority: z.number().optional().default(0),
   isRequired: stringToBooleanSchema,
   showInTable: stringToBooleanSchema,
+  showInStatistics: stringToBooleanSchema,
   type: z.string(),
   active: z.boolean().optional().default(true),
 })
@@ -45,6 +48,7 @@ export const editProductPropertySchema = z.object({
   priority: z.number().optional().default(0),
   isRequired: stringToBooleanSchema,
   showInTable: stringToBooleanSchema,
+  showInStatistics: stringToBooleanSchema,
   type: z.string(),
   active: z.boolean().optional().default(true),
 })

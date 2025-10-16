@@ -8,6 +8,7 @@ export interface getProductPropertiesParams {
     type?: string
     options?: string[]
     showInTable?: boolean
+    showInStatistics?: boolean
     createdAt?: {
       from?: Date
       to?: Date
@@ -22,6 +23,7 @@ export interface getProductPropertiesParams {
     priority?: string
     type?: string
     showInTable?: string
+    showInStatistics?: string
     createdAt?: string
     updatedAt?: string
   }
@@ -37,6 +39,7 @@ export interface createProductPropertiesParams {
   priority: number
   type: string
   showInTable?: boolean
+  showInStatistics?: boolean
   active?: boolean
 }
 
@@ -46,6 +49,7 @@ export interface editProductPropertyParams {
   priority: number
   type: string
   showInTable?: boolean
+  showInStatistics?: boolean
   active?: boolean
 }
 
