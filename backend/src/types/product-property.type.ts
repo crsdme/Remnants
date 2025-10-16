@@ -27,6 +27,7 @@ export interface getProductPropertiesResult {
 export interface getProductPropertiesFilters {
   ids: IdType[]
   names: LanguageString
+  symbols: LanguageString
   language: SUPPORTED_LANGUAGES_TYPE
   options: IdType[]
   type: string
@@ -64,6 +65,7 @@ export interface createProductPropertyResult {
 
 export interface createProductPropertyParams {
   names: LanguageString
+  symbols: LanguageString
   priority?: number
   type: string
   showInTable: boolean
@@ -82,6 +84,7 @@ export interface editProductPropertyResult {
 export interface editProductPropertyParams {
   id: IdType
   names: LanguageString
+  symbols: LanguageString
   priority?: number
   type: string
   showInTable: boolean

@@ -164,6 +164,21 @@ export function useColumns() {
         cell: ({ row }) => row.original.names?.[i18n.language],
       },
       {
+        id: 'symbols',
+        size: 150,
+        meta: {
+          title: t('page.product-properties.table.symbols'),
+          batchEdit: true,
+          batchEditType: 'textMultiLanguage',
+          filterable: true,
+          filterType: 'text',
+          sortable: true,
+          defaultVisible: true,
+        },
+        header: ({ column }) => sortHeader(column, t('page.product-properties.table.symbols')),
+        cell: ({ row }) => row.original.symbols?.[i18n.language],
+      },
+      {
         id: 'type',
         accessorKey: 'type',
         meta: {

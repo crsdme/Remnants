@@ -43,8 +43,8 @@ export function ProductSelectedTotal() {
         return
 
       const key = pp?.data?.names?.[i18n.language] || t('common.unknown-property')
-
-      acc[key] = (acc[key] || 0) + num * (qty || 1)
+      const symbols = pp?.data?.symbols?.[i18n.language] || ''
+      acc[`${key}|${symbols}`] = (acc[`${key} ${symbols}`] || 0) + num * (qty || 1)
     })
 
     return acc
@@ -72,7 +72,7 @@ export function ProductSelectedTotal() {
         {Object.entries(totalsByNumericProps)
           .sort((a: any, b: any) => b[1] - a[1])
           .map(([propName, total]) => (
-            <Badge key={propName}>{`${propName}: ${total}`}</Badge>
+            <Badge key={propName}>{`${propName.split('|')[0]}: ${total} ${propName.split('|')[1]}`}</Badge>
           ))}
       </div>
     </div>

@@ -243,9 +243,9 @@ export function useColumns() {
 
           switch (productProperty.data.type) {
             case 'text':
-              return productProperty.value
+              return `${productProperty.value} ${productProperty?.data?.symbols?.[i18n.language] || ''}`
             case 'number':
-              return productProperty.value
+              return `${productProperty.value} ${productProperty?.data?.symbols?.[i18n.language] || ''}`
             case 'boolean':
               return <Badge variant={productProperty.value ? 'success' : 'destructive'}>{t(`table.yesno.${productProperty.value}`)}</Badge>
             case 'select':

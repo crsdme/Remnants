@@ -10,6 +10,7 @@ export async function get(payload: ProductPropertyTypes.getProductPropertiesPara
     ids = [],
     names = '',
     language = 'en',
+    symbols = '',
     options = undefined,
     type = undefined,
     priority = undefined,
@@ -31,6 +32,7 @@ export async function get(payload: ProductPropertyTypes.getProductPropertiesPara
   const filterRules = {
     _id: { type: 'array' },
     names: { type: 'string', langAware: true },
+    symbols: { type: 'string', langAware: true },
     active: { type: 'array' },
     options: { type: 'array' },
     type: { type: 'exact' },
@@ -42,7 +44,7 @@ export async function get(payload: ProductPropertyTypes.getProductPropertiesPara
   } as const
 
   const query = buildQuery({
-    filters: { _id: ids, names, options, type, priority, active, showInTable, showInStatistics, createdAt, updatedAt },
+    filters: { _id: ids, names, symbols, options, type, priority, active, showInTable, showInStatistics, createdAt, updatedAt },
     rules: filterRules,
     language,
   })

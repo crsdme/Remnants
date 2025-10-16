@@ -19,6 +19,7 @@ export function DataTable() {
 
   const filtersInitialState = {
     names: '',
+    symbols: '',
     isRequired: undefined,
     type: undefined,
     priority: undefined,

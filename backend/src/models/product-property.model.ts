@@ -24,6 +24,18 @@ const ProductPropertySchema: Schema = new Schema(
         message: 'Supported languages only',
       },
     },
+    symbols: {
+      type: Map,
+      of: String,
+      validate: {
+        validator(value: Map<string, string>) {
+          return Array.from(value.keys()).every(key =>
+            SUPPORTED_LANGUAGES.includes(key as any),
+          )
+        },
+        message: 'Supported languages only',
+      },
+    },
     options: {
       type: Array,
       ref: 'ProductPropertyOption',

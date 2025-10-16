@@ -2,6 +2,7 @@ export interface getProductPropertiesParams {
   filters: {
     ids?: string[]
     names?: string
+    symbols?: string
     language: string
     active?: boolean[]
     priority?: number
@@ -36,6 +37,7 @@ export interface getProductPropertiesParams {
 
 export interface createProductPropertiesParams {
   names: LanguageString
+  symbols: LanguageString
   priority: number
   type: string
   showInTable?: boolean
@@ -46,6 +48,7 @@ export interface createProductPropertiesParams {
 export interface editProductPropertyParams {
   id: string
   names: LanguageString
+  symbols: LanguageString
   priority: number
   type: string
   showInTable?: boolean

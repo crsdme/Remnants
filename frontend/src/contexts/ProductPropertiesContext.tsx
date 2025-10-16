@@ -58,6 +58,7 @@ export function ProductPropertiesProvider({ children }: ProductPropertiesProvide
   const propertyFormSchema = useMemo(() =>
     z.object({
       names: z.record(z.string({ required_error: t('form.errors.required') }).min(3, { message: t('form.errors.min_length', { count: 3 }) }).trim()),
+      symbols: z.record(z.string({ required_error: t('form.errors.required') }).min(1, { message: t('form.errors.min_length', { count: 1 }) }).trim()),
       priority: z.number().optional(),
       isRequired: z.boolean().optional(),
       showInTable: z.boolean().optional(),
@@ -70,6 +71,10 @@ export function ProductPropertiesProvider({ children }: ProductPropertiesProvide
     resolver: zodResolver(propertyFormSchema),
     defaultValues: {
       names: {
+        en: '',
+        ru: '',
+      },
+      symbols: {
         en: '',
         ru: '',
       },
@@ -107,6 +112,7 @@ export function ProductPropertiesProvider({ children }: ProductPropertiesProvide
     if (!property) {
       return {
         names: {},
+        symbols: {},
         priority: 0,
         isRequired: false,
         showInTable: false,
@@ -117,6 +123,7 @@ export function ProductPropertiesProvider({ children }: ProductPropertiesProvide
     }
     return {
       names: { ...property.names },
+      symbols: { ...property.symbols },
       priority: property.priority,
       isRequired: property.isRequired,
       showInTable: property.showInTable,
@@ -130,6 +137,7 @@ export function ProductPropertiesProvider({ children }: ProductPropertiesProvide
     if (!option) {
       return {
         names: {},
+        symbols: {},
         priority: 0,
         color: '',
         active: true,
@@ -137,6 +145,7 @@ export function ProductPropertiesProvider({ children }: ProductPropertiesProvide
     }
     return {
       names: { ...option.names },
+      symbols: { ...option.symbols },
       priority: option.priority,
       color: option.color,
       active: option.active,

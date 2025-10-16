@@ -7,6 +7,7 @@ extendZodWithOpenApi(z)
 export const getProductPropertySchema = z.object({
   filters: z.object({
     names: z.string().trim().optional(),
+    symbols: z.string().trim().optional(),
     language: z.string().optional().default('en'),
     priority: numberFromStringSchema.optional(),
     options: idSchema.optional(),
@@ -24,6 +25,7 @@ export const getProductPropertySchema = z.object({
     priority: sorterParamsSchema.optional(),
     isRequired: sorterParamsSchema.optional(),
     showInTable: sorterParamsSchema.optional(),
+    symbols: sorterParamsSchema.optional(),
     type: sorterParamsSchema.optional(),
     showInStatistics: sorterParamsSchema.optional(),
     updatedAt: sorterParamsSchema.optional(),
@@ -34,6 +36,7 @@ export const getProductPropertySchema = z.object({
 
 export const createProductPropertySchema = z.object({
   names: languageStringSchema,
+  symbols: languageStringSchema,
   priority: z.number().optional().default(0),
   isRequired: stringToBooleanSchema,
   showInTable: stringToBooleanSchema,
@@ -45,6 +48,7 @@ export const createProductPropertySchema = z.object({
 export const editProductPropertySchema = z.object({
   id: idSchema,
   names: languageStringSchema,
+  symbols: languageStringSchema,
   priority: z.number().optional().default(0),
   isRequired: stringToBooleanSchema,
   showInTable: stringToBooleanSchema,

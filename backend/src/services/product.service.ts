@@ -384,7 +384,7 @@ export async function get(payload: ProductTypes.getProductsParams, user?: UserTy
         quantitySort: 1,
         quantity: { count: 1, warehouse: 1, status: 1 },
         images: 1,
-        productProperties: { id: 1, value: 1, data: { names: 1, type: 1, isRequired: 1, showInTable: 1 }, optionData: { id: 1, names: 1, color: 1 } },
+        productProperties: { id: 1, value: 1, data: { names: 1, symbols: 1, type: 1, isRequired: 1, showInTable: 1 }, optionData: { id: 1, names: 1, color: 1 } },
         productPropertiesSort: 1,
         productPropertiesGroup: { id: '$productPropertiesGroup._id', names: 1 },
         createdAt: 1,
