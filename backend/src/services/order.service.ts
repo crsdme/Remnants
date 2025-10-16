@@ -1053,6 +1053,7 @@ export async function remove(payload: OrderTypes.removeOrdersParams, user: Reque
 export async function printInvoice(payload: OrderTypes.printInvoiceOrderParams): Promise<OrderTypes.printInvoiceOrderResult> {
   const { seq, language } = payload
   const mm = 2.83464567
+  const margins = 30
   const params = {
     size: [210 * mm, 297 * mm],
     margins: {
@@ -1063,9 +1064,19 @@ export async function printInvoice(payload: OrderTypes.printInvoiceOrderParams):
     },
   }
 
-  const margins = 30
   const contentWidth = params.size[0] - margins * 2
   // const contentHeight = size.h - padding * 2
+
+  const tableColumns = {
+    name: { key: 'name', width: 100, x: margins, align: 'left', type: 'text' },
+    length: { key: 'length', width: 50, x: margins + 100, align: 'left', type: 'text' },
+    weight: { key: 'weight', width: 50, x: margins + 150, align: 'left', type: 'text' },
+    type: { key: 'type', width: 80, x: margins + 200, align: 'left', type: 'text' },
+    price: { key: 'price', width: 60, x: margins + 280, align: 'left', type: 'text' },
+    quantity: { key: 'quantity', width: 60, x: margins + 340, align: 'left', type: 'text' },
+    discount: { key: 'discount', width: 50, x: margins + 400, align: 'left', type: 'text' },
+    total: { key: 'total', width: 100, x: params.size[0] - margins - 100, align: 'right', type: 'text' },
+  }
 
   const order = await OrderModel.findOne({ seq }).populate('client') as unknown as Order & { client: Client }
   if (!order) {
@@ -1131,13 +1142,38 @@ export async function printInvoice(payload: OrderTypes.printInvoiceOrderParams):
   const renderTableHeader = (doc: any) => {
     doc.fontSize(10).font('Manrope-Bold')
     const headerRow = [
-      { key: 'name', width: 100, x: margins, value: 'Name', align: 'left', type: 'text' },
-      { key: 'length', width: 60, x: margins + 100, value: 'Length', align: 'left', type: 'text' },
-      { key: 'weight', width: 60, x: margins + 160, value: 'Weight', align: 'left', type: 'text' },
-      { key: 'type', width: 100, x: margins + 220, value: 'Type', align: 'left', type: 'text' },
-      { key: 'price', width: 80, x: margins + 320, value: 'Price', align: 'left', type: 'text' },
-      { key: 'quantity', width: 60, x: margins + 400, value: 'Quantity', align: 'left', type: 'text' },
-      { key: 'total', width: 120, x: params.size[0] - margins - 120, value: 'Total', align: 'right', type: 'text' },
+      {
+        ...tableColumns.name,
+        value: 'Name',
+      },
+      {
+        ...tableColumns.length,
+        value: 'Length',
+      },
+      {
+        ...tableColumns.weight,
+        value: 'Weight',
+      },
+      {
+        ...tableColumns.type,
+        value: 'Type',
+      },
+      {
+        ...tableColumns.price,
+        value: 'Price',
+      },
+      {
+        ...tableColumns.quantity,
+        value: 'Quantity',
+      },
+      {
+        ...tableColumns.discount,
+        value: 'Discount',
+      },
+      {
+        ...tableColumns.total,
+        value: 'Total',
+      },
     ]
     drawTableRow(doc, headerRow)
     drawHr(doc, 8, 8)
@@ -1260,6 +1296,7 @@ export async function printInvoice(payload: OrderTypes.printInvoiceOrderParams):
       { min: 85, max: 89, price: 1500 },
       { min: 90, max: 94, price: 1600 },
       { min: 95, max: 99, price: 1700 },
+      { min: 100, max: 104, price: 1800 },
     ]
 
     let multiply = 1
@@ -1282,6 +1319,7 @@ export async function printInvoice(payload: OrderTypes.printInvoiceOrderParams):
         { min: 85, max: 89, price: 2700 },
         { min: 90, max: 94, price: 2800 },
         { min: 95, max: 99, price: 2900 },
+        { min: 100, max: 104, price: 3000 },
       ]
     }
 
@@ -1299,6 +1337,7 @@ export async function printInvoice(payload: OrderTypes.printInvoiceOrderParams):
         { min: 85, max: 89, price: 2200 },
         { min: 90, max: 94, price: 2300 },
         { min: 95, max: 99, price: 2400 },
+        { min: 100, max: 104, price: 2500 },
       ]
     }
 
@@ -1310,21 +1349,12 @@ export async function printInvoice(payload: OrderTypes.printInvoiceOrderParams):
     return null
   }
 
-  function countPriceDiscounts(price: any, discountAmount: any, discountPercent: any) {
-    if (discountPercent > 0) {
-      return price - (price * discountPercent) / 100
-    }
-    else if (discountAmount > 0) {
-      return price - discountAmount
-    }
-    return price
-  }
-
   const products = orderItems.map((item: any) => {
     const type = item.product.productProperties.find((property: any) => property.id === '25144e64-5c4c-47fd-842d-c0a2393f972e')
     const weight = item.product.productProperties.find((property: any) => property.id === '7c3e2c1b-f2bf-4639-baf2-7b1101fa7bf2')?.value
     const length = item.product.productProperties.find((property: any) => property.id === 'efcc3c51-a146-4975-bc5b-196745f76891')?.value
-    const totalPrice = countPriceDiscounts(item.price, item.discountAmount, item.discountPercent)
+    const discount = item.discountAmount > 0 ? item.discountAmount * item.quantity : item.discountPercent > 0 ? item.discountPercent : 0
+    const discountType = item.discountAmount > 0 ? 'amount' : item.discountPercent > 0 ? 'percent' : 'none'
 
     return {
       name: item.product.names[language],
@@ -1336,71 +1366,14 @@ export async function printInvoice(payload: OrderTypes.printInvoiceOrderParams):
         type?.optionData.map((option: any) => option.id) || [],
       ),
       quantity: item.quantity,
-      total: totalPrice * item.quantity,
+      total: item.price * item.quantity,
       currency: item.currency,
+      discount,
+      discountType,
     }
   }).sort((a: any, b: any) => a.length - b.length)
 
   doc.fontSize(10)
-  // const row = [
-  //   {
-  //     key: 'name',
-  //     width: 100,
-  //     x: margins,
-  //     value: 'Name',
-  //     align: 'left',
-  //     type: 'text',
-  //   },
-  //   {
-  //     key: 'length',
-  //     width: 60,
-  //     x: margins + 100,
-  //     value: 'Length',
-  //     align: 'left',
-  //     type: 'text',
-  //   },
-  //   {
-  //     key: 'weight',
-  //     width: 60,
-  //     x: margins + 100 + 60,
-  //     value: 'Weight',
-  //     align: 'left',
-  //     type: 'text',
-  //   },
-  //   {
-  //     key: 'type',
-  //     width: 100,
-  //     x: margins + 100 + 60 + 60,
-  //     value: 'Type',
-  //     align: 'left',
-  //     type: 'text',
-  //   },
-  //   {
-  //     key: 'price',
-  //     width: 80,
-  //     x: margins + 100 + 60 + 60 + 100,
-  //     value: 'Price',
-  //     align: 'left',
-  //     type: 'text',
-  //   },
-  //   {
-  //     key: 'quantity',
-  //     width: 60,
-  //     x: margins + 100 + 60 + 60 + 100 + 80,
-  //     align: 'left',
-  //     value: 'Quantity',
-  //     type: 'text',
-  //   },
-  //   {
-  //     key: 'total',
-  //     width: 120,
-  //     x: params.size[0] - margins - 120,
-  //     align: 'right',
-  //     value: 'Total',
-  //     type: 'text',
-  //   },
-  // ]
-  // drawTableRow(doc, row)
 
   renderTableHeader(doc)
 
@@ -1410,60 +1383,36 @@ export async function printInvoice(payload: OrderTypes.printInvoiceOrderParams):
     doc.fontSize(10)
     const row = [
       {
-        key: 'name',
-        width: 100,
-        x: margins,
+        ...tableColumns.name,
         value: product.name,
-        align: 'left',
-        type: 'text',
       },
       {
-        key: 'length',
-        width: 60,
-        x: margins + 100,
+        ...tableColumns.length,
         value: `${product.length} cm`,
-        align: 'left',
-        type: 'text',
       },
       {
-        key: 'weight',
-        width: 60,
-        x: margins + 100 + 60,
+        ...tableColumns.weight,
         value: `${product.weight} g`,
-        align: 'left',
-        type: 'text',
       },
       {
-        key: 'type',
-        width: 100,
-        x: margins + 100 + 60 + 60,
+        ...tableColumns.type,
         value: `${product.type}`,
-        align: 'left',
-        type: 'text',
       },
       {
-        key: 'price',
-        width: 80,
-        x: margins + 100 + 60 + 60 + 100,
+        ...tableColumns.price,
         value: `${product.price} ${product.currency.symbols[language] || ''}`,
-        align: 'left',
-        type: 'text',
       },
       {
-        key: 'quantity',
-        width: 60,
-        x: margins + 100 + 60 + 60 + 100 + 80,
+        ...tableColumns.quantity,
         value: `${product.quantity} pcs`,
-        align: 'left',
-        type: 'text',
       },
       {
-        key: 'total',
-        width: 120,
-        x: params.size[0] - margins - 120,
+        ...tableColumns.discount,
+        value: `${product.discount} ${product.discountType === 'amount' ? product.currency.symbols[language] : '%'}`,
+      },
+      {
+        ...tableColumns.total,
         value: `${product.total} ${product.currency.symbols[language] || ''}`,
-        align: 'right',
-        type: 'text',
       },
     ]
 
@@ -1485,60 +1434,36 @@ export async function printInvoice(payload: OrderTypes.printInvoiceOrderParams):
 
   const totalRow = [
     {
-      key: 'name',
-      width: 100,
-      x: margins,
+      ...tableColumns.name,
       value: '',
-      align: 'left',
-      type: 'text',
     },
     {
-      key: 'length',
-      width: 60,
-      x: margins + 100,
+      ...tableColumns.length,
       value: '',
-      align: 'left',
-      type: 'text',
     },
     {
-      key: 'weight',
-      width: 60,
-      x: margins + 100 + 60,
+      ...tableColumns.weight,
       value: `${totals.weight} g`,
-      align: 'left',
-      type: 'text',
     },
     {
-      key: 'type',
-      width: 100,
-      x: margins + 100 + 60 + 60,
+      ...tableColumns.type,
       value: '',
-      align: 'left',
-      type: 'text',
     },
     {
-      key: 'price',
-      width: 80,
-      x: margins + 100 + 60 + 60 + 100,
+      ...tableColumns.price,
       value: ``,
-      align: 'left',
-      type: 'text',
     },
     {
-      key: 'quantity',
-      width: 60,
-      x: margins + 100 + 60 + 60 + 100 + 80,
-      align: 'left',
+      ...tableColumns.quantity,
       value: `${totals.count} pcs`,
-      type: 'text',
     },
     {
-      key: 'total',
-      width: 120,
-      x: params.size[0] - margins - 120,
-      align: 'right',
+      ...tableColumns.discount,
+      value: '',
+    },
+    {
+      ...tableColumns.total,
       value: Object.values(totals.amount).map((amount: any) => `${amount.total.toFixed(2)} ${amount.currency.symbols[language] || ''}`).join(', '),
-      type: 'text',
     },
   ]
 
