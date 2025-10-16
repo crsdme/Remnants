@@ -87,7 +87,7 @@ export async function importHandler(req: Request, res: Response, next: NextFunct
 
 export async function exportHandler(req: Request, res: Response, next: NextFunction) {
   try {
-    const serviceResponse = await ProductService.exportHandler(req.body)
+    const serviceResponse = await ProductService.exportHandler(req.body, req.user)
     res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
     res.setHeader('X-Export-Code', serviceResponse.code)
     res.setHeader('X-Export-Message', serviceResponse.message)

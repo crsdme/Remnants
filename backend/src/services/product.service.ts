@@ -897,7 +897,7 @@ export async function importHandler(payload: ProductTypes.importProductsParams):
   return { status: 'success', code: 'PRODUCTS_IMPORTED', message: 'Products imported', productIds }
 }
 
-export async function exportHandler(payload: ProductTypes.exportProductsParams): Promise<ProductTypes.exportProductsResult> {
+export async function exportHandler(payload: ProductTypes.exportProductsParams, user?: UserTypes.User): Promise<ProductTypes.exportProductsResult> {
   const { ids } = payload
   const language = 'ru'
 
@@ -908,11 +908,13 @@ export async function exportHandler(payload: ProductTypes.exportProductsParams):
   const productPropertiesGroups = await ProductPropertyGroupModel.find({ active: true, removed: false })
   const productProperties = await ProductPropertyModel.find({ active: true, removed: false })
 
+  const hasPurchasePricePermission = await UserService.checkUserPermissions('product.purchasePrice', user)
+
   const workbook = new ExcelJS.Workbook()
   const hiddenSheet = workbook.addWorksheet('hidden')
   hiddenSheet.state = 'veryHidden'
 
-  const selectedProducts = await get({ filters: { ids }, pagination: { full: true }, sorters: { seq: 'asc' } })
+  const selectedProducts = await get({ filters: { ids }, pagination: { full: true }, sorters: { seq: 'asc' } }, user)
 
   const groupedProducts: Record<string, any[]> = {}
   for (const product of selectedProducts.products) {
@@ -994,9 +996,19 @@ export async function exportHandler(payload: ProductTypes.exportProductsParams):
         row[`name_${lang.code}`] = product.names[lang.code] || ''
       }
       row.price = product.price
-      row.purchasePrice = product.purchasePrice
+      if (hasPurchasePricePermission) {
+        row.purchasePrice = product.purchasePrice
+      }
+      else {
+        row.purchasePrice = ''
+      }
       row.currency = `${product.currency.names[language] || 'NO_NAME'} (${product.currency.id})`
-      row.purchaseCurrency = `${product.purchaseCurrency.names[language] || 'NO_NAME'} (${product.purchaseCurrency.id})`
+      if (hasPurchasePricePermission) {
+        row.purchaseCurrency = `${product.purchaseCurrency.names[language] || 'NO_NAME'} (${product.purchaseCurrency.id})`
+      }
+      else {
+        row.purchaseCurrency = ''
+      }
       row.unit = `${product.unit.names[language] || 'NO_NAME'} (${product.unit.id})`
       row.productPropertiesGroup = `${product.productPropertiesGroup.names[language] || 'NO_NAME'} (${product.productPropertiesGroup.id})`
       for (let i = 1; i <= 5; i++) {
