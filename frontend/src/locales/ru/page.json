@@ -991,6 +991,7 @@
   "page.create-order.form.order-source": "Источник заказа",
   "page.create-order.form.order-status": "Статус заказа",
   "page.create-order.form.comment": "Комментарий",
+  "page.create-order.form.print-draft-invoice": "Распечатать черновик счета",
 
   "page.create-order.form.add-payment": "Добавить оплату",
   "page.create-order.form.add-payment.description": "Добавить оплату к заказу",

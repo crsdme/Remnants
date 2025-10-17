@@ -985,6 +985,7 @@
   "page.create-order.form.order-source": "Order Source",
   "page.create-order.form.order-status": "Order Status",
   "page.create-order.form.comment": "Comment",
+  "page.create-order.form.print-draft-invoice": "Print Draft Invoice",
 
   "page.create-order.form.add-payment": "Add Payment",
   "page.create-order.form.add-payment.description": "Add payment to the order",

@@ -131,6 +131,7 @@ export * from './order/useOrderCreate'
 export * from './order/useOrderEdit'
 export * from './order/useOrderQuery'
 export * from './order/useOrderRemove'
+export * from './order/usePrintDraftInvoice'
 
 // Product Property Group Management
 export * from './product-property-group/useProductPropertyGroupCreate'

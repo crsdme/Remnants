@@ -1079,6 +1079,7 @@ export async function printInvoice(payload: OrderTypes.printInvoiceOrderParams):
   }
 
   const order = await OrderModel.findOne({ seq }).populate('client') as unknown as Order & { client: Client }
+
   if (!order) {
     throw new HttpError(400, 'Order not found', 'ORDER_NOT_FOUND')
   }
@@ -1470,16 +1471,432 @@ export async function printInvoice(payload: OrderTypes.printInvoiceOrderParams):
   doc.font('Manrope-Bold')
   drawTableRow(doc, totalRow)
 
-  // const productsText = barcode.products.map((product: any) => product.names[language] || '').join(', ')
-
-  // doc.text(
-  //   productsText,
-  //   padding,
-  //   doc.y,
-  //   { width: contentWidth, height: 50, ellipsis: true, lineBreak: false },
-  // )
-
   return { status: 'success', code: 'INVOICE_PRINTED', message: 'Invoice printed', doc }
+}
+
+export async function printDraftInvoice(payload: OrderTypes.printDraftInvoiceOrderParams): Promise<OrderTypes.printDraftInvoiceOrderResult> {
+  const { products, client, language } = payload
+  const mm = 2.83464567
+  const margins = 30
+  const params = {
+    size: [210 * mm, 297 * mm],
+    margins: {
+      top: 50,
+      bottom: 50,
+      left: 30,
+      right: 30,
+    },
+  }
+
+  console.log(products, client)
+
+  const contentWidth = params.size[0] - margins * 2
+
+  const tableColumns = {
+    name: { key: 'name', width: 100, x: margins, align: 'left', type: 'text' },
+    length: { key: 'length', width: 50, x: margins + 100, align: 'left', type: 'text' },
+    weight: { key: 'weight', width: 50, x: margins + 150, align: 'left', type: 'text' },
+    type: { key: 'type', width: 80, x: margins + 200, align: 'left', type: 'text' },
+    price: { key: 'price', width: 60, x: margins + 280, align: 'left', type: 'text' },
+    quantity: { key: 'quantity', width: 60, x: margins + 340, align: 'left', type: 'text' },
+    discount: { key: 'discount', width: 50, x: margins + 400, align: 'left', type: 'text' },
+    total: { key: 'total', width: 100, x: params.size[0] - margins - 100, align: 'right', type: 'text' },
+  }
+
+  // const order = await OrderModel.findOne({ seq }).populate('client') as unknown as Order & { client: Client }
+
+  if (!products) {
+    throw new HttpError(400, 'Products not found', 'PRODUCTS_NOT_FOUND')
+  }
+
+  const measureRowHeight = (doc: any, columns: any[], opts?: { pad?: number, imgMaxH?: number, minH?: number }) => {
+    const pad = opts?.pad ?? 6
+    const imgMaxH = opts?.imgMaxH ?? 70
+    let h = opts?.minH ?? 18
+
+    for (const col of columns) {
+      if (col.type === 'text') {
+        const textH = doc.heightOfString(String(col.value ?? ''), {
+          width: Math.max(0, col.width - pad * 2),
+          align: col.align || 'left',
+        })
+        h = Math.max(h, textH + pad * 2)
+      }
+      else if (col.type === 'image') {
+        h = Math.max(h, imgMaxH)
+      }
+    }
+    return h
+  }
+
+  const drawTableRow = (doc: any, columns: any[]) => {
+    const y = doc.y
+    const rowH = measureRowHeight(doc, columns, { imgMaxH: 70, minH: 22 })
+    for (const column of columns) {
+      if (column.type === 'text') {
+        doc.text(column.value, column.x, y, { width: column.width, align: column.align })
+      }
+      else if (column.type === 'image') {
+        doc.image(column.value, column.x, y, {
+          width: column.width,
+          fit: [Math.max(0, column.width - 6 * 2), Math.max(0, rowH - 6 * 2)],
+        })
+      }
+    }
+  }
+
+  const drawHr = (doc: any, gapTopPx = 6, gapBottomPx = 6) => {
+    const y = doc.y + gapTopPx
+    doc
+      .strokeColor('#D9D9D9')
+      .lineWidth(1)
+      .moveTo(margins, y)
+      .lineTo(params.size[0] - margins, y)
+      .stroke()
+    doc.y = y + gapBottomPx
+  }
+
+  const ensureSpace = (doc: any, needPx: number, onNewPage?: () => void) => {
+    const pageBottom = doc.page.height - doc.page.margins.bottom
+    if (doc.y + needPx > pageBottom) {
+      doc.addPage(params)
+      if (onNewPage)
+        onNewPage()
+    }
+  }
+
+  const renderTableHeader = (doc: any) => {
+    doc.fontSize(10).font('Manrope-Bold')
+    const headerRow = [
+      {
+        ...tableColumns.name,
+        value: 'Name',
+      },
+      {
+        ...tableColumns.length,
+        value: 'Length',
+      },
+      {
+        ...tableColumns.weight,
+        value: 'Weight',
+      },
+      {
+        ...tableColumns.type,
+        value: 'Type',
+      },
+      {
+        ...tableColumns.price,
+        value: 'Price',
+      },
+      {
+        ...tableColumns.quantity,
+        value: 'Quantity',
+      },
+      {
+        ...tableColumns.discount,
+        value: 'Discount',
+      },
+      {
+        ...tableColumns.total,
+        value: 'Total',
+      },
+    ]
+    drawTableRow(doc, headerRow)
+    drawHr(doc, 8, 8)
+    doc.font('Manrope')
+  }
+
+  const doc = new PDFDocument({ autoFirstPage: false })
+
+  doc.addPage(params)
+
+  doc.registerFont('Manrope', path.resolve(__dirname, '../utils/fonts/Manrope-Regular.ttf'))
+  doc.registerFont('Manrope-Bold', path.resolve(__dirname, '../utils/fonts/Manrope-ExtraBold.ttf'))
+
+  doc.fontSize(32)
+  doc.font('Manrope-Bold')
+  doc.image(
+    path.resolve(__dirname, '../utils/invoice/logo.png'),
+    margins,
+    doc.y,
+    { width: 141.67, height: 50 },
+  )
+  doc.text(
+    `Draft invoice`,
+    margins,
+    doc.y,
+    { width: contentWidth, height: 25, align: 'right', ellipsis: true, lineBreak: false },
+  )
+
+  drawHr(doc, 8, 8)
+
+  // CLIENT
+
+  if (client) {
+    doc.fontSize(12)
+    doc.font('Manrope-Bold')
+    doc.text(
+      'Client:',
+      margins,
+      doc.y,
+      { width: contentWidth, height: 25, align: 'left', ellipsis: true, lineBreak: false },
+    )
+
+    doc.fontSize(10)
+    doc.font('Manrope')
+    if (client.name || client.lastName || client.middleName) {
+      doc.text(
+        `${client.name || ''} ${client.lastName || ''} ${client.middleName || ''}`,
+        margins,
+        doc.y,
+        { width: contentWidth, height: 25, align: 'left', ellipsis: true, lineBreak: false },
+      )
+    }
+
+    if (client.phones.length > 0) {
+      doc.text(
+        `${client.phones.join(', ')}`,
+        margins,
+        doc.y,
+        { width: contentWidth, height: 25, align: 'left', ellipsis: true, lineBreak: false },
+      )
+    }
+
+    if (client.emails.length > 0) {
+      doc.text(
+        `${client.emails.join(', ')}`,
+        margins,
+        doc.y,
+        { width: contentWidth, height: 25, align: 'left', ellipsis: true, lineBreak: false },
+      )
+    }
+
+    drawHr(doc, 8, 8)
+  }
+
+  // CLIENT
+
+  // INVOICE DATE
+
+  const fmt = new Intl.DateTimeFormat('ru-RU', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  })
+
+  doc.fontSize(12)
+  doc.font('Manrope-Bold')
+  doc.text(
+    'Invoice date:',
+    margins,
+    doc.y,
+  )
+  doc.fontSize(10)
+  doc.font('Manrope')
+  doc.text(
+    `${fmt.format(new Date())}`,
+    margins,
+    doc.y,
+  )
+  doc.font('Manrope-Bold')
+
+  drawHr(doc, 8, 8)
+
+  // INVOICE DATE
+
+  // PRODUCTS
+
+  // const { orderItems } = await getItems({ filters: { order: [order.id] }, pagination: { full: true } }) as any
+
+  function getProductPrice(lengthCm: number, type: any[]): number | null {
+    let table = [
+      { min: 40, max: 44, price: 900 },
+      { min: 45, max: 49, price: 950 },
+      { min: 50, max: 54, price: 1000 },
+      { min: 55, max: 59, price: 1150 },
+      { min: 60, max: 64, price: 1200 },
+      { min: 65, max: 69, price: 1250 },
+      { min: 70, max: 74, price: 1300 },
+      { min: 75, max: 79, price: 1350 },
+      { min: 80, max: 84, price: 1400 },
+      { min: 85, max: 89, price: 1500 },
+      { min: 90, max: 94, price: 1600 },
+      { min: 95, max: 99, price: 1700 },
+      { min: 100, max: 104, price: 1800 },
+    ]
+
+    let multiply = 1
+
+    if (type.includes('822ec142-d144-44fb-ba96-582cff8757b3')) {
+      multiply = 1.3
+    }
+
+    if (type.includes('b930fb75-61a6-41c0-88de-0c69082b7f06')) {
+      table = [
+        { min: 40, max: 44, price: 1800 },
+        { min: 45, max: 49, price: 1900 },
+        { min: 50, max: 54, price: 2000 },
+        { min: 55, max: 59, price: 2100 },
+        { min: 60, max: 64, price: 2200 },
+        { min: 65, max: 69, price: 2300 },
+        { min: 70, max: 74, price: 2400 },
+        { min: 75, max: 79, price: 2500 },
+        { min: 80, max: 84, price: 2600 },
+        { min: 85, max: 89, price: 2700 },
+        { min: 90, max: 94, price: 2800 },
+        { min: 95, max: 99, price: 2900 },
+        { min: 100, max: 104, price: 3000 },
+      ]
+    }
+
+    if (type.includes('aeb36d06-1a12-4319-9313-51abcbed38fb') || type.includes('44307e30-0fb8-4ab1-af56-6d8d724dd204')) {
+      table = [
+        { min: 40, max: 44, price: 1300 },
+        { min: 45, max: 49, price: 1400 },
+        { min: 50, max: 54, price: 1500 },
+        { min: 55, max: 59, price: 1600 },
+        { min: 60, max: 64, price: 1700 },
+        { min: 65, max: 69, price: 1800 },
+        { min: 70, max: 74, price: 1900 },
+        { min: 75, max: 79, price: 2000 },
+        { min: 80, max: 84, price: 2100 },
+        { min: 85, max: 89, price: 2200 },
+        { min: 90, max: 94, price: 2300 },
+        { min: 95, max: 99, price: 2400 },
+        { min: 100, max: 104, price: 2500 },
+      ]
+    }
+
+    for (const row of table) {
+      if (lengthCm >= row.min && lengthCm <= row.max) {
+        return row.price * multiply
+      }
+    }
+    return null
+  }
+
+  const productsData = products.map((item: any) => {
+    const type = item.productProperties.find((property: any) => property.id === '25144e64-5c4c-47fd-842d-c0a2393f972e')
+    const weight = item.productProperties.find((property: any) => property.id === '7c3e2c1b-f2bf-4639-baf2-7b1101fa7bf2')?.value
+    const length = item.productProperties.find((property: any) => property.id === 'efcc3c51-a146-4975-bc5b-196745f76891')?.value
+    const discount = item.discountAmount > 0 ? item.discountAmount * item.quantity : item.discountPercent > 0 ? item.discountPercent : 0
+    const discountType = item.discountAmount > 0 ? 'amount' : item.discountPercent > 0 ? 'percent' : 'none'
+
+    return {
+      name: item.names[language],
+      length: length || 0,
+      weight: weight || 0,
+      type: type?.optionData.map((option: any) => option.names[language]).join(', ') || '',
+      price: getProductPrice(
+        length || 0,
+        type?.optionData.map((option: any) => option.id) || [],
+      ),
+      quantity: item.quantity,
+      total: item.price * item.quantity,
+      currency: item.currency,
+      discount,
+      discountType,
+    }
+  }).sort((a: any, b: any) => a.length - b.length)
+
+  doc.fontSize(10)
+
+  renderTableHeader(doc)
+
+  const totals = { count: 0, weight: 0, amount: {} } as any
+  for (const product of productsData) {
+    doc.font('Manrope')
+    doc.fontSize(10)
+    const row = [
+      {
+        ...tableColumns.name,
+        value: product.name,
+      },
+      {
+        ...tableColumns.length,
+        value: `${product.length} cm`,
+      },
+      {
+        ...tableColumns.weight,
+        value: `${product.weight} g`,
+      },
+      {
+        ...tableColumns.type,
+        value: `${product.type}`,
+      },
+      {
+        ...tableColumns.price,
+        value: `${product.price} ${product?.currency?.symbols?.[language] || ''}`,
+      },
+      {
+        ...tableColumns.quantity,
+        value: `${product.quantity} pcs`,
+      },
+      {
+        ...tableColumns.discount,
+        value: `${product.discount} ${product.discountType === 'amount' ? product.currency.symbols[language] : '%'}`,
+      },
+      {
+        ...tableColumns.total,
+        value: `${product.total} ${product?.currency?.symbols?.[language] || ''}`,
+      },
+    ]
+
+    const rowH = measureRowHeight(doc, row, { imgMaxH: 70, minH: 22 })
+    const hrH = 12
+    const need = rowH + hrH
+
+    ensureSpace(doc, need, () => renderTableHeader(doc))
+
+    totals.count += product.quantity
+    totals.weight += product.weight
+    if (!totals.amount[product.currency.id]) {
+      totals.amount[product.currency.id] = { currency: product.currency, total: 0 }
+    }
+    totals.amount[product.currency.id].total += product.total
+    drawTableRow(doc, row)
+    drawHr(doc, 8, 8)
+  }
+
+  const totalRow = [
+    {
+      ...tableColumns.name,
+      value: '',
+    },
+    {
+      ...tableColumns.length,
+      value: '',
+    },
+    {
+      ...tableColumns.weight,
+      value: `${totals.weight} g`,
+    },
+    {
+      ...tableColumns.type,
+      value: '',
+    },
+    {
+      ...tableColumns.price,
+      value: ``,
+    },
+    {
+      ...tableColumns.quantity,
+      value: `${totals.count} pcs`,
+    },
+    {
+      ...tableColumns.discount,
+      value: '',
+    },
+    {
+      ...tableColumns.total,
+      value: Object.values(totals.amount).map((amount: any) => `${amount.total.toFixed(2)} ${amount?.currency?.symbols?.[language] || ''}`).join(', '),
+    },
+  ]
+
+  doc.font('Manrope-Bold')
+  drawTableRow(doc, totalRow)
+
+  return { status: 'success', code: 'DRAFT_INVOICE_PRINTED', message: 'Draft invoice printed', doc }
 }
 
 async function convertCurrency({

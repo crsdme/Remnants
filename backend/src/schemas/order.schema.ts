@@ -92,3 +92,9 @@ export const printInvoiceOrderSchema = z.object({
   seq: numberFromStringSchema,
   language: z.string().optional().default('en'),
 })
+
+export const printDraftInvoiceOrderSchema = z.object({
+  products: z.array(z.any()),
+  client: z.any(),
+  language: z.string().optional().default('en'),
+})

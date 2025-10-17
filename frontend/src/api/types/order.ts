@@ -55,3 +55,12 @@ export interface editOrderParams {
 export interface removeOrdersParams {
   ids: string[]
 }
+
+export interface printDraftInvoiceParams {
+  products: any[]
+  client: any
+  language: string
+}
+
+export interface printDraftInvoiceResponse extends Blob {
+}

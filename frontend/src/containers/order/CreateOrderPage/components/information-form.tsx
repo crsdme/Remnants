@@ -21,7 +21,7 @@ import { formatDate } from '@/utils/helpers/formatDate'
 
 export function InformationForm({ form, onSubmit }: { form: UseFormReturn, onSubmit: (payments: any) => void }) {
   const { t, i18n } = useTranslation()
-  const { isLoading, openClientModal, openPaymentModal, payments, removePayment } = useCreateOrderContext()
+  const { isLoading, openClientModal, openPaymentModal, payments, removePayment, printDraftInvoice } = useCreateOrderContext()
 
   const loadWarehouseOptions = useWarehouseOptions()
   const loadOrderSourceOptions = useOrderSourceOptions()
@@ -222,6 +222,7 @@ export function InformationForm({ form, onSubmit }: { form: UseFormReturn, onSub
           </div>
 
           <div className="flex justify-end gap-2">
+            <Button type="button" variant="outline" onClick={printDraftInvoice}>{t('page.create-order.form.print-draft-invoice')}</Button>
             <Button type="submit" disabled={isLoading} loading={isLoading}>
               {t('button.submit')}
             </Button>

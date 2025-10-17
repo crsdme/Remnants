@@ -3,6 +3,7 @@ import type {
   editOrderParams,
   getOrdersParams,
   OrderResponse,
+  printDraftInvoiceParams,
   removeOrdersParams,
 } from '@/api/types'
 import { api } from '@/api/instance'
@@ -21,4 +22,8 @@ export async function editOrder(params: editOrderParams) {
 
 export async function removeOrder(params: removeOrdersParams) {
   return api.post<OrderResponse>('orders/remove', params)
+}
+
+export async function printDraftInvoice(params: printDraftInvoiceParams) {
+  return api.post<Blob>('orders/print/draft-invoice', { ...params }, { responseType: 'blob' })
 }

@@ -1,5 +1,6 @@
 import type PDFDocument from 'pdfkit'
 import type { SUPPORTED_LANGUAGES_TYPE } from '../config/constants'
+import type { Client } from './client.type'
 import type { Code, DateRange, IdType, Message, Pagination, Sorter, Status } from './common.type'
 import type { OrderPayment, OrderPaymentParams } from './order-payment.type'
 
@@ -192,6 +193,19 @@ export interface printInvoiceOrderParams {
 }
 
 export interface printInvoiceOrderResult {
+  status: Status
+  code: Code
+  message: Message
+  doc: typeof PDFDocument
+}
+
+export interface printDraftInvoiceOrderParams {
+  products: OrderItem[]
+  client: Client
+  language: SUPPORTED_LANGUAGES_TYPE
+}
+
+export interface printDraftInvoiceOrderResult {
   status: Status
   code: Code
   message: Message

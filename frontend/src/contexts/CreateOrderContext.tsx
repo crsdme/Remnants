@@ -17,6 +17,7 @@ import {
   useClientCreate,
   useCurrencyQuery,
   useOrderCreate,
+  usePrintDraftInvoice,
 } from '@/api/hooks'
 import { PAYMENT_STATUSES } from '@/utils/constants'
 
@@ -37,6 +38,7 @@ interface CreateOrderContextType {
   createOrder: (params) => void
   createPayment: (params) => void
   getBarcode: (code: string) => Promise<any>
+  printDraftInvoice: () => void
 }
 
 const CreateOrderContext = createContext<CreateOrderContextType | undefined>(undefined)
@@ -235,6 +237,19 @@ export function CreateOrderProvider({ children }: CreateOrderProviderProps) {
     },
   })
 
+  const useMutatePrintDraftInvoice = usePrintDraftInvoice({
+    options: {
+      onSuccess: ({ data }) => {
+        window.open(URL.createObjectURL(data), '_blank', 'noopener,noreferrer')
+        setTimeout(() => URL.revokeObjectURL(URL.createObjectURL(data)), 60_000)
+      },
+      onError: ({ response }) => {
+        const error = response.data.error
+        toast.error(t(`error.title.${error.code}`), { description: `${t(`error.description.${error.code}`)} ${error.description || ''}` })
+      },
+    },
+  })
+
   const createClient = (params) => {
     setIsLoading(true)
     useMutateCreateClient.mutate(params)
@@ -273,6 +288,29 @@ export function CreateOrderProvider({ children }: CreateOrderProviderProps) {
     return barcode[0]?.products
   }
 
+  const printDraftInvoice = async () => {
+    const products = informationForm.getValues('items').map((item: any) => {
+      return {
+        id: item.product,
+        names: item.names,
+        quantity: item.quantity,
+        productProperties: item.productProperties,
+        currency: item.selectedCurrency,
+        price: item.price,
+        manualPrice: item.manualPrice || undefined,
+        basePrice: item.basePrice,
+        discountAmount: item.discountAmount || 0,
+        discountPercent: item.discountPercent || 0,
+      }
+    })
+
+    useMutatePrintDraftInvoice.mutate({
+      products,
+      client: informationForm.getValues('client'),
+      language: 'en',
+    })
+  }
+
   const value: CreateOrderContextType = useMemo(
     () => ({
       isClientModalOpen,
@@ -282,6 +320,7 @@ export function CreateOrderProvider({ children }: CreateOrderProviderProps) {
       informationForm,
       payments,
       clientForm,
+      printDraftInvoice,
       openClientModal,
       closeClientModal,
       openPaymentModal,

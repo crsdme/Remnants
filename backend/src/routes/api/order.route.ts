@@ -2,7 +2,7 @@ import { Router } from 'express'
 import * as OrderController from '../../controllers/order.controller'
 import { validateBodyRequest, validateQueryRequest } from '../../middleware'
 import { checkPermissions } from '../../middleware/permission.middleware'
-import { createOrderSchema, editOrderSchema, getOrdersSchema, printInvoiceOrderSchema, removeOrdersSchema } from '../../schemas/order.schema'
+import { createOrderSchema, editOrderSchema, getOrdersSchema, printDraftInvoiceOrderSchema, printInvoiceOrderSchema, removeOrdersSchema } from '../../schemas/order.schema'
 
 const router = Router()
 
@@ -34,6 +34,13 @@ router.get(
   validateQueryRequest(printInvoiceOrderSchema),
   checkPermissions('order.print.invoice'),
   OrderController.printInvoice,
+)
+
+router.post(
+  '/print/draft-invoice',
+  validateBodyRequest(printDraftInvoiceOrderSchema),
+  checkPermissions('order.print.draft-invoice'),
+  OrderController.printDraftInvoice,
 )
 
 export default router
