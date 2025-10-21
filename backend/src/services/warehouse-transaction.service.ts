@@ -1,6 +1,5 @@
 import type { RequestUser } from '../types/common.type'
 import type * as WarehouseTransactionTypes from '../types/warehouse-transaction.type'
-import { userInfo } from 'node:os'
 import { STORAGE_URLS } from '../config/constants'
 import { BarcodeModel, WarehouseTransactionItemModel, WarehouseTransactionModel } from '../models'
 import { buildQuery, buildSortQuery } from '../utils/queryBuilder'

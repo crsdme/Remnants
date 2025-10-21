@@ -1,4 +1,3 @@
-import type { RequestUser } from '../types/common.type'
 import type * as WarehouseTransactionLogTypes from '../types/warehouse-transaction-log.type'
 import { WarehouseTransactionLogModel } from '../models'
 import { buildQuery, buildSortQuery } from '../utils/queryBuilder'

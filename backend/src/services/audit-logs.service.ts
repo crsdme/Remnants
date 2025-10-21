@@ -2,7 +2,7 @@ import type { PipelineStage } from 'mongoose'
 import type * as AuditLogsTypes from '../types/audit-logs.type'
 import { AuditLogsModel } from '../models'
 import { HttpError } from '../utils/httpError'
-import { buildQuery, buildSortQuery } from '../utils/queryBuilder'
+import { buildQuery } from '../utils/queryBuilder'
 
 export async function get(payload: AuditLogsTypes.getAuditLogsParams): Promise<AuditLogsTypes.getAuditLogsResult> {
   const { current = 1, pageSize = 10 } = payload.pagination || {}
