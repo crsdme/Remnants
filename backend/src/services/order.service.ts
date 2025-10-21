@@ -1351,7 +1351,7 @@ export async function printInvoice(payload: OrderTypes.printInvoiceOrderParams):
   // }
 
   function getNewProductPrice(weightGrams: number, packPrice: number) {
-    return Number(((packPrice * 1000) / weightGrams).toFixed(2))
+    return Math.round((packPrice * 1000) / weightGrams)
   }
 
   const products = orderItems.map((item: any) => {
@@ -1707,77 +1707,81 @@ export async function printDraftInvoice(payload: OrderTypes.printDraftInvoiceOrd
 
   // const { orderItems } = await getItems({ filters: { order: [order.id] }, pagination: { full: true } }) as any
 
-  function getProductPrice(lengthCm: number, type: any[]): number | null {
-    let table = [
-      { min: 40, max: 44, price: 900 },
-      { min: 45, max: 49, price: 950 },
-      { min: 50, max: 54, price: 1000 },
-      { min: 55, max: 59, price: 1150 },
-      { min: 60, max: 64, price: 1200 },
-      { min: 65, max: 69, price: 1250 },
-      { min: 70, max: 74, price: 1300 },
-      { min: 75, max: 79, price: 1350 },
-      { min: 80, max: 84, price: 1400 },
-      { min: 85, max: 89, price: 1500 },
-      { min: 90, max: 94, price: 1600 },
-      { min: 95, max: 99, price: 1700 },
-      { min: 100, max: 104, price: 1800 },
-    ]
+  // function getProductPrice(lengthCm: number, type: any[]): number | null {
+  //   let table = [
+  //     { min: 40, max: 44, price: 900 },
+  //     { min: 45, max: 49, price: 950 },
+  //     { min: 50, max: 54, price: 1000 },
+  //     { min: 55, max: 59, price: 1150 },
+  //     { min: 60, max: 64, price: 1200 },
+  //     { min: 65, max: 69, price: 1250 },
+  //     { min: 70, max: 74, price: 1300 },
+  //     { min: 75, max: 79, price: 1350 },
+  //     { min: 80, max: 84, price: 1400 },
+  //     { min: 85, max: 89, price: 1500 },
+  //     { min: 90, max: 94, price: 1600 },
+  //     { min: 95, max: 99, price: 1700 },
+  //     { min: 100, max: 104, price: 1800 },
+  //   ]
 
-    let multiply = 1
+  //   let multiply = 1
 
-    if (type.includes('822ec142-d144-44fb-ba96-582cff8757b3')) {
-      multiply = 1.3
-    }
+  //   if (type.includes('822ec142-d144-44fb-ba96-582cff8757b3')) {
+  //     multiply = 1.3
+  //   }
 
-    if (type.includes('b930fb75-61a6-41c0-88de-0c69082b7f06')) {
-      table = [
-        { min: 40, max: 44, price: 1800 },
-        { min: 45, max: 49, price: 1900 },
-        { min: 50, max: 54, price: 2000 },
-        { min: 55, max: 59, price: 2100 },
-        { min: 60, max: 64, price: 2200 },
-        { min: 65, max: 69, price: 2300 },
-        { min: 70, max: 74, price: 2400 },
-        { min: 75, max: 79, price: 2500 },
-        { min: 80, max: 84, price: 2600 },
-        { min: 85, max: 89, price: 2700 },
-        { min: 90, max: 94, price: 2800 },
-        { min: 95, max: 99, price: 2900 },
-        { min: 100, max: 104, price: 3000 },
-      ]
-    }
+  //   if (type.includes('b930fb75-61a6-41c0-88de-0c69082b7f06')) {
+  //     table = [
+  //       { min: 40, max: 44, price: 1800 },
+  //       { min: 45, max: 49, price: 1900 },
+  //       { min: 50, max: 54, price: 2000 },
+  //       { min: 55, max: 59, price: 2100 },
+  //       { min: 60, max: 64, price: 2200 },
+  //       { min: 65, max: 69, price: 2300 },
+  //       { min: 70, max: 74, price: 2400 },
+  //       { min: 75, max: 79, price: 2500 },
+  //       { min: 80, max: 84, price: 2600 },
+  //       { min: 85, max: 89, price: 2700 },
+  //       { min: 90, max: 94, price: 2800 },
+  //       { min: 95, max: 99, price: 2900 },
+  //       { min: 100, max: 104, price: 3000 },
+  //     ]
+  //   }
 
-    if (type.includes('aeb36d06-1a12-4319-9313-51abcbed38fb') || type.includes('44307e30-0fb8-4ab1-af56-6d8d724dd204')) {
-      table = [
-        { min: 40, max: 44, price: 1300 },
-        { min: 45, max: 49, price: 1400 },
-        { min: 50, max: 54, price: 1500 },
-        { min: 55, max: 59, price: 1600 },
-        { min: 60, max: 64, price: 1700 },
-        { min: 65, max: 69, price: 1800 },
-        { min: 70, max: 74, price: 1900 },
-        { min: 75, max: 79, price: 2000 },
-        { min: 80, max: 84, price: 2100 },
-        { min: 85, max: 89, price: 2200 },
-        { min: 90, max: 94, price: 2300 },
-        { min: 95, max: 99, price: 2400 },
-        { min: 100, max: 104, price: 2500 },
-      ]
-    }
+  //   if (type.includes('aeb36d06-1a12-4319-9313-51abcbed38fb') || type.includes('44307e30-0fb8-4ab1-af56-6d8d724dd204')) {
+  //     table = [
+  //       { min: 40, max: 44, price: 1300 },
+  //       { min: 45, max: 49, price: 1400 },
+  //       { min: 50, max: 54, price: 1500 },
+  //       { min: 55, max: 59, price: 1600 },
+  //       { min: 60, max: 64, price: 1700 },
+  //       { min: 65, max: 69, price: 1800 },
+  //       { min: 70, max: 74, price: 1900 },
+  //       { min: 75, max: 79, price: 2000 },
+  //       { min: 80, max: 84, price: 2100 },
+  //       { min: 85, max: 89, price: 2200 },
+  //       { min: 90, max: 94, price: 2300 },
+  //       { min: 95, max: 99, price: 2400 },
+  //       { min: 100, max: 104, price: 2500 },
+  //     ]
+  //   }
 
-    for (const row of table) {
-      if (lengthCm >= row.min && lengthCm <= row.max) {
-        return row.price * multiply
-      }
-    }
-    return null
+  //   for (const row of table) {
+  //     if (lengthCm >= row.min && lengthCm <= row.max) {
+  //       return row.price * multiply
+  //     }
+  //   }
+  //   return null
+  // }
+
+  function getNewProductPrice(weightGrams: number, packPrice: number) {
+    return Math.round((packPrice * 1000) / weightGrams)
   }
 
   const productsData = products.map((item: any) => {
     const type = item.productProperties.find((property: any) => property.id === '25144e64-5c4c-47fd-842d-c0a2393f972e')
-    const weight = item.productProperties.find((property: any) => property.id === '7c3e2c1b-f2bf-4639-baf2-7b1101fa7bf2')?.value
-    const length = item.productProperties.find((property: any) => property.id === 'efcc3c51-a146-4975-bc5b-196745f76891')?.value
+    const weight = item.productProperties.find((property: any) => property.id === '028bff68-fe1c-49a3-8c9d-9b6f39c5524c')?.value // 7c3e2c1b-f2bf-4639-baf2-7b1101fa7bf2
+    const length = item.productProperties.find((property: any) => property.id === '1b42f359-66c6-4950-9f6a-82b20500d01a')?.value // efcc3c51-a146-4975-bc5b-196745f76891
     const discount = item.discountAmount > 0 ? item.discountAmount * item.quantity : item.discountPercent > 0 ? item.discountPercent : 0
     const discountType = item.discountAmount > 0 ? 'amount' : item.discountPercent > 0 ? 'percent' : 'none'
 
@@ -1786,10 +1790,7 @@ export async function printDraftInvoice(payload: OrderTypes.printDraftInvoiceOrd
       length: length || 0,
       weight: weight || 0,
       type: type?.optionData.map((option: any) => option.names[language]).join(', ') || '',
-      price: getProductPrice(
-        length || 0,
-        type?.optionData.map((option: any) => option.id) || [],
-      ),
+      price: getNewProductPrice(weight || 0, item.price),
       quantity: item.quantity,
       total: item.price * item.quantity,
       currency: item.currency,
