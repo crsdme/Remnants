@@ -1350,10 +1350,14 @@ export async function printInvoice(payload: OrderTypes.printInvoiceOrderParams):
     return null
   }
 
+  function getNewProductPrice(weightGrams: number, packPrice: number) {
+    return Number(((packPrice * 1000) / weightGrams).toFixed(2))
+  }
+
   const products = orderItems.map((item: any) => {
     const type = item.product.productProperties.find((property: any) => property.id === '25144e64-5c4c-47fd-842d-c0a2393f972e')
-    const weight = item.product.productProperties.find((property: any) => property.id === '7c3e2c1b-f2bf-4639-baf2-7b1101fa7bf2')?.value
-    const length = item.product.productProperties.find((property: any) => property.id === 'efcc3c51-a146-4975-bc5b-196745f76891')?.value
+    const weight = item.product.productProperties.find((property: any) => property.id === '7c3e2c1b-f2bf-4639-baf2-7b1101fa7bf2')?.value // 7c3e2c1b-f2bf-4639-baf2-7b1101fa7bf2
+    const length = item.product.productProperties.find((property: any) => property.id === 'efcc3c51-a146-4975-bc5b-196745f76891')?.value // efcc3c51-a146-4975-bc5b-196745f76891
     const discount = item.discountAmount > 0 ? item.discountAmount * item.quantity : item.discountPercent > 0 ? item.discountPercent : 0
     const discountType = item.discountAmount > 0 ? 'amount' : item.discountPercent > 0 ? 'percent' : 'none'
 
@@ -1362,10 +1366,7 @@ export async function printInvoice(payload: OrderTypes.printInvoiceOrderParams):
       length: length || 0,
       weight: weight || 0,
       type: type?.optionData.map((option: any) => option.names[language]).join(', ') || '',
-      price: getProductPrice(
-        length || 0,
-        type?.optionData.map((option: any) => option.id) || [],
-      ),
+      price: getNewProductPrice(weight || 0, item.product.price),
       quantity: item.quantity,
       total: item.price * item.quantity,
       currency: item.currency,
@@ -1487,8 +1488,6 @@ export async function printDraftInvoice(payload: OrderTypes.printDraftInvoiceOrd
       right: 30,
     },
   }
-
-  console.log(products, client)
 
   const contentWidth = params.size[0] - margins * 2
 
