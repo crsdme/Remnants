@@ -14,11 +14,6 @@ import {
   FormItem,
   FormMessage,
   Input,
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
 } from '@/components/ui'
 import { useAuthContext } from '@/contexts'
 import { cn } from '@/utils/lib'
@@ -37,9 +32,6 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
         .min(5, { message: t('form.errors.min_length', { count: 5 }) })
         .max(20, { message: t('form.errors.max_length', { count: 20 }) })
         .trim(),
-      type: z.string({ required_error: t('form.errors.required') })
-        .min(5, { message: t('form.errors.min_length', { count: 5 }) })
-        .max(20, { message: t('form.errors.max_length', { count: 20 }) }),
     }), [t])
 
   const form = useForm({
@@ -47,7 +39,6 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
     defaultValues: {
       login: '',
       password: '',
-      type: 'guest',
     },
   })
 
@@ -93,30 +84,6 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
                     ref={null}
                   />
                 </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="type"
-            render={({ field }) => (
-              <FormItem>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
-                  <FormControl className="w-full">
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    <SelectItem value="guest">
-                      {t('page.login.select.value.typeGuest')}
-                    </SelectItem>
-                    <SelectItem value="worker">
-                      {t('page.login.select.value.typeWork')}
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
                 <FormMessage />
               </FormItem>
             )}
