@@ -168,6 +168,27 @@ export function useColumns() {
         },
       },
       {
+        id: 'country',
+        accessorKey: 'country',
+        meta: {
+          title: t('page.clients.table.country'),
+          batchEdit: true,
+          batchEditType: 'textMultiLanguage',
+          filterable: true,
+          filterType: 'text',
+          sortable: true,
+        },
+        header: t('page.clients.table.country'),
+        cell: ({ row }) => {
+          const country = row.original.country
+          if (!country)
+            return null
+          return (
+            <Badge variant="outline">{country}</Badge>
+          )
+        },
+      },
+      {
         id: 'createdAt',
         accessorKey: 'createdAt',
         meta: {

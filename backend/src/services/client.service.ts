@@ -12,6 +12,7 @@ export async function get(payload: ClientTypes.getClientsParams): Promise<Client
     emails = [],
     phones = [],
     addresses = [],
+    country = '',
     createdAt = {
       from: undefined,
       to: undefined,
@@ -28,12 +29,13 @@ export async function get(payload: ClientTypes.getClientsParams): Promise<Client
     emails: { type: 'array' },
     phones: { type: 'array' },
     addresses: { type: 'array' },
+    country: { type: 'string' },
     createdAt: { type: 'dateRange' },
     updatedAt: { type: 'dateRange' },
   } as const
 
   const query = buildQuery({
-    filters: { _id: ids, emails, phones, addresses, createdAt, updatedAt },
+    filters: { _id: ids, emails, phones, addresses, country, createdAt, updatedAt },
     rules: filterRules,
   })
 

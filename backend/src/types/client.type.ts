@@ -8,6 +8,7 @@ export interface Client {
   emails: string[]
   phones: string[]
   addresses: string[]
+  country: string
   comment: string
   removed: boolean
   createdAt: Date
@@ -28,6 +29,7 @@ export interface getClientsFilters {
   emails: string[]
   phones: string[]
   addresses: string[]
+  country: string
   createdAt: DateRange
   updatedAt: DateRange
 }
@@ -57,8 +59,10 @@ export interface createClientParams {
   name: string
   middleName: string
   lastName: string
+  country: string
   emails: string[]
   phones: string[]
+  addresses: string[]
   comment?: string
 }
 
@@ -74,6 +78,7 @@ export interface editClientParams {
   name: string
   middleName: string
   lastName: string
+  country: string
   emails: string[]
   phones: string[]
   addresses: string[]

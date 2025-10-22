@@ -135,6 +135,11 @@
   "component.fileUploadDnd.upload": "Загрузить файл",
   "component.fileUploadDnd.noFilesUploaded": "Файлы не загружены",
 
+  "component.countrySelect.placeholder": "Выберите страну",
+  "component.countrySelect.searchPlaceholder": "Поиск страны",
+  "component.countrySelect.noResultsMessage": "Ничего не найдено",
+  "component.countrySelect.clearSelection": "Сбросить выбор",
+
   "component.productSelectTable.filter.placeholder": "Поиск товаров",
 
   "component.productTable.table.selectedProducts": "Выбранные товары ({{count}})",

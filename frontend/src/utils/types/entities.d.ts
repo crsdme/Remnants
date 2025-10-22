@@ -224,6 +224,7 @@ interface Client {
   name: string
   middleName: string
   lastName: string
+  country: CountryCode
   emails: string[]
   phones: string[]
   addresses: string[]

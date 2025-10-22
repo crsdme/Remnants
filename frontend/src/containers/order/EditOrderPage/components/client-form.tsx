@@ -3,6 +3,7 @@ import { TrashIcon } from 'lucide-react'
 
 import { useFieldArray } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
+import { CountrySelect } from '@/components'
 import {
   Button,
   Form,
@@ -45,7 +46,7 @@ export function ClientForm({ form, onSubmit }: { form: UseFormReturn, onSubmit: 
 }
 
 function FullForm({ form, onSubmit }: { form: UseFormReturn, onSubmit: (payments: any) => void }) {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const { isLoading } = useEditOrderContext()
 
   const { fields: phoneFields, append: appendPhone, remove: removePhone } = useFieldArray({
@@ -98,6 +99,20 @@ function FullForm({ form, onSubmit }: { form: UseFormReturn, onSubmit: (payments
               <FormLabel>{t('page.edit-order.form.lastName')}</FormLabel>
               <FormControl>
                 <Input {...field} disabled={isLoading} placeholder={t('page.edit-order.form.lastName')} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="country"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>{t('page.edit-order.form.country')}</FormLabel>
+              <FormControl>
+                <CountrySelect locale={i18n.language} {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>

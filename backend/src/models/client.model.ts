@@ -20,6 +20,9 @@ const ClientSchema: Schema = new Schema(
     lastName: {
       type: String,
     },
+    country: {
+      type: String,
+    },
     emails: [{
       type: String,
     }],

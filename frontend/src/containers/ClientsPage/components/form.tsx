@@ -2,6 +2,7 @@ import { TrashIcon } from 'lucide-react'
 import { useFieldArray } from 'react-hook-form'
 
 import { useTranslation } from 'react-i18next'
+import { CountrySelect } from '@/components/CountrySelect'
 import {
   Button,
   Form,
@@ -16,7 +17,7 @@ import {
 import { useClientContext } from '@/contexts'
 
 export function ClientForm() {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const { isLoading, form, closeModal, submitClientForm } = useClientContext()
 
   const onSubmit = (values) => {
@@ -72,6 +73,20 @@ export function ClientForm() {
               <FormLabel>{t('page.clients.form.lastName')}</FormLabel>
               <FormControl>
                 <Input {...field} disabled={isLoading} placeholder={t('page.clients.form.lastName')} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="country"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>{t('page.clients.form.country')}</FormLabel>
+              <FormControl>
+                <CountrySelect locale={i18n.language} {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>

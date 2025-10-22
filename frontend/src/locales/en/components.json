@@ -135,6 +135,11 @@
   "component.fileUploadDnd.upload": "Upload file",
   "component.fileUploadDnd.noFilesUploaded": "No files uploaded",
 
+  "component.countrySelect.placeholder": "Select country",
+  "component.countrySelect.searchPlaceholder": "Search country",
+  "component.countrySelect.noResultsMessage": "No results found",
+  "component.countrySelect.clearSelection": "Clear selection",
+
   "component.productSelectTable.filter.placeholder": "Search products",
 
   "component.productTable.table.selectedProducts": "Selected Products ({{count}})",

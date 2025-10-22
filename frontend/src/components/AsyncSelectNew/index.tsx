@@ -143,7 +143,6 @@ export function AsyncSelectNew<T>({
         changed = true
       }
       else {
-        // Можно обновлять всегда; если строгая экономия — сравнивайте поля
         map.set(id, opt)
         changed = true
       }
