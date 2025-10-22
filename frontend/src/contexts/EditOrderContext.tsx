@@ -84,9 +84,11 @@ export function EditOrderProvider({ children }: EditOrderProviderProps) {
     { filters: { seq: id } },
     { options: {
       select: response => ({ order: response.data.orders[0] }),
-      refetchOnMount: 'always',
-      refetchOnReconnect: true,
+      refetchOnMount: false,
+      refetchOnReconnect: false,
       refetchOnWindowFocus: false,
+      staleTime: 5 * 60 * 1000,
+      gcTime: 30 * 60 * 1000,
     } },
   )
 
