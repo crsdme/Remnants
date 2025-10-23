@@ -62,7 +62,6 @@ export interface createClientParams {
   country: string
   emails: string[]
   phones: string[]
-  addresses: string[]
   comment?: string
 }
 
