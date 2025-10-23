@@ -72,3 +72,17 @@ export async function printDraftInvoice(req: Request, res: Response, next: NextF
     next(err)
   }
 }
+
+export async function printOrderLabel(req: Request, res: Response, next: NextFunction) {
+  try {
+    const { doc } = await OrderService.printOrderLabel(req.body)
+
+    res.setHeader('Content-Type', 'application/pdf')
+    res.setHeader('Content-Disposition', `inline; filename=order-label-${req.body.order}.pdf`)
+    doc.pipe(res)
+    doc.end()
+  }
+  catch (err) {
+    next(err)
+  }
+}

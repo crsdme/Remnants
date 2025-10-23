@@ -98,3 +98,8 @@ export const printDraftInvoiceOrderSchema = z.object({
   client: z.any(),
   language: z.string().optional().default('en'),
 })
+
+export const printOrderLabelOrderSchema = z.object({
+  seq: numberFromStringSchema,
+  language: z.string().optional().default('en'),
+})

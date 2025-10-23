@@ -211,3 +211,15 @@ export interface printDraftInvoiceOrderResult {
   message: Message
   doc: typeof PDFDocument
 }
+
+export interface printOrderLabelParams {
+  seq: number
+  language: SUPPORTED_LANGUAGES_TYPE
+}
+
+export interface printOrderLabelResult {
+  status: Status
+  code: Code
+  message: Message
+  doc: typeof PDFDocument
+}
