@@ -13,7 +13,7 @@ import { useTranslation } from 'react-i18next'
 
 import { useNavigate } from 'react-router-dom'
 import { TableActionDropdown } from '@/components'
-import { Badge, Button, Checkbox, Label } from '@/components/ui'
+import { Badge, Button, Checkbox } from '@/components/ui'
 import { useAuthContext, useOrderContext } from '@/contexts'
 import { backendUrl } from '@/utils/constants'
 import { formatDate } from '@/utils/helpers'
@@ -99,7 +99,7 @@ export function useColumns() {
               link: `${backendUrl}api/orders/print/order-label?seq=${item.seq}&language=${i18n.language}`,
               type: 'link' as const,
               label: t('table.printLabel'),
-              icon: <Label className="h-4 w-4" />,
+              icon: <Printer className="h-4 w-4" />,
             },
             {
               permission: 'order.print.invoice',

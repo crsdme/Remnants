@@ -28,6 +28,7 @@
   "table.printInvoice": "Print Invoice",
   "table.quantityLogs": "Quantity Logs",
   "table.auditLogs": "Audit Logs",
+  "table.printLabel": "Print Label",
 
   "order-status.all": "All",
 

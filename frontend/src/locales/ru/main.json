@@ -28,6 +28,7 @@
   "table.printInvoice": "Печатать счет",
   "table.quantityLogs": "Логи количества",
   "table.auditLogs": "Логи изменений",
+  "table.printLabel": "Печатать этикетку",
 
   "order-status.all": "Все",
 
