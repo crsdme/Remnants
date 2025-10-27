@@ -1914,7 +1914,7 @@ export async function printOrderLabel(payload: OrderTypes.printOrderLabelParams)
 
   const MM = 8.49
   const [wMm, hMm] = [55, 40]
-  const paddingMm = 2
+  const paddingMm = 1.5
 
   const size: [number, number] = [wMm * MM, hMm * MM]
   const margins = {
@@ -1933,18 +1933,19 @@ export async function printOrderLabel(payload: OrderTypes.printOrderLabelParams)
 
   if (order) {
     doc.font('Manrope-Bold')
-    doc.fontSize(50)
+    doc.fontSize(70)
     doc.text(
       `#${order.seq + 1000}`,
       margins.left,
-      doc.y,
+      doc.y - 15,
       { width: size[0] - margins.left - margins.right, height: 25, align: 'left' },
     )
   }
 
   if (client) {
-    doc.font('Manrope')
-    doc.fontSize(25)
+    doc.y -= 15
+    doc.font('Manrope-Bold')
+    doc.fontSize(28)
     doc.text(
       `${client?.name || ''} ${client?.lastName || ''} ${client?.middleName || ''}`,
       margins.left,
