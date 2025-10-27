@@ -157,6 +157,21 @@ export const NAV_MENU_ITEMS = [
   },
 ]
 
+export const SOCIAL_TYPES = [
+  {
+    id: 'telegram',
+  },
+  {
+    id: 'instagram',
+  },
+  {
+    id: 'whatsapp',
+  },
+  {
+    id: 'viber',
+  },
+]
+
 export const PAYMENT_STATUSES = [
   {
     id: 'pending',

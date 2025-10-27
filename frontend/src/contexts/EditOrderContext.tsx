@@ -94,12 +94,12 @@ export function EditOrderProvider({ children }: EditOrderProviderProps) {
 
   const paymentFormSchema = useMemo(() =>
     z.object({
-      cashregister: z.string({ required_error: t('error.required') }).min(1, { message: t('error.required') }),
-      cashregisterAccount: z.string({ required_error: t('error.required') }).min(1, { message: t('error.required') }),
+      cashregister: z.string({ required_error: t('form.errors.required') }).min(1, { message: t('form.errors.required') }),
+      cashregisterAccount: z.string({ required_error: t('form.errors.required') }).min(1, { message: t('form.errors.required') }),
       amount: z.number().default(0),
-      currency: z.string({ required_error: t('error.required') }).min(1, { message: t('error.required') }),
+      currency: z.string({ required_error: t('form.errors.required') }).min(1, { message: t('form.errors.required') }),
       paymentDate: z.date().optional(),
-      paymentStatus: z.string({ required_error: t('error.required') }).min(1, { message: t('error.required') }),
+      paymentStatus: z.string({ required_error: t('form.errors.required') }).min(1, { message: t('form.errors.required') }),
       comment: z.string().optional(),
     }), [t])
 
@@ -117,10 +117,10 @@ export function EditOrderProvider({ children }: EditOrderProviderProps) {
   })
 
   const informationFormSchema = z.object({
-    warehouse: z.string({ required_error: t('error.required') }).min(1, { message: t('error.required') }),
-    orderSource: z.string({ required_error: t('error.required') }).min(1, { message: t('error.required') }),
-    orderStatus: z.string({ required_error: t('error.required') }).min(1, { message: t('error.required') }),
-    deliveryService: z.string({ required_error: t('error.required') }).min(1, { message: t('error.required') }),
+    warehouse: z.string({ required_error: t('form.errors.required') }).min(1, { message: t('form.errors.required') }),
+    orderSource: z.string({ required_error: t('form.errors.required') }).min(1, { message: t('form.errors.required') }),
+    orderStatus: z.string({ required_error: t('form.errors.required') }).min(1, { message: t('form.errors.required') }),
+    deliveryService: z.string({ required_error: t('form.errors.required') }).min(1, { message: t('form.errors.required') }),
     client: z.string().optional(),
     items: z.array(z.object({
       product: z.string(),
@@ -134,12 +134,11 @@ export function EditOrderProvider({ children }: EditOrderProviderProps) {
       selectedPrice: z.number(),
       discountAmount: z.number().optional(),
       discountPercent: z.number().optional(),
-      // receivedQuantity: z.number({ required_error: t('error.required') }).min(1, { message: t('error.required') }),
-    })).min(1, { message: t('error.required') }),
+    })).min(1, { message: t('form.errors.required') }),
     comment: z.string().optional(),
   }).superRefine((data) => {
     if (data.items.length === 0)
-      toast.error(t('error.products.required'))
+      toast.error(t('form.errors.required.products'))
   })
 
   const informationForm = useForm({
@@ -157,12 +156,16 @@ export function EditOrderProvider({ children }: EditOrderProviderProps) {
 
   const clientFormSchema = useMemo(() =>
     z.object({
-      name: z.string({ required_error: t('error.required') }).min(1, { message: t('error.required') }),
+      name: z.string({ required_error: t('form.errors.required') }).min(1, { message: t('form.errors.required') }),
       middleName: z.string().optional(),
-      lastName: z.string({ required_error: t('error.required') }).min(1, { message: t('error.required') }),
+      lastName: z.string().optional(),
       country: z.string().optional(),
-      phones: z.array(z.string().min(7)).min(1),
+      phones: z.array(z.string().min(7)).optional(),
       emails: z.array(z.string().email()).optional(),
+      socials: z.array(z.object({
+        type: z.string(),
+        value: z.string(),
+      })).optional(),
       comment: z.string().optional(),
     }), [t])
 
@@ -290,8 +293,10 @@ export function EditOrderProvider({ children }: EditOrderProviderProps) {
 
   const useMutateCreateClient = useClientCreate({
     options: {
-      onSuccess: ({ data }) => {
+      onSuccess: ({ data }: { data: any }) => {
         closeClientModal()
+        setIsLoading(false)
+        informationForm.setValue('client', data?.client?.id || '')
         queryClient.invalidateQueries({ queryKey: ['clients'] })
         toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description || ''}` })
       },
@@ -306,8 +311,6 @@ export function EditOrderProvider({ children }: EditOrderProviderProps) {
   const createClient = (params) => {
     setIsLoading(true)
     useMutateCreateClient.mutate(params)
-    setIsLoading(false)
-    closeClientModal()
   }
 
   const editOrder = (params) => {

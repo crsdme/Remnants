@@ -30,6 +30,10 @@ export const createClientSchema = z.object({
   emails: z.array(z.string().email()).optional(),
   phones: z.array(z.string().min(7)).optional(),
   addresses: z.array(z.string()).optional(),
+  socials: z.array(z.object({
+    type: z.string(),
+    value: z.string(),
+  })).optional(),
   comment: z.string().optional(),
 })
 
@@ -42,6 +46,10 @@ export const editClientSchema = z.object({
   emails: z.array(z.string().email()).optional(),
   phones: z.array(z.string().min(7)).optional(),
   addresses: z.array(z.string()).optional(),
+  socials: z.array(z.object({
+    type: z.string(),
+    value: z.string(),
+  })).optional(),
   comment: z.string().optional(),
 })
 

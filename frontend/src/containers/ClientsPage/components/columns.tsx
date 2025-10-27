@@ -168,6 +168,31 @@ export function useColumns() {
         },
       },
       {
+        id: 'socials',
+        accessorKey: 'socials',
+        meta: {
+          title: t('page.clients.table.socials'),
+          batchEdit: true,
+          batchEditType: 'textMultiLanguage',
+          filterable: true,
+          filterType: 'text',
+          sortable: true,
+        },
+        header: t('page.clients.table.socials'),
+        cell: ({ row }) => {
+          const socials = row.original.socials || []
+          return (
+            <div className="flex flex-wrap gap-2">
+              {socials.map(social => (
+                <Badge key={`${row.original.id}-${social.value}}`} variant="outline">
+                  {`${t(`socials.type.${social.type}`)}: ${social.value}`}
+                </Badge>
+              ))}
+            </div>
+          )
+        },
+      },
+      {
         id: 'country',
         accessorKey: 'country',
         meta: {

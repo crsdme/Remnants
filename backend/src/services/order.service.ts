@@ -1971,7 +1971,7 @@ export async function printOrderLabel(payload: OrderTypes.printOrderLabelParams)
     `${order.comment || ''}`,
     margins.left,
     doc.y,
-    { width: size[0] - margins.left - margins.right, height: 25, align: 'left' },
+    { width: size[0] - margins.left - margins.right, align: 'left' },
   )
 
   return { status: 'success', code: 'ORDER_LABEL_PRINTED', message: 'Order label printed', doc }

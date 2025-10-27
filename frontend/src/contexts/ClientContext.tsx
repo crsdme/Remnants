@@ -49,6 +49,10 @@ export function ClientProvider({ children }: ClientProviderProps) {
       country: z.string().optional(),
       phones: z.array(z.string().min(10, { message: t('form.errors.min_length', { count: 10 }) })).optional(),
       emails: z.array(z.string().email()).optional(),
+      socials: z.array(z.object({
+        type: z.string(),
+        value: z.string(),
+      })).optional(),
       comment: z.string().optional(),
     }), [t])
 
@@ -61,6 +65,7 @@ export function ClientProvider({ children }: ClientProviderProps) {
       country: '',
       phones: [],
       emails: [],
+      socials: [],
       comment: '',
     },
   })
@@ -76,6 +81,7 @@ export function ClientProvider({ children }: ClientProviderProps) {
         country: '',
         phones: [],
         emails: [],
+        socials: [],
         comment: '',
       }
     }
@@ -86,6 +92,7 @@ export function ClientProvider({ children }: ClientProviderProps) {
       country: client.country,
       phones: client.phones,
       emails: client.emails,
+      socials: client.socials,
       comment: client.comment,
     }
   }

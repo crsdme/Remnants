@@ -1011,6 +1011,8 @@
   "page.create-order.form.country": "Страна",
   "page.create-order.form.phones": "Телефоны",
   "page.create-order.form.emails": "Email",
+  "page.create-order.form.socials": "Социальные сети",
+  "page.create-order.form.socials.type": "Тип",
   "page.create-order.form.address": "Адрес",
 
   "page.edit-order.title": "Редактирование заказа",
@@ -1044,6 +1046,8 @@
   "page.edit-order.form.country": "Страна",
   "page.edit-order.form.phones": "Телефоны",
   "page.edit-order.form.emails": "Email",
+  "page.edit-order.form.socials": "Социальные сети",
+  "page.edit-order.form.socials.type": "Тип",
   "page.edit-order.form.address": "Адрес",
 
   "page.view-order.title": "Просмотр заказа",
@@ -1125,6 +1129,7 @@
   "page.clients.table.phones": "Телефоны",
   "page.clients.table.emails": "Email",
   "page.clients.table.country": "Страна",
+  "page.clients.table.socials": "Социальные сети",
   "page.clients.table.createdAt": "Дата создания",
   "page.clients.table.updatedAt": "Дата обновления",
 
@@ -1139,6 +1144,8 @@
   "page.clients.form.phones": "Телефоны",
   "page.clients.form.emails": "Emails",
   "page.clients.form.comment": "Комментарий",
+  "page.clients.form.socials": "Социальные сети",
+  "page.clients.form.socials.type": "Тип",
 
   "page.expense-categories.title": "Категории расходов",
   "page.expense-categories.description": "Управление категориями расходов",

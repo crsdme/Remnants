@@ -13,6 +13,11 @@ import {
   FormLabel,
   FormMessage,
   Input,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
   Sheet,
   SheetContent,
   SheetDescription,
@@ -21,6 +26,7 @@ import {
   Textarea,
 } from '@/components/ui'
 import { useEditOrderContext } from '@/contexts'
+import { SOCIAL_TYPES } from '@/utils/constants'
 
 export function ClientForm({ form, onSubmit }: { form: UseFormReturn, onSubmit: (payments: any) => void }) {
   const { t } = useTranslation()
@@ -57,6 +63,11 @@ function FullForm({ form, onSubmit }: { form: UseFormReturn, onSubmit: (payments
   const { fields: emailFields, append: appendEmail, remove: removeEmail } = useFieldArray({
     control: form.control,
     name: 'emails',
+  })
+
+  const { fields: socialsFields, append: appendSocial, remove: removeSocial } = useFieldArray({
+    control: form.control,
+    name: 'socials',
   })
 
   return (
@@ -175,6 +186,60 @@ function FullForm({ form, onSubmit }: { form: UseFormReturn, onSubmit: (payments
           </Button>
 
           <FormMessage />
+        </FormItem>
+
+        <FormItem>
+          <FormLabel>{t('page.edit-order.form.socials')}</FormLabel>
+          {socialsFields.map((f, idx) => (
+            <div key={f.id} className="flex items-center gap-2 mb-2">
+              <FormField
+                control={form.control}
+                name={`socials.${idx}.type`}
+                render={({ field }) => (
+                  <Select value={field.value} onValueChange={field.onChange}>
+                    <SelectTrigger className="w-[120px]">
+                      <SelectValue placeholder={t('page.edit-order.form.socials.type')} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {SOCIAL_TYPES.map(social => (
+                        <SelectItem key={social.id} value={social.id}>
+                          {t(`socials.type.${social.id}`)}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name={`socials.${idx}.value`}
+                render={({ field }) => (
+                  <Input
+                    {...field}
+                    className="flex-1"
+                  />
+                )}
+              />
+
+              <Button
+                type="button"
+                variant="destructive"
+                size="icon"
+                onClick={() => removeSocial(idx)}
+              >
+                <TrashIcon />
+              </Button>
+            </div>
+          ))}
+          <FormMessage />
+          <Button
+            type="button"
+            onClick={() => appendSocial({ type: 'telegram', value: '' })}
+            className="w-full"
+          >
+            {t('button.add')}
+          </Button>
         </FormItem>
 
         <FormField

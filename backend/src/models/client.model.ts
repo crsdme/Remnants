@@ -32,6 +32,16 @@ const ClientSchema: Schema = new Schema(
     addresses: [{
       type: String,
     }],
+    socials: [{
+      type: {
+        type: String,
+        required: true,
+      },
+      value: {
+        type: String,
+        required: true,
+      },
+    }],
     comment: {
       type: String,
     },

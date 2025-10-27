@@ -8,6 +8,10 @@ export interface Client {
   emails: string[]
   phones: string[]
   addresses: string[]
+  socials: {
+    type: string
+    value: string
+  }[]
   country: string
   comment: string
   removed: boolean
@@ -62,6 +66,10 @@ export interface createClientParams {
   country: string
   emails: string[]
   phones: string[]
+  socials: {
+    type: string
+    value: string
+  }[]
   comment?: string
 }
 
@@ -81,6 +89,10 @@ export interface editClientParams {
   emails: string[]
   phones: string[]
   addresses: string[]
+  socials: {
+    type: string
+    value: string
+  }[]
   comment?: string
 }
 

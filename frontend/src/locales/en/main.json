@@ -113,5 +113,10 @@
   "permission.currency.import": "Import currency",
   "permission.currency.export": "Export currency",
 
-  "permission.other.admin": "Admin"
+  "permission.other.admin": "Admin",
+
+  "socials.type.telegram": "Telegram",
+  "socials.type.whatsapp": "WhatsApp",
+  "socials.type.viber": "Viber",
+  "socials.type.instagram": "Instagram"
 }

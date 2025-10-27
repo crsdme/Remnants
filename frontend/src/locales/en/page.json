@@ -1005,6 +1005,8 @@
   "page.create-order.form.country": "Country",
   "page.create-order.form.phones": "Phones",
   "page.create-order.form.emails": "Emails",
+  "page.create-order.form.socials": "Socials",
+  "page.create-order.form.socials.type": "Type",
   "page.create-order.form.address": "Address",
 
   "page.edit-order.title": "Edit Order",
@@ -1038,6 +1040,8 @@
   "page.edit-order.form.country": "Country",
   "page.edit-order.form.phones": "Phones",
   "page.edit-order.form.emails": "Emails",
+  "page.edit-order.form.socials": "Socials",
+  "page.edit-order.form.socials.type": "Type",
   "page.edit-order.form.address": "Address",
 
   "page.view-order.title": "View Order",
@@ -1119,6 +1123,7 @@
   "page.clients.table.phones": "Phones",
   "page.clients.table.emails": "Email",
   "page.clients.table.country": "Country",
+  "page.clients.table.socials": "Socials",
   "page.clients.table.createdAt": "Created At",
   "page.clients.table.updatedAt": "Updated At",
 
@@ -1133,6 +1138,8 @@
   "page.clients.form.phones": "Phones",
   "page.clients.form.emails": "Emails",
   "page.clients.form.comment": "Comment",
+  "page.clients.form.socials": "Socials",
+  "page.clients.form.socials.type": "Type",
 
   "page.expense-categories.title": "Expense Categories",
   "page.expense-categories.description": "Manage expense categories",

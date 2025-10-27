@@ -113,5 +113,10 @@
   "permission.currency.import": "Импортировать валюту",
   "permission.currency.export": "Экспортировать валюту",
 
-  "permission.other.admin": "Администратор"
+  "permission.other.admin": "Администратор",
+
+  "socials.type.telegram": "Telegram",
+  "socials.type.whatsapp": "WhatsApp",
+  "socials.type.viber": "Viber",
+  "socials.type.instagram": "Instagram"
 }
