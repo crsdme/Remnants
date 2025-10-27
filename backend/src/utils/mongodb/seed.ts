@@ -1490,6 +1490,12 @@ async function createClients() {
       country: 'USA',
       emails: ['dmytro@example.com', 'd.kovalenko@gmail.com'],
       phones: ['+380931234567', '+380671234567'],
+      socials: [
+        {
+          type: 'telegram',
+          value: 'https://t.me/yaroslav_petrenko',
+        },
+      ],
       comment: 'Regular customer',
     },
     {
@@ -1499,6 +1505,12 @@ async function createClients() {
       country: 'USA',
       emails: ['olena.shevchenko@example.com'],
       phones: ['+380501112233'],
+      socials: [
+        {
+          type: 'telegram',
+          value: 'https://t.me/yaroslav_petrenko',
+        },
+      ],
       comment: 'Prefers email contact',
     },
     {
@@ -1508,6 +1520,12 @@ async function createClients() {
       country: 'USA',
       emails: ['m.tkachenko@gmail.com', 'mykola@example.com'],
       phones: ['+380931112233', '+380991112233'],
+      socials: [
+        {
+          type: 'telegram',
+          value: 'https://t.me/yaroslav_petrenko',
+        },
+      ],
       comment: 'Wholesale buyer',
     },
     {
@@ -1517,6 +1535,12 @@ async function createClients() {
       country: 'USA',
       emails: ['iryna.melnyk@ukr.net'],
       phones: ['+380971234567'],
+      socials: [
+        {
+          type: 'telegram',
+          value: 'https://t.me/yaroslav_petrenko',
+        },
+      ],
       comment: 'Asks for discounts',
     },
     {
@@ -1526,6 +1550,12 @@ async function createClients() {
       country: 'USA',
       emails: ['andriy@example.com'],
       phones: ['+380631112233', '+380731112233'],
+      socials: [
+        {
+          type: 'telegram',
+          value: 'https://t.me/yaroslav_petrenko',
+        },
+      ],
       comment: 'VIP client',
     },
     {
@@ -1535,6 +1565,12 @@ async function createClients() {
       country: 'USA',
       emails: ['y.savchenko@gmail.com'],
       phones: ['+380671231231'],
+      socials: [
+        {
+          type: 'telegram',
+          value: 'https://t.me/yaroslav_petrenko',
+        },
+      ],
       comment: 'Likes new products',
     },
     {
@@ -1544,6 +1580,12 @@ async function createClients() {
       country: 'USA',
       emails: ['oleksandr.h@example.com'],
       phones: ['+380931231231'],
+      socials: [
+        {
+          type: 'telegram',
+          value: 'https://t.me/yaroslav_petrenko',
+        },
+      ],
       comment: 'Corporate orders',
     },
     {
@@ -1553,6 +1595,12 @@ async function createClients() {
       country: 'USA',
       emails: ['tetiana.kravch@gmail.com'],
       phones: ['+380981112244', '+380671112244'],
+      socials: [
+        {
+          type: 'telegram',
+          value: 'https://t.me/yaroslav_petrenko',
+        },
+      ],
       comment: 'Sometimes inactive',
     },
     {
@@ -1562,6 +1610,12 @@ async function createClients() {
       country: 'USA',
       emails: ['roman.polishchuk@example.com'],
       phones: ['+380931223344'],
+      socials: [
+        {
+          type: 'telegram',
+          value: 'https://t.me/yaroslav_petrenko',
+        },
+      ],
       comment: 'Referral from friend',
     },
     {
@@ -1571,6 +1625,12 @@ async function createClients() {
       country: 'USA',
       emails: ['katya.zakhar@gmail.com'],
       phones: ['+380991234321'],
+      socials: [
+        {
+          type: 'telegram',
+          value: 'https://t.me/yaroslav_petrenko',
+        },
+      ],
       comment: 'Interested in promos',
     },
     {
@@ -1580,6 +1640,12 @@ async function createClients() {
       country: 'USA',
       emails: ['petro.h@example.com'],
       phones: ['+380671223344'],
+      socials: [
+        {
+          type: 'telegram',
+          value: 'https://t.me/yaroslav_petrenko',
+        },
+      ],
       comment: 'Pays cash only',
     },
     {
@@ -1589,6 +1655,12 @@ async function createClients() {
       country: 'USA',
       emails: ['halyna.levchenko@example.com'],
       phones: ['+380981223344'],
+      socials: [
+        {
+          type: 'telegram',
+          value: 'https://t.me/yaroslav_petrenko',
+        },
+      ],
       comment: 'Regular weekend buyer',
     },
     {
@@ -1598,6 +1670,12 @@ async function createClients() {
       country: 'USA',
       emails: ['viktor.marchenko@example.com'],
       phones: ['+380931998877'],
+      socials: [
+        {
+          type: 'telegram',
+          value: 'https://t.me/yaroslav_petrenko',
+        },
+      ],
       comment: 'Loyal for 3 years',
     },
     {
@@ -1607,6 +1685,12 @@ async function createClients() {
       country: 'USA',
       emails: ['nadiia.prok@gmail.com'],
       phones: ['+380971112255'],
+      socials: [
+        {
+          type: 'telegram',
+          value: 'https://t.me/yaroslav_petrenko',
+        },
+      ],
       comment: 'Prefers online orders',
     },
     {
@@ -1616,6 +1700,12 @@ async function createClients() {
       country: 'USA',
       emails: ['oleh.ch@example.com'],
       phones: ['+380631123321'],
+      socials: [
+        {
+          type: 'telegram',
+          value: 'https://t.me/yaroslav_petrenko',
+        },
+      ],
       comment: 'Always late pickup',
     },
     {
@@ -1625,6 +1715,12 @@ async function createClients() {
       country: 'USA',
       emails: ['mariia.lys@example.com'],
       phones: ['+380981145678'],
+      socials: [
+        {
+          type: 'telegram',
+          value: 'https://t.me/yaroslav_petrenko',
+        },
+      ],
       comment: 'Asks for loyalty bonuses',
     },
     {
@@ -1634,6 +1730,12 @@ async function createClients() {
       country: 'USA',
       emails: ['serhii.bilan@example.com'],
       phones: ['+380671234000'],
+      socials: [
+        {
+          type: 'telegram',
+          value: 'https://t.me/yaroslav_petrenko',
+        },
+      ],
       comment: 'Corporate manager',
     },
     {
@@ -1643,6 +1745,12 @@ async function createClients() {
       country: 'USA',
       emails: ['anna.danyl@example.com'],
       phones: ['+380991111555'],
+      socials: [
+        {
+          type: 'telegram',
+          value: 'https://t.me/yaroslav_petrenko',
+        },
+      ],
       comment: 'Young customer',
     },
     {
@@ -1652,6 +1760,12 @@ async function createClients() {
       emails: ['yaroslav.petrenko@example.com'],
       country: 'USA',
       phones: ['+380931122334'],
+      socials: [
+        {
+          type: 'telegram',
+          value: 'https://t.me/yaroslav_petrenko',
+        },
+      ],
       comment: 'Referred 5 new clients',
     },
     {
@@ -1661,6 +1775,12 @@ async function createClients() {
       emails: ['oksana.klymenko@example.com'],
       country: 'USA',
       phones: ['+380981221122'],
+      socials: [
+        {
+          type: 'telegram',
+          value: 'https://t.me/oksana_klymenko',
+        },
+      ],
       comment: 'Leaves detailed feedback',
     },
   ]
