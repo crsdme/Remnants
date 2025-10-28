@@ -24,6 +24,7 @@ interface ProductSelectedTableProps {
   className?: string
   includeTotal?: boolean
   includeFooterTotal?: boolean
+  isProfit?: boolean
 }
 
 export function ProductSelectedTable(
@@ -39,6 +40,7 @@ export function ProductSelectedTable(
     disabled = false,
     includeTotal = false,
     includeFooterTotal = false,
+    isProfit = false,
   }: ProductSelectedTableProps,
 ) {
   const { t } = useTranslation()
@@ -67,6 +69,7 @@ export function ProductSelectedTable(
     handleChange,
     isDiscount,
     includeTotal,
+    isProfit,
   })
 
   const table = useReactTable({

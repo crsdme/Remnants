@@ -151,6 +151,7 @@ export function ViewOrderProvider({ children }: ViewOrderProviderProps) {
             product: item.product.id,
             quantity: item.quantity,
             price: item.price || item.product.price,
+            profit: item.profit || 0,
             selectedPrice: discountPrice,
             discountAmount: item.discountAmount || 0,
             discountPercent: item.discountPercent || 0,

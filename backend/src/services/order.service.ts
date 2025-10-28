@@ -272,7 +272,7 @@ export async function get(payload: OrderTypes.getOrdersParams, user?: UserTypes.
   const ordersCount = ordersRaw[0].totalCount[0]?.count || 0
 
   for (const order of orders) {
-    const orderItems = await getItems({ filters: { order: [order.id] }, pagination: { full: true } })
+    const orderItems = await getItems({ filters: { order: [order.id], showFullData: hasProfitPermission }, pagination: { full: true } })
     order.items = orderItems.orderItems
 
     const orderPayments = await getOrderPayments({ filters: { order: order.id } })

@@ -184,6 +184,7 @@ export function DataTable() {
         isSelectedPrice={true}
         isDiscount={true}
         includeTotal={true}
+        isProfit={true}
       />
       <ProductSelectedTotal />
       <InformationForm form={informationForm} onSubmit={onSubmitInformation} />

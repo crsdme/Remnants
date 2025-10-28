@@ -63,11 +63,11 @@ export default function App() {
           />
           <Route
             path="/product-properties-groups"
-            element={<ProtectedRoute children={<Pages.ProductPropertiesGroupsPage />} permissions={['product-properties-groups.page']} />}
+            element={<ProtectedRoute children={<Pages.ProductPropertiesGroupsPage />} permissions={['productPropertyGroup.page']} />}
           />
           <Route
             path="/product-properties"
-            element={<ProtectedRoute children={<Pages.ProductPropertiesPage />} permissions={['product-properties.page']} />}
+            element={<ProtectedRoute children={<Pages.ProductPropertiesPage />} permissions={['productProperty.page']} />}
           />
 
           <Route
@@ -89,11 +89,11 @@ export default function App() {
           />
           <Route
             path="/cashregister-accounts"
-            element={<ProtectedRoute children={<Pages.CashregisterAccountsPage />} permissions={['cashregister-account.page']} />}
+            element={<ProtectedRoute children={<Pages.CashregisterAccountsPage />} permissions={['cashregisterAccount.page']} />}
           />
           <Route
             path="/money-transactions"
-            element={<ProtectedRoute children={<Pages.MoneyTransactionsPage />} permissions={['money-transaction.page']} />}
+            element={<ProtectedRoute children={<Pages.MoneyTransactionsPage />} permissions={['moneyTransaction.page']} />}
           />
 
           <Route
@@ -102,7 +102,7 @@ export default function App() {
           />
           <Route
             path="/settings/expense-categories"
-            element={<ProtectedRoute children={<Pages.ExpenseCategoriesPage />} permissions={['expense-category.page']} />}
+            element={<ProtectedRoute children={<Pages.ExpenseCategoriesPage />} permissions={['expenseCategory.page']} />}
           />
 
           <Route
@@ -121,7 +121,7 @@ export default function App() {
           />
           <Route
             path="/settings/audit-logs"
-            element={<ProtectedRoute children={<Pages.AuditLogsPage />} permissions={['audit-log.page']} />}
+            element={<ProtectedRoute children={<Pages.AuditLogsPage />} permissions={['auditLog.page']} />}
           />
           <Route
             path="/settings/languages"
@@ -133,15 +133,15 @@ export default function App() {
           />
           <Route
             path="/settings/delivery-services"
-            element={<ProtectedRoute children={<Pages.DeliveryServicesPage />} permissions={['delivery-service.page']} />}
+            element={<ProtectedRoute children={<Pages.DeliveryServicesPage />} permissions={['deliveryService.page']} />}
           />
           <Route
             path="/settings/order-statuses"
-            element={<ProtectedRoute children={<Pages.OrderStatusesPage />} permissions={['order-status.page']} />}
+            element={<ProtectedRoute children={<Pages.OrderStatusesPage />} permissions={['orderStatus.page']} />}
           />
           <Route
             path="/settings/order-sources"
-            element={<ProtectedRoute children={<Pages.OrderSourcesPage />} permissions={['order-source.page']} />}
+            element={<ProtectedRoute children={<Pages.OrderSourcesPage />} permissions={['orderSource.page']} />}
           />
           <Route
             path="/settings/automations"
@@ -158,7 +158,7 @@ export default function App() {
           />
           <Route
             path="/warehouse-transactions"
-            element={<ProtectedRoute children={<Pages.WarehouseTransactionsPage />} permissions={['warehouse-transaction.page']} />}
+            element={<ProtectedRoute children={<Pages.WarehouseTransactionsPage />} permissions={['warehouseTransaction.page']} />}
           />
           <Route
             path="/barcodes"
@@ -176,7 +176,7 @@ export default function App() {
 
           <Route
             path="/statistics/orders"
-            element={<ProtectedRoute children={<Pages.OrderStatisticPage />} permissions={['order-statistic.page']} />}
+            element={<ProtectedRoute children={<Pages.OrderStatisticPage />} permissions={['orderStatistic.page']} />}
           />
 
           <Route path="*" element={<Pages.ErrorPage status={404} />} />

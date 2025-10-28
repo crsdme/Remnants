@@ -156,6 +156,7 @@
   "component.productTable.table.discount": "Discount",
   "component.productTable.table.selectedPrice": "Price",
   "component.productTable.table.receivedQuantity": "Received Quantity",
+  "component.productTable.table.profit": "Profit",
   "component.productTable.table.total": "Total",
 
   "component.tableActionDropdown.deleteTitle": "Delete",

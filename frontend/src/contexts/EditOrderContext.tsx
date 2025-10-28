@@ -199,19 +199,12 @@ export function EditOrderProvider({ children }: EditOrderProviderProps) {
         deliveryService: order.deliveryService.id,
         client: order.client.id,
         items: order.items.map((item) => {
-          // let discountPrice = item.price
-          // if (item.discountPercent > 0) {
-          //   discountPrice = item.price - (item.price * item.discountPercent) / 100
-          // }
-          // else if (item.discountAmount > 0) {
-          //   discountPrice = item.price - item.discountAmount
-          // }
-
           return {
             ...item.product,
             product: item.product.id,
             quantity: item.quantity,
             price: item.price,
+            profit: item.profit || 0,
             manualPrice: item.manualPrice || undefined,
             basePrice: item.basePrice,
             selectedPrice: item.price,

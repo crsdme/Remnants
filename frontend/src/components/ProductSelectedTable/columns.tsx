@@ -1,8 +1,5 @@
 import {
-  ArrowDown,
-  ArrowUp,
   Check,
-  ChevronsUpDown,
   Minus,
   Plus,
   Trash2,
@@ -20,8 +17,6 @@ import { hasPermission } from '@/utils/helpers/permission'
 import { AsyncSelectNew } from '../AsyncSelectNew'
 import { EditableCell } from './cells'
 
-const sortIcons = { asc: ArrowUp, desc: ArrowDown }
-
 interface ProductSelectedTableProps {
   removeProduct: (product: any) => void
   isReceiving: boolean
@@ -30,6 +25,7 @@ interface ProductSelectedTableProps {
   disabled: boolean
   handleChange: (options: { productId: string, field: string, value: string | number | string[], isDebounced?: boolean }) => void
   includeTotal: boolean
+  isProfit: boolean
 }
 
 export function useColumns(
@@ -41,6 +37,7 @@ export function useColumns(
     disabled,
     handleChange,
     includeTotal,
+    isProfit,
   }: ProductSelectedTableProps,
 ) {
   const { t, i18n } = useTranslation()
@@ -63,22 +60,6 @@ export function useColumns(
   )
 
   const columns = useMemo(() => {
-    function sortHeader(column, label) {
-      const Icon = sortIcons[column.getIsSorted() || undefined] || ChevronsUpDown
-
-      return (
-        <Button
-          disabled={isLoading || disabled}
-          variant="ghost"
-          onClick={() => column.toggleSorting()}
-          className="my-2 flex items-center gap-2"
-        >
-          {label}
-          <Icon className="w-4 h-4" />
-        </Button>
-      )
-    }
-
     function actionColumn() {
       return ({
         id: 'action',
@@ -116,7 +97,7 @@ export function useColumns(
           filterType: 'text',
           sortable: true,
         },
-        header: ({ column }) => sortHeader(column, property.names[i18n.language]),
+        header: () => property.names[i18n.language],
         cell: ({ row }) => {
           const productProperty = row.original.productProperties.find(p => p.id === property.id)
 
@@ -173,8 +154,27 @@ export function useColumns(
             filterType: 'number',
             sortable: true,
           },
-          header: ({ column }) => sortHeader(column, t('component.productTable.table.purchasePrice')),
+          header: () => t('component.productTable.table.purchasePrice'),
           accessorFn: row => `${row.purchasePrice} ${row.purchaseCurrency.symbols[i18n.language]}`,
+        },
+      ]
+    }
+
+    function profitColumns() {
+      if (!isProfit)
+        return []
+      return [
+        {
+          id: 'profit',
+          size: 150,
+          meta: {
+            title: t('component.productTable.table.profit'),
+            filterable: true,
+            filterType: 'number',
+            sortable: true,
+          },
+          header: () => t('component.productTable.table.profit'),
+          accessorFn: row => `${row.profit} ${row.currency.symbols[i18n.language]}`,
         },
       ]
     }
@@ -206,7 +206,7 @@ export function useColumns(
           sortable: true,
           defaultVisible: true,
         },
-        header: ({ column }) => sortHeader(column, t('component.productTable.table.names')),
+        header: () => t('component.productTable.table.names'),
         accessorFn: row => row.names?.[i18n.language] || row.names?.en,
       },
       {
@@ -219,10 +219,11 @@ export function useColumns(
           sortable: true,
           defaultVisible: true,
         },
-        header: ({ column }) => sortHeader(column, t('component.productTable.table.price')),
+        header: () => t('component.productTable.table.price'),
         accessorFn: row => `${row.price} ${row.currency.symbols[i18n.language]}`,
       },
       ...permissionColumns(),
+      ...profitColumns(),
       {
         id: 'unit',
         size: 150,
@@ -232,7 +233,7 @@ export function useColumns(
           filterType: 'text',
           sortable: true,
         },
-        header: ({ column }) => sortHeader(column, t('component.productTable.table.unit')),
+        header: () => t('component.productTable.table.unit'),
         accessorFn: row => `${row.unit.names[i18n.language]}`,
       },
       {
@@ -245,7 +246,7 @@ export function useColumns(
           sortable: true,
           defaultVisible: true,
         },
-        header: ({ column }) => sortHeader(column, t('component.productTable.table.categories')),
+        header: () => t('component.productTable.table.categories'),
         cell: ({ row }) => (
           <div className="flex flex-wrap gap-2">
             {row.original.categories.map(category => <Badge key={category.id}>{category.names[i18n.language]}</Badge>)}
@@ -261,7 +262,7 @@ export function useColumns(
           filterType: 'text',
           sortable: true,
         },
-        header: ({ column }) => sortHeader(column, t('component.productTable.table.productPropertyGroup')),
+        header: () => t('component.productTable.table.productPropertyGroup'),
         accessorFn: row => `${row.productPropertiesGroup.names[i18n.language]}`,
       },
       ...productPropertyColumn(),
@@ -274,7 +275,7 @@ export function useColumns(
           filterType: 'date',
           sortable: true,
         },
-        header: ({ column }) => sortHeader(column, t('table.createdAt')),
+        header: () => t('table.createdAt'),
         cell: ({ row }) => formatDate(row.getValue('createdAt'), 'dd.MM.yyyy HH:mm', i18n.language),
       },
       {
@@ -286,7 +287,7 @@ export function useColumns(
           filterType: 'date',
           sortable: true,
         },
-        header: ({ column }) => sortHeader(column, t('table.updatedAt')),
+        header: () => t('table.updatedAt'),
         cell: ({ row }) => formatDate(row.getValue('updatedAt'), 'dd.MM.yyyy HH:mm', i18n.language),
       },
       ...(isDiscount
@@ -427,7 +428,7 @@ export function useColumns(
           sortable: true,
           defaultVisible: true,
         },
-        header: ({ column }) => sortHeader(column, t('component.productTable.table.selectedQuantity')),
+        header: () => t('component.productTable.table.selectedQuantity'),
         cell: ({ row }) => {
           const item = row.original
 

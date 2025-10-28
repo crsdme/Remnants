@@ -18,6 +18,7 @@ export function DataTable() {
         isDiscount={true}
         includeTotal={true}
         changeProduct={() => {}}
+        isProfit={true}
       />
       <ProductSelectedTotal />
       <InformationForm form={informationForm} onSubmit={() => {}} />

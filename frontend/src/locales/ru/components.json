@@ -156,6 +156,7 @@
   "component.productTable.table.discount": "Скидка",
   "component.productTable.table.selectedPrice": "Цена",
   "component.productTable.table.receivedQuantity": "Полученное количество",
+  "component.productTable.table.profit": "Прибыль",
   "component.productTable.table.total": "Итого",
 
   "component.tableActionDropdown.deleteTitle": "Удалить",
