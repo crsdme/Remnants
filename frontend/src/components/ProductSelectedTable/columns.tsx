@@ -174,7 +174,7 @@ export function useColumns(
             sortable: true,
           },
           header: () => t('component.productTable.table.profit'),
-          accessorFn: row => `${row.profit} ${row.currency.symbols[i18n.language]}`,
+          accessorFn: row => `${row.profit} ${row.selectedCurrency.symbols[i18n.language]}`,
         },
       ]
     }
