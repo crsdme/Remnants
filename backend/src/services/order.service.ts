@@ -1075,7 +1075,8 @@ export async function printInvoice(payload: OrderTypes.printInvoiceOrderParams):
     type: { key: 'type', width: 80, x: margins + 200, align: 'left', type: 'text' },
     price: { key: 'price', width: 60, x: margins + 280, align: 'left', type: 'text' },
     quantity: { key: 'quantity', width: 60, x: margins + 340, align: 'left', type: 'text' },
-    discount: { key: 'discount', width: 50, x: margins + 400, align: 'left', type: 'text' },
+    // discount: { key: 'discount', width: 50, x: margins + 400, align: 'left', type: 'text' },
+    // total: { key: 'total', width: 100, x: params.size[0] - margins - 100, align: 'right', type: 'text' },
     total: { key: 'total', width: 100, x: params.size[0] - margins - 100, align: 'right', type: 'text' },
   }
 
@@ -1168,10 +1169,10 @@ export async function printInvoice(payload: OrderTypes.printInvoiceOrderParams):
         ...tableColumns.quantity,
         value: 'Quantity',
       },
-      {
-        ...tableColumns.discount,
-        value: 'Discount',
-      },
+      // {
+      //   ...tableColumns.discount,
+      //   value: 'Discount',
+      // },
       {
         ...tableColumns.total,
         value: 'Total',
@@ -1409,10 +1410,10 @@ export async function printInvoice(payload: OrderTypes.printInvoiceOrderParams):
         ...tableColumns.quantity,
         value: `${product.quantity} pcs`,
       },
-      {
-        ...tableColumns.discount,
-        value: `${product.discount} ${product.discountType === 'amount' ? product.currency.symbols[language] : '%'}`,
-      },
+      // {
+      //   ...tableColumns.discount,
+      //   value: `${product.discount} ${product.discountType === 'amount' ? product.currency.symbols[language] : '%'}`,
+      // },
       {
         ...tableColumns.total,
         value: `${product.total} ${product.currency.symbols[language] || ''}`,
@@ -1460,10 +1461,10 @@ export async function printInvoice(payload: OrderTypes.printInvoiceOrderParams):
       ...tableColumns.quantity,
       value: `${totals.count} pcs`,
     },
-    {
-      ...tableColumns.discount,
-      value: '',
-    },
+    // {
+    //   ...tableColumns.discount,
+    //   value: '',
+    // },
     {
       ...tableColumns.total,
       value: Object.values(totals.amount).map((amount: any) => `${amount.total.toFixed(2)} ${amount.currency.symbols[language] || ''}`).join(', '),
@@ -1499,7 +1500,8 @@ export async function printDraftInvoice(payload: OrderTypes.printDraftInvoiceOrd
     type: { key: 'type', width: 80, x: margins + 200, align: 'left', type: 'text' },
     price: { key: 'price', width: 60, x: margins + 280, align: 'left', type: 'text' },
     quantity: { key: 'quantity', width: 60, x: margins + 340, align: 'left', type: 'text' },
-    discount: { key: 'discount', width: 50, x: margins + 400, align: 'left', type: 'text' },
+    // discount: { key: 'discount', width: 50, x: margins + 400, align: 'left', type: 'text' },
+    // total: { key: 'total', width: 100, x: params.size[0] - margins - 100, align: 'right', type: 'text' },
     total: { key: 'total', width: 100, x: params.size[0] - margins - 100, align: 'right', type: 'text' },
   }
 
@@ -1592,10 +1594,10 @@ export async function printDraftInvoice(payload: OrderTypes.printDraftInvoiceOrd
         ...tableColumns.quantity,
         value: 'Quantity',
       },
-      {
-        ...tableColumns.discount,
-        value: 'Discount',
-      },
+      // {
+      //   ...tableColumns.discount,
+      //   value: 'Discount',
+      // },
       {
         ...tableColumns.total,
         value: 'Total',
@@ -1833,10 +1835,10 @@ export async function printDraftInvoice(payload: OrderTypes.printDraftInvoiceOrd
         ...tableColumns.quantity,
         value: `${product.quantity} pcs`,
       },
-      {
-        ...tableColumns.discount,
-        value: `${product.discount} ${product.discountType === 'amount' ? product.currency.symbols[language] : '%'}`,
-      },
+      // {
+      //   ...tableColumns.discount,
+      //   value: `${product.discount} ${product.discountType === 'amount' ? product.currency.symbols[language] : '%'}`,
+      // },
       {
         ...tableColumns.total,
         value: `${product.total} ${product?.currency?.symbols?.[language] || ''}`,
@@ -1884,10 +1886,10 @@ export async function printDraftInvoice(payload: OrderTypes.printDraftInvoiceOrd
       ...tableColumns.quantity,
       value: `${totals.count} pcs`,
     },
-    {
-      ...tableColumns.discount,
-      value: '',
-    },
+    // {
+    //   ...tableColumns.discount,
+    //   value: '',
+    // },
     {
       ...tableColumns.total,
       value: Object.values(totals.amount).map((amount: any) => `${amount.total.toFixed(2)} ${amount?.currency?.symbols?.[language] || ''}`).join(', '),

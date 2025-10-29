@@ -3,6 +3,7 @@ import { authMiddleware } from '../../middleware/auth.middleware'
 import auditLogsRoutes from './audit-logs.route'
 import authRoutes from './auth.route'
 import automationRoutes from './automation.route'
+import balanceRoutes from './balance.route'
 import barcodeRoutes from './barcode.route'
 import cashregisterAccountRoutes from './cashregister-account.route'
 import cashregisterRoutes from './cashregister.route'
@@ -72,4 +73,5 @@ router.use('/inventories', inventoriesRoutes)
 router.use('/statistics', statisticRoutes)
 router.use('/audit-logs', auditLogsRoutes)
 router.use('/warehouse-transactions-logs', warehouseTransactionLogsRoutes)
+router.use('/balance', balanceRoutes)
 export default router
