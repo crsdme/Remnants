@@ -102,5 +102,8 @@
   "description.page.view-inventory": "View inventory in Remnant",
 
   "title.page.order-statistic": "Order Statistic - Remnant",
-  "description.page.order-statistic": "Order statistic in Remnant"
+  "description.page.order-statistic": "Order statistic in Remnant",
+
+  "title.page.balances": "Balances - Remnant",
+  "description.page.balances": "Manage balances in Remnant"
 }

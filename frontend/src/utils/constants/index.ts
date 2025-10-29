@@ -105,6 +105,7 @@ export const NAV_MENU_ITEMS = [
       { id: 'investors', url: '/investors', permissions: ['investor.page'] },
       { id: 'providers', url: '/providers', permissions: ['provider.page'] },
       { id: 'moneyTransactions', url: '/money-transactions', permissions: ['money-transaction.page'] },
+      { id: 'balances', url: '/balances', permissions: ['balance.page'] },
     ],
   },
   {
@@ -351,6 +352,11 @@ export const USER_ROLE_PERMISSIONS = [
     group: 'orderStatus',
     dependencies: ['language.read'],
     permissions: ['orderStatus.page', 'orderStatus.read', 'orderStatus.remove', 'orderStatus.create', 'orderStatus.edit', 'orderStatus.auditLogs'],
+  },
+  {
+    group: 'balance',
+    dependencies: ['balance.read'],
+    permissions: ['balance.page', 'balance.read', 'balance.remove', 'balance.create', 'balance.auditLogs'],
   },
   {
     group: 'orderSource',

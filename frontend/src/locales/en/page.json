@@ -1245,5 +1245,14 @@
   "page.order-statistic.average-check": "Average check",
   "page.order-statistic.expenses": "Expenses",
   "page.order-statistic.income": "Income",
-  "page.order-statistic.profit": "Profit"
+  "page.order-statistic.profit": "Profit",
+
+  "page.balances.title": "Balances",
+  "page.balances.description": "Manage balances",
+  "page.balances.chart.title": "Balances Chart",
+  "page.balances.chart.description": "Balances chart for the last 90 days",
+  "page.balances.button.create": "Save balance",
+
+  "page.balances.form.title.create": "Save new balance",
+  "page.balances.form.description.create": "Save new balance to the system"
 }

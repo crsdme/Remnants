@@ -95,6 +95,10 @@ export default function App() {
             path="/money-transactions"
             element={<ProtectedRoute children={<Pages.MoneyTransactionsPage />} permissions={['moneyTransaction.page']} />}
           />
+          <Route
+            path="/balances"
+            element={<ProtectedRoute children={<Pages.BalancesPage />} permissions={['balance.page']} />}
+          />
 
           <Route
             path="/expenses"

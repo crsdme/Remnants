@@ -102,5 +102,8 @@
   "description.page.view-inventory": "Просмотр инвентаризации в Remnant",
 
   "title.page.order-statistic": "Статистика заказов - Remnant",
-  "description.page.order-statistic": "Статистика заказов в Remnant"
+  "description.page.order-statistic": "Статистика заказов в Remnant",
+
+  "title.page.balances": "Балансы - Remnant",
+  "description.page.balances": "Управление балансами в Remnant"
 }

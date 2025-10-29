@@ -1251,5 +1251,14 @@
   "page.order-statistic.average-check": "Средний чек",
   "page.order-statistic.expenses": "Расходы",
   "page.order-statistic.income": "Доход",
-  "page.order-statistic.profit": "Прибыль"
+  "page.order-statistic.profit": "Прибыль",
+
+  "page.balances.title": "Балансы",
+  "page.balances.description": "Управление балансами",
+  "page.balances.chart.title": "График балансов",
+  "page.balances.chart.description": "График балансов за последние 90 дней",
+  "page.balances.button.create": "Cохранить баланс",
+
+  "page.balances.form.title.create": "Сохранение нового баланса",
+  "page.balances.form.description.create": "Сохранение нового баланса в систему"
 }

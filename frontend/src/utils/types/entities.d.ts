@@ -373,3 +373,24 @@ interface WarehouseTransactionLog {
   createdAt: Date
   updatedAt: Date
 }
+
+interface Balance {
+  id: string
+  warehouseBalance: {
+    warehouseId: string
+    totals: {
+      currencyId: string
+      amount: number
+    }[]
+  }[]
+  cashregisterBalance: {
+    cashregisterId: string
+    totals: {
+      currencyId: string
+      amount: number
+    }[]
+  }[]
+  comment: string
+  createdAt: Date
+  updatedAt: Date
+}

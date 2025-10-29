@@ -1,6 +1,7 @@
 export * from './audit-logs'
 export * from './auth'
 export * from './automation'
+export * from './balance'
 export * from './barcodes'
 export * from './cashregister-accounts'
 export * from './cashregisters'
