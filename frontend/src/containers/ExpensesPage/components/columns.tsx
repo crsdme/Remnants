@@ -111,6 +111,21 @@ export function useColumns() {
     return [
       selectColumn(),
       {
+        id: 'seq',
+        size: 150,
+        meta: {
+          title: t('table.seq'),
+          batchEdit: true,
+          batchEditType: 'number',
+          filterable: true,
+          filterType: 'number',
+          sortable: true,
+          defaultVisible: true,
+        },
+        header: ({ column }) => sortHeader(column, t('table.seq')),
+        accessorFn: row => row.seq,
+      },
+      {
         id: 'amount',
         accessorKey: 'amount',
         meta: {

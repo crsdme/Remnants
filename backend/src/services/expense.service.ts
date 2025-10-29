@@ -114,6 +114,7 @@ export async function get(payload: ExpenseTypes.getExpensesParams): Promise<Expe
       $project: {
         _id: 0,
         id: '$_id',
+        seq: 1,
         amount: 1,
         currency: {
           id: '$currency._id',
