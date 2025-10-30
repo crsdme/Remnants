@@ -1,19 +1,22 @@
 import { flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table'
-import { Fragment, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { useOrderQuery, useOrderStatusQuery } from '@/api/hooks'
 import { AdvancedFilters, AdvancedSorters, ColumnVisibilityMenu, TablePagination, TableSelectionDropdown } from '@/components'
 import { Separator, Skeleton, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Tabs, TabsList, TabsTrigger } from '@/components/ui'
 import { useOrderContext } from '@/contexts'
-import { useDebounceCallback } from '@/utils/hooks'
+import { useThemeContext } from '@/contexts/ThemeContext'
+import { hexToRgba } from '@/utils/helpers'
 
+import { useDebounceCallback } from '@/utils/hooks'
 import { useColumns } from './columns'
 import { DataTableFilters } from './data-table-filters'
 
 export function DataTable() {
   const { t, i18n } = useTranslation()
   const { removeOrder } = useOrderContext()
+  const { theme } = useThemeContext()
 
   const filtersInitialState = {
     warehouse: '',
@@ -118,9 +121,14 @@ export function DataTable() {
       return renderSkeletonRows()
 
     if (table.getRowModel().rows?.length) {
-      return table.getRowModel().rows.map(row => (
-        <Fragment key={row.id}>
-          <TableRow data-state={row.getIsSelected() && 'selected'}>
+      return table.getRowModel().rows.map((row) => {
+        const color = hexToRgba(row.original.orderStatus?.color || 'transparent', theme.layoutTheme === 'dark' ? 0.22 : 0.1)
+        return (
+          <TableRow
+            data-state={row.getIsSelected() && 'selected'}
+            style={{ backgroundColor: color, transition: 'background-color 0.3s ease' }}
+            key={row.id}
+          >
             {row.getVisibleCells().map(cell => (
               <TableCell
                 key={cell.id}
@@ -130,8 +138,9 @@ export function DataTable() {
               </TableCell>
             ))}
           </TableRow>
-        </Fragment>
-      ))
+        )
+      },
+      )
     }
 
     return (

@@ -1,3 +1,4 @@
+export * from './color'
 export * from './debounce'
 export * from './download'
 export * from './formatDate'
