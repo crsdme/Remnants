@@ -1,11 +1,11 @@
-import type { ColumnSort } from '@tanstack/react-table'
+import type { ColumnSort, Table as ReactTable } from '@tanstack/react-table'
 import { flexRender, getCoreRowModel, getExpandedRowModel, useReactTable } from '@tanstack/react-table'
 import { Package } from 'lucide-react'
 import { Fragment, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { ColumnVisibilityMenu } from '@/components'
-import { Skeleton, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui'
+import { Skeleton, Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from '@/components/ui'
 
 import { useDebounceCallback } from '@/utils/hooks'
 import { cn } from '@/utils/lib/utils'
@@ -154,6 +154,36 @@ export function ProductSelectedTable(
     )
   }
 
+  const renderTableFooter = () => {
+    const footerGroups = table.getFooterGroups()
+
+    const hasContent = footerGroups.some(group =>
+      group.headers.some((header) => {
+        const def = header.column.columnDef.footer
+        return !!def
+      }),
+    )
+
+    if (!hasContent)
+      return null
+
+    return footerGroups.map(footerGroup => (
+      <TableRow key={footerGroup.id}>
+        {footerGroup.headers.map(footerHeader => (
+          <TableCell
+            key={footerHeader.id}
+            className={`font-semibold max-w-[${footerHeader.column.columnDef.size}px] text-right align-top`}
+          >
+            {flexRender(
+              footerHeader.column.columnDef.footer,
+              footerHeader.getContext(),
+            )}
+          </TableCell>
+        ))}
+      </TableRow>
+    ))
+  }
+
   return (
     <div className={cn('', className)}>
       <div className="flex justify-between items-center max-md:flex-col gap-2 py-2">
@@ -171,6 +201,7 @@ export function ProductSelectedTable(
         <Table>
           <TableHeader>{renderTableHeader()}</TableHeader>
           <TableBody>{renderTableBody()}</TableBody>
+          <TableFooter>{renderTableFooter()}</TableFooter>
         </Table>
       </div>
       {includeFooterTotal && <ProductSelectedTotal products={products} />}

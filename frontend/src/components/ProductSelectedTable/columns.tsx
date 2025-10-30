@@ -1,3 +1,4 @@
+import type { Row } from '@tanstack/react-table'
 import {
   Check,
   Minus,
@@ -6,8 +7,8 @@ import {
   X,
 } from 'lucide-react'
 import { useMemo } from 'react'
-import { useTranslation } from 'react-i18next'
 
+import { useTranslation } from 'react-i18next'
 import { useCurrencyOptions, useCurrencyQuery, useProductPropertyQuery } from '@/api/hooks'
 import { ImageGallery } from '@/components'
 import { Badge, Button, Popover, PopoverContent, PopoverTrigger, Separator } from '@/components/ui'
@@ -138,6 +139,116 @@ export function useColumns(
               )
           }
         },
+        footer: ({ table }) => {
+          const { rows } = table.getRowModel()
+
+          const values = rows
+            .map(r => r.original.productProperties.find(p => p.id === property.id))
+            .filter(Boolean)
+
+          if (!values.length)
+            return null
+
+          const type = values[0].data.type
+
+          if (type === 'number') {
+            let sum = 0
+            let unitSymbol: string | undefined
+
+            for (const v of values) {
+              const num = typeof v.value === 'number' ? v.value : Number(v.value)
+              if (!Number.isNaN(num))
+                sum += num
+
+              // возьмём символ единицы измерения из любого вхождения
+              if (!unitSymbol) {
+                unitSymbol = v?.data?.symbols?.[i18n.language]
+              }
+            }
+
+            return (
+              <div className="flex flex-wrap gap-2">
+                <Badge>{`${sum} ${unitSymbol || ''}`}</Badge>
+              </div>
+            )
+          }
+
+          if (type === 'boolean') {
+            let trueCount = 0
+            let falseCount = 0
+
+            for (const v of values) {
+              if (v.value === true)
+                trueCount++
+              else if (v.value === false)
+                falseCount++
+            }
+
+            if (!trueCount && !falseCount)
+              return null
+
+            return (
+              <div className="flex flex-wrap gap-2 justify-end text-xs leading-tight">
+                {trueCount > 0 && (
+                  <Badge variant="success">
+                    {`${t('table.yesno.true')} ${trueCount}`}
+                  </Badge>
+                )}
+                {falseCount > 0 && (
+                  <Badge variant="destructive">
+                    {`${t('table.yesno.false')} ${falseCount}`}
+                  </Badge>
+                )}
+              </div>
+            )
+          }
+
+          if (type === 'select' || type === 'multiSelect' || type === 'color') {
+            const optionMap = new Map<
+              string,
+              { count: number, label: string, color?: string }
+            >()
+
+            for (const v of values) {
+              for (const opt of v.optionData || []) {
+                const prev = optionMap.get(opt.id)
+                if (prev) {
+                  prev.count += 1
+                }
+                else {
+                  optionMap.set(opt.id, {
+                    count: 1,
+                    label: opt.names[i18n.language],
+                    color: opt.color,
+                  })
+                }
+              }
+            }
+
+            if (!optionMap.size)
+              return null
+
+            return (
+              <div className="flex flex-wrap gap-2 justify-end text-xs leading-tight">
+                {Array.from(optionMap.entries()).map(([id, { count, label, color }]) => (
+                  <Badge key={id} className="flex items-center gap-2">
+                    {type === 'color' && (
+                      <div
+                        className="w-2 h-2 rounded-full"
+                        style={{ backgroundColor: color }}
+                      />
+                    )}
+                    <span>{label}</span>
+                    <span>{count}</span>
+                  </Badge>
+                ))}
+              </div>
+            )
+          }
+
+          // fallback
+          return null
+        },
       }))
     }
 
@@ -174,6 +285,32 @@ export function useColumns(
             sortable: true,
           },
           header: () => t('component.productTable.table.profit'),
+          footer: ({ table }) => {
+            const { rows } = table.getRowModel()
+
+            const totalsByCurrency = rows.reduce((acc: Record<string, number>, r: Row<any>) => {
+              const p = r.original
+              const symbol = p?.selectedCurrency?.symbols?.[i18n.language] || p?.currency?.symbols?.[i18n.language]
+
+              if (!symbol)
+                return acc
+
+              const rowTotal = (p.quantity ?? 0) * (p.profit ?? 0)
+
+              acc[symbol] = (acc[symbol] ?? 0) + rowTotal
+              return acc
+            }, {})
+
+            const badges = Object.entries(totalsByCurrency).map(([symbol, sum]) => (
+              <Badge key={symbol}>
+                {`${sum} ${symbol}`}
+              </Badge>
+            ))
+
+            return badges.length
+              ? <div className="flex flex-wrap gap-2">{badges}</div>
+              : null
+          },
           accessorFn: row => `${row.profit} ${row.selectedCurrency.symbols[i18n.language]}`,
         },
       ]
@@ -380,6 +517,32 @@ export function useColumns(
                 sortable: true,
               },
               header: () => t('component.productTable.table.selectedPrice'),
+              footer: ({ table }) => {
+                const { rows } = table.getRowModel()
+
+                const totalsByCurrency = rows.reduce((acc: Record<string, number>, r: Row<any>) => {
+                  const p = r.original
+                  const symbol = p?.selectedCurrency?.symbols?.[i18n.language] || p?.currency?.symbols?.[i18n.language]
+
+                  if (!symbol)
+                    return acc
+
+                  const rowTotal = (p.quantity ?? 0) * (p.selectedPrice ?? 0)
+
+                  acc[symbol] = (acc[symbol] ?? 0) + rowTotal
+                  return acc
+                }, {})
+
+                const badges = Object.entries(totalsByCurrency).map(([symbol, sum]) => (
+                  <Badge key={symbol}>
+                    {`${sum} ${symbol}`}
+                  </Badge>
+                ))
+
+                return badges.length
+                  ? <div className="flex flex-wrap gap-2">{badges}</div>
+                  : null
+              },
               cell: ({ row }) => {
                 const product = row.original
                 return (
@@ -429,6 +592,32 @@ export function useColumns(
           defaultVisible: true,
         },
         header: () => t('component.productTable.table.selectedQuantity'),
+        footer: ({ table }) => {
+          const { rows } = table.getRowModel()
+
+          const totalsByUnit = rows.reduce((acc: Record<string, number>, r: Row<any>) => {
+            const p = r.original
+            const unit = p?.unit?.symbols?.[i18n.language]
+
+            if (!unit)
+              return acc
+
+            const rowTotal = (p.quantity ?? 0)
+
+            acc[unit] = (acc[unit] ?? 0) + rowTotal
+            return acc
+          }, {})
+
+          const badges = Object.entries(totalsByUnit).map(([unit, sum]) => (
+            <Badge key={unit}>
+              {`${sum} ${unit}`}
+            </Badge>
+          ))
+
+          return badges.length
+            ? <div className="flex flex-wrap gap-2">{badges}</div>
+            : null
+        },
         cell: ({ row }) => {
           const item = row.original
 

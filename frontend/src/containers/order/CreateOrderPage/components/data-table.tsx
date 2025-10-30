@@ -10,7 +10,6 @@ import { useBarcodeScanned } from '@/utils/hooks'
 import { ClientForm } from './client-form'
 import { InformationForm } from './information-form'
 import { PaymentForm } from './payment-form'
-import { ProductSelectedTotal } from './product-selected-total'
 
 export function DataTable() {
   const { paymentForm, informationForm, isLoading, clientForm, createClient, createOrder, createPayment, getBarcode } = useCreateOrderContext()
@@ -142,7 +141,6 @@ export function DataTable() {
         isDiscount={true}
         includeTotal={true}
       />
-      <ProductSelectedTotal />
       <InformationForm form={informationForm} onSubmit={informationForm.handleSubmit(onSubmitInformation)} />
       <PaymentForm form={paymentForm} onSubmit={paymentForm.handleSubmit(onSubmitPayment)} />
       <ClientForm form={clientForm} onSubmit={clientForm.handleSubmit(onSubmitClient)} />

@@ -2,7 +2,6 @@ import { ProductSelectedTable } from '@/components'
 
 import { useViewOrderContext } from '@/contexts'
 import { InformationForm } from './information-form'
-import { ProductSelectedTotal } from './product-selected-total'
 
 export function DataTable() {
   const { informationForm } = useViewOrderContext()
@@ -20,7 +19,6 @@ export function DataTable() {
         changeProduct={() => {}}
         isProfit={true}
       />
-      <ProductSelectedTotal />
       <InformationForm form={informationForm} onSubmit={() => {}} />
     </>
   )
