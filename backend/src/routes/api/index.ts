@@ -27,6 +27,7 @@ import productRoutes from './product.route'
 import settingRoutes from './setting.route'
 import siteRoutes from './site.route'
 import statisticRoutes from './statistic.route'
+import supplierRoutes from './supplier.route'
 import testRoutes from './test.route'
 import unitRoutes from './unit.route'
 import userRoleRoutes from './user-role.route'
@@ -63,6 +64,7 @@ router.use('/delivery-services', deliveryServiceRoutes)
 router.use('/settings', settingRoutes)
 router.use('/order-payments', orderPaymentRoutes)
 router.use('/clients', clientRoutes)
+router.use('/suppliers', supplierRoutes)
 router.use('/orders', orderRoutes)
 router.use('/warehouse-transactions', warehouseTransactionRoutes)
 router.use('/test', testRoutes)

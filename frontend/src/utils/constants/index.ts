@@ -93,7 +93,7 @@ export const NAV_MENU_ITEMS = [
   {
     id: 'money',
     icon: 'Banknote',
-    permissions: ['money.page', 'cashregister.page', 'cashregister-account.page', 'expense.page', 'investor.page', 'provider.page', 'money-transaction.page'],
+    permissions: ['money.page', 'cashregister.page', 'cashregister-account.page', 'expense.page', 'investor.page', 'supplier.page', 'money-transaction.page'],
     items: [
       { id: 'cashregisters', url: '/cashregisters', permissions: ['cashregister.page'] },
       {
@@ -103,7 +103,7 @@ export const NAV_MENU_ITEMS = [
       },
       { id: 'expenses', url: '/expenses', permissions: ['expense.page'] },
       { id: 'investors', url: '/investors', permissions: ['investor.page'] },
-      { id: 'providers', url: '/providers', permissions: ['provider.page'] },
+      { id: 'suppliers', url: '/suppliers', permissions: ['supplier.page'] },
       { id: 'moneyTransactions', url: '/money-transactions', permissions: ['money-transaction.page'] },
       { id: 'balances', url: '/balances', permissions: ['balance.page'] },
     ],
@@ -293,6 +293,11 @@ export const USER_ROLE_PERMISSIONS = [
     group: 'client',
     dependencies: ['language.read', 'client.read'],
     permissions: ['client.page', 'client.read', 'client.remove', 'client.create', 'client.edit', 'client.export', 'client.auditLogs'],
+  },
+  {
+    group: 'supplier',
+    dependencies: ['language.read'],
+    permissions: ['supplier.page', 'supplier.read', 'supplier.remove', 'supplier.create', 'supplier.edit', 'supplier.export', 'supplier.auditLogs'],
   },
   {
     group: 'warehouse',

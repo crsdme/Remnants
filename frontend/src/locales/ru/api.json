@@ -525,5 +525,23 @@
   "response.description.SITES_REMOVED": "Выбранные сайты были удалены",
 
   "response.title.SITES_FETCHED": "Сайты получены",
-  "response.description.SITES_FETCHED": "Список сайтов успешно получен"
+  "response.description.SITES_FETCHED": "Список сайтов успешно получен",
+
+  "response.title.SUPPLIERS_FETCHED": "Поставщики получены",
+  "response.description.SUPPLIERS_FETCHED": "Список поставщиков успешно получен",
+
+  "response.title.SUPPLIER_CREATED": "Поставщик создан",
+  "response.description.SUPPLIER_CREATED": "Новый поставщик был создан",
+
+  "response.title.SUPPLIER_NOT_EDITED": "Поставщик не обновлен",
+  "response.description.SUPPLIER_NOT_EDITED": "Не удалось обновить поставщика",
+
+  "response.title.SUPPLIER_EDITED": "Поставщик обновлен",
+  "response.description.SUPPLIER_EDITED": "Поставщик был обновлен",
+
+  "response.title.SUPPLIERS_NOT_REMOVED": "Поставщики не удалены",
+  "response.description.SUPPLIERS_NOT_REMOVED": "Не удалось удалить выбранные поставщики",
+
+  "response.title.SUPPLIERS_REMOVED": "Поставщики удалены",
+  "response.description.SUPPLIERS_REMOVED": "Выбранные поставщики были удалены"
 }

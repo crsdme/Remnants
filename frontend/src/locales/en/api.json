@@ -525,5 +525,23 @@
   "response.description.SITES_REMOVED": "Selected sites have been deleted",
 
   "response.title.SITES_FETCHED": "Sites fetched",
-  "response.description.SITES_FETCHED": "Sites list successfully fetched"
+  "response.description.SITES_FETCHED": "Sites list successfully fetched",
+
+  "response.title.SUPPLIERS_FETCHED": "Suppliers fetched",
+  "response.description.SUPPLIERS_FETCHED": "Suppliers list successfully fetched",
+
+  "response.title.SUPPLIER_CREATED": "Supplier created",
+  "response.description.SUPPLIER_CREATED": "New supplier has been created",
+
+  "response.title.SUPPLIER_NOT_EDITED": "Supplier not edited",
+  "response.description.SUPPLIER_NOT_EDITED": "Unable to edit supplier",
+
+  "response.title.SUPPLIER_EDITED": "Supplier edited",
+  "response.description.SUPPLIER_EDITED": "Supplier has been updated",
+
+  "response.title.SUPPLIERS_NOT_REMOVED": "Suppliers not removed",
+  "response.description.SUPPLIERS_NOT_REMOVED": "Unable to remove selected suppliers",
+
+  "response.title.SUPPLIERS_REMOVED": "Suppliers removed",
+  "response.description.SUPPLIERS_REMOVED": "Selected suppliers have been deleted"
 }

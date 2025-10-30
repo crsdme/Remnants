@@ -105,5 +105,8 @@
   "description.page.order-statistic": "Статистика заказов в Remnant",
 
   "title.page.balances": "Балансы - Remnant",
-  "description.page.balances": "Управление балансами в Remnant"
+  "description.page.balances": "Управление балансами в Remnant",
+
+  "title.page.suppliers": "Поставщики - Remnant",
+  "description.page.suppliers": "Управление поставщиками в Remnant"
 }

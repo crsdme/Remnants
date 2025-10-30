@@ -394,3 +394,18 @@ interface Balance {
   createdAt: Date
   updatedAt: Date
 }
+
+interface Supplier {
+  id: string
+  name: string
+  emails: string[]
+  phones: string[]
+  socials: {
+    type: string
+    value: string
+  }[]
+  comment: string
+  removed: boolean
+  createdAt: Date
+  updatedAt: Date
+}
