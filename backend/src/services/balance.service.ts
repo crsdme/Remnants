@@ -69,11 +69,11 @@ export async function getCurrent(_payload: BalanceTypes.getCurrentBalanceParams,
       .sort((a, b) => a[0].localeCompare(b[0]))
       .map(([warehouse, inner]) => ({
         warehouseId: warehouse,
-        total: Array.from(inner.values()).sort((a, b) => a.currencyId.localeCompare(b.currencyId)),
+        totals: Array.from(inner.values()).sort((a, b) => a.currencyId.localeCompare(b.currencyId)),
       }))
   }
 
-  const warehouseBalance = getWarehouseBalance(products)
+  const warehouseBalances = getWarehouseBalance(products)
 
   const { cashregisters } = await CashregisterService.get({
     pagination: { full: true },
@@ -112,14 +112,14 @@ export async function getCurrent(_payload: BalanceTypes.getCurrentBalanceParams,
     return result
   }
 
-  const cashregisterBalance = getCashregisterBalance(cashregisters)
+  const cashregisterBalances = getCashregisterBalance(cashregisters)
 
-  function getTotalBalance(warehouseBalance: any[], cashregisterBalance: any[]) {
+  function getTotalBalance(warehouseBalances: any[], cashregisterBalances: any[]) {
     const map = new Map<string, { currencyId: string, currencySymbol?: string, currencyName?: string, amount: number }>()
 
     // склады
-    for (const w of warehouseBalance ?? []) {
-      for (const t of w.total ?? []) {
+    for (const w of warehouseBalances ?? []) {
+      for (const t of w.totals ?? []) {
         const key = t.currencyId
         const row = map.get(key) ?? {
           currencyId: t.currencyId,
@@ -133,7 +133,7 @@ export async function getCurrent(_payload: BalanceTypes.getCurrentBalanceParams,
     }
 
     // кассы
-    for (const c of cashregisterBalance ?? []) {
+    for (const c of cashregisterBalances ?? []) {
       for (const t of c.totals ?? []) {
         const key = t.currencyId
         const row = map.get(key) ?? {
@@ -150,12 +150,12 @@ export async function getCurrent(_payload: BalanceTypes.getCurrentBalanceParams,
     return Array.from(map.values()).sort((a, b) => a.currencyId.localeCompare(b.currencyId))
   }
 
-  const totalBalance = getTotalBalance(warehouseBalance, cashregisterBalance)
+  const totalBalances = getTotalBalance(warehouseBalances, cashregisterBalances)
 
   const balance = {
-    warehouseBalance,
-    cashregisterBalance,
-    totalBalance,
+    warehouseBalances,
+    cashregisterBalances,
+    totalBalances,
   }
 
   return {
@@ -170,9 +170,9 @@ export async function create(payload: BalanceTypes.createBalanceParams, user: Us
   const { balance } = await getCurrent({}, user)
 
   const newBalance = await BalanceModel.create({
-    warehouseBalance: balance.warehouseBalance,
-    cashregisterBalance: balance.cashregisterBalance,
-    totalBalance: balance.totalBalance,
+    warehouseBalances: balance.warehouseBalances,
+    cashregisterBalances: balance.cashregisterBalances,
+    totalBalances: balance.totalBalances,
     comment: payload.comment,
     createdBy: user.id,
   })

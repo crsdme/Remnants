@@ -43,13 +43,13 @@ const BalanceSchema: Schema = new Schema(
       type: Number,
       default: 0,
     },
-    warehouseBalance: [
+    warehouseBalances: [
       WarehouseBalanceSchema,
     ],
-    cashregisterBalance: [
+    cashregisterBalances: [
       CashregisterBalanceSchema,
     ],
-    totalBalance: [
+    totalBalances: [
       TotalBalanceSchema,
     ],
     comment: {

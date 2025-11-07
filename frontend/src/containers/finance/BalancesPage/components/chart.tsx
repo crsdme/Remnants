@@ -28,7 +28,7 @@ export function ChartAreaInteractive() {
   const dataForChart = React.useMemo(() => {
     return balances.map((snap: any) => {
       const row: Record<string, any> = { createdAt: snap.createdAt }
-      for (const t of snap.totalBalance ?? []) {
+      for (const t of snap.totalBalances ?? []) {
         row[t.currencyId] = t.amount ?? 0
       }
 
