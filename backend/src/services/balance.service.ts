@@ -36,7 +36,7 @@ export async function getCurrent(_payload: BalanceTypes.getCurrentBalanceParams)
     >()
 
     for (const p of products ?? []) {
-      const price = Number(p.price) || 0
+      const price = Number(p.purchasePrice) || 0
       const currencyId = p.currency?.id ?? 'UNKNOWN'
       const currencySymbol = p.currency?.symbols?.ru ?? p.currency?.symbols?.en
       const currencyName = p.currency?.names?.ru ?? p.currency?.names?.en
