@@ -21,10 +21,13 @@ export async function get(payload: BalanceTypes.getBalancesParams): Promise<Bala
   }
 }
 
-export async function getCurrent(_payload: BalanceTypes.getCurrentBalanceParams): Promise<BalanceTypes.getCurrentBalanceResult> {
-  const { products } = await ProductService.get({
-    pagination: { full: true },
-  })
+export async function getCurrent(_payload: BalanceTypes.getCurrentBalanceParams, user?: User): Promise<BalanceTypes.getCurrentBalanceResult> {
+  const { products } = await ProductService.get(
+    {
+      pagination: { full: true },
+    },
+    user,
+  )
 
   function getWarehouseBalance(products: any) {
     const outer = new Map<
@@ -164,7 +167,7 @@ export async function getCurrent(_payload: BalanceTypes.getCurrentBalanceParams)
 }
 
 export async function create(payload: BalanceTypes.createBalanceParams, user: User): Promise<BalanceTypes.createBalanceResult> {
-  const { balance } = await getCurrent({})
+  const { balance } = await getCurrent({}, user)
 
   const newBalance = await BalanceModel.create({
     warehouseBalance: balance.warehouseBalance,
