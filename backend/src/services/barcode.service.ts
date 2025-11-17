@@ -7,6 +7,7 @@ import { STORAGE_URLS } from '../config/constants'
 import { BarcodeModel, CounterModel } from '../models/'
 import { ProductModel } from '../models/product.model'
 import { HttpError } from '../utils/httpError'
+import { getPrintConfig } from '../utils/mongodb/hardcode'
 import { buildQuery, buildSortQuery } from '../utils/queryBuilder'
 import * as AuditLogsService from './audit-logs.service'
 
@@ -617,16 +618,10 @@ async function print55x40(payload: { barcodes: any[], size: string, language: st
 
   const doc = new PDFDocument({ autoFirstPage: false })
 
-  const providerPrice: Record<string, number> = {
-    '9bd76cab-821f-4bd1-8428-9deae1a79da2': 900,
-    '6ea945b4-d6cb-4059-a3e3-fde3f9b25443': 1000,
-    '21c3f26a-cc0d-495e-8d17-ed7bfba391f6': 600,
-    '0ba601b3-bcd5-4c13-b71d-ad3f9d597d23': 910,
-    '01b8e779-4b62-4058-ae7a-d4b36835960b': 1020,
-    '4698a04a-ea07-4f5c-824e-6f758ab472ea': 1011,
-  }
+  const hardcodeData = getPrintConfig()
 
-  // Шрифты регистрируем один раз
+  const providerPrice = hardcodeData.providerPrice
+
   doc.registerFont('Manrope', path.resolve(__dirname, '../utils/fonts/Manrope-Regular.ttf'))
   doc.registerFont('Manrope-Bold', path.resolve(__dirname, '../utils/fonts/Manrope-Bold.ttf'))
 
@@ -654,7 +649,7 @@ async function print55x40(payload: { barcodes: any[], size: string, language: st
       height: contentHeight / 2,
     })
 
-    const providerKey = product?.categories?.[0]?.id as string | undefined
+    const providerKey = product?.categories?.[0]?.id as keyof typeof providerPrice
     const providerSuffix = providerKey ? (providerPrice[providerKey] || '') : ''
 
     doc.text(
@@ -671,22 +666,22 @@ async function print55x40(payload: { barcodes: any[], size: string, language: st
     const type = []
 
     for (const property of product.productProperties || []) {
-      if (typeof property.value === 'number' && property.id === 'efcc3c51-a146-4975-bc5b-196745f76891') {
+      if (typeof property.value === 'number' && property.id === hardcodeData.propertyIds.LENGTH) {
         length = `${property.value} cm`
       }
-      else if (typeof property.value === 'number' && property.id === '7c3e2c1b-f2bf-4639-baf2-7b1101fa7bf2') {
+      else if (typeof property.value === 'number' && property.id === hardcodeData.propertyIds.WEIGHT) {
         weight = `${property.value} g`
       }
-      if (property.id === '25144e64-5c4c-47fd-842d-c0a2393f972e' && (property?.value || []).includes('b930fb75-61a6-41c0-88de-0c69082b7f06')) {
+      if (property.id === hardcodeData.propertyIds.HAIR_TYPE && (property?.value || []).includes(hardcodeData.hairTypes.VIRGIN)) {
         type.push('Virgin')
       }
-      if (property.id === '25144e64-5c4c-47fd-842d-c0a2393f972e' && (property?.value || []).includes('aeb36d06-1a12-4319-9313-51abcbed38fb')) {
+      if (property.id === hardcodeData.propertyIds.HAIR_TYPE && (property?.value || []).includes(hardcodeData.hairTypes.SILKY)) {
         type.push('Silky')
       }
-      if (property.id === '25144e64-5c4c-47fd-842d-c0a2393f972e' && (property?.value || []).includes('44307e30-0fb8-4ab1-af56-6d8d724dd204')) {
+      if (property.id === hardcodeData.propertyIds.HAIR_TYPE && (property?.value || []).includes(hardcodeData.hairTypes.BROWN)) {
         type.push('Brown')
       }
-      if (property.id === '25144e64-5c4c-47fd-842d-c0a2393f972e' && (property?.value || []).includes('822ec142-d144-44fb-ba96-582cff8757b3')) {
+      if (property.id === hardcodeData.propertyIds.HAIR_TYPE && (property?.value || []).includes(hardcodeData.hairTypes.CURLY)) {
         type.push('Curly')
       }
     }
