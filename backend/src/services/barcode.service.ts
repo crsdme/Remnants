@@ -7,7 +7,7 @@ import { STORAGE_URLS } from '../config/constants'
 import { BarcodeModel, CounterModel } from '../models/'
 import { ProductModel } from '../models/product.model'
 import { HttpError } from '../utils/httpError'
-import { getPrintConfig } from '../utils/mongodb/hardcode'
+import { getHardcodeData } from '../utils/mongodb/hardcode'
 import { buildQuery, buildSortQuery } from '../utils/queryBuilder'
 import * as AuditLogsService from './audit-logs.service'
 
@@ -618,7 +618,7 @@ async function print55x40(payload: { barcodes: any[], size: string, language: st
 
   const doc = new PDFDocument({ autoFirstPage: false })
 
-  const { propertyIds, hairTypes, providerPrice } = getPrintConfig()
+  const { propertyIds, hairTypes, providerPrice, symbol } = getHardcodeData()
 
   console.log(propertyIds, hairTypes, providerPrice)
 
@@ -706,12 +706,25 @@ async function print55x40(payload: { barcodes: any[], size: string, language: st
     doc.font('Manrope-Bold').fontSize(170)
 
     const bigCode = (product.names?.[language] || '').split('#')[1] || 'ERROR'
+
+    const bigCodeHeight = doc.y
+
     doc.text(
       bigCode,
       padding,
-      doc.y - 30,
+      bigCodeHeight - 30,
       { width: contentWidth, height: 50, lineBreak: false, align: 'center' },
     )
+
+    if (symbol) {
+      doc.font('Manrope-Bold').fontSize(50)
+      doc.text(
+        symbol,
+        padding + 20,
+        doc.y - 20,
+        { width: contentWidth, height: 50, lineBreak: false, align: 'left' },
+      )
+    }
   }
 
   return { status: 'success', code: 'BARCODE_PRINTED', message: 'Barcodes printed', doc }

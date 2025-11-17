@@ -23,6 +23,7 @@ const CONFIGS = {
       BROWN: '44307e30-0fb8-4ab1-af56-6d8d724dd204',
       CURLY: '822ec142-d144-44fb-ba96-582cff8757b3',
     },
+    symbol: '',
   },
   raw: {
     providerPrice: {
@@ -46,6 +47,7 @@ const CONFIGS = {
       BROWN: '44307e30-0fb8-4ab1-af56-6d8d724dd204',
       CURLY: '822ec142-d144-44fb-ba96-582cff8757b3',
     },
+    symbol: '',
   },
   exile: {
     providerPrice: {
@@ -63,12 +65,13 @@ const CONFIGS = {
       BROWN: 'ebbf2c81-fa4d-45eb-aa3f-425f40d218e0',
       CURLY: '7610a715-e4c1-4190-bb3c-daa5d29a4b27',
     },
+    symbol: 'N',
   },
 } as const
 
 type ConfigKey = keyof typeof CONFIGS
 
-export function getPrintConfig() {
+export function getHardcodeData() {
   const key = APP_INSTANCE as ConfigKey
   return CONFIGS[key] ?? CONFIGS.default
 }
