@@ -620,8 +620,6 @@ async function print55x40(payload: { barcodes: any[], size: string, language: st
 
   const { propertyIds, hairTypes, providerPrice, symbol } = getHardcodeData()
 
-  console.log(propertyIds, hairTypes, providerPrice)
-
   doc.registerFont('Manrope', path.resolve(__dirname, '../utils/fonts/Manrope-Regular.ttf'))
   doc.registerFont('Manrope-Bold', path.resolve(__dirname, '../utils/fonts/Manrope-Bold.ttf'))
 
@@ -649,8 +647,10 @@ async function print55x40(payload: { barcodes: any[], size: string, language: st
       height: contentHeight / 2,
     })
 
-    const providerKey = product?.categories?.[0]?.id as keyof typeof providerPrice
-    const providerSuffix = providerKey ? (providerPrice[providerKey] || '') : ''
+    const providerSuffix = product?.categories
+      ?.map((cat: any) => providerPrice[cat.id as keyof typeof providerPrice])
+      ?.filter(Boolean)
+      .join('') || ''
 
     doc.text(
       `${barcode.code}${providerSuffix ? `-${providerSuffix}` : ''}`,
