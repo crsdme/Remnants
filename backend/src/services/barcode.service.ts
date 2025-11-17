@@ -618,9 +618,9 @@ async function print55x40(payload: { barcodes: any[], size: string, language: st
 
   const doc = new PDFDocument({ autoFirstPage: false })
 
-  const hardcodeData = getPrintConfig()
+  const { propertyIds, hairTypes, providerPrice } = getPrintConfig()
 
-  const providerPrice = hardcodeData.providerPrice
+  console.log(propertyIds, hairTypes, providerPrice)
 
   doc.registerFont('Manrope', path.resolve(__dirname, '../utils/fonts/Manrope-Regular.ttf'))
   doc.registerFont('Manrope-Bold', path.resolve(__dirname, '../utils/fonts/Manrope-Bold.ttf'))
@@ -666,22 +666,22 @@ async function print55x40(payload: { barcodes: any[], size: string, language: st
     const type = []
 
     for (const property of product.productProperties || []) {
-      if (typeof property.value === 'number' && property.id === hardcodeData.propertyIds.LENGTH) {
+      if (typeof property.value === 'number' && property.id === propertyIds.LENGTH) {
         length = `${property.value} cm`
       }
-      else if (typeof property.value === 'number' && property.id === hardcodeData.propertyIds.WEIGHT) {
+      else if (typeof property.value === 'number' && property.id === propertyIds.WEIGHT) {
         weight = `${property.value} g`
       }
-      if (property.id === hardcodeData.propertyIds.HAIR_TYPE && (property?.value || []).includes(hardcodeData.hairTypes.VIRGIN)) {
+      if (property.id === propertyIds.HAIR_TYPE && (property?.value || []).includes(hairTypes.VIRGIN)) {
         type.push('Virgin')
       }
-      if (property.id === hardcodeData.propertyIds.HAIR_TYPE && (property?.value || []).includes(hardcodeData.hairTypes.SILKY)) {
+      if (property.id === propertyIds.HAIR_TYPE && (property?.value || []).includes(hairTypes.SILKY)) {
         type.push('Silky')
       }
-      if (property.id === hardcodeData.propertyIds.HAIR_TYPE && (property?.value || []).includes(hardcodeData.hairTypes.BROWN)) {
+      if (property.id === propertyIds.HAIR_TYPE && (property?.value || []).includes(hairTypes.BROWN)) {
         type.push('Brown')
       }
-      if (property.id === hardcodeData.propertyIds.HAIR_TYPE && (property?.value || []).includes(hardcodeData.hairTypes.CURLY)) {
+      if (property.id === propertyIds.HAIR_TYPE && (property?.value || []).includes(hairTypes.CURLY)) {
         type.push('Curly')
       }
     }
