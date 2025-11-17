@@ -695,6 +695,9 @@ export async function create(payload: InventoriesTypes.createInventoryParams, us
     filters: {
       categories: [category],
     },
+    pagination: {
+      full: true,
+    },
   })
 
   const inventory = await InventoryModel.create({
