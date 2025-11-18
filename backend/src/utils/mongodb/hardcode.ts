@@ -60,6 +60,7 @@ const CONFIGS = {
       '1f814052-5fec-4e9f-b119-793441ba0269': 1020,
       '7a422e90-ac88-4809-aafc-012dfc24b5ae': 1000,
       'c73f0115-ecab-4e49-8fa6-17faf667277c': 1182,
+      '403073ef-aa4e-4f3b-8150-ece62b459f4a': 950,
     },
     propertyIds: {
       LENGTH: 'b42b8212-c49c-41c5-b070-16097fa5c546',
