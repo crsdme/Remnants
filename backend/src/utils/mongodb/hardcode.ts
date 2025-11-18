@@ -54,6 +54,8 @@ const CONFIGS = {
   exile: {
     providerPrice: {
       'eaafd34d-68aa-48a6-9de9-349f2b08a7b8': 980,
+      '54eff814-6885-4d13-b8ba-2fc0946b8529': 1146,
+      '1f814052-5fec-4e9f-b119-793441ba0269': 1020,
     },
     propertyIds: {
       LENGTH: 'b42b8212-c49c-41c5-b070-16097fa5c546',
