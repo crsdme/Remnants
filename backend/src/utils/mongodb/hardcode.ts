@@ -19,6 +19,7 @@ const CONFIGS = {
 
     hairTypes: {
       VIRGIN: 'b930fb75-61a6-41c0-88de-0c69082b7f06',
+      GRAY: '',
       SILKY: 'aeb36d06-1a12-4319-9313-51abcbed38fb',
       BROWN: '44307e30-0fb8-4ab1-af56-6d8d724dd204',
       CURLY: '822ec142-d144-44fb-ba96-582cff8757b3',
@@ -44,6 +45,7 @@ const CONFIGS = {
     hairTypes: {
       VIRGIN: 'b930fb75-61a6-41c0-88de-0c69082b7f06',
       SILKY: 'aeb36d06-1a12-4319-9313-51abcbed38fb',
+      GRAY: '',
       BROWN: '44307e30-0fb8-4ab1-af56-6d8d724dd204',
       CURLY: '822ec142-d144-44fb-ba96-582cff8757b3',
     },
@@ -60,7 +62,8 @@ const CONFIGS = {
     },
 
     hairTypes: {
-      VIRGIN: '1f99da09-bef8-413b-a22e-303ee6ae0467',
+      VIRGIN: '9f49b061-4c93-40a1-bd9e-c1cfaa0a465d',
+      GRAY: '1f99da09-bef8-413b-a22e-303ee6ae0467',
       SILKY: '98373627-06b6-4e21-9816-c9b459036fb5',
       BROWN: 'ebbf2c81-fa4d-45eb-aa3f-425f40d218e0',
       CURLY: '7610a715-e4c1-4190-bb3c-daa5d29a4b27',
