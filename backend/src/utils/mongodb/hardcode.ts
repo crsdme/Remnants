@@ -37,6 +37,7 @@ const CONFIGS = {
       '4698a04a-ea07-4f5c-824e-6f758ab472ea': 1011,
       '13e6fa90-c986-4440-8c94-f36f41e22d36': 1208,
       '37f3a270-e312-4a07-8277-4f49cd8025f0': 1300,
+      '951bde3a-e48f-412c-9bea-e8fdd4cdd0c7': 1142,
     },
 
     propertyIds: {
