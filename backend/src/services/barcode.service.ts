@@ -653,7 +653,7 @@ async function print55x40(payload: { barcodes: any[], size: string, language: st
       .join('') || ''
 
     doc.text(
-      `${barcode.code}${providerSuffix ? `-${providerSuffix}` : ''}`,
+      `${barcode.code}${providerSuffix ? `-${Number(providerSuffix) + 5000}` : ''}`,
       padding,
       contentHeight / 2 + 10,
       { width: contentWidth, height: 25, align: 'center', ellipsis: true, lineBreak: false },
