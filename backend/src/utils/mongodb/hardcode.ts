@@ -19,11 +19,11 @@ const CONFIGS = {
 
     hairTypes: {
       VIRGIN: 'b930fb75-61a6-41c0-88de-0c69082b7f06',
-      GRAY: '',
+      GRAY: '91dcfe98-6192-492f-98de-1ff22bdff01a',
       SILKY: 'aeb36d06-1a12-4319-9313-51abcbed38fb',
       BROWN: '44307e30-0fb8-4ab1-af56-6d8d724dd204',
       CURLY: '822ec142-d144-44fb-ba96-582cff8757b3',
-      SLAVIC: '',
+      SLAVIC: '7f6d9a15-9f9f-4ddc-a815-dfaf613a0901',
     },
     symbol: '',
   },
@@ -47,10 +47,10 @@ const CONFIGS = {
     hairTypes: {
       VIRGIN: 'b930fb75-61a6-41c0-88de-0c69082b7f06',
       SILKY: 'aeb36d06-1a12-4319-9313-51abcbed38fb',
-      GRAY: '',
+      GRAY: '91dcfe98-6192-492f-98de-1ff22bdff01a',
       BROWN: '44307e30-0fb8-4ab1-af56-6d8d724dd204',
       CURLY: '822ec142-d144-44fb-ba96-582cff8757b3',
-      SLAVIC: '',
+      SLAVIC: '7f6d9a15-9f9f-4ddc-a815-dfaf613a0901',
     },
     symbol: '',
   },
