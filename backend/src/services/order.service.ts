@@ -1066,7 +1066,7 @@ export async function printInvoice(payload: OrderTypes.printInvoiceOrderParams):
     },
   }
 
-  const { propertyIds, hairTypes, invoicePrefix } = getHardcodeData()
+  const { propertyIds, hairTypes, invoicePrefix, invoiceAddition } = getHardcodeData()
 
   const contentWidth = params.size[0] - margins * 2
   // const contentHeight = size.h - padding * 2
@@ -1210,7 +1210,7 @@ export async function printInvoice(payload: OrderTypes.printInvoiceOrderParams):
     { width: 141.67, height: 50 },
   )
   doc.text(
-    `${invoicePrefix}${order.seq + 1000}`,
+    `${invoicePrefix}${order.seq + invoiceAddition}`,
     margins,
     doc.y,
     { width: contentWidth, height: 25, align: 'right', ellipsis: true, lineBreak: false },

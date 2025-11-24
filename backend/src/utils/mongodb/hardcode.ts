@@ -26,6 +26,7 @@ const CONFIGS = {
     },
     symbol: '',
     invoicePrefix: '#',
+    invoiceAddition: 1000,
   },
   raw: {
     providerPrice: {
@@ -56,6 +57,7 @@ const CONFIGS = {
     },
     symbol: '',
     invoicePrefix: '#',
+    invoiceAddition: 1000,
   },
   exile: {
     providerPrice: {
@@ -82,6 +84,7 @@ const CONFIGS = {
     },
     symbol: 'N',
     invoicePrefix: 'N',
+    invoiceAddition: 500,
   },
 } as const
 
