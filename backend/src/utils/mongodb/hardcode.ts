@@ -10,7 +10,6 @@ const CONFIGS = {
       '01b8e779-4b62-4058-ae7a-d4b36835960b': 1020,
       '4698a04a-ea07-4f5c-824e-6f758ab472ea': 1011,
     },
-
     propertyIds: {
       LENGTH: 'efcc3c51-a146-4975-bc5b-196745f76891',
       WEIGHT: '7c3e2c1b-f2bf-4639-baf2-7b1101fa7bf2',
@@ -26,6 +25,7 @@ const CONFIGS = {
       SLAVIC: '7f6d9a15-9f9f-4ddc-a815-dfaf613a0901',
     },
     symbol: '',
+    invoicePrefix: '#',
   },
   raw: {
     providerPrice: {
@@ -55,6 +55,7 @@ const CONFIGS = {
       SLAVIC: '7f6d9a15-9f9f-4ddc-a815-dfaf613a0901',
     },
     symbol: '',
+    invoicePrefix: '#',
   },
   exile: {
     providerPrice: {
@@ -80,6 +81,7 @@ const CONFIGS = {
       SLAVIC: '188e3571-be2a-484e-9a81-dd7fa1362b95',
     },
     symbol: 'N',
+    invoicePrefix: 'N',
   },
 } as const
 
