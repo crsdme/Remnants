@@ -1078,7 +1078,7 @@ export async function printInvoice(payload: OrderTypes.printInvoiceOrderParams):
     type: { key: 'type', width: 80, x: margins + 200, align: 'left', type: 'text' },
     price: { key: 'price', width: 60, x: margins + 280, align: 'left', type: 'text' },
     quantity: { key: 'quantity', width: 60, x: margins + 340, align: 'left', type: 'text' },
-    // discount: { key: 'discount', width: 50, x: margins + 400, align: 'left', type: 'text' },
+    discount: { key: 'discount', width: 50, x: margins + 400, align: 'left', type: 'text' },
     // total: { key: 'total', width: 100, x: params.size[0] - margins - 100, align: 'right', type: 'text' },
     total: { key: 'total', width: 100, x: params.size[0] - margins - 100, align: 'right', type: 'text' },
   }
@@ -1088,6 +1088,10 @@ export async function printInvoice(payload: OrderTypes.printInvoiceOrderParams):
   if (!order) {
     throw new HttpError(400, 'Order not found', 'ORDER_NOT_FOUND')
   }
+
+  const { orderItems } = await getItems({ filters: { order: [order.id] }, pagination: { full: true } }) as any
+
+  const hasDiscount = orderItems.some((item: any) => item.discountAmount > 0 || item.discountPercent > 0)
 
   const measureRowHeight = (doc: any, columns: any[], opts?: { pad?: number, imgMaxH?: number, minH?: number }) => {
     const pad = opts?.pad ?? 6
@@ -1172,10 +1176,14 @@ export async function printInvoice(payload: OrderTypes.printInvoiceOrderParams):
         ...tableColumns.quantity,
         value: 'Quantity',
       },
-      // {
-      //   ...tableColumns.discount,
-      //   value: 'Discount',
-      // },
+      ...(hasDiscount
+        ? [
+            {
+              ...tableColumns.discount,
+              value: 'Discount',
+            },
+          ]
+        : []),
       {
         ...tableColumns.total,
         value: 'Total',
@@ -1285,8 +1293,6 @@ export async function printInvoice(payload: OrderTypes.printInvoiceOrderParams):
   // INVOICE DATE
 
   // PRODUCTS
-
-  const { orderItems } = await getItems({ filters: { order: [order.id] }, pagination: { full: true } }) as any
 
   function getProductPrice(lengthCm: number, type: any[]): number | null {
     let table = [
@@ -1437,10 +1443,14 @@ export async function printInvoice(payload: OrderTypes.printInvoiceOrderParams):
         ...tableColumns.quantity,
         value: `${product.quantity} pcs`,
       },
-      // {
-      //   ...tableColumns.discount,
-      //   value: `${product.discount} ${product.discountType === 'amount' ? product.currency.symbols[language] : '%'}`,
-      // },
+      ...(hasDiscount
+        ? [
+            {
+              ...tableColumns.discount,
+              value: `${product.discount} ${product.discountType === 'amount' ? product.currency.symbols[language] : '%'}`,
+            },
+          ]
+        : []),
       {
         ...tableColumns.total,
         value: `${product.total} ${product.currency.symbols[language] || ''}`,
@@ -1488,10 +1498,14 @@ export async function printInvoice(payload: OrderTypes.printInvoiceOrderParams):
       ...tableColumns.quantity,
       value: `${totals.count} pcs`,
     },
-    // {
-    //   ...tableColumns.discount,
-    //   value: '',
-    // },
+    ...(hasDiscount
+      ? [
+          {
+            ...tableColumns.discount,
+            value: '',
+          },
+        ]
+      : []),
     {
       ...tableColumns.total,
       value: Object.values(totals.amount).map((amount: any) => `${amount.total.toFixed(2)} ${amount.currency.symbols[language] || ''}`).join(', '),
@@ -1529,12 +1543,12 @@ export async function printDraftInvoice(payload: OrderTypes.printDraftInvoiceOrd
     type: { key: 'type', width: 80, x: margins + 200, align: 'left', type: 'text' },
     price: { key: 'price', width: 60, x: margins + 280, align: 'left', type: 'text' },
     quantity: { key: 'quantity', width: 60, x: margins + 340, align: 'left', type: 'text' },
-    // discount: { key: 'discount', width: 50, x: margins + 400, align: 'left', type: 'text' },
+    discount: { key: 'discount', width: 50, x: margins + 400, align: 'left', type: 'text' },
     // total: { key: 'total', width: 100, x: params.size[0] - margins - 100, align: 'right', type: 'text' },
     total: { key: 'total', width: 100, x: params.size[0] - margins - 100, align: 'right', type: 'text' },
   }
 
-  // const order = await OrderModel.findOne({ seq }).populate('client') as unknown as Order & { client: Client }
+  const hasDiscount = products.some((item: any) => item.discountAmount > 0 || item.discountPercent > 0)
 
   if (!products) {
     throw new HttpError(400, 'Products not found', 'PRODUCTS_NOT_FOUND')
@@ -1623,10 +1637,14 @@ export async function printDraftInvoice(payload: OrderTypes.printDraftInvoiceOrd
         ...tableColumns.quantity,
         value: 'Quantity',
       },
-      // {
-      //   ...tableColumns.discount,
-      //   value: 'Discount',
-      // },
+      ...(hasDiscount
+        ? [
+            {
+              ...tableColumns.discount,
+              value: 'Discount',
+            },
+          ]
+        : []),
       {
         ...tableColumns.total,
         value: 'Total',
@@ -1812,8 +1830,8 @@ export async function printDraftInvoice(payload: OrderTypes.printDraftInvoiceOrd
 
   const productsData = products.map((item: any) => {
     const type = item.productProperties.find((property: any) => property.id === propertyIds.HAIR_TYPE)
-    const weight = item.productProperties.find((property: any) => property.id === propertyIds.WEIGHT)?.value // 7c3e2c1b-f2bf-4639-baf2-7b1101fa7bf2
-    const length = item.productProperties.find((property: any) => property.id === propertyIds.LENGTH)?.value // efcc3c51-a146-4975-bc5b-196745f76891
+    const weight = item.productProperties.find((property: any) => property.id === propertyIds.WEIGHT)?.value
+    const length = item.productProperties.find((property: any) => property.id === propertyIds.LENGTH)?.value
     const discount = item.discountAmount > 0 ? item.discountAmount * item.quantity : item.discountPercent > 0 ? item.discountPercent : 0
     const discountType = item.discountAmount > 0 ? 'amount' : item.discountPercent > 0 ? 'percent' : 'none'
 
@@ -1864,10 +1882,14 @@ export async function printDraftInvoice(payload: OrderTypes.printDraftInvoiceOrd
         ...tableColumns.quantity,
         value: `${product.quantity} pcs`,
       },
-      // {
-      //   ...tableColumns.discount,
-      //   value: `${product.discount} ${product.discountType === 'amount' ? product.currency.symbols[language] : '%'}`,
-      // },
+      ...(hasDiscount
+        ? [
+            {
+              ...tableColumns.discount,
+              value: `${product.discount} ${product.discountType === 'amount' ? product.currency.symbols[language] : '%'}`,
+            },
+          ]
+        : []),
       {
         ...tableColumns.total,
         value: `${product.total} ${product?.currency?.symbols?.[language] || ''}`,
@@ -1915,10 +1937,14 @@ export async function printDraftInvoice(payload: OrderTypes.printDraftInvoiceOrd
       ...tableColumns.quantity,
       value: `${totals.count} pcs`,
     },
-    // {
-    //   ...tableColumns.discount,
-    //   value: '',
-    // },
+    ...(hasDiscount
+      ? [
+          {
+            ...tableColumns.discount,
+            value: '',
+          },
+        ]
+      : []),
     {
       ...tableColumns.total,
       value: Object.values(totals.amount).map((amount: any) => `${amount.total.toFixed(2)} ${amount?.currency?.symbols?.[language] || ''}`).join(', '),
