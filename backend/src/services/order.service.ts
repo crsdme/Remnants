@@ -9,6 +9,7 @@ import { v4 as uuidv4 } from 'uuid'
 import { STORAGE_URLS } from '../config/constants'
 import { OrderItemModel, OrderModel, OrderPaymentModel, ProductModel } from '../models'
 import { HttpError } from '../utils/httpError'
+import { getHardcodeData } from '../utils/mongodb/hardcode'
 import { drawHr } from '../utils/pdf'
 import { buildQuery, buildSortQuery } from '../utils/queryBuilder'
 import * as AutomationService from './automation.service'
@@ -1065,6 +1066,8 @@ export async function printInvoice(payload: OrderTypes.printInvoiceOrderParams):
     },
   }
 
+  const { propertyIds, hairTypes } = getHardcodeData()
+
   const contentWidth = params.size[0] - margins * 2
   // const contentHeight = size.h - padding * 2
 
@@ -1300,15 +1303,17 @@ export async function printInvoice(payload: OrderTypes.printInvoiceOrderParams):
       { min: 90, max: 94, price: 1600 },
       { min: 95, max: 99, price: 1700 },
       { min: 100, max: 104, price: 1800 },
+      { min: 105, max: 109, price: 1900 },
+      { min: 110, max: 114, price: 2000 },
     ]
 
     let multiply = 1
 
-    if (type.includes('822ec142-d144-44fb-ba96-582cff8757b3')) {
+    if (type.includes(hairTypes.CURLY)) {
       multiply = 1.3
     }
 
-    if (type.includes('b930fb75-61a6-41c0-88de-0c69082b7f06')) {
+    if (type.includes(hairTypes.VIRGIN)) {
       table = [
         { min: 40, max: 44, price: 1800 },
         { min: 45, max: 49, price: 1900 },
@@ -1323,10 +1328,32 @@ export async function printInvoice(payload: OrderTypes.printInvoiceOrderParams):
         { min: 90, max: 94, price: 2800 },
         { min: 95, max: 99, price: 2900 },
         { min: 100, max: 104, price: 3000 },
+        { min: 105, max: 109, price: 3100 },
+        { min: 110, max: 114, price: 3200 },
       ]
     }
 
-    if (type.includes('aeb36d06-1a12-4319-9313-51abcbed38fb') || type.includes('44307e30-0fb8-4ab1-af56-6d8d724dd204')) {
+    if (type.includes(hairTypes.SLAVIC)) {
+      table = [
+        { min: 40, max: 44, price: 3600 },
+        { min: 45, max: 49, price: 3700 },
+        { min: 50, max: 54, price: 4800 },
+        { min: 55, max: 59, price: 4900 },
+        { min: 60, max: 64, price: 4000 },
+        { min: 65, max: 69, price: 4100 },
+        { min: 70, max: 74, price: 4200 },
+        { min: 75, max: 79, price: 4300 },
+        { min: 80, max: 84, price: 4400 },
+        { min: 85, max: 89, price: 4500 },
+        { min: 90, max: 94, price: 4600 },
+        { min: 95, max: 99, price: 4700 },
+        { min: 100, max: 104, price: 4800 },
+        { min: 105, max: 109, price: 4900 },
+        { min: 110, max: 114, price: 5000 },
+      ]
+    }
+
+    if (type.includes(hairTypes.SILKY) || type.includes(hairTypes.BROWN)) {
       table = [
         { min: 40, max: 44, price: 1300 },
         { min: 45, max: 49, price: 1400 },
@@ -1357,9 +1384,9 @@ export async function printInvoice(payload: OrderTypes.printInvoiceOrderParams):
   // }
 
   const products = orderItems.map((item: any) => {
-    const type = item.product.productProperties.find((property: any) => property.id === '25144e64-5c4c-47fd-842d-c0a2393f972e')
-    const weight = item.product.productProperties.find((property: any) => property.id === '7c3e2c1b-f2bf-4639-baf2-7b1101fa7bf2')?.value // 7c3e2c1b-f2bf-4639-baf2-7b1101fa7bf2
-    const length = item.product.productProperties.find((property: any) => property.id === 'efcc3c51-a146-4975-bc5b-196745f76891')?.value // efcc3c51-a146-4975-bc5b-196745f76891
+    const type = item.product.productProperties.find((property: any) => property.id === propertyIds.HAIR_TYPE)
+    const weight = item.product.productProperties.find((property: any) => property.id === propertyIds.WEIGHT)?.value // 7c3e2c1b-f2bf-4639-baf2-7b1101fa7bf2
+    const length = item.product.productProperties.find((property: any) => property.id === propertyIds.LENGTH)?.value // efcc3c51-a146-4975-bc5b-196745f76891
     const discount = item.discountAmount > 0 ? item.discountAmount * item.quantity : item.discountPercent > 0 ? item.discountPercent : 0
     const discountType = item.discountAmount > 0 ? 'amount' : item.discountPercent > 0 ? 'percent' : 'none'
 
@@ -1490,6 +1517,8 @@ export async function printDraftInvoice(payload: OrderTypes.printDraftInvoiceOrd
       right: 30,
     },
   }
+
+  const { propertyIds } = getHardcodeData()
 
   const contentWidth = params.size[0] - margins * 2
 
@@ -1782,9 +1811,9 @@ export async function printDraftInvoice(payload: OrderTypes.printDraftInvoiceOrd
   }
 
   const productsData = products.map((item: any) => {
-    const type = item.productProperties.find((property: any) => property.id === '25144e64-5c4c-47fd-842d-c0a2393f972e')
-    const weight = item.productProperties.find((property: any) => property.id === '028bff68-fe1c-49a3-8c9d-9b6f39c5524c')?.value // 7c3e2c1b-f2bf-4639-baf2-7b1101fa7bf2
-    const length = item.productProperties.find((property: any) => property.id === '1b42f359-66c6-4950-9f6a-82b20500d01a')?.value // efcc3c51-a146-4975-bc5b-196745f76891
+    const type = item.productProperties.find((property: any) => property.id === propertyIds.HAIR_TYPE)
+    const weight = item.productProperties.find((property: any) => property.id === propertyIds.WEIGHT)?.value // 7c3e2c1b-f2bf-4639-baf2-7b1101fa7bf2
+    const length = item.productProperties.find((property: any) => property.id === propertyIds.LENGTH)?.value // efcc3c51-a146-4975-bc5b-196745f76891
     const discount = item.discountAmount > 0 ? item.discountAmount * item.quantity : item.discountPercent > 0 ? item.discountPercent : 0
     const discountType = item.discountAmount > 0 ? 'amount' : item.discountPercent > 0 ? 'percent' : 'none'
 
