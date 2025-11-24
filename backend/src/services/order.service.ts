@@ -1453,7 +1453,7 @@ export async function printInvoice(payload: OrderTypes.printInvoiceOrderParams):
         : []),
       {
         ...tableColumns.total,
-        value: `${product.total} ${product.currency.symbols[language] || ''}`,
+        value: `${product.total.toFixed(0)} ${product.currency.symbols[language] || ''}`,
       },
     ]
 
