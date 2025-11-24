@@ -1508,7 +1508,7 @@ export async function printInvoice(payload: OrderTypes.printInvoiceOrderParams):
       : []),
     {
       ...tableColumns.total,
-      value: Object.values(totals.amount).map((amount: any) => `${amount.total.toFixed(2)} ${amount.currency.symbols[language] || ''}`).join(', '),
+      value: Object.values(totals.amount).map((amount: any) => `${amount.total.toFixed(0)} ${amount.currency.symbols[language] || ''}`).join(', '),
     },
   ]
 
