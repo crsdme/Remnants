@@ -1981,6 +1981,8 @@ export async function printOrderLabel(payload: OrderTypes.printOrderLabelParams)
     bottom: paddingMm * MM,
   }
 
+  const { invoiceAddition } = getHardcodeData()
+
   const doc = new PDFDocument({ autoFirstPage: false })
 
   doc.registerFont('Manrope', path.resolve(__dirname, '../utils/fonts/Manrope-Regular.ttf'))
@@ -1992,7 +1994,7 @@ export async function printOrderLabel(payload: OrderTypes.printOrderLabelParams)
     doc.font('Manrope-Bold')
     doc.fontSize(70)
     doc.text(
-      `#${order.seq + 1000}`,
+      `#${order.seq + invoiceAddition}`,
       margins.left,
       doc.y - 15,
       { width: size[0] - margins.left - margins.right, height: 25, align: 'left' },
