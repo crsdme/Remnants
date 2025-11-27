@@ -83,6 +83,16 @@ export interface createMoneyTransferAccountParams {
   sourceModel: string
 }
 
+export interface createMoneyTransactionTransferResult {
+  status: Status
+  code: Code
+  message: Message
+  moneyTransaction: {
+    outMoneyTransaction: any
+    inMoneyTransaction: any
+  }
+}
+
 export interface createMoneyTransferCashregisterParams {
   type: string
   direction: string

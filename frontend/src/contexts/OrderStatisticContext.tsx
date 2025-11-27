@@ -25,16 +25,18 @@ interface OrderStatisticProviderProps {
   children: ReactNode
 }
 
+const defaultFilters = {
+  date: {
+    from: new Date(new Date().setHours(0, 0, 0, 0)),
+    to: new Date(new Date().setHours(23, 59, 59, 999)),
+  },
+  cashregister: [],
+  cashregisterAccount: [],
+  currency: '',
+}
+
 export function OrderStatisticProvider({ children }: OrderStatisticProviderProps) {
-  const [filters, setFilters] = useState({
-    date: {
-      from: new Date(new Date().setHours(0, 0, 0, 0)),
-      to: new Date(new Date().setHours(23, 59, 59, 999)),
-    },
-    cashregister: [],
-    cashregisterAccount: [],
-    currency: '',
-  })
+  const [filters, setFilters] = useState(defaultFilters)
 
   const { t } = useTranslation()
 

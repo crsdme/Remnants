@@ -294,7 +294,7 @@ export function AsyncSelectNew<T>({
                   placeholder={t('component.asyncSelect.searchPlaceholder')}
                   value={search}
                   onValueChange={setSearch}
-                  className="w-full"
+                  className="w-full text-muted-foreground"
                 />
                 {loading && menuOptions.length > 0 && (
                   <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center">
@@ -376,7 +376,7 @@ function renderSelectedOptions<T>({
   onRemove?: (val: string) => void
 }) {
   if (selectedOptions.length === 0)
-    return placeholder
+    return <p className="text-muted-foreground">{placeholder}</p>
 
   if (!multi) {
     return (

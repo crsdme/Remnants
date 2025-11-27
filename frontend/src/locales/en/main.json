@@ -29,6 +29,8 @@
   "table.quantityLogs": "Quantity Logs",
   "table.auditLogs": "Audit Logs",
   "table.printLabel": "Print Label",
+  "table.pay": "Pay",
+  "table.accept": "Accept",
 
   "order-status.all": "All",
 

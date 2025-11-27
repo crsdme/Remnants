@@ -145,7 +145,7 @@ export async function get(payload: MoneyTransactionTypes.getMoneyTransactionsPar
   return { status: 'success', code: 'MONEY_TRANSACTIONS_FETCHED', message: 'Money transactions fetched', moneyTransactions, moneyTransactionsCount }
 }
 
-export async function create(payload: any) {
+export async function create(payload: any): Promise<any> {
   if (payload.type === 'transfer-account') {
     return createTransferAccount(payload)
   }
@@ -158,11 +158,14 @@ export async function create(payload: any) {
   if (payload.type === 'expense') {
     return createExpense(payload)
   }
+  if (payload.type === 'procurement') {
+    return createProcurement(payload)
+  }
 
   throw new HttpError(400, 'Money transaction type not supported', 'MONEY_TRANSACTION_TYPE_NOT_SUPPORTED')
 }
 
-async function createTransferAccount(payload: MoneyTransactionTypes.createMoneyTransferAccountParams) {
+async function createTransferAccount(payload: MoneyTransactionTypes.createMoneyTransferAccountParams): Promise<any> {
   const transferId = uuidv4()
 
   await createIncome({
@@ -194,7 +197,7 @@ async function createTransferAccount(payload: MoneyTransactionTypes.createMoneyT
   return { status: 'success', code: 'MONEY_TRANSACTION_CREATED', message: 'Money transaction created' }
 }
 
-async function createTransferCashregister(payload: MoneyTransactionTypes.createMoneyTransferCashregisterParams) {
+async function createTransferCashregister(payload: MoneyTransactionTypes.createMoneyTransferCashregisterParams): Promise<any> {
   const transferId = uuidv4()
 
   await createIncome({
@@ -233,6 +236,12 @@ async function createIncome(payload: MoneyTransactionTypes.createMoneyTransactio
 }
 
 async function createExpense(payload: MoneyTransactionTypes.createMoneyTransactionParams): Promise<MoneyTransactionTypes.createMoneyTransactionResult> {
+  const moneyTransaction = await MoneyTransactionModel.create(payload)
+
+  return { status: 'success', code: 'MONEY_TRANSACTION_CREATED', message: 'Money transaction created', moneyTransaction }
+}
+
+async function createProcurement(payload: MoneyTransactionTypes.createMoneyTransactionParams): Promise<MoneyTransactionTypes.createMoneyTransactionResult> {
   const moneyTransaction = await MoneyTransactionModel.create(payload)
 
   return { status: 'success', code: 'MONEY_TRANSACTION_CREATED', message: 'Money transaction created', moneyTransaction }

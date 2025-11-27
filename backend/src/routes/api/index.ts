@@ -20,6 +20,7 @@ import orderPaymentRoutes from './order-payment.route'
 import orderSourceRoutes from './order-source.route'
 import orderStatusRoutes from './order-status.route'
 import orderRoutes from './order.route'
+import procurementRoutes from './procurement.route'
 import productPropertyGroupRoutes from './product-property-group.route'
 import productPropertyOptionRoutes from './product-property-option.route'
 import productPropertyRoutes from './product-property.route'
@@ -74,6 +75,7 @@ router.use('/expense-categories', expenseCategoryRoutes)
 router.use('/inventories', inventoriesRoutes)
 router.use('/statistics', statisticRoutes)
 router.use('/audit-logs', auditLogsRoutes)
+router.use('/procurements', procurementRoutes)
 router.use('/warehouse-transactions-logs', warehouseTransactionLogsRoutes)
 router.use('/balance', balanceRoutes)
 export default router

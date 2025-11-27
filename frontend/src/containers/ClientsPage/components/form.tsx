@@ -1,4 +1,4 @@
-import { Trash2, TrashIcon } from 'lucide-react'
+import { TrashIcon } from 'lucide-react'
 import { useFieldArray } from 'react-hook-form'
 
 import { useTranslation } from 'react-i18next'

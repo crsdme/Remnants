@@ -108,5 +108,17 @@
   "description.page.balances": "Управление балансами в Remnant",
 
   "title.page.suppliers": "Поставщики - Remnant",
-  "description.page.suppliers": "Управление поставщиками в Remnant"
+  "description.page.suppliers": "Управление поставщиками в Remnant",
+
+  "title.page.procurements": "Закупки - Remnant",
+  "description.page.procurements": "Управление закупками в Remnant",
+
+  "title.page.procurement.pay": "Оплатить закупку - Remnant",
+  "description.page.procurement.pay": "Оплатить закупку в Remnant",
+
+  "title.page.sites": "Сайты - Remnant",
+  "description.page.sites": "Управление сайтами в Remnant",
+
+  "title.page.procurement.create": "Создать закупку - Remnant",
+  "description.page.procurement.create": "Создать закупку в Remnant"
 }

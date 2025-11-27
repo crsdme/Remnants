@@ -1277,5 +1277,54 @@
   "page.balances.button.create": "Save balance",
 
   "page.balances.form.title.create": "Save new balance",
-  "page.balances.form.description.create": "Save new balance to the system"
+  "page.balances.form.description.create": "Save new balance to the system",
+
+  "page.procurements.title": "Procurements",
+  "page.procurements.description": "Manage procurements",
+  "page.procurements.filter.names": "Filter by name",
+  "page.procurements.button.create": "Create procurement",
+
+  "page.procurements.table.supplier": "Supplier",
+  "page.procurements.table.status": "Status",
+  "page.procurements.table.warehouse": "Warehouse",
+  "page.procurements.table.expenses": "Expenses",
+  "page.procurements.table.payments": "Payments",
+  "page.procurements.table.comment": "Comment",
+  "page.procurements.table.createdAt": "Created At",
+  "page.procurements.table.updatedAt": "Updated At",
+  "page.procurements.table.paymentStatus": "Payment Status",
+  "page.procurements.table.total": "Total",
+  "page.procurements.table.debt": "Debt",
+
+  "page.procurements.status.draft": "Draft",
+  "page.procurements.status.ordered": "Ordered",
+  "page.procurements.status.awaiting": "Awaiting",
+  "page.procurements.status.partially-received": "Partially received",
+  "page.procurements.status.received": "Received",
+  "page.procurements.status.cancelled": "Cancelled",
+  "page.procurements.paymentStatus.unpaid": "Unpaid",
+  "page.procurements.paymentStatus.partially-paid": "Partially paid",
+  "page.procurements.paymentStatus.paid": "Paid",
+  "page.procurements.paymentStatus.overpaid": "Overpaid",
+
+  "page.procurements.form.title.create": "Create new procurement",
+  "page.procurements.form.description.create": "Add new procurement to the system",
+  "page.procurements.form.title.edit": "Edit procurement",
+  "page.procurements.form.description.edit": "Edit existing procurement",
+  "page.procurements.form.comment": "Comment",
+  "page.procurements.form.supplier": "Supplier",
+
+  "page.procurements.pay.title": "Pay Procurement",
+  "page.procurements.pay.description": "Pay procurement",
+
+  "page.procurements.pay.label.seq": "Seq",
+  "page.procurements.pay.label.supplier": "Supplier",
+  "page.procurements.pay.label.status": "Status",
+  "page.procurements.pay.label.total": "Total",
+  "page.procurements.pay.label.debt": "Debt",
+  "page.procurements.pay.label.createdAt": "Created At",
+  "page.procurements.pay.label.comment": "Comment",
+
+  "page.procurements.create.title": "Create procurement",
+  "page.procurements.create.description": "Create procurement"
 }

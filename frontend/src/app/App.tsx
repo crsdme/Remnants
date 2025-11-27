@@ -112,6 +112,19 @@ export default function App() {
             path="/suppliers"
             element={<ProtectedRoute children={<Pages.SuppliersPage />} permissions={['supplier.page']} />}
           />
+          <Route
+            path="/procurements"
+            element={<ProtectedRoute children={<Pages.ProcurementsPage />} permissions={['procurement.page']} />}
+          />
+          <Route
+            path="/procurements/pay/:procurementSeq"
+            element={<ProtectedRoute children={<Pages.PayProcurementPage />} permissions={['procurement.page']} />}
+          />
+
+          <Route
+            path="/procurements/create"
+            element={<ProtectedRoute children={<Pages.CreateProcurementPage />} permissions={['procurement.page']} />}
+          />
 
           <Route
             path="/settings"

@@ -1,4 +1,4 @@
-import type { ColumnSort, Table as ReactTable } from '@tanstack/react-table'
+import type { ColumnSort } from '@tanstack/react-table'
 import { flexRender, getCoreRowModel, getExpandedRowModel, useReactTable } from '@tanstack/react-table'
 import { Package } from 'lucide-react'
 import { Fragment, useState } from 'react'

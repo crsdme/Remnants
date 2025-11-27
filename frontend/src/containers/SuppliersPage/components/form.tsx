@@ -1,8 +1,7 @@
-import { Trash2, TrashIcon } from 'lucide-react'
+import { TrashIcon } from 'lucide-react'
 import { useFieldArray } from 'react-hook-form'
 
 import { useTranslation } from 'react-i18next'
-import { CountrySelect } from '@/components/CountrySelect'
 import {
   Button,
   Form,
@@ -19,11 +18,11 @@ import {
   SelectValue,
   Textarea,
 } from '@/components/ui'
-import { useSupplierContext } from '../context'
 import { SOCIAL_TYPES } from '@/utils/constants'
+import { useSupplierContext } from '../context'
 
 export function SupplierForm() {
-  const { t, i18n } = useTranslation()
+  const { t } = useTranslation()
   const { isLoading, form, closeModal, submitForm } = useSupplierContext()
 
   const onSubmit = (values) => {

@@ -90,26 +90,27 @@ export function TableActionDropdown({ actions }: { actions?: Action[] }) {
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>
-              {confirmAction?.isDestructive ? t('component.tableActionDropdown.deleteTitle') : t('component.tableActionDropdown.confirmTitle')}
+              {t('component.tableActionDropdown.deleteTitle')}
             </AlertDialogTitle>
-            {confirmAction?.isDestructive && (
-              <AlertDialogDescription>
-                {t('component.tableActionDropdown.deleteDescription')}
-              </AlertDialogDescription>
-            )}
+            <AlertDialogDescription>
+              {t('component.tableActionDropdown.deleteDescription')}
+            </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>{t('component.tableActionDropdown.cancel')}</AlertDialogCancel>
+            <AlertDialogCancel>
+              {t('component.tableActionDropdown.cancel')}
+            </AlertDialogCancel>
+
             <AlertDialogAction
               onClick={handleConfirm}
               className={cn(
-                confirmAction?.isDestructive
-                && 'bg-destructive text-destructive-foreground hover:bg-destructive/90',
+                'bg-destructive text-white hover:bg-destructive/70 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40',
               )}
             >
-              {confirmAction?.isDestructive ? t('component.tableActionDropdown.delete') : t('component.tableActionDropdown.confirm')}
+              {t('component.tableActionDropdown.delete')}
             </AlertDialogAction>
           </AlertDialogFooter>
+
         </AlertDialogContent>
       </AlertDialog>
     </div>

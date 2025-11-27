@@ -1283,5 +1283,54 @@
   "page.balances.button.create": "Cохранить баланс",
 
   "page.balances.form.title.create": "Сохранение нового баланса",
-  "page.balances.form.description.create": "Сохранение нового баланса в систему"
+  "page.balances.form.description.create": "Сохранение нового баланса в систему",
+
+  "page.procurements.title": "Закупки",
+  "page.procurements.description": "Управление закупками",
+  "page.procurements.filter.names": "Фильтр по названию",
+  "page.procurements.button.create": "Создать закупку",
+
+  "page.procurements.table.supplier": "Поставщик",
+  "page.procurements.table.status": "Статус",
+  "page.procurements.table.warehouse": "Склад",
+  "page.procurements.table.expenses": "Расходы",
+  "page.procurements.table.payments": "Оплаты",
+  "page.procurements.table.comment": "Комментарий",
+  "page.procurements.table.createdAt": "Дата создания",
+  "page.procurements.table.updatedAt": "Дата обновления",
+  "page.procurements.table.total": "Общая сумма",
+  "page.procurements.table.debt": "Задолженность",
+
+  "page.procurements.status.draft": "Черновик",
+  "page.procurements.status.ordered": "Заказан",
+  "page.procurements.status.awaiting": "Ожидание",
+  "page.procurements.status.partially-received": "Частично получено",
+  "page.procurements.status.received": "Получено",
+  "page.procurements.status.cancelled": "Отменен",
+  "page.procurements.table.paymentStatus": "Статус оплаты",
+  "page.procurements.paymentStatus.unpaid": "Не оплачено",
+  "page.procurements.paymentStatus.partially-paid": "Частично оплачено",
+  "page.procurements.paymentStatus.paid": "Оплачено",
+  "page.procurements.paymentStatus.overpaid": "Переплата",
+
+  "page.procurements.form.title.create": "Создание новой закупки",
+  "page.procurements.form.description.create": "Добавить новую закупку в систему",
+  "page.procurements.form.title.edit": "Редактирование закупки",
+  "page.procurements.form.description.edit": "Редактирование существующей закупки",
+  "page.procurements.form.comment": "Комментарий",
+  "page.procurements.form.supplier": "Поставщик",
+
+  "page.procurements.pay.title": "Оплатить закупку",
+  "page.procurements.pay.description": "Оплатить закупку",
+
+  "page.procurements.pay.label.seq": "Номер",
+  "page.procurements.pay.label.supplier": "Поставщик",
+  "page.procurements.pay.label.status": "Статус",
+  "page.procurements.pay.label.total": "Общая сумма",
+  "page.procurements.pay.label.debt": "Задолженность",
+  "page.procurements.pay.label.createdAt": "Дата создания",
+  "page.procurements.pay.label.comment": "Комментарий",
+
+  "page.procurements.create.title": "Создать закупку",
+  "page.procurements.create.description": "Создать закупку"
 }

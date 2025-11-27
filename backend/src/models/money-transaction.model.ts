@@ -23,6 +23,7 @@ const MoneyTransactionSchema: Schema = new Schema(
         'refund', // возврат
         'investment', // инвестиции
         'purchase', // закупка
+        'procurement', // закупка
       ],
       required: true,
     },
@@ -52,7 +53,7 @@ const MoneyTransactionSchema: Schema = new Schema(
     },
     sourceModel: {
       type: String,
-      enum: ['investor', 'order', 'purchase', 'expense', 'manual', null],
+      enum: ['investor', 'order', 'purchase', 'expense', 'manual', 'procurement', null],
       default: null,
     },
     sourceId: {

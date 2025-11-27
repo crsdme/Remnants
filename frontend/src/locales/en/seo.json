@@ -108,5 +108,17 @@
   "description.page.balances": "Manage balances in Remnant",
 
   "title.page.suppliers": "Suppliers - Remnant",
-  "description.page.suppliers": "Manage suppliers in Remnant"
+  "description.page.suppliers": "Manage suppliers in Remnant",
+
+  "title.page.procurements": "Procurements - Remnant",
+  "description.page.procurements": "Manage procurements in Remnant",
+
+  "title.page.procurement.pay": "Pay Procurement - Remnant",
+  "description.page.procurement.pay": "Pay procurement in Remnant",
+
+  "title.page.sites": "Sites - Remnant",
+  "description.page.sites": "Manage sites in Remnant",
+
+  "title.page.procurement.create": "Create Procurement - Remnant",
+  "description.page.procurement.create": "Create procurement in Remnant"
 }

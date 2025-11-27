@@ -29,6 +29,8 @@
   "table.quantityLogs": "Логи количества",
   "table.auditLogs": "Логи изменений",
   "table.printLabel": "Печатать этикетку",
+  "table.pay": "Оплатить",
+  "table.accept": "Принять",
 
   "order-status.all": "Все",
 

@@ -409,3 +409,45 @@ interface Supplier {
   createdAt: Date
   updatedAt: Date
 }
+
+interface Procurement {
+  id: string
+  seq: number
+  supplier: {
+    id: string
+    name: string
+  }
+  status: string
+  warehouse: string
+  itemsByCurrency: {
+    currency: Currency
+    amount: number
+  }[]
+  paymentsByCurrency: {
+    currency: Currency
+    amount: number
+  }[]
+  balanceByCurrency: {
+    currency: Currency
+    amount: number
+  }[]
+  expenses: string[]
+  payments: MoneyTransaction[]
+  createdBy: string
+  removedBy: string
+  comment: string
+  createdAt: Date
+  updatedAt: Date
+}
+
+interface ProcurementItem {
+  id: string
+  procurementId: string
+  productId: string
+  product: Product
+  quantity: number
+  purchasePrice: number
+  purchaseCurrency: string
+  createdAt: Date
+  updatedAt: Date
+}

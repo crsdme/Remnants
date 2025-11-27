@@ -57,6 +57,7 @@ export function MoneyTransactionForm() {
 function AddForm() {
   const { t, i18n } = useTranslation()
   const { isLoading, addForm, closeModal, submitMoneyTransactionForm } = useMoneyTransactionContext()
+
   const selectedCashregister = useWatch({
     control: addForm.control,
     name: 'cashregister',

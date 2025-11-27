@@ -7,7 +7,6 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-  Input,
   Textarea,
 } from '@/components/ui'
 import { useBalanceContext } from '../context'
