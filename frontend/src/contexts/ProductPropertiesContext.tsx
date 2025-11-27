@@ -58,7 +58,7 @@ export function ProductPropertiesProvider({ children }: ProductPropertiesProvide
   const propertyFormSchema = useMemo(() =>
     z.object({
       names: z.record(z.string({ required_error: t('form.errors.required') }).min(3, { message: t('form.errors.min_length', { count: 3 }) }).trim()),
-      symbols: z.record(z.string({ required_error: t('form.errors.required') }).min(1, { message: t('form.errors.min_length', { count: 1 }) }).trim()),
+      symbols: z.record(z.string()).optional(),
       priority: z.number().optional(),
       isRequired: z.boolean().optional(),
       showInTable: z.boolean().optional(),
