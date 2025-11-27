@@ -17,7 +17,7 @@ import {
   SheetTitle,
 
 } from '@/components/ui'
-import { useAutomationContext } from '@/contexts'
+import { useAutomationContext } from '../context'
 
 import { AutomationActionsForm, AutomationConditionsForm, AutomationForm } from './form'
 

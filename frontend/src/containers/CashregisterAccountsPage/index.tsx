@@ -1,10 +1,10 @@
 import { Helmet } from 'react-helmet'
 import { useTranslation } from 'react-i18next'
 
-import { CashregisterAccountProvider } from '@/contexts'
-
 import { ActionBar } from './components/action-bar'
+
 import { DataTable } from './components/data-table'
+import { CashregisterAccountProvider } from './context'
 
 export function CashregisterAccountsPage() {
   const { t } = useTranslation()

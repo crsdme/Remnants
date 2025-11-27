@@ -26,8 +26,8 @@ import {
   SelectValue,
   Separator,
 } from '@/components/ui'
-import { useAutomationContext } from '@/contexts'
 import { AUTOMATION_ACTIONS, AUTOMATION_CONDITIONS, AUTOMATION_TRIGGERS } from '@/utils/constants'
+import { useAutomationContext } from '../context'
 
 export function AutomationForm() {
   const { t, i18n } = useTranslation()

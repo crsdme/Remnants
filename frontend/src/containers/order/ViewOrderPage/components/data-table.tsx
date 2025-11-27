@@ -1,6 +1,6 @@
 import { ProductSelectedTable } from '@/components'
 
-import { useViewOrderContext } from '@/contexts'
+import { useViewOrderContext } from '../context'
 import { InformationForm } from './information-form'
 
 export function DataTable() {

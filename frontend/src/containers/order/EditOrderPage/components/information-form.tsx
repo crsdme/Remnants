@@ -16,9 +16,9 @@ import {
   Separator,
   Textarea,
 } from '@/components/ui'
-import { useEditOrderContext } from '@/contexts'
 import { hasPermission } from '@/utils/helpers'
 import { formatDate } from '@/utils/helpers/formatDate'
+import { useEditOrderContext } from '../context'
 
 export function InformationForm({ form, onSubmit }: { form: UseFormReturn, onSubmit: (payments: any) => void }) {
   const { t, i18n } = useTranslation()

@@ -12,8 +12,8 @@ import {
   SheetTitle,
   SheetTrigger,
 } from '@/components/ui'
-import { useUserRoleContext } from '@/contexts'
 import { downloadCsv } from '@/utils/helpers/download'
+import { useUserRoleContext } from '../context'
 import { UserRoleForm } from './form'
 
 export function ActionBar() {

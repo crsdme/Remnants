@@ -21,7 +21,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from '@/components/ui'
-import { useProductPropertiesGroupsContext } from '@/contexts'
+import { useProductPropertiesGroupsContext } from '../context'
 
 export function ActionBar() {
   const { t, i18n } = useTranslation()

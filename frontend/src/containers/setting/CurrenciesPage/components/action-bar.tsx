@@ -13,8 +13,8 @@ import {
   SheetTitle,
   SheetTrigger,
 } from '@/components/ui'
-import { useCurrencyContext } from '@/contexts'
 import { downloadCsv } from '@/utils/helpers/download'
+import { useCurrencyContext } from '../context'
 
 import { CurrencyForm, ExchangeRateForm } from './form'
 

@@ -11,7 +11,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from '@/components/ui'
-import { useClientContext } from '@/contexts'
+import { useClientContext } from '../context'
 
 import { ClientForm } from './form'
 

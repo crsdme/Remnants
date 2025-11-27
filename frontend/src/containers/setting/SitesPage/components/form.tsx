@@ -13,7 +13,7 @@ import {
   FormMessage,
   Input,
 } from '@/components/ui'
-import { useSiteContext } from '@/contexts'
+import { useSiteContext } from '../context'
 
 export function SiteForm() {
   const { t } = useTranslation()

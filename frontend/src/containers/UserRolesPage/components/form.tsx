@@ -15,8 +15,8 @@ import {
   FormMessage,
   Input,
 } from '@/components/ui'
-import { useUserRoleContext } from '@/contexts'
 import { USER_ROLE_PERMISSIONS } from '@/utils/constants'
+import { useUserRoleContext } from '../context'
 
 export function UserRoleForm() {
   const { t } = useTranslation()

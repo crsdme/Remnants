@@ -12,8 +12,8 @@ import {
   SheetTitle,
   SheetTrigger,
 } from '@/components/ui'
-import { useUserContext } from '@/contexts'
 import { downloadCsv } from '@/utils/helpers/download'
+import { useUserContext } from '../context'
 
 import { UserForm } from './form'
 

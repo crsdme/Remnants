@@ -1,10 +1,10 @@
 import { Helmet } from 'react-helmet'
 import { useTranslation } from 'react-i18next'
 
-import { OrderSourceProvider } from '@/contexts'
-
 import { ActionBar } from './components/action-bar'
+
 import { DataTable } from './components/data-table'
+import { OrderSourceProvider } from './context'
 
 export function OrderSourcesPage() {
   const { t } = useTranslation()

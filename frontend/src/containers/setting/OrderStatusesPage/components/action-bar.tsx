@@ -11,7 +11,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from '@/components/ui'
-import { useOrderStatusContext } from '@/contexts'
+import { useOrderStatusContext } from '../context'
 
 import { OrderStatusForm } from './form'
 

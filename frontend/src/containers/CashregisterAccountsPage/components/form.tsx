@@ -13,7 +13,7 @@ import {
   FormMessage,
   Input,
 } from '@/components/ui'
-import { useCashregisterAccountContext } from '@/contexts'
+import { useCashregisterAccountContext } from '../context'
 
 export function CashregisterAccountForm() {
   const { t, i18n } = useTranslation()

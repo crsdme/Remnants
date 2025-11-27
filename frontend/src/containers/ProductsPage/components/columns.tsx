@@ -17,9 +17,10 @@ import { useTranslation } from 'react-i18next'
 import { useProductPropertyQuery } from '@/api/hooks/product-property/useProductPropertyQuery'
 import { ImageGallery, TableActionDropdown } from '@/components'
 import { Badge, Button, Checkbox } from '@/components/ui'
-import { useAuthContext, useProductContext } from '@/contexts'
+import { useAuthContext } from '@/contexts'
 import { formatDate } from '@/utils/helpers'
 import { hasPermission } from '@/utils/helpers/permission'
+import { useProductContext } from '../context'
 
 const sortIcons = { asc: ArrowUp, desc: ArrowDown }
 

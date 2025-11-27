@@ -11,7 +11,7 @@ import {
   FormMessage,
   Input,
 } from '@/components/ui'
-import { useLanguageContext } from '@/contexts'
+import { useLanguageContext } from '../context'
 
 export function LanguageForm() {
   const { t } = useTranslation()

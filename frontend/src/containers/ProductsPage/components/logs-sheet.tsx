@@ -17,8 +17,8 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui'
-import { useProductContext } from '@/contexts'
 import { formatDate } from '@/utils/helpers'
+import { useProductContext } from '../context'
 
 export function LogsSheet() {
   const { t } = useTranslation()

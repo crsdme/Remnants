@@ -17,7 +17,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui'
-import { useDeliveryServiceContext } from '@/contexts'
+import { useDeliveryServiceContext } from '../context'
 
 export function DeliveryServiceForm() {
   const { t } = useTranslation()

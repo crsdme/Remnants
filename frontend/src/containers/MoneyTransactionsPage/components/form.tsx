@@ -22,7 +22,7 @@ import {
   TabsTrigger,
   Textarea,
 } from '@/components/ui'
-import { useMoneyTransactionContext } from '@/contexts'
+import { useMoneyTransactionContext } from '../context'
 
 export function MoneyTransactionForm() {
   const { t } = useTranslation()

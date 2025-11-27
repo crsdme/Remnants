@@ -11,7 +11,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from '@/components/ui'
-import { useExpenseContext } from '@/contexts'
+import { useExpenseContext } from '../context'
 
 import { ExpenseForm } from './form'
 

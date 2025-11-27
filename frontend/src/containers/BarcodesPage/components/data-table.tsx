@@ -7,10 +7,10 @@ import { useTranslation } from 'react-i18next'
 import { useBarcodeQuery } from '@/api/hooks'
 import { AdvancedFilters, AdvancedSorters, ColumnVisibilityMenu, TablePagination, TableSelectionDropdown } from '@/components'
 import { Separator, Skeleton, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui'
-import { useBarcodeContext } from '@/contexts'
 import { backendUrl } from '@/utils/constants'
-
 import { useDebounceCallback } from '@/utils/hooks'
+
+import { useBarcodeContext } from '../context'
 import { useColumns } from './columns'
 import { DataTableFilters } from './data-table-filters'
 

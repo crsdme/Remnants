@@ -1,10 +1,10 @@
 import { Helmet } from 'react-helmet'
 import { useTranslation } from 'react-i18next'
 
-import { ClientProvider } from '@/contexts'
-
 import { ActionBar } from './components/action-bar'
+
 import { DataTable } from './components/data-table'
+import { ClientProvider } from './context'
 
 export function ClientsPage() {
   const { t } = useTranslation()

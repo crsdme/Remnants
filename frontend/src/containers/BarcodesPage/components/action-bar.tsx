@@ -3,8 +3,8 @@ import { Plus } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { PermissionGate } from '@/components'
 import { Button, Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui'
-import { useBarcodeContext } from '@/contexts'
 
+import { useBarcodeContext } from '../context'
 import { BarcodeForm } from './form'
 
 export function ActionBar() {

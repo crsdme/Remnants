@@ -1,10 +1,9 @@
 import { Helmet } from 'react-helmet'
 import { useTranslation } from 'react-i18next'
 
-import { UserProvider } from '@/contexts'
-
 import { ActionBar } from './components/action-bar'
 import { DataTable } from './components/data-table'
+import { UserProvider } from './context'
 
 export function UsersPage() {
   const { t } = useTranslation()

@@ -18,7 +18,7 @@ import {
   FormMessage,
   Separator,
 } from '@/components/ui'
-import { useOrderStatisticContext } from '@/contexts'
+import { useOrderStatisticContext } from '../context'
 
 export function DataTable() {
   const { i18n, t } = useTranslation()

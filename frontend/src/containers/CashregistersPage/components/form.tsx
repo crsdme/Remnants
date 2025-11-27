@@ -14,8 +14,8 @@ import {
   FormMessage,
   Input,
 } from '@/components/ui'
-import { useCashregisterContext } from '@/contexts'
 import i18n from '@/locales/i18n'
+import { useCashregisterContext } from '../context'
 
 export function CashregisterForm() {
   const { t } = useTranslation()

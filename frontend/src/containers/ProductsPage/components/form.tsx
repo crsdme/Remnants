@@ -22,7 +22,7 @@ import {
   SelectValue,
   Switch,
 } from '@/components/ui'
-import { useProductContext } from '@/contexts'
+import { useProductContext } from '../context'
 
 export function ProductForm() {
   const { i18n } = useTranslation()

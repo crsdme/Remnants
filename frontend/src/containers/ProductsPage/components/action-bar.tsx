@@ -12,7 +12,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from '@/components/ui'
-import { useProductContext } from '@/contexts'
+import { useProductContext } from '../context'
 import { ProductForm } from './form'
 import { LogsSheet } from './logs-sheet'
 

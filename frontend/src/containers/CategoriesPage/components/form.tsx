@@ -13,7 +13,7 @@ import {
   FormMessage,
   Input,
 } from '@/components/ui'
-import { useCategoryContext } from '@/contexts'
+import { useCategoryContext } from '../context'
 
 export function CategoryForm() {
   const { isLoading, isEdit, form, submitCategoryForm, closeModal } = useCategoryContext()

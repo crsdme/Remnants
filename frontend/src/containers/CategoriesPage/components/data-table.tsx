@@ -8,8 +8,8 @@ import { useCategoryQuery, useLanguageQuery } from '@/api/hooks'
 import { AdvancedFilters, AdvancedSorters, BatchEdit, ColumnVisibilityMenu, PermissionGate, TablePagination, TableSelectionDropdown } from '@/components'
 import { Separator, Skeleton, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui'
 
-import { useCategoryContext } from '@/contexts/CategoryContext'
 import { useDebounceCallback } from '@/utils/hooks'
+import { useCategoryContext } from '../context'
 
 import { useColumns } from './columns'
 import { DataTableFilters } from './data-table-filters'

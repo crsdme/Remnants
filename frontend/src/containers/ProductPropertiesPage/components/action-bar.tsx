@@ -13,8 +13,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from '@/components/ui'
-import { useProductPropertiesContext } from '@/contexts'
-
+import { useProductPropertiesContext } from '../context'
 import { ProductOptionForm, ProductPropertyForm } from './form'
 
 export function ActionBar() {

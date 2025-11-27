@@ -11,7 +11,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from '@/components/ui'
-import { useMoneyTransactionContext } from '@/contexts'
+import { useMoneyTransactionContext } from '../context'
 
 import { MoneyTransactionForm } from './form'
 

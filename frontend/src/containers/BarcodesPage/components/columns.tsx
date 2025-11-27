@@ -14,9 +14,9 @@ import { useTranslation } from 'react-i18next'
 
 import { TableActionDropdown } from '@/components'
 import { Badge, Button, Checkbox } from '@/components/ui'
-import { useBarcodeContext } from '@/contexts'
 import { backendUrl } from '@/utils/constants'
 import { formatDate } from '@/utils/helpers'
+import { useBarcodeContext } from '../context'
 
 const sortIcons = { asc: ArrowUp, desc: ArrowDown }
 

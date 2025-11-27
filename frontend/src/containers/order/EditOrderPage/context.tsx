@@ -19,9 +19,9 @@ import {
   useOrderEdit,
   useOrderQuery,
 } from '@/api/hooks'
+import { useAuthContext } from '@/contexts/AuthContext'
 import { PAYMENT_STATUSES } from '@/utils/constants'
 import { hasPermission } from '@/utils/helpers'
-import { useAuthContext } from './AuthContext'
 
 interface EditOrderContextType {
   isClientModalOpen: boolean

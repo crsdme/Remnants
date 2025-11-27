@@ -25,8 +25,8 @@ import {
   SheetTitle,
   Textarea,
 } from '@/components/ui'
-import { useEditOrderContext } from '@/contexts'
 import { SOCIAL_TYPES } from '@/utils/constants'
+import { useEditOrderContext } from '../context'
 
 export function ClientForm({ form, onSubmit }: { form: UseFormReturn, onSubmit: (payments: any) => void }) {
   const { t } = useTranslation()

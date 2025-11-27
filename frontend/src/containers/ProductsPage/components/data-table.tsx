@@ -7,9 +7,9 @@ import { useTranslation } from 'react-i18next'
 import { useLanguageQuery, useProductQuery, useWarehouseQuery } from '@/api/hooks'
 import { AdvancedFilters, AdvancedSorters, BatchEdit, ColumnVisibilityMenu, PermissionGate, TablePagination, TableSelectionDropdown } from '@/components'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Separator, Skeleton, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui'
-import { useProductContext } from '@/contexts/ProductContext'
-
 import { useDebounceCallback } from '@/utils/hooks'
+
+import { useProductContext } from '../context'
 import { useColumns } from './columns'
 import { DataTableFilters } from './data-table-filters'
 

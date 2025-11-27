@@ -10,8 +10,8 @@ import { useTranslation } from 'react-i18next'
 
 import { TableActionDropdown } from '@/components'
 import { Badge, Button } from '@/components/ui'
-import { useAuditLogsContext } from '@/contexts'
 import { formatDate } from '@/utils/helpers'
+import { useAuditLogsContext } from '../context'
 
 const sortIcons = { asc: ArrowUp, desc: ArrowDown }
 

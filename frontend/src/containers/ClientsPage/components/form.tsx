@@ -19,8 +19,8 @@ import {
   SelectValue,
   Textarea,
 } from '@/components/ui'
-import { useClientContext } from '@/contexts'
 import { SOCIAL_TYPES } from '@/utils/constants'
+import { useClientContext } from '../context'
 
 export function ClientForm() {
   const { t, i18n } = useTranslation()

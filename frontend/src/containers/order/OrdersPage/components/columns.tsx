@@ -14,10 +14,12 @@ import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import { TableActionDropdown } from '@/components'
 import { Badge, Button, Checkbox } from '@/components/ui'
-import { useAuthContext, useOrderContext } from '@/contexts'
+import { useAuthContext } from '@/contexts'
 import { backendUrl } from '@/utils/constants'
+
 import { formatDate } from '@/utils/helpers'
 import { hasPermission } from '@/utils/helpers/permission'
+import { useOrderContext } from '../context'
 
 const sortIcons = { asc: ArrowUp, desc: ArrowDown }
 

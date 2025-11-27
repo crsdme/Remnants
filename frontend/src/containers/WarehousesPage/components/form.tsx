@@ -13,7 +13,7 @@ import {
   FormMessage,
   Input,
 } from '@/components/ui'
-import { useWarehouseContext } from '@/contexts'
+import { useWarehouseContext } from '../context'
 
 export function WarehouseForm() {
   const { t } = useTranslation()

@@ -15,7 +15,7 @@ import {
   Input,
   Textarea,
 } from '@/components/ui'
-import { useExpenseContext } from '@/contexts'
+import { useExpenseContext } from '../context'
 
 export function ExpenseForm() {
   const { t, i18n } = useTranslation()

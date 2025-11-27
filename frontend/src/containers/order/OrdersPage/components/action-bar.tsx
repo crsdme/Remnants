@@ -6,7 +6,7 @@ import { PermissionGate } from '@/components'
 import {
   Button,
 } from '@/components/ui'
-import { useOrderContext } from '@/contexts'
+import { useOrderContext } from '../context'
 
 export function ActionBar() {
   const { t } = useTranslation()

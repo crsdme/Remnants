@@ -12,7 +12,7 @@ import {
   Input,
   Textarea,
 } from '@/components/ui'
-import { useExpenseCategoryContext } from '@/contexts'
+import { useExpenseCategoryContext } from '../context'
 
 export function ExpenseCategoryForm() {
   const { t } = useTranslation()

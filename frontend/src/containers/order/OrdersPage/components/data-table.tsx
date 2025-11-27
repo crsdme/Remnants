@@ -5,11 +5,11 @@ import { useTranslation } from 'react-i18next'
 import { useOrderQuery, useOrderStatusQuery } from '@/api/hooks'
 import { AdvancedFilters, AdvancedSorters, ColumnVisibilityMenu, TablePagination, TableSelectionDropdown } from '@/components'
 import { Separator, Skeleton, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Tabs, TabsList, TabsTrigger } from '@/components/ui'
-import { useOrderContext } from '@/contexts'
-import { useThemeContext } from '@/contexts/ThemeContext'
+import { useThemeContext } from '@/contexts'
 import { hexToRgba } from '@/utils/helpers'
-
 import { useDebounceCallback } from '@/utils/hooks'
+
+import { useOrderContext } from '../context'
 import { useColumns } from './columns'
 import { DataTableFilters } from './data-table-filters'
 

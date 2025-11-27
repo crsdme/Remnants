@@ -2,7 +2,7 @@ import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { useTestStart } from '@/api/hooks/test/useTestStart'
 import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Switch } from '@/components/ui'
-import { useSettingContext } from '@/contexts/SettingContext'
+import { useSettingContext } from './context'
 
 export function MainSettingsPage() {
   const { t } = useTranslation()

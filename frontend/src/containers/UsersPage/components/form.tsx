@@ -13,7 +13,7 @@ import {
   FormMessage,
   Input,
 } from '@/components/ui'
-import { useUserContext } from '@/contexts'
+import { useUserContext } from '../context'
 
 export function UserForm() {
   const { t, i18n } = useTranslation()

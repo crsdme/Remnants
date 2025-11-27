@@ -1,9 +1,9 @@
 import { Helmet } from 'react-helmet'
 import { useTranslation } from 'react-i18next'
 
-import { WarehouseProvider } from '@/contexts'
 import { ActionBar } from './components/action-bar'
 import { DataTable } from './components/data-table'
+import { WarehouseProvider } from './context'
 
 export function WarehousesPage() {
   const { t } = useTranslation()

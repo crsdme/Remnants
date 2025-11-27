@@ -13,7 +13,7 @@ import {
   Input,
   Textarea,
 } from '@/components/ui'
-import { useCurrencyContext } from '@/contexts'
+import { useCurrencyContext } from '../context'
 
 export function CurrencyForm() {
   const { t } = useTranslation()

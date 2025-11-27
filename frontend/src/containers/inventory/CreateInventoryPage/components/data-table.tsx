@@ -17,8 +17,8 @@ import {
   Input,
   Separator,
 } from '@/components/ui'
-import { useCreateInventoryContext } from '@/contexts'
 import { useBarcodeScanned, useDebounceCallback } from '@/utils/hooks'
+import { useCreateInventoryContext } from '../context'
 import { ProductSelectedTable } from './ProductTable'
 
 export function DataTable() {

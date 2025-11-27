@@ -5,8 +5,8 @@ import { useTranslation } from 'react-i18next'
 import { useExpenseCategoryQuery } from '@/api/hooks'
 import { ColumnVisibilityMenu, TablePagination, TableSelectionDropdown } from '@/components'
 import { Skeleton, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui'
-import { useExpenseCategoryContext } from '@/contexts'
 import { useDebounceCallback } from '@/utils/hooks'
+import { useExpenseCategoryContext } from '../context'
 
 import { useColumns } from './columns'
 

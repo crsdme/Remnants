@@ -14,8 +14,8 @@ import {
   Input,
   Separator,
 } from '@/components/ui'
-import { useBarcodeContext } from '@/contexts'
 import { useBarcodeScanned } from '@/utils/hooks'
+import { useBarcodeContext } from '../context'
 
 export function BarcodeForm() {
   const { isLoading, form, submitBarcodeForm, generateBarcode, closeModal, getBarcode } = useBarcodeContext()

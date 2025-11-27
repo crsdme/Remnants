@@ -5,8 +5,8 @@ import { useTranslation } from 'react-i18next'
 import { useSiteQuery } from '@/api/hooks'
 import { ColumnVisibilityMenu, TablePagination, TableSelectionDropdown } from '@/components'
 import { Skeleton, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui'
-import { useSiteContext } from '@/contexts'
 import { useDebounceCallback } from '@/utils/hooks'
+import { useSiteContext } from '../context'
 
 import { useColumns } from './columns'
 

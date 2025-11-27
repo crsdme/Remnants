@@ -2,11 +2,10 @@ import { useFieldArray } from 'react-hook-form'
 
 import { ProductSelectedTable, ProductTable } from '@/components'
 import { Separator } from '@/components/ui'
-
-import { useCreateOrderContext } from '@/contexts'
-
 import { roundNumber } from '@/utils/helpers/'
 import { useBarcodeScanned } from '@/utils/hooks'
+
+import { useCreateOrderContext } from '../context'
 import { ClientForm } from './client-form'
 import { InformationForm } from './information-form'
 import { PaymentForm } from './payment-form'

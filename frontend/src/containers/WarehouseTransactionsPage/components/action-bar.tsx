@@ -3,7 +3,7 @@ import { Plus } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { PermissionGate } from '@/components'
 import { Button, Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui'
-import { useWarehouseTransactionContext } from '@/contexts'
+import { useWarehouseTransactionContext } from '../context'
 
 import { WarehouseTransactionForm } from './form'
 

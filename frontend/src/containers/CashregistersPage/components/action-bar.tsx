@@ -11,7 +11,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from '@/components/ui'
-import { useCashregisterContext } from '@/contexts'
+import { useCashregisterContext } from '../context'
 
 import { CashregisterForm } from './form'
 

@@ -27,8 +27,8 @@ import {
   SheetTitle,
   Textarea,
 } from '@/components/ui'
-import { useCreateOrderContext } from '@/contexts'
 import { PAYMENT_STATUSES } from '@/utils/constants'
+import { useCreateOrderContext } from '../context'
 
 export function PaymentForm({ form, onSubmit }: { form: UseFormReturn, onSubmit: (payments: any) => void }) {
   const { t } = useTranslation()

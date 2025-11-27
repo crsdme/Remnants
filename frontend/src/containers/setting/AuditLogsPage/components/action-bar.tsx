@@ -16,7 +16,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui'
-import { useAuditLogsContext } from '@/contexts'
+import { useAuditLogsContext } from '../context'
 
 function formatValue(value: unknown): string {
   if (value === null || value === undefined)

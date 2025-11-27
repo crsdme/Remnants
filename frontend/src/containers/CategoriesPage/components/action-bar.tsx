@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { ImportButton, PermissionGate } from '@/components'
 import { Button, Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui'
-import { useCategoryContext } from '@/contexts'
+import { useCategoryContext } from '../context'
 
 import { CategoryForm } from './form'
 
