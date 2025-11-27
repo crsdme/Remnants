@@ -20,6 +20,9 @@
   "component.tableSelection.delete": "Delete",
   "component.tableSelection.duplicate": "Duplicate",
   "component.tableSelection.print": "Print",
+  "component.tableSelection.deleteTitle": "Delete",
+  "component.tableSelection.deleteDescription": "Are you sure you want to delete this?",
+  "component.tableSelection.cancel": "Cancel",
 
   "component.asyncSelect.searchPlaceholder": "Search",
   "component.asyncSelect.noResultsMessage": "No results found",

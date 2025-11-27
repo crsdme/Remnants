@@ -1,4 +1,7 @@
 {
+  "error.title.undefined": "Undefined error",
+  "error.description.undefined": "An undefined error occurred",
+  
   "response.title.LANGUAGES_FETCHED": "Languages fetched",
   "response.description.LANGUAGES_FETCHED": "Languages list successfully fetched",
 

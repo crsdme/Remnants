@@ -1,4 +1,7 @@
 {
+  "error.title.undefined": "Неизвестная ошибка",
+  "error.description.undefined": "Произошла неизвестная ошибка",
+
   "response.title.LANGUAGES_FETCHED": "Языки получены",
   "response.description.LANGUAGES_FETCHED": "Список языков успешно получен",
 
