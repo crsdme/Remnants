@@ -20,7 +20,7 @@ import {
   Separator,
   Switch,
 } from '@/components/ui'
-import { useWarehouseTransactionContext } from '@/contexts'
+import { useWarehouseTransactionContext } from '../context'
 import { useBarcodeScanned } from '@/utils/hooks'
 
 export function WarehouseTransactionForm() {
