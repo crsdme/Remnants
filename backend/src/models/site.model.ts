@@ -27,11 +27,9 @@ const SiteSchema: Schema = new Schema(
     },
     url: {
       type: String,
-      required: true,
     },
     key: {
       type: String,
-      required: true,
     },
     priority: {
       type: Number,
