@@ -140,7 +140,7 @@ export function ProductForm() {
                     {property.isRequired && <span className="text-destructive ml-1">*</span>}
                   </p>
                 </FormLabel>
-                <AsyncSelect
+                {/* <AsyncSelect
                   fetcher={async ({ query, selectedValue }) => {
                     const response = await getProductPropertiesOptions({
                       pagination: { full: true },
@@ -162,6 +162,29 @@ export function ProductForm() {
                   value={field.value || []}
                   onChange={field.onChange}
                   disabled={isLoading}
+                /> */}
+                <AsyncSelectNew
+                  {...field}
+                  loadOptions={async ({ query, selectedValue }) => {
+                    const response = await getProductPropertiesOptions({
+                      pagination: { full: true },
+                      filters: {
+                        ...(selectedValue ? { ids: selectedValue } : { names: query }),
+                        productProperty: property.id,
+                        active: [true],
+                        language: i18n.language,
+                      },
+                    })
+                    return response?.data?.productPropertiesOptions || []
+                  }}
+                  field={field}
+                  value={field.value || []}
+                  renderOption={e => e.names[i18n.language]}
+                  getDisplayValue={e => e.names[i18n.language]}
+                  getOptionValue={e => e.id}
+                  triggerClassName="w-full"
+                  disabled={isLoading}
+                  searchable
                 />
               </FormItem>
             )}
@@ -247,7 +270,7 @@ export function ProductForm() {
                     {property.isRequired && <span className="text-destructive ml-1">*</span>}
                   </p>
                 </FormLabel>
-                <AsyncSelect
+                {/* <AsyncSelect
                   fetcher={async ({ query, selectedValue }) => {
                     const response = await getProductPropertiesOptions({
                       pagination: { full: true },
@@ -280,6 +303,39 @@ export function ProductForm() {
                   onChange={field.onChange}
                   disabled={isLoading}
                   field={field}
+                /> */}
+                <AsyncSelectNew
+                  {...field}
+                  loadOptions={async ({ query, selectedValue }) => {
+                    const response = await getProductPropertiesOptions({
+                      pagination: { full: true },
+                      filters: {
+                        ...(selectedValue ? { ids: selectedValue } : { names: query }),
+                        productProperty: property.id,
+                        active: [true],
+                        language: i18n.language,
+                      },
+                    })
+                    return response?.data?.productPropertiesOptions || []
+                  }}
+                  renderOption={e => (
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 rounded-full border border-gray-300" style={{ backgroundColor: e.color }} />
+                      {e.names[i18n.language]}
+                    </div>
+                  )}
+                  getDisplayValue={e => (
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 rounded-full border border-gray-300" style={{ backgroundColor: e.color }} />
+                      {e.names[i18n.language]}
+                    </div>
+                  )}
+                  field={field}
+                  value={field.value || []}
+                  getOptionValue={e => e.id}
+                  triggerClassName="w-full"
+                  disabled={isLoading}
+                  searchable
                 />
               </FormItem>
             )}
@@ -488,7 +544,7 @@ function CreateForm({ languages, currencies, units, productPropertiesGroups, onS
                   <span className="text-destructive ml-1">*</span>
                 </p>
               </FormLabel>
-              <AsyncSelect
+              {/* <AsyncSelect
                 fetcher={loadCategoryOptions}
                 renderOption={e => e.names[i18n.language]}
                 getDisplayValue={e => e.names[i18n.language]}
@@ -501,7 +557,21 @@ function CreateForm({ languages, currencies, units, productPropertiesGroups, onS
                 multi
                 disabled={isLoading}
                 field={field}
-              />
+              /> */}
+              <AsyncSelectNew
+                  {...field}
+                  loadOptions={loadCategoryOptions}
+                  field={field}
+                  value={field.value || []}
+                  renderOption={e => e.names[i18n.language]}
+                  getDisplayValue={e => e.names[i18n.language]}
+                  getOptionValue={e => e.id}
+                  triggerClassName="w-full"
+                  disabled={isLoading}
+                  searchable
+                  clearable
+                  multi
+                />
             </FormItem>
           )}
         />
@@ -852,7 +922,7 @@ function EditForm({ languages, currencies, units, productPropertiesGroups, onSub
             <FormItem>
               <FormLabel>{t('page.products.form.categories')}</FormLabel>
               <FormControl>
-                <AsyncSelect
+                {/* <AsyncSelect
                   fetcher={loadCategoryOptions}
                   renderOption={e => e.names[i18n.language]}
                   getDisplayValue={e => e.names[i18n.language]}
@@ -865,6 +935,19 @@ function EditForm({ languages, currencies, units, productPropertiesGroups, onSub
                   multi
                   disabled={isLoading}
                   field={field}
+                /> */}
+                <AsyncSelectNew
+                  {...field}
+                  loadOptions={loadCategoryOptions}
+                  field={field}
+                  value={field.value || []}
+                  renderOption={e => e.names[i18n.language]}
+                  getDisplayValue={e => e.names[i18n.language]}
+                  getOptionValue={e => e.id}
+                  triggerClassName="w-full"
+                  searchable
+                  clearable
+                  multi
                 />
               </FormControl>
               <FormMessage />
