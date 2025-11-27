@@ -1,5 +1,6 @@
-import { useTranslation } from 'react-i18next'
+import { useWatch } from 'react-hook-form'
 
+import { useTranslation } from 'react-i18next'
 import { ColorPicker } from '@/components'
 import {
   Button,
@@ -142,6 +143,8 @@ export function ProductOptionForm({ form, languages, isLoading, onSubmit, closeM
 export function ProductPropertyForm({ form, languages, isLoading, onSubmit, closeModal }) {
   const { t } = useTranslation()
 
+  const isTextOrNumber = ['text', 'number'].includes(useWatch({ control: form.control, name: 'type' }))
+
   return (
     <Form {...form}>
       <form className="w-full space-y-1" onSubmit={form.handleSubmit(onSubmit)}>
@@ -175,35 +178,37 @@ export function ProductPropertyForm({ form, languages, isLoading, onSubmit, clos
             )}
           />
         ))}
-        {languages.map(language => (
-          <FormField
-            control={form.control}
-            key={language.code}
-            name={`symbols.${language.code}`}
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>
-                  <p>
-                    {t('page.product-properties.form.symbols', {
-                      language: t(`language.${language.code}`),
-                    })}
-                  </p>
-                </FormLabel>
-                <FormControl>
-                  <Input
-                    placeholder={t('page.product-properties.form.symbols', {
-                      language: t(`language.${language.code}`),
-                    })}
-                    className="w-full"
-                    {...field}
-                    disabled={isLoading}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        ))}
+        { isTextOrNumber && (
+          languages.map(language => (
+            <FormField
+              control={form.control}
+              key={language.code}
+              name={`symbols.${language.code}`}
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>
+                    <p>
+                      {t('page.product-properties.form.symbols', {
+                        language: t(`language.${language.code}`),
+                      })}
+                    </p>
+                  </FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder={t('page.product-properties.form.symbols', {
+                        language: t(`language.${language.code}`),
+                      })}
+                      className="w-full"
+                      {...field}
+                      disabled={isLoading}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          ))
+        ) }
         <FormField
           control={form.control}
           name="type"
