@@ -5,11 +5,8 @@ import { useNavigate } from 'react-router-dom'
 import { PermissionGate } from '@/components'
 import { Button } from '@/components/ui'
 
-import { useProcurementContext } from '../context'
-
 export function ActionBar() {
   const { t } = useTranslation()
-  const { isLoading } = useProcurementContext()
   const navigate = useNavigate()
 
   return (
@@ -22,7 +19,6 @@ export function ActionBar() {
         <PermissionGate permission={['procurement.create', 'procurement.edit']}>
           <Button
             onClick={() => navigate('/procurements/create')}
-            disabled={isLoading}
           >
             <Plus />
             {t('page.procurements.button.create')}

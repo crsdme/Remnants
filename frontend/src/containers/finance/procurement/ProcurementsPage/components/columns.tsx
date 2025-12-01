@@ -21,7 +21,7 @@ const sortIcons = { asc: ArrowUp, desc: ArrowDown }
 
 export function useColumns() {
   const { t, i18n } = useTranslation()
-  const { isLoading, editModal, removeProcurement } = useProcurementContext()
+  const { removeProcurement } = useProcurementContext()
   const navigate = useNavigate()
 
   const columns = useMemo(() => {
@@ -30,7 +30,6 @@ export function useColumns() {
 
       return (
         <Button
-          disabled={isLoading}
           variant="ghost"
           onClick={() => column.toggleSorting()}
           className="my-2 flex items-center gap-2"
@@ -59,12 +58,12 @@ export function useColumns() {
               label: t('table.copy'),
               icon: <Copy className="h-4 w-4" />,
             },
-            {
-              permission: 'procurement.edit',
-              onClick: async () => await editModal(item),
-              label: t('table.edit'),
-              icon: <Pencil className="h-4 w-4" />,
-            },
+            // {
+            //   permission: 'procurement.edit',
+            //   onClick: async () => await editModal(item),
+            //   label: t('table.edit'),
+            //   icon: <Pencil className="h-4 w-4" />,
+            // },
             {
               permission: 'procurement.pay',
               onClick: async () => navigate(`/procurements/pay/${item.seq}`),
