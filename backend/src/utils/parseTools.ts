@@ -112,6 +112,13 @@ export function parseCategories(row: Record<string, string>): string[] {
     .filter(Boolean)
 }
 
+export function parseBarcodes(row: Record<string, string>): string[] {
+  return Object.entries(row)
+    .filter(([key]) => key.toLowerCase().startsWith('barcodes_'))
+    .map(([, val]) => val)
+    .filter(Boolean)
+}
+
 const UUID_RE = /[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}/i
 const PROPERTY_KEY_RE = new RegExp(`\\((${UUID_RE.source})(?:_(\\d+))?\\)\\s*$`, 'i')
 const UUID_IN_VALUE_RE = new RegExp(`\\((${UUID_RE.source})\\)`, 'gi')
@@ -149,6 +156,14 @@ export function parseProductProperties(
     result.push({ _id: id, value: mergeValues(values) })
   }
   return result
+}
+
+export function parseGenerateBarcode(row: Record<string, string>): boolean {
+  if (row.generateBarcode?.toLowerCase() === 'yes')
+    return true
+  if (row.generateBarcode?.toLowerCase() === 'no')
+    return false
+  return false
 }
 
 function mergeValues(values: unknown[]): unknown {

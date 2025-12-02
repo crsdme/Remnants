@@ -11,8 +11,10 @@ import { diffToChangesFromDeep, getDifferenceDeep } from '../utils/getDiff'
 import { HttpError } from '../utils/httpError'
 import {
   extractLangMap,
+  parseBarcodes,
   parseCategories,
   parseFile,
+  parseGenerateBarcode,
   parseId,
   parseProductProperties,
   toNumber,
@@ -840,7 +842,7 @@ export async function importHandler(payload: ProductTypes.importProductsParams):
     currency: parseId(row.currency),
     purchasePrice: toNumber(row.purchasePrice),
     purchaseCurrency: parseId(row.purchaseCurrency),
-    barcodes: row.barcodes,
+    barcodes: parseBarcodes(row),
     categories: parseCategories(row),
     unit: parseId(row.unit),
     productPropertiesGroup: parseId(row.productPropertiesGroup),
@@ -850,7 +852,7 @@ export async function importHandler(payload: ProductTypes.importProductsParams):
     })) || [],
     images: [],
     uploadedImages: [],
-    generateBarcode: true,
+    generateBarcode: parseGenerateBarcode(row),
   }))
 
   const productsForEdit = parsedProducts.filter(product => product._id)
@@ -882,13 +884,21 @@ export async function importHandler(payload: ProductTypes.importProductsParams):
 
   if (productsForCreate.length > 0) {
     for (const product of productsForCreate) {
-      await ProductService.create({
+      const { product: createdProduct } = await ProductService.create({
         ...product,
         productProperties: product.productProperties.map(property => ({
           id: property._id,
           value: property.value as string | number | boolean | string[],
         })),
       })
+
+      for (const barcode of product.barcodes) {
+        await BarcodeService.create({
+          code: barcode,
+          products: [{ id: createdProduct.id.toString(), quantity: 1 }],
+          active: true,
+        })
+      }
     }
   }
 
@@ -983,6 +993,11 @@ export async function exportHandler(payload: ProductTypes.exportProductsParams, 
       { header: 'categories_3', key: 'categories_3' },
       { header: 'categories_4', key: 'categories_4' },
       { header: 'categories_5', key: 'categories_5' },
+      { header: 'barcodes_1', key: 'barcodes_1' },
+      { header: 'barcodes_2', key: 'barcodes_2' },
+      { header: 'barcodes_3', key: 'barcodes_3' },
+      { header: 'barcodes_4', key: 'barcodes_4' },
+      { header: 'barcodes_5', key: 'barcodes_5' },
       ...dynamicColumns,
     ]
 
@@ -1012,6 +1027,7 @@ export async function exportHandler(payload: ProductTypes.exportProductsParams, 
       row.unit = `${product.unit.names[language] || 'NO_NAME'} (${product.unit.id})`
       row.productPropertiesGroup = `${product.productPropertiesGroup.names[language] || 'NO_NAME'} (${product.productPropertiesGroup.id})`
       for (let i = 1; i <= 5; i++) {
+        row[`barcodes_${i}`] = product?.barcodes[i - 1] ? `${product?.barcodes[i - 1]?.code}` : ''
         row[`categories_${i}`] = product?.categories[i - 1] ? `${product?.categories[i - 1]?.names[language] || 'NO_NAME'} (${product?.categories[i - 1]?.id})` : ''
       }
       dynamicKeys.forEach(({ id, type, key }) => {
@@ -1185,6 +1201,12 @@ export async function downloadTemplate(user?: UserTypes.User): Promise<ProductTy
       { header: 'categories_3', key: 'categories_3' },
       { header: 'categories_4', key: 'categories_4' },
       { header: 'categories_5', key: 'categories_5' },
+      { header: 'barcodes_1', key: 'barcodes_1' },
+      { header: 'barcodes_2', key: 'barcodes_2' },
+      { header: 'barcodes_3', key: 'barcodes_3' },
+      { header: 'barcodes_4', key: 'barcodes_4' },
+      { header: 'barcodes_5', key: 'barcodes_5' },
+      { header: 'generateBarcode', key: 'generateBarcode' },
       ...dynamicColumns,
     ]
 
@@ -1193,6 +1215,7 @@ export async function downloadTemplate(user?: UserTypes.User): Promise<ProductTy
 
       row.id = product.id
       row.seq = product.seq
+      row.generateBarcode = 'NO'
       row.images = product.images.map((image: any) => `${STORAGE_URLS.productImages}/${image.filename}`).join(', ')
       for (const lang of languages) {
         row[`name_${lang.code}`] = product.names[lang.code] || ''
@@ -1210,6 +1233,7 @@ export async function downloadTemplate(user?: UserTypes.User): Promise<ProductTy
       row.productPropertiesGroup = `${product.productPropertiesGroup.names[language] || 'NO_NAME'} (${product.productPropertiesGroup.id})`
       for (let i = 1; i <= 5; i++) {
         row[`categories_${i}`] = product?.categories[i - 1] ? `${product?.categories[i - 1]?.names[language] || 'NO_NAME'} (${product?.categories[i - 1]?.id})` : ''
+        row[`barcodes_${i}`] = product?.barcodes[i - 1] ? `${product?.barcodes[i - 1]?.code}` : ''
       }
       dynamicKeys.forEach(({ id, type, key }) => {
         const property = product.productProperties.find(
@@ -1242,6 +1266,7 @@ export async function downloadTemplate(user?: UserTypes.User): Promise<ProductTy
     createHiddenList({ data: categories, columnKey: 'D', columnName: 'categories_3' })
     createHiddenList({ data: categories, columnKey: 'D', columnName: 'categories_4' })
     createHiddenList({ data: categories, columnKey: 'D', columnName: 'categories_5' })
+    createHiddenListTrueFalse({ columnKey: 'E', columnName: 'generateBarcode' })
     const propertiesLetters: Record<string, string> = {}
     for (const [index, property] of dynamicKeys.entries()) {
       if (['select', 'multiSelect', 'color'].includes(property.type)) {
@@ -1282,6 +1307,26 @@ export async function downloadTemplate(user?: UserTypes.User): Promise<ProductTy
       }
     }
 
+    function createHiddenListTrueFalse({ columnKey, columnName }: { columnKey: string, columnName: string }) {
+      const data = [{ id: 'YES' }, { id: 'NO' }]
+      const options = data.map((item: any) => item.id)
+
+      options.forEach((value, index) => {
+        hiddenSheet.getCell(`${columnKey}${index + 1}`).value = value
+      })
+
+      const formulaRange = `hidden!$${columnKey}$1:$${columnKey}$${options.length}`
+      const column = sheet.columns.findIndex(col => col.key === columnName) + 1
+
+      for (let i = 2; i <= sheet.rowCount; i++) {
+        sheet.getCell(i, column).dataValidation = {
+          type: 'list',
+          allowBlank: true,
+          formulae: [formulaRange],
+        }
+      }
+    }
+
     function getExcelColumnLetter(colIndex: number): string {
       let letter = ''
       while (colIndex > 0) {
@@ -1291,8 +1336,6 @@ export async function downloadTemplate(user?: UserTypes.User): Promise<ProductTy
       return letter
     }
   }
-
-  console.log(4)
 
   await workbook.xlsx.writeFile(path.join(STORAGE_PATHS.exportProducts, `${uuidv4()}.xlsx`))
 
