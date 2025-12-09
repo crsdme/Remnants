@@ -235,8 +235,9 @@
   "page.products.quantity.logs.description": "Quantity logs of product",
   "page.products.quantity.logs.type.order": "Order",
   "page.products.quantity.logs.type.warehouse": "Warehouse",
-  "page.products.quantity.logs.type.warehouseTransaction": "Warehouse transaction",
+  "page.products.quantity.logs.type.warehouse-transaction": "Warehouse transaction",
   "page.products.quantity.logs.noLogs": "No logs found",
+  "page.products.quantity.logs.view": "View",
 
   "page.products.audit.logs.title": "Audit logs",
   "page.products.audit.logs.description": "Audit logs of product",

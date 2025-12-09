@@ -235,8 +235,9 @@
   "page.products.quantity.logs.description": "Логи количества товара",
   "page.products.quantity.logs.type.order": "Заказ",
   "page.products.quantity.logs.type.warehouse": "Склад",
-  "page.products.quantity.logs.type.warehouseTransaction": "Транзакция склада",
+  "page.products.quantity.logs.type.warehouse-transaction": "Транзакция склада",
   "page.products.quantity.logs.noLogs": "Логов не найдено",
+  "page.products.quantity.logs.view": "Посмотреть",
 
   "page.products.audit.logs.title": "Логи изменений",
   "page.products.audit.logs.description": "Логи изменений товара",

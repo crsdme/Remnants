@@ -1,7 +1,9 @@
 import { useTranslation } from 'react-i18next'
+import { Link } from 'react-router-dom'
 import { useAuditLogQuery, useWarehouseTransactionLogQuery } from '@/api/hooks'
 import {
   Badge,
+  Button,
   Card,
   CardContent,
   CardHeader,
@@ -34,7 +36,7 @@ export function LogsSheet() {
         return <QuantityLogsBlock selectedProductLogs={selectedProductLogs} selectedWarehouse={selectedWarehouse} />
       default:
         return (
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-2 h-[100%] overflow-auto">
             {Array.from({ length: 10 }).map((_, index) => <Skeleton className="h-10 w-full" key={index} />)}
           </div>
         )
@@ -49,7 +51,7 @@ export function LogsSheet() {
             <SheetTitle>{title}</SheetTitle>
             <SheetDescription>{description}</SheetDescription>
           </SheetHeader>
-          <div className="w-full pb-4 px-4">
+          <div className="w-full pb-4 px-4 flex flex-col gap-2 h-[100%] overflow-auto">
             {content()}
           </div>
         </SheetContent>
@@ -130,36 +132,64 @@ function QuantityLogsBlock({ selectedProductLogs, selectedWarehouse }) {
     return <div className="text-muted-foreground text-center my-6">{t('page.products.quantity.logs.noLogs')}</div>
 
   return (
-    <div>
-      {warehouseTransactionLogs.map(wtLog => (
-        <Card className="mb-2" key={wtLog.id}>
-          <CardHeader>
-            <CardTitle className="text-base flex flex-wrap items-center gap-2">
-              <Badge variant="outline">{t(`page.products.quantity.logs.type.${wtLog.refType}`)}</Badge>
-              <Badge variant="outline">{wtLog?.user?.name}</Badge>
-              <Badge variant="outline">{wtLog?.warehouse?.names[i18n.language]}</Badge>
-              <span className="text-xs text-muted-foreground ml-auto">{formatDate(wtLog.createdAt, 'dd.MM.yyyy HH:mm')}</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2">
-              {
-                wtLog.deltaCount > 0
-                  ? (
-                      <Badge variant="success">
-                        {`+${wtLog.deltaCount}`}
+    <div className="space-y-2">
+      {warehouseTransactionLogs.map((wtLog) => {
+        const onViewClick = () => {
+          if (wtLog.refType === 'warehouse-transaction') {
+            return `/warehouse-transactions/view/${wtLog?.resource?.seq}`
+          }
+          else if (wtLog.refType === 'order') {
+            return `/orders/view/${wtLog?.resource?.seq}`
+          }
+        }
+
+        const isPositive = wtLog.deltaCount > 0
+
+        return (
+          <div className="group relative rounded-lg border border-border bg-card transition-all hover:border-accent hover:bg-accent/5" key={wtLog.id}>
+            <div className="flex items-center gap-4 p-4">
+              <div
+                className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-md font-mono text-sm font-semibold transition-colors ${
+                  isPositive ? 'bg-green-500/15 text-green-500' : 'bg-destructive/15 text-destructive'
+                }`}
+              >
+                <div className="flex items-center gap-0.5">
+                  {isPositive ? '+' : '-'}
+                  <span>{Math.abs(wtLog.deltaCount)}</span>
+                </div>
+              </div>
+
+              <div className="flex flex-1 flex-col gap-2 md:flex-row md:items-center md:justify-between">
+                <div className="flex flex-col gap-2 flex-1">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <h3 className="text-base font-medium text-foreground">
+                      {`${t(`page.products.quantity.logs.type.${wtLog.refType}`)} ${wtLog?.resource?.seq || ''}`}
+                    </h3>
+                    <div className="flex items-center gap-2">
+                      <Badge variant="secondary" className="text-xs">
+                        {wtLog?.user?.name}
                       </Badge>
-                    )
-                  : (
-                      <Badge variant="destructive">
-                        {`${wtLog.deltaCount}`}
+                      <Badge variant="outline" className="text-xs">
+                        {wtLog?.warehouse?.names[i18n.language]}
                       </Badge>
-                    )
-              }
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <span className="font-mono">{formatDate(wtLog.createdAt, 'dd.MM.yyyy HH:mm')}</span>
+                  </div>
+                  { ['order'].includes(wtLog.refType) && (
+                    <Button size="sm" variant="ghost" asChild>
+                      <Link to={onViewClick()}>
+                        {t('page.products.quantity.logs.view')}
+                      </Link>
+                    </Button>
+                  )}
+                </div>
+              </div>
             </div>
-          </CardContent>
-        </Card>
-      ))}
+          </div>
+        )
+      })}
     </div>
   )
 }
