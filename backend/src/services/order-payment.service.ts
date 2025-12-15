@@ -1,3 +1,4 @@
+import type { ClientSession } from 'mongoose'
 import type * as OrderPaymentTypes from '../types/order-payment.type'
 import { OrderPaymentModel } from '../models'
 import { HttpError } from '../utils/httpError'
@@ -81,16 +82,16 @@ export async function get(payload: OrderPaymentTypes.getOrderPaymentsParams): Pr
   return { status: 'success', code: 'ORDER_PAYMENTS_FETCHED', message: 'Order payments fetched', orderPayments, orderPaymentsCount }
 }
 
-export async function create(payload: OrderPaymentTypes.createOrderPaymentParams): Promise<OrderPaymentTypes.createOrderPaymentResult> {
-  const orderPayment = await OrderPaymentModel.create(payload)
+export async function create(payload: OrderPaymentTypes.createOrderPaymentParams, session?: ClientSession): Promise<OrderPaymentTypes.createOrderPaymentResult> {
+  const orderPayment = await OrderPaymentModel.create([payload], { session })
 
-  return { status: 'success', code: 'ORDER_PAYMENT_CREATED', message: 'Order payment created', orderPayment }
+  return { status: 'success', code: 'ORDER_PAYMENT_CREATED', message: 'Order payment created', orderPayment: orderPayment[0] }
 }
 
-export async function edit(payload: OrderPaymentTypes.editOrderPaymentParams): Promise<OrderPaymentTypes.editOrderPaymentResult> {
+export async function edit(payload: OrderPaymentTypes.editOrderPaymentParams, session?: ClientSession): Promise<OrderPaymentTypes.editOrderPaymentResult> {
   const { id } = payload
 
-  const orderPayment = await OrderPaymentModel.findOneAndUpdate({ _id: id }, payload)
+  const orderPayment = await OrderPaymentModel.findOneAndUpdate({ _id: id }, payload, { session })
 
   if (!orderPayment) {
     throw new HttpError(400, 'Order payment not edited', 'ORDER_PAYMENT_NOT_EDITED')

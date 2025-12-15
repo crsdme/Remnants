@@ -1,3 +1,4 @@
+import type { ClientSession } from 'mongoose'
 import type * as WarehouseTransactionLogTypes from '../types/warehouse-transaction-log.type'
 import { WarehouseTransactionLogModel } from '../models'
 import { buildQuery, buildSortQuery } from '../utils/queryBuilder'
@@ -51,7 +52,7 @@ export async function get(payload: WarehouseTransactionLogTypes.getWarehouseTran
         from: 'warehouse-transactions',
         localField: 'refId',
         foreignField: '_id',
-        as: 'warehouseTransaction',
+        as: 'warehouse-transaction',
       },
     },
     {
@@ -82,8 +83,8 @@ export async function get(payload: WarehouseTransactionLogTypes.getWarehouseTran
       $addFields: {
         resource: {
           $cond: [
-            { $eq: ['$resourceType', 'warehouseTransaction'] },
-            { $first: '$warehouseTransaction' },
+            { $eq: ['$resourceType', 'warehouse-transaction'] },
+            { $first: '$warehouse-transaction' },
             { $first: '$order' },
           ],
         },
@@ -133,10 +134,10 @@ export async function get(payload: WarehouseTransactionLogTypes.getWarehouseTran
   return { status: 'success', code: 'WAREHOUSE_TRANSACTION_LOGS_FETCHED', message: 'Warehouse transaction logs fetched', warehouseTransactionLogs, warehouseTransactionLogsCount }
 }
 
-export async function create(payload: WarehouseTransactionLogTypes.createWarehouseTransactionLogsParams) {
+export async function create(payload: WarehouseTransactionLogTypes.createWarehouseTransactionLogsParams, session?: ClientSession) {
   const { productId, warehouseId, deltaCount, refType, refId, userId } = payload
 
-  const warehouseTransactionLog = await WarehouseTransactionLogModel.create({
+  const warehouseTransactionLog = await WarehouseTransactionLogModel.create([{
     productId,
     warehouseId,
     deltaCount,
@@ -144,7 +145,7 @@ export async function create(payload: WarehouseTransactionLogTypes.createWarehou
     refId,
     userId,
     createdBy: userId,
-  })
+  }], { session })
 
   return { status: 'success', code: 'WAREHOUSE_TRANSACTION_LOG_CREATED', message: 'Warehouse transaction log created', warehouseTransactionLog }
 }

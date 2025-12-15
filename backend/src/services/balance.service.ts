@@ -3,6 +3,8 @@ import type { User } from '../types/user.type'
 import { BalanceModel } from '../models/balance.model'
 import { HttpError } from '../utils/httpError'
 import * as CashregisterService from './cashregister.service'
+import * as OrderStatusService from './order-status.service'
+import * as OrderService from './order.service'
 import * as ProductService from './product.service'
 
 export async function get(payload: BalanceTypes.getBalancesParams): Promise<BalanceTypes.getBalancesResult> {
@@ -40,9 +42,9 @@ export async function getCurrent(_payload: BalanceTypes.getCurrentBalanceParams,
 
     for (const p of products ?? []) {
       const price = Number(p.purchasePrice) || 0
-      const currencyId = p.currency?.id ?? 'UNKNOWN'
-      const currencySymbol = p.currency?.symbols?.ru ?? p.currency?.symbols?.en
-      const currencyName = p.currency?.names?.ru ?? p.currency?.names?.en
+      const currencyId = p.purchaseCurrency?.id ?? 'UNKNOWN'
+      const currencySymbol = p.purchaseCurrency?.symbols?.ru ?? p.purchaseCurrency?.symbols?.en
+      const currencyName = p.purchaseCurrency?.names?.ru ?? p.purchaseCurrency?.names?.en
 
       for (const q of p.quantity ?? []) {
         const warehouse = q.warehouse
@@ -114,7 +116,67 @@ export async function getCurrent(_payload: BalanceTypes.getCurrentBalanceParams,
 
   const cashregisterBalances = getCashregisterBalance(cashregisters)
 
-  function getTotalBalance(warehouseBalances: any[], cashregisterBalances: any[]) {
+  const { orderStatuses } = await OrderStatusService.get({
+    pagination: { full: true },
+    filters: {
+      isLocked: false,
+    },
+  })
+
+  const { orders } = await OrderService.get({
+    pagination: { full: true },
+    filters: {
+      orderStatus: orderStatuses.map((status: any) => status.id),
+    },
+  })
+
+  const ordersProducts = orders.reduce((acc: any[], order: any) => acc.concat(order.items), [])
+
+  function getOrdersBalance(ordersProducts: any[]) {
+    const outer = new Map<
+      string,
+      Map<
+        string,
+        { currencyId: string, currencySymbol?: string, currencyName?: string, quantity: number, amount: number }
+      >
+    >()
+
+    for (const p of ordersProducts ?? []) {
+      const price = Number(p.product.purchasePrice) || 0
+      const currencyId = p.product.purchaseCurrency?.id ?? 'UNKNOWN'
+      const currencySymbol = p.product.purchaseCurrency?.symbols?.ru ?? p.product.purchaseCurrency?.symbols?.en
+      const currencyName = p.product.purchaseCurrency?.names?.ru ?? p.product.purchaseCurrency?.names?.en
+
+      const productId = p.product.id
+      const cnt = Number(p.quantity) || 0
+
+      let inner = outer.get(productId)
+      if (!inner) {
+        inner = new Map()
+        outer.set(productId, inner)
+      }
+
+      let row = inner.get(currencyId)
+      if (!row) {
+        row = { currencyId, currencySymbol, currencyName, quantity: 0, amount: 0 }
+        inner.set(currencyId, row)
+      }
+
+      row.quantity += cnt
+      row.amount += cnt * price
+    }
+
+    return Array.from(outer.entries())
+      .sort((a, b) => a[0].localeCompare(b[0]))
+      .map(([productId, inner]) => ({
+        productId,
+        totals: Array.from(inner.values()).sort((a, b) => a.currencyId.localeCompare(b.currencyId)),
+      }))
+  }
+
+  const ordersBalances = getOrdersBalance(ordersProducts)
+
+  function getTotalBalance(warehouseBalances: any[], cashregisterBalances: any[], ordersBalances: any[]) {
     const map = new Map<string, { currencyId: string, currencySymbol?: string, currencyName?: string, amount: number }>()
 
     // склады
@@ -147,14 +209,34 @@ export async function getCurrent(_payload: BalanceTypes.getCurrentBalanceParams,
       }
     }
 
+    // заказы
+    for (const o of ordersBalances ?? []) {
+      for (const t of o.totals ?? []) {
+        const key = t.currencyId
+        const row = map.get(key) ?? {
+          currencyId: t.currencyId,
+          currencySymbol: t.currencySymbol,
+          currencyName: t.currencyName,
+          amount: 0,
+        }
+        row.amount += t.amount || 0
+        map.set(key, row)
+      }
+    }
+
     return Array.from(map.values()).sort((a, b) => a.currencyId.localeCompare(b.currencyId))
   }
 
-  const totalBalances = getTotalBalance(warehouseBalances, cashregisterBalances)
+  const totalBalances = getTotalBalance(warehouseBalances, cashregisterBalances, ordersBalances)
+
+  console.log(JSON.stringify(warehouseBalances, null, 2))
+
+  console.log(JSON.stringify(ordersBalances, null, 2))
 
   const balance = {
     warehouseBalances,
     cashregisterBalances,
+    ordersBalances,
     totalBalances,
   }
 

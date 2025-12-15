@@ -1,3 +1,4 @@
+import type { ClientSession } from 'mongoose'
 import type * as QuantityTypes from '../types/quantity.type'
 import { ProductModel, QuantityModel } from '../models'
 import { HttpError } from '../utils/httpError'
@@ -56,25 +57,25 @@ export async function get(payload: QuantityTypes.getQuantitiesParams): Promise<Q
   return { status: 'success', code: 'QUANTITIES_FETCHED', message: 'Quantities fetched', quantities, quantitiesCount }
 }
 
-export async function create(payload: QuantityTypes.createQuantitiesParams): Promise<QuantityTypes.createQuantitiesResult> {
+export async function create(payload: QuantityTypes.createQuantitiesParams, session?: ClientSession): Promise<QuantityTypes.createQuantitiesResult> {
   const {
     count,
     product,
     warehouse,
   } = payload
 
-  const quantity = await QuantityModel.create({
+  const quantity = await QuantityModel.create([{
     count,
     product,
     warehouse,
-  })
+  }], { session })
 
-  await ProductModel.updateOne({ _id: product }, { $push: { quantity: quantity._id } })
+  await ProductModel.updateOne({ _id: product }, { $push: { quantity: quantity[0]._id } }, { session })
 
-  return { status: 'success', code: 'QUANTITY_CREATED', message: 'Quantity created', quantity }
+  return { status: 'success', code: 'QUANTITY_CREATED', message: 'Quantity created', quantity: quantity[0] }
 }
 
-export async function count(payload: QuantityTypes.countQuantitiesParams): Promise<QuantityTypes.countQuantitiesResult> {
+export async function count(payload: QuantityTypes.countQuantitiesParams, session?: ClientSession): Promise<QuantityTypes.countQuantitiesResult> {
   const {
     count,
     product,
@@ -90,7 +91,7 @@ export async function count(payload: QuantityTypes.countQuantitiesParams): Promi
     inc: { $inc: { count } },
   }
 
-  const quantity = await QuantityModel.findOneAndUpdate({ product, warehouse }, update[mode], { new: true })
+  const quantity = await QuantityModel.findOneAndUpdate({ product, warehouse }, update[mode], { new: true, session })
 
   await WarehouseTransactionLogService.create({
     productId: product,
@@ -99,10 +100,10 @@ export async function count(payload: QuantityTypes.countQuantitiesParams): Promi
     refType,
     refId,
     userId,
-  })
+  }, session)
 
   if (!quantity) {
-    await create({ count, product, warehouse })
+    await create({ count, product, warehouse }, session)
   }
 
   return { status: 'success', code: 'QUANTITY_COUNTED', message: 'Quantity counted' }

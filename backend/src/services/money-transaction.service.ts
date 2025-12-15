@@ -1,3 +1,4 @@
+import type { ClientSession } from 'mongoose'
 import type * as MoneyTransactionTypes from '../types/money-transaction.type'
 import { v4 as uuidv4 } from 'uuid'
 import { MoneyTransactionModel } from '../models'
@@ -145,27 +146,27 @@ export async function get(payload: MoneyTransactionTypes.getMoneyTransactionsPar
   return { status: 'success', code: 'MONEY_TRANSACTIONS_FETCHED', message: 'Money transactions fetched', moneyTransactions, moneyTransactionsCount }
 }
 
-export async function create(payload: any): Promise<any> {
+export async function create(payload: any, session?: ClientSession): Promise<any> {
   if (payload.type === 'transfer-account') {
-    return createTransferAccount(payload)
+    return createTransferAccount(payload, session)
   }
   if (payload.type === 'transfer-cashregister') {
-    return createTransferCashregister(payload)
+    return createTransferCashregister(payload, session)
   }
   if (payload.type === 'income') {
-    return createIncome(payload)
+    return createIncome(payload, session)
   }
   if (payload.type === 'expense') {
-    return createExpense(payload)
+    return createExpense(payload, session)
   }
   if (payload.type === 'procurement') {
-    return createProcurement(payload)
+    return createProcurement(payload, session)
   }
 
   throw new HttpError(400, 'Money transaction type not supported', 'MONEY_TRANSACTION_TYPE_NOT_SUPPORTED')
 }
 
-async function createTransferAccount(payload: MoneyTransactionTypes.createMoneyTransferAccountParams): Promise<any> {
+async function createTransferAccount(payload: MoneyTransactionTypes.createMoneyTransferAccountParams, session?: ClientSession): Promise<any> {
   const transferId = uuidv4()
 
   await createIncome({
@@ -179,7 +180,7 @@ async function createTransferAccount(payload: MoneyTransactionTypes.createMoneyT
     currency: payload.currency,
     amount: payload.amount,
     transferId,
-  })
+  }, session)
 
   await createIncome({
     type: 'transfer',
@@ -192,12 +193,12 @@ async function createTransferAccount(payload: MoneyTransactionTypes.createMoneyT
     currency: payload.currency,
     amount: payload.amount,
     transferId,
-  })
+  }, session)
 
   return { status: 'success', code: 'MONEY_TRANSACTION_CREATED', message: 'Money transaction created' }
 }
 
-async function createTransferCashregister(payload: MoneyTransactionTypes.createMoneyTransferCashregisterParams): Promise<any> {
+async function createTransferCashregister(payload: MoneyTransactionTypes.createMoneyTransferCashregisterParams, session?: ClientSession): Promise<any> {
   const transferId = uuidv4()
 
   await createIncome({
@@ -211,7 +212,7 @@ async function createTransferCashregister(payload: MoneyTransactionTypes.createM
     currency: payload.currency,
     amount: payload.amount,
     transferId,
-  })
+  }, session)
 
   await createIncome({
     type: 'transfer',
@@ -224,25 +225,25 @@ async function createTransferCashregister(payload: MoneyTransactionTypes.createM
     currency: payload.currency,
     amount: payload.amount,
     transferId,
-  })
+  }, session)
 
   return { status: 'success', code: 'MONEY_TRANSACTION_CREATED', message: 'Money transaction created' }
 }
 
-async function createIncome(payload: MoneyTransactionTypes.createMoneyTransactionParams): Promise<MoneyTransactionTypes.createMoneyTransactionResult> {
-  const moneyTransaction = await MoneyTransactionModel.create(payload)
+async function createIncome(payload: MoneyTransactionTypes.createMoneyTransactionParams, session?: ClientSession): Promise<MoneyTransactionTypes.createMoneyTransactionResult> {
+  const moneyTransaction = await MoneyTransactionModel.create([payload], { session })
 
-  return { status: 'success', code: 'MONEY_TRANSACTION_CREATED', message: 'Money transaction created', moneyTransaction }
+  return { status: 'success', code: 'MONEY_TRANSACTION_CREATED', message: 'Money transaction created', moneyTransaction: moneyTransaction[0] }
 }
 
-async function createExpense(payload: MoneyTransactionTypes.createMoneyTransactionParams): Promise<MoneyTransactionTypes.createMoneyTransactionResult> {
-  const moneyTransaction = await MoneyTransactionModel.create(payload)
+async function createExpense(payload: MoneyTransactionTypes.createMoneyTransactionParams, session?: ClientSession): Promise<MoneyTransactionTypes.createMoneyTransactionResult> {
+  const moneyTransaction = await MoneyTransactionModel.create([payload], { session })
 
-  return { status: 'success', code: 'MONEY_TRANSACTION_CREATED', message: 'Money transaction created', moneyTransaction }
+  return { status: 'success', code: 'MONEY_TRANSACTION_CREATED', message: 'Money transaction created', moneyTransaction: moneyTransaction[0] }
 }
 
-async function createProcurement(payload: MoneyTransactionTypes.createMoneyTransactionParams): Promise<MoneyTransactionTypes.createMoneyTransactionResult> {
-  const moneyTransaction = await MoneyTransactionModel.create(payload)
+async function createProcurement(payload: MoneyTransactionTypes.createMoneyTransactionParams, session?: ClientSession): Promise<MoneyTransactionTypes.createMoneyTransactionResult> {
+  const moneyTransaction = await MoneyTransactionModel.create([payload], { session })
 
-  return { status: 'success', code: 'MONEY_TRANSACTION_CREATED', message: 'Money transaction created', moneyTransaction }
+  return { status: 'success', code: 'MONEY_TRANSACTION_CREATED', message: 'Money transaction created', moneyTransaction: moneyTransaction[0] }
 }

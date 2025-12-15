@@ -36,7 +36,7 @@ export function DataTable() {
     pageSize: 10,
   })
   const [filters, setFilters] = useState(filtersInitialState)
-  const [selectedStatus, setSelectedStatus] = useState('')
+  const [selectedStatus, setSelectedStatus] = useState('all')
   const columns = useColumns()
 
   const sorters = useMemo(() => (
@@ -44,7 +44,7 @@ export function DataTable() {
   ), [sorting])
 
   const { data: { orders = [], ordersCount = 0 } = {}, isLoading, isFetching } = useOrderQuery(
-    { pagination, filters: { ...filters, orderStatus: selectedStatus }, sorters },
+    { pagination, filters: { ...filters, orderStatus: [selectedStatus] }, sorters },
     { options: {
       select: response => ({
         orders: response.data.orders,

@@ -45,6 +45,7 @@ export function DataTable() {
     else {
       itemsField.append({
         ...product,
+        id: undefined,
         product: product.id,
         quantity: selectedQuantity,
         receivedQuantity: 0,

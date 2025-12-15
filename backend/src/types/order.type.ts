@@ -27,6 +27,8 @@ export interface Order {
 }
 
 export interface OrderItem {
+  _id?: IdType
+  id?: IdType
   order: IdType
   product: IdType
   quantity: number
@@ -54,7 +56,7 @@ export interface getOrdersFilters {
   warehouse: string
   deliveryService: string
   orderSource: string
-  orderStatus: string
+  orderStatus: string[]
   orderPayments: OrderPayment[]
   client: IdType
   comment: string
@@ -117,7 +119,7 @@ export interface editOrderParams {
   orderStatus: string
   orderPayments: OrderPayment[]
   client: IdType
-  items: OrderItem[]
+  items: (OrderItem & { basePrice: number, manualPrice: number, discountAmount: number, discountPercent: number })[]
   comment: string
   createdBy: string
   confirmedBy: string

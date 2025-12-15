@@ -4,7 +4,7 @@ export interface getOrdersParams {
     warehouse?: string
     deliveryService?: string
     orderSource?: string
-    orderStatus?: string
+    orderStatus?: string[]
     orderPayments?: string
     client?: string
     comment?: string

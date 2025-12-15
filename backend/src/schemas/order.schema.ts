@@ -11,7 +11,7 @@ export const getOrdersSchema = z.object({
     warehouse: z.string().trim().optional(),
     deliveryService: z.string().trim().optional(),
     orderSource: z.string().trim().optional(),
-    orderStatus: z.string().trim().optional(),
+    orderStatus: z.array(z.string().trim()).optional(),
     createdAt: dateRangeSchema.optional(),
     updatedAt: dateRangeSchema.optional(),
   }).optional().default({}),
@@ -62,6 +62,7 @@ export const editOrderSchema = z.object({
   orderSource: z.string(),
   orderStatus: z.string(),
   orderPayments: z.array(z.object({
+    id: z.string().optional(),
     amount: z.number(),
     currency: z.string(),
     cashregister: z.string(),
@@ -73,6 +74,7 @@ export const editOrderSchema = z.object({
   client: z.string().optional(),
   comment: z.string().optional(),
   items: z.array(z.object({
+    id: z.string().optional(),
     product: z.string(),
     quantity: z.number(),
     price: z.number(),

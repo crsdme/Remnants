@@ -94,6 +94,7 @@ export function EditOrderProvider({ children }: EditOrderProviderProps) {
 
   const paymentFormSchema = useMemo(() =>
     z.object({
+      id: z.string().optional(),
       cashregister: z.string({ required_error: t('form.errors.required') }).min(1, { message: t('form.errors.required') }),
       cashregisterAccount: z.string({ required_error: t('form.errors.required') }).min(1, { message: t('form.errors.required') }),
       amount: z.number().default(0),
@@ -106,6 +107,7 @@ export function EditOrderProvider({ children }: EditOrderProviderProps) {
   const paymentForm = useForm({
     resolver: zodResolver(paymentFormSchema),
     defaultValues: {
+      id: '',
       cashregister: '',
       cashregisterAccount: '',
       amount: 0,
@@ -123,6 +125,7 @@ export function EditOrderProvider({ children }: EditOrderProviderProps) {
     deliveryService: z.string({ required_error: t('form.errors.required') }).min(1, { message: t('form.errors.required') }),
     client: z.string().optional(),
     items: z.array(z.object({
+      id: z.string().optional(),
       product: z.string(),
       quantity: z.number(),
       selectedCurrency: z.object({
@@ -201,6 +204,7 @@ export function EditOrderProvider({ children }: EditOrderProviderProps) {
         items: order.items.map((item) => {
           return {
             ...item.product,
+            id: item.id,
             product: item.product.id,
             quantity: item.quantity,
             price: item.price,
@@ -247,7 +251,7 @@ export function EditOrderProvider({ children }: EditOrderProviderProps) {
     const currency = (currencies || []).find(currency => currency.id === params.currency)
 
     const payment = {
-      id: Date.now(),
+      id: '',
       cashregister,
       cashregisterAccount,
       currency,
