@@ -2270,7 +2270,7 @@ async function applyItemsDiff(params: {
 
   for (const [, oldItem] of oldById) {
     await OrderItemModel.updateOne(
-      { _id: oldItem.id },
+      { _id: oldItem._id },
       {
         $set: {
           removed: true,
