@@ -33,10 +33,10 @@ export function DataTable() {
 
   const addProduct = (product, selectedQuantity = 1) => {
     const selectedProducts = informationForm.getValues('items')
-    const existing = selectedProducts.find(p => p.id === product.id) as any
+    const existing = selectedProducts.find(p => p.product === product.id) as any
 
     if (existing) {
-      const index = selectedProducts.findIndex(p => p.id === product.id)
+      const index = selectedProducts.findIndex(p => p.product === product.id)
       itemsField.update(index, {
         ...existing,
         quantity: existing.quantity + selectedQuantity,
@@ -62,7 +62,7 @@ export function DataTable() {
 
   const removeProduct = (product) => {
     const selectedProducts = informationForm.getValues('items')
-    const index = selectedProducts.findIndex(p => p.id === product.id)
+    const index = selectedProducts.findIndex(p => p.product === product.product)
     if (index !== -1) {
       itemsField.remove(index)
     }
@@ -113,7 +113,9 @@ export function DataTable() {
 
   const updateProduct = ({ productId, field, value }: { productId: string, field: string, value: any }) => {
     const selectedProducts = informationForm.getValues('items')
-    const index = selectedProducts.findIndex(p => p.id === productId)
+    const index = selectedProducts.findIndex(p => p.product === productId)
+
+    console.log(productId, index, selectedProducts)
 
     if (index === -1)
       return

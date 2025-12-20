@@ -469,7 +469,7 @@ export function useColumns(
                         <EditableCell
                           product={product}
                           onChange={val => handleChange({
-                            productId: product.id,
+                            productId: product.product,
                             field: 'discountAmount',
                             value: val,
                             isDebounced: true,
@@ -486,7 +486,7 @@ export function useColumns(
                         <EditableCell
                           product={product}
                           onChange={val => handleChange({
-                            productId: product.id,
+                            productId: product.product,
                             field: 'discountPercent',
                             value: val,
                             isDebounced: true,
@@ -550,7 +550,7 @@ export function useColumns(
                     <EditableCell
                       product={product}
                       onChange={value => handleChange({
-                        productId: product.id,
+                        productId: product.product,
                         field: 'selectedPrice',
                         value,
                         isDebounced: true,
@@ -567,7 +567,7 @@ export function useColumns(
                       getOptionValue={e => e.id}
                       disabled={isLoading || disabled}
                       onChange={val => handleChange({
-                        productId: product.id,
+                        productId: product.product,
                         field: 'selectedCurrency',
                         value: currencies.find(c => c.id === val),
                       })}
@@ -627,7 +627,7 @@ export function useColumns(
                 <Button
                   variant="outline"
                   size="icon"
-                  onClick={() => handleChange({ productId: item.id, field: 'quantity', value: item.quantity - 1 })}
+                  onClick={() => handleChange({ productId: item.product, field: 'quantity', value: item.quantity - 1 })}
                   disabled={isLoading || isReceiving || disabled}
                 >
                   <Minus className="h-4 w-4" />
@@ -637,7 +637,7 @@ export function useColumns(
                 <EditableCell
                   product={item}
                   onChange={val => handleChange({
-                    productId: item.id,
+                    productId: item.product,
                     field: 'quantity',
                     value: val,
                     isDebounced: true,
@@ -654,7 +654,7 @@ export function useColumns(
                 <Button
                   variant="outline"
                   size="icon"
-                  onClick={() => handleChange({ productId: item.id, field: 'quantity', value: item.quantity + 1 })}
+                  onClick={() => handleChange({ productId: item.product, field: 'quantity', value: item.quantity + 1 })}
                   disabled={isLoading || isReceiving || disabled}
                 >
                   <Plus className="h-4 w-4" />
@@ -688,7 +688,7 @@ export function useColumns(
                     <Button
                       variant="outline"
                       size="icon"
-                      onClick={() => handleChange({ productId: product.id, field: 'receivedQuantity', value: product.receivedQuantity - 1 })}
+                      onClick={() => handleChange({ productId: product.product, field: 'receivedQuantity', value: product.receivedQuantity - 1 })}
                       disabled={isLoading || disabled}
                     >
                       <Minus className="h-4 w-4" />
@@ -709,7 +709,7 @@ export function useColumns(
                       <EditableCell
                         product={product}
                         onChange={value => handleChange({
-                          productId: product.id,
+                          productId: product.product,
                           field: 'receivedQuantity',
                           value,
                           isDebounced: true,
@@ -725,7 +725,7 @@ export function useColumns(
                     <Button
                       variant="outline"
                       size="icon"
-                      onClick={() => handleChange({ productId: product.id, field: 'receivedQuantity', value: product.receivedQuantity + 1 })}
+                      onClick={() => handleChange({ productId: product.product, field: 'receivedQuantity', value: product.receivedQuantity + 1 })}
                       disabled={isLoading || disabled}
                     >
                       <Plus className="h-4 w-4" />
