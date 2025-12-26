@@ -681,14 +681,17 @@ async function print55x40(payload: { barcodes: any[], size: string, language: st
       if (property.id === propertyIds.HAIR_TYPE && (property?.value || []).includes(hairTypes.BROWN)) {
         type.push('Brown')
       }
-      if (property.id === propertyIds.HAIR_TYPE && (property?.value || []).includes(hairTypes.CURLY)) {
-        type.push('Curly')
-      }
       if (property.id === propertyIds.HAIR_TYPE && (property?.value || []).includes(hairTypes.GRAY)) {
         type.push('Gray')
       }
       if (property.id === propertyIds.HAIR_TYPE && (property?.value || []).includes(hairTypes.SLAVIC)) {
         type.push('Slavic')
+      }
+      if (property.id === propertyIds.HAIR_TYPE && (property?.value || []).includes(hairTypes.ALBINO)) {
+        type.push('Albino')
+      }
+      if (property.id === propertyIds.HAIR_TYPE && (property?.value || []).includes(hairTypes.CURLY)) {
+        type.push('Curly')
       }
     }
 
