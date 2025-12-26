@@ -55,6 +55,7 @@ const CONFIGS = {
       BROWN: '44307e30-0fb8-4ab1-af56-6d8d724dd204',
       CURLY: '822ec142-d144-44fb-ba96-582cff8757b3',
       SLAVIC: '7f6d9a15-9f9f-4ddc-a815-dfaf613a0901',
+      ALBINO: '8a379f9e-4a84-4d8c-8108-b35188be2fe1',
     },
     symbol: '',
     invoicePrefix: '#',
