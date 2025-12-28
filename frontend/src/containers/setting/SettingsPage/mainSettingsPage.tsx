@@ -77,6 +77,13 @@ export function MainSettingsPage() {
             </div>
             <Button onClick={() => startTest({ key: 'quantityProducts' })}>{t('page.settings.main.quantityProducts')}</Button>
           </div>
+          <div className="flex justify-between">
+            <div>
+              <p className="text-sm">{t('page.settings.main.addProductCategories.label')}</p>
+              <p className="text-sm text-muted-foreground ">{t('page.settings.main.addProductCategories.description')}</p>
+            </div>
+            <Button onClick={() => startTest({ key: 'addProductCategories' })}>{t('page.settings.main.addProductCategories')}</Button>
+          </div>
         </CardContent>
       </Card>
     </div>
