@@ -73,6 +73,7 @@ const CONFIGS = {
       CURLY: '822ec142-d144-44fb-ba96-582cff8757b3',
       SLAVIC: '7f6d9a15-9f9f-4ddc-a815-dfaf613a0901',
       ALBINO: '8a379f9e-4a84-4d8c-8108-b35188be2fe1',
+      RED: '89b60d3c-2f97-4f94-8305-00d749fdf134',
     },
     hairLengths: {
       40: 'a3b85e8b-1485-4f2a-80c6-70ae8fa05865',

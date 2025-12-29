@@ -690,6 +690,9 @@ async function print55x40(payload: { barcodes: any[], size: string, language: st
       if (property.id === propertyIds.HAIR_TYPE && (property?.value || []).includes(hairTypes.ALBINO)) {
         type.push('Albino')
       }
+      if (property.id === propertyIds.HAIR_TYPE && (property?.value || []).includes(hairTypes.RED)) {
+        type.push('Red')
+      }
       if (property.id === propertyIds.HAIR_TYPE && (property?.value || []).includes(hairTypes.CURLY)) {
         type.push('Curly')
       }
