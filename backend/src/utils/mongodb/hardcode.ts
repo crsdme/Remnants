@@ -24,6 +24,7 @@ const CONFIGS = {
       CURLY: '822ec142-d144-44fb-ba96-582cff8757b3',
       SLAVIC: '7f6d9a15-9f9f-4ddc-a815-dfaf613a0901',
       ALBINO: '',
+      RED: '',
     },
     hairLengths: {
       40: '213',
@@ -117,6 +118,7 @@ const CONFIGS = {
       CURLY: '7610a715-e4c1-4190-bb3c-daa5d29a4b27',
       SLAVIC: '188e3571-be2a-484e-9a81-dd7fa1362b95',
       ALBINO: '',
+      RED: '',
     },
     hairLengths: {
       40: '',
