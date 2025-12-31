@@ -120,8 +120,8 @@ const CONFIGS = {
       BROWN: 'ebbf2c81-fa4d-45eb-aa3f-425f40d218e0',
       CURLY: '7610a715-e4c1-4190-bb3c-daa5d29a4b27',
       SLAVIC: '188e3571-be2a-484e-9a81-dd7fa1362b95',
-      ALBINO: '',
-      RED: '',
+      ALBINO: '5fbd09bc-f14f-4a35-8180-acf8ff3c2459',
+      RED: 'eaad9e8d-94ba-43e1-83aa-71592b58a73a',
     },
     hairLengths: {
       40: '',
