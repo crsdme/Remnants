@@ -403,7 +403,7 @@ async function createProducts(productProperties: any) {
         },
         {
           id: productProperties.boxes.id,
-          value: 10,
+          value: 46,
         },
         {
           id: productProperties.isNew.id,
@@ -442,7 +442,7 @@ async function createProducts(productProperties: any) {
         },
         {
           id: productProperties.boxes.id,
-          value: 100,
+          value: 53,
         },
         {
           id: productProperties.isNew.id,
@@ -481,7 +481,7 @@ async function createProducts(productProperties: any) {
         },
         {
           id: productProperties.boxes.id,
-          value: 1000,
+          value: 56,
         },
         {
           id: productProperties.isNew.id,
@@ -520,7 +520,7 @@ async function createProducts(productProperties: any) {
         },
         {
           id: productProperties.boxes.id,
-          value: 10000,
+          value: 60,
         },
         {
           id: productProperties.isNew.id,
@@ -559,7 +559,7 @@ async function createProducts(productProperties: any) {
         },
         {
           id: productProperties.boxes.id,
-          value: 100000,
+          value: 65,
         },
         {
           id: productProperties.isNew.id,
@@ -598,7 +598,7 @@ async function createProducts(productProperties: any) {
         },
         {
           id: productProperties.boxes.id,
-          value: 100000,
+          value: 74,
         },
         {
           id: productProperties.isNew.id,
@@ -637,7 +637,7 @@ async function createProducts(productProperties: any) {
         },
         {
           id: productProperties.boxes.id,
-          value: 100000,
+          value: 77,
         },
         {
           id: productProperties.isNew.id,
@@ -676,7 +676,7 @@ async function createProducts(productProperties: any) {
         },
         {
           id: productProperties.boxes.id,
-          value: 100000,
+          value: 82,
         },
         {
           id: productProperties.isNew.id,
@@ -715,7 +715,7 @@ async function createProducts(productProperties: any) {
         },
         {
           id: productProperties.boxes.id,
-          value: 100000,
+          value: 86,
         },
         {
           id: productProperties.isNew.id,
@@ -754,7 +754,7 @@ async function createProducts(productProperties: any) {
         },
         {
           id: productProperties.boxes.id,
-          value: 100000,
+          value: 94,
         },
         {
           id: productProperties.isNew.id,
@@ -793,7 +793,7 @@ async function createProducts(productProperties: any) {
         },
         {
           id: productProperties.boxes.id,
-          value: 10,
+          value: 54,
         },
         {
           id: productProperties.isNew.id,
@@ -832,7 +832,7 @@ async function createProducts(productProperties: any) {
         },
         {
           id: productProperties.boxes.id,
-          value: 100,
+          value: 57,
         },
         {
           id: productProperties.isNew.id,
@@ -871,7 +871,7 @@ async function createProducts(productProperties: any) {
         },
         {
           id: productProperties.boxes.id,
-          value: 1000,
+          value: 62,
         },
         {
           id: productProperties.isNew.id,
@@ -910,7 +910,7 @@ async function createProducts(productProperties: any) {
         },
         {
           id: productProperties.boxes.id,
-          value: 10000,
+          value: 68,
         },
         {
           id: productProperties.isNew.id,
@@ -949,7 +949,7 @@ async function createProducts(productProperties: any) {
         },
         {
           id: productProperties.boxes.id,
-          value: 100000,
+          value: 73,
         },
         {
           id: productProperties.isNew.id,
@@ -988,7 +988,7 @@ async function createProducts(productProperties: any) {
         },
         {
           id: productProperties.boxes.id,
-          value: 100000,
+          value: 75,
         },
         {
           id: productProperties.isNew.id,
@@ -1027,7 +1027,7 @@ async function createProducts(productProperties: any) {
         },
         {
           id: productProperties.boxes.id,
-          value: 100000,
+          value: 83,
         },
         {
           id: productProperties.isNew.id,
@@ -1066,7 +1066,7 @@ async function createProducts(productProperties: any) {
         },
         {
           id: productProperties.boxes.id,
-          value: 100000,
+          value: 89,
         },
         {
           id: productProperties.isNew.id,
@@ -1105,7 +1105,7 @@ async function createProducts(productProperties: any) {
         },
         {
           id: productProperties.boxes.id,
-          value: 100000,
+          value: 93,
         },
         {
           id: productProperties.isNew.id,
@@ -1144,7 +1144,7 @@ async function createProducts(productProperties: any) {
         },
         {
           id: productProperties.boxes.id,
-          value: 100000,
+          value: 100,
         },
         {
           id: productProperties.isNew.id,
