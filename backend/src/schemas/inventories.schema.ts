@@ -6,6 +6,7 @@ extendZodWithOpenApi(z)
 
 export const getInventoriesSchema = z.object({
   filters: z.object({
+    seq: z.string().optional(),
     status: z.string().trim().optional(),
     warehouse: idSchema.optional(),
     createdAt: dateRangeSchema.optional(),

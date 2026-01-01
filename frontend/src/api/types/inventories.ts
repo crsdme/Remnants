@@ -1,5 +1,6 @@
 export interface getInventoriesParams {
   filters: {
+    seq?: number
     status?: string
     warehouse?: string
     createdAt?: Date

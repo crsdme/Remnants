@@ -30,6 +30,7 @@ export interface getInventoriesResult {
 }
 
 export interface getInventoriesFilters {
+  seq: number
   status: string
   warehouse: string
   createdAt: DateRange

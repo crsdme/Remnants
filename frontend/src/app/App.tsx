@@ -194,6 +194,10 @@ export default function App() {
             path="/inventories/create"
             element={<ProtectedRoute children={<Pages.CreateInventoryPage />} permissions={['inventory.create']} />}
           />
+          <Route
+            path="/inventories/view/:seq"
+            element={<ProtectedRoute children={<Pages.ViewInventoryPage />} permissions={['inventory.page']} />}
+          />
 
           <Route
             path="/statistics/orders"

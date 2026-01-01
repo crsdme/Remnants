@@ -11,6 +11,7 @@ export async function get(payload: InventoriesTypes.getInventoriesParams): Promi
   const { current = 1, pageSize = 10 } = payload.pagination || {}
 
   const {
+    seq = undefined,
     createdAt = {
       from: undefined,
       to: undefined,
@@ -22,17 +23,18 @@ export async function get(payload: InventoriesTypes.getInventoriesParams): Promi
   } = payload.filters || {}
 
   const filterRules = {
+    seq: { type: 'number' },
     createdAt: { type: 'dateRange' },
     updatedAt: { type: 'dateRange' },
   } as const
 
   const query = buildQuery({
-    filters: { createdAt, updatedAt },
+    filters: { seq, createdAt, updatedAt },
     rules: filterRules,
     removed: false,
   })
 
-  const sorters = buildSortQuery(payload.sorters || {}, { createdAt: -1 })
+  const sorters = buildSortQuery(payload.sorters || {}, { seq: -1, createdAt: -1 })
 
   const pipeline = [
     {
@@ -71,6 +73,7 @@ export async function get(payload: InventoriesTypes.getInventoriesParams): Promi
       $project: {
         _id: 0,
         id: '$_id',
+        seq: 1,
         status: 1,
         warehouse: {
           $cond: {

@@ -6,25 +6,22 @@ import {
   ChevronRight,
   ChevronsUpDown,
   Copy,
-  Eye,
   Pencil,
   Trash,
 } from 'lucide-react'
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import { useNavigate } from 'react-router-dom'
 import { TableActionDropdown } from '@/components'
 import { Badge, Button } from '@/components/ui'
 import { formatDate } from '@/utils/helpers'
-import { useInventoryContext } from '../context'
+import { useViewInventoryContext } from '../context'
 
 const sortIcons = { asc: ArrowUp, desc: ArrowDown }
 
 export function useColumns() {
   const { t, i18n } = useTranslation()
-  const { isLoading } = useInventoryContext()
-  const navigate = useNavigate()
+  const { isLoading } = useViewInventoryContext()
 
   const columns = useMemo(() => {
     function sortHeader(column, label) {
@@ -56,33 +53,27 @@ export function useColumns() {
 
           const actions = [
             {
-              permission: 'inventory.copy',
+              permission: 'warehouse-transaction.copy',
               onClick: () => navigator.clipboard.writeText(item.id),
               label: t('table.copy'),
               icon: <Copy className="h-4 w-4" />,
             },
             {
-              permission: 'inventory.edit',
+              permission: 'warehouse-transaction.edit',
               onClick: async () => {},
               label: t('table.edit'),
               icon: <Pencil className="h-4 w-4" />,
             },
-            {
-              permission: 'inventory.view',
-              onClick: () => navigate(`/inventories/view/${item.seq}`),
-              label: t('table.view'),
-              icon: <Eye className="h-4 w-4" />,
-            },
             ...(item.status === 'awaiting'
               ? [{
-                  permission: 'inventory.receive',
+                  permission: 'warehouse-transaction.receive',
                   onClick: async () => {},
                   label: t('table.receive'),
                   icon: <Check className="h-4 w-4" />,
                 }]
               : []),
             {
-              permission: 'inventory.delete',
+              permission: 'warehouse-transaction.delete',
               onClick: () => {},
               label: t('table.delete'),
               icon: <Trash className="h-4 w-4" />,
@@ -125,7 +116,7 @@ export function useColumns() {
       {
         id: 'seq',
         meta: {
-          title: t('page.inventories.table.seq'),
+          title: t('page.products.table.seq'),
           filterable: true,
           filterType: 'number',
           sortable: true,
@@ -133,38 +124,56 @@ export function useColumns() {
         cell: ({ row }) => row.original.seq,
       },
       {
-        id: 'category',
+        id: 'type',
         size: 150,
         meta: {
-          title: t('page.inventories.table.category'),
+          title: t('page.warehouse-transactions.table.type'),
           filterable: true,
           filterType: 'select',
           sortable: true,
           defaultVisible: true,
         },
-        header: ({ column }) => sortHeader(column, t('page.inventories.table.category')),
-        cell: ({ row }) => <Badge>{row.original.category?.names[i18n.language]}</Badge>,
+        header: ({ column }) => sortHeader(column, t('page.warehouse-transactions.table.type')),
+        cell: ({ row }) => {
+          const badgeType = {
+            in: 'success',
+            out: 'destructive',
+            transfer: 'default',
+          }
+          return <Badge variant={badgeType[row.original.type]}>{t(`page.warehouse-transactions.table.type.${row.original.type.toLowerCase()}`)}</Badge>
+        },
       },
       {
-        id: 'warehouse',
-        accessorKey: 'warehouse',
+        id: 'fromWarehouse',
+        accessorKey: 'fromWarehouse',
         meta: {
-          title: t('page.inventories.table.warehouse'),
+          title: t('page.warehouse-transactions.table.fromWarehouse'),
           filterable: true,
           filterType: 'select',
         },
-        header: () => t('page.inventories.table.warehouse'),
-        cell: ({ row }) => <Badge variant="outline">{row.original?.warehouse?.names[i18n.language]}</Badge>,
+        header: () => t('page.warehouse-transactions.table.fromWarehouse'),
+        cell: ({ row }) => <Badge variant="outline">{row.original?.fromWarehouse?.names[i18n.language] || t('page.warehouse-transactions.table.empty')}</Badge>,
+      },
+      {
+        id: 'toWarehouse',
+        accessorKey: 'toWarehouse',
+        meta: {
+          title: t('page.warehouse-transactions.table.toWarehouse'),
+          filterable: true,
+          filterType: 'select',
+        },
+        header: () => t('page.warehouse-transactions.table.toWarehouse'),
+        cell: ({ row }) => <Badge variant="outline">{row.original?.toWarehouse?.names[i18n.language] || t('page.warehouse-transactions.table.empty')}</Badge>,
       },
       {
         id: 'status',
         accessorKey: 'status',
         meta: {
-          title: t('page.inventories.table.status'),
+          title: t('page.warehouse-transactions.table.status'),
           filterable: true,
           filterType: 'select',
         },
-        header: () => t('page.inventories.table.status'),
+        header: () => t('page.warehouse-transactions.table.status'),
         cell: ({ row }) => {
           const badgeType = {
             draft: 'default',
@@ -172,16 +181,16 @@ export function useColumns() {
             cancelled: 'destructive',
             received: 'success',
           }
-          return <Badge variant={badgeType[row.original.status]}>{t(`page.inventories.table.status.${row.original.status.toLowerCase()}`)}</Badge>
+          return <Badge variant={badgeType[row.original.status]}>{t(`page.warehouse-transactions.table.status.${row.original.status.toLowerCase()}`)}</Badge>
         },
       },
       {
         id: 'comment',
         accessorKey: 'comment',
         meta: {
-          title: t('page.inventories.table.comment'),
+          title: t('page.warehouse-transactions.table.comment'),
         },
-        header: () => t('page.inventories.table.comment'),
+        header: () => t('page.warehouse-transactions.table.comment'),
       },
       {
         id: 'createdAt',
