@@ -16,6 +16,7 @@ import { TableActionDropdown } from '@/components'
 import { Badge, Button, Checkbox } from '@/components/ui'
 import { backendUrl } from '@/utils/constants'
 import { formatDate } from '@/utils/helpers'
+import { buildUrl } from '@/utils/helpers/url'
 import { useBarcodeContext } from '../context'
 
 const sortIcons = { asc: ArrowUp, desc: ArrowDown }
@@ -126,21 +127,21 @@ export function useColumns() {
             },
             {
               permission: 'barcode.print',
-              link: `${backendUrl}api/barcodes/print?ids=${item.id}&size=30x20&language=${i18n.language}`,
+              link: buildUrl(backendUrl, 'api/barcodes/print', { codes: [item.code], size: '30x20', language: i18n.language }),
               type: 'link' as const,
               label: t('table.print', { size: '30x20' }),
               icon: <Barcode className="h-4 w-4" />,
             },
             {
               permission: 'barcode.print',
-              link: `${backendUrl}api/barcodes/print?ids=${item.id}&size=60x30&language=${i18n.language}`,
+              link: buildUrl(backendUrl, 'api/barcodes/print', { codes: [item.code], size: '60x30', language: i18n.language }),
               type: 'link' as const,
               label: t('table.print', { size: '60x30' }),
               icon: <Barcode className="h-4 w-4" />,
             },
             {
               permission: 'barcode.print',
-              link: `${backendUrl}api/barcodes/print?ids=${item.id}&size=55x40&language=${i18n.language}`,
+              link: buildUrl(backendUrl, 'api/barcodes/print', { codes: [item.code], size: '55x40', language: i18n.language }),
               type: 'link' as const,
               label: t('table.print', { size: '55x40' }),
               icon: <Barcode className="h-4 w-4" />,

@@ -45,12 +45,19 @@ export const removeBarcodeSchema = z.object({
   ids: z.array(idSchema).min(1),
 })
 
-const idsFromQuery = z
+const arrayFromQuery = z
   .union([z.array(z.string()), z.string()])
-  .transform(v => Array.isArray(v) ? v : v.split(',').map(s => s.trim()).filter(Boolean))
+  .transform(v => (Array.isArray(v) ? v : [v]))
+  .transform(arr => arr.map(s => s.trim()).filter(Boolean))
 
 export const printBarcodeSchema = z.object({
-  ids: idsFromQuery.pipe(z.array(idSchema).min(1)),
-  size: z.string().optional().default('20x30'),
-  language: z.string().optional().default('en'),
+  ids: z
+    .union([z.array(idSchema), idSchema])
+    .transform(v => (Array.isArray(v) ? v : [v]))
+    .optional(),
+
+  codes: arrayFromQuery.optional().default([]),
+
+  size: z.string().default('20x30'),
+  language: z.string().default('en'),
 })

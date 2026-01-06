@@ -13,11 +13,13 @@ import {
 } from 'lucide-react'
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
+import { Link } from 'react-router-dom'
 
 import { useProductPropertyQuery } from '@/api/hooks/product-property/useProductPropertyQuery'
 import { ImageGallery, TableActionDropdown } from '@/components'
 import { Badge, Button, Checkbox } from '@/components/ui'
 import { useAuthContext } from '@/contexts'
+import { backendUrl } from '@/utils/constants'
 import { formatDate } from '@/utils/helpers'
 import { hasPermission } from '@/utils/helpers/permission'
 import { useProductContext } from '../context'
@@ -473,7 +475,13 @@ export function useColumns() {
           const barcodes = row.original.barcodes.map(barcode => barcode.code)
           return (
             <div className="flex flex-wrap gap-2">
-              {barcodes.map(barcode => <Badge key={barcode}>{barcode}</Badge>)}
+              {barcodes.map(barcode => (
+                <Link target="_blank" to={`${backendUrl}api/barcodes/print?codes=${barcode}&size=55x40&language=${i18n.language}`} key={barcode}>
+                  <Badge>
+                    {barcode}
+                  </Badge>
+                </Link>
+              ))}
             </div>
           )
         },

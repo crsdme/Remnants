@@ -13,10 +13,10 @@ import * as AuditLogsService from './audit-logs.service'
 
 export async function get(payload: BarcodeTypes.getBarcodesParams): Promise<BarcodeTypes.getBarcodesResult> {
   const { current = 1, pageSize = 10 } = payload.pagination || {}
-
+  console.log(payload)
   const {
     ids = [],
-    code = '',
+    codes = [],
     products = [],
     active = undefined,
     createdAt = {
@@ -31,7 +31,7 @@ export async function get(payload: BarcodeTypes.getBarcodesParams): Promise<Barc
 
   const filterRules = {
     _id: { type: 'array' },
-    code: { type: 'string' },
+    code: { type: 'array' },
     products: { type: 'array' },
     active: { type: 'array' },
     createdAt: { type: 'dateRange' },
@@ -39,7 +39,7 @@ export async function get(payload: BarcodeTypes.getBarcodesParams): Promise<Barc
   } as const
 
   const query = buildQuery({
-    filters: { _id: ids, code, products, active, createdAt, updatedAt },
+    filters: { _id: ids, code: codes, products, active, createdAt, updatedAt },
     rules: filterRules,
   })
 
@@ -443,9 +443,9 @@ export async function remove(payload: BarcodeTypes.removeBarcodesParams): Promis
 }
 
 export async function print(payload: BarcodeTypes.printBarcodeParams): Promise<BarcodeTypes.printBarcodeResult> {
-  const { ids, size = '20x30', language = 'en' } = payload
+  const { ids, codes, size = '20x30', language = 'en' } = payload
 
-  const { barcodes } = await get({ filters: { ids }, pagination: { full: true }, sorters: {} })
+  const { barcodes } = await get({ filters: { ids, codes }, pagination: { full: true }, sorters: {} })
 
   if (barcodes.length === 0) {
     throw new HttpError(400, 'Barcodes not found', 'BARCODES_NOT_FOUND')

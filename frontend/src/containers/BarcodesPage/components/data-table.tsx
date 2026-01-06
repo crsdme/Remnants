@@ -154,8 +154,13 @@ export function DataTable() {
 
   const handleBulkPrint = () => {
     const selectedIds = Object.keys(rowSelection)
-    const path = `${backendUrl}api/barcodes/print?ids=${selectedIds.join(',')}&size=55x40&language=${i18n.language}`
-    window.open(path, '_blank', 'noopener,noreferrer')
+    const params = new URLSearchParams({
+      size: '55x40',
+      language: i18n.language,
+    })
+    selectedIds.forEach(id => params.append('ids', id))
+    const url = `${backendUrl}api/barcodes/print?${params.toString()}`
+    window.open(url, '_blank', 'noopener,noreferrer')
   }
 
   const advancedFiltersSubmit = (filters) => {
