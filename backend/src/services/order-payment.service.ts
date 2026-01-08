@@ -5,13 +5,12 @@ import { HttpError } from '../utils/httpError'
 import { buildQuery, buildSortQuery } from '../utils/queryBuilder'
 
 export async function get(payload: OrderPaymentTypes.getOrderPaymentsParams): Promise<OrderPaymentTypes.getOrderPaymentsResult> {
-  const { current = 1, pageSize = 10 } = payload.pagination || {}
+  const { current = 1, pageSize = 10, full = false } = payload.pagination || {}
 
   const {
-    order = '',
+    order = [],
     cashregister = '',
     cashregisterAccount = '',
-    amount = 0,
     currency = '',
     paymentStatus = '',
     paymentDate = {
@@ -21,6 +20,7 @@ export async function get(payload: OrderPaymentTypes.getOrderPaymentsParams): Pr
     transaction = '',
     createdBy = '',
     removedBy = '',
+    removed = '',
     createdAt = {
       from: undefined,
       to: undefined,
@@ -33,22 +33,22 @@ export async function get(payload: OrderPaymentTypes.getOrderPaymentsParams): Pr
 
   const filterRules = {
     _id: { type: 'array' },
-    order: { type: 'string' },
+    order: { type: 'array' },
     cashregister: { type: 'string' },
     cashregisterAccount: { type: 'string' },
-    amount: { type: 'number' },
     currency: { type: 'string' },
     paymentStatus: { type: 'string' },
     paymentDate: { type: 'dateRange' },
     transaction: { type: 'string' },
     createdBy: { type: 'string' },
     removedBy: { type: 'string' },
+    removed: { type: 'exact' },
     createdAt: { type: 'dateRange' },
     updatedAt: { type: 'dateRange' },
   } as const
 
   const query = buildQuery({
-    filters: { order, cashregister, cashregisterAccount, amount, currency, paymentStatus, paymentDate, transaction, createdBy, removedBy, createdAt, updatedAt },
+    filters: { order, cashregister, cashregisterAccount, currency, paymentStatus, paymentDate, transaction, createdBy, removedBy, createdAt, updatedAt, removed },
     rules: filterRules,
   })
 
@@ -62,11 +62,46 @@ export async function get(payload: OrderPaymentTypes.getOrderPaymentsParams): Pr
       $sort: sorters,
     },
     {
+      $lookup: {
+        from: 'currencies',
+        localField: 'currency',
+        foreignField: '_id',
+        as: 'currency',
+      },
+    },
+    {
+      $addFields: {
+        currency: { $arrayElemAt: ['$currency', 0] },
+      },
+    },
+    {
+      $project: {
+        _id: 0,
+        id: '$_id',
+        order: 1,
+        cashregister: 1,
+        cashregisterAccount: 1,
+        currency: { id: '$currency._id', names: 1, symbols: 1 },
+        amount: 1,
+        paymentStatus: 1,
+        paymentDate: 1,
+        transaction: 1,
+        comment: 1,
+        createdAt: 1,
+        updatedAt: 1,
+        createdBy: 1,
+        removedBy: 1,
+        removed: 1,
+      },
+    },
+    {
       $facet: {
-        orderPayments: [
-          { $skip: (current - 1) * pageSize },
-          { $limit: pageSize },
-        ],
+        orderPayments: full
+          ? []
+          : [
+              { $skip: (current - 1) * pageSize },
+              { $limit: pageSize },
+            ],
         totalCount: [
           { $count: 'count' },
         ],
@@ -76,7 +111,7 @@ export async function get(payload: OrderPaymentTypes.getOrderPaymentsParams): Pr
 
   const orderPaymentsRaw = await OrderPaymentModel.aggregate(pipeline).exec()
 
-  const orderPayments = orderPaymentsRaw[0].orderPayments.map((doc: any) => OrderPaymentModel.hydrate(doc))
+  const orderPayments = orderPaymentsRaw[0].orderPayments
   const orderPaymentsCount = orderPaymentsRaw[0].totalCount[0]?.count || 0
 
   return { status: 'success', code: 'ORDER_PAYMENTS_FETCHED', message: 'Order payments fetched', orderPayments, orderPaymentsCount }

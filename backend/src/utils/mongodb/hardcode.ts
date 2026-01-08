@@ -15,7 +15,6 @@ const CONFIGS = {
       WEIGHT: '7c3e2c1b-f2bf-4639-baf2-7b1101fa7bf2',
       HAIR_TYPE: '25144e64-5c4c-47fd-842d-c0a2393f972e',
     },
-
     hairTypes: {
       VIRGIN: 'b930fb75-61a6-41c0-88de-0c69082b7f06',
       GRAY: '91dcfe98-6192-492f-98de-1ff22bdff01a',

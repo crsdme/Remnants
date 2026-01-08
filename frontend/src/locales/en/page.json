@@ -1262,14 +1262,39 @@
   "page.order-statistic.form.date": "Date",
 
   "page.order-statistic.total-amount": "Total amount",
-  "page.order-statistic.orders": "orders",
-  "page.order-statistic.products": "products",
   "page.order-statistic.paid": "Paid",
   "page.order-statistic.unpaid": "Unpaid",
-  "page.order-statistic.average-check": "Average check",
-  "page.order-statistic.expenses": "Expenses",
   "page.order-statistic.income": "Income",
+  "page.order-statistic.expenses": "Expenses",
   "page.order-statistic.profit": "Profit",
+
+  "page.order-statistic.orders_count": "{{count}} order",
+  "page.order-statistic.orders_count_one": "{{count}} order",
+  "page.order-statistic.orders_count_few": "{{count}} orders",
+  "page.order-statistic.orders_count_many": "{{count}} orders",
+  "page.order-statistic.orders_count_other": "{{count}} order",
+
+  "page.order-statistic.products_count": "{{count}} product",
+  "page.order-statistic.products_count_one": "{{count}} product",
+  "page.order-statistic.products_count_few": "{{count}} products",
+  "page.order-statistic.products_count_many": "{{count}} products",
+  "page.order-statistic.products_count_other": "{{count}} product",
+
+  "page.order-statistic.expenses_count": "{{count}} expense",
+  "page.order-statistic.expenses_count_one": "{{count}} expense",
+  "page.order-statistic.expenses_count_few": "{{count}} expenses",
+  "page.order-statistic.expenses_count_many": "{{count}} expenses",
+  "page.order-statistic.expenses_count_other": "{{count}} expense",
+
+  "page.order-statistic.payments_count": "{{count}} payment",
+  "page.order-statistic.payments_count_one": "{{count}} payment",
+  "page.order-statistic.payments_count_few": "{{count}} payments",
+  "page.order-statistic.payments_count_many": "{{count}} payments",
+  "page.order-statistic.payments_count_other": "{{count}} payment",
+
+  "page.order-statistic.total-amount-description": "Total amount of orders",
+  "page.order-statistic.paid-description": "Total amount of paid orders",
+  "page.order-statistic.unpaid-description": "Total amount of unpaid orders",
 
   "page.balances.title": "Balances",
   "page.balances.description": "Manage balances",

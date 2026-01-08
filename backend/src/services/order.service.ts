@@ -306,6 +306,7 @@ export async function getItems(payload: OrderTypes.getOrderItemsParams, session?
   let commonProjection: any = {
     _id: 0,
     id: '$_id',
+    order: 1,
     product: 1,
     quantity: 1,
     price: 1,
@@ -527,6 +528,7 @@ export async function getItems(payload: OrderTypes.getOrderItemsParams, session?
               seq: 1,
               names: 1,
               price: 1,
+              order: 1,
               currency: { id: '$currency._id', names: 1, symbols: 1 },
               purchasePrice: 1,
               purchaseCurrency: { id: '$purchaseCurrency._id', names: 1, symbols: 1 },

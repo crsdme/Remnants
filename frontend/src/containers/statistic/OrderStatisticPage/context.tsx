@@ -42,20 +42,41 @@ export function OrderStatisticProvider({ children }: OrderStatisticProviderProps
 
   const { data: {
     statistics = {
-      averageCheck: 0,
-      ordersAmount: [],
-      ordersCount: 0,
-      paidAmount: [],
-      paidCount: 0,
-      income: [],
-      profit: [],
-      expenses: [],
-      expensesCount: 0,
-      expensesTotal: [],
-      unpaidAmount: [],
-      unpaidCount: 0,
-      productAttributes: [],
-      productCategories: [],
+      range: { from: new Date(new Date().setHours(0, 0, 0, 0)), to: new Date(new Date().setHours(23, 59, 59, 999)) },
+      orders: {
+        count: 0,
+        amount: [],
+        paid: {
+          count: 0,
+          amount: [],
+        },
+        unpaid: {
+          count: 0,
+          amount: [],
+        },
+      },
+      payments: {
+        count: 0,
+        amount: [],
+        income: {
+          count: 0,
+          amount: [],
+        },
+        expense: {
+          count: 0,
+          categories: [],
+          amount: [],
+        },
+        profit: {
+          count: 0,
+          amount: [],
+        },
+      },
+      products: {
+        count: 0,
+        attributes: [],
+        categories: [],
+      },
     },
   } = {}, isLoading, isFetching } = useOrderStatisticQuery(
     { pagination: { full: true }, filters },

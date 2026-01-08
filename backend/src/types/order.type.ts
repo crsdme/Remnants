@@ -2,6 +2,7 @@ import type PDFDocument from 'pdfkit'
 import type { SUPPORTED_LANGUAGES_TYPE } from '../config/constants'
 import type { Client } from './client.type'
 import type { Code, DateRange, IdType, Message, Pagination, Sorter, Status } from './common.type'
+import type { Currency } from './currency.type'
 import type { OrderPayment, OrderPaymentParams } from './order-payment.type'
 
 export interface Order {
@@ -33,7 +34,7 @@ export interface OrderItem {
   product: IdType
   quantity: number
   price: number
-  currency: IdType
+  currency: Currency
   removedBy: string
   removed: boolean
   profit: number

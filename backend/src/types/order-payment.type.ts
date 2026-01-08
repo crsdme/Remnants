@@ -1,4 +1,5 @@
 import type { Code, DateRange, IdType, Message, Pagination, Sorter, Status } from './common.type'
+import type { Currency } from './currency.type'
 
 export interface OrderPayment {
   id: IdType
@@ -6,7 +7,7 @@ export interface OrderPayment {
   cashregister: string
   cashregisterAccount: string
   amount: number
-  currency: string
+  currency: Currency
   paymentStatus: string
   paymentDate: Date
   transaction: string
@@ -38,7 +39,7 @@ export interface getOrderPaymentsResult {
 }
 
 export interface getOrderPaymentsFilters {
-  order: string
+  order?: string[]
   cashregister: string
   cashregisterAccount: string
   amount: number
@@ -48,6 +49,7 @@ export interface getOrderPaymentsFilters {
   transaction: string
   createdBy: string
   removedBy: string
+  removed: boolean
   createdAt: DateRange
   updatedAt: DateRange
   removedAt: DateRange
