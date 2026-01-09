@@ -87,6 +87,7 @@ export async function get(payload: CurrencyTypes.getCurrenciesParams): Promise<C
         id: '$_id',
         names: 1,
         symbols: 1,
+        scale: 1,
         active: 1,
         priority: 1,
         createdAt: 1,

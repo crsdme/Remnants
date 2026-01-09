@@ -97,6 +97,26 @@ export function CurrencyForm() {
         ))}
         <FormField
           control={form.control}
+          name="scale"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>{t('page.currencies.form.scale')}</FormLabel>
+              <FormControl>
+                <Input
+                  type="number"
+                  placeholder={t('page.currencies.form.scale')}
+                  className="w-full"
+                  {...field}
+                  disabled={isLoading}
+                  onChange={e => field.onChange(Number(e.target.value))}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
           name="priority"
           render={({ field }) => (
             <FormItem>

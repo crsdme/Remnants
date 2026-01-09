@@ -98,6 +98,7 @@
   "page.currencies.form.names": "Название ({{language}})",
   "page.currencies.form.symbols": "Символ ({{language}})",
   "page.currencies.form.priority": "Приоритет",
+  "page.currencies.form.scale": "Цифр после запятой",
   "page.currencies.form.active": "Активная",
   "page.currencies.form.active.description": "Активная валюта",
 

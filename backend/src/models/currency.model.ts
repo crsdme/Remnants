@@ -43,6 +43,10 @@ const CurrencySchema: Schema = new Schema(
         message: 'Supported languages only',
       },
     },
+    scale: {
+      type: Number,
+      default: 2,
+    },
     priority: {
       type: Number,
       default: 0,

@@ -72,6 +72,7 @@ export function CurrencyProvider({ children }: CurrencyProviderProps) {
           .min(1, { message: t('form.errors.min_length', { count: 1 }) })
           .trim(),
       ),
+      scale: z.number().default(2),
       priority: z.number().default(0),
       active: z.boolean().default(true),
     }), [t])
@@ -81,6 +82,7 @@ export function CurrencyProvider({ children }: CurrencyProviderProps) {
     defaultValues: {
       names: defaultLanguageValues,
       symbols: defaultLanguageValues,
+      scale: 2,
       priority: 0,
       active: true,
     },
@@ -105,6 +107,7 @@ export function CurrencyProvider({ children }: CurrencyProviderProps) {
       return {
         names: defaultLanguageValues,
         symbols: defaultLanguageValues,
+        scale: 2,
         priority: 0,
         active: true,
       }
@@ -112,6 +115,7 @@ export function CurrencyProvider({ children }: CurrencyProviderProps) {
     return {
       names: { ...currency.names },
       symbols: { ...currency.symbols },
+      scale: currency.scale,
       priority: currency.priority,
       active: currency.active,
     }

@@ -52,6 +52,7 @@ export function ActionBar() {
     const headers = [
       ...languages.map(l => `names_${l.code}`),
       ...languages.map(l => `symbols_${l.code}`),
+      'scale',
       'priority',
       'active',
     ]
@@ -59,6 +60,7 @@ export function ActionBar() {
     const row = [
       ...languages.map(() => t(`component.import.dialog.template.name`)),
       ...languages.map(() => t(`component.import.dialog.template.symbol`)),
+      '2',
       '1',
       'true',
     ]

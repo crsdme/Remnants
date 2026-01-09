@@ -98,6 +98,7 @@
   "page.currencies.form.names": "Name ({{language}})",
   "page.currencies.form.symbols": "Symbol ({{language}})",
   "page.currencies.form.priority": "Priority",
+  "page.currencies.form.scale": "Scale",
   "page.currencies.form.active": "Active",
   "page.currencies.form.active.description": "Active currency",
 

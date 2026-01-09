@@ -37,6 +37,7 @@ export const getCurrencySchema = z.object({
 export const createCurrencySchema = z.object({
   names: languageStringSchema,
   symbols: languageStringSchema,
+  scale: z.number().optional().default(2),
   priority: z.number().optional().default(0),
   active: z.boolean().optional().default(true),
 })
@@ -45,6 +46,7 @@ export const editCurrencySchema = z.object({
   id: idSchema,
   names: languageStringSchema,
   symbols: languageStringSchema,
+  scale: z.number().optional().default(2),
   priority: z.number().optional().default(0),
   active: z.boolean().optional().default(true),
 })
