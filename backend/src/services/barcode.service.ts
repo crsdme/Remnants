@@ -610,6 +610,14 @@ async function print60x30(payload: { barcodes: any[], size: string, language: st
 }
 
 async function print55x40(payload: { barcodes: any[], size: string, language: string }): Promise<BarcodeTypes.printBarcodeResult> {
+  const { propertyIds, hairTypes, providerPrice, symbol, propertyGroups } = getHardcodeData()
+
+  const isDyed = payload.barcodes.some((barcode: any) => barcode.products[0].productPropertiesGroup.toString() === propertyGroups.dyed)
+  // const isDyed = true
+
+  if (isDyed)
+    return await print55x40Dyed(payload)
+
   const { barcodes, size, language } = payload
   const [w, h] = size.split('x').map(Number)
   const padding = 10
@@ -617,8 +625,6 @@ async function print55x40(payload: { barcodes: any[], size: string, language: st
   const contentHeight = h * 8.49 - padding * 2
 
   const doc = new PDFDocument({ autoFirstPage: false })
-
-  const { propertyIds, hairTypes, providerPrice, symbol } = getHardcodeData()
 
   doc.registerFont('Manrope', path.resolve(__dirname, '../utils/fonts/Manrope-Regular.ttf'))
   doc.registerFont('Manrope-Bold', path.resolve(__dirname, '../utils/fonts/Manrope-Bold.ttf'))
@@ -735,6 +741,191 @@ async function print55x40(payload: { barcodes: any[], size: string, language: st
         padding + 20,
         doc.y - 20,
         { width: contentWidth, height: 50, lineBreak: false, align: 'left' },
+      )
+    }
+  }
+
+  return { status: 'success', code: 'BARCODE_PRINTED', message: 'Barcodes printed', doc }
+}
+
+async function print55x40Dyed(payload: { barcodes: any[], size: string, language: string }): Promise<BarcodeTypes.printBarcodeResult> {
+  const { barcodes, size, language } = payload
+  const [w, h] = size.split('x').map(Number)
+  const padding = 10
+  const contentWidth = w * 8.49 - padding * 2
+  const contentHeight = h * 8.49 - padding * 2
+
+  const doc = new PDFDocument({ autoFirstPage: false })
+
+  const { propertyIds, hairTypes, providerPrice, symbol } = getHardcodeData()
+
+  doc.registerFont('Manrope', path.resolve(__dirname, '../utils/fonts/Manrope-Regular.ttf'))
+  doc.registerFont('Manrope-Bold', path.resolve(__dirname, '../utils/fonts/Manrope-Bold.ttf'))
+
+  for (const barcode of barcodes) {
+    const product = barcode?.products?.[0]
+    if (!product) {
+      continue
+    }
+
+    doc.font('Manrope')
+    doc.fontSize(25)
+    doc.addPage({ size: [w * 8.49, h * 8.49] })
+
+    const barcodePng = await bwipjs.toBuffer({
+      bcid: 'code128',
+      text: barcode.code,
+      scale: 8,
+      height: 20,
+      includetext: false,
+      textxalign: 'center',
+    })
+
+    doc.image(barcodePng, padding, padding, {
+      width: contentWidth,
+      height: contentHeight / 2.5,
+    })
+
+    const providerSuffix = product?.categories
+      ?.map((cat: any) => providerPrice[cat.id as keyof typeof providerPrice])
+      ?.filter(Boolean)
+      .join('') || ''
+
+    doc.text(
+      `${barcode.code}${providerSuffix ? `-${Number(providerSuffix) + 5000}` : ''}`,
+      padding,
+      contentHeight / 2.5 + 10,
+      { width: contentWidth, height: 25, align: 'center', ellipsis: true, lineBreak: false },
+    )
+
+    let length = ''
+    let weight = ''
+    let segment = 'Standart'
+    const type = []
+
+    for (const property of product.productProperties || []) {
+      if (typeof property.value === 'number' && property.id === propertyIds.LENGTH) {
+        length = `${property.value} cm`
+      }
+      else if (typeof property.value === 'number' && property.id === propertyIds.WEIGHT) {
+        weight = `${property.value} g`
+      }
+      if (property.id === propertyIds.SEGMENT) {
+        segment = property.optionData.map((option: any) => option.names[language]).join(', ')
+      }
+      if (property.id === propertyIds.HAIR_TYPE && (property?.value || []).includes(hairTypes.VIRGIN)) {
+        type.push('Virgin')
+      }
+      if (property.id === propertyIds.HAIR_TYPE && (property?.value || []).includes(hairTypes.SILKY)) {
+        type.push('Silky')
+      }
+      if (property.id === propertyIds.HAIR_TYPE && (property?.value || []).includes(hairTypes.BROWN)) {
+        type.push('Brown')
+      }
+      if (property.id === propertyIds.HAIR_TYPE && (property?.value || []).includes(hairTypes.GRAY)) {
+        type.push('Gray')
+      }
+      if (property.id === propertyIds.HAIR_TYPE && (property?.value || []).includes(hairTypes.SLAVIC)) {
+        type.push('Slavic')
+      }
+      if (property.id === propertyIds.HAIR_TYPE && (property?.value || []).includes(hairTypes.ALBINO)) {
+        type.push('Albino')
+      }
+      if (property.id === propertyIds.HAIR_TYPE && (property?.value || []).includes(hairTypes.RED)) {
+        type.push('Red')
+      }
+      if (property.id === propertyIds.HAIR_TYPE && (property?.value || []).includes(hairTypes.CURLY)) {
+        type.push('Curly')
+      }
+    }
+
+    const lenWgt = [length || '000cm', weight || '000g'].filter(Boolean).join(', ')
+    doc.font('Manrope-Bold').fontSize(68)
+    doc.text(
+      lenWgt,
+      padding,
+      doc.y - 10,
+      { width: contentWidth, height: 50, ellipsis: true, lineBreak: false, align: 'center' },
+    )
+
+    doc.font('Manrope-Bold').fontSize(64)
+    doc.text(
+      type.join(', '),
+      padding,
+      doc.y - 15,
+      { width: contentWidth, height: 50, ellipsis: true, lineBreak: false, align: 'center' },
+    )
+
+    doc.addPage({ size: [w * 8.49, h * 8.49] })
+
+    const bigCode = (product.names?.[language] || '').split('#')[1] || '0000'
+
+    const bigCodeHeight = doc.y
+
+    doc.font('Manrope-Bold').fontSize(68)
+
+    doc.text(
+      segment,
+      padding,
+      doc.y - 70,
+      { width: contentWidth, height: 50, lineBreak: false, align: 'center' },
+    )
+
+    doc.font('Manrope-Bold').fontSize(168)
+
+    doc.text(
+      bigCode,
+      padding,
+      bigCodeHeight - 30,
+      { width: contentWidth, height: 50, lineBreak: false, align: 'center' },
+    )
+
+    doc.font('Manrope-Bold').fontSize(68)
+    doc.text(
+      lenWgt,
+      padding,
+      doc.y - 40,
+      { width: contentWidth, height: 50, ellipsis: true, lineBreak: false, align: 'center' },
+    )
+
+    if (symbol) {
+      doc.font('Manrope-Bold').fontSize(50)
+      doc.text(
+        symbol,
+        padding + 20,
+        doc.y - 20,
+        { width: contentWidth, height: 50, lineBreak: false, align: 'left' },
+      )
+    }
+
+    doc.addPage({ size: [w * 8.49, h * 8.49] })
+    doc.font('Manrope-Bold').fontSize(34)
+
+    const info = []
+
+    for (const property of product.productProperties || []) {
+      if (property.id === propertyIds.STRUCTURE) {
+        info.push(`Structure: ${property.optionData.map((option: any) => option.names[language]).join(', ')}`)
+      }
+      if (property.id === propertyIds.COMBING) {
+        info.push(`Combing: ${property.optionData.map((option: any) => option.names[language]).join(', ')}`)
+      }
+      if (property.id === propertyIds.PROCCESSING_TYPE) {
+        info.push(`Processing: ${property.optionData.map((option: any) => option.names[language]).join(', ')}`)
+      }
+      if (property.id === propertyIds.HAIR_TYPE) {
+        info.push(`Type: ${property.optionData.map((option: any) => option.names[language]).join(', ')}`)
+      }
+    }
+
+    // info.push('Structure: Porous', 'Combing: 25cm', 'Processing: Lighted, Dyed', 'Type: Slavic, Curly')
+    doc.y = doc.y - 60
+    for (const item of info) {
+      doc.text(
+        item,
+        padding,
+        doc.y,
+        { width: contentWidth, height: 50, ellipsis: true, lineBreak: true, align: 'left' },
       )
     }
   }
