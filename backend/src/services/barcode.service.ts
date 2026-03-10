@@ -613,8 +613,8 @@ async function print60x30(payload: { barcodes: any[], size: string, language: st
 async function print55x40(payload: { barcodes: any[], size: string, language: string }): Promise<BarcodeTypes.printBarcodeResult> {
   const { propertyIds, hairTypes, providerPrice, symbol, propertyGroups } = getHardcodeData()
 
-  // const isDyed = payload.barcodes.some((barcode: any) => barcode.products[0].productPropertiesGroup.id.toString() === propertyGroups.dyed)
-  const isDyed = true
+  const isDyed = payload.barcodes.some((barcode: any) => barcode.products[0].productPropertiesGroup.id.toString() === propertyGroups.dyed)
+  // const isDyed = true
 
   if (isDyed)
     return await print55x40Dyed(payload)
@@ -929,7 +929,7 @@ async function print55x40Dyed(payload: { barcodes: any[], size: string, language
         }
       }
 
-      info.push('Structure: Porous', 'Combing: 25cm', 'Processing: Lighted', 'Type: Slavic, Curly', 'Color: DB3')
+      // info.push('Structure: Porous', 'Combing: 25cm', 'Processing: Lighted', 'Type: Slavic, Curly', 'Color: DB3')
       doc.font('Manrope-Bold').fontSize(42)
       doc.y = doc.y + 25
       for (const item of info) {
