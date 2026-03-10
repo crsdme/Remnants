@@ -4,7 +4,7 @@ import { HttpError } from '../utils/httpError'
 import { buildQuery, buildSortQuery } from '../utils/queryBuilder'
 
 export async function get(payload: ProductPropertyOptionTypes.getProductPropertyOptionsParams): Promise<ProductPropertyOptionTypes.getProductPropertyOptionsResult> {
-  const { current = 1, pageSize = 10 } = payload.pagination || {}
+  const { current = 1, pageSize = 10, full = false } = payload.pagination || {}
 
   const {
     ids = [],
@@ -50,15 +50,28 @@ export async function get(payload: ProductPropertyOptionTypes.getProductProperty
     },
     {
       $facet: {
-        documents: [
-          { $skip: (current - 1) * pageSize },
-          { $limit: pageSize },
-        ],
+        documents: full
+          ? []
+          : [
+              { $skip: (current - 1) * pageSize },
+              { $limit: pageSize },
+            ],
         totalCount: [
           { $count: 'count' },
         ],
       },
     },
+    // {
+    //   $facet: {
+    //     documents: [
+    //       { $skip: (current - 1) * pageSize },
+    //       { $limit: pageSize },
+    //     ],
+    //     totalCount: [
+    //       { $count: 'count' },
+    //     ],
+    //   },
+    // },
   ]
 
   const productPropertiesOptionsRaw = await ProductPropertyOptionModel.aggregate(pipeline).exec()

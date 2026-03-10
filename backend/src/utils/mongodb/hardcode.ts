@@ -26,6 +26,7 @@ const CONFIGS = {
       STRUCTURE: '',
       THREATMENT: '',
       COMBING: '',
+      COLOR: '',
     },
     propertyGroups: {
       raw: 'f676759b-2e39-4644-b3cb-b2ae71afda25',
@@ -40,6 +41,7 @@ const CONFIGS = {
       SLAVIC: '7f6d9a15-9f9f-4ddc-a815-dfaf613a0901',
       ALBINO: '8a379f9e-4a84-4d8c-8108-b35188be2fe1',
       RED: '89b60d3c-2f97-4f94-8305-00d749fdf134',
+      REMY: '9163dd30-79d6-4301-891e-33940266a8d7',
     },
     hairLengths: {
       40: 'a3b85e8b-1485-4f2a-80c6-70ae8fa05865',
@@ -84,6 +86,7 @@ const CONFIGS = {
       PROCCESSING_TYPE: '16fcb56a-3eee-4153-bb8a-1b2309c9fe8a',
       STRUCTURE: '1bbaef6f-0cbb-4bfb-8117-4d572b8c2975',
       COMBING: '4f8f8ae8-b4f5-4821-9dc2-cf3556287049',
+      COLOR: 'ee6ebb43-785f-4cfe-9f0b-08883d0fd358',
     },
     propertyGroups: {
       raw: 'f676759b-2e39-4644-b3cb-b2ae71afda25',
@@ -98,6 +101,7 @@ const CONFIGS = {
       SLAVIC: '7f6d9a15-9f9f-4ddc-a815-dfaf613a0901',
       ALBINO: '8a379f9e-4a84-4d8c-8108-b35188be2fe1',
       RED: '89b60d3c-2f97-4f94-8305-00d749fdf134',
+      REMY: '9163dd30-79d6-4301-891e-33940266a8d7',
     },
     hairLengths: {
       40: 'a3b85e8b-1485-4f2a-80c6-70ae8fa05865',
@@ -139,6 +143,7 @@ const CONFIGS = {
       STRUCTURE: '',
       THREATMENT: '',
       COMBING: '',
+      COLOR: '',
     },
     propertyGroups: {
       raw: '',
@@ -153,6 +158,7 @@ const CONFIGS = {
       SLAVIC: '188e3571-be2a-484e-9a81-dd7fa1362b95',
       ALBINO: '5fbd09bc-f14f-4a35-8180-acf8ff3c2459',
       RED: 'eaad9e8d-94ba-43e1-83aa-71592b58a73a',
+      REMY: '9163dd30-79d6-4301-891e-33940266a8d7',
     },
     hairLengths: {
       40: '',
