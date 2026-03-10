@@ -815,6 +815,9 @@ async function print55x40Dyed(payload: { barcodes: any[], size: string, language
       if (property.id === propertyIds.HAIR_TYPE && (property?.value || []).includes(hairTypes.CURLY)) {
         type.push('Curly')
       }
+      if (property.id === propertyIds.HAIR_TYPE && (property?.value || []).includes(hairTypes.REMY)) {
+        type.push('Remy')
+      }
     }
 
     const lenWgt = [length || '000cm', weight || '000g'].filter(Boolean).join(', ')
