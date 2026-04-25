@@ -27,6 +27,13 @@ const CONFIGS = {
       THREATMENT: '',
       COMBING: '',
       COLOR: '',
+      COLOR_CATEGORY: '4599d9f7-6292-4f78-9af4-21ef2d8b7188',
+    },
+    colorCategories: {
+      OMBRE: '3b67a025-058d-45a4-97cc-e8a5c2b1b77b',
+      PLATIN: '3aa8d773-0cfc-4c84-8582-6d1b0d418523',
+      NATURAL_COLOR: '962ff5ac-4e16-4648-8ef4-bb6b41e865c2',
+      BLONDE: '2a570cec-761c-4fa3-8a80-aa6cbd33cf14',
     },
     propertyGroups: {
       raw: 'f676759b-2e39-4644-b3cb-b2ae71afda25',
@@ -78,6 +85,7 @@ const CONFIGS = {
       'a8781973-17ad-4388-bf97-67db386faefe': 1182,
       '15ec0db3-801a-4b49-977b-9dc2ea224762': 980,
       '80e0ef91-d597-4d85-8392-de92482bd15f': 1103,
+      '743923f1-c9ac-46c3-9be8-10474ccbd917': 1370,
     },
     propertyIds: {
       LENGTH: 'efcc3c51-a146-4975-bc5b-196745f76891',
@@ -88,6 +96,13 @@ const CONFIGS = {
       STRUCTURE: '1bbaef6f-0cbb-4bfb-8117-4d572b8c2975',
       COMBING: '4f8f8ae8-b4f5-4821-9dc2-cf3556287049',
       COLOR: 'ee6ebb43-785f-4cfe-9f0b-08883d0fd358',
+      COLOR_CATEGORY: '4599d9f7-6292-4f78-9af4-21ef2d8b7188',
+    },
+    colorCategories: {
+      OMBRE: '3b67a025-058d-45a4-97cc-e8a5c2b1b77b',
+      PLATIN: '3aa8d773-0cfc-4c84-8582-6d1b0d418523',
+      NATURAL_COLOR: '962ff5ac-4e16-4648-8ef4-bb6b41e865c2',
+      BLONDE: '2a570cec-761c-4fa3-8a80-aa6cbd33cf14',
     },
     propertyGroups: {
       raw: 'f676759b-2e39-4644-b3cb-b2ae71afda25',
@@ -145,6 +160,13 @@ const CONFIGS = {
       THREATMENT: '',
       COMBING: '',
       COLOR: '',
+      COLOR_CATEGORY: '4599d9f7-6292-4f78-9af4-21ef2d8b7188',
+    },
+    colorCategories: {
+      OMBRE: '3b67a025-058d-45a4-97cc-e8a5c2b1b77b',
+      PLATIN: '3aa8d773-0cfc-4c84-8582-6d1b0d418523',
+      NATURAL_COLOR: '962ff5ac-4e16-4648-8ef4-bb6b41e865c2',
+      BLONDE: '2a570cec-761c-4fa3-8a80-aa6cbd33cf14',
     },
     propertyGroups: {
       raw: '',

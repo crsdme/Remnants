@@ -613,8 +613,8 @@ async function print60x30(payload: { barcodes: any[], size: string, language: st
 async function print55x40(payload: { barcodes: any[], size: string, language: string }): Promise<BarcodeTypes.printBarcodeResult> {
   const { propertyIds, hairTypes, providerPrice, symbol, propertyGroups } = getHardcodeData()
 
-  const isDyed = payload.barcodes.some((barcode: any) => barcode.products[0].productPropertiesGroup.id.toString() === propertyGroups.dyed)
-  // const isDyed = true
+  // const isDyed = payload.barcodes.some((barcode: any) => barcode.products[0].productPropertiesGroup.id.toString() === propertyGroups.dyed)
+  const isDyed = true
 
   if (isDyed)
     return await print55x40Dyed(payload)
@@ -761,7 +761,7 @@ async function print55x40Dyed(payload: { barcodes: any[], size: string, language
 
   const doc = new PDFDocument({ autoFirstPage: false })
 
-  const { propertyIds, hairTypes, providerPrice, symbol } = getHardcodeData()
+  const { propertyIds, hairTypes, providerPrice, symbol, colorCategories } = getHardcodeData()
 
   doc.registerFont('Manrope', path.resolve(__dirname, '../utils/fonts/Manrope-Regular.ttf'))
   doc.registerFont('Manrope-Bold', path.resolve(__dirname, '../utils/fonts/Manrope-Bold.ttf'))
@@ -780,6 +780,7 @@ async function print55x40Dyed(payload: { barcodes: any[], size: string, language
     let weight = ''
     let segment = 'Standart'
     const type: string[] = []
+    let colorCategory: string = ''
 
     for (const property of product.productProperties || []) {
       if (typeof property.value === 'number' && property.id === propertyIds.LENGTH) {
@@ -790,6 +791,9 @@ async function print55x40Dyed(payload: { barcodes: any[], size: string, language
       }
       if (property.id === propertyIds.SEGMENT) {
         segment = property.optionData.map((option: any) => option.names[language]).join(', ')
+      }
+      if (property.id === propertyIds.COLOR_CATEGORY) {
+        colorCategory = property.optionData.find((option: any) => option.id === colorCategories[colorCategory as keyof typeof colorCategories])?.names[language] || 'Natural Color'
       }
       if (property.id === propertyIds.HAIR_TYPE && (property?.value || []).includes(hairTypes.VIRGIN)) {
         type.push('Virgin')
@@ -843,7 +847,7 @@ async function print55x40Dyed(payload: { barcodes: any[], size: string, language
       const providerSuffix = product?.categories
         ?.map((cat: any) => providerPrice[cat.id as keyof typeof providerPrice])
         ?.filter(Boolean)
-        .join('') || ''
+        .join('') || '1000'
 
       doc.text(
         `${barcode.code}${providerSuffix ? `-${Number(providerSuffix) + 5000}` : ''}`,
@@ -866,6 +870,13 @@ async function print55x40Dyed(payload: { barcodes: any[], size: string, language
         type.join(', '),
         padding,
         doc.y,
+        { width: contentWidth, height: 50, ellipsis: true, lineBreak: false, align: 'center' },
+      )
+
+      doc.text(
+        colorCategory,
+        padding,
+        doc.y + 120,
         { width: contentWidth, height: 50, ellipsis: true, lineBreak: false, align: 'center' },
       )
     }
@@ -913,6 +924,7 @@ async function print55x40Dyed(payload: { barcodes: any[], size: string, language
         )
       }
 
+      // const info = ['Structure: Porous', 'Combing: 25cm', 'Processing: Lighted', 'Type: Slavic, Curly', 'Color: DB3']
       const info = []
 
       for (const property of product.productProperties || []) {

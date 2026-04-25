@@ -1393,7 +1393,7 @@ export async function printInvoice(payload: OrderTypes.printInvoiceOrderParams):
       },
       {
         ...tableColumns.price,
-        value: `${product.price} ${product.currency.symbols[language] || ''}`,
+        value: `${product.price}`,
       },
       {
         ...tableColumns.quantity,
@@ -1403,13 +1403,13 @@ export async function printInvoice(payload: OrderTypes.printInvoiceOrderParams):
         ? [
             {
               ...tableColumns.discount,
-              value: `${product.discount} ${product.discountType === 'amount' ? product.currency.symbols[language] : '%'}`,
+              value: `${product.discount} ${product.discountType === 'amount' ? '' : '%'}`,
             },
           ]
         : []),
       {
         ...tableColumns.total,
-        value: `${product.total.toFixed(0)} ${product.currency.symbols[language] || ''}`,
+        value: `${product.total.toFixed(0)}`,
       },
     ]
 
@@ -1464,7 +1464,7 @@ export async function printInvoice(payload: OrderTypes.printInvoiceOrderParams):
       : []),
     {
       ...tableColumns.total,
-      value: Object.values(totals.amount).map((amount: any) => `${amount.total.toFixed(0)} ${amount.currency.symbols[language] || ''}`).join(', '),
+      value: Object.values(totals.amount).map((amount: any) => `${amount.total.toFixed(0)}`).join(', '),
     },
   ]
 
@@ -1587,7 +1587,7 @@ export async function printDraftInvoice(payload: OrderTypes.printDraftInvoiceOrd
       },
       {
         ...tableColumns.price,
-        value: 'Price',
+        value: 'Per kg',
       },
       {
         ...tableColumns.quantity,
@@ -1842,13 +1842,13 @@ export async function printDraftInvoice(payload: OrderTypes.printDraftInvoiceOrd
         ? [
             {
               ...tableColumns.discount,
-              value: `${product.discount} ${product.discountType === 'amount' ? product.currency.symbols[language] : '%'}`,
+              value: `${product.discount} ${product.discountType === 'amount' ? '' : '%'}`,
             },
           ]
         : []),
       {
         ...tableColumns.total,
-        value: `${product.total} ${product?.currency?.symbols?.[language] || ''}`,
+        value: `${product.total}`,
       },
     ]
 
@@ -1903,7 +1903,7 @@ export async function printDraftInvoice(payload: OrderTypes.printDraftInvoiceOrd
       : []),
     {
       ...tableColumns.total,
-      value: Object.values(totals.amount).map((amount: any) => `${amount.total.toFixed(2)} ${amount?.currency?.symbols?.[language] || ''}`).join(', '),
+      value: Object.values(totals.amount).map((amount: any) => `${amount.total.toFixed(2)}`).join(', '),
     },
   ]
 
