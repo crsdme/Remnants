@@ -613,8 +613,8 @@ async function print60x30(payload: { barcodes: any[], size: string, language: st
 async function print55x40(payload: { barcodes: any[], size: string, language: string }): Promise<BarcodeTypes.printBarcodeResult> {
   const { propertyIds, hairTypes, providerPrice, symbol, propertyGroups } = getHardcodeData()
 
-  // const isDyed = payload.barcodes.some((barcode: any) => barcode.products[0].productPropertiesGroup.id.toString() === propertyGroups.dyed)
-  const isDyed = true
+  const isDyed = payload.barcodes.some((barcode: any) => barcode.products[0].productPropertiesGroup.id.toString() === propertyGroups.dyed)
+  // const isDyed = true
 
   if (isDyed)
     return await print55x40Dyed(payload)
