@@ -792,8 +792,17 @@ async function print55x40Dyed(payload: { barcodes: any[], size: string, language
       if (property.id === propertyIds.SEGMENT) {
         segment = property.optionData.map((option: any) => option.names[language]).join(', ')
       }
-      if (property.id === propertyIds.COLOR_CATEGORY) {
-        colorCategory = property.optionData.find((option: any) => option.id === colorCategories[colorCategory as keyof typeof colorCategories])?.names[language] || 'Natural Color'
+      if (property.id === propertyIds.COLOR_CATEGORY && property.value === colorCategories.NATURAL_COLOR) {
+        colorCategory = 'Natural Color'
+      }
+      if (property.id === propertyIds.COLOR_CATEGORY && property.value === colorCategories.OMBRE) {
+        colorCategory = 'Ombre'
+      }
+      if (property.id === propertyIds.COLOR_CATEGORY && property.value === colorCategories.PLATIN) {
+        colorCategory = 'Platin'
+      }
+      if (property.id === propertyIds.COLOR_CATEGORY && property.value === colorCategories.BLONDE) {
+        colorCategory = 'Blonde'
       }
       if (property.id === propertyIds.HAIR_TYPE && (property?.value || []).includes(hairTypes.VIRGIN)) {
         type.push('Virgin')
