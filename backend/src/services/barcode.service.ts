@@ -875,12 +875,12 @@ async function print55x40Dyed(payload: { barcodes: any[], size: string, language
       )
 
       doc.font('Manrope-Bold').fontSize(64)
-      doc.text(
-        type.join(', '),
-        padding,
-        doc.y,
-        { width: contentWidth, height: 50, ellipsis: true, lineBreak: false, align: 'center' },
-      )
+      // doc.text(
+      //   type.join(', '),
+      //   padding,
+      //   doc.y,
+      //   { width: contentWidth, height: 50, ellipsis: true, lineBreak: false, align: 'center' },
+      // )
 
       doc.text(
         colorCategory,
@@ -945,9 +945,6 @@ async function print55x40Dyed(payload: { barcodes: any[], size: string, language
         }
         if (property.id === propertyIds.PROCCESSING_TYPE) {
           info.push(`Processing: ${property.optionData.map((option: any) => option.names[language]).join(', ')}`)
-        }
-        if (property.id === propertyIds.HAIR_TYPE) {
-          info.push(`Type: ${property.optionData.map((option: any) => option.names[language]).join(', ')}`)
         }
         if (property.id === propertyIds.COLOR) {
           info.push(`Color: ${property.optionData.map((option: any) => option.names[language]).join(', ')}`)
