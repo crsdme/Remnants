@@ -1033,8 +1033,8 @@ export async function printInvoice(payload: OrderTypes.printInvoiceOrderParams):
     weight: { key: 'weight', width: 50, x: margins + 150, align: 'left', type: 'text' },
     type: { key: 'type', width: 80, x: margins + 200, align: 'left', type: 'text' },
     price: { key: 'price', width: 60, x: margins + 280, align: 'left', type: 'text' },
-    segment: { key: 'segment', width: 60, x: margins + 340, align: 'left', type: 'text' },
-    discount: { key: 'discount', width: 50, x: margins + 400, align: 'left', type: 'text' },
+    segment: { key: 'segment', width: 70, x: margins + 340, align: 'left', type: 'text' },
+    discount: { key: 'discount', width: 50, x: margins + 410, align: 'left', type: 'text' },
     // total: { key: 'total', width: 100, x: params.size[0] - margins - 100, align: 'right', type: 'text' },
     total: { key: 'total', width: 100, x: params.size[0] - margins - 100, align: 'right', type: 'text' },
   }
@@ -1126,7 +1126,7 @@ export async function printInvoice(payload: OrderTypes.printInvoiceOrderParams):
       },
       {
         ...tableColumns.price,
-        value: 'Price',
+        value: 'Per kg',
       },
       {
         ...tableColumns.segment,
@@ -1355,7 +1355,7 @@ export async function printInvoice(payload: OrderTypes.printInvoiceOrderParams):
     const discountType = item.discountAmount > 0 ? 'amount' : item.discountPercent > 0 ? 'percent' : 'none'
 
     return {
-      name: item.product.names[language],
+      name: `#${item.names[language].split('#')[1] || ''}`,
       length: length || 0,
       weight: weight || 0,
       type: (colorCategory?.optionData || type?.optionData || []).map((option: any) => option.names[language]).join(', ') || '',
