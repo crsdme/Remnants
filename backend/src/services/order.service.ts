@@ -1355,7 +1355,7 @@ export async function printInvoice(payload: OrderTypes.printInvoiceOrderParams):
     const discountType = item.discountAmount > 0 ? 'amount' : item.discountPercent > 0 ? 'percent' : 'none'
 
     return {
-      name: `#${item?.names?.[language]?.split('#')[1] || ''}`,
+      name: `#${item?.names?.[language]?.split('#')[2] || ''}`,
       length: length || 0,
       weight: weight || 0,
       type: (colorCategory?.optionData || type?.optionData || []).map((option: any) => option.names[language]).join(', ') || '',
@@ -1795,7 +1795,7 @@ export async function printDraftInvoice(payload: OrderTypes.printDraftInvoiceOrd
     const discountType = item.discountAmount > 0 ? 'amount' : item.discountPercent > 0 ? 'percent' : 'none'
 
     return {
-      name: `#${item?.names?.[language]?.split('#')[1] || ''}`,
+      name: `#${item?.names?.[language]?.split('#')[2] || ''}`,
       length: length || 0,
       weight: weight || 0,
       type: (colorCategory?.optionData || type?.optionData || []).map((option: any) => option.names[language]).join(', ') || '',
