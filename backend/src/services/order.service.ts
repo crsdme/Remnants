@@ -1008,21 +1008,6 @@ export async function remove(payload: OrderTypes.removeOrdersParams, user: Reque
   return { status: 'success', code: 'ORDERS_REMOVED', message: 'Orders removed' }
 }
 
-function formatInvoiceProductType(
-  hairTypeProperty: { optionData?: { names?: Record<string, string> }[] } | undefined,
-  colorCategoryProperty: { optionData?: { names?: Record<string, string> }[] } | undefined,
-  language: string,
-): string {
-  const options = [
-    ...(hairTypeProperty?.optionData ?? []),
-    ...(colorCategoryProperty?.optionData ?? []),
-  ]
-  return options
-    .map(option => option?.names?.[language])
-    .filter((name): name is string => Boolean(name))
-    .join(', ')
-}
-
 export async function printInvoice(payload: OrderTypes.printInvoiceOrderParams): Promise<OrderTypes.printInvoiceOrderResult> {
   const { seq, language } = payload
   const mm = 2.83464567
@@ -1362,18 +1347,18 @@ export async function printInvoice(payload: OrderTypes.printInvoiceOrderParams):
 
   const products = orderItems.map((item: any) => {
     const type = item.product.productProperties.find((property: any) => property.id === propertyIds.HAIR_TYPE)
+    const segment = item.product.productProperties.find((property: any) => property.id === propertyIds.SEGMENT)?.optionData.map((option: any) => option.names[language]).join(', ')
     const colorCategory = item.product.productProperties.find((property: any) => property.id === propertyIds.COLOR_CATEGORY)
-    const segment = item.product.productProperties.find((property: any) => property.id === propertyIds.SEGMENT)?.value
     const weight = item.product.productProperties.find((property: any) => property.id === propertyIds.WEIGHT)?.value // 7c3e2c1b-f2bf-4639-baf2-7b1101fa7bf2
     const length = item.product.productProperties.find((property: any) => property.id === propertyIds.LENGTH)?.value // efcc3c51-a146-4975-bc5b-196745f76891
     const discount = item.discountAmount > 0 ? item.discountAmount * item.quantity : item.discountPercent > 0 ? item.discountPercent : 0
     const discountType = item.discountAmount > 0 ? 'amount' : item.discountPercent > 0 ? 'percent' : 'none'
 
     return {
-      name: item.product.names?.[language] ?? '',
+      name: item.product.names[language],
       length: length || 0,
       weight: weight || 0,
-      type: formatInvoiceProductType(type, colorCategory, language),
+      type: (colorCategory?.optionData || type?.optionData || []).map((option: any) => option.names[language]).join(', ') || '',
       price: getProductPrice(length || 0, type?.optionData.map((option: any) => option.id) || []),
       segment: segment || '',
       total: item.price,
@@ -1802,18 +1787,18 @@ export async function printDraftInvoice(payload: OrderTypes.printDraftInvoiceOrd
 
   const productsData = products.map((item: any) => {
     const type = item.productProperties.find((property: any) => property.id === propertyIds.HAIR_TYPE)
+    const segment = item.productProperties.find((property: any) => property.id === propertyIds.SEGMENT)?.optionData.map((option: any) => option.names[language]).join(', ')
     const colorCategory = item.productProperties.find((property: any) => property.id === propertyIds.COLOR_CATEGORY)
     const weight = item.productProperties.find((property: any) => property.id === propertyIds.WEIGHT)?.value
     const length = item.productProperties.find((property: any) => property.id === propertyIds.LENGTH)?.value
-    const segment = item.productProperties.find((property: any) => property.id === propertyIds.SEGMENT)?.value
     const discount = item.discountAmount > 0 ? item.discountAmount : item.discountPercent > 0 ? item.discountPercent : 0
     const discountType = item.discountAmount > 0 ? 'amount' : item.discountPercent > 0 ? 'percent' : 'none'
 
     return {
-      name: `#${(item.names?.[language] ?? '').split('#')[1] || ''}`,
+      name: `#${item.names[language].split('#')[1] || ''}`,
       length: length || 0,
       weight: weight || 0,
-      type: formatInvoiceProductType(type, colorCategory, language),
+      type: (colorCategory?.optionData || type?.optionData || []).map((option: any) => option.names[language]).join(', ') || '',
       price: getNewProductPrice(weight || 0, item.price),
       segment: segment || '',
       total: item.price,
