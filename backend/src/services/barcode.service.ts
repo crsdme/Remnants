@@ -750,7 +750,7 @@ async function print55x40(payload: { barcodes: any[], size: string, language: st
 }
 
 async function print55x40Dyed(payload: { barcodes: any[], size: string, language: string }): Promise<BarcodeTypes.printBarcodeResult> {
-  const { barcodes, size } = payload
+  const { barcodes } = payload
   const language = 'en'
   // const [w, h] = size.split('x').map(Number)
   const w = 58
@@ -778,7 +778,7 @@ async function print55x40Dyed(payload: { barcodes: any[], size: string, language
 
     let length = ''
     let weight = ''
-    let segment = 'Standart'
+    let segment = 'Standard'
     const type: string[] = []
     let colorCategory: string = ''
 

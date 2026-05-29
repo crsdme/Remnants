@@ -1033,7 +1033,7 @@ export async function printInvoice(payload: OrderTypes.printInvoiceOrderParams):
     weight: { key: 'weight', width: 50, x: margins + 150, align: 'left', type: 'text' },
     type: { key: 'type', width: 80, x: margins + 200, align: 'left', type: 'text' },
     price: { key: 'price', width: 60, x: margins + 280, align: 'left', type: 'text' },
-    quantity: { key: 'quantity', width: 60, x: margins + 340, align: 'left', type: 'text' },
+    segment: { key: 'segment', width: 60, x: margins + 340, align: 'left', type: 'text' },
     discount: { key: 'discount', width: 50, x: margins + 400, align: 'left', type: 'text' },
     // total: { key: 'total', width: 100, x: params.size[0] - margins - 100, align: 'right', type: 'text' },
     total: { key: 'total', width: 100, x: params.size[0] - margins - 100, align: 'right', type: 'text' },
@@ -1129,8 +1129,8 @@ export async function printInvoice(payload: OrderTypes.printInvoiceOrderParams):
         value: 'Price',
       },
       {
-        ...tableColumns.quantity,
-        value: 'Quantity',
+        ...tableColumns.segment,
+        value: 'Segment',
       },
       ...(hasDiscount
         ? [
@@ -1159,89 +1159,89 @@ export async function printInvoice(payload: OrderTypes.printInvoiceOrderParams):
 
   doc.fontSize(32)
   doc.font('Manrope-Bold')
-  doc.image(
-    path.resolve(__dirname, '../utils/invoice/logo.png'),
-    margins,
-    doc.y,
-    { width: 141.67, height: 50 },
-  )
-  doc.text(
-    `${invoicePrefix}${order.seq + invoiceAddition}`,
-    margins,
-    doc.y,
-    { width: contentWidth, height: 25, align: 'right', ellipsis: true, lineBreak: false },
-  )
+  // doc.image(
+  //   path.resolve(__dirname, '../utils/invoice/logo.png'),
+  //   margins,
+  //   doc.y,
+  //   { width: 141.67, height: 50 },
+  // )
+  // doc.text(
+  //   `${invoicePrefix}${order.seq + invoiceAddition}`,
+  //   margins,
+  //   doc.y,
+  //   { width: contentWidth, height: 25, align: 'right', ellipsis: true, lineBreak: false },
+  // )
 
-  drawHr(doc, 8, 8)
+  // drawHr(doc, 8, 8)
 
   // CLIENT
 
-  if (order.client) {
-    doc.fontSize(12)
-    doc.font('Manrope-Bold')
-    doc.text(
-      'Client:',
-      margins,
-      doc.y,
-      { width: contentWidth, height: 25, align: 'left', ellipsis: true, lineBreak: false },
-    )
+  // if (order.client) {
+  //   doc.fontSize(12)
+  //   doc.font('Manrope-Bold')
+  //   doc.text(
+  //     'Client:',
+  //     margins,
+  //     doc.y,
+  //     { width: contentWidth, height: 25, align: 'left', ellipsis: true, lineBreak: false },
+  //   )
 
-    doc.fontSize(10)
-    doc.font('Manrope')
-    if (order.client.name || order.client.lastName || order.client.middleName) {
-      doc.text(
-        `${order.client.name || ''} ${order.client.lastName || ''} ${order.client.middleName || ''}`,
-        margins,
-        doc.y,
-        { width: contentWidth, height: 25, align: 'left', ellipsis: true, lineBreak: false },
-      )
-    }
+  //   doc.fontSize(10)
+  //   doc.font('Manrope')
+  //   if (order.client.name || order.client.lastName || order.client.middleName) {
+  //     doc.text(
+  //       `${order.client.name || ''} ${order.client.lastName || ''} ${order.client.middleName || ''}`,
+  //       margins,
+  //       doc.y,
+  //       { width: contentWidth, height: 25, align: 'left', ellipsis: true, lineBreak: false },
+  //     )
+  //   }
 
-    if (order.client.phones.length > 0) {
-      doc.text(
-        `${order.client.phones.join(', ')}`,
-        margins,
-        doc.y,
-        { width: contentWidth, height: 25, align: 'left', ellipsis: true, lineBreak: false },
-      )
-    }
+  //   if (order.client.phones.length > 0) {
+  //     doc.text(
+  //       `${order.client.phones.join(', ')}`,
+  //       margins,
+  //       doc.y,
+  //       { width: contentWidth, height: 25, align: 'left', ellipsis: true, lineBreak: false },
+  //     )
+  //   }
 
-    if (order.client.emails.length > 0) {
-      doc.text(
-        `${order.client.emails.join(', ')}`,
-        margins,
-        doc.y,
-        { width: contentWidth, height: 25, align: 'left', ellipsis: true, lineBreak: false },
-      )
-    }
+  //   if (order.client.emails.length > 0) {
+  //     doc.text(
+  //       `${order.client.emails.join(', ')}`,
+  //       margins,
+  //       doc.y,
+  //       { width: contentWidth, height: 25, align: 'left', ellipsis: true, lineBreak: false },
+  //     )
+  //   }
 
-    drawHr(doc, 8, 8)
-  }
+  //   drawHr(doc, 8, 8)
+  // }
 
   // CLIENT
 
   // INVOICE DATE
 
-  const fmt = new Intl.DateTimeFormat('ru-RU', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-  })
+  // const fmt = new Intl.DateTimeFormat('ru-RU', {
+  //   year: 'numeric',
+  //   month: '2-digit',
+  //   day: '2-digit',
+  // })
 
   doc.fontSize(12)
   doc.font('Manrope-Bold')
-  doc.text(
-    'Invoice date:',
-    margins,
-    doc.y,
-  )
+  // doc.text(
+  //   'Invoice date:',
+  //   margins,
+  //   doc.y,
+  // )
   doc.fontSize(10)
   doc.font('Manrope')
-  doc.text(
-    `${fmt.format(order.createdAt)}`,
-    margins,
-    doc.y,
-  )
+  // doc.text(
+  //   `${fmt.format(order.createdAt)}`,
+  //   margins,
+  //   doc.y,
+  // )
   doc.font('Manrope-Bold')
 
   drawHr(doc, 8, 8)
@@ -1347,6 +1347,8 @@ export async function printInvoice(payload: OrderTypes.printInvoiceOrderParams):
 
   const products = orderItems.map((item: any) => {
     const type = item.product.productProperties.find((property: any) => property.id === propertyIds.HAIR_TYPE)
+    const segment = item.product.productProperties.find((property: any) => property.id === propertyIds.SEGMENT)?.value
+    const colorCategory = item.product.productProperties.find((property: any) => property.id === propertyIds.COLOR_CATEGORY)?.value
     const weight = item.product.productProperties.find((property: any) => property.id === propertyIds.WEIGHT)?.value // 7c3e2c1b-f2bf-4639-baf2-7b1101fa7bf2
     const length = item.product.productProperties.find((property: any) => property.id === propertyIds.LENGTH)?.value // efcc3c51-a146-4975-bc5b-196745f76891
     const discount = item.discountAmount > 0 ? item.discountAmount * item.quantity : item.discountPercent > 0 ? item.discountPercent : 0
@@ -1356,10 +1358,10 @@ export async function printInvoice(payload: OrderTypes.printInvoiceOrderParams):
       name: item.product.names[language],
       length: length || 0,
       weight: weight || 0,
-      type: type?.optionData.map((option: any) => option.names[language]).join(', ') || '',
+      type: [...(type?.optionData || []), colorCategory].map((option: any) => option.names[language]).join(', ') || '',
       price: getProductPrice(length || 0, type?.optionData.map((option: any) => option.id) || []),
-      quantity: item.quantity,
-      total: item.price * item.quantity,
+      segment: segment || '',
+      total: item.price,
       currency: item.currency,
       discount,
       discountType,
@@ -1396,8 +1398,8 @@ export async function printInvoice(payload: OrderTypes.printInvoiceOrderParams):
         value: `${product.price}`,
       },
       {
-        ...tableColumns.quantity,
-        value: `${product.quantity} pcs`,
+        ...tableColumns.segment,
+        value: `${product.segment}`,
       },
       ...(hasDiscount
         ? [
@@ -1419,7 +1421,6 @@ export async function printInvoice(payload: OrderTypes.printInvoiceOrderParams):
 
     ensureSpace(doc, need, () => renderTableHeader(doc))
 
-    totals.count += product.quantity
     totals.weight += product.weight
     if (!totals.amount[product.currency.id]) {
       totals.amount[product.currency.id] = { currency: product.currency, total: 0 }
@@ -1451,8 +1452,8 @@ export async function printInvoice(payload: OrderTypes.printInvoiceOrderParams):
       value: ``,
     },
     {
-      ...tableColumns.quantity,
-      value: `${totals.count} pcs`,
+      ...tableColumns.segment,
+      value: ``,
     },
     ...(hasDiscount
       ? [
@@ -1498,7 +1499,7 @@ export async function printDraftInvoice(payload: OrderTypes.printDraftInvoiceOrd
     weight: { key: 'weight', width: 50, x: margins + 150, align: 'left', type: 'text' },
     type: { key: 'type', width: 80, x: margins + 200, align: 'left', type: 'text' },
     price: { key: 'price', width: 60, x: margins + 280, align: 'left', type: 'text' },
-    quantity: { key: 'quantity', width: 60, x: margins + 340, align: 'left', type: 'text' },
+    segment: { key: 'segment', width: 60, x: margins + 340, align: 'left', type: 'text' },
     discount: { key: 'discount', width: 50, x: margins + 400, align: 'left', type: 'text' },
     // total: { key: 'total', width: 100, x: params.size[0] - margins - 100, align: 'right', type: 'text' },
     total: { key: 'total', width: 100, x: params.size[0] - margins - 100, align: 'right', type: 'text' },
@@ -1590,8 +1591,8 @@ export async function printDraftInvoice(payload: OrderTypes.printDraftInvoiceOrd
         value: 'Per kg',
       },
       {
-        ...tableColumns.quantity,
-        value: 'Quantity',
+        ...tableColumns.segment,
+        value: 'Segment',
       },
       ...(hasDiscount
         ? [
@@ -1620,89 +1621,89 @@ export async function printDraftInvoice(payload: OrderTypes.printDraftInvoiceOrd
 
   doc.fontSize(32)
   doc.font('Manrope-Bold')
-  doc.image(
-    path.resolve(__dirname, '../utils/invoice/logo.png'),
-    margins,
-    doc.y,
-    { width: 141.67, height: 50 },
-  )
+  // doc.image(
+  //   path.resolve(__dirname, '../utils/invoice/logo.png'),
+  //   margins,
+  //   doc.y,
+  //   { width: 141.67, height: 50 },
+  // )
   doc.text(
-    `Draft invoice`,
+    `Draft`,
     margins,
     doc.y,
     { width: contentWidth, height: 25, align: 'right', ellipsis: true, lineBreak: false },
   )
 
-  drawHr(doc, 8, 8)
+  // drawHr(doc, 8, 8)
 
   // CLIENT
 
-  if (client) {
-    doc.fontSize(12)
-    doc.font('Manrope-Bold')
-    doc.text(
-      'Client:',
-      margins,
-      doc.y,
-      { width: contentWidth, height: 25, align: 'left', ellipsis: true, lineBreak: false },
-    )
+  // if (client) {
+  //   doc.fontSize(12)
+  //   doc.font('Manrope-Bold')
+  //   doc.text(
+  //     'Client:',
+  //     margins,
+  //     doc.y,
+  //     { width: contentWidth, height: 25, align: 'left', ellipsis: true, lineBreak: false },
+  //   )
 
-    doc.fontSize(10)
-    doc.font('Manrope')
-    if (client.name || client.lastName || client.middleName) {
-      doc.text(
-        `${client.name || ''} ${client.lastName || ''} ${client.middleName || ''}`,
-        margins,
-        doc.y,
-        { width: contentWidth, height: 25, align: 'left', ellipsis: true, lineBreak: false },
-      )
-    }
+  //   doc.fontSize(10)
+  //   doc.font('Manrope')
+  //   if (client.name || client.lastName || client.middleName) {
+  //     doc.text(
+  //       `${client.name || ''} ${client.lastName || ''} ${client.middleName || ''}`,
+  //       margins,
+  //       doc.y,
+  //       { width: contentWidth, height: 25, align: 'left', ellipsis: true, lineBreak: false },
+  //     )
+  //   }
 
-    if (client.phones.length > 0) {
-      doc.text(
-        `${client.phones.join(', ')}`,
-        margins,
-        doc.y,
-        { width: contentWidth, height: 25, align: 'left', ellipsis: true, lineBreak: false },
-      )
-    }
+  //   if (client.phones.length > 0) {
+  //     doc.text(
+  //       `${client.phones.join(', ')}`,
+  //       margins,
+  //       doc.y,
+  //       { width: contentWidth, height: 25, align: 'left', ellipsis: true, lineBreak: false },
+  //     )
+  //   }
 
-    if (client.emails.length > 0) {
-      doc.text(
-        `${client.emails.join(', ')}`,
-        margins,
-        doc.y,
-        { width: contentWidth, height: 25, align: 'left', ellipsis: true, lineBreak: false },
-      )
-    }
+  //   if (client.emails.length > 0) {
+  //     doc.text(
+  //       `${client.emails.join(', ')}`,
+  //       margins,
+  //       doc.y,
+  //       { width: contentWidth, height: 25, align: 'left', ellipsis: true, lineBreak: false },
+  //     )
+  //   }
 
-    drawHr(doc, 8, 8)
-  }
+  //   drawHr(doc, 8, 8)
+  // }
 
   // CLIENT
 
   // INVOICE DATE
 
-  const fmt = new Intl.DateTimeFormat('ru-RU', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-  })
+  // const fmt = new Intl.DateTimeFormat('ru-RU', {
+  //   year: 'numeric',
+  //   month: '2-digit',
+  //   day: '2-digit',
+  // })
 
   doc.fontSize(12)
   doc.font('Manrope-Bold')
-  doc.text(
-    'Invoice date:',
-    margins,
-    doc.y,
-  )
+  // doc.text(
+  //   'Invoice date:',
+  //   margins,
+  //   doc.y,
+  // )
   doc.fontSize(10)
   doc.font('Manrope')
-  doc.text(
-    `${fmt.format(new Date())}`,
-    margins,
-    doc.y,
-  )
+  // doc.text(
+  //   `${fmt.format(new Date())}`,
+  //   margins,
+  //   doc.y,
+  // )
   doc.font('Manrope-Bold')
 
   drawHr(doc, 8, 8)
@@ -1786,19 +1787,21 @@ export async function printDraftInvoice(payload: OrderTypes.printDraftInvoiceOrd
 
   const productsData = products.map((item: any) => {
     const type = item.productProperties.find((property: any) => property.id === propertyIds.HAIR_TYPE)
+    const colorCategory = item.productProperties.find((property: any) => property.id === propertyIds.COLOR_CATEGORY)?.value
     const weight = item.productProperties.find((property: any) => property.id === propertyIds.WEIGHT)?.value
     const length = item.productProperties.find((property: any) => property.id === propertyIds.LENGTH)?.value
-    const discount = item.discountAmount > 0 ? item.discountAmount * item.quantity : item.discountPercent > 0 ? item.discountPercent : 0
+    const segment = item.productProperties.find((property: any) => property.id === propertyIds.SEGMENT)?.value
+    const discount = item.discountAmount > 0 ? item.discountAmount : item.discountPercent > 0 ? item.discountPercent : 0
     const discountType = item.discountAmount > 0 ? 'amount' : item.discountPercent > 0 ? 'percent' : 'none'
 
     return {
-      name: item.names[language],
+      name: `#${item.names[language].split('#')[1] || ''}`,
       length: length || 0,
       weight: weight || 0,
-      type: type?.optionData.map((option: any) => option.names[language]).join(', ') || '',
+      type: [...(type?.optionData || []), colorCategory].map((option: any) => option.names[language]).join(', ') || '',
       price: getNewProductPrice(weight || 0, item.price),
-      quantity: item.quantity,
-      total: item.price * item.quantity,
+      segment: segment || '',
+      total: item.price,
       currency: item.currency,
       discount,
       discountType,
@@ -1832,11 +1835,11 @@ export async function printDraftInvoice(payload: OrderTypes.printDraftInvoiceOrd
       },
       {
         ...tableColumns.price,
-        value: `${product.price} ${product?.currency?.symbols?.[language] || ''}`,
+        value: `${product.price}`,
       },
       {
-        ...tableColumns.quantity,
-        value: `${product.quantity} pcs`,
+        ...tableColumns.segment,
+        value: `${product.segment}`,
       },
       ...(hasDiscount
         ? [
@@ -1858,7 +1861,6 @@ export async function printDraftInvoice(payload: OrderTypes.printDraftInvoiceOrd
 
     ensureSpace(doc, need, () => renderTableHeader(doc))
 
-    totals.count += product.quantity
     totals.weight += product.weight
     if (!totals.amount[product.currency.id]) {
       totals.amount[product.currency.id] = { currency: product.currency, total: 0 }
@@ -1890,8 +1892,8 @@ export async function printDraftInvoice(payload: OrderTypes.printDraftInvoiceOrd
       value: ``,
     },
     {
-      ...tableColumns.quantity,
-      value: `${totals.count} pcs`,
+      ...tableColumns.segment,
+      value: ``,
     },
     ...(hasDiscount
       ? [
