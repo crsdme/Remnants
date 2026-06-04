@@ -975,6 +975,12 @@ async function print55x40Dyed(payload: {
       }
       if (
         property.id === propertyIds.COLOR_CATEGORY
+        && property.value === colorCategories.BALAYAGE
+      ) {
+        colorCategory = 'Balayage'
+      }
+      if (
+        property.id === propertyIds.COLOR_CATEGORY
         && property.value === colorCategories.OMBRE
       ) {
         colorCategory = 'Ombre'
