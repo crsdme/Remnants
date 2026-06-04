@@ -702,6 +702,37 @@ async function print60x30(payload: {
   }
 }
 
+const PROVIDER_E_SUFFIX_CATEGORY_ID = '929dc694-afd4-406c-b766-00a1d483c68f'
+
+function getProductCategoryId(cat: any): string | undefined {
+  if (cat == null) {
+    return undefined
+  }
+  if (typeof cat === 'string') {
+    return cat
+  }
+  const id = cat.id ?? cat._id
+  return id != null ? String(id) : undefined
+}
+
+function getProviderBarcodeSuffix(
+  categories: any[] | undefined,
+  providerPrice: Record<string, number>,
+): { price: number, suffix: string } {
+  const providerCategory = categories?.find((cat: any) => {
+    const id = getProductCategoryId(cat)
+    return id != null && providerPrice[id as keyof typeof providerPrice] != null
+  })
+  const categoryId = providerCategory
+    ? getProductCategoryId(providerCategory)
+    : undefined
+  const price = categoryId
+    ? providerPrice[categoryId as keyof typeof providerPrice] ?? 1000
+    : 1000
+  const suffix = categoryId === PROVIDER_E_SUFFIX_CATEGORY_ID ? '-e' : ''
+  return { price, suffix }
+}
+
 async function print55x40(payload: {
   barcodes: any[]
   size: string
@@ -761,23 +792,11 @@ async function print55x40(payload: {
       height: contentHeight / 2,
     })
 
-    const providerCategory = product?.categories?.find(
-      (cat: any) => providerPrice[cat.id as keyof typeof providerPrice] != null,
-    )
-    const providerSuffix = providerCategory
-      ? {
-          price: providerPrice[providerCategory.id as keyof typeof providerPrice],
-          id: providerCategory.id,
-        }
-      : { price: 1000, id: null }
-
-    const providerPreffix
-      = providerSuffix.id === '929dc694-afd4-406c-b766-00a1d483c68f'
-        ? '-e'
-        : ''
+    const { price: providerPriceValue, suffix: providerSuffixMark }
+      = getProviderBarcodeSuffix(product?.categories, providerPrice)
 
     doc.text(
-      `${barcode.code}${providerSuffix.price ? `-${providerSuffix.price + 5000}${providerPreffix}` : ''}`,
+      `${barcode.code}${providerPriceValue ? `-${providerPriceValue + 5000}${providerSuffixMark}` : ''}`,
       padding,
       contentHeight / 2 + 10,
       {
@@ -1079,16 +1098,11 @@ async function print55x40Dyed(payload: {
         height: contentHeight / 4,
       })
 
-      const providerSuffix
-        = product?.categories
-          ?.map(
-            (cat: any) => providerPrice[cat.id as keyof typeof providerPrice],
-          )
-          ?.filter(Boolean)
-          .join('') || '1000'
+      const { price: providerPriceValue, suffix: providerSuffixMark }
+        = getProviderBarcodeSuffix(product?.categories, providerPrice)
 
       doc.text(
-        `${barcode.code}${providerSuffix ? `-${Number(providerSuffix) + 5000}` : ''}`,
+        `${barcode.code}${providerPriceValue ? `-${providerPriceValue + 5000}${providerSuffixMark}` : ''}`,
         padding,
         contentHeight / 4 + 10,
         {
