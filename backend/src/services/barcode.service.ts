@@ -761,14 +761,18 @@ async function print55x40(payload: {
       height: contentHeight / 2,
     })
 
-    const providerSuffix
-      = product?.categories
-        ?.map((cat: any) => ({ price: providerPrice[cat.id as keyof typeof providerPrice], id: cat.id }))
-        ?.filter(Boolean)
-        .join('') || { price: 1000, id: null }
+    const providerCategory = product?.categories?.find(
+      (cat: any) => providerPrice[cat.id as keyof typeof providerPrice] != null,
+    )
+    const providerSuffix = providerCategory
+      ? {
+          price: providerPrice[providerCategory.id as keyof typeof providerPrice],
+          id: providerCategory.id,
+        }
+      : { price: 1000, id: null }
 
     const providerPreffix
-      = providerSuffix.id?.toString() === '929dc694-afd4-406c-b766-00a1d483c68f'
+      = providerSuffix.id === '929dc694-afd4-406c-b766-00a1d483c68f'
         ? '-e'
         : ''
 
