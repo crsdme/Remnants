@@ -1,4 +1,6 @@
-import type { Row } from '@tanstack/react-table'
+import type { CurrencyDTO, ProductPopulatedDTO } from '@remnant/shared'
+import type { ColumnDef, Row } from '@tanstack/react-table'
+import { createColumnHelper } from '@tanstack/react-table'
 import {
   Check,
   Minus,
@@ -6,8 +8,8 @@ import {
   Trash2,
   X,
 } from 'lucide-react'
-import { useMemo } from 'react'
 
+import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useCurrencyOptions, useCurrencyQuery, useProductPropertyQuery } from '@/api/hooks'
 import { ImageGallery } from '@/components'
@@ -19,7 +21,7 @@ import { AsyncSelectNew } from '../AsyncSelectNew'
 import { EditableCell } from './cells'
 
 interface ProductSelectedTableProps {
-  removeProduct: (product: any) => void
+  removeProduct: (productId: string) => void
   isReceiving: boolean
   isSelectedPrice: boolean
   isDiscount: boolean
@@ -28,6 +30,14 @@ interface ProductSelectedTableProps {
   includeTotal: boolean
   isProfit: boolean
 }
+const columnHelper = createColumnHelper<ProductPopulatedDTO & {
+  profit?: number
+  selectedCurrency?: CurrencyDTO
+  manualPrice?: number
+  basePrice?: number
+  discountPercent?: number
+  discountAmount?: number
+}>()
 
 export function useColumns(
   {
@@ -42,27 +52,23 @@ export function useColumns(
   }: ProductSelectedTableProps,
 ) {
   const { t, i18n } = useTranslation()
+  const language = i18n.language as 'ru' | 'en'
   const { permissions } = useAuthContext()
 
-  const requestProductProperties = useProductPropertyQuery({ filters: { active: [true], language: i18n.language, showInTable: true }, pagination: { full: true } })
-  const productProperties = requestProductProperties.data?.data.productProperties || []
+  const { productProperties } = useProductPropertyQuery({
+    filters: { active: [true], language: i18n.language, showInTable: true },
+    pagination: { full: true },
+  })
 
   const isLoading = false
 
   const loadCurrencyOptions = useCurrencyOptions()
 
-  const { data: { currencies = [] } = {} } = useCurrencyQuery(
-    {},
-    { options: {
-      select: response => ({
-        currencies: response.data.currencies,
-      }),
-    } },
-  )
+  const { currencies = [] } = useCurrencyQuery({ pagination: { full: true } })
 
   const columns = useMemo(() => {
     function actionColumn() {
-      return ({
+      return columnHelper.display({
         id: 'action',
         size: 85,
         meta: {
@@ -70,11 +76,10 @@ export function useColumns(
         },
         enableHiding: false,
         cell: ({ row }) => {
-          const item = row.original
           return (
             <div className="flex gap-2 justify-end">
               <Button
-                onClick={() => removeProduct(item)}
+                onClick={() => removeProduct(row.original.id)}
                 variant="ghost"
                 size="icon"
                 className="h-8 w-8 p-0 text-destructive hover:text-destructive hover:bg-destructive/10"
@@ -89,17 +94,17 @@ export function useColumns(
     }
 
     function productPropertyColumn() {
-      return productProperties.map(property => ({
+      return productProperties.map(property => columnHelper.display({
         id: property.id,
         size: 150,
         meta: {
-          title: property.names[i18n.language],
+          title: property.names[language],
           filterable: true,
           filterType: 'text',
           sortable: true,
         },
-        header: () => property.names[i18n.language],
-        cell: ({ row }) => {
+        header: () => property.names[language],
+        cell: ({ row }: { row: Row<ProductPopulatedDTO> }) => {
           const productProperty = row.original.productProperties.find(p => p.id === property.id)
 
           if (!productProperty)
@@ -107,32 +112,32 @@ export function useColumns(
 
           switch (productProperty.data.type) {
             case 'text':
-              return `${productProperty.value} ${productProperty?.data?.symbols?.[i18n.language] || ''}`
+              return `${productProperty.value as string} ${productProperty?.data?.symbols?.[language] || ''}`
             case 'number':
-              return `${productProperty.value} ${productProperty?.data?.symbols?.[i18n.language] || ''}`
+              return `${productProperty.value as number} ${productProperty?.data?.symbols?.[language] || ''}`
             case 'boolean':
-              return <Badge variant={productProperty.value ? 'success' : 'destructive'}>{t(`table.yesno.${productProperty.value}`)}</Badge>
+              return <Badge variant={productProperty.value as boolean ? 'success' : 'destructive'}>{t(`table.yesno.${productProperty.value as boolean}`)}</Badge>
             case 'select':
               return (
                 <div className="flex flex-wrap gap-2">
-                  {productProperty.optionData.map(option =>
-                    <Badge key={option.id}>{option.names[i18n.language]}</Badge>)}
+                  {productProperty.options.map(option =>
+                    <Badge key={option.id}>{option.names[language]}</Badge>)}
                 </div>
               )
             case 'multiSelect':
               return (
                 <div className="flex flex-wrap gap-2">
-                  {productProperty.optionData.map(option =>
-                    <Badge key={option.id}>{option.names[i18n.language]}</Badge>)}
+                  {productProperty.options.map(option =>
+                    <Badge key={option.id}>{option.names[language]}</Badge>)}
                 </div>
               )
             case 'color':
               return (
                 <div className="flex flex-wrap gap-2">
-                  {productProperty.optionData.map(option => (
+                  {productProperty.options.map(option => (
                     <Badge key={option.id}>
                       <div className="w-2 h-2 rounded-full border-gray-200" style={{ backgroundColor: option.color }} />
-                      {option.names[i18n.language]}
+                      {option.names[language]}
                     </Badge>
                   ))}
                 </div>
@@ -143,7 +148,7 @@ export function useColumns(
           const { rows } = table.getRowModel()
 
           const values = rows
-            .map(r => r.original.productProperties.find(p => p.id === property.id))
+            .map((r: any) => r.original.productProperties.find((p: any) => p.id === property.id))
             .filter(Boolean)
 
           if (!values.length)
@@ -162,7 +167,7 @@ export function useColumns(
 
               // возьмём символ единицы измерения из любого вхождения
               if (!unitSymbol) {
-                unitSymbol = v?.data?.symbols?.[i18n.language]
+                unitSymbol = v?.data?.symbols?.[language]
               }
             }
 
@@ -218,7 +223,7 @@ export function useColumns(
                 else {
                   optionMap.set(opt.id, {
                     count: 1,
-                    label: opt.names[i18n.language],
+                    label: opt.names[language],
                     color: opt.color,
                   })
                 }
@@ -256,68 +261,73 @@ export function useColumns(
       if (!hasPermission(permissions, 'product.purchasePrice'))
         return []
       return [
-        {
-          id: 'purchasePrice',
-          size: 150,
-          meta: {
-            title: t('component.productTable.table.purchasePrice'),
-            filterable: true,
-            filterType: 'number',
-            sortable: true,
+        columnHelper.accessor(
+          row => `${row.purchasePrice} ${row.purchaseCurrency.symbols[language]}`,
+          {
+            id: 'purchasePrice',
+            size: 150,
+            meta: {
+              title: t('component.productTable.table.purchasePrice'),
+              filterable: true,
+              filterType: 'number',
+              sortable: true,
+            },
+            header: () => t('component.productTable.table.purchasePrice'),
           },
-          header: () => t('component.productTable.table.purchasePrice'),
-          accessorFn: row => `${row.purchasePrice} ${row.purchaseCurrency.symbols[i18n.language]}`,
-        },
+        ),
       ]
     }
 
     function profitColumns() {
       if (!isProfit)
         return []
+
       return [
-        {
-          id: 'profit',
-          size: 150,
-          meta: {
-            title: t('component.productTable.table.profit'),
-            filterable: true,
-            filterType: 'number',
-            sortable: true,
-          },
-          header: () => t('component.productTable.table.profit'),
-          footer: ({ table }) => {
-            const { rows } = table.getRowModel()
+        columnHelper.accessor(
+          row => `${row.profit} ${row.selectedCurrency?.symbols[language] || ''}`,
+          {
+            id: 'profit',
+            size: 150,
+            meta: {
+              title: t('component.productTable.table.profit'),
+              filterable: true,
+              filterType: 'number',
+              sortable: true,
+            },
+            header: () => t('component.productTable.table.profit'),
+            footer: ({ table }) => {
+              const { rows } = table.getRowModel()
 
-            const totalsByCurrency = rows.reduce((acc: Record<string, number>, r: Row<any>) => {
-              const p = r.original
-              const symbol = p?.selectedCurrency?.symbols?.[i18n.language] || p?.currency?.symbols?.[i18n.language]
+              const totalsByCurrency = rows.reduce((acc: Record<string, number>, r: Row<any>) => {
+                const p = r.original
+                const symbol = p?.selectedCurrency?.symbols?.[language] || p?.currency?.symbols?.[language]
 
-              if (!symbol)
+                if (!symbol)
+                  return acc
+
+                const rowTotal = (p.quantity ?? 0) * (p.profit ?? 0)
+
+                acc[symbol] = (acc[symbol] ?? 0) + rowTotal
                 return acc
+              }, {} as Record<string, number>)
 
-              const rowTotal = (p.quantity ?? 0) * (p.profit ?? 0)
+              const badges = Object.entries(totalsByCurrency).map(([symbol, sum]) => (
+                <Badge key={symbol}>
+                  {`${Number(sum).toString()} ${symbol}`}
+                </Badge>
+              ))
 
-              acc[symbol] = (acc[symbol] ?? 0) + rowTotal
-              return acc
-            }, {})
-
-            const badges = Object.entries(totalsByCurrency).map(([symbol, sum]) => (
-              <Badge key={symbol}>
-                {`${sum} ${symbol}`}
-              </Badge>
-            ))
-
-            return badges.length
-              ? <div className="flex flex-wrap gap-2">{badges}</div>
-              : null
+              return badges.length
+                ? <div className="flex flex-wrap gap-2">{badges}</div>
+                : null
+            },
           },
-          accessorFn: row => `${row.profit} ${row.selectedCurrency.symbols[i18n.language]}`,
-        },
+        ),
       ]
     }
 
     return [
-      {
+      columnHelper.display({
         id: 'images',
         size: 100,
         meta: {
@@ -326,14 +336,14 @@ export function useColumns(
         },
         cell: ({ row }) => {
           const images = row.original.images.map((image, index) => ({
-            id: index,
+            id: index.toString(),
             src: image.path,
-            alt: image.originalname,
+            alt: image.name,
           }))
           return (<ImageGallery images={images} size={60} />)
         },
-      },
-      {
+      }),
+      columnHelper.accessor(row => row.names?.[language] || row.names?.en, {
         id: 'names',
         size: 150,
         meta: {
@@ -344,9 +354,8 @@ export function useColumns(
           defaultVisible: true,
         },
         header: () => t('component.productTable.table.names'),
-        accessorFn: row => row.names?.[i18n.language] || row.names?.en,
-      },
-      {
+      }),
+      columnHelper.accessor(row => `${row.price} ${row.currency.symbols[language]}`, {
         id: 'price',
         size: 150,
         meta: {
@@ -357,11 +366,10 @@ export function useColumns(
           defaultVisible: true,
         },
         header: () => t('component.productTable.table.price'),
-        accessorFn: row => `${row.price} ${row.currency.symbols[i18n.language]}`,
-      },
+      }),
       ...permissionColumns(),
       ...profitColumns(),
-      {
+      columnHelper.accessor(row => `${row.unit.names[language]}`, {
         id: 'unit',
         size: 150,
         meta: {
@@ -371,9 +379,8 @@ export function useColumns(
           sortable: true,
         },
         header: () => t('component.productTable.table.unit'),
-        accessorFn: row => `${row.unit.names[i18n.language]}`,
-      },
-      {
+      }),
+      columnHelper.display({
         id: 'categories',
         size: 150,
         meta: {
@@ -386,11 +393,11 @@ export function useColumns(
         header: () => t('component.productTable.table.categories'),
         cell: ({ row }) => (
           <div className="flex flex-wrap gap-2">
-            {row.original.categories.map(category => <Badge key={category.id}>{category.names[i18n.language]}</Badge>)}
+            {row.original.categories.map(category => <Badge key={category.id}>{category.names[language]}</Badge>)}
           </div>
         ),
-      },
-      {
+      }),
+      columnHelper.accessor(row => `${row.productPropertiesGroup.names[language]}`, {
         id: 'productPropertyGroup',
         size: 150,
         meta: {
@@ -400,12 +407,10 @@ export function useColumns(
           sortable: true,
         },
         header: () => t('component.productTable.table.productPropertyGroup'),
-        accessorFn: row => `${row.productPropertiesGroup.names[i18n.language]}`,
-      },
+      }),
       ...productPropertyColumn(),
-      {
+      columnHelper.accessor('createdAt', {
         id: 'createdAt',
-        accessorKey: 'createdAt',
         meta: {
           title: t('table.createdAt'),
           filterable: true,
@@ -414,10 +419,9 @@ export function useColumns(
         },
         header: () => t('table.createdAt'),
         cell: ({ row }) => formatDate(row.getValue('createdAt'), 'dd.MM.yyyy HH:mm', i18n.language),
-      },
-      {
+      }),
+      columnHelper.accessor('updatedAt', {
         id: 'updatedAt',
-        accessorKey: 'updatedAt',
         meta: {
           title: t('table.updatedAt'),
           filterable: true,
@@ -426,10 +430,10 @@ export function useColumns(
         },
         header: () => t('table.updatedAt'),
         cell: ({ row }) => formatDate(row.getValue('updatedAt'), 'dd.MM.yyyy HH:mm', i18n.language),
-      },
+      }),
       ...(isDiscount
         ? [
-            {
+            columnHelper.display({
               id: 'discount',
               meta: {
                 title: t('component.productTable.table.discount'),
@@ -440,15 +444,17 @@ export function useColumns(
               header: () => t('component.productTable.table.discount'),
               cell: ({ row }) => {
                 const product = row.original
-                const currency = currencies.find(c => c.id === product.selectedCurrency.id)?.symbols[i18n.language]
+                const currency = currencies.find(c => c.id === product.selectedCurrency?.id)?.symbols[language]
                 const currentPrice = (product.manualPrice ?? product.basePrice) || 0
+                const discountPercent = product.discountPercent || 0
+                const discountAmount = product.discountAmount || 0
 
                 let discountPrice = 0
-                if (product.discountPercent > 0) {
-                  discountPrice = currentPrice - (currentPrice * product.discountPercent) / 100 - currentPrice
+                if (discountPercent > 0) {
+                  discountPrice = currentPrice - (currentPrice * discountPercent) / 100 - currentPrice
                 }
-                else if (product.discountAmount > 0) {
-                  discountPrice = (currentPrice - product.discountAmount - currentPrice)
+                else if (discountAmount > 0) {
+                  discountPrice = (currentPrice - discountAmount - currentPrice)
                 }
 
                 return (
@@ -469,7 +475,7 @@ export function useColumns(
                         <EditableCell
                           product={product}
                           onChange={val => handleChange({
-                            productId: product.product,
+                            productId: product.id,
                             field: 'discountAmount',
                             value: val,
                             isDebounced: true,
@@ -486,7 +492,7 @@ export function useColumns(
                         <EditableCell
                           product={product}
                           onChange={val => handleChange({
-                            productId: product.product,
+                            productId: product.id,
                             field: 'discountPercent',
                             value: val,
                             isDebounced: true,
@@ -503,85 +509,83 @@ export function useColumns(
                   </Popover>
                 )
               },
-            },
+            }),
           ]
         : []),
       ...(isSelectedPrice
-        ? [
-            {
-              id: 'selectedPrice',
-              meta: {
-                title: t('component.productTable.table.selectedPrice'),
-                filterable: true,
-                filterType: 'number',
-                sortable: true,
-              },
-              header: () => t('component.productTable.table.selectedPrice'),
-              footer: ({ table }) => {
-                const { rows } = table.getRowModel()
-
-                const totalsByCurrency = rows.reduce((acc: Record<string, number>, r: Row<any>) => {
-                  const p = r.original
-                  const symbol = p?.selectedCurrency?.symbols?.[i18n.language] || p?.currency?.symbols?.[i18n.language]
-
-                  if (!symbol)
-                    return acc
-
-                  const rowTotal = (p.quantity ?? 0) * (p.selectedPrice ?? 0)
-
-                  acc[symbol] = (acc[symbol] ?? 0) + rowTotal
-                  return acc
-                }, {})
-
-                const badges = Object.entries(totalsByCurrency).map(([symbol, sum]) => (
-                  <Badge key={symbol}>
-                    {`${sum} ${symbol}`}
-                  </Badge>
-                ))
-
-                return badges.length
-                  ? <div className="flex flex-wrap gap-2">{badges}</div>
-                  : null
-              },
-              cell: ({ row }) => {
-                const product = row.original
-                return (
-                  <div className="flex gap-2">
-                    <EditableCell
-                      product={product}
-                      onChange={value => handleChange({
-                        productId: product.product,
-                        field: 'selectedPrice',
-                        value,
-                        isDebounced: true,
-                      })}
-                      field="selectedPrice"
-                      className="w-20 pr-2"
-                      disabled={isLoading || disabled}
-                    />
-                    <AsyncSelectNew
-                      loadOptions={loadCurrencyOptions}
-                      value={[product.selectedCurrency.id]}
-                      renderOption={e => `${e.symbols[i18n.language]}`}
-                      getDisplayValue={e => `${e.symbols[i18n.language]}`}
-                      getOptionValue={e => e.id}
-                      disabled={isLoading || disabled}
-                      onChange={val => handleChange({
-                        productId: product.product,
-                        field: 'selectedCurrency',
-                        value: currencies.find(c => c.id === val),
-                      })}
-                      triggerClassName="w-15"
-                      placeholder="..."
-                      isForm={false}
-                    />
-                  </div>
-                )
-              },
+        ? [columnHelper.display({
+            id: 'selectedPrice',
+            meta: {
+              title: t('component.productTable.table.selectedPrice'),
+              filterable: true,
+              filterType: 'number',
+              sortable: true,
             },
-          ]
+            header: () => t('component.productTable.table.selectedPrice'),
+            footer: ({ table }) => {
+              const { rows } = table.getRowModel()
+
+              const totalsByCurrency = rows.reduce((acc: Record<string, number>, r: Row<any>) => {
+                const p = r.original
+                const symbol = p?.selectedCurrency?.symbols?.[language] || p?.currency?.symbols?.[language]
+
+                if (!symbol)
+                  return acc
+
+                const rowTotal = (p.quantity ?? 0) * (p.selectedPrice ?? 0)
+
+                acc[symbol] = (acc[symbol] ?? 0) + rowTotal
+                return acc
+              }, {} as Record<string, number>)
+
+              const badges = Object.entries(totalsByCurrency).map(([symbol, sum]) => (
+                <Badge key={symbol}>
+                  {`${Number(sum).toString()} ${symbol}`}
+                </Badge>
+              ))
+
+              return badges.length
+                ? <div className="flex flex-wrap gap-2">{badges}</div>
+                : null
+            },
+            cell: ({ row }: { row: Row<any> }) => {
+              const product = row.original
+              return (
+                <div className="flex gap-2">
+                  <EditableCell
+                    product={product}
+                    onChange={value => handleChange({
+                      productId: product.product,
+                      field: 'selectedPrice',
+                      value,
+                      isDebounced: true,
+                    })}
+                    field="selectedPrice"
+                    className="w-20 pr-2"
+                    disabled={isLoading || disabled}
+                  />
+                  <AsyncSelectNew
+                    loadOptions={async ({ query = '', selectedValue } = {}) => loadCurrencyOptions({ query, selectedValue })}
+                    value={[product.selectedCurrency.id]}
+                    renderOption={e => `${e.symbols[language]}`}
+                    getDisplayValue={e => `${e.symbols[language]}`}
+                    getOptionValue={e => e.id}
+                    disabled={isLoading || disabled}
+                    onChange={val => handleChange({
+                      productId: product.product,
+                      field: 'selectedCurrency',
+                      value: currencies.find(c => c.id === val)?.id ?? product.selectedCurrency.id,
+                    })}
+                    triggerClassName="w-15"
+                    placeholder="..."
+                    isForm={false}
+                  />
+                </div>
+              )
+            },
+          })]
         : []),
-      {
+      columnHelper.display({
         id: 'selectedQuantity',
         size: 150,
         meta: {
@@ -592,12 +596,12 @@ export function useColumns(
           defaultVisible: true,
         },
         header: () => t('component.productTable.table.selectedQuantity'),
-        footer: ({ table }) => {
+        footer: ({ table }: { table: any }) => {
           const { rows } = table.getRowModel()
 
           const totalsByUnit = rows.reduce((acc: Record<string, number>, r: Row<any>) => {
             const p = r.original
-            const unit = p?.unit?.symbols?.[i18n.language]
+            const unit = p?.unit?.symbols?.[language]
 
             if (!unit)
               return acc
@@ -610,7 +614,7 @@ export function useColumns(
 
           const badges = Object.entries(totalsByUnit).map(([unit, sum]) => (
             <Badge key={unit}>
-              {`${sum} ${unit}`}
+              {`${Number(sum).toString()} ${unit}`}
             </Badge>
           ))
 
@@ -618,7 +622,7 @@ export function useColumns(
             ? <div className="flex flex-wrap gap-2">{badges}</div>
             : null
         },
-        cell: ({ row }) => {
+        cell: ({ row }: { row: Row<any> }) => {
           const item = row.original
 
           return (
@@ -647,7 +651,7 @@ export function useColumns(
                   disabled={isLoading || isReceiving || disabled}
                 />
                 <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                  <p>{item.unit.symbols[i18n.language]}</p>
+                  <p>{item.unit.symbols[language]}</p>
                 </div>
               </div>
               {!isReceiving && (
@@ -663,9 +667,9 @@ export function useColumns(
             </div>
           )
         },
-      },
+      }),
       ...(isReceiving
-        ? [{
+        ? [columnHelper.display({
             id: 'selectedPrice',
             meta: {
               title: t('component.productTable.table.receivedQuantity'),
@@ -674,7 +678,7 @@ export function useColumns(
               sortable: true,
             },
             header: () => t('component.productTable.table.receivedQuantity'),
-            cell: ({ row }) => {
+            cell: ({ row }: { row: Row<any> }) => {
               const product = row.original
               const hasMismatch = product.receivedQuantity !== product.quantity
 
@@ -719,7 +723,7 @@ export function useColumns(
                         disabled={isLoading || disabled}
                       />
                       <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                        <p>{product.unit.symbols[i18n.language]}</p>
+                        <p>{product.unit.symbols[language]}</p>
                       </div>
                     </div>
                     <Button
@@ -734,31 +738,31 @@ export function useColumns(
                 </div>
               )
             },
-          }]
+          })]
         : []),
       ...(includeTotal
         ? [
-            {
+            columnHelper.display({
               id: 'total',
               meta: {
                 title: t('component.productTable.table.total'),
               },
-              cell: ({ row }) => {
+              cell: ({ row }: { row: Row<any> }) => {
                 const item = row.original
 
                 return (
                   <div className="flex items-center gap-2">
                     <p className="font-bold">
-                      {`${(item.quantity * item.selectedPrice).toFixed(2)} ${currencies.find(c => c.id === item.selectedCurrency.id)?.symbols[i18n.language]}`}
+                      {`${(item.quantity * item.selectedPrice).toFixed(2)} ${currencies.find(c => c.id === item.selectedCurrency.id)?.symbols[language]}`}
                     </p>
                   </div>
                 )
               },
-            },
+            }),
           ]
         : []),
       actionColumn(),
     ]
-  }, [i18n.language, productProperties, currencies])
+  }, [language, productProperties, currencies, t, permissions, isProfit, isDiscount, isSelectedPrice, isReceiving, includeTotal, isLoading, disabled, handleChange, loadCurrencyOptions, removeProduct])
   return columns
 }

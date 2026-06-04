@@ -1,9 +1,17 @@
-import type * as ProductPropertyOptionTypes from '../types/product-property-option.type'
-import { ProductPropertyModel, ProductPropertyOptionModel } from '../models'
-import { HttpError } from '../utils/httpError'
-import { buildQuery, buildSortQuery } from '../utils/queryBuilder'
+import type {
+  CreateProductPropertyOptionParams,
+  CreateProductPropertyOptionResponse,
+  EditProductPropertyOptionParams,
+  EditProductPropertyOptionResponse,
+  GetProductPropertyOptionsParams,
+  GetProductPropertyOptionsResponse,
+  RemoveProductPropertyOptionsParams,
+  RemoveProductPropertyOptionsResponse,
+} from '@remnant/shared'
+import { ProductPropertyModel, ProductPropertyOptionModel } from '@/models/'
+import { buildQuery, buildSortQuery, HttpError } from '@/utils/'
 
-export async function get(payload: ProductPropertyOptionTypes.getProductPropertyOptionsParams): Promise<ProductPropertyOptionTypes.getProductPropertyOptionsResult> {
+export async function get(payload: GetProductPropertyOptionsParams): Promise<GetProductPropertyOptionsResponse> {
   const { current = 1, pageSize = 10 } = payload.pagination || {}
 
   const {
@@ -66,18 +74,35 @@ export async function get(payload: ProductPropertyOptionTypes.getProductProperty
   const productPropertiesOptions = productPropertiesOptionsRaw[0].documents.map((doc: any) => ProductPropertyOptionModel.hydrate(doc))
   const productPropertiesOptionsCount = productPropertiesOptionsRaw[0].totalCount[0]?.count || 0
 
-  return { status: 'success', code: 'PRODUCT_PROPERTY_OPTIONS_FETCHED', message: 'Product property options fetched', productPropertiesOptions, productPropertiesOptionsCount }
+  return {
+    status: 'success',
+    code: 'PRODUCT_PROPERTY_OPTIONS_FETCHED',
+    message: 'Product property options fetched',
+    data: {
+      items: productPropertiesOptions,
+      pagination: {
+        page: current,
+        pageSize,
+        total: productPropertiesOptionsCount,
+      },
+    },
+  }
 }
 
-export async function create(payload: ProductPropertyOptionTypes.createProductPropertyOptionParams): Promise<ProductPropertyOptionTypes.createProductPropertyOptionResult> {
+export async function create(payload: CreateProductPropertyOptionParams): Promise<CreateProductPropertyOptionResponse> {
   const productPropertyOption = await ProductPropertyOptionModel.create(payload)
 
   await ProductPropertyModel.updateOne({ _id: payload.productProperty }, { $push: { options: productPropertyOption._id } })
 
-  return { status: 'success', code: 'PRODUCT_PROPERTY_OPTION_CREATED', message: 'Product property option created', productPropertyOption }
+  return {
+    status: 'success',
+    code: 'PRODUCT_PROPERTY_OPTION_CREATED',
+    message: 'Product property option created',
+    data: productPropertyOption,
+  }
 }
 
-export async function edit(payload: ProductPropertyOptionTypes.editProductPropertyOptionParams): Promise<ProductPropertyOptionTypes.editProductPropertyOptionResult> {
+export async function edit(payload: EditProductPropertyOptionParams): Promise<EditProductPropertyOptionResponse> {
   const { id } = payload
 
   const productPropertyOption = await ProductPropertyOptionModel.findOneAndUpdate({ _id: id }, payload)
@@ -86,10 +111,15 @@ export async function edit(payload: ProductPropertyOptionTypes.editProductProper
     throw new HttpError(400, 'Product property option not edited', 'PRODUCT_PROPERTY_OPTION_NOT_EDITED')
   }
 
-  return { status: 'success', code: 'PRODUCT_PROPERTY_OPTION_EDITED', message: 'Product property option edited', productPropertyOption }
+  return {
+    status: 'success',
+    code: 'PRODUCT_PROPERTY_OPTION_EDITED',
+    message: 'Product property option edited',
+    data: productPropertyOption,
+  }
 }
 
-export async function remove(payload: ProductPropertyOptionTypes.removeProductPropertyOptionsParams): Promise<ProductPropertyOptionTypes.removeProductPropertyOptionsResult> {
+export async function remove(payload: RemoveProductPropertyOptionsParams): Promise<RemoveProductPropertyOptionsResponse> {
   const { ids } = payload
 
   const productPropertyOptions = await ProductPropertyOptionModel.updateMany(
@@ -106,5 +136,9 @@ export async function remove(payload: ProductPropertyOptionTypes.removeProductPr
     throw new HttpError(400, 'Product property options not removed', 'PRODUCT_PROPERTY_OPTIONS_NOT_REMOVED')
   }
 
-  return { status: 'success', code: 'PRODUCT_PROPERTY_OPTIONS_REMOVED', message: 'Product property options removed' }
+  return {
+    status: 'success',
+    code: 'PRODUCT_PROPERTY_OPTIONS_REMOVED',
+    message: 'Product property options removed',
+  }
 }

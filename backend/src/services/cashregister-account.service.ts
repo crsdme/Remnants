@@ -1,151 +1,90 @@
-import type * as CashregisterAccountTypes from '../types/cashregister-account.type'
-import { CashregisterAccountModel } from '../models'
-import { HttpError } from '../utils/httpError'
-import { buildQuery, buildSortQuery } from '../utils/queryBuilder'
+import type {
+  CreateCashregisterAccountResponse,
+  EditCashregisterAccountResponse,
+  GetCashregisterAccountsResponse,
+  RemoveCashregisterAccountsResponse,
+} from '@remnant/shared'
+import type {
+  CreateCashregisterAccountPayload,
+  EditCashregisterAccountPayload,
+  GetCashregisterAccountsPayload,
+  RemoveCashregisterAccountsPayload,
+} from '@/types'
+import { mapCashregisterAccountToDTO } from '@/mappers/cashregister-accounts.mapper'
+import * as cashregisterAccountsRepo from '@/repositories/cashregister-accounts.repo'
+import * as AuditLogsService from '@/services/audit-logs.service'
+import { HttpError } from '@/utils/'
 
-export async function get(payload: CashregisterAccountTypes.getCashregisterAccountsParams): Promise<CashregisterAccountTypes.getCashregisterAccountsResult> {
-  const { current = 1, pageSize = 10 } = payload.pagination || {}
+export async function get({ payload }: { payload: GetCashregisterAccountsPayload }): Promise<GetCashregisterAccountsResponse> {
+  const { items, total, page, pageSize } = await cashregisterAccountsRepo.list(payload)
 
-  const {
-    ids = [],
-    names = '',
-    language = 'en',
-    active = undefined,
-    priority = undefined,
-    cashregister = [],
-    createdAt = {
-      from: undefined,
-      to: undefined,
-    },
-    updatedAt = {
-      from: undefined,
-      to: undefined,
-    },
-  } = payload.filters || {}
-
-  const filterRules = {
-    _id: { type: 'array' },
-    names: { type: 'string', langAware: true },
-    active: { type: 'array' },
-    priority: { type: 'exact' },
-    createdAt: { type: 'dateRange' },
-    updatedAt: { type: 'dateRange' },
-  } as const
-
-  const query = buildQuery({
-    filters: { _id: ids, names, active, priority, createdAt, updatedAt },
-    rules: filterRules,
-    language,
-  })
-
-  const sorters = buildSortQuery(payload.sorters || {}, { priority: 1 })
-
-  const pipeline = [
-    {
-      $match: query,
-    },
-    {
-      $sort: sorters,
-    },
-    {
-      $lookup: {
-        from: 'cashregisters',
-        let: { accountId: '$_id' },
-        pipeline: [
-          {
-            $match: {
-              $expr: { $in: ['$$accountId', '$accounts'] },
-              ...(cashregister.length > 0 ? { _id: { $in: cashregister } } : {}),
-            },
-          },
-          { $project: { _id: 1 } },
-        ],
-        as: 'matchedCashregisters',
+  return {
+    status: 'success',
+    code: 'CASHREGISTER_ACCOUNTS_FETCHED',
+    message: 'Cashregister accounts fetched',
+    data: {
+      items,
+      pagination: {
+        page,
+        pageSize,
+        total,
       },
     },
-    ...(cashregister.length > 0
-      ? [{ $match: { 'matchedCashregisters.0': { $exists: true } } }]
-      : []),
-    {
-      $lookup: {
-        from: 'currencies',
-        localField: 'currencies',
-        foreignField: '_id',
-        as: 'currencies',
-        pipeline: [
-          {
-            $addFields: {
-              id: '$_id',
-              names: '$names',
-              symbols: '$symbols',
-            },
-          },
-        ],
-      },
-    },
-    {
-      $project: {
-        _id: 0,
-        id: '$_id',
-        seq: 1,
-        names: 1,
-        currencies: { id: 1, names: 1, symbols: 1 },
-        priority: 1,
-        active: 1,
-        createdAt: 1,
-        updatedAt: 1,
-      },
-    },
-    {
-      $facet: {
-        cashregisterAccounts: [
-          { $skip: (current - 1) * pageSize },
-          { $limit: pageSize },
-        ],
-        totalCount: [
-          { $count: 'count' },
-        ],
-      },
-    },
-  ]
-
-  const cashregisterAccountsRaw = await CashregisterAccountModel.aggregate(pipeline).exec()
-
-  const cashregisterAccounts = cashregisterAccountsRaw[0].cashregisterAccounts
-  const cashregisterAccountsCount = cashregisterAccountsRaw[0].totalCount[0]?.count || 0
-
-  return { status: 'success', code: 'CASHREGISTER_ACCOUNTS_FETCHED', message: 'Cashregister accounts fetched', cashregisterAccounts, cashregisterAccountsCount }
+  }
 }
 
-export async function create(payload: CashregisterAccountTypes.createCashregisterAccountParams): Promise<CashregisterAccountTypes.createCashregisterAccountResult> {
-  const cashregisterAccount = await CashregisterAccountModel.create(payload)
+export async function create({ payload }: { payload: CreateCashregisterAccountPayload }): Promise<CreateCashregisterAccountResponse> {
+  const raw = await cashregisterAccountsRepo.createOne(payload)
 
-  return { status: 'success', code: 'CASHREGISTER_ACCOUNT_CREATED', message: 'Cashregister account created', cashregisterAccount }
+  return {
+    status: 'success',
+    code: 'CASHREGISTER_ACCOUNT_CREATED',
+    message: 'Cashregister account created',
+    data: mapCashregisterAccountToDTO(raw),
+  }
 }
 
-export async function edit(payload: CashregisterAccountTypes.editCashregisterAccountParams): Promise<CashregisterAccountTypes.editCashregisterAccountResult> {
+export async function edit({ payload }: { payload: EditCashregisterAccountPayload }): Promise<EditCashregisterAccountResponse> {
   const { id } = payload
 
-  const cashregisterAccount = await CashregisterAccountModel.findOneAndUpdate({ _id: id }, payload)
+  const data = await cashregisterAccountsRepo.updateById(id, payload)
 
-  if (!cashregisterAccount) {
+  if (!data) {
     throw new HttpError(400, 'Cashregister account not edited', 'CASHREGISTER_ACCOUNT_NOT_EDITED')
   }
 
-  return { status: 'success', code: 'CASHREGISTER_ACCOUNT_EDITED', message: 'Cashregister account edited', cashregisterAccount }
+  return {
+    status: 'success',
+    code: 'CASHREGISTER_ACCOUNT_EDITED',
+    message: 'Cashregister account edited',
+    data: mapCashregisterAccountToDTO(data),
+  }
 }
 
-export async function remove(payload: CashregisterAccountTypes.removeCashregisterAccountsParams): Promise<CashregisterAccountTypes.removeCashregisterAccountsResult> {
-  const { ids } = payload
+export async function remove({ payload }: { payload: RemoveCashregisterAccountsPayload }): Promise<RemoveCashregisterAccountsResponse> {
+  for (const id of payload.ids) {
+    const data = await cashregisterAccountsRepo.removeById(id)
 
-  const cashregisterAccounts = await CashregisterAccountModel.updateMany(
-    { _id: { $in: ids } },
-    { $set: { removed: true } },
-  )
+    if (!data)
+      continue
 
-  if (!cashregisterAccounts) {
-    throw new HttpError(400, 'Cashregister accounts not removed', 'CASHREGISTER_ACCOUNTS_NOT_REMOVED')
+    await AuditLogsService.create({
+      resourceType: 'cashregister-account',
+      resourceId: id.toString(),
+      action: 'remove',
+      changes: [
+        { path: 'names', before: data.names, after: null },
+        { path: 'currencies', before: data.currencies, after: null },
+        { path: 'priority', before: data.priority, after: null },
+        { path: 'active', before: data.active, after: null },
+        { path: 'removed', before: false, after: true },
+      ],
+    })
   }
 
-  return { status: 'success', code: 'CASHREGISTER_ACCOUNTS_REMOVED', message: 'Cashregister accounts removed' }
+  return {
+    status: 'success',
+    code: 'CASHREGISTER_ACCOUNTS_REMOVED',
+    message: 'Cashregister accounts removed',
+  }
 }

@@ -1,9 +1,8 @@
-import type { Warehouse } from '../types/warehouse.type'
+import type { Warehouse } from '@remnant/shared'
 import mongoose, { Schema } from 'mongoose'
-
 import { v4 as uuidv4 } from 'uuid'
-import { SUPPORTED_LANGUAGES } from '../config/constants'
-import { uuidValidator } from '../utils/uuidValidator'
+import { SUPPORTED_LANGUAGES } from '@/config/constants'
+import { uuidValidator } from '@/utils/'
 
 const WarehouseSchema: Schema = new Schema(
   {

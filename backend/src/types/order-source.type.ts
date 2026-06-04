@@ -1,80 +1,50 @@
-import type { SUPPORTED_LANGUAGES_TYPE } from '../config/constants'
-import type { Code, DateRange, IdType, LanguageString, Message, Pagination, Sorter, Status } from './common.type'
+import type {
+  LanguageString,
+  OrderSourceDTO,
+} from '@remnant/shared'
+import type { z } from 'zod'
+import {
+  createOrderSourceSchema,
+  editOrderSourceSchema,
+  getOrderSourcesSchema,
+  removeOrderSourcesSchema,
+} from '@remnant/shared'
 
-export interface OrderSource {
-  id: IdType
+export interface OrderSourceDB {
+  _id: string
   names: LanguageString
   priority: number
   color: string
   removed: boolean
+  createdBy: string
+  removedBy: string
   createdAt: Date
   updatedAt: Date
 }
 
-export interface getOrderSourcesResult {
-  status: Status
-  code: Code
-  message: Message
-  orderSources: OrderSource[]
-  orderSourcesCount: number
+export type GetOrderSourcesPayload = z.output<typeof getOrderSourcesSchema>
+export function parseGetOrderSources(x: unknown): GetOrderSourcesPayload {
+  return getOrderSourcesSchema.parse(x)
 }
 
-export interface getOrderSourcesFilters {
-  names: LanguageString
-  language: SUPPORTED_LANGUAGES_TYPE
-  color: string
-  priority: number
-  createdAt: DateRange
-  updatedAt: DateRange
+export type CreateOrderSourcePayload = z.output<typeof createOrderSourceSchema>
+export function parseCreateOrderSource(x: unknown): CreateOrderSourcePayload {
+  return createOrderSourceSchema.parse(x)
 }
 
-export interface getOrderSourcesSorters {
-  names: Sorter
-  color: Sorter
-  priority: Sorter
-  updatedAt: Sorter
-  createdAt: Sorter
+export type EditOrderSourcePayload = z.output<typeof editOrderSourceSchema>
+export function parseEditOrderSource(x: unknown): EditOrderSourcePayload {
+  return editOrderSourceSchema.parse(x)
 }
 
-export interface getOrderSourcesParams {
-  filters?: Partial<getOrderSourcesFilters>
-  sorters?: Partial<getOrderSourcesSorters>
-  pagination?: Partial<Pagination>
+export type RemoveOrderSourcesPayload = z.output<typeof removeOrderSourcesSchema>
+export function parseRemoveOrderSources(x: unknown): RemoveOrderSourcesPayload {
+  return removeOrderSourcesSchema.parse(x)
 }
 
-export interface createOrderSourceResult {
-  status: Status
-  code: Code
-  message: Message
-  orderSource: OrderSource
-}
+export type GetOrderSourcesRepoPayload = GetOrderSourcesPayload
+export interface GetOrderSourcesRepoResult { items: OrderSourceDTO[], total: number, page: number, pageSize: number }
 
-export interface createOrderSourceParams {
-  names: LanguageString
-  priority?: number
-  color?: string
-}
+export type CreateOrderSourceRepoPayload = CreateOrderSourcePayload
 
-export interface editOrderSourceResult {
-  status: Status
-  code: Code
-  message: Message
-  orderSource: OrderSource
-}
-
-export interface editOrderSourceParams {
-  id: IdType
-  names: LanguageString
-  priority?: number
-  color?: string
-}
-
-export interface removeOrderSourcesResult {
-  status: Status
-  code: Code
-  message: Message
-}
-
-export interface removeOrderSourcesParams {
-  ids: IdType[]
-}
+export type EditOrderSourceRepoPayload = EditOrderSourcePayload

@@ -1,13 +1,21 @@
-import type * as BalanceTypes from '../types/balance.type'
-import type { User } from '../types/user.type'
-import { BalanceModel } from '../models/balance.model'
-import { HttpError } from '../utils/httpError'
-import * as CashregisterService from './cashregister.service'
-import * as OrderStatusService from './order-status.service'
-import * as OrderService from './order.service'
-import * as ProductService from './product.service'
+import type {
+  CreateBalanceParams,
+  CreateBalanceResponse,
+  GetBalancesParams,
+  GetBalancesResponse,
+  GetCurrentBalanceResponse,
+  OrderItem,
+  RemoveBalancesResponse,
+  User,
+} from '@remnant/shared'
+import { BalanceModel } from '@/models/'
+import * as CashregisterService from '@/services/cashregister.service'
+import * as OrderStatusService from '@/services/order-status.service'
+import * as OrderService from '@/services/order.service'
+import * as ProductService from '@/services/product.service'
+import { HttpError } from '@/utils/'
 
-export async function get(payload: BalanceTypes.getBalancesParams): Promise<BalanceTypes.getBalancesResult> {
+export async function get(payload: GetBalancesParams): Promise<GetBalancesResponse> {
   const { current = 1, pageSize = 10 } = payload.pagination || {}
 
   const balances = await BalanceModel.find(payload.filters ?? {})
@@ -19,17 +27,19 @@ export async function get(payload: BalanceTypes.getBalancesParams): Promise<Bala
     status: 'success',
     code: 'BALANCE_FETCHED',
     message: 'Balance fetched',
-    balances,
+    data: {
+      items: balances,
+      pagination: {
+        page: current,
+        pageSize,
+        total: balances.length,
+      },
+    },
   }
 }
 
-export async function getCurrent(_payload: BalanceTypes.getCurrentBalanceParams, user?: User): Promise<BalanceTypes.getCurrentBalanceResult> {
-  const { products } = await ProductService.get(
-    {
-      pagination: { full: true },
-    },
-    user,
-  )
+export async function getCurrent(_payload: any, user?: User): Promise<GetCurrentBalanceResponse> {
+  const { data: { items: products } } = await ProductService.get({ pagination: { full: true } }, user)
 
   function getWarehouseBalance(products: any) {
     const outer = new Map<
@@ -77,7 +87,7 @@ export async function getCurrent(_payload: BalanceTypes.getCurrentBalanceParams,
 
   const warehouseBalances = getWarehouseBalance(products)
 
-  const { cashregisters } = await CashregisterService.get({
+  const { data: { items: cashregisters } } = await CashregisterService.get({
     pagination: { full: true },
   })
 
@@ -116,23 +126,23 @@ export async function getCurrent(_payload: BalanceTypes.getCurrentBalanceParams,
 
   const cashregisterBalances = getCashregisterBalance(cashregisters)
 
-  const { orderStatuses } = await OrderStatusService.get({
+  const { data: { items: orderStatuses } } = await OrderStatusService.get({
     pagination: { full: true },
     filters: {
       isLocked: false,
     },
   })
 
-  const { orders } = await OrderService.get({
+  const { data: { items: orders } } = await OrderService.get({
     pagination: { full: true },
     filters: {
-      orderStatus: orderStatuses.map((status: any) => status.id),
+      orderStatus: orderStatuses.map(status => status.id),
     },
   })
 
-  const ordersProducts = orders.reduce((acc: any[], order: any) => acc.concat(order.items), [])
+  const ordersProducts = orders.reduce((acc, order) => acc.concat(order.items), [])
 
-  function getOrdersBalance(ordersProducts: any[]) {
+  function getOrdersBalance(ordersProducts: OrderItem[]) {
     const outer = new Map<
       string,
       Map<
@@ -229,32 +239,26 @@ export async function getCurrent(_payload: BalanceTypes.getCurrentBalanceParams,
 
   const totalBalances = getTotalBalance(warehouseBalances, cashregisterBalances, ordersBalances)
 
-  console.log(JSON.stringify(warehouseBalances, null, 2))
-
-  console.log(JSON.stringify(ordersBalances, null, 2))
-
-  const balance = {
-    warehouseBalances,
-    cashregisterBalances,
-    ordersBalances,
-    totalBalances,
-  }
-
   return {
     status: 'success',
     code: 'BALANCE_FETCHED',
     message: 'Balance fetched',
-    balance,
+    data: {
+      warehouseBalances,
+      cashregisterBalances,
+      ordersBalances,
+      totalBalances,
+    },
   }
 }
 
-export async function create(payload: BalanceTypes.createBalanceParams, user: User): Promise<BalanceTypes.createBalanceResult> {
-  const { balance } = await getCurrent({}, user)
+export async function create(payload: CreateBalanceParams, user: User): Promise<CreateBalanceResponse> {
+  const { data: { warehouseBalances, cashregisterBalances, totalBalances } } = await getCurrent({}, user)
 
   const newBalance = await BalanceModel.create({
-    warehouseBalances: balance.warehouseBalances,
-    cashregisterBalances: balance.cashregisterBalances,
-    totalBalances: balance.totalBalances,
+    warehouseBalances,
+    cashregisterBalances,
+    totalBalances,
     comment: payload.comment,
     createdBy: user.id,
   })
@@ -263,11 +267,11 @@ export async function create(payload: BalanceTypes.createBalanceParams, user: Us
     status: 'success',
     code: 'BALANCE_CREATED',
     message: 'Balance created',
-    balance: newBalance,
+    data: newBalance,
   }
 }
 
-export async function remove(id: string, user: User): Promise<BalanceTypes.removeBalancesResult> {
+export async function remove(id: string, user: User): Promise<RemoveBalancesResponse> {
   const balance = await BalanceModel.findByIdAndUpdate(id, { removedBy: user.id, removed: true }, { new: true })
 
   if (!balance) {
@@ -278,6 +282,5 @@ export async function remove(id: string, user: User): Promise<BalanceTypes.remov
     status: 'success',
     code: 'BALANCE_REMOVED',
     message: 'Balance removed',
-    balance,
   }
 }

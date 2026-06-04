@@ -1,5 +1,5 @@
 import type { NextFunction, Request, Response } from 'express'
-import * as ProductPropertyOptionService from '../services/product-property-option.service'
+import * as ProductPropertyOptionService from '@/services/product-property-option.service'
 
 export async function get(req: Request, res: Response, next: NextFunction) {
   try {

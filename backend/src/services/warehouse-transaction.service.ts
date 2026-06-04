@@ -1,11 +1,27 @@
-import type { RequestUser } from '../types/common.type'
-import type * as WarehouseTransactionTypes from '../types/warehouse-transaction.type'
-import { STORAGE_URLS } from '../config/constants'
-import { BarcodeModel, WarehouseTransactionItemModel, WarehouseTransactionModel } from '../models'
-import { buildQuery, buildSortQuery } from '../utils/queryBuilder'
-import * as QuantityService from './quantity.service'
+import type {
+  CreateWarehouseTransactionParams,
+  CreateWarehouseTransactionResponse,
+  EditWarehouseTransactionParams,
+  EditWarehouseTransactionResponse,
+  GetWarehouseTransactionsItemsParams,
+  GetWarehouseTransactionsItemsResponse,
+  GetWarehouseTransactionsParams,
+  GetWarehouseTransactionsResponse,
+  ReceiveWarehouseTransactionParams,
+  ReceiveWarehouseTransactionResponse,
+  RemoveWarehouseTransactionsParams,
+  RemoveWarehouseTransactionsResponse,
+  RequestUser,
+  ScanBarcodeToDraftParams,
+  ScanBarcodeToDraftResponse,
+} from '@remnant/shared'
 
-export async function get(payload: WarehouseTransactionTypes.getWarehouseTransactionsParams): Promise<WarehouseTransactionTypes.getWarehouseTransactionsResult> {
+import { STORAGE_URLS } from '@/config/constants'
+import { BarcodeModel, WarehouseTransactionItemModel, WarehouseTransactionModel } from '@/models/'
+import * as QuantityService from '@/services/quantity.service'
+import { buildQuery, buildSortQuery } from '@/utils/'
+
+export async function get(payload: GetWarehouseTransactionsParams): Promise<GetWarehouseTransactionsResponse> {
   const { current = 1, pageSize = 10 } = payload.pagination || {}
 
   const {
@@ -114,10 +130,22 @@ export async function get(payload: WarehouseTransactionTypes.getWarehouseTransac
   const warehouseTransactions = warehouseTransactionsRaw[0].warehouseTransactions || []
   const warehouseTransactionsCount = warehouseTransactionsRaw[0].totalCount[0]?.count || 0
 
-  return { status: 'success', code: 'WAREHOUSE_TRANSACTIONS_FETCHED', message: 'Warehouse transactions fetched', warehouseTransactions, warehouseTransactionsCount }
+  return {
+    status: 'success',
+    code: 'WAREHOUSE_TRANSACTIONS_FETCHED',
+    message: 'Warehouse transactions fetched',
+    data: {
+      items: warehouseTransactions,
+      pagination: {
+        total: warehouseTransactionsCount,
+        page: current,
+        pageSize,
+      },
+    },
+  }
 }
 
-export async function getItems(payload: WarehouseTransactionTypes.getWarehouseTransactionsItemsParams): Promise<WarehouseTransactionTypes.getWarehouseTransactionsItemsResult> {
+export async function getItems(payload: GetWarehouseTransactionsItemsParams): Promise<GetWarehouseTransactionsItemsResponse> {
   const { current = 1, pageSize = 10, full = false } = payload.pagination || {}
 
   const {
@@ -395,10 +423,22 @@ export async function getItems(payload: WarehouseTransactionTypes.getWarehouseTr
     },
   }))
 
-  return { status: 'success', code: 'WAREHOUSE_TRANSACTIONS_ITEMS_FETCHED', message: 'Warehouse transactions items fetched', warehouseTransactionsItems, warehouseTransactionsItemsCount }
+  return {
+    status: 'success',
+    code: 'WAREHOUSE_TRANSACTIONS_ITEMS_FETCHED',
+    message: 'Warehouse transactions items fetched',
+    data: {
+      items: warehouseTransactionsItems,
+      pagination: {
+        total: warehouseTransactionsItemsCount,
+        page: current,
+        pageSize,
+      },
+    },
+  }
 }
 
-export async function scanBarcodeToDraft(payload: WarehouseTransactionTypes.scanBarcodeToDraftParams): Promise<WarehouseTransactionTypes.scanBarcodeToDraftResult> {
+export async function scanBarcodeToDraft(payload: ScanBarcodeToDraftParams): Promise<ScanBarcodeToDraftResponse> {
   const { barcode, transactionId } = payload
 
   const filterRules = {
@@ -677,10 +717,16 @@ export async function scanBarcodeToDraft(payload: WarehouseTransactionTypes.scan
     },
   }))
 
-  return { status: 'success', code: 'WAREHOUSE_ITEM_FETCHED', message: 'Warehouse item fetched', warehouseItems, transactionId }
+  return {
+    status: 'success',
+    code: 'WAREHOUSE_ITEM_FETCHED',
+    message: 'Warehouse item fetched',
+    warehouseItems,
+    transactionId,
+  }
 }
 
-export async function create(payload: WarehouseTransactionTypes.createWarehouseTransactionParams, user: RequestUser) {
+export async function create(payload: CreateWarehouseTransactionParams, user: RequestUser): Promise<CreateWarehouseTransactionResponse> {
   const { type, fromWarehouse, toWarehouse, requiresReceiving, comment, products } = payload
   const createdBy = user.id
 
@@ -728,10 +774,15 @@ export async function create(payload: WarehouseTransactionTypes.createWarehouseT
 
   await WarehouseTransactionItemModel.create(mappedProducts)
 
-  return { status: 'success', code: 'WAREHOUSE_TRANSACTION_CREATED', message: 'Warehouse transaction created', warehouseTransaction }
+  return {
+    status: 'success',
+    code: 'WAREHOUSE_TRANSACTION_CREATED',
+    message: 'Warehouse transaction created',
+    data: warehouseTransaction,
+  }
 }
 
-export async function edit(payload: WarehouseTransactionTypes.editWarehouseTransactionParams, user: RequestUser) {
+export async function edit(payload: EditWarehouseTransactionParams, user: RequestUser): Promise<EditWarehouseTransactionResponse> {
   const { id, type, fromWarehouse = null, toWarehouse = null, requiresReceiving = false, comment, products } = payload
 
   const oldTransaction = await WarehouseTransactionModel.findById(id)
@@ -793,10 +844,15 @@ export async function edit(payload: WarehouseTransactionTypes.editWarehouseTrans
     }
   }
 
-  return { status: 'success', code: 'WAREHOUSE_TRANSACTION_EDITED', message: 'Warehouse transaction edited', warehouseTransaction }
+  return {
+    status: 'success',
+    code: 'WAREHOUSE_TRANSACTION_EDITED',
+    message: 'Warehouse transaction edited',
+    data: warehouseTransaction,
+  }
 }
 
-export async function remove(payload: WarehouseTransactionTypes.removeWarehouseTransactionsParams, user: RequestUser) {
+export async function remove(payload: RemoveWarehouseTransactionsParams, user: RequestUser): Promise<RemoveWarehouseTransactionsResponse> {
   const { ids } = payload
   const removedBy = user.id
 
@@ -861,10 +917,14 @@ export async function remove(payload: WarehouseTransactionTypes.removeWarehouseT
     }
   }
 
-  return { status: 'success', code: 'WAREHOUSE_TRANSACTION_REMOVED', message: 'Warehouse transaction removed' }
+  return {
+    status: 'success',
+    code: 'WAREHOUSE_TRANSACTION_REMOVED',
+    message: 'Warehouse transaction removed',
+  }
 }
 
-export async function receive(payload: WarehouseTransactionTypes.receiveWarehouseTransactionParams, user: RequestUser) {
+export async function receive(payload: ReceiveWarehouseTransactionParams, user: RequestUser): Promise<ReceiveWarehouseTransactionResponse> {
   const { id, products } = payload
   const acceptedBy = user.id
 
@@ -906,5 +966,10 @@ export async function receive(payload: WarehouseTransactionTypes.receiveWarehous
     })
   }
 
-  return { status: 'success', code: 'WAREHOUSE_TRANSACTION_RECEIVED', message: 'Warehouse transaction received', warehouseTransaction }
+  return {
+    status: 'success',
+    code: 'WAREHOUSE_TRANSACTION_RECEIVED',
+    message: 'Warehouse transaction received',
+    data: warehouseTransaction,
+  }
 }

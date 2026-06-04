@@ -1,10 +1,13 @@
-import type { Currency, ExchangeRate } from '../types/currency.type'
+import type { HydratedDocument } from 'mongoose'
+import type { SUPPORTED_LANGUAGES_TYPE } from '@/config/constants'
+import type { CurrencyDB, ExchangeRateDB } from '@/types'
 import mongoose, { Schema } from 'mongoose'
 import { v4 as uuidv4 } from 'uuid'
+import { SUPPORTED_LANGUAGES } from '@/config/constants'
+import { CounterModel } from '@/models/'
+import { uuidValidator } from '@/utils/'
 
-import { SUPPORTED_LANGUAGES } from '../config/constants'
-import { uuidValidator } from '../utils/uuidValidator'
-import { CounterModel } from './counter.model'
+type CurrencyDoc = HydratedDocument<CurrencyDB>
 
 const CurrencySchema: Schema = new Schema(
   {
@@ -24,7 +27,7 @@ const CurrencySchema: Schema = new Schema(
       validate: {
         validator(value: Map<string, string>) {
           return Array.from(value.keys()).every(key =>
-            SUPPORTED_LANGUAGES.includes(key as any),
+            SUPPORTED_LANGUAGES.includes(key as SUPPORTED_LANGUAGES_TYPE),
           )
         },
         message: 'Supported languages only',
@@ -37,7 +40,7 @@ const CurrencySchema: Schema = new Schema(
       validate: {
         validator(value: Map<string, string>) {
           return Array.from(value.keys()).every(key =>
-            SUPPORTED_LANGUAGES.includes(key as any),
+            SUPPORTED_LANGUAGES.includes(key as SUPPORTED_LANGUAGES_TYPE),
           )
         },
         message: 'Supported languages only',
@@ -62,6 +65,8 @@ const CurrencySchema: Schema = new Schema(
   },
   { timestamps: true },
 )
+
+type ExchangeRateDoc = HydratedDocument<ExchangeRateDB>
 
 const ExchangeRateSchema: Schema = new Schema(
   {
@@ -98,10 +103,6 @@ const ExchangeRateSchema: Schema = new Schema(
   { timestamps: true },
 )
 
-CurrencySchema.index({ 'names.ru': 1 })
-CurrencySchema.index({ 'names.en': 1 })
-CurrencySchema.index({ 'symbols.ru': 1 })
-CurrencySchema.index({ 'symbols.en': 1 })
 CurrencySchema.index({ active: 1 })
 CurrencySchema.index({ priority: 1 })
 CurrencySchema.index({ removed: 1 })
@@ -117,20 +118,18 @@ CurrencySchema.set('toJSON', {
   },
 })
 
-CurrencySchema.pre('save', async function (next) {
-  const doc = this as any
-
-  if (doc.isNew && !doc.seq) {
+CurrencySchema.pre('save', async function (this: CurrencyDoc, next) {
+  if (this.isNew && !this.seq) {
     const counter = await CounterModel.findByIdAndUpdate(
       'currencies',
       { $inc: { seq: 1 } },
       { new: true, upsert: true },
     )
-    doc.seq = counter.seq
+    this.seq = counter.seq
   }
 
   next()
 })
 
-export const CurrencyModel = mongoose.model<Currency>('Currency', CurrencySchema)
-export const ExchangeRateModel = mongoose.model<ExchangeRate>('Exchange-Rate', ExchangeRateSchema)
+export const CurrencyModel = mongoose.model<CurrencyDoc>('Currency', CurrencySchema)
+export const ExchangeRateModel = mongoose.model<ExchangeRateDoc>('Exchange-Rate', ExchangeRateSchema)

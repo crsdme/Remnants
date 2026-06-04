@@ -1,8 +1,14 @@
-import type { Category } from '../types/category.type'
+import type { HydratedDocument } from 'mongoose'
+import type { SUPPORTED_LANGUAGES_TYPE } from '@/config/constants'
+import type { CategoryDB } from '@/types'
 import mongoose, { Schema } from 'mongoose'
 import { v4 as uuidv4 } from 'uuid'
-import { SUPPORTED_LANGUAGES } from '../config/constants'
-import { uuidValidator } from '../utils/uuidValidator'
+import { SUPPORTED_LANGUAGES } from '@/config/constants'
+
+import { uuidValidator } from '@/utils/'
+import { CounterModel } from './counter.model'
+
+type CategoryDoc = HydratedDocument<CategoryDB>
 
 const CategorySchema: Schema = new Schema(
   {
@@ -11,6 +17,10 @@ const CategorySchema: Schema = new Schema(
       default: uuidv4,
       validate: uuidValidator,
     },
+    seq: {
+      type: Number,
+      default: 0,
+    },
     names: {
       type: Map,
       of: String,
@@ -18,7 +28,7 @@ const CategorySchema: Schema = new Schema(
       validate: {
         validator(value: Map<string, string>) {
           return Array.from(value.keys()).every(key =>
-            SUPPORTED_LANGUAGES.includes(key as any),
+            SUPPORTED_LANGUAGES.includes(key as SUPPORTED_LANGUAGES_TYPE),
           )
         },
         message: 'Supported languages only',
@@ -56,4 +66,17 @@ CategorySchema.set('toJSON', {
   },
 })
 
-export const CategoryModel = mongoose.model<Category>('Category', CategorySchema)
+CategorySchema.pre('save', async function (this: CategoryDoc, next) {
+  if (this.isNew && !this.seq) {
+    const counter = await CounterModel.findByIdAndUpdate(
+      'categories',
+      { $inc: { seq: 1 } },
+      { new: true, upsert: true },
+    )
+    this.seq = counter.seq
+  }
+
+  next()
+})
+
+export const CategoryModel = mongoose.model<CategoryDoc>('category', CategorySchema)

@@ -1,9 +1,17 @@
-import type * as WarehouseTypes from '../types/warehouse.type'
-import { WarehouseModel } from '../models'
-import { HttpError } from '../utils/httpError'
-import { buildQuery, buildSortQuery } from '../utils/queryBuilder'
+import type {
+  CreateWarehousesParams,
+  CreateWarehousesResponse,
+  EditWarehousesParams,
+  EditWarehousesResponse,
+  GetWarehousesParams,
+  GetWarehousesResponse,
+  RemoveWarehousesParams,
+  RemoveWarehousesResponse,
+} from '@remnant/shared'
+import { WarehouseModel } from '@/models/'
+import { buildQuery, buildSortQuery, HttpError } from '@/utils/'
 
-export async function get(payload: WarehouseTypes.getWarehousesParams): Promise<WarehouseTypes.getWarehousesResult> {
+export async function get(payload: GetWarehousesParams): Promise<GetWarehousesResponse> {
   const { current = 1, pageSize = 10 } = payload.pagination || {}
 
   const {
@@ -54,16 +62,33 @@ export async function get(payload: WarehouseTypes.getWarehousesParams): Promise<
   const warehouses = warehousesRaw[0].warehouses.map((doc: any) => WarehouseModel.hydrate(doc))
   const warehousesCount = warehousesRaw[0].totalCount[0]?.count || 0
 
-  return { status: 'success', code: 'WAREHOUSES_FETCHED', message: 'Warehouses fetched', warehouses, warehousesCount }
+  return {
+    status: 'success',
+    code: 'WAREHOUSES_FETCHED',
+    message: 'Warehouses fetched',
+    data: {
+      items: warehouses,
+      pagination: {
+        total: warehousesCount,
+        page: current,
+        pageSize,
+      },
+    },
+  }
 }
 
-export async function create(payload: WarehouseTypes.createWarehousesParams): Promise<WarehouseTypes.createWarehousesResult> {
+export async function create(payload: CreateWarehousesParams): Promise<CreateWarehousesResponse> {
   const warehouse = await WarehouseModel.create(payload)
 
-  return { status: 'success', code: 'WAREHOUSE_CREATED', message: 'Warehouse created', warehouse }
+  return {
+    status: 'success',
+    code: 'WAREHOUSE_CREATED',
+    message: 'Warehouse created',
+    data: warehouse,
+  }
 }
 
-export async function edit(payload: WarehouseTypes.editWarehousesParams): Promise<WarehouseTypes.editWarehousesResult> {
+export async function edit(payload: EditWarehousesParams): Promise<EditWarehousesResponse> {
   const { id } = payload
 
   const warehouse = await WarehouseModel.findOneAndUpdate({ _id: id }, payload)
@@ -72,10 +97,15 @@ export async function edit(payload: WarehouseTypes.editWarehousesParams): Promis
     throw new HttpError(400, 'Warehouse not edited', 'WAREHOUSE_NOT_EDITED')
   }
 
-  return { status: 'success', code: 'WAREHOUSE_EDITED', message: 'Warehouse edited', warehouse }
+  return {
+    status: 'success',
+    code: 'WAREHOUSE_EDITED',
+    message: 'Warehouse edited',
+    data: warehouse,
+  }
 }
 
-export async function remove(payload: WarehouseTypes.removeWarehousesParams): Promise<WarehouseTypes.removeWarehousesResult> {
+export async function remove(payload: RemoveWarehousesParams): Promise<RemoveWarehousesResponse> {
   const { ids } = payload
 
   const warehouses = await WarehouseModel.updateMany(
@@ -87,5 +117,9 @@ export async function remove(payload: WarehouseTypes.removeWarehousesParams): Pr
     throw new HttpError(400, 'Warehouses not removed', 'WAREHOUSES_NOT_REMOVED')
   }
 
-  return { status: 'success', code: 'WAREHOUSES_REMOVED', message: 'Warehouses removed' }
+  return {
+    status: 'success',
+    code: 'WAREHOUSES_REMOVED',
+    message: 'Warehouses removed',
+  }
 }

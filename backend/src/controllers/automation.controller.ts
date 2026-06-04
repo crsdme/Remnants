@@ -1,9 +1,23 @@
-import type { NextFunction, Request, Response } from 'express'
-import * as AutomationService from '../services/automation.service'
+import type { NextFunction, Response } from 'express'
+import type {
+  CreateAutomationPayload,
+  EditAutomationPayload,
+  GetAutomationsPayload,
+  RemoveAutomationsPayload,
+  ValidatedRequest,
+} from '@/types'
 
-export async function get(req: Request, res: Response, next: NextFunction) {
+import * as AutomationService from '@/services/automation.service'
+
+export async function get(
+  req: ValidatedRequest<GetAutomationsPayload>,
+  res: Response,
+  next: NextFunction,
+) {
   try {
-    const serviceResponse = await AutomationService.get(req.body)
+    const serviceResponse = await AutomationService.get({
+      payload: req.validated.query,
+    })
 
     res.status(200).json(serviceResponse)
   }
@@ -12,9 +26,15 @@ export async function get(req: Request, res: Response, next: NextFunction) {
   }
 }
 
-export async function create(req: Request, res: Response, next: NextFunction) {
+export async function create(
+  req: ValidatedRequest<never, CreateAutomationPayload>,
+  res: Response,
+  next: NextFunction,
+) {
   try {
-    const serviceResponse = await AutomationService.create(req.body)
+    const serviceResponse = await AutomationService.create({
+      payload: req.validated.body,
+    })
 
     res.status(201).json(serviceResponse)
   }
@@ -23,9 +43,15 @@ export async function create(req: Request, res: Response, next: NextFunction) {
   }
 }
 
-export async function edit(req: Request, res: Response, next: NextFunction) {
+export async function edit(
+  req: ValidatedRequest<never, EditAutomationPayload>,
+  res: Response,
+  next: NextFunction,
+) {
   try {
-    const serviceResponse = await AutomationService.edit(req.body)
+    const serviceResponse = await AutomationService.edit({
+      payload: req.validated.body,
+    })
 
     res.status(200).json(serviceResponse)
   }
@@ -34,9 +60,15 @@ export async function edit(req: Request, res: Response, next: NextFunction) {
   }
 }
 
-export async function remove(req: Request, res: Response, next: NextFunction) {
+export async function remove(
+  req: ValidatedRequest<never, RemoveAutomationsPayload>,
+  res: Response,
+  next: NextFunction,
+) {
   try {
-    const serviceResponse = await AutomationService.remove(req.body)
+    const serviceResponse = await AutomationService.remove({
+      payload: req.validated.body,
+    })
 
     res.status(200).json(serviceResponse)
   }

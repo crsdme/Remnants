@@ -1,8 +1,11 @@
-import type { Order, OrderItem } from '../types/order.type'
+import type { HydratedDocument } from 'mongoose'
+import type { OrderDB, OrderItemDB } from '@/types'
 import mongoose, { Schema } from 'mongoose'
 import { v4 as uuidv4 } from 'uuid'
-import { uuidValidator } from '../utils/uuidValidator'
-import { CounterModel } from './counter.model'
+import { CounterModel } from '@/models/'
+import { uuidValidator } from '@/utils/'
+
+type OrderDoc = HydratedDocument<OrderDB>
 
 const OrderSchema: Schema = new Schema(
   {
@@ -72,6 +75,8 @@ const OrderSchema: Schema = new Schema(
   },
   { timestamps: true },
 )
+
+type OrderItemDoc = HydratedDocument<OrderItemDB>
 
 const OrderItemSchema: Schema = new Schema({
   order: {
@@ -164,20 +169,15 @@ OrderItemSchema.set('toJSON', {
   },
 })
 
-OrderSchema.pre('save', async function (next) {
-  const doc = this as any
-
-  if (doc.isNew && !doc.seq) {
-    const counter = await CounterModel.findByIdAndUpdate(
+OrderSchema.pre('save', async function (this: OrderDoc, next) {
+  if (this.isNew) {
+    await CounterModel.findByIdAndUpdate(
       'orders',
       { $inc: { seq: 1 } },
       { new: true, upsert: true },
     )
-    doc.seq = counter.seq
   }
-
   next()
 })
-
-export const OrderModel = mongoose.model<Order>('order', OrderSchema)
-export const OrderItemModel = mongoose.model<OrderItem>('order-item', OrderItemSchema)
+export const OrderModel = mongoose.model<OrderDoc>('order', OrderSchema)
+export const OrderItemModel = mongoose.model<OrderItemDoc>('order-item', OrderItemSchema)

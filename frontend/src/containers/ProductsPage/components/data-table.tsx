@@ -58,8 +58,8 @@ export function DataTable() {
     { pagination, filters, sorters },
     { options: {
       select: response => ({
-        products: response.data.products,
-        productsCount: response.data.productsCount,
+        products: response.data.data.items,
+        productsCount: response.data.data.total,
       }),
       placeholderData: prevData => prevData,
     } },

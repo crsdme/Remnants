@@ -1,89 +1,52 @@
-import type { SUPPORTED_LANGUAGES_TYPE } from '../config/constants'
-import type { Code, DateRange, IdType, LanguageString, Message, Pagination, Sorter, Status } from './common.type'
+import type {
+  LanguageString,
+  OrderStatusDTO,
+} from '@remnant/shared'
+import type { z } from 'zod'
+import {
+  createOrderStatusSchema,
+  editOrderStatusSchema,
+  getOrderStatusesSchema,
+  removeOrderStatusesSchema,
+} from '@remnant/shared'
 
-export interface OrderStatus {
-  id: IdType
+export interface OrderStatusDB {
+  _id: string
   names: LanguageString
   priority: number
   color: string
   removed: boolean
   isLocked: boolean
+  isSelectable: boolean
+  createdBy: string
+  removedBy: string
   createdAt: Date
   updatedAt: Date
 }
 
-export interface getOrderStatusesResult {
-  status: Status
-  code: Code
-  message: Message
-  orderStatuses: OrderStatus[]
-  orderStatusesCount: number
+export type GetOrderStatusesPayload = z.output<typeof getOrderStatusesSchema>
+export function parseGetOrderStatuses(x: unknown): GetOrderStatusesPayload {
+  return getOrderStatusesSchema.parse(x)
 }
 
-export interface getOrderStatusesFilters {
-  names: LanguageString
-  language: SUPPORTED_LANGUAGES_TYPE
-  color: string
-  priority: number
-  includeCount: boolean
-  includeAll: boolean
-  isLocked: boolean
-  isSelectable: boolean
-  createdAt: DateRange
-  updatedAt: DateRange
+export type CreateOrderStatusPayload = z.output<typeof createOrderStatusSchema>
+export function parseCreateOrderStatus(x: unknown): CreateOrderStatusPayload {
+  return createOrderStatusSchema.parse(x)
 }
 
-export interface getOrderStatusesSorters {
-  names: Sorter
-  color: Sorter
-  priority: Sorter
-  updatedAt: Sorter
-  createdAt: Sorter
+export type EditOrderStatusPayload = z.output<typeof editOrderStatusSchema>
+export function parseEditOrderStatus(x: unknown): EditOrderStatusPayload {
+  return editOrderStatusSchema.parse(x)
 }
 
-export interface getOrderStatusesParams {
-  filters?: Partial<getOrderStatusesFilters>
-  sorters?: Partial<getOrderStatusesSorters>
-  pagination?: Partial<Pagination>
+export type RemoveOrderStatusesPayload = z.output<typeof removeOrderStatusesSchema>
+export function parseRemoveOrderStatuses(x: unknown): RemoveOrderStatusesPayload {
+  return removeOrderStatusesSchema.parse(x)
 }
 
-export interface createOrderStatusResult {
-  status: Status
-  code: Code
-  message: Message
-  orderStatus: OrderStatus
-}
+export type GetOrderStatusesRepoPayload = GetOrderStatusesPayload
+export interface GetOrderStatusesRepoResult { items: OrderStatusDTO[], total: number, page: number, pageSize: number }
 
-export interface createOrderStatusParams {
-  names: LanguageString
-  priority?: number
-  color?: string
-  isLocked?: boolean
-  isSelectable?: boolean
-}
+export type CreateOrderStatusRepoPayload = CreateOrderStatusPayload
 
-export interface editOrderStatusResult {
-  status: Status
-  code: Code
-  message: Message
-  orderStatus: OrderStatus
-}
-
-export interface editOrderStatusParams {
-  id: IdType
-  names: LanguageString
-  priority?: number
-  color?: string
-  isLocked?: boolean
-  isSelectable?: boolean
-}
-
-export interface removeOrderStatusesResult {
-  status: Status
-  code: Code
-  message: Message
-}
-
-export interface removeOrderStatusesParams {
-  ids: IdType[]
-}
+export type EditOrderStatusRepoPayload = EditOrderStatusPayload

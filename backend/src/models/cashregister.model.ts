@@ -1,10 +1,14 @@
-import type { Cashregister } from '../types/cashregister.type'
+import type { HydratedDocument } from 'mongoose'
+import type { SUPPORTED_LANGUAGES_TYPE } from '@/config/constants'
+import type { CashregisterDB } from '@/types'
+
 import mongoose, { Schema } from 'mongoose'
 import { v4 as uuidv4 } from 'uuid'
+import { SUPPORTED_LANGUAGES } from '@/config/constants'
+import { CounterModel } from '@/models/'
+import { uuidValidator } from '@/utils/'
 
-import { SUPPORTED_LANGUAGES } from '../config/constants'
-import { uuidValidator } from '../utils/uuidValidator'
-import { CounterModel } from './counter.model'
+type CashregisterDoc = HydratedDocument<CashregisterDB>
 
 const CashregisterSchema: Schema = new Schema(
   {
@@ -13,6 +17,10 @@ const CashregisterSchema: Schema = new Schema(
       default: uuidv4,
       validate: uuidValidator,
     },
+    seq: {
+      type: Number,
+      default: 0,
+    },
     names: {
       type: Map,
       of: String,
@@ -20,7 +28,7 @@ const CashregisterSchema: Schema = new Schema(
       validate: {
         validator(value: Map<string, string>) {
           return Array.from(value.keys()).every(key =>
-            SUPPORTED_LANGUAGES.includes(key as any),
+            SUPPORTED_LANGUAGES.includes(key as SUPPORTED_LANGUAGES_TYPE),
           )
         },
         message: 'Supported languages only',
@@ -57,19 +65,17 @@ CashregisterSchema.set('toJSON', {
   },
 })
 
-CashregisterSchema.pre('save', async function (next) {
-  const doc = this as any
-
-  if (doc.isNew && !doc.seq) {
+CashregisterSchema.pre('save', async function (this: CashregisterDoc, next) {
+  if (this.isNew && !this.seq) {
     const counter = await CounterModel.findByIdAndUpdate(
       'cashregisters',
       { $inc: { seq: 1 } },
       { new: true, upsert: true },
     )
-    doc.seq = counter.seq
+    this.seq = counter.seq
   }
 
   next()
 })
 
-export const CashregisterModel = mongoose.model<Cashregister>('cashregister', CashregisterSchema)
+export const CashregisterModel = mongoose.model<CashregisterDB>('cashregister', CashregisterSchema)

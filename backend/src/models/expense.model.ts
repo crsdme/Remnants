@@ -1,10 +1,13 @@
-import type { ExpenseCategory } from '../types/expense-category.type'
-import type { Expense } from '../types/expense.type'
+import type { HydratedDocument } from 'mongoose'
+import type { SUPPORTED_LANGUAGES_TYPE } from '@/config/constants'
+import type { ExpenseCategoryDB, ExpenseDB } from '@/types'
 import mongoose, { Schema } from 'mongoose'
 import { v4 as uuidv4 } from 'uuid'
-import { SUPPORTED_LANGUAGES } from '../config/constants'
-import { uuidValidator } from '../utils/uuidValidator'
-import { CounterModel } from './counter.model'
+import { SUPPORTED_LANGUAGES } from '@/config/constants'
+import { CounterModel } from '@/models/'
+import { uuidValidator } from '@/utils/'
+
+type ExpenseDoc = HydratedDocument<ExpenseDB>
 
 const ExpenseSchema: Schema = new Schema(
   {
@@ -73,6 +76,8 @@ const ExpenseSchema: Schema = new Schema(
   { timestamps: true },
 )
 
+type ExpenseCategoryDoc = HydratedDocument<ExpenseCategoryDB>
+
 const ExpenseCategorySchema: Schema = new Schema(
   {
     _id: {
@@ -87,9 +92,10 @@ const ExpenseCategorySchema: Schema = new Schema(
       validate: {
         validator(value: Map<string, string>) {
           return Array.from(value.keys()).every(key =>
-            SUPPORTED_LANGUAGES.includes(key as any),
+            SUPPORTED_LANGUAGES.includes(key as SUPPORTED_LANGUAGES_TYPE),
           )
         },
+        message: 'Supported languages only',
       },
     },
     priority: {
@@ -122,20 +128,18 @@ ExpenseSchema.set('toJSON', {
   },
 })
 
-ExpenseSchema.pre('save', async function (next) {
-  const doc = this as any
-
-  if (doc.isNew && !doc.seq) {
+ExpenseSchema.pre('save', async function (this: ExpenseDoc, next) {
+  if (this.isNew && !this.seq) {
     const counter = await CounterModel.findByIdAndUpdate(
       'expenses',
       { $inc: { seq: 1 } },
       { new: true, upsert: true },
     )
-    doc.seq = counter.seq
+    this.seq = counter.seq
   }
 
   next()
 })
 
-export const ExpenseModel = mongoose.model<Expense>('expense', ExpenseSchema)
-export const ExpenseCategoryModel = mongoose.model<ExpenseCategory>('expense-category', ExpenseCategorySchema)
+export const ExpenseModel = mongoose.model<ExpenseDoc>('expense', ExpenseSchema)
+export const ExpenseCategoryModel = mongoose.model<ExpenseCategoryDoc>('expense-category', ExpenseCategorySchema)

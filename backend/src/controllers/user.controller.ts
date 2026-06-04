@@ -1,10 +1,14 @@
-import type { NextFunction, Request, Response } from 'express'
-import * as UserService from '../services/user.service'
-import { HttpError } from '../utils/httpError'
+import type { NextFunction, Response } from 'express'
+import type { CreateUsersPayload, EditUsersPayload, GetUsersPayload, RemoveUsersPayload, ValidatedRequest } from '@/types/'
+import * as UserService from '@/services/user.service'
 
-export async function get(req: Request, res: Response, next: NextFunction) {
+export async function get(
+  req: ValidatedRequest<never, GetUsersPayload>,
+  res: Response,
+  next: NextFunction,
+) {
   try {
-    const serviceResponse = await UserService.get(req.body)
+    const serviceResponse = await UserService.get(req.validated.query)
 
     res.status(200).json(serviceResponse)
   }
@@ -13,9 +17,13 @@ export async function get(req: Request, res: Response, next: NextFunction) {
   }
 }
 
-export async function create(req: Request, res: Response, next: NextFunction) {
+export async function create(
+  req: ValidatedRequest<CreateUsersPayload, never>,
+  res: Response,
+  next: NextFunction,
+) {
   try {
-    const serviceResponse = await UserService.create(req.body)
+    const serviceResponse = await UserService.create(req.validated.body)
 
     res.status(201).json(serviceResponse)
   }
@@ -24,9 +32,13 @@ export async function create(req: Request, res: Response, next: NextFunction) {
   }
 }
 
-export async function edit(req: Request, res: Response, next: NextFunction) {
+export async function edit(
+  req: ValidatedRequest<EditUsersPayload, never>,
+  res: Response,
+  next: NextFunction,
+) {
   try {
-    const serviceResponse = await UserService.edit(req.body)
+    const serviceResponse = await UserService.edit(req.validated.body)
 
     res.status(200).json(serviceResponse)
   }
@@ -35,35 +47,13 @@ export async function edit(req: Request, res: Response, next: NextFunction) {
   }
 }
 
-export async function remove(req: Request, res: Response, next: NextFunction) {
+export async function remove(
+  req: ValidatedRequest<RemoveUsersPayload, never>,
+  res: Response,
+  next: NextFunction,
+) {
   try {
-    const serviceResponse = await UserService.remove(req.body)
-
-    res.status(200).json(serviceResponse)
-  }
-  catch (err) {
-    next(err)
-  }
-}
-
-export async function duplicate(req: Request, res: Response, next: NextFunction) {
-  try {
-    const serviceResponse = await UserService.duplicate(req.body)
-
-    res.status(200).json(serviceResponse)
-  }
-  catch (err) {
-    next(err)
-  }
-}
-
-export async function importHandler(req: Request, res: Response, next: NextFunction) {
-  try {
-    if (!req.file) {
-      throw new HttpError(400, 'No file uploaded', 'NO_FILE_UPLOADED')
-    }
-
-    const serviceResponse = await UserService.importHandler({ file: req.file })
+    const serviceResponse = await UserService.remove(req.validated.body)
 
     res.status(200).json(serviceResponse)
   }

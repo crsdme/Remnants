@@ -1,17 +1,18 @@
-import type { Expense } from '../types/expense.type'
-import type { OrderPayment } from '../types/order-payment.type'
-import type { OrderItem } from '../types/order.type'
-import type * as StatisticTypes from '../types/statistic.type'
-import * as ExpenseService from './expense.service'
-import * as OrderPaymentService from './order-payment.service'
-import * as OrderService from './order.service'
+import type {
+  Expense,
+  GetStatisticParams,
+  GetStatisticResponse,
+  OrderItem,
+  OrderPayment,
+} from '@remnant/shared'
+import * as ExpenseService from '@/services/expense.service'
+import * as OrderPaymentService from '@/services/order-payment.service'
+import * as OrderService from '@/services/order.service'
 
-export async function get(
-  payload: StatisticTypes.getStatisticParams,
-): Promise<StatisticTypes.getStatisticResult> {
+export async function get(payload: GetStatisticParams): Promise<GetStatisticResponse> {
   const { date } = payload.filters || {}
 
-  const { orders, ordersCount } = await OrderService.get({
+  const { data: { items: orders } } = await OrderService.get({
     filters: {
       createdAt: date,
       removed: false,
@@ -21,7 +22,7 @@ export async function get(
 
   const orderIds = orders.map(order => order.id)
 
-  const { orderItems: orderItemsCreated } = await OrderService.getItems({
+  const { data: { items: orderItemsCreated } } = await OrderService.getItems({
     filters: {
       order: orderIds,
       showFullData: true,
@@ -29,17 +30,17 @@ export async function get(
     pagination: { full: true },
   })
 
-  const { orderPayments: paymentsForOrders } = await OrderPaymentService.get({
+  const { data: { items: paymentsForOrders } } = await OrderPaymentService.get({
     filters: { order: orderIds },
     pagination: { full: true },
   })
 
-  const { orderPayments: paymentsByDate, orderPaymentsCount } = await OrderPaymentService.get({
+  const { data: { items: paymentsByDate, totalCount: orderPaymentsCount } } = await OrderPaymentService.get({
     filters: { paymentDate: date },
     pagination: { full: true },
   })
 
-  const { expenses, expensesCount } = await ExpenseService.get({
+  const { data: { items: expenses, pagination: { total: expensesCount } } } = await ExpenseService.get({
     filters: {
       createdAt: date,
     },
@@ -53,7 +54,7 @@ export async function get(
   const statistics = {
     range: date,
     orders: {
-      count: ordersCount,
+      count: orders.length,
       amount: sumOrdersItemsAmount(orderItemsCreated),
       paid: {
         count: paid.count,

@@ -5,5 +5,13 @@
     "source.fixAll": "explicit",
     "source.fixAll.eslint": "explicit"
   },
-  "eslint.validate": ["javascript", "typescript", "typescriptreact", "json"]
+  "eslint.validate": [
+    "javascript",
+    "typescript",
+    "typescriptreact",
+    "json"
+  ],
+  "[typescript]": {
+    "editor.defaultFormatter": "vscode.typescript-language-features"
+  }
 }

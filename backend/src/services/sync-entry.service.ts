@@ -1,14 +1,29 @@
-import type * as SyncEntryTypes from '../types/sync-entry.type'
+import type {
+  CreateSyncEntryParams,
+  CreateSyncEntryResponse,
+  EditSyncEntryParams,
+  EditSyncEntryResponse,
+  GetSyncEntriesParams,
+  GetSyncEntriesResponse,
+  RemoveSyncEntriesParams,
+  RemoveSyncEntriesResponse,
+  SyncProductCreateParams,
+  SyncProductCreateResponse,
+  SyncProductEditParams,
+  SyncProductEditResponse,
+  SyncProductQuantityParams,
+  SyncProductQuantityResponse,
+} from '@remnant/shared'
 import axios from 'axios'
 import slugify from 'slugify'
-import { STORAGE_URLS } from '../config/constants'
-import { QuantityModel, SiteModel, SyncEntryModel } from '../models'
-import { buildUrl } from '../utils/buildUrl'
-import { HttpError } from '../utils/httpError'
-import { buildQuery, buildSortQuery } from '../utils/queryBuilder'
-import * as ProductService from './product.service'
+import { STORAGE_URLS } from '@/config/constants'
+import { QuantityModel, SiteModel, SyncEntryModel } from '@/models/'
+import * as ProductService from '@/services/product.service'
+import { buildUrl } from '@/utils/buildUrl'
+import { HttpError } from '@/utils/httpError'
+import { buildQuery, buildSortQuery } from '@/utils/queryBuilder'
 
-export async function get(payload: SyncEntryTypes.getSyncEntriesParams): Promise<SyncEntryTypes.getSyncEntriesResult> {
+export async function get(payload: GetSyncEntriesParams): Promise<GetSyncEntriesResponse> {
   const { current = 1, pageSize = 10 } = payload.pagination || {}
 
   const {
@@ -57,10 +72,22 @@ export async function get(payload: SyncEntryTypes.getSyncEntriesParams): Promise
   const syncEntries = syncEntriesRaw[0].syncEntries
   const syncEntriesCount = syncEntriesRaw[0].totalCount[0]?.count || 0
 
-  return { status: 'success', code: 'SYNC_ENTRIES_FETCHED', message: 'Sync entries fetched', syncEntries, syncEntriesCount }
+  return {
+    status: 'success',
+    code: 'SYNC_ENTRIES_FETCHED',
+    message: 'Sync entries fetched',
+    data: {
+      items: syncEntries,
+      pagination: {
+        page: current,
+        pageSize,
+        total: syncEntriesCount,
+      },
+    },
+  }
 }
 
-export async function create(payload: SyncEntryTypes.createSyncEntryParams): Promise<SyncEntryTypes.createSyncEntryResult> {
+export async function create(payload: CreateSyncEntryParams): Promise<CreateSyncEntryResponse> {
   const {
     sourceType,
     site,
@@ -71,10 +98,15 @@ export async function create(payload: SyncEntryTypes.createSyncEntryParams): Pro
     site,
   })
 
-  return { status: 'success', code: 'SYNC_ENTRY_CREATED', message: 'Sync entry created', syncEntry }
+  return {
+    status: 'success',
+    code: 'SYNC_ENTRY_CREATED',
+    message: 'Sync entry created',
+    data: syncEntry,
+  }
 }
 
-export async function edit(payload: SyncEntryTypes.editSyncEntryParams): Promise<SyncEntryTypes.editSyncEntryResult> {
+export async function edit(payload: EditSyncEntryParams): Promise<EditSyncEntryResponse> {
   const {
     id,
     site,
@@ -90,10 +122,15 @@ export async function edit(payload: SyncEntryTypes.editSyncEntryParams): Promise
     throw new HttpError(400, 'Sync entry not edited', 'SYNC_ENTRY_NOT_EDITED')
   }
 
-  return { status: 'success', code: 'SYNC_ENTRY_EDITED', message: 'Sync entry edited', syncEntry }
+  return {
+    status: 'success',
+    code: 'SYNC_ENTRY_EDITED',
+    message: 'Sync entry edited',
+    data: syncEntry,
+  }
 }
 
-export async function remove(payload: SyncEntryTypes.removeSyncEntriesParams): Promise<SyncEntryTypes.removeSyncEntriesResult> {
+export async function remove(payload: RemoveSyncEntriesParams): Promise<RemoveSyncEntriesResponse> {
   const { ids } = payload
 
   const syncEntries = await SyncEntryModel.updateMany(
@@ -105,10 +142,14 @@ export async function remove(payload: SyncEntryTypes.removeSyncEntriesParams): P
     throw new HttpError(400, 'Sync entries not removed', 'SYNC_ENTRIES_NOT_REMOVED')
   }
 
-  return { status: 'success', code: 'SYNC_ENTRIES_REMOVED', message: 'Sync entries removed' }
+  return {
+    status: 'success',
+    code: 'SYNC_ENTRIES_REMOVED',
+    message: 'Sync entries removed',
+  }
 }
 
-export async function syncProductCreate(payload: SyncEntryTypes.syncProductCreateParams): Promise<SyncEntryTypes.syncProductCreateResult> {
+export async function syncProductCreate(payload: SyncProductCreateParams): Promise<SyncProductCreateResponse> {
   const { siteId, productId } = payload
 
   const site = await SiteModel.findOne({ _id: siteId })
@@ -123,7 +164,7 @@ export async function syncProductCreate(payload: SyncEntryTypes.syncProductCreat
     await SyncEntryModel.create({ sourceType: 'product', sourceId: productId, site: siteId, status: 'pending' })
   }
 
-  const { products: [product] } = await ProductService.get({
+  const { data: { items: [product] } } = await ProductService.get({
     filters: { ids: [productId] },
   })
 
@@ -283,10 +324,14 @@ export async function syncProductCreate(payload: SyncEntryTypes.syncProductCreat
     })
   }
 
-  return { status: 'success', code: 'SYNC_ENTRY_CREATED', message: 'Sync entry created' }
+  return {
+    status: 'success',
+    code: 'SYNC_ENTRY_CREATED',
+    message: 'Sync entry created',
+  }
 }
 
-export async function syncProductEdit(payload: SyncEntryTypes.syncProductEditParams): Promise<SyncEntryTypes.syncProductEditResult> {
+export async function syncProductEdit(payload: SyncProductEditParams): Promise<SyncProductEditResponse> {
   const { siteId, productId, difference } = payload
 
   if (!difference || Object.keys(difference).length === 0)
@@ -299,10 +344,11 @@ export async function syncProductEdit(payload: SyncEntryTypes.syncProductEditPar
 
   const syncEntry = await SyncEntryModel.findOne({ sourceType: 'product', sourceId: productId, site: siteId })
 
-  if (!syncEntry)
-    return { status: 'error', code: 'SYNC_ENTRY_NOT_FOUND', message: 'Sync entry not found' }
+  if (!syncEntry) {
+    throw new HttpError(400, 'Sync entry not found', 'SYNC_ENTRY_NOT_FOUND')
+  }
 
-  const { products: [product] } = await ProductService.get({
+  const { data: { items: [product] } } = await ProductService.get({
     filters: { ids: [productId] },
   })
 
@@ -481,7 +527,7 @@ export async function syncProductEdit(payload: SyncEntryTypes.syncProductEditPar
   return { status: 'success', code: 'SYNC_ENTRY_EDITED', message: 'Sync entry edited' }
 }
 
-export async function syncProductQuantity(payload: SyncEntryTypes.syncProductQuantityParams): Promise<SyncEntryTypes.syncProductQuantityResult> {
+export async function syncProductQuantity(payload: SyncProductQuantityParams): Promise<SyncProductQuantityResponse> {
   const { siteId, productId } = payload
 
   const site = await SiteModel.findOne({ _id: siteId })
@@ -492,12 +538,12 @@ export async function syncProductQuantity(payload: SyncEntryTypes.syncProductQua
   const syncEntry = await SyncEntryModel.findOne({ sourceType: 'product', sourceId: productId, site: siteId })
 
   if (!syncEntry)
-    return { status: 'success', code: 'SYNC_ENTRY_NOT_FOUND', message: 'Sync entry not found' }
+    throw new HttpError(400, 'Sync entry not found', 'SYNC_ENTRY_NOT_FOUND')
 
   const quantities = await QuantityModel.find({ product: productId, warehouse: { $in: site.warehouses } })
 
   if (quantities.length === 0)
-    return { status: 'success', code: 'QUANTITY_NOT_FOUND', message: 'Quantity not found' }
+    throw new HttpError(400, 'Quantity not found', 'QUANTITY_NOT_FOUND')
 
   const quantity = quantities.reduce((acc, quantity) => acc + quantity.count, 0)
 

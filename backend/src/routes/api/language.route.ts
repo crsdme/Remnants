@@ -1,52 +1,41 @@
+import type { RequestHandler } from 'express'
+import {
+  createLanguageSchema,
+  editLanguageSchema,
+  getLanguageSchema,
+  removeLanguageSchema,
+} from '@remnant/shared'
 import { Router } from 'express'
-import * as LanguageController from '../../controllers/language.controller'
-import { uploadMiddleware, validateBodyRequest, validateQueryRequest, validateUpload } from '../../middleware/'
-import { checkPermissions } from '../../middleware/permission.middleware'
-import { batchLanguageSchema, createLanguageSchema, duplicateLanguageSchema, editLanguageSchema, getLanguageSchema, removeLanguageSchema } from '../../schemas/language.schema'
+import * as LanguageController from '@/controllers/language.controller'
+import { checkPermissions, validateBodyRequest, validateQueryRequest } from '@/middleware'
 
 const router = Router()
 
 router.get(
   '/get',
   validateQueryRequest(getLanguageSchema),
-  LanguageController.get,
+  LanguageController.get as RequestHandler,
 )
+
 router.post(
   '/create',
   validateBodyRequest(createLanguageSchema),
   checkPermissions('language.create'),
-  LanguageController.create,
+  LanguageController.create as RequestHandler,
 )
+
 router.post(
   '/edit',
   validateBodyRequest(editLanguageSchema),
   checkPermissions('language.edit'),
-  LanguageController.edit,
+  LanguageController.edit as RequestHandler,
 )
+
 router.post(
   '/remove',
   validateBodyRequest(removeLanguageSchema),
   checkPermissions('language.remove'),
-  LanguageController.remove,
-)
-router.post(
-  '/batch',
-  validateBodyRequest(batchLanguageSchema),
-  checkPermissions('language.batch'),
-  LanguageController.batch,
-)
-router.post(
-  '/import',
-  uploadMiddleware({ fieldName: 'file', storageKey: 'import' }),
-  validateUpload('file'),
-  checkPermissions('language.import'),
-  LanguageController.importHandler,
-)
-router.post(
-  '/duplicate',
-  validateBodyRequest(duplicateLanguageSchema),
-  checkPermissions('language.duplicate'),
-  LanguageController.duplicate,
+  LanguageController.remove as RequestHandler,
 )
 
 export default router

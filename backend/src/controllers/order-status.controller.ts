@@ -1,9 +1,22 @@
-import type { NextFunction, Request, Response } from 'express'
-import * as OrderStatusService from '../services/order-status.service'
+import type { NextFunction, Response } from 'express'
+import type {
+  CreateOrderStatusPayload,
+  EditOrderStatusPayload,
+  GetOrderStatusesPayload,
+  RemoveOrderStatusesPayload,
+  ValidatedRequest,
+} from '@/types'
+import * as OrderStatusService from '@/services/order-status.service'
 
-export async function get(req: Request, res: Response, next: NextFunction) {
+export async function get(
+  req: ValidatedRequest<GetOrderStatusesPayload, never>,
+  res: Response,
+  next: NextFunction,
+): Promise<void> {
   try {
-    const serviceResponse = await OrderStatusService.get(req.body)
+    const serviceResponse = await OrderStatusService.get({
+      payload: req.validated.query,
+    })
 
     res.status(200).json(serviceResponse)
   }
@@ -12,9 +25,15 @@ export async function get(req: Request, res: Response, next: NextFunction) {
   }
 }
 
-export async function create(req: Request, res: Response, next: NextFunction) {
+export async function create(
+  req: ValidatedRequest<CreateOrderStatusPayload, never>,
+  res: Response,
+  next: NextFunction,
+): Promise<void> {
   try {
-    const serviceResponse = await OrderStatusService.create(req.body)
+    const serviceResponse = await OrderStatusService.create({
+      payload: req.validated.body,
+    })
 
     res.status(201).json(serviceResponse)
   }
@@ -23,9 +42,15 @@ export async function create(req: Request, res: Response, next: NextFunction) {
   }
 }
 
-export async function edit(req: Request, res: Response, next: NextFunction) {
+export async function edit(
+  req: ValidatedRequest<EditOrderStatusPayload, never>,
+  res: Response,
+  next: NextFunction,
+): Promise<void> {
   try {
-    const serviceResponse = await OrderStatusService.edit(req.body)
+    const serviceResponse = await OrderStatusService.edit({
+      payload: req.validated.body,
+    })
 
     res.status(200).json(serviceResponse)
   }
@@ -34,9 +59,15 @@ export async function edit(req: Request, res: Response, next: NextFunction) {
   }
 }
 
-export async function remove(req: Request, res: Response, next: NextFunction) {
+export async function remove(
+  req: ValidatedRequest<RemoveOrderStatusesPayload, never>,
+  res: Response,
+  next: NextFunction,
+): Promise<void> {
   try {
-    const serviceResponse = await OrderStatusService.remove(req.body)
+    const serviceResponse = await OrderStatusService.remove({
+      payload: req.validated.body,
+    })
 
     res.status(200).json(serviceResponse)
   }

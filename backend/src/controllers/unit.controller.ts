@@ -1,6 +1,6 @@
 import type { NextFunction, Request, Response } from 'express'
-import * as UnitService from '../services/unit.service'
-import { HttpError } from '../utils/httpError'
+import * as UnitService from '@/services/unit.service'
+import { HttpError } from '@/utils/httpError'
 
 export async function get(req: Request, res: Response, next: NextFunction) {
   try {

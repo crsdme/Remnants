@@ -1,8 +1,7 @@
+import { createInventorySchema, editInventorySchema, getInventoriesSchema, getInventoryItemsSchema, removeInventoriesSchema, scanBarcodeToDraftSchema } from '@remnant/shared'
 import { Router } from 'express'
-import * as InventoriesController from '../../controllers/inventories.controller'
-import { validateBodyRequest, validateQueryRequest } from '../../middleware'
-import { checkPermissions } from '../../middleware/permission.middleware'
-import { createInventorySchema, editInventorySchema, getInventoriesSchema, getInventoryItemsSchema, removeInventoriesSchema, scanBarcodeToDraftSchema } from '../../schemas/inventories.schema'
+import * as InventoriesController from '@/controllers/inventories.controller'
+import { checkPermissions, validateBodyRequest, validateQueryRequest } from '@/middleware'
 
 const router = Router()
 
@@ -11,28 +10,33 @@ router.get(
   validateQueryRequest(getInventoriesSchema),
   InventoriesController.get,
 )
+
 router.get(
   '/get/items',
   validateQueryRequest(getInventoryItemsSchema),
   InventoriesController.getItems,
 )
+
 router.get(
   '/scan/barcode',
   validateQueryRequest(scanBarcodeToDraftSchema),
   InventoriesController.scanBarcodeToDraft,
 )
+
 router.post(
   '/create',
   validateBodyRequest(createInventorySchema),
   checkPermissions('inventories.create'),
   InventoriesController.create,
 )
+
 router.post(
   '/edit',
   validateBodyRequest(editInventorySchema),
   checkPermissions('inventories.edit'),
   InventoriesController.edit,
 )
+
 router.post(
   '/remove',
   validateBodyRequest(removeInventoriesSchema),

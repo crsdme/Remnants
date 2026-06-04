@@ -1,12 +1,23 @@
-import type { RequestUser } from '../types/common.type'
-import type * as ProcurementTypes from '../types/procurement.type'
-import { STORAGE_URLS } from '../config/constants'
-import { BarcodeModel, ProcurementItemModel, ProcurementModel } from '../models'
-import { HttpError } from '../utils/httpError'
-import { buildQuery, buildSortQuery } from '../utils/queryBuilder'
-import * as MoneyTransactionService from './money-transaction.service'
+import type {
+  createProcurementParams,
+  editProcurementParams,
+  getProcurementItemsParams,
+  getProcurementItemsResult,
+  getProcurementsParams,
+  getProcurementsResult,
+  payProcurementParams,
+  removeProcurementsParams,
+  RequestUser,
+  scanBarcodeParams,
+  scanBarcodeResult,
+} from '@remnant/shared'
+import { STORAGE_URLS } from '@/config/constants'
+import { BarcodeModel, ProcurementItemModel, ProcurementModel } from '@/models/'
+import * as MoneyTransactionService from '@/services/money-transaction.service'
+import { HttpError } from '@/utils/'
+import { buildQuery, buildSortQuery } from '@/utils/queryBuilder'
 
-export async function get(payload: ProcurementTypes.getProcurementsParams): Promise<ProcurementTypes.getProcurementsResult> {
+export async function get(payload: getProcurementsParams): Promise<getProcurementsResult> {
   const { current = 1, pageSize = 10 } = payload.pagination || {}
 
   const {
@@ -340,7 +351,7 @@ export async function get(payload: ProcurementTypes.getProcurementsParams): Prom
   return { status: 'success', code: 'PROCUREMENTS_FETCHED', message: 'Procurements fetched', procurements, procurementsCount }
 }
 
-export async function getItems(payload: ProcurementTypes.getProcurementItemsParams): Promise<ProcurementTypes.getProcurementItemsResult> {
+export async function getItems(payload: getProcurementItemsParams): Promise<getProcurementItemsResult> {
   const { current = 1, pageSize = 10, full = false } = payload.pagination || {}
 
   const {
@@ -589,9 +600,9 @@ export async function getItems(payload: ProcurementTypes.getProcurementItemsPara
         procurementItems: full
           ? []
           : [
-              { $skip: (current - 1) * pageSize },
-              { $limit: pageSize },
-            ],
+            { $skip: (current - 1) * pageSize },
+            { $limit: pageSize },
+          ],
         totalCount: [
           { $count: 'count' },
         ],
@@ -621,7 +632,7 @@ export async function getItems(payload: ProcurementTypes.getProcurementItemsPara
   return { status: 'success', code: 'PROCUREMENT_ITEMS_FETCHED', message: 'Procurement items fetched', procurementItems, procurementItemsCount }
 }
 
-export async function scanBarcode(payload: ProcurementTypes.scanBarcodeParams): Promise<ProcurementTypes.scanBarcodeResult> {
+export async function scanBarcode(payload: scanBarcodeParams): Promise<scanBarcodeResult> {
   const { barcode } = payload
 
   const filterRules = {
@@ -903,7 +914,7 @@ export async function scanBarcode(payload: ProcurementTypes.scanBarcodeParams): 
   return { status: 'success', code: 'PROCUREMENT_ITEMS_FETCHED', message: 'Procurement items fetched', procurementItems }
 }
 
-export async function create(payload: ProcurementTypes.createProcurementParams, user: RequestUser) {
+export async function create(payload: createProcurementParams, user: RequestUser) {
   const { supplier, comment, items } = payload
   const createdBy = user.id
 
@@ -927,7 +938,7 @@ export async function create(payload: ProcurementTypes.createProcurementParams, 
   return { status: 'success', code: 'PROCUREMENT_CREATED', message: 'Procurement created', procurement }
 }
 
-export async function edit(payload: ProcurementTypes.editProcurementParams, user: RequestUser) {
+export async function edit(payload: editProcurementParams, user: RequestUser) {
   const { id, supplier, status, warehouse, expenses, payments, comment } = payload
 
   // const oldProcurement = await ProcurementModel.findById(id)
@@ -945,7 +956,7 @@ export async function edit(payload: ProcurementTypes.editProcurementParams, user
   return { status: 'success', code: 'PROCUREMENT_EDITED', message: 'Procurement edited', procurement }
 }
 
-export async function remove(payload: ProcurementTypes.removeProcurementsParams, user: RequestUser) {
+export async function remove(payload: removeProcurementsParams, user: RequestUser) {
   const { ids } = payload
   const removedBy = user.id
 
@@ -1013,7 +1024,7 @@ export async function remove(payload: ProcurementTypes.removeProcurementsParams,
   return { status: 'success', code: 'PROCUREMENT_REMOVED', message: 'Procurement removed' }
 }
 
-export async function payProcurement(payload: ProcurementTypes.payProcurementParams, user: RequestUser) {
+export async function payProcurement(payload: payProcurementParams, user: RequestUser) {
   const { procurementId, cashregister, account, currency, amount, comment } = payload
   const createdBy = user.id
 

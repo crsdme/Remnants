@@ -1,197 +1,75 @@
-import type * as UserTypes from '../types/user.type'
-import bcrypt from 'bcrypt'
-import { UserModel } from '../models'
-import { HttpError } from '../utils/httpError'
-import { parseFile, toBoolean } from '../utils/parseTools'
-import { buildQuery, buildSortQuery } from '../utils/queryBuilder'
+import type {
+  CreateUserResponse,
+  EditUserResponse,
+  GetUsersResponse,
+  PopulatedUser,
+  RemoveUsersResponse,
+} from '@remnant/shared'
+import type { CreateUsersPayload, EditUsersPayload, GetUsersPayload, RemoveUsersPayload } from '@/types/'
+import { mapUserToDTO } from '@/mappers/'
+import * as UserRepository from '@/repositories/users.repo'
 
-export async function get(payload: UserTypes.getUsersParams): Promise<UserTypes.getUsersResult> {
-  const { current = 1, pageSize = 10 } = payload.pagination || {}
+export async function get(payload: GetUsersPayload): Promise<GetUsersResponse> {
+  const { items, total, page, pageSize } = await UserRepository.list(payload)
 
-  const {
-    name = '',
-    login = '',
-    role = '',
-    active = undefined,
-    createdAt = {
-      from: undefined,
-      to: undefined,
-    },
-    updatedAt = {
-      from: undefined,
-      to: undefined,
-    },
-  } = payload.filters || {}
-
-  const sorters = buildSortQuery(payload.sorters || {}, { name: 1 })
-
-  const filterRules = {
-    name: { type: 'string' },
-    login: { type: 'string' },
-    role: { type: 'string' },
-    active: { type: 'array' },
-    createdAt: { type: 'dateRange' },
-    updatedAt: { type: 'dateRange' },
-  } as const
-
-  const query = buildQuery({
-    filters: { name, login, role, active, createdAt, updatedAt },
-    rules: filterRules,
-  })
-
-  const pipeline = [
-    {
-      $match: query,
-    },
-    {
-      $lookup: {
-        from: 'user-roles',
-        localField: 'role',
-        foreignField: '_id',
-        as: 'role',
+  return {
+    status: 'success',
+    code: 'USERS_FETCHED',
+    message: 'Users fetched',
+    data: {
+      items,
+      pagination: {
+        total,
+        page,
+        pageSize,
       },
     },
-    {
-      $unwind: '$role',
-    },
-    {
-      $sort: sorters,
-    },
-    {
-      $facet: {
-        users: [
-          { $skip: (current - 1) * pageSize },
-          { $limit: pageSize },
-          { $project: { password: 0 } },
-        ],
-        totalCount: [
-          { $count: 'count' },
-        ],
-      },
-    },
-  ]
-
-  const usersRaw = await UserModel.aggregate(pipeline).exec()
-
-  const users = usersRaw[0].users.map((doc: any) => UserModel.hydrate(doc))
-  const usersCount = usersRaw[0].totalCount[0]?.count || 0
-
-  return { status: 'success', code: 'USERS_FETCHED', message: 'Users fetched', users, usersCount }
+  }
 }
 
-export async function create(payload: UserTypes.createUserParams): Promise<UserTypes.createUserResult> {
-  const { name, login, password, role, active } = payload
+export async function create(payload: CreateUsersPayload): Promise<CreateUserResponse> {
+  const user = await UserRepository.createOne(payload)
 
-  const hashedPassword = await bcrypt.hash(password, 10)
-
-  const sameLogin = await UserModel.findOne({ login, removed: false })
-
-  if (sameLogin) {
-    throw new HttpError(409, 'User with this login already exists', 'USER_ALREADY_EXISTS')
+  return {
+    status: 'success',
+    code: 'USER_CREATED',
+    message: 'User created',
+    data: mapUserToDTO(user),
   }
-
-  const user = await UserModel.create({ name, login, password: hashedPassword, role, active })
-
-  if (!user) {
-    throw new HttpError(400, 'User not created', 'USER_NOT_CREATED')
-  }
-
-  return { status: 'success', code: 'USER_CREATED', message: 'User created', user: user.removeSensitiveData({ exclude: ['password'] }) }
 }
 
-export async function edit(payload: UserTypes.editUserParams): Promise<UserTypes.editUserResult> {
-  const { id, name, login, password, role, active } = payload
+export async function edit(payload: EditUsersPayload): Promise<EditUserResponse> {
+  const user = await UserRepository.updateById(payload.id, payload)
 
-  let query: Record<string, any> = { name, login, role, active }
-
-  if (password) {
-    const hashedPassword = await bcrypt.hash(password, 10)
-    query = { ...query, password: hashedPassword }
+  return {
+    status: 'success',
+    code: 'USER_EDITED',
+    message: 'User edited',
+    data: mapUserToDTO(user),
   }
-
-  const user = await UserModel.findOneAndUpdate({ _id: id }, query)
-
-  if (!user) {
-    throw new HttpError(400, 'User not edited', 'USER_NOT_EDITED')
-  }
-
-  return { status: 'success', code: 'USER_EDITED', message: 'User edited', user: user.removeSensitiveData({ exclude: ['password'] }) }
 }
 
-export async function remove(payload: UserTypes.removeUsersParams): Promise<UserTypes.removeUsersResult> {
-  const { ids } = payload
-
-  const users = await UserModel.updateMany(
-    { _id: { $in: ids } },
-    { $set: { removed: true } },
-  )
-
-  if (!users) {
-    throw new HttpError(400, 'Users not removed', 'USERS_NOT_REMOVED')
+export async function remove(payload: RemoveUsersPayload): Promise<RemoveUsersResponse> {
+  for (const id of payload.ids) {
+    await UserRepository.removeById(id)
   }
 
-  return { status: 'success', code: 'USERS_REMOVED', message: 'Users removed' }
-}
-
-export async function importHandler(payload: UserTypes.importUsersParams): Promise<UserTypes.importUsersResult> {
-  const { file } = payload
-
-  const storedFile = await parseFile(file.path)
-
-  const parsedUsers = storedFile.map(row => ({
-    name: row.name,
-    login: row.login,
-    password: row.password,
-    role: row.role,
-    active: toBoolean(row.active),
-  }))
-
-  const logins = parsedUsers.map(user => user.login)
-  const existingUsers = await UserModel.find({
-    login: { $in: logins },
-    removed: false,
-  }).select('login')
-
-  if (existingUsers.length > 0) {
-    const existingLogins = existingUsers.map(u => u.login)
-    throw new HttpError(409, 'Users with these logins already exist', 'USER_ALREADY_EXISTS', existingLogins.join(', '))
+  return {
+    status: 'success',
+    code: 'USERS_REMOVED',
+    message: 'Users removed',
   }
-
-  await UserModel.create(parsedUsers)
-
-  return { status: 'success', code: 'USERS_IMPORTED', message: 'Users imported' }
 }
 
-export async function duplicate(payload: UserTypes.duplicateUsersParams): Promise<UserTypes.duplicateUsersResult> {
-  const { ids } = payload
+export async function checkPermission(permission: string, userId: string): Promise<boolean> {
+  const user = await UserRepository.findById(userId) as PopulatedUser | null
 
-  const users = await UserModel.find({ _id: { $in: ids } })
-
-  const usersCount = await UserModel.countDocuments()
-
-  const parsedUsers = users.map(user => ({
-    name: `${user.name} ${usersCount + 1}`,
-    login: `${user.login} ${usersCount + 1}`,
-    password: user.password,
-    role: user.role,
-    active: user.active,
-  }))
-
-  await UserModel.create(parsedUsers)
-
-  return { status: 'success', code: 'USERS_DUPLICATED', message: 'Users duplicated' }
-}
-
-export async function checkUserPermissions(permission: string, user: any) {
-  let isAccess = false
-
-  if (!user || !user.permissions) {
+  const role = user?.role
+  if (!role || !Array.isArray(role.permissions))
     return false
-  }
 
-  if (user?.permissions?.includes(permission) || user?.permissions?.includes('other.admin')) {
-    isAccess = true
-  }
-
-  return isAccess
+  return (
+    role.permissions.includes(permission)
+    || role.permissions.includes('other.admin')
+  )
 }

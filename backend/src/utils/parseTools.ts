@@ -21,7 +21,7 @@ export async function parseFile(filePath: string): Promise<any[]> {
   }
 }
 
-function parseCSV(filePath: string, delimiter = ','): Promise<any[]> {
+async function parseCSV(filePath: string, delimiter = ','): Promise<any[]> {
   const results: any[] = []
 
   return new Promise((resolve, reject) => {
@@ -40,7 +40,7 @@ function parseXLSX(filePath: string): any[] {
   return xlsx.utils.sheet_to_json(sheet)
 }
 
-function parseJSON(filePath: string): Promise<any[]> {
+async function parseJSON(filePath: string): Promise<any[]> {
   return new Promise((resolve, reject) => {
     readFile(filePath, 'utf-8', (err, data) => {
       if (err) {
@@ -84,9 +84,13 @@ export function extractLangMap(row: Record<string, string>, prefix: string): Rec
   return result
 }
 
-export function parseFormData(body: Record<string, any>) {
-  const obj: Record<string, any> = {}
+export function parseFormData(body: Record<string, unknown>): Record<string, unknown> {
+  const obj: Record<string, unknown> = {}
   for (const [key, value] of Object.entries(body)) {
+    if (typeof value !== 'string') {
+      obj[key] = value
+      continue
+    }
     try {
       obj[key] = JSON.parse(value)
     }
@@ -171,7 +175,7 @@ function mergeValues(values: unknown[]): unknown {
     .flatMap(v => (Array.isArray(v) ? v : [v]))
     .filter(v => v !== '' && v != null)
 
-  if (flat.every(v => typeof v === 'string' && UUID_RE.test(v as string))) {
+  if (flat.every(v => typeof v === 'string' && UUID_RE.test(v))) {
     const seen = new Set<string>()
     const uniq: string[] = []
     for (const v of flat as string[]) {

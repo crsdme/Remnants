@@ -1,111 +1,71 @@
-import type { Code, DateRange, IdType, Message, Pagination, RequestUser, Sorter, Status } from './common.type'
+import type {
+  AutomationDTO,
+} from '@remnant/shared'
+import type { z } from 'zod'
+import {
+  createAutomationSchema,
+  editAutomationSchema,
+  getAutomationsSchema,
+  removeAutomationsSchema,
+  runAutomationsSchema,
+} from '@remnant/shared'
 
-export interface Automation {
-  id: IdType
-  trigger: Trigger
-  conditions: Condition[]
-  actions: Action[]
+export interface AutomationTriggerDB {
+  type: string
+  params: string[]
+}
+
+export interface AutomationConditionDB {
+  field: string
+  operator: string
+  params: unknown
+}
+
+export interface AutomationActionDB {
+  field: string
+  params: unknown
+}
+
+export interface AutomationDB {
+  _id: string
+  name: string
+  trigger: AutomationTriggerDB
+  conditions: AutomationConditionDB[]
+  actions: AutomationActionDB[]
   active: boolean
   removed: boolean
   createdAt: Date
   updatedAt: Date
 }
 
-export interface Trigger {
-  type: string
-  params: IdType[]
+export type GetAutomationsPayload = z.output<typeof getAutomationsSchema>
+export function parseGetAutomations(x: unknown): GetAutomationsPayload {
+  return getAutomationsSchema.parse(x)
 }
 
-export interface Condition {
-  field: string
-  operator: string
-  params: any
+export type CreateAutomationPayload = z.output<typeof createAutomationSchema>
+export function parseCreateAutomation(x: unknown): CreateAutomationPayload {
+  return createAutomationSchema.parse(x)
 }
 
-export interface Action {
-  field: string
-  params: any
+export type EditAutomationPayload = z.output<typeof editAutomationSchema>
+export function parseEditAutomation(x: unknown): EditAutomationPayload {
+  return editAutomationSchema.parse(x)
 }
 
-export interface getAutomationsResult {
-  status: Status
-  code: Code
-  message: Message
-  automations: Automation[]
-  automationsCount: number
+export type RemoveAutomationsPayload = z.output<typeof removeAutomationsSchema>
+export function parseRemoveAutomations(x: unknown): RemoveAutomationsPayload {
+  return removeAutomationsSchema.parse(x)
 }
 
-export interface getAutomationsFilters {
-  trigger: Trigger
-  conditions: Condition[]
-  actions: Action[]
-  active: boolean[]
-  createdAt: DateRange
-  updatedAt: DateRange
+export type RunAutomationsPayload = z.output<typeof runAutomationsSchema>
+export function parseRunAutomations(x: unknown): RunAutomationsPayload {
+  return runAutomationsSchema.parse(x)
 }
 
-export interface getAutomationsSorters {
-  trigger: Sorter
-  conditions: Sorter
-  actions: Sorter
-  active: Sorter
-}
+export type GetAutomationsRepoPayload = GetAutomationsPayload
+export interface GetAutomationsRepoResult { items: AutomationDTO[], total: number, page: number, pageSize: number }
 
-export interface getAutomationsParams {
-  filters?: Partial<getAutomationsFilters>
-  sorters?: Partial<getAutomationsSorters>
-  pagination?: Partial<Pagination>
-}
+export type CreateAutomationsRepoPayload = CreateAutomationPayload
 
-export interface createAutomationResult {
-  status: Status
-  code: Code
-  message: Message
-  automation: Automation
-}
-
-export interface createAutomationParams {
-  name: string
-  trigger: Trigger
-  conditions: Condition[]
-  actions: Action[]
-  active?: boolean
-}
-
-export interface editAutomationResult {
-  status: Status
-  code: Code
-  message: Message
-  automation: Automation
-}
-
-export interface editAutomationParams {
-  id: IdType
-  name: string
-  trigger: Trigger
-  conditions: Condition[]
-  actions: Action[]
-  active?: boolean
-}
-
-export interface removeAutomationsResult {
-  status: Status
-  code: Code
-  message: Message
-}
-
-export interface removeAutomationsParams {
-  ids: IdType[]
-}
-
-export interface runAutomationsParams {
-  type: string
-  entityId: IdType
-  user: RequestUser
-}
-
-export interface runAutomationsResult {
-  status: Status
-  code: Code
-  message: Message
-}
+export type EditAutomationsRepoPayload = EditAutomationPayload

@@ -1,49 +1,44 @@
 import type { NextFunction, Request, Response } from 'express'
-import type { JwtPayload } from 'jsonwebtoken'
-import jwt from 'jsonwebtoken'
-import logger from '../utils/logger'
+import logger from '@/utils/logger'
 
-export function requestLogger(req: Request, res: Response, next: NextFunction) {
+type AnyReq = Request<any, any, unknown, any>
+
+export function requestLogger(req: AnyReq, res: Response, next: NextFunction) {
   res.on('finish', () => {
     const { method, originalUrl, body, ip } = req
     const { statusCode } = res
 
     const safeBody = sanitizeBody(body)
 
-    const userId = (req as any).user?.id || undefined
-    const decodedToken = jwt.decode(userId) as JwtPayload | null
-    const userIdFromToken = decodedToken?.id || 'unknown'
+    const userId = req.user?.id ?? 'unknown'
+    const message = `[${userId}] ${ip} ${method} ${originalUrl} ${statusCode} - Payload: ${JSON.stringify(safeBody)}`
 
-    const message = `[${userIdFromToken}] ${ip} ${method} ${originalUrl} ${statusCode} - Payload: ${JSON.stringify(safeBody)}`
-
-    if (statusCode >= 500) {
+    if (statusCode >= 500)
       logger.error(message)
-    }
-    else if (statusCode >= 400) {
+    else if (statusCode >= 400)
       logger.warn(message)
-    }
-    else {
-      logger.info(message)
-    }
+    else logger.info(message)
   })
 
   next()
 }
 
-const sensitiveFields = ['password', 'token', 'refreshToken', 'accessToken', 'secret', 'apiKey']
+const sensitiveFields = ['password', 'token', 'refreshToken', 'accessToken', 'secret', 'apiKey'] as const
 
-function sanitizeBody(body: Record<string, any>): Record<string, any> {
-  if (!body || typeof body !== 'object') {
+function sanitizeBody(body: unknown): Record<string, unknown> {
+  if (!isPlainObject(body))
     return {}
-  }
 
-  const sanitized = { ...body }
+  const sanitized: Record<string, unknown> = { ...body }
 
   for (const field of sensitiveFields) {
-    if (sanitized[field] !== undefined) {
+    if (field in sanitized)
       sanitized[field] = '***'
-    }
   }
 
   return sanitized
+}
+
+function isPlainObject(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
 }

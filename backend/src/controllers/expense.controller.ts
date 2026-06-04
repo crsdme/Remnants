@@ -1,9 +1,16 @@
-import type { NextFunction, Request, Response } from 'express'
-import * as ExpenseService from '../services/expense.service'
+import type { NextFunction, Response } from 'express'
+import type { CreateExpensePayload, EditExpensePayload, GetExpensesPayload, RemoveExpensesPayload, ValidatedRequest } from '@/types'
+import * as ExpenseService from '@/services/expense.service'
 
-export async function get(req: Request, res: Response, next: NextFunction) {
+export async function get(
+  req: ValidatedRequest<GetExpensesPayload, never>,
+  res: Response,
+  next: NextFunction,
+) {
   try {
-    const serviceResponse = await ExpenseService.get(req.body)
+    const serviceResponse = await ExpenseService.get({
+      payload: req.validated.query,
+    })
 
     res.status(200).json(serviceResponse)
   }
@@ -12,9 +19,15 @@ export async function get(req: Request, res: Response, next: NextFunction) {
   }
 }
 
-export async function create(req: Request, res: Response, next: NextFunction) {
+export async function create(
+  req: ValidatedRequest<never, CreateExpensePayload>,
+  res: Response,
+  next: NextFunction,
+) {
   try {
-    const serviceResponse = await ExpenseService.create(req.body)
+    const serviceResponse = await ExpenseService.create({
+      payload: req.validated.body,
+    })
 
     res.status(201).json(serviceResponse)
   }
@@ -23,9 +36,15 @@ export async function create(req: Request, res: Response, next: NextFunction) {
   }
 }
 
-export async function edit(req: Request, res: Response, next: NextFunction) {
+export async function edit(
+  req: ValidatedRequest<never, EditExpensePayload>,
+  res: Response,
+  next: NextFunction,
+) {
   try {
-    const serviceResponse = await ExpenseService.edit(req.body)
+    const serviceResponse = await ExpenseService.edit({
+      payload: req.validated.body,
+    })
 
     res.status(200).json(serviceResponse)
   }
@@ -34,9 +53,15 @@ export async function edit(req: Request, res: Response, next: NextFunction) {
   }
 }
 
-export async function remove(req: Request, res: Response, next: NextFunction) {
+export async function remove(
+  req: ValidatedRequest<never, RemoveExpensesPayload>,
+  res: Response,
+  next: NextFunction,
+) {
   try {
-    const serviceResponse = await ExpenseService.remove(req.body)
+    const serviceResponse = await ExpenseService.remove({
+      payload: req.validated.body,
+    })
 
     res.status(200).json(serviceResponse)
   }

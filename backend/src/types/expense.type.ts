@@ -1,110 +1,56 @@
-import type { Code, DateRange, IdType, Message, Pagination, Sorter, Status } from './common.type'
+import type {
+  ExpenseDTO,
+} from '@remnant/shared'
+import type { z } from 'zod'
+import {
+  createExpenseSchema,
+  editExpenseSchema,
+  getExpensesSchema,
+  removeExpensesSchema,
+} from '@remnant/shared'
 
-export interface Expense {
-  id: IdType
+export interface ExpenseDB {
+  _id: string
   seq: number
   amount: number
-  currency: IdType
-  cashregister: IdType
-  cashregisterAccount: IdType
-  categories: IdType[]
+  currency: string
+  cashregister: string
+  cashregisterAccount: string
+  categories: string[]
   sourceModel: string
-  sourceId: IdType
+  sourceId: string
   type: string
   comment: string
-  createdBy: IdType
-  removedBy: IdType
+  createdBy: string
+  removedBy: string
   removed: boolean
   createdAt: Date
   updatedAt: Date
 }
 
-export interface getExpensesResult {
-  status: Status
-  code: Code
-  message: Message
-  expenses: Expense[]
-  expensesCount: number
+export type GetExpensesPayload = z.output<typeof getExpensesSchema>
+export function parseGetExpenses(x: unknown): GetExpensesPayload {
+  return getExpensesSchema.parse(x)
 }
 
-export interface getExpensesFilters {
-  ids: IdType[]
-  amount: number
-  currency: IdType
-  cashregister: IdType
-  cashregisterAccount: IdType
-  categories: IdType[]
-  sourceModel: string
-  sourceId: IdType
-  type: string
-  createdAt: DateRange
-  updatedAt: DateRange
+export type CreateExpensePayload = z.output<typeof createExpenseSchema>
+export function parseCreateExpense(x: unknown): CreateExpensePayload {
+  return createExpenseSchema.parse(x)
 }
 
-export interface getExpensesSorters {
-  amount: Sorter
-  currency: Sorter
-  cashregister: Sorter
-  cashregisterAccount: Sorter
-  category: Sorter
-  sourceModel: Sorter
-  sourceId: Sorter
-  type: Sorter
-  updatedAt: Sorter
-  createdAt: Sorter
+export type EditExpensePayload = z.output<typeof editExpenseSchema>
+export function parseEditExpense(x: unknown): EditExpensePayload {
+  return editExpenseSchema.parse(x)
 }
 
-export interface getExpensesParams {
-  filters?: Partial<getExpensesFilters>
-  sorters?: Partial<getExpensesSorters>
-  pagination?: Partial<Pagination>
+export type RemoveExpensesPayload = z.output<typeof removeExpensesSchema>
+export function parseRemoveExpenses(x: unknown): RemoveExpensesPayload {
+  return removeExpensesSchema.parse(x)
 }
 
-export interface createExpenseResult {
-  status: Status
-  code: Code
-  message: Message
-  expense: Expense
-}
+export type GetExpensesRepoPayload = GetExpensesPayload
+export interface GetExpensesRepoResult { items: ExpenseDTO[], total: number, page: number, pageSize: number }
 
-export interface createExpenseParams {
-  amount: number
-  currency: IdType
-  cashregister: IdType
-  cashregisterAccount: IdType
-  category: IdType
-  sourceModel: string
-  sourceId: IdType
-  type: string
-  comment?: string
-}
+export type CreateExpensesRepoPayload = CreateExpensePayload
 
-export interface editExpenseResult {
-  status: Status
-  code: Code
-  message: Message
-  expense: Expense
-}
-
-export interface editExpenseParams {
-  id: IdType
-  amount: number
-  currency: IdType
-  cashregister: IdType
-  cashregisterAccount: IdType
-  category: IdType
-  sourceModel: string
-  sourceId: IdType
-  type: string
-  comment?: string
-}
-
-export interface removeExpensesResult {
-  status: Status
-  code: Code
-  message: Message
-}
-
-export interface removeExpensesParams {
-  ids: IdType[]
-}
+export type EditExpensesRepoPayload = EditExpensePayload

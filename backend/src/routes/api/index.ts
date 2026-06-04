@@ -1,5 +1,6 @@
 import { Router } from 'express'
-import { authMiddleware } from '../../middleware/auth.middleware'
+
+import { authMiddleware } from '@/middleware/auth.middleware'
 import auditLogsRoutes from './audit-logs.route'
 import authRoutes from './auth.route'
 import automationRoutes from './automation.route'

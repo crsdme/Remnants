@@ -1,7 +1,7 @@
-import type { Supplier } from '../types/supplier.type'
+import type { Supplier } from '@remnant/shared'
 import mongoose, { Schema } from 'mongoose'
 import { v4 as uuidv4 } from 'uuid'
-import { uuidValidator } from '../utils/uuidValidator'
+import { uuidValidator } from '@/utils/'
 
 const SupplierSchema: Schema = new Schema(
   {

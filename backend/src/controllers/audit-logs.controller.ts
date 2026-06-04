@@ -1,9 +1,16 @@
-import type { NextFunction, Request, Response } from 'express'
-import * as AuditLogsService from '../services/audit-logs.service'
+import type { NextFunction, Response } from 'express'
+import type { GetAuditLogsPayload, ValidatedRequest } from '@/types'
+import * as AuditLogsService from '@/services/audit-logs.service'
 
-export async function get(req: Request, res: Response, next: NextFunction) {
+export async function get(
+  req: ValidatedRequest<GetAuditLogsPayload>,
+  res: Response,
+  next: NextFunction,
+) {
   try {
-    const serviceResponse = await AuditLogsService.get(req.body)
+    const serviceResponse = await AuditLogsService.get({
+      payload: req.validated.query,
+    })
 
     res.status(200).json(serviceResponse)
   }

@@ -1,46 +1,36 @@
+import type { RequestHandler } from 'express'
+import { createUserRoleSchema, editUserRoleSchema, getUserRoleSchema, removeUserRoleSchema } from '@remnant/shared'
 import { Router } from 'express'
-import * as UserRoleController from '../../controllers/user-role.controller'
-import { uploadMiddleware, validateBodyRequest, validateQueryRequest, validateUpload } from '../../middleware/'
-import { checkPermissions } from '../../middleware/permission.middleware'
-import { createUserRoleSchema, duplicateUserRoleSchema, editUserRoleSchema, getUserRoleSchema, removeUserRoleSchema } from '../../schemas/user-role.schema'
+import * as UserRoleController from '@/controllers/user-role.controller'
+import { checkPermissions, validateBodyRequest, validateQueryRequest } from '@/middleware'
 
 const router = Router()
 
 router.get(
   '/get',
   validateQueryRequest(getUserRoleSchema),
-  UserRoleController.get,
+  UserRoleController.get as RequestHandler,
 )
+
 router.post(
   '/create',
   checkPermissions('user-role.create'),
   validateBodyRequest(createUserRoleSchema),
-  UserRoleController.create,
+  UserRoleController.create as RequestHandler,
 )
+
 router.post(
   '/edit',
   checkPermissions('user-role.edit'),
   validateBodyRequest(editUserRoleSchema),
-  UserRoleController.edit,
+  UserRoleController.edit as RequestHandler,
 )
+
 router.post(
   '/remove',
   checkPermissions('user-role.remove'),
   validateBodyRequest(removeUserRoleSchema),
-  UserRoleController.remove,
-)
-router.post(
-  '/import',
-  checkPermissions('user-role.import'),
-  uploadMiddleware({ fieldName: 'file', storageKey: 'import' }),
-  validateUpload('file'),
-  UserRoleController.importHandler,
-)
-router.post(
-  '/duplicate',
-  checkPermissions('user-role.duplicate'),
-  validateBodyRequest(duplicateUserRoleSchema),
-  UserRoleController.duplicate,
+  UserRoleController.remove as RequestHandler,
 )
 
 export default router

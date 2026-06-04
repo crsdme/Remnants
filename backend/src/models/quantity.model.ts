@@ -1,7 +1,7 @@
-import type { Quantity } from '../types/quantity.type'
+import type { Quantity } from '@remnant/shared'
 import mongoose, { Schema } from 'mongoose'
 import { v4 as uuidv4 } from 'uuid'
-import { uuidValidator } from '../utils/uuidValidator'
+import { uuidValidator } from '@/utils/'
 
 const QuantitySchema: Schema = new Schema(
   {

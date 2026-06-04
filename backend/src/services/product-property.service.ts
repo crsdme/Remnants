@@ -1,111 +1,76 @@
-import type * as ProductPropertyTypes from '../types/product-property.type'
-import { ProductPropertyModel } from '../models'
-import { HttpError } from '../utils/httpError'
-import { buildQuery, buildSortQuery } from '../utils/queryBuilder'
+import type {
+  CreateProductPropertyResponse,
+  EditProductPropertyResponse,
+  GetProductPropertiesResponse,
+  RemoveProductPropertiesResponse,
+} from '@remnant/shared'
+import type {
+  CreateProductPropertyPayload,
+  EditProductPropertyPayload,
+  GetProductPropertiesPayload,
+  RemoveProductPropertiesPayload,
+} from '@/types/'
+import { ProductPropertyModel } from '@/models/'
+import * as ProductPropertyRepo from '@/repositories/product-property.repo'
+import { HttpError } from '@/utils/'
 
-export async function get(payload: ProductPropertyTypes.getProductPropertiesParams): Promise<ProductPropertyTypes.getProductPropertiesResult> {
-  const { current = 1, pageSize = 10 } = payload.pagination || {}
+export async function get({ payload }: { payload: GetProductPropertiesPayload }): Promise<GetProductPropertiesResponse> {
+  const { items, total, page, pageSize } = await ProductPropertyRepo.list(payload)
 
-  const {
-    ids = [],
-    names = '',
-    language = 'en',
-    symbols = '',
-    options = undefined,
-    type = undefined,
-    priority = undefined,
-    active = undefined,
-    showInTable = undefined,
-    showInStatistics = undefined,
-    createdAt = {
-      from: undefined,
-      to: undefined,
-    },
-    updatedAt = {
-      from: undefined,
-      to: undefined,
-    },
-  } = payload.filters || {}
-
-  const sorters = buildSortQuery(payload.sorters || {}, { priority: 1 })
-
-  const filterRules = {
-    _id: { type: 'array' },
-    names: { type: 'string', langAware: true },
-    symbols: { type: 'string', langAware: true },
-    active: { type: 'array' },
-    options: { type: 'array' },
-    type: { type: 'exact' },
-    priority: { type: 'exact' },
-    showInTable: { type: 'exact' },
-    showInStatistics: { type: 'exact' },
-    createdAt: { type: 'dateRange' },
-    updatedAt: { type: 'dateRange' },
-  } as const
-
-  const query = buildQuery({
-    filters: { _id: ids, names, symbols, options, type, priority, active, showInTable, showInStatistics, createdAt, updatedAt },
-    rules: filterRules,
-    language,
-  })
-
-  const pipeline = [
-    {
-      $match: query,
-    },
-    {
-      $sort: sorters,
-    },
-    {
-      $facet: {
-        productProperties: [
-          { $skip: (current - 1) * pageSize },
-          { $limit: pageSize },
-        ],
-        totalCount: [
-          { $count: 'count' },
-        ],
+  return {
+    status: 'success',
+    code: 'PRODUCT_PROPERTIES_FETCHED',
+    message: 'Product properties fetched',
+    data: {
+      items,
+      pagination: {
+        page,
+        pageSize,
+        total,
       },
     },
-  ]
-
-  const productPropertiesRaw = await ProductPropertyModel.aggregate(pipeline).exec()
-
-  const productProperties = productPropertiesRaw[0].productProperties.map((doc: any) => ProductPropertyModel.hydrate(doc))
-  const productPropertiesCount = productPropertiesRaw[0].totalCount[0]?.count || 0
-
-  return { status: 'success', code: 'PRODUCT_PROPERTIES_FETCHED', message: 'Product properties fetched', productProperties, productPropertiesCount }
+  }
 }
 
-export async function create(payload: ProductPropertyTypes.createProductPropertyParams): Promise<ProductPropertyTypes.createProductPropertyResult> {
-  const productProperty = await ProductPropertyModel.create(payload)
+export async function create({ payload }: { payload: CreateProductPropertyPayload }): Promise<CreateProductPropertyResponse> {
+  const productProperty = await ProductPropertyRepo.createOne(payload)
 
-  return { status: 'success', code: 'PRODUCT_PROPERTY_CREATED', message: 'Product property created', productProperty }
+  return {
+    status: 'success',
+    code: 'PRODUCT_PROPERTY_CREATED',
+    message: 'Product property created',
+    data: mapProductPropertyToDTO(productProperty),
+  }
 }
 
-export async function edit(payload: ProductPropertyTypes.editProductPropertyParams): Promise<ProductPropertyTypes.editProductPropertyResult> {
+export async function edit({ payload }: { payload: EditProductPropertyPayload }): Promise<EditProductPropertyResponse> {
   const { id } = payload
 
-  const productProperty = await ProductPropertyModel.findOneAndUpdate({ _id: id }, payload)
+  const productProperty = await ProductPropertyRepo.updateById(id, payload)
 
   if (!productProperty) {
     throw new HttpError(400, 'Product property not edited', 'PRODUCT_PROPERTY_NOT_EDITED')
   }
 
-  return { status: 'success', code: 'PRODUCT_PROPERTY_EDITED', message: 'Product property edited', productProperty }
+  return {
+    status: 'success',
+    code: 'PRODUCT_PROPERTY_EDITED',
+    message: 'Product property edited',
+    data: mapProductPropertyToDTO(productProperty),
+  }
 }
 
-export async function remove(payload: ProductPropertyTypes.removeProductPropertiesParams): Promise<ProductPropertyTypes.removeProductPropertiesResult> {
-  const { ids } = payload
+export async function remove({ payload }: { payload: RemoveProductPropertiesPayload }): Promise<RemoveProductPropertiesResponse> {
+  for (const id of payload.ids) {
+    const productProperty = await ProductPropertyRepo.removeById(id)
 
-  const productProperties = await ProductPropertyModel.updateMany(
-    { _id: { $in: ids } },
-    { $set: { removed: true } },
-  )
-
-  if (!productProperties) {
-    throw new HttpError(400, 'Product properties not removed', 'PRODUCT_PROPERTIES_NOT_REMOVED')
+    if (!productProperty)
+      throw new HttpError(400, 'Product properties not removed', 'PRODUCT_PROPERTIES_NOT_REMOVED')
   }
 
-  return { status: 'success', code: 'PRODUCT_PROPERTIES_REMOVED', message: 'Product properties removed' }
+  return {
+    status: 'success',
+    code: 'PRODUCT_PROPERTIES_REMOVED',
+    message: 'Product properties removed',
+  }
 }

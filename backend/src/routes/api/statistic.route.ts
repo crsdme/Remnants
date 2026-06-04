@@ -1,7 +1,7 @@
+import { getStatisticSchema } from '@remnant/shared'
 import { Router } from 'express'
-import * as StatisticController from '../../controllers/statistic.controller'
-import { validateQueryRequest } from '../../middleware'
-import { getStatisticSchema } from '../../schemas/statistic.schema'
+import * as StatisticController from '@/controllers/statistic.controller'
+import { validateQueryRequest } from '@/middleware'
 
 const router = Router()
 

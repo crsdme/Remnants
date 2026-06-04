@@ -1,78 +1,50 @@
-import type * as DeliveryServiceTypes from '../types/delivery-service.type'
-import { DeliveryServiceModel } from '../models'
-import { HttpError } from '../utils/httpError'
-import { buildQuery, buildSortQuery } from '../utils/queryBuilder'
+import type {
+  CreateDeliveryServiceResponse,
+  EditDeliveryServiceResponse,
+  GetDeliveryServicesResponse,
+  RemoveDeliveryServicesResponse,
+} from '@remnant/shared'
+import type {
+  CreateDeliveryServicesPayload,
+  EditDeliveryServicesPayload,
+  GetDeliveryServicesPayload,
+  RemoveDeliveryServicesPayload,
+} from '@/types/delivery-services.type'
+import { mapDeliveryServiceToDTO } from '@/mappers/'
+import { DeliveryServiceModel } from '@/models/'
+import * as DeliveryServicesRepo from '@/repositories/delivery-services.repo'
+import { HttpError } from '@/utils/'
 
-export async function get(payload: DeliveryServiceTypes.getDeliveryServicesParams): Promise<DeliveryServiceTypes.getDeliveryServicesResult> {
-  const { current = 1, pageSize = 10 } = payload.pagination || {}
+export async function get({ payload }: { payload: GetDeliveryServicesPayload }): Promise<GetDeliveryServicesResponse> {
+  const { items, total, page, pageSize } = await DeliveryServicesRepo.list(payload)
 
-  const {
-    names = '',
-    language = 'en',
-    color = '',
-    priority = undefined,
-    createdAt = {
-      from: undefined,
-      to: undefined,
-    },
-    updatedAt = {
-      from: undefined,
-      to: undefined,
-    },
-  } = payload.filters || {}
-
-  const filterRules = {
-    _id: { type: 'array' },
-    names: { type: 'string', langAware: true },
-    color: { type: 'string' },
-    priority: { type: 'exact' },
-    createdAt: { type: 'dateRange' },
-    updatedAt: { type: 'dateRange' },
-  } as const
-
-  const query = buildQuery({
-    filters: { names, color, priority, createdAt, updatedAt },
-    rules: filterRules,
-    language,
-  })
-
-  const sorters = buildSortQuery(payload.sorters || {}, { priority: 1 })
-
-  const pipeline = [
-    {
-      $match: query,
-    },
-    {
-      $sort: sorters,
-    },
-    {
-      $facet: {
-        deliveryServices: [
-          { $skip: (current - 1) * pageSize },
-          { $limit: pageSize },
-        ],
-        totalCount: [
-          { $count: 'count' },
-        ],
+  return {
+    status: 'success',
+    code: 'DELIVERY_SERVICES_FETCHED',
+    message: 'Delivery services fetched',
+    data: {
+      items,
+      pagination: {
+        page,
+        pageSize,
+        total,
       },
     },
-  ]
-
-  const deliveryServicesRaw = await DeliveryServiceModel.aggregate(pipeline).exec()
-
-  const deliveryServices = deliveryServicesRaw[0].deliveryServices.map((doc: any) => DeliveryServiceModel.hydrate(doc))
-  const deliveryServicesCount = deliveryServicesRaw[0].totalCount[0]?.count || 0
-
-  return { status: 'success', code: 'DELIVERY_SERVICES_FETCHED', message: 'Delivery services fetched', deliveryServices, deliveryServicesCount }
+  }
 }
 
-export async function create(payload: DeliveryServiceTypes.createDeliveryServiceParams): Promise<DeliveryServiceTypes.createDeliveryServiceResult> {
-  const deliveryService = await DeliveryServiceModel.create(payload)
+export async function create({ payload }: { payload: CreateDeliveryServicesPayload }): Promise<CreateDeliveryServiceResponse> {
+  const deliveryService = await DeliveryServicesRepo.createOne(payload)
 
-  return { status: 'success', code: 'DELIVERY_SERVICE_CREATED', message: 'Delivery service created', deliveryService }
+  return {
+    status: 'success',
+    code: 'DELIVERY_SERVICE_CREATED',
+    message: 'Delivery service created',
+    data: mapDeliveryServiceToDTO(deliveryService),
+  }
 }
 
-export async function edit(payload: DeliveryServiceTypes.editDeliveryServiceParams): Promise<DeliveryServiceTypes.editDeliveryServiceResult> {
+export async function edit({ payload }: { payload: EditDeliveryServicesPayload }): Promise<EditDeliveryServiceResponse> {
   const { id } = payload
 
   const deliveryService = await DeliveryServiceModel.findOneAndUpdate({ _id: id }, payload)
@@ -81,10 +53,15 @@ export async function edit(payload: DeliveryServiceTypes.editDeliveryServicePara
     throw new HttpError(400, 'Delivery service not edited', 'DELIVERY_SERVICE_NOT_EDITED')
   }
 
-  return { status: 'success', code: 'DELIVERY_SERVICE_EDITED', message: 'Delivery service edited', deliveryService }
+  return {
+    status: 'success',
+    code: 'DELIVERY_SERVICE_EDITED',
+    message: 'Delivery service edited',
+    data: mapDeliveryServiceToDTO(deliveryService),
+  }
 }
 
-export async function remove(payload: DeliveryServiceTypes.removeDeliveryServicesParams): Promise<DeliveryServiceTypes.removeDeliveryServicesResult> {
+export async function remove({ payload }: { payload: RemoveDeliveryServicesPayload }): Promise<RemoveDeliveryServicesResponse> {
   const { ids } = payload
 
   const deliveryServices = await DeliveryServiceModel.updateMany(
@@ -92,9 +69,13 @@ export async function remove(payload: DeliveryServiceTypes.removeDeliveryService
     { $set: { removed: true } },
   )
 
-  if (!deliveryServices) {
+  if (deliveryServices.modifiedCount === 0) {
     throw new HttpError(400, 'Delivery services not removed', 'DELIVERY_SERVICES_NOT_REMOVED')
   }
 
-  return { status: 'success', code: 'DELIVERY_SERVICES_REMOVED', message: 'Delivery services removed' }
+  return {
+    status: 'success',
+    code: 'DELIVERY_SERVICES_REMOVED',
+    message: 'Delivery services removed',
+  }
 }

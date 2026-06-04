@@ -1,72 +1,56 @@
-import { Router } from 'express'
-import * as CurrencyController from '../../controllers/currency.controller'
-import { uploadMiddleware, validateBodyRequest, validateQueryRequest, validateUpload } from '../../middleware'
-import { checkPermissions } from '../../middleware/permission.middleware'
+import type { RequestHandler } from 'express'
 import {
-  batchCurrencySchema,
   createCurrencySchema,
-  duplicateCurrencySchema,
   editCurrencySchema,
   editExchangeRateSchema,
   getCurrencySchema,
   getExchangeRatesSchema,
   removeCurrencySchema,
-} from '../../schemas/currency.schema'
+} from '@remnant/shared'
+import { Router } from 'express'
+import * as CurrencyController from '@/controllers/currency.controller'
+import { checkPermissions, validateBodyRequest, validateQueryRequest } from '@/middleware'
 
 const router = Router()
 
 router.get(
   '/get',
   validateQueryRequest(getCurrencySchema),
-  CurrencyController.get,
+  CurrencyController.get as RequestHandler,
 )
+
 router.get(
   '/get-exchange-rates',
   validateQueryRequest(getExchangeRatesSchema),
-  CurrencyController.getExchangeRates,
+  CurrencyController.getExchangeRates as RequestHandler,
 )
+
 router.post(
   '/create',
   validateBodyRequest(createCurrencySchema),
   checkPermissions('currency.create'),
-  CurrencyController.create,
+  CurrencyController.create as RequestHandler,
 )
+
 router.post(
   '/edit',
   validateBodyRequest(editCurrencySchema),
   checkPermissions('currency.edit'),
-  CurrencyController.edit,
+  CurrencyController.edit as RequestHandler,
 )
+
 router.post(
   '/edit-exchange-rate',
   validateBodyRequest(editExchangeRateSchema),
   checkPermissions('exchange-rate.edit'),
-  CurrencyController.editExchangeRate,
+  CurrencyController.editExchangeRate as RequestHandler,
 )
+
 router.post(
   '/remove',
   validateBodyRequest(removeCurrencySchema),
   checkPermissions('currency.remove'),
-  CurrencyController.remove,
-)
-router.post(
-  '/batch',
-  validateBodyRequest(batchCurrencySchema),
-  checkPermissions('currency.batch'),
-  CurrencyController.batch,
-)
-router.post(
-  '/import',
-  uploadMiddleware({ fieldName: 'file', storageKey: 'import' }),
-  validateUpload('file'),
-  checkPermissions('currency.import'),
-  CurrencyController.importHandler,
-)
-router.post(
-  '/duplicate',
-  validateBodyRequest(duplicateCurrencySchema),
-  checkPermissions('currency.duplicate'),
-  CurrencyController.duplicate,
+  CurrencyController.remove as RequestHandler,
 )
 
 export default router

@@ -1,8 +1,7 @@
+import { editSettingSchema, getSettingSchema } from '@remnant/shared'
 import { Router } from 'express'
-import * as SettingController from '../../controllers/setting.controller'
-import { validateBodyRequest, validateQueryRequest } from '../../middleware'
-import { checkPermissions } from '../../middleware/permission.middleware'
-import { editSettingSchema, getSettingSchema } from '../../schemas/setting.schema'
+import * as SettingController from '@/controllers/setting.controller'
+import { checkPermissions, validateBodyRequest, validateQueryRequest } from '@/middleware'
 
 const router = Router()
 
@@ -11,6 +10,7 @@ router.get(
   validateQueryRequest(getSettingSchema),
   SettingController.get,
 )
+
 router.post(
   '/edit',
   validateBodyRequest(editSettingSchema),

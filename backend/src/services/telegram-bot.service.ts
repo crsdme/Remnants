@@ -1,9 +1,9 @@
-import type { Product } from '../types/product.type'
+import type { Product } from '@remnant/shared'
 import fs from 'node:fs'
 import path from 'node:path'
 import axios from 'axios'
 import FormData from 'form-data'
-import { STORAGE_PATHS } from '../config/constants'
+import { STORAGE_PATHS } from '@/config/constants'
 
 export async function sendMessage(product: Product): Promise<any> {
   const form = new FormData()

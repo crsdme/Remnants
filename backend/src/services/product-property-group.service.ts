@@ -1,119 +1,73 @@
-import type * as ProductPropertyGroupTypes from '../types/product-property-group.type'
-import { ProductPropertyGroupModel } from '../models'
-import { HttpError } from '../utils/httpError'
-import { buildQuery, buildSortQuery } from '../utils/queryBuilder'
+import type {
+  CreateProductPropertyGroupResponse,
+  EditProductPropertyGroupResponse,
+  GetProductPropertyGroupsResponse,
+  RemoveProductPropertyGroupsResponse,
+} from '@remnant/shared'
+import type {
+  CreateProductPropertyGroupPayload,
+  EditProductPropertyGroupPayload,
+  GetProductPropertyGroupsPayload,
+  RemoveProductPropertyGroupPayload,
+} from '@/types/'
+import { mapProductPropertyGroupToDTO } from '@/mappers/'
+import * as ProductPropertyGroupRepo from '@/repositories/product-property-group.repo'
+import { HttpError } from '@/utils/'
 
-export async function get(payload: ProductPropertyGroupTypes.getProductPropertyGroupsParams): Promise<ProductPropertyGroupTypes.getProductPropertyGroupsResult> {
-  const { current = 1, pageSize = 10 } = payload.pagination || {}
+export async function get({ payload }: { payload: GetProductPropertyGroupsPayload }): Promise<GetProductPropertyGroupsResponse> {
+  const { items, total, page, pageSize } = await ProductPropertyGroupRepo.list(payload)
 
-  const {
-    names = '',
-    language = 'en',
-    productProperties = undefined,
-    active = undefined,
-    priority = undefined,
-    createdAt = {
-      from: undefined,
-      to: undefined,
-    },
-    updatedAt = {
-      from: undefined,
-      to: undefined,
-    },
-  } = payload.filters || {}
-
-  const sorters = buildSortQuery(payload.sorters || {}, { priority: 1 })
-
-  const filterRules = {
-    names: { type: 'string', langAware: true },
-    active: { type: 'array' },
-    priority: { type: 'exact' },
-    productProperties: { type: 'array' },
-    createdAt: { type: 'dateRange' },
-    updatedAt: { type: 'dateRange' },
-  } as const
-
-  const query = buildQuery({
-    filters: { names, active, priority, productProperties, createdAt, updatedAt },
-    rules: filterRules,
-    language,
-  })
-
-  const pipeline = [
-    {
-      $match: query,
-    },
-    {
-      $lookup: {
-        from: 'product-properties',
-        localField: 'productProperties',
-        foreignField: '_id',
-        as: 'productProperties',
+  return {
+    status: 'success',
+    code: 'PRODUCT_PROPERTY_GROUPS_FETCHED',
+    message: 'Product property groups fetched',
+    data: {
+      items,
+      pagination: {
+        page,
+        pageSize,
+        total,
       },
     },
-    {
-      $set: {
-        productProperties: {
-          $sortArray: {
-            input: '$productProperties',
-            sortBy: { priority: 1 },
-          },
-        },
-      },
-    },
-    {
-      $sort: sorters,
-    },
-    {
-      $facet: {
-        productPropertyGroups: [
-          { $skip: (current - 1) * pageSize },
-          { $limit: pageSize },
-        ],
-        totalCount: [
-          { $count: 'count' },
-        ],
-      },
-    },
-  ]
-
-  const productPropertyGroupsRaw = await ProductPropertyGroupModel.aggregate(pipeline).exec()
-
-  const productPropertyGroups = productPropertyGroupsRaw[0].productPropertyGroups.map((doc: any) => ProductPropertyGroupModel.hydrate(doc))
-  const productPropertyGroupsCount = productPropertyGroupsRaw[0].totalCount[0]?.count || 0
-
-  return { status: 'success', code: 'PRODUCT_PROPERTY_GROUPS_FETCHED', message: 'Product property groups fetched', productPropertyGroups, productPropertyGroupsCount }
+  }
 }
 
-export async function create(payload: ProductPropertyGroupTypes.createProductPropertyGroupParams): Promise<ProductPropertyGroupTypes.createProductPropertyGroupResult> {
-  const productPropertyGroup = await ProductPropertyGroupModel.create(payload)
+export async function create({ payload }: { payload: CreateProductPropertyGroupPayload }): Promise<CreateProductPropertyGroupResponse> {
+  const item = await ProductPropertyGroupRepo.createOne(payload)
 
-  return { status: 'success', code: 'PRODUCT_PROPERTY_GROUP_CREATED', message: 'Product property group created', productPropertyGroup }
+  return {
+    status: 'success',
+    code: 'PRODUCT_PROPERTY_GROUP_CREATED',
+    message: 'Product property group created',
+    data: mapProductPropertyGroupToDTO(item.toObject()),
+  }
 }
 
-export async function edit(payload: ProductPropertyGroupTypes.editProductPropertyGroupParams): Promise<ProductPropertyGroupTypes.editProductPropertyGroupResult> {
-  const { id } = payload
+export async function edit({ payload }: { payload: EditProductPropertyGroupPayload }): Promise<EditProductPropertyGroupResponse> {
+  const item = await ProductPropertyGroupRepo.updateById(payload.id, payload)
 
-  const productPropertyGroup = await ProductPropertyGroupModel.findOneAndUpdate({ _id: id }, payload)
+  if (item === null)
+    throw new HttpError(400, 'Product property group not found', 'PRODUCT_PROPERTY_GROUP_NOT_FOUND')
 
-  if (!productPropertyGroup) {
-    throw new HttpError(400, 'Product property group not edited', 'PRODUCT_PROPERTY_GROUP_NOT_EDITED')
+  return {
+    status: 'success',
+    code: 'PRODUCT_PROPERTY_GROUP_EDITED',
+    message: 'Product property group edited',
+    data: mapProductPropertyGroupToDTO(item),
+  }
+}
+
+export async function remove({ payload }: { payload: RemoveProductPropertyGroupPayload }): Promise<RemoveProductPropertyGroupsResponse> {
+  for (const id of payload.ids) {
+    const productPropertyGroups = await ProductPropertyGroupRepo.removeById(id)
+
+    if (!productPropertyGroups)
+      throw new HttpError(400, 'Product property groups not removed', 'PRODUCT_PROPERTY_GROUPS_NOT_REMOVED')
   }
 
-  return { status: 'success', code: 'PRODUCT_PROPERTY_GROUP_EDITED', message: 'Product property group edited', productPropertyGroup }
-}
-
-export async function remove(payload: ProductPropertyGroupTypes.removeProductPropertyGroupsParams): Promise<ProductPropertyGroupTypes.removeProductPropertyGroupsResult> {
-  const { ids } = payload
-
-  const productPropertyGroups = await ProductPropertyGroupModel.updateMany(
-    { _id: { $in: ids } },
-    { $set: { removed: true } },
-  )
-
-  if (!productPropertyGroups) {
-    throw new HttpError(400, 'Product property groups not removed', 'PRODUCT_PROPERTY_GROUPS_NOT_REMOVED')
+  return {
+    status: 'success',
+    code: 'PRODUCT_PROPERTY_GROUPS_REMOVED',
+    message: 'Product property groups removed',
   }
-
-  return { status: 'success', code: 'PRODUCT_PROPERTY_GROUPS_REMOVED', message: 'Product property groups removed' }
 }

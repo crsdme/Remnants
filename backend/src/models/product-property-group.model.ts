@@ -1,8 +1,12 @@
-import type { ProductPropertyGroup } from '../types/product-property-group.type'
+import type { HydratedDocument } from 'mongoose'
+import type { SUPPORTED_LANGUAGES_TYPE } from '@/config/constants'
+import type { ProductPropertyGroupDB } from '@/types/'
 import mongoose, { Schema } from 'mongoose'
 import { v4 as uuidv4 } from 'uuid'
-import { SUPPORTED_LANGUAGES } from '../config/constants'
-import { uuidValidator } from '../utils/uuidValidator'
+import { SUPPORTED_LANGUAGES } from '@/config/constants'
+import { uuidValidator } from '@/utils/'
+
+type ProductPropertyGroupDoc = HydratedDocument<ProductPropertyGroupDB>
 
 const ProductPropertyGroupSchema: Schema = new Schema(
   {
@@ -18,7 +22,7 @@ const ProductPropertyGroupSchema: Schema = new Schema(
       validate: {
         validator(value: Map<string, string>) {
           return Array.from(value.keys()).every(key =>
-            SUPPORTED_LANGUAGES.includes(key as any),
+            SUPPORTED_LANGUAGES.includes(key as SUPPORTED_LANGUAGES_TYPE),
           )
         },
         message: 'Supported languages only',
@@ -56,4 +60,4 @@ ProductPropertyGroupSchema.set('toJSON', {
 
 ProductPropertyGroupSchema.index({ removed: 1 })
 
-export const ProductPropertyGroupModel = mongoose.model<ProductPropertyGroup>('product-property-group', ProductPropertyGroupSchema)
+export const ProductPropertyGroupModel = mongoose.model<ProductPropertyGroupDoc>('product-property-group', ProductPropertyGroupSchema)

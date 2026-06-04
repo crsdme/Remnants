@@ -1,7 +1,7 @@
-import type { Procurement, ProcurementItem } from '../types/procurement.type'
+import type { Procurement, ProcurementItem } from '@remnant/shared'
 import mongoose, { Schema } from 'mongoose'
 import { v4 as uuidv4 } from 'uuid'
-import { CounterModel } from './counter.model'
+import { CounterModel } from '@/models/'
 
 const ProcurementSchema: Schema = new Schema(
   {

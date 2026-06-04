@@ -1,10 +1,19 @@
-import type { SUPPORTED_LANGUAGES_TYPE } from '../config/constants'
-import type { Code, DateRange, IdType, LanguageString, Message, Pagination, Sorter, Status } from './common.type'
+import type {
+  LanguageString,
+  ProductPropertyGroupDTO,
+} from '@remnant/shared'
+import type { z } from 'zod'
+import {
+  createProductPropertyGroupSchema,
+  editProductPropertyGroupSchema,
+  getProductPropertyGroupSchema,
+  removeProductPropertyGroupSchema,
+} from '@remnant/shared'
 
-export interface ProductPropertyGroup {
-  id: IdType
+export interface ProductPropertyGroupDB {
+  _id: string
   names: LanguageString
-  productProperties: IdType[]
+  productProperties: string[]
   priority: number
   active: boolean
   removed: boolean
@@ -12,73 +21,28 @@ export interface ProductPropertyGroup {
   updatedAt: Date
 }
 
-export interface getProductPropertyGroupsResult {
-  status: Status
-  code: Code
-  message: Message
-  productPropertyGroups: ProductPropertyGroup[]
-  productPropertyGroupsCount: number
+export type GetProductPropertyGroupsPayload = z.output<typeof getProductPropertyGroupSchema>
+export function parseGetProductPropertyGroups(x: unknown): GetProductPropertyGroupsPayload {
+  return getProductPropertyGroupSchema.parse(x)
 }
 
-export interface getProductPropertyGroupsFilters {
-  names: LanguageString
-  language: SUPPORTED_LANGUAGES_TYPE
-  productProperties: IdType[]
-  active: boolean[]
-  priority: number
-  createdAt: DateRange
-  updatedAt: DateRange
+export type CreateProductPropertyGroupPayload = z.output<typeof createProductPropertyGroupSchema>
+export function parseCreateProductPropertyGroup(x: unknown): CreateProductPropertyGroupPayload {
+  return createProductPropertyGroupSchema.parse(x)
 }
 
-export interface getProductPropertyGroupsSorters {
-  names: Sorter
-  active: Sorter
-  priority: Sorter
-  createdAt: Sorter
-  updatedAt: Sorter
+export type EditProductPropertyGroupPayload = z.output<typeof editProductPropertyGroupSchema>
+export function parseEditProductPropertyGroup(x: unknown): EditProductPropertyGroupPayload {
+  return editProductPropertyGroupSchema.parse(x)
 }
 
-export interface getProductPropertyGroupsParams {
-  filters?: Partial<getProductPropertyGroupsFilters>
-  sorters?: Partial<getProductPropertyGroupsSorters>
-  pagination?: Partial<Pagination>
+export type RemoveProductPropertyGroupPayload = z.output<typeof removeProductPropertyGroupSchema>
+export function parseRemoveProductPropertyGroup(x: unknown): RemoveProductPropertyGroupPayload {
+  return removeProductPropertyGroupSchema.parse(x)
 }
 
-export interface createProductPropertyGroupResult {
-  status: Status
-  code: Code
-  message: Message
-  productPropertyGroup: ProductPropertyGroup
-}
+export type GetProductPropertyGroupsRepoPayload = GetProductPropertyGroupsPayload
 
-export interface createProductPropertyGroupParams {
-  names: LanguageString
-  productProperties: IdType[]
-  priority?: number
-  active?: boolean
-}
+export type CreateProductPropertyGroupRepoPayload = CreateProductPropertyGroupPayload
 
-export interface editProductPropertyGroupResult {
-  status: Status
-  code: Code
-  message: Message
-  productPropertyGroup: ProductPropertyGroup
-}
-
-export interface editProductPropertyGroupParams {
-  id: IdType
-  names: LanguageString
-  productProperties: IdType[]
-  priority?: number
-  active?: boolean
-}
-
-export interface removeProductPropertyGroupsResult {
-  status: Status
-  code: Code
-  message: Message
-}
-
-export interface removeProductPropertyGroupsParams {
-  ids: IdType[]
-}
+export type EditProductPropertyGroupRepoPayload = EditProductPropertyGroupPayload

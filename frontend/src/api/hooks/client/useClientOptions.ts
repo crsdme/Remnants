@@ -1,4 +1,4 @@
-import type { getClientsParams } from '@/api/types'
+import type { Client, getClientsParams } from '@remnant/shared'
 import { useQueryClient } from '@tanstack/react-query'
 import { getClients } from '@/api/requests'
 
@@ -36,13 +36,13 @@ export function useClientOptions({ defaultFilters, mapFn }: UseClientOptionsPara
       params.filters = filters
     }
 
-    const data = await queryClient.fetchQuery({
+    const { data } = await queryClient.fetchQuery({
       queryKey: ['clients', 'get', params],
       queryFn: () => getClients(params),
       staleTime: 60000,
     })
 
-    const clients = data?.data?.clients || []
+    const clients = data?.data?.items || []
 
     return mapFn ? clients.map(mapFn) as unknown as Client[] : clients
   }

@@ -1,125 +1,76 @@
-import type * as ClientTypes from '../types/client.type'
-import { ClientModel } from '../models'
-import { HttpError } from '../utils/httpError'
-import { buildQuery, buildSortQuery } from '../utils/queryBuilder'
+import type {
+  CreateClientResponse,
+  EditClientResponse,
+  GetClientsResponse,
+  RemoveClientsResponse,
+} from '@remnant/shared'
+import type {
+  CreateClientPayload,
+  EditClientPayload,
+  GetClientsPayload,
+  RemoveClientsPayload,
+} from '@/types'
+import { mapClientToDTO } from '@/mappers/'
+import * as clientRepo from '@/repositories/client.repo'
+import { HttpError } from '@/utils/'
 
-export async function get(payload: ClientTypes.getClientsParams): Promise<ClientTypes.getClientsResult> {
-  const { current = 1, pageSize = 10 } = payload.pagination || {}
+export async function get({ payload }: { payload: GetClientsPayload }): Promise<GetClientsResponse> {
+  const { items, total, page, pageSize } = await clientRepo.list(payload)
 
-  const {
-    ids = [],
-    search = '',
-    emails = [],
-    phones = [],
-    addresses = [],
-    country = '',
-    createdAt = {
-      from: undefined,
-      to: undefined,
-    },
-    updatedAt = {
-      from: undefined,
-      to: undefined,
-    },
-  } = payload.filters || {}
-
-  const filterRules = {
-    _id: { type: 'array' },
-    search: { type: 'string' },
-    emails: { type: 'array' },
-    phones: { type: 'array' },
-    addresses: { type: 'array' },
-    country: { type: 'string' },
-    createdAt: { type: 'dateRange' },
-    updatedAt: { type: 'dateRange' },
-  } as const
-
-  const query = buildQuery({
-    filters: { _id: ids, emails, phones, addresses, country, createdAt, updatedAt },
-    rules: filterRules,
-  })
-
-  const filterRulesLast: any = {
-    search: {
-      type: 'multiFieldSearch',
-      multiFields: [
-        { field: `name` },
-        { field: `middleName` },
-        { field: `lastName` },
-        { field: `emails`, isArray: true, isArrayPrimitive: true },
-        { field: `phones`, isArray: true, isArrayPrimitive: true },
-      ],
-    },
-  }
-
-  const queryLast = buildQuery({
-    filters: { search },
-    rules: filterRulesLast,
-    removed: false,
-  })
-
-  const sorters = buildSortQuery(payload.sorters || {}, { createdAt: 1 })
-
-  const pipeline = [
-    {
-      $match: query,
-    },
-    {
-      $sort: sorters,
-    },
-    {
-      $match: queryLast,
-    },
-    {
-      $facet: {
-        clients: [
-          { $skip: (current - 1) * pageSize },
-          { $limit: pageSize },
-        ],
-        totalCount: [
-          { $count: 'count' },
-        ],
+  return {
+    status: 'success',
+    code: 'CLIENTS_FETCHED',
+    message: 'Clients fetched',
+    data: {
+      items,
+      pagination: {
+        page,
+        pageSize,
+        total,
       },
     },
-  ]
-
-  const clientsRaw = await ClientModel.aggregate(pipeline).exec()
-
-  const clients = clientsRaw[0].clients.map((doc: any) => ClientModel.hydrate(doc))
-  const clientsCount = clientsRaw[0].totalCount[0]?.count || 0
-
-  return { status: 'success', code: 'CLIENTS_FETCHED', message: 'Clients fetched', clients, clientsCount }
+  }
 }
 
-export async function create(payload: ClientTypes.createClientParams): Promise<ClientTypes.createClientResult> {
-  const client = await ClientModel.create(payload)
+export async function create({ payload }: { payload: CreateClientPayload }): Promise<CreateClientResponse> {
+  const client = await clientRepo.createOne(payload)
 
-  return { status: 'success', code: 'CLIENT_CREATED', message: 'Client created', client }
+  return {
+    status: 'success',
+    code: 'CLIENT_CREATED',
+    message: 'Client created',
+    data: mapClientToDTO(client),
+  }
 }
 
-export async function edit(payload: ClientTypes.editClientParams): Promise<ClientTypes.editClientResult> {
-  const { id } = payload
-
-  const client = await ClientModel.findOneAndUpdate({ _id: id }, payload)
+export async function edit({ payload }: { payload: EditClientPayload }): Promise<EditClientResponse> {
+  const client = await clientRepo.updateById(payload.id, payload)
 
   if (!client) {
     throw new HttpError(400, 'Client not edited', 'CLIENT_NOT_EDITED')
   }
 
-  return { status: 'success', code: 'CLIENT_EDITED', message: 'Client edited', client }
+  return {
+    status: 'success',
+    code: 'CLIENT_EDITED',
+    message: 'Client edited',
+    data: mapClientToDTO(client),
+  }
 }
 
-export async function remove(payload: ClientTypes.removeClientsParams): Promise<ClientTypes.removeClientsResult> {
+export async function remove({ payload }: { payload: RemoveClientsPayload }): Promise<RemoveClientsResponse> {
   const { ids } = payload
 
-  const clients = await ClientModel.updateMany(
-    { _id: { $in: ids } },
-    { $set: { removed: true } },
-  )
+  for (const id of ids) {
+    const client = await clientRepo.removeById(id)
 
-  if (!clients) {
-    throw new HttpError(400, 'Clients not removed', 'CLIENTS_NOT_REMOVED')
+    if (!client)
+      continue
   }
 
-  return { status: 'success', code: 'CLIENTS_REMOVED', message: 'Clients removed' }
+  return {
+    status: 'success',
+    code: 'CLIENTS_REMOVED',
+    message: 'Clients removed',
+  }
 }

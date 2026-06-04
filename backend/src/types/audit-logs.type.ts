@@ -1,86 +1,49 @@
-import type { Code, DateRange, IdType, Message, Pagination, Sorter, Status } from './common.type'
+import type { AuditLogDTO } from '@remnant/shared'
+import type { z } from 'zod'
+import {
+  createAuditLogsSchema,
+  editAuditLogsSchema,
+  getAuditLogsSchema,
+  removeAuditLogsSchema,
+} from '@remnant/shared'
 
-export interface AuditLog {
-  id: IdType
+export interface AuditLogDB {
+  _id: string
   resourceType: string
   resourceId: string
   action: string
-  changes: {
-    path: string
-    before: any
-    after: any
-  }[]
-  comment: string
+  changes: { path: string, before: unknown, after: unknown }[]
+  comment?: string
   createdAt: Date
   updatedAt: Date
+  resource?: unknown
 }
 
-export interface getAuditLogsResult {
-  status: Status
-  code: Code
-  message: Message
-  auditLogs: AuditLog[]
-  auditLogsCount: number
+export type GetAuditLogsPayload = z.output<typeof getAuditLogsSchema>
+export function parseGetAuditLogs(x: unknown): GetAuditLogsPayload {
+  return getAuditLogsSchema.parse(x)
 }
 
-export interface getAuditLogsFilters {
-  ids: IdType[]
-  resourceType: string[]
-  resourceId: string[]
-  action: string[]
-  createdAt: DateRange
-  updatedAt: DateRange
+export type CreateAuditLogsPayload = z.output<typeof createAuditLogsSchema>
+export function parseCreateAuditLogs(x: unknown): CreateAuditLogsPayload {
+  return createAuditLogsSchema.parse(x)
 }
 
-export interface getAuditLogsSorters {
-  resourceType: Sorter
-  resourceId: Sorter
-  action: Sorter
-  updatedAt: Sorter
-  createdAt: Sorter
+export type EditAuditLogsPayload = z.output<typeof editAuditLogsSchema>
+export function parseEditAuditLogs(x: unknown): EditAuditLogsPayload {
+  return editAuditLogsSchema.parse(x)
 }
 
-export interface getAuditLogsParams {
-  filters?: Partial<getAuditLogsFilters>
-  sorters?: Partial<getAuditLogsSorters>
-  pagination?: Partial<Pagination>
+export type RemoveAuditLogsPayload = z.output<typeof removeAuditLogsSchema>
+export function parseRemoveAuditLogs(x: unknown): RemoveAuditLogsPayload {
+  return removeAuditLogsSchema.parse(x)
 }
 
-export interface createAuditLogsResult {
-  status: Status
-  code: Code
-  message: Message
-  auditLog: AuditLog
-}
+export type GetAuditLogsRepoPayload = GetAuditLogsPayload
+export interface GetAuditLogsRepoResult { items: AuditLogDTO[], total: number, page: number, pageSize: number }
 
-export interface createAuditLogsParams {
-  resourceType: string
-  resourceId: string
-  action: string
-  changes: {
-    path: string
-    before: any
-    after: any
-  }[]
-  comment?: string
-}
+export type CreateAuditLogsRepoPayload = CreateAuditLogsPayload
 
-export interface editAuditLogsResult {
-  status: Status
-  code: Code
-  message: Message
-  auditLog: AuditLog
-}
+export type EditAuditLogsRepoPayload = EditAuditLogsPayload
 
-export interface editAuditLogsParams {
-  id: IdType
-  resourceType: string
-  resourceId: string
-  action: string
-  changes: {
-    path: string
-    before: any
-    after: any
-  }[]
-  comment?: string
-}
+export type RemoveAuditLogsRepoPayload = RemoveAuditLogsPayload

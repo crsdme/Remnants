@@ -1,13 +1,26 @@
-import type { RequestUser } from '../types/common.type'
-import type * as InventoriesTypes from '../types/inventories.type'
+import type {
+  CreateInventoryParams,
+  CreateInventoryResponse,
+  EditInventoryParams,
+  EditInventoryResponse,
+  GetInventoriesParams,
+  GetInventoriesResponse,
+  GetInventoryItemsParams,
+  GetInventoryItemsResponse,
+  RemoveInventoriesParams,
+  RemoveInventoriesResponse,
+  RequestUser,
+  ScanBarcodeToDraftParams,
+  ScanBarcodeToDraftResponse,
+} from '@remnant/shared'
 import { v4 as uuidv4 } from 'uuid'
-import { STORAGE_URLS } from '../config/constants'
-import { BarcodeModel, InventoryItemModel, InventoryModel } from '../models'
-import { buildQuery, buildSortQuery } from '../utils/queryBuilder'
-import * as ProductService from './product.service'
-import * as QuantityService from './quantity.service'
+import { STORAGE_URLS } from '@/config/constants'
+import { BarcodeModel, InventoryItemModel, InventoryModel } from '@/models/'
+import * as ProductService from '@/services/product.service'
+import * as QuantityService from '@/services/quantity.service'
+import { buildQuery, buildSortQuery, HttpError } from '@/utils/'
 
-export async function get(payload: InventoriesTypes.getInventoriesParams): Promise<InventoriesTypes.getInventoriesResult> {
+export async function get(payload: GetInventoriesParams): Promise<GetInventoriesResponse> {
   const { current = 1, pageSize = 10 } = payload.pagination || {}
 
   const {
@@ -118,10 +131,22 @@ export async function get(payload: InventoriesTypes.getInventoriesParams): Promi
   const inventories = inventoriesRaw[0].inventories || []
   const inventoriesCount = inventoriesRaw[0].totalCount[0]?.count || 0
 
-  return { status: 'success', code: 'INVENTORIES_FETCHED', message: 'Inventories fetched', inventories, inventoriesCount }
+  return {
+    status: 'success',
+    code: 'INVENTORIES_FETCHED',
+    message: 'Inventories fetched',
+    data: {
+      items: inventories,
+      pagination: {
+        page: current,
+        pageSize,
+        total: inventoriesCount,
+      },
+    },
+  }
 }
 
-export async function getItems(payload: InventoriesTypes.getInventoryItemsParams): Promise<InventoriesTypes.getInventoryItemsResult> {
+export async function getItems(payload: GetInventoryItemsParams): Promise<GetInventoryItemsResponse> {
   const { current = 1, pageSize = 10 } = payload.pagination || {}
 
   const {
@@ -397,10 +422,22 @@ export async function getItems(payload: InventoriesTypes.getInventoryItemsParams
     },
   }))
 
-  return { status: 'success', code: 'INVENTORY_ITEMS_FETCHED', message: 'Inventory items fetched', inventoryItems, inventoryItemsCount }
+  return {
+    status: 'success',
+    code: 'INVENTORY_ITEMS_FETCHED',
+    message: 'Inventory items fetched',
+    data: {
+      items: inventoryItems,
+      pagination: {
+        page: current,
+        pageSize,
+        total: inventoryItemsCount,
+      },
+    },
+  }
 }
 
-export async function scanBarcodeToDraft(payload: InventoriesTypes.scanBarcodeToDraftParams): Promise<InventoriesTypes.scanBarcodeToDraftResult> {
+export async function scanBarcodeToDraft(payload: ScanBarcodeToDraftParams): Promise<ScanBarcodeToDraftResponse> {
   const { barcode, category } = payload.filters
 
   const filterRules = {
@@ -686,10 +723,16 @@ export async function scanBarcodeToDraft(payload: InventoriesTypes.scanBarcodeTo
     },
   })
 
-  return { status: 'success', code: 'INVENTORY_ITEMS_FETCHED', message: 'Inventory items fetched', inventoryItems, productIndex }
+  return {
+    status: 'success',
+    code: 'INVENTORY_ITEMS_FETCHED',
+    message: 'Inventory items fetched',
+    inventoryItems,
+    productIndex,
+  }
 }
 
-export async function create(payload: InventoriesTypes.createInventoryParams, user: RequestUser) {
+export async function create(payload: CreateInventoryParams, user: RequestUser): Promise<CreateInventoryResponse> {
   const { warehouse, category, comment, items } = payload
   const createdBy = user.id
   const inventoryId = uuidv4()
@@ -747,10 +790,15 @@ export async function create(payload: InventoriesTypes.createInventoryParams, us
 
   await InventoryItemModel.create(mappedItems)
 
-  return { status: 'success', code: 'INVENTORY_CREATED', message: 'Inventory created', inventory }
+  return {
+    status: 'success',
+    code: 'INVENTORY_CREATED',
+    message: 'Inventory created',
+    data: inventory,
+  }
 }
 
-export async function edit(payload: InventoriesTypes.editInventoryParams) {
+export async function edit(payload: EditInventoryParams): Promise<EditInventoryResponse> {
   const { id, status, warehouse, comment } = payload
 
   // const oldInventory = await InventoryModel.findById(id)
@@ -763,10 +811,19 @@ export async function edit(payload: InventoriesTypes.editInventoryParams) {
     comment,
   }, { new: true })
 
-  return { status: 'success', code: 'INVENTORY_EDITED', message: 'Inventory edited', inventory }
+  if (!inventory) {
+    throw new HttpError(400, 'Inventory not edited', 'INVENTORY_NOT_EDITED')
+  }
+
+  return {
+    status: 'success',
+    code: 'INVENTORY_EDITED',
+    message: 'Inventory edited',
+    data: inventory,
+  }
 }
 
-export async function remove(payload: InventoriesTypes.removeInventoriesParams, user: RequestUser) {
+export async function remove(payload: RemoveInventoriesParams, user: RequestUser): Promise<RemoveInventoriesResponse> {
   const { ids } = payload
   const removedBy = user.id
 
@@ -783,5 +840,9 @@ export async function remove(payload: InventoriesTypes.removeInventoriesParams, 
     // const items = await InventoryItemModel.find({ inventoryId: id })
   }
 
-  return { status: 'success', code: 'WAREHOUSE_TRANSACTION_REMOVED', message: 'Warehouse transaction removed' }
+  return {
+    status: 'success',
+    code: 'WAREHOUSE_TRANSACTION_REMOVED',
+    message: 'Warehouse transaction removed',
+  }
 }

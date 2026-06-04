@@ -1,33 +1,22 @@
+import type { RequestHandler } from 'express'
+import { createMoneyTransactionSchema, getMoneyTransactionsSchema } from '@remnant/shared'
 import { Router } from 'express'
-import * as MoneyTransactionController from '../../controllers/money-transaction.controller'
-import { validateBodyRequest, validateQueryRequest } from '../../middleware'
-import { checkPermissions } from '../../middleware/permission.middleware'
-import { createMoneyTransactionSchema, getMoneyTransactionsSchema } from '../../schemas/money-transaction.schema'
+import * as MoneyTransactionController from '@/controllers/money-transaction.controller'
+import { checkPermissions, validateBodyRequest, validateQueryRequest } from '@/middleware'
 
 const router = Router()
 
 router.get(
   '/get',
   validateQueryRequest(getMoneyTransactionsSchema),
-  MoneyTransactionController.get,
+  MoneyTransactionController.get as RequestHandler,
 )
+
 router.post(
   '/create',
   validateBodyRequest(createMoneyTransactionSchema),
   checkPermissions('money-transaction.create'),
-  MoneyTransactionController.create,
+  MoneyTransactionController.create as RequestHandler,
 )
-// router.post(
-//   '/edit',
-//   validateBodyRequest(editMoneyTransactionSchema),
-//   checkPermissions('money-transaction.edit'),
-//   MoneyTransactionController.edit,
-// )
-// router.post(
-//   '/remove',
-//   validateBodyRequest(removeMoneyTransactionsSchema),
-//   checkPermissions('money-transaction.remove'),
-//   MoneyTransactionController.remove,
-// )
 
 export default router

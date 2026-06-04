@@ -1,7 +1,11 @@
-import type { Client } from '../types/client.type'
+import type { HydratedDocument } from 'mongoose'
+import type { ClientDB } from '@/types/'
 import mongoose, { Schema } from 'mongoose'
 import { v4 as uuidv4 } from 'uuid'
-import { uuidValidator } from '../utils/uuidValidator'
+import { CounterModel } from '@/models/'
+import { uuidValidator } from '@/utils/'
+
+type ClientDoc = HydratedDocument<ClientDB>
 
 const ClientSchema: Schema = new Schema(
   {
@@ -9,6 +13,10 @@ const ClientSchema: Schema = new Schema(
       type: String,
       default: uuidv4,
       validate: uuidValidator,
+    },
+    seq: {
+      type: Number,
+      default: 0,
     },
     name: {
       type: String,
@@ -53,14 +61,17 @@ const ClientSchema: Schema = new Schema(
   { timestamps: true },
 )
 
-ClientSchema.set('toJSON', {
-  virtuals: true,
-  versionKey: false,
-  transform: (_, ret) => {
-    ret.id = ret._id
-    delete ret._id
-    delete ret.removed
-  },
+ClientSchema.pre('save', async function (this: ClientDoc, next) {
+  if (this.isNew && !this.seq) {
+    const counter = await CounterModel.findByIdAndUpdate(
+      'clients',
+      { $inc: { seq: 1 } },
+      { new: true, upsert: true },
+    )
+    this.seq = counter.seq
+  }
+
+  next()
 })
 
-export const ClientModel = mongoose.model<Client>('Client', ClientSchema)
+export const ClientModel = mongoose.model<ClientDB>('client', ClientSchema)

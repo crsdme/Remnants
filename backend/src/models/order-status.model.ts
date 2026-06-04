@@ -1,8 +1,12 @@
-import type { OrderStatus } from '../types/order-status.type'
+import type { HydratedDocument } from 'mongoose'
+import type { SUPPORTED_LANGUAGES_TYPE } from '@/config/constants'
+import type { OrderStatusDB } from '@/types'
 import mongoose, { Schema } from 'mongoose'
 import { v4 as uuidv4 } from 'uuid'
-import { SUPPORTED_LANGUAGES } from '../config/constants'
-import { uuidValidator } from '../utils/uuidValidator'
+import { SUPPORTED_LANGUAGES } from '@/config/constants'
+import { uuidValidator } from '@/utils/'
+
+type OrderStatusDoc = HydratedDocument<OrderStatusDB>
 
 const OrderStatusSchema: Schema = new Schema(
   {
@@ -18,7 +22,7 @@ const OrderStatusSchema: Schema = new Schema(
       validate: {
         validator(value: Map<string, string>) {
           return Array.from(value.keys()).every(key =>
-            SUPPORTED_LANGUAGES.includes(key as any),
+            SUPPORTED_LANGUAGES.includes(key as SUPPORTED_LANGUAGES_TYPE),
           )
         },
         message: 'Supported languages only',
@@ -58,4 +62,4 @@ OrderStatusSchema.set('toJSON', {
   },
 })
 
-export const OrderStatusModel = mongoose.model<OrderStatus>('order-status', OrderStatusSchema)
+export const OrderStatusModel = mongoose.model<OrderStatusDoc>('order-status', OrderStatusSchema)

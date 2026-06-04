@@ -1,8 +1,7 @@
+import { createBalanceSchema, getBalanceSchema, getCurrentBalanceSchema, removeBalanceSchema } from '@remnant/shared'
 import { Router } from 'express'
-import * as BalanceController from '../../controllers/balance.controller'
-import { validateBodyRequest, validateQueryRequest } from '../../middleware'
-import { checkPermissions } from '../../middleware/permission.middleware'
-import { createBalanceSchema, getBalanceSchema, getCurrentBalanceSchema, removeBalanceSchema } from '../../schemas/balance.schema'
+import * as BalanceController from '@/controllers/balance.controller'
+import { checkPermissions, validateBodyRequest, validateQueryRequest } from '@/middleware'
 
 const router = Router()
 

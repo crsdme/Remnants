@@ -1,9 +1,9 @@
-import type { Unit } from '../types/unit.type'
+import type { Unit } from '@remnant/shared'
 import mongoose, { Schema } from 'mongoose'
 import { v4 as uuidv4 } from 'uuid'
-import { SUPPORTED_LANGUAGES } from '../config/constants'
-import { uuidValidator } from '../utils/uuidValidator'
-import { CounterModel } from './counter.model'
+import { SUPPORTED_LANGUAGES } from '@/config/constants'
+import { CounterModel } from '@/models/'
+import { uuidValidator } from '@/utils/'
 
 const UnitSchema: Schema = new Schema(
   {

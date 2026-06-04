@@ -1,0 +1,24 @@
+import { z } from 'zod'
+
+export const loginSchema = z.object({
+  login: z.string(),
+  password: z.string(),
+})
+
+export const refreshSchema = z.object({ refreshToken: z.string() })
+
+export const tokenSchema = z.object({
+  id: z.string().uuid(),
+  login: z.string(),
+  permissions: z.array(z.string()),
+})
+
+export const authUserSchema = z.object({
+  id: z.string(),
+  login: z.string(),
+  name: z.string(),
+  role: z.string(),
+  permissions: z.array(z.string()),
+})
+
+export type AuthUser = z.infer<typeof authUserSchema>

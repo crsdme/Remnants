@@ -1,10 +1,14 @@
-import type { CashregisterAccount } from '../types/cashregister-account.type'
+import type { HydratedDocument } from 'mongoose'
+import type { SUPPORTED_LANGUAGES_TYPE } from '@/config/constants'
+import type { CashregisterAccountDB } from '@/types'
+
 import mongoose, { Schema } from 'mongoose'
 import { v4 as uuidv4 } from 'uuid'
+import { SUPPORTED_LANGUAGES } from '@/config/constants'
+import { CounterModel } from '@/models/'
+import { uuidValidator } from '@/utils/'
 
-import { SUPPORTED_LANGUAGES } from '../config/constants'
-import { uuidValidator } from '../utils/uuidValidator'
-import { CounterModel } from './counter.model'
+type CashregisterAccountDoc = HydratedDocument<CashregisterAccountDB>
 
 const CashregisterAccountSchema: Schema = new Schema(
   {
@@ -24,7 +28,7 @@ const CashregisterAccountSchema: Schema = new Schema(
       validate: {
         validator(value: Map<string, string>) {
           return Array.from(value.keys()).every(key =>
-            SUPPORTED_LANGUAGES.includes(key as any),
+            SUPPORTED_LANGUAGES.includes(key as SUPPORTED_LANGUAGES_TYPE),
           )
         },
         message: 'Supported languages only',
@@ -51,30 +55,17 @@ const CashregisterAccountSchema: Schema = new Schema(
   { timestamps: true },
 )
 
-CashregisterAccountSchema.set('toJSON', {
-  virtuals: true,
-  versionKey: false,
-  transform: (_, ret) => {
-    ret.id = ret._id
-    ret.seq = ret.seq || 0
-    delete ret._id
-    delete ret.removed
-  },
-})
-
-CashregisterAccountSchema.pre('save', async function (next) {
-  const doc = this as any
-
-  if (doc.isNew && !doc.seq) {
+CashregisterAccountSchema.pre('save', async function (this: CashregisterAccountDoc, next) {
+  if (this.isNew && !this.seq) {
     const counter = await CounterModel.findByIdAndUpdate(
       'cashregister-accounts',
       { $inc: { seq: 1 } },
       { new: true, upsert: true },
     )
-    doc.seq = counter.seq
+    this.seq = counter.seq
   }
 
   next()
 })
 
-export const CashregisterAccountModel = mongoose.model<CashregisterAccount>('cashregister-account', CashregisterAccountSchema)
+export const CashregisterAccountModel = mongoose.model<CashregisterAccountDB>('cashregister-account', CashregisterAccountSchema)

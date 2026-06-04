@@ -1,5 +1,5 @@
-import { batchCurrencySchema, createCurrencySchema, editCurrencySchema, getCurrencySchema, removeCurrencySchema } from '../../schemas/currency.schema'
-import { registry } from '../registry'
+import { batchCurrencySchema, createCurrencySchema, editCurrencySchema, getCurrencySchema, removeCurrencySchema } from '@remnant/shared'
+import { registry } from '@/docs/registry'
 
 registry.registerPath({
   method: 'get',

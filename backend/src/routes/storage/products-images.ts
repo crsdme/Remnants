@@ -2,8 +2,8 @@ import fs from 'node:fs'
 import path from 'node:path'
 import { Router } from 'express'
 import sharp from 'sharp'
-import { STORAGE_PATHS } from '../../config/constants'
-import { HttpError } from '../../utils/httpError'
+import { STORAGE_PATHS } from '@/config/constants'
+import { HttpError } from '@/utils/httpError'
 
 const router = Router()
 

@@ -1,9 +1,17 @@
-import type * as SupplierTypes from '../types/supplier.type'
-import { SupplierModel } from '../models'
-import { HttpError } from '../utils/httpError'
-import { buildQuery, buildSortQuery } from '../utils/queryBuilder'
+import type {
+  CreateSupplierParams,
+  CreateSupplierResponse,
+  EditSupplierParams,
+  EditSupplierResponse,
+  GetSuppliersParams,
+  GetSuppliersResponse,
+  RemoveSuppliersParams,
+  RemoveSuppliersResponse,
+} from '@remnant/shared'
+import { SupplierModel } from '@/models/'
+import { buildQuery, buildSortQuery, HttpError } from '@/utils/'
 
-export async function get(payload: SupplierTypes.getSuppliersParams): Promise<SupplierTypes.getSuppliersResult> {
+export async function get(payload: GetSuppliersParams): Promise<GetSuppliersResponse> {
   const { current = 1, pageSize = 10 } = payload.pagination || {}
 
   const {
@@ -82,16 +90,33 @@ export async function get(payload: SupplierTypes.getSuppliersParams): Promise<Su
   const suppliers = suppliersRaw[0].suppliers.map((doc: any) => SupplierModel.hydrate(doc))
   const suppliersCount = suppliersRaw[0].totalCount[0]?.count || 0
 
-  return { status: 'success', code: 'SUPPLIERS_FETCHED', message: 'Suppliers fetched', suppliers, suppliersCount }
+  return {
+    status: 'success',
+    code: 'SUPPLIERS_FETCHED',
+    message: 'Suppliers fetched',
+    data: {
+      items: suppliers,
+      pagination: {
+        page: current,
+        pageSize,
+        total: suppliersCount,
+      },
+    },
+  }
 }
 
-export async function create(payload: SupplierTypes.createSupplierParams): Promise<SupplierTypes.createSupplierResult> {
+export async function create(payload: CreateSupplierParams): Promise<CreateSupplierResponse> {
   const supplier = await SupplierModel.create(payload)
 
-  return { status: 'success', code: 'SUPPLIER_CREATED', message: 'Supplier created', supplier }
+  return {
+    status: 'success',
+    code: 'SUPPLIER_CREATED',
+    message: 'Supplier created',
+    data: supplier,
+  }
 }
 
-export async function edit(payload: SupplierTypes.editSupplierParams): Promise<SupplierTypes.editSupplierResult> {
+export async function edit(payload: EditSupplierParams): Promise<EditSupplierResponse> {
   const { id } = payload
 
   const supplier = await SupplierModel.findOneAndUpdate({ _id: id }, payload)
@@ -100,10 +125,15 @@ export async function edit(payload: SupplierTypes.editSupplierParams): Promise<S
     throw new HttpError(400, 'Supplier not edited', 'SUPPLIER_NOT_EDITED')
   }
 
-  return { status: 'success', code: 'SUPPLIER_EDITED', message: 'Supplier edited', supplier }
+  return {
+    status: 'success',
+    code: 'SUPPLIER_EDITED',
+    message: 'Supplier edited',
+    data: supplier,
+  }
 }
 
-export async function remove(payload: SupplierTypes.removeSuppliersParams): Promise<SupplierTypes.removeSuppliersResult> {
+export async function remove(payload: RemoveSuppliersParams): Promise<RemoveSuppliersResponse> {
   const { ids } = payload
 
   const suppliers = await SupplierModel.updateMany(
@@ -115,5 +145,9 @@ export async function remove(payload: SupplierTypes.removeSuppliersParams): Prom
     throw new HttpError(400, 'Suppliers not removed', 'SUPPLIERS_NOT_REMOVED')
   }
 
-  return { status: 'success', code: 'SUPPLIERS_REMOVED', message: 'Suppliers removed' }
+  return {
+    status: 'success',
+    code: 'SUPPLIERS_REMOVED',
+    message: 'Suppliers removed',
+  }
 }

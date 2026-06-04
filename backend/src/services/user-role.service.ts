@@ -1,10 +1,17 @@
-import type * as UserRoleTypes from '../types/user-role.type'
-import { UserRoleModel } from '../models'
-import { HttpError } from '../utils/httpError'
-import { parseFile, toBoolean } from '../utils/parseTools'
-import { buildQuery, buildSortQuery } from '../utils/queryBuilder'
+import type {
+  CreateUserRoleParams,
+  CreateUserRoleResponse,
+  EditUserRoleParams,
+  EditUserRoleResponse,
+  GetUserRolesParams,
+  GetUserRolesResponse,
+  RemoveUserRolesParams,
+  RemoveUserRolesResponse,
+} from '@remnant/shared'
+import { UserRoleModel } from '@/models/'
+import { buildQuery, buildSortQuery, HttpError } from '@/utils'
 
-export async function get(payload: UserRoleTypes.getUserRolesParams): Promise<UserRoleTypes.getUserRolesResult> {
+export async function get(payload: GetUserRolesParams): Promise<GetUserRolesResponse> {
   const { current = 1, pageSize = 10 } = payload.pagination || {}
 
   const {
@@ -64,10 +71,22 @@ export async function get(payload: UserRoleTypes.getUserRolesParams): Promise<Us
   const userRoles = userRolesRaw[0].userRoles.map((doc: any) => UserRoleModel.hydrate(doc))
   const userRolesCount = userRolesRaw[0].totalCount[0]?.count || 0
 
-  return { status: 'success', code: 'USER_ROLES_FETCHED', message: 'User roles fetched', userRoles, userRolesCount }
+  return {
+    status: 'success',
+    code: 'USER_ROLES_FETCHED',
+    message: 'User roles fetched',
+    data: {
+      items: userRoles,
+      pagination: {
+        total: userRolesCount,
+        page: current,
+        pageSize,
+      },
+    },
+  }
 }
 
-export async function create(payload: UserRoleTypes.createUserRoleParams): Promise<UserRoleTypes.createUserRoleResult> {
+export async function create(payload: CreateUserRoleParams): Promise<CreateUserRoleResponse> {
   const { names, permissions, priority, active } = payload
 
   const userRole = await UserRoleModel.create({ names, permissions, priority, active })
@@ -76,10 +95,15 @@ export async function create(payload: UserRoleTypes.createUserRoleParams): Promi
     throw new HttpError(400, 'User role not created', 'USER_ROLE_NOT_CREATED')
   }
 
-  return { status: 'success', code: 'USER_ROLE_CREATED', message: 'User role created', userRole }
+  return {
+    status: 'success',
+    code: 'USER_ROLE_CREATED',
+    message: 'User role created',
+    data: userRole,
+  }
 }
 
-export async function edit(payload: UserRoleTypes.editUserRoleParams): Promise<UserRoleTypes.editUserRoleResult> {
+export async function edit(payload: EditUserRoleParams): Promise<EditUserRoleResponse> {
   const { id, names, permissions, priority, active } = payload
 
   const query = { names, permissions, priority, active }
@@ -90,10 +114,15 @@ export async function edit(payload: UserRoleTypes.editUserRoleParams): Promise<U
     throw new HttpError(400, 'User role not edited', 'USER_ROLE_NOT_EDITED')
   }
 
-  return { status: 'success', code: 'USER_ROLE_EDITED', message: 'User role edited', userRole }
+  return {
+    status: 'success',
+    code: 'USER_ROLE_EDITED',
+    message: 'User role edited',
+    data: userRole,
+  }
 }
 
-export async function remove(payload: UserRoleTypes.removeUserRolesParams): Promise<UserRoleTypes.removeUserRolesResult> {
+export async function remove(payload: RemoveUserRolesParams): Promise<RemoveUserRolesResponse> {
   const { ids } = payload
 
   const userRoles = await UserRoleModel.updateMany(
@@ -105,39 +134,43 @@ export async function remove(payload: UserRoleTypes.removeUserRolesParams): Prom
     throw new HttpError(400, 'User roles not removed', 'USER_ROLES_NOT_REMOVED')
   }
 
-  return { status: 'success', code: 'USER_ROLES_REMOVED', message: 'User roles removed' }
+  return {
+    status: 'success',
+    code: 'USER_ROLES_REMOVED',
+    message: 'User roles removed',
+  }
 }
 
-export async function importHandler(payload: UserRoleTypes.importUserRolesParams): Promise<UserRoleTypes.importUserRolesResult> {
-  const { file } = payload
+// export async function importHandler(payload: importUserRolesParams): Promise<importUserRolesResult> {
+//   const { file } = payload
 
-  const storedFile = await parseFile(file.path)
+//   const storedFile = await parseFile(file.path)
 
-  const parsedUserRoles = storedFile.map(row => ({
-    name: row.name,
-    permissions: row.permissions,
-    priority: row.priority,
-    active: toBoolean(row.active),
-  }))
+//   const parsedUserRoles = storedFile.map(row => ({
+//     name: row.name,
+//     permissions: row.permissions,
+//     priority: row.priority,
+//     active: toBoolean(row.active),
+//   }))
 
-  await UserRoleModel.create(parsedUserRoles)
+//   await UserRoleModel.create(parsedUserRoles)
 
-  return { status: 'success', code: 'USER_ROLES_IMPORTED', message: 'User roles imported' }
-}
+//   return { status: 'success', code: 'USER_ROLES_IMPORTED', message: 'User roles imported' }
+// }
 
-export async function duplicate(payload: UserRoleTypes.duplicateUserRolesParams): Promise<UserRoleTypes.duplicateUserRolesResult> {
-  const { ids } = payload
+// export async function duplicate(payload: duplicateUserRolesParams): Promise<duplicateUserRolesResult> {
+//   const { ids } = payload
 
-  const userRoles = await UserRoleModel.find({ _id: { $in: ids } })
+//   const userRoles = await UserRoleModel.find({ _id: { $in: ids } })
 
-  const parsedUserRoles = userRoles.map(userRole => ({
-    names: userRole.names,
-    permissions: userRole.permissions,
-    priority: userRole.priority,
-    active: userRole.active,
-  }))
+//   const parsedUserRoles = userRoles.map(userRole => ({
+//     names: userRole.names,
+//     permissions: userRole.permissions,
+//     priority: userRole.priority,
+//     active: userRole.active,
+//   }))
 
-  await UserRoleModel.create(parsedUserRoles)
+//   await UserRoleModel.create(parsedUserRoles)
 
-  return { status: 'success', code: 'USER_ROLES_DUPLICATED', message: 'User roles duplicated' }
-}
+//   return { status: 'success', code: 'USER_ROLES_DUPLICATED', message: 'User roles duplicated' }
+// }

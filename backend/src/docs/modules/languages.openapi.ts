@@ -1,5 +1,5 @@
-import { batchLanguageSchema, createLanguageSchema, editLanguageSchema, getLanguageSchema, removeLanguageSchema } from '../../schemas/language.schema'
-import { registry } from '../registry'
+import { batchLanguageSchema, createLanguageSchema, editLanguageSchema, getLanguageSchema, removeLanguageSchema } from '@remnant/shared'
+import { registry } from '@/docs/registry'
 
 registry.registerPath({
   method: 'get',

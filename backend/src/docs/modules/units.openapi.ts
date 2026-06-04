@@ -1,5 +1,5 @@
-import { batchUnitSchema, createUnitSchema, editUnitSchema, getUnitSchema, removeUnitSchema } from '../../schemas/unit.schema'
-import { registry } from '../registry'
+import { batchUnitSchema, createUnitSchema, editUnitSchema, getUnitSchema, removeUnitSchema } from '@remnant/shared'
+import { registry } from '@/docs/registry'
 
 registry.registerPath({
   method: 'get',

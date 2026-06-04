@@ -1,5 +1,5 @@
-import { batchCategorySchema, createCategorySchema, editCategorySchema, getCategorySchema, removeCategorySchema } from '../../schemas/category.schema'
-import { registry } from '../registry'
+import { batchCategorySchema, createCategorySchema, editCategorySchema, getCategorySchema, removeCategorySchema } from '@remnant/shared'
+import { registry } from '@/docs/registry'
 
 registry.registerPath({
   method: 'get',

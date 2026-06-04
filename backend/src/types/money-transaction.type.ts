@@ -1,133 +1,44 @@
-import type { Code, DateRange, IdType, Message, Pagination, Sorter, Status } from './common.type'
+import type { MoneyTransactionDTO } from '@remnant/shared'
+import type { z } from 'zod'
+import {
+  createMoneyTransactionRepoSchema,
+  createMoneyTransactionSchema,
+  getMoneyTransactionsSchema,
+} from '@remnant/shared'
 
-export interface MoneyTransaction {
-  id: IdType
+export interface MoneyTransactionDB {
+  _id: string
+  seq: number
   type: string
   direction: string
   account: string
-  amount: number
-  currency: string
-  sourceModel: string
-  sourceId: string
-  createdAt: Date
-  updatedAt: Date
-}
-
-export interface getMoneyTransactionsResult {
-  status: Status
-  code: Code
-  message: Message
-  moneyTransactions: MoneyTransaction[]
-  moneyTransactionsCount: number
-}
-
-export interface getMoneyTransactionsFilters {
-  type: string
-  direction: string
-  account: string
-  amount: number
+  minorAmount: number
   currency: string
   cashregister: string
   description: string
   sourceModel: string
   sourceId: string
-  createdAt: DateRange
-  updatedAt: DateRange
+  createdBy: string
+  removedBy: string
+  removed: boolean
+  createdAt: Date
+  updatedAt: Date
 }
 
-export interface getMoneyTransactionsSorters {
-  type: Sorter
-  direction: Sorter
-  account: Sorter
-  sourceModel: Sorter
-  sourceId: Sorter
-  createdAt: Sorter
-  updatedAt: Sorter
+export type GetMoneyTransactionsPayload = z.output<typeof getMoneyTransactionsSchema>
+export function parseGetMoneyTransactions(x: unknown): GetMoneyTransactionsPayload {
+  return (getMoneyTransactionsSchema as z.ZodType<GetMoneyTransactionsPayload>).parse(x)
 }
 
-export interface getMoneyTransactionsParams {
-  filters?: Partial<getMoneyTransactionsFilters>
-  sorters?: Partial<getMoneyTransactionsSorters>
-  pagination?: Partial<Pagination>
+export type CreateMoneyTransactionsPayload = z.output<typeof createMoneyTransactionSchema>
+export function parseCreateMoneyTransactions(x: unknown): CreateMoneyTransactionsPayload {
+  return (createMoneyTransactionSchema as z.ZodType<CreateMoneyTransactionsPayload>).parse(x)
 }
 
-export interface createMoneyTransactionResult {
-  status: Status
-  code: Code
-  message: Message
-  moneyTransaction: MoneyTransaction
-}
+export type GetMoneyTransactionsRepoPayload = GetMoneyTransactionsPayload
+export interface GetMoneyTransactionsRepoResult { items: MoneyTransactionDTO[], total: number, page: number, pageSize: number }
 
-export interface createMoneyTransactionParams {
-  type: string
-  direction: string
-  account: string
-  cashregister: string
-  sourceModel: string
-  sourceId: string
-  currency: string
-  amount: number
-  role?: string
-  transferId?: string
-  description?: string
-}
-
-export interface createMoneyTransferAccountParams {
-  type: string
-  direction: string
-  accountFrom: string
-  accountTo: string
-  cashregister: string
-  currency: string
-  amount: number
-  sourceModel: string
-}
-
-export interface createMoneyTransactionTransferResult {
-  status: Status
-  code: Code
-  message: Message
-  moneyTransaction: {
-    outMoneyTransaction: any
-    inMoneyTransaction: any
-  }
-}
-
-export interface createMoneyTransferCashregisterParams {
-  type: string
-  direction: string
-  accountFrom: string
-  accountTo: string
-  cashregisterFrom: string
-  cashregisterTo: string
-  currency: string
-  amount: number
-  sourceModel: string
-}
-
-export interface editMoneyTransactionResult {
-  status: Status
-  code: Code
-  message: Message
-  moneyTransaction: MoneyTransaction
-}
-
-export interface editMoneyTransactionParams {
-  id: IdType
-  type: string
-  direction: string
-  account: string
-  sourceModel: string
-  sourceId: string
-  amount: number
-}
-
-export interface removeMoneyTransactionsResult {
-  status: Status
-  code: Code
-  message: Message
-}
-
-export interface removeMoneyTransactionsParams {
-  ids: IdType[]
+export type CreateMoneyTransactionsRepoPayload = z.output<typeof createMoneyTransactionRepoSchema>
+export function parseCreateMoneyTransactionsRepo(x: unknown): CreateMoneyTransactionsRepoPayload {
+  return (createMoneyTransactionRepoSchema as z.ZodType<CreateMoneyTransactionsRepoPayload>).parse(x)
 }

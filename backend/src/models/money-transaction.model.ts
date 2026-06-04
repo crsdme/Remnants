@@ -1,7 +1,10 @@
-import type { MoneyTransaction } from '../types/money-transaction.type'
+import type { HydratedDocument } from 'mongoose'
+import type { MoneyTransactionDB } from '@/types'
 import mongoose, { Schema } from 'mongoose'
 import { v4 as uuidv4 } from 'uuid'
-import { CounterModel } from './counter.model'
+import { CounterModel } from '@/models/'
+
+type MoneyTransactionDoc = HydratedDocument<MoneyTransactionDB>
 
 const MoneyTransactionSchema: Schema = new Schema(
   {
@@ -32,23 +35,23 @@ const MoneyTransactionSchema: Schema = new Schema(
       enum: ['in', 'out'],
       required: true,
     },
-    account: {
+    accountId: {
       type: String,
       required: true,
       ref: 'CashregisterAccount',
     },
-    cashregister: {
+    cashregisterId: {
       type: String,
       required: true,
       ref: 'Cashregister',
     },
-    amount: {
+    minorAmount: {
       type: Number,
       required: true,
-      min: 0,
     },
-    currency: {
+    currencyId: {
       type: String,
+      ref: 'Currency',
       required: true,
     },
     sourceModel: {
@@ -90,19 +93,17 @@ MoneyTransactionSchema.set('toJSON', {
   },
 })
 
-MoneyTransactionSchema.pre('save', async function (next) {
-  const doc = this as any
-
-  if (doc.isNew && !doc.seq) {
+MoneyTransactionSchema.pre('save', async function (this: MoneyTransactionDoc, next) {
+  if (this.isNew && !this.seq) {
     const counter = await CounterModel.findByIdAndUpdate(
       'money-transactions',
       { $inc: { seq: 1 } },
       { new: true, upsert: true },
     )
-    doc.seq = counter.seq
+    this.seq = counter.seq
   }
 
   next()
 })
 
-export const MoneyTransactionModel = mongoose.model<MoneyTransaction>('money-transaction', MoneyTransactionSchema)
+export const MoneyTransactionModel = mongoose.model<MoneyTransactionDoc>('money-transaction', MoneyTransactionSchema)

@@ -1,5 +1,5 @@
-import { createUserSchema, editUserSchema, getUserSchema, removeUserSchema } from '../../schemas/user.schema'
-import { registry } from '../registry'
+import { createUserSchema, editUserSchema, getUserSchema, removeUserSchema } from '@remnant/shared'
+import { registry } from '@/docs/registry'
 
 registry.registerPath({
   method: 'get',

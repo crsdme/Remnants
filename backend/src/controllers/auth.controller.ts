@@ -1,11 +1,15 @@
 import type { NextFunction, Request, Response } from 'express'
-import * as AuthService from '../services/auth.service'
+import type { LoginPayload, RefreshPayload, ValidatedRequest } from '@/types'
 
-export async function login(req: Request, res: Response, next: NextFunction) {
+import * as AuthService from '@/services/auth.service'
+
+export async function login(
+  req: ValidatedRequest<unknown, LoginPayload>,
+  res: Response,
+  next: NextFunction,
+) {
   try {
-    const { accessToken, refreshToken, user } = await AuthService.login(
-      req.body,
-    )
+    const { accessToken, refreshToken, user } = await AuthService.login(req.validated.body)
 
     res.cookie('refreshToken', refreshToken, {
       httpOnly: true,
@@ -30,7 +34,11 @@ export async function login(req: Request, res: Response, next: NextFunction) {
   }
 }
 
-export async function logout(req: Request, res: Response, next: NextFunction) {
+export async function logout(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) {
   try {
     res.clearCookie('accessToken', {
       httpOnly: true,
@@ -51,11 +59,15 @@ export async function logout(req: Request, res: Response, next: NextFunction) {
   }
 }
 
-export async function refresh(req: Request, res: Response, next: NextFunction) {
+export async function refresh(
+  req: ValidatedRequest<unknown, RefreshPayload>,
+  res: Response,
+  next: NextFunction,
+) {
   try {
     const refreshToken = req.cookies?.refreshToken
 
-    if (!refreshToken) {
+    if (typeof refreshToken !== 'string' || refreshToken.length === 0) {
       res.sendStatus(403)
       return
     }

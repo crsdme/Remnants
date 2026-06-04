@@ -1,11 +1,11 @@
 import { OpenApiGeneratorV31 } from '@asteasolutions/zod-to-openapi'
 import { registry } from './registry'
-import '../docs/modules/currencies.openapi'
-import '../docs/modules/languages.openapi'
-import '../docs/modules/units.openapi'
-import '../docs/modules/users.openapi'
-import '../docs/modules/categories.openapi'
-import '../docs/modules/users-roles.openapi'
+import '@/docs/modules/currencies.openapi'
+import '@/docs/modules/languages.openapi'
+import '@/docs/modules/units.openapi'
+import '@/docs/modules/users.openapi'
+import '@/docs/modules/categories.openapi'
+import '@/docs/modules/users-roles.openapi'
 
 const generator = new OpenApiGeneratorV31(registry.definitions)
 

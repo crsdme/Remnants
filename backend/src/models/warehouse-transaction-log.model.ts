@@ -1,8 +1,7 @@
-import type { WarehouseTransactionLog } from '../types/warehouse-transaction-log.type'
+import type { WarehouseTransactionLog } from '@remnant/shared'
 import mongoose, { Schema } from 'mongoose'
-
 import { v4 as uuidv4 } from 'uuid'
-import { uuidValidator } from '../utils/uuidValidator'
+import { uuidValidator } from '@/utils/'
 
 const WarehouseTransactionLogSchema: Schema = new Schema(
   {

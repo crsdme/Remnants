@@ -1,43 +1,49 @@
+import type { RequestHandler } from 'express'
+import { createBarcodeSchema, editBarcodeSchema, getBarcodesSchema, printBarcodeSchema, removeBarcodesSchema } from '@remnant/shared'
 import { Router } from 'express'
-import * as BarcodeController from '../../controllers/barcode.controller'
-import { validateBodyRequest, validateQueryRequest } from '../../middleware/'
-import { checkPermissions } from '../../middleware/permission.middleware'
-import { createBarcodeSchema, editBarcodeSchema, getBarcodeSchema, printBarcodeSchema, removeBarcodeSchema } from '../../schemas/barcode.schema'
+import * as BarcodeController from '@/controllers/barcode.controller'
+
+import { checkPermissions, validateBodyRequest, validateQueryRequest } from '@/middleware'
 
 const router = Router()
 
 router.get(
   '/get',
-  validateQueryRequest(getBarcodeSchema),
-  BarcodeController.get,
+  validateQueryRequest(getBarcodesSchema),
+  BarcodeController.get as RequestHandler,
 )
+
 router.post(
   '/create',
   validateBodyRequest(createBarcodeSchema),
   checkPermissions('barcode.create'),
-  BarcodeController.create,
+  BarcodeController.create as RequestHandler,
 )
+
 router.get(
   '/generate-code',
   BarcodeController.generateCode,
 )
+
 router.post(
   '/edit',
   validateBodyRequest(editBarcodeSchema),
   checkPermissions('barcode.edit'),
-  BarcodeController.edit,
+  BarcodeController.edit as RequestHandler,
 )
+
 router.post(
   '/remove',
-  validateBodyRequest(removeBarcodeSchema),
+  validateBodyRequest(removeBarcodesSchema),
   checkPermissions('barcode.remove'),
-  BarcodeController.remove,
+  BarcodeController.remove as RequestHandler,
 )
+
 router.get(
   '/print',
   validateQueryRequest(printBarcodeSchema),
   checkPermissions('barcode.print'),
-  BarcodeController.print,
+  BarcodeController.print as RequestHandler,
 )
 
 export default router

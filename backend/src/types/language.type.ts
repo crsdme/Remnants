@@ -1,124 +1,50 @@
-import type { Code, DateRange, IdType, LanguageString, Message, Pagination, Sorter, Status } from './common.type'
+import type {
+  LanguageDTO,
+} from '@remnant/shared'
+import type { z } from 'zod'
+import {
+  createLanguageSchema,
+  editLanguageSchema,
+  getLanguageSchema,
+  removeLanguageSchema,
+} from '@remnant/shared'
 
-export interface Language {
-  id: IdType
+export interface LanguageDB {
+  _id: string
+  seq: number
   name: string
   code: string
-  priority: number
   main: boolean
+  priority: number
   active: boolean
   removed: boolean
   createdAt: Date
   updatedAt: Date
 }
 
-export interface getLanguagesResult {
-  status: Status
-  code: Code
-  message: Message
-  languages: Language[]
-  languagesCount: number
+export type GetLanguagesPayload = z.output<typeof getLanguageSchema>
+export function parseGetLanguages(x: unknown): GetLanguagesPayload {
+  return getLanguageSchema.parse(x)
 }
 
-export interface getLanguagesFilters {
-  name: string
-  code: string
-  active: boolean[]
-  priority: number
-  main: boolean[]
-  createdAt: DateRange
-  updatedAt: DateRange
+export type CreateLanguagePayload = z.output<typeof createLanguageSchema>
+export function parseCreateLanguage(x: unknown): CreateLanguagePayload {
+  return createLanguageSchema.parse(x)
 }
 
-export interface getLanguagesSorters {
-  name: Sorter
-  code: Sorter
-  priority: Sorter
-  main: Sorter
-  active: Sorter
-  createdAt: Sorter
-  updatedAt: Sorter
+export type EditLanguagePayload = z.output<typeof editLanguageSchema>
+export function parseEditLanguage(x: unknown): EditLanguagePayload {
+  return editLanguageSchema.parse(x)
 }
 
-export interface getLanguagesParams {
-  filters?: Partial<getLanguagesFilters>
-  sorters?: Partial<getLanguagesSorters>
-  pagination?: Partial<Pagination>
+export type RemoveLanguagesPayload = z.output<typeof removeLanguageSchema>
+export function parseRemoveLanguages(x: unknown): RemoveLanguagesPayload {
+  return removeLanguageSchema.parse(x)
 }
 
-export interface createLanguagesResult {
-  status: Status
-  code: Code
-  message: Message
-  language: Language
-}
+export type GetLanguagesRepoPayload = GetLanguagesPayload
+export interface GetLanguagesRepoResult { items: LanguageDTO[], total: number, page: number, pageSize: number }
 
-export interface createLanguageParams {
-  name: string
-  code: string
-  priority?: number
-  main?: boolean
-  active?: boolean
-}
+export type CreateLanguagesRepoPayload = CreateLanguagePayload
 
-export interface editLanguagesResult {
-  status: Status
-  code: Code
-  message: Message
-  language: Language
-}
-
-export interface editLanguageParams {
-  id: IdType
-  name: string
-  code: string
-  priority?: number
-  main?: boolean
-  active?: boolean
-}
-
-export interface removeLanguagesResult {
-  status: Status
-  code: Code
-  message: Message
-}
-
-export interface removeLanguageParams {
-  ids: IdType[]
-}
-
-export interface batchLanguagesResult {
-  status: Status
-  code: Code
-  message: Message
-}
-
-export interface batchLanguagesParams {
-  ids: IdType[]
-  filters: Partial<getLanguagesFilters>
-  params: {
-    column: string
-    value: string | number | boolean | LanguageString
-  }[]
-}
-
-export interface importLanguagesResult {
-  status: Status
-  code: Code
-  message: Message
-  languageIds: any[]
-}
-
-export interface importLanguagesParams {
-  file: Express.Multer.File
-}
-
-export interface duplicateLanguageResult {
-  status: Status
-  code: Code
-  message: Message
-}
-
-export interface duplicateLanguageParams {
-  ids: IdType[]
-}
+export type EditLanguagesRepoPayload = EditLanguagePayload

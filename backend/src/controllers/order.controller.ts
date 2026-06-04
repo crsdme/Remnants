@@ -1,9 +1,27 @@
 import type { NextFunction, Request, Response } from 'express'
-import * as OrderService from '../services/order.service'
+import type {
+  CreateOrderPayload,
+  EditOrderPayload,
+  GetOrdersPayload,
+  PrintDraftInvoiceOrderPayload,
+  PrintInvoiceOrderPayload,
+  PrintOrderLabelPayload,
+  RemoveOrdersPayload,
+  ValidatedRequest,
+} from '@/types'
 
-export async function get(req: Request, res: Response, next: NextFunction) {
+import * as OrderService from '@/services/order.service'
+
+export async function get(
+  req: ValidatedRequest<GetOrdersPayload, never>,
+  res: Response,
+  next: NextFunction,
+) {
   try {
-    const serviceResponse = await OrderService.get(req.body, req.user)
+    const serviceResponse = await OrderService.get({
+      payload: req.validated.query,
+      user: req.user,
+    })
 
     res.status(200).json(serviceResponse)
   }
@@ -12,9 +30,16 @@ export async function get(req: Request, res: Response, next: NextFunction) {
   }
 }
 
-export async function create(req: Request, res: Response, next: NextFunction) {
+export async function create(
+  req: ValidatedRequest<CreateOrderPayload, never>,
+  res: Response,
+  next: NextFunction,
+) {
   try {
-    const serviceResponse = await OrderService.create(req.body, req.user)
+    const serviceResponse = await OrderService.create({
+      payload: req.body,
+      user: req.user,
+    })
 
     res.status(201).json(serviceResponse)
   }
@@ -23,9 +48,16 @@ export async function create(req: Request, res: Response, next: NextFunction) {
   }
 }
 
-export async function edit(req: Request, res: Response, next: NextFunction) {
+export async function edit(
+  req: ValidatedRequest<EditOrderPayload, never>,
+  res: Response,
+  next: NextFunction,
+) {
   try {
-    const serviceResponse = await OrderService.edit(req.body, req.user)
+    const serviceResponse = await OrderService.edit({
+      payload: req.body,
+      user: req.user,
+    })
 
     res.status(200).json(serviceResponse)
   }
@@ -34,9 +66,16 @@ export async function edit(req: Request, res: Response, next: NextFunction) {
   }
 }
 
-export async function remove(req: Request, res: Response, next: NextFunction) {
+export async function remove(
+  req: ValidatedRequest<RemoveOrdersPayload, never>,
+  res: Response,
+  next: NextFunction,
+) {
   try {
-    const serviceResponse = await OrderService.remove(req.body, req.user)
+    const serviceResponse = await OrderService.remove({
+      payload: req.body,
+      user: req.user,
+    })
 
     res.status(200).json(serviceResponse)
   }
@@ -45,12 +84,18 @@ export async function remove(req: Request, res: Response, next: NextFunction) {
   }
 }
 
-export async function printInvoice(req: Request, res: Response, next: NextFunction) {
+export async function printInvoice(
+  req: ValidatedRequest<PrintInvoiceOrderPayload, never>,
+  res: Response,
+  next: NextFunction,
+) {
   try {
-    const { doc } = await OrderService.printInvoice(req.body)
+    const { doc } = await OrderService.printInvoice({
+      payload: req.validated.body,
+    })
 
     res.setHeader('Content-Type', 'application/pdf')
-    res.setHeader('Content-Disposition', `inline; filename=order-invoice-${req.body.seq}.pdf`)
+    res.setHeader('Content-Disposition', `inline; filename=order-invoice-${req.validated.body.seq}.pdf`)
     doc.pipe(res)
     doc.end()
   }
@@ -59,9 +104,15 @@ export async function printInvoice(req: Request, res: Response, next: NextFuncti
   }
 }
 
-export async function printDraftInvoice(req: Request, res: Response, next: NextFunction) {
+export async function printDraftInvoice(
+  req: ValidatedRequest<PrintDraftInvoiceOrderPayload, never>,
+  res: Response,
+  next: NextFunction,
+) {
   try {
-    const { doc } = await OrderService.printDraftInvoice(req.body)
+    const { doc } = await OrderService.printDraftInvoice({
+      payload: req.validated.body,
+    })
 
     res.setHeader('Content-Type', 'application/pdf')
     res.setHeader('Content-Disposition', `inline; filename=order-draft-invoice.pdf`)
@@ -73,12 +124,18 @@ export async function printDraftInvoice(req: Request, res: Response, next: NextF
   }
 }
 
-export async function printOrderLabel(req: Request, res: Response, next: NextFunction) {
+export async function printOrderLabel(
+  req: ValidatedRequest<PrintOrderLabelPayload, never>,
+  res: Response,
+  next: NextFunction,
+) {
   try {
-    const { doc } = await OrderService.printOrderLabel(req.body)
+    const { doc } = await OrderService.printOrderLabel({
+      payload: req.validated.body,
+    })
 
     res.setHeader('Content-Type', 'application/pdf')
-    res.setHeader('Content-Disposition', `inline; filename=order-label-${req.body.order}.pdf`)
+    res.setHeader('Content-Disposition', `inline; filename=order-label-${req.validated.body.order}.pdf`)
     doc.pipe(res)
     doc.end()
   }

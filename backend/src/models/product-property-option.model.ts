@@ -1,8 +1,8 @@
-import type { ProductPropertyOption } from '../types/product-property-option.type'
+import type { ProductPropertyOption } from '@remnant/shared'
 import mongoose, { Schema } from 'mongoose'
 import { v4 as uuidv4 } from 'uuid'
-import { SUPPORTED_LANGUAGES } from '../config/constants'
-import { uuidValidator } from '../utils/uuidValidator'
+import { SUPPORTED_LANGUAGES } from '@/config/constants'
+import { uuidValidator } from '@/utils/'
 
 const ProductPropertyOptionSchema: Schema = new Schema(
   {

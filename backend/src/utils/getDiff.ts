@@ -1,7 +1,7 @@
 import { isEqual, isPlainObject } from 'lodash'
 
-export function getDifference(oldObj: any, newObj: any) {
-  const diff: any = {}
+export function getDifference(oldObj: Record<string, unknown>, newObj: Record<string, unknown>) {
+  const diff: Record<string, unknown> = {}
 
   for (const key of Object.keys(newObj)) {
     if (typeof newObj[key] === 'undefined')
@@ -15,7 +15,7 @@ export function getDifference(oldObj: any, newObj: any) {
   return diff
 }
 
-export function getDifferenceDeep(prev: any, next: any) {
+export function getDifferenceDeep(prev: Record<string, unknown>, next: Record<string, unknown>) {
   if (isEqual(prev, next))
     return Array.isArray(prev) ? [] : {}
 
@@ -29,7 +29,7 @@ export function getDifferenceDeep(prev: any, next: any) {
     return next
   }
 
-  const result: any = {}
+  const result: Record<string, unknown> = {}
   const keys = new Set([...Object.keys(prev), ...Object.keys(next)])
 
   for (const key of keys) {
@@ -44,7 +44,7 @@ export function getDifferenceDeep(prev: any, next: any) {
         result[key] = b
       }
       else if (isPlainObject(a) && isPlainObject(b)) {
-        const nested = getDifferenceDeep(a, b)
+        const nested = getDifferenceDeep(a as Record<string, unknown>, b as Record<string, unknown>)
         if (Array.isArray(nested)) {
           result[key] = b
         }
@@ -63,24 +63,24 @@ export function getDifferenceDeep(prev: any, next: any) {
 
 // --------------AI BRUH---------------
 
-interface Change { path: string, before: any, after: any }
+interface Change { path: string, before: unknown, after: unknown }
 
 // утилита для чтения значения по пути "a.b.c"
-function getByPath(obj: any, path: string) {
+function getByPath(obj: unknown, path: string) {
   if (!path)
     return obj
-  return path.split('.').reduce((o, k) => (o == null ? o : o[k]), obj)
+  return path.split('.').reduce((o, k) => (o == null ? o : o[k as keyof typeof o]), obj)
 }
 
 // обёртка: делает changes[] на основе результата getDifferenceDeep
-export function diffToChangesFromDeep(prev: any, next: any): Change[] {
+export function diffToChangesFromDeep(prev: Record<string, unknown>, next: Record<string, unknown>): Change[] {
   const diff = getDifferenceDeep(prev, next)
   const changes: Change[] = []
 
-  const isPlainObject = (v: any) =>
+  const isPlainObject = (v: unknown) =>
     Object.prototype.toString.call(v) === '[object Object]'
 
-  const walk = (node: any, basePath: string) => {
+  const walk = (node: unknown, basePath: string) => {
     // если в diff лежит не объект (примитив/массив) — это «замена целиком» по basePath
     if (!isPlainObject(node)) {
       if (!basePath)
@@ -93,8 +93,8 @@ export function diffToChangesFromDeep(prev: any, next: any): Change[] {
       return
     }
 
-    for (const key of Object.keys(node)) {
-      const child = node[key]
+    for (const key of Object.keys(node as Record<string, unknown>)) {
+      const child = (node as Record<string, unknown>)[key]
       const path = basePath ? `${basePath}.${key}` : key
 
       if (isPlainObject(child)) {

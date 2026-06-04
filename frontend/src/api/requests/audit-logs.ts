@@ -1,7 +1,7 @@
 import type {
   AuditLogsResponse,
   getAuditLogsParams,
-} from '@/api/types'
+} from '@remnant/shared'
 import { api } from '@/api/instance'
 
 export async function getAuditLogs(params: getAuditLogsParams) {

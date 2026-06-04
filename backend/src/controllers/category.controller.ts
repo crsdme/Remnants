@@ -1,10 +1,16 @@
-import type { NextFunction, Request, Response } from 'express'
-import * as CategoryService from '../services/category.service'
-import { HttpError } from '../utils/httpError'
+import type { NextFunction, Response } from 'express'
+import type { CreateCategoryPayload, EditCategoryPayload, GetCategoriesPayload, RemoveCategoriesPayload, ValidatedRequest } from '@/types'
+import * as CategoryService from '@/services/category.service'
 
-export async function get(req: Request, res: Response, next: NextFunction) {
+export async function get(
+  req: ValidatedRequest<GetCategoriesPayload, never>,
+  res: Response,
+  next: NextFunction,
+) {
   try {
-    const serviceResponse = await CategoryService.get(req.body)
+    const serviceResponse = await CategoryService.get({
+      payload: req.validated.query,
+    })
 
     res.status(200).json(serviceResponse)
   }
@@ -13,9 +19,15 @@ export async function get(req: Request, res: Response, next: NextFunction) {
   }
 }
 
-export async function create(req: Request, res: Response, next: NextFunction) {
+export async function create(
+  req: ValidatedRequest<never, CreateCategoryPayload>,
+  res: Response,
+  next: NextFunction,
+) {
   try {
-    const serviceResponse = await CategoryService.create(req.body)
+    const serviceResponse = await CategoryService.create({
+      payload: req.validated.body,
+    })
 
     res.status(201).json(serviceResponse)
   }
@@ -24,9 +36,15 @@ export async function create(req: Request, res: Response, next: NextFunction) {
   }
 }
 
-export async function edit(req: Request, res: Response, next: NextFunction) {
+export async function edit(
+  req: ValidatedRequest<never, EditCategoryPayload>,
+  res: Response,
+  next: NextFunction,
+) {
   try {
-    const serviceResponse = await CategoryService.edit(req.body)
+    const serviceResponse = await CategoryService.edit({
+      payload: req.validated.body,
+    })
 
     res.status(200).json(serviceResponse)
   }
@@ -35,62 +53,17 @@ export async function edit(req: Request, res: Response, next: NextFunction) {
   }
 }
 
-export async function remove(req: Request, res: Response, next: NextFunction) {
+export async function remove(
+  req: ValidatedRequest<never, RemoveCategoriesPayload>,
+  res: Response,
+  next: NextFunction,
+) {
   try {
-    const serviceResponse = await CategoryService.remove(req.body)
+    const serviceResponse = await CategoryService.remove({
+      payload: req.validated.body,
+    })
 
     res.status(200).json(serviceResponse)
-  }
-  catch (err) {
-    next(err)
-  }
-}
-
-export async function batch(req: Request, res: Response, next: NextFunction) {
-  try {
-    const serviceResponse = await CategoryService.batch(req.body)
-
-    res.status(200).json(serviceResponse)
-  }
-  catch (err) {
-    next(err)
-  }
-}
-
-export async function duplicate(req: Request, res: Response, next: NextFunction) {
-  try {
-    const serviceResponse = await CategoryService.duplicate(req.body)
-
-    res.status(200).json(serviceResponse)
-  }
-  catch (err) {
-    next(err)
-  }
-}
-
-export async function importHandler(req: Request, res: Response, next: NextFunction) {
-  try {
-    if (!req.file) {
-      throw new HttpError(400, 'No file uploaded', 'NO_FILE_UPLOADED')
-    }
-
-    const serviceResponse = await CategoryService.importHandler({ file: req.file })
-
-    res.status(200).json(serviceResponse)
-  }
-  catch (err) {
-    next(err)
-  }
-}
-
-export async function exportHandler(req: Request, res: Response, next: NextFunction) {
-  try {
-    const serviceResponse = await CategoryService.exportHandler(req.body)
-    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-    res.setHeader('X-Export-Code', serviceResponse.code)
-    res.setHeader('X-Export-Message', serviceResponse.message)
-    res.setHeader('Access-Control-Expose-Headers', 'x-export-code, x-export-message')
-    res.send(serviceResponse.buffer)
   }
   catch (err) {
     next(err)

@@ -1,46 +1,12 @@
-import { extendZodWithOpenApi } from '@asteasolutions/zod-to-openapi'
 import { z } from 'zod'
-import { dateRangeSchema, idSchema, numberFromStringSchema, paginationSchema, sorterParamsSchema } from './common'
 
-extendZodWithOpenApi(z)
-
-export const getOrdersSchema = z.object({
-  filters: z.object({
-    ids: z.array(idSchema).optional(),
-    seq: z.string().trim().optional(),
-    warehouse: z.string().trim().optional(),
-    deliveryService: z.string().trim().optional(),
-    orderSource: z.string().trim().optional(),
-    orderStatus: z.array(z.string().trim()).optional(),
-    createdAt: dateRangeSchema.optional(),
-    updatedAt: dateRangeSchema.optional(),
-  }).optional().default({}),
-  sorters: z.object({
-    seq: sorterParamsSchema.optional(),
-    warehouse: sorterParamsSchema.optional(),
-    deliveryService: sorterParamsSchema.optional(),
-    orderSource: sorterParamsSchema.optional(),
-    orderStatus: sorterParamsSchema.optional(),
-    updatedAt: sorterParamsSchema.optional(),
-    createdAt: sorterParamsSchema.optional(),
-  }).optional().default({}),
-  pagination: paginationSchema.optional().default({}),
-})
-
-export const createOrderSchema = z.object({
+export const createOrderRepoSchema = z.object({
+  _id: z.string(),
   warehouse: z.string(),
   deliveryService: z.string(),
   orderSource: z.string(),
   orderStatus: z.string(),
-  orderPayments: z.array(z.object({
-    amount: z.number(),
-    currency: z.string(),
-    cashregister: z.string(),
-    cashregisterAccount: z.string(),
-    paymentStatus: z.string(),
-    paymentDate: z.string().optional(),
-    comment: z.string().optional(),
-  }).optional()),
+  orderPayments: z.array(z.string()),
   client: z.string().optional(),
   comment: z.string().optional(),
   items: z.array(z.object({
@@ -53,28 +19,18 @@ export const createOrderSchema = z.object({
     discountAmount: z.number().optional(),
     discountPercent: z.number().optional(),
   })),
+  orderPaymentStatus: z.enum(['paid', 'unpaid', 'partially_paid', 'overpaid']),
 })
 
-export const editOrderSchema = z.object({
-  id: idSchema,
+export const editOrderRepoSchema = z.object({
   warehouse: z.string(),
   deliveryService: z.string(),
   orderSource: z.string(),
   orderStatus: z.string(),
-  orderPayments: z.array(z.object({
-    id: z.string().optional(),
-    amount: z.number(),
-    currency: z.string(),
-    cashregister: z.string(),
-    cashregisterAccount: z.string(),
-    paymentStatus: z.string(),
-    paymentDate: z.string().optional(),
-    comment: z.string().optional(),
-  }).optional()),
+  orderPayments: z.array(z.string()),
   client: z.string().optional(),
   comment: z.string().optional(),
   items: z.array(z.object({
-    id: z.string().optional(),
     product: z.string(),
     quantity: z.number(),
     price: z.number(),
@@ -84,24 +40,24 @@ export const editOrderSchema = z.object({
     discountAmount: z.number().optional(),
     discountPercent: z.number().optional(),
   })),
+  orderPaymentStatus: z.enum(['paid', 'unpaid', 'partially_paid', 'overpaid']),
 })
 
-export const removeOrdersSchema = z.object({
-  ids: z.array(idSchema).min(1),
+export const printInvoiceOrderRepoSchema = z.object({
+  seq: z.number(),
+  language: z.string(),
 })
 
-export const printInvoiceOrderSchema = z.object({
-  seq: numberFromStringSchema,
-  language: z.string().optional().default('en'),
-})
-
-export const printDraftInvoiceOrderSchema = z.object({
-  products: z.array(z.any()),
-  client: z.any(),
-  language: z.string().optional().default('en'),
-})
-
-export const printOrderLabelOrderSchema = z.object({
-  seq: numberFromStringSchema,
-  language: z.string().optional().default('en'),
+export const editOrderItemRepoSchema = z.object({
+  id: z.string(),
+  product: z.string().optional(),
+  quantity: z.number().optional(),
+  price: z.number().optional(),
+  currency: z.string().optional(),
+  manualPrice: z.number().optional(),
+  basePrice: z.number().optional(),
+  removed: z.boolean().optional(),
+  removedBy: z.string().optional(),
+  discountAmount: z.number().optional(),
+  discountPercent: z.number().optional(),
 })

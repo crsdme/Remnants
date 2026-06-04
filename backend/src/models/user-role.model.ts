@@ -1,8 +1,12 @@
-import type { UserRole } from '../types/user-role.type'
+import type { HydratedDocument } from 'mongoose'
+import type { SUPPORTED_LANGUAGES_TYPE } from '@/config/constants'
+import type { UserRoleDB } from '@/types/'
 import mongoose, { Schema } from 'mongoose'
 import { v4 as uuidv4 } from 'uuid'
-import { SUPPORTED_LANGUAGES } from '../config/constants'
-import { uuidValidator } from '../utils/uuidValidator'
+import { SUPPORTED_LANGUAGES } from '@/config/constants'
+import { uuidValidator } from '@/utils/'
+
+type UserRoleDoc = HydratedDocument<UserRoleDB>
 
 const UserRoleSchema: Schema = new Schema(
   {
@@ -18,7 +22,7 @@ const UserRoleSchema: Schema = new Schema(
       validate: {
         validator(value: Map<string, string>) {
           return Array.from(value.keys()).every(key =>
-            SUPPORTED_LANGUAGES.includes(key as any),
+            SUPPORTED_LANGUAGES.includes(key as SUPPORTED_LANGUAGES_TYPE),
           )
         },
         message: 'Supported languages only',
@@ -57,4 +61,4 @@ UserRoleSchema.set('toJSON', {
   },
 })
 
-export const UserRoleModel = mongoose.model<UserRole>('user-role', UserRoleSchema)
+export const UserRoleModel = mongoose.model<UserRoleDoc>('user-role', UserRoleSchema)

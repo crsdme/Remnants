@@ -1,7 +1,7 @@
+import { getWarehouseTransactionLogsSchema } from '@remnant/shared'
 import { Router } from 'express'
-import * as WarehouseTransactionLogController from '../../controllers/warehouse-transaction-log.controller'
-import { validateQueryRequest } from '../../middleware'
-import { getWarehouseTransactionLogsSchema } from '../../schemas/warehouse-transaction-log.schema'
+import * as WarehouseTransactionLogController from '@/controllers/warehouse-transaction-log.controller'
+import { validateQueryRequest } from '@/middleware'
 
 const router = Router()
 

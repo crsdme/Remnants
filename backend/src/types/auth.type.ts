@@ -1,26 +1,27 @@
+import type { IdType } from '@remnant/shared'
 import type { JwtPayload } from 'jsonwebtoken'
-import type { IdType } from './common.type'
+import type { z } from 'zod'
+import {
+  loginSchema,
+} from '@remnant/shared'
 
-export interface loginParams {
-  login: string
-  password: string
+export type LoginPayload = z.output<typeof loginSchema>
+export function parseLogin(x: unknown): LoginPayload {
+  return loginSchema.parse(x)
 }
 
-export interface loginResult {
-  accessToken: string
+export interface RefreshPayload {
   refreshToken: string
-  user: object
-}
-
-export interface refreshParams {
-  refreshToken: string
-}
-
-export interface refreshResult {
-  accessToken: string
-  permissions: string[]
 }
 
 export interface TokenPayload extends JwtPayload {
   id: IdType
+  login: string
+  permissions: string[]
+}
+
+export interface auntificatedUser {
+  id: string
+  login: string
+  permissions: string[]
 }

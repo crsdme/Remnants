@@ -1,18 +1,28 @@
 {
   "scripts": {
+    "dev": "concurrently -n shared,backend,frontend -c auto \"npm -w @remnant/shared run dev\" \"npm -w backend run dev\" \"npm -w frontend run dev\"",
     "prepare": "husky install"
   },
+  "workspaces": [
+    "frontend",
+    "backend",
+    "packages/*"
+  ],
   "lint-staged": {
     "frontend/*.{js,ts,tsx,jsx}": [
       "npx eslint frontend --config frontend/eslint.config.js --fix"
     ],
     "backend/*.{js,ts}": [
-      "npx eslint backend --config backend/eslint.config.js --fix"
+      "npx eslint backend --config backend/eslint.config.mjs --fix"
+    ],
+    "packages/shared/*.{js,ts}": [
+      "npx eslint packages/shared --config packages/shared/eslint.config.mjs --fix"
     ]
   },
   "devDependencies": {
     "@commitlint/cli": "^19.8.0",
     "@commitlint/config-conventional": "^19.8.0",
+    "concurrently": "^9.2.1",
     "husky": "^9.1.7",
     "lint-staged": "^15.5.1"
   }

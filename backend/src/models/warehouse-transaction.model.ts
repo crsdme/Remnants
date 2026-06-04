@@ -1,7 +1,7 @@
-import type { WarehouseTransaction, WarehouseTransactionItem } from '../types/warehouse-transaction.type'
+import type { WarehouseTransaction, WarehouseTransactionItem } from '@remnant/shared'
 import mongoose, { Schema } from 'mongoose'
 import { v4 as uuidv4 } from 'uuid'
-import { CounterModel } from './counter.model'
+import { CounterModel } from '@/models/'
 
 const WarehouseTransactionSchema: Schema = new Schema(
   {

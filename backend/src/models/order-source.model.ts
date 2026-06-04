@@ -1,8 +1,12 @@
-import type { OrderSource } from '../types/order-source.type'
+import type { HydratedDocument } from 'mongoose'
+import type { SUPPORTED_LANGUAGES_TYPE } from '@/config/constants'
+import type { OrderSourceDB } from '@/types'
 import mongoose, { Schema } from 'mongoose'
 import { v4 as uuidv4 } from 'uuid'
-import { SUPPORTED_LANGUAGES } from '../config/constants'
-import { uuidValidator } from '../utils/uuidValidator'
+import { SUPPORTED_LANGUAGES } from '@/config/constants'
+import { uuidValidator } from '@/utils/'
+
+type OrderSourceDoc = HydratedDocument<OrderSourceDB>
 
 const OrderSourceSchema: Schema = new Schema(
   {
@@ -18,7 +22,7 @@ const OrderSourceSchema: Schema = new Schema(
       validate: {
         validator(value: Map<string, string>) {
           return Array.from(value.keys()).every(key =>
-            SUPPORTED_LANGUAGES.includes(key as any),
+            SUPPORTED_LANGUAGES.includes(key as SUPPORTED_LANGUAGES_TYPE),
           )
         },
         message: 'Supported languages only',
@@ -50,4 +54,4 @@ OrderSourceSchema.set('toJSON', {
   },
 })
 
-export const OrderSourceModel = mongoose.model<OrderSource>('order-source', OrderSourceSchema)
+export const OrderSourceModel = mongoose.model<OrderSourceDoc>('order-source', OrderSourceSchema)

@@ -1,8 +1,12 @@
-import type { ProductProperty } from '../types/product-property.type'
+import type { HydratedDocument } from 'mongoose'
+import type { SUPPORTED_LANGUAGES_TYPE } from '@/config/constants'
+import type { ProductPropertyDB } from '@/types/'
 import mongoose, { Schema } from 'mongoose'
 import { v4 as uuidv4 } from 'uuid'
-import { SUPPORTED_LANGUAGES } from '../config/constants'
-import { uuidValidator } from '../utils/uuidValidator'
+import { SUPPORTED_LANGUAGES } from '@/config/constants'
+import { uuidValidator } from '@/utils/'
+
+type ProductPropertyDoc = HydratedDocument<ProductPropertyDB>
 
 const ProductPropertySchema: Schema = new Schema(
   {
@@ -18,7 +22,7 @@ const ProductPropertySchema: Schema = new Schema(
       validate: {
         validator(value: Map<string, string>) {
           return Array.from(value.keys()).every(key =>
-            SUPPORTED_LANGUAGES.includes(key as any),
+            SUPPORTED_LANGUAGES.includes(key as SUPPORTED_LANGUAGES_TYPE),
           )
         },
         message: 'Supported languages only',
@@ -30,7 +34,7 @@ const ProductPropertySchema: Schema = new Schema(
       validate: {
         validator(value: Map<string, string>) {
           return Array.from(value.keys()).every(key =>
-            SUPPORTED_LANGUAGES.includes(key as any),
+            SUPPORTED_LANGUAGES.includes(key as SUPPORTED_LANGUAGES_TYPE),
           )
         },
         message: 'Supported languages only',
@@ -84,4 +88,4 @@ ProductPropertySchema.set('toJSON', {
 
 ProductPropertySchema.index({ removed: 1 })
 
-export const ProductPropertyModel = mongoose.model<ProductProperty>('product-property', ProductPropertySchema)
+export const ProductPropertyModel = mongoose.model<ProductPropertyDoc>('product-property', ProductPropertySchema)

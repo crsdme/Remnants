@@ -3,7 +3,7 @@ import fs from 'node:fs'
 import path from 'node:path'
 import multer from 'multer'
 import { v4 as uuidv4 } from 'uuid'
-import { STORAGE_PATHS } from '../config/constants'
+import { STORAGE_PATHS } from '@/config/constants'
 
 type UploadMode = 'single' | 'multiple' | 'fields'
 
@@ -66,7 +66,7 @@ export function uploadMiddleware({
         : upload.single(fieldName)
 
     handler(req, res, (err) => {
-      if (err instanceof multer.MulterError || err) {
+      if (err instanceof multer.MulterError || err instanceof Error) {
         return res.status(400).json({ error: err.message })
       }
       next()

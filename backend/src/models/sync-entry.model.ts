@@ -1,8 +1,8 @@
-import type { SyncEntry } from '../types/sync-entry.type'
+import type { SyncEntry } from '@remnant/shared'
 import mongoose, { Schema } from 'mongoose'
 import { v4 as uuidv4 } from 'uuid'
 
-import { uuidValidator } from '../utils/uuidValidator'
+import { uuidValidator } from '@/utils/'
 
 const SyncEntrySchema: Schema = new Schema(
   {

@@ -1,58 +1,36 @@
+import type { RequestHandler } from 'express'
+import { createCategorySchema, editCategorySchema, getCategoriesSchema, removeCategoriesSchema } from '@remnant/shared'
 import { Router } from 'express'
-import * as CategoryController from '../../controllers/category.controller'
-import { uploadMiddleware, validateBodyRequest, validateQueryRequest, validateUpload } from '../../middleware/'
-import { checkPermissions } from '../../middleware/permission.middleware'
-import { batchCategorySchema, createCategorySchema, duplicateCategorySchema, editCategorySchema, exportCategoriesSchema, getCategorySchema, removeCategorySchema } from '../../schemas/category.schema'
+import * as CategoryController from '@/controllers/category.controller'
+import { checkPermissions, validateBodyRequest, validateQueryRequest } from '@/middleware'
 
 const router = Router()
 
 router.get(
   '/get',
-  validateQueryRequest(getCategorySchema),
-  CategoryController.get,
+  validateQueryRequest(getCategoriesSchema),
+  CategoryController.get as RequestHandler,
 )
+
 router.post(
   '/create',
   validateBodyRequest(createCategorySchema),
   checkPermissions('category.create'),
-  CategoryController.create,
+  CategoryController.create as RequestHandler,
 )
+
 router.post(
   '/edit',
   validateBodyRequest(editCategorySchema),
   checkPermissions('category.edit'),
-  CategoryController.edit,
+  CategoryController.edit as RequestHandler,
 )
+
 router.post(
   '/remove',
-  validateBodyRequest(removeCategorySchema),
+  validateBodyRequest(removeCategoriesSchema),
   checkPermissions('category.remove'),
-  CategoryController.remove,
-)
-router.post(
-  '/batch',
-  validateBodyRequest(batchCategorySchema),
-  checkPermissions('category.batch'),
-  CategoryController.batch,
-)
-router.post(
-  '/import',
-  uploadMiddleware({ fieldName: 'file', storageKey: 'importCategories' }),
-  validateUpload('file'),
-  checkPermissions('category.import'),
-  CategoryController.importHandler,
-)
-router.post(
-  '/export',
-  validateBodyRequest(exportCategoriesSchema),
-  checkPermissions('category.export'),
-  CategoryController.exportHandler,
-)
-router.post(
-  '/duplicate',
-  validateBodyRequest(duplicateCategorySchema),
-  checkPermissions('category.duplicate'),
-  CategoryController.duplicate,
+  CategoryController.remove as RequestHandler,
 )
 
 export default router

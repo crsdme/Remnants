@@ -1,10 +1,24 @@
-import type { NextFunction, Request, Response } from 'express'
-import * as CurrencyService from '../services/currency.service'
-import { HttpError } from '../utils/httpError'
+import type { NextFunction, Response } from 'express'
+import type {
+  CreateCurrencyPayload,
+  EditCurrencyPayload,
+  EditExchangeRatePayload,
+  GetCurrencyPayload,
+  GetExchangeRatesPayload,
+  RemoveCurrencyPayload,
+  ValidatedRequest,
+} from '@/types'
+import * as CurrencyService from '@/services/currency.service'
 
-export async function get(req: Request, res: Response, next: NextFunction) {
+export async function get(
+  req: ValidatedRequest<GetCurrencyPayload, never>,
+  res: Response,
+  next: NextFunction,
+) {
   try {
-    const serviceResponse = await CurrencyService.get(req.body)
+    const serviceResponse = await CurrencyService.get({
+      payload: req.validated.query,
+    })
 
     res.status(200).json(serviceResponse)
   }
@@ -13,20 +27,15 @@ export async function get(req: Request, res: Response, next: NextFunction) {
   }
 }
 
-export async function getExchangeRates(req: Request, res: Response, next: NextFunction) {
+export async function create(
+  req: ValidatedRequest<never, CreateCurrencyPayload>,
+  res: Response,
+  next: NextFunction,
+) {
   try {
-    const serviceResponse = await CurrencyService.getExchangeRates(req.body)
-
-    res.status(200).json(serviceResponse)
-  }
-  catch (err) {
-    next(err)
-  }
-}
-
-export async function create(req: Request, res: Response, next: NextFunction) {
-  try {
-    const serviceResponse = await CurrencyService.create(req.body)
+    const serviceResponse = await CurrencyService.create({
+      payload: req.validated.body,
+    })
 
     res.status(201).json(serviceResponse)
   }
@@ -35,9 +44,15 @@ export async function create(req: Request, res: Response, next: NextFunction) {
   }
 }
 
-export async function edit(req: Request, res: Response, next: NextFunction) {
+export async function edit(
+  req: ValidatedRequest<never, EditCurrencyPayload>,
+  res: Response,
+  next: NextFunction,
+) {
   try {
-    const serviceResponse = await CurrencyService.edit(req.body)
+    const serviceResponse = await CurrencyService.edit({
+      payload: req.validated.body,
+    })
 
     res.status(200).json(serviceResponse)
   }
@@ -46,9 +61,15 @@ export async function edit(req: Request, res: Response, next: NextFunction) {
   }
 }
 
-export async function editExchangeRate(req: Request, res: Response, next: NextFunction) {
+export async function remove(
+  req: ValidatedRequest<never, RemoveCurrencyPayload>,
+  res: Response,
+  next: NextFunction,
+) {
   try {
-    const serviceResponse = await CurrencyService.editExchangeRate(req.body)
+    const serviceResponse = await CurrencyService.remove({
+      payload: req.validated.body,
+    })
 
     res.status(200).json(serviceResponse)
   }
@@ -57,9 +78,15 @@ export async function editExchangeRate(req: Request, res: Response, next: NextFu
   }
 }
 
-export async function remove(req: Request, res: Response, next: NextFunction) {
+export async function getExchangeRates(
+  req: ValidatedRequest<GetExchangeRatesPayload, never>,
+  res: Response,
+  next: NextFunction,
+) {
   try {
-    const serviceResponse = await CurrencyService.remove(req.body)
+    const serviceResponse = await CurrencyService.getExchangeRates({
+      payload: req.validated.query,
+    })
 
     res.status(200).json(serviceResponse)
   }
@@ -68,35 +95,15 @@ export async function remove(req: Request, res: Response, next: NextFunction) {
   }
 }
 
-export async function batch(req: Request, res: Response, next: NextFunction) {
+export async function editExchangeRate(
+  req: ValidatedRequest<never, EditExchangeRatePayload>,
+  res: Response,
+  next: NextFunction,
+) {
   try {
-    const serviceResponse = await CurrencyService.batch(req.body)
-
-    res.status(200).json(serviceResponse)
-  }
-  catch (err) {
-    next(err)
-  }
-}
-
-export async function duplicate(req: Request, res: Response, next: NextFunction) {
-  try {
-    const serviceResponse = await CurrencyService.duplicate(req.body)
-
-    res.status(200).json(serviceResponse)
-  }
-  catch (err) {
-    next(err)
-  }
-}
-
-export async function importHandler(req: Request, res: Response, next: NextFunction) {
-  try {
-    if (!req.file) {
-      throw new HttpError(400, 'No file uploaded', 'NO_FILE_UPLOADED')
-    }
-
-    const serviceResponse = await CurrencyService.importHandler({ file: req.file })
+    const serviceResponse = await CurrencyService.editExchangeRate({
+      payload: req.validated.body,
+    })
 
     res.status(200).json(serviceResponse)
   }

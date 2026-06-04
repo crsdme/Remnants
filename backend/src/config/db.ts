@@ -1,11 +1,12 @@
 import dotenv from 'dotenv'
+
 import mongoose from 'mongoose'
-import logger from '../utils/logger'
+import logger from '@/utils/logger'
 
 dotenv.config()
 
-const MONGO_URI_TEST = process.env.MONGO_URI_TEST || 'mongodb://localhost:27017/testdb'
-const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/db'
+const MONGO_URI_TEST = process.env.MONGO_URI_TEST ?? 'mongodb://localhost:27017/testdb'
+const MONGO_URI = process.env.MONGO_URI ?? 'mongodb://localhost:27017/db'
 
 const URL = process.env.NODE_ENV === 'test' ? MONGO_URI_TEST : MONGO_URI
 

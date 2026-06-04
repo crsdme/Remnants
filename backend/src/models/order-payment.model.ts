@@ -1,7 +1,10 @@
-import type { OrderPayment } from '../types/order-payment.type'
+import type { HydratedDocument } from 'mongoose'
+import type { OrderPaymentDB } from '@/types'
 import mongoose, { Schema } from 'mongoose'
 import { v4 as uuidv4 } from 'uuid'
-import { uuidValidator } from '../utils/uuidValidator'
+import { uuidValidator } from '@/utils/'
+
+type OrderPaymentDoc = HydratedDocument<OrderPaymentDB>
 
 const OrderPaymentSchema: Schema = new Schema(
   {
@@ -80,4 +83,4 @@ OrderPaymentSchema.set('toJSON', {
   },
 })
 
-export const OrderPaymentModel = mongoose.model<OrderPayment>('order-payment', OrderPaymentSchema)
+export const OrderPaymentModel = mongoose.model<OrderPaymentDoc>('order-payment', OrderPaymentSchema)

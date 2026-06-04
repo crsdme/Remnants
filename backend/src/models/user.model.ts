@@ -1,8 +1,11 @@
-import type { User } from '../types/user.type'
+import type { HydratedDocument } from 'mongoose'
+import type { UserDB } from '@/types'
 import mongoose, { Schema } from 'mongoose'
 import { v4 as uuidv4 } from 'uuid'
-import { uuidValidator } from '../utils/uuidValidator'
-import { CounterModel } from './counter.model'
+import { CounterModel } from '@/models/'
+import { uuidValidator } from '@/utils/'
+
+type UserDoc = HydratedDocument<UserDB>
 
 const UserSchema: Schema = new Schema(
   {
@@ -64,30 +67,28 @@ UserSchema.set('toJSON', {
   },
 })
 
-UserSchema.pre('save', async function (next) {
-  const doc = this as any
-
-  if (doc.isNew && !doc.seq) {
+UserSchema.pre('save', async function (this: UserDoc, next) {
+  if (this.isNew && !this.seq) {
     const counter = await CounterModel.findByIdAndUpdate(
       'users',
       { $inc: { seq: 1 } },
       { new: true, upsert: true },
     )
-    doc.seq = counter.seq
+    this.seq = counter.seq
   }
 
   next()
 })
 
-UserSchema.methods.removeSensitiveData = function (options: { exclude?: string[] } = {}) {
-  const user = this.toJSON()
-  const fieldsToRemove = [...(options.exclude || [])]
+// UserSchema.methods.removeSensitiveData = function (options: { exclude?: string[] } = {}) {
+//   const user = this.toJSON()
+//   const fieldsToRemove = [...(options.exclude || [])]
 
-  for (const key of fieldsToRemove) {
-    delete user[key]
-  }
+//   for (const key of fieldsToRemove) {
+//     delete user[key]
+//   }
 
-  return user
-}
+//   return user
+// }
 
-export const UserModel = mongoose.model<User>('User', UserSchema)
+export const UserModel = mongoose.model<UserDoc>('User', UserSchema)

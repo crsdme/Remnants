@@ -1,12 +1,21 @@
-import type { SUPPORTED_LANGUAGES_TYPE } from '../config/constants'
-import type { Code, DateRange, IdType, LanguageString, Message, Pagination, Sorter, Status } from './common.type'
+import type {
+  LanguageString,
+} from '@remnant/shared'
+import type { z } from 'zod'
+import {
+  createProductPropertySchema,
+  editProductPropertySchema,
+  getProductPropertySchema,
+  removeProductPropertySchema,
+} from '@remnant/shared'
 
-export interface ProductProperty {
-  id: IdType
+export interface ProductPropertyDB {
+  _id: string
   names: LanguageString
-  options: IdType[]
+  symbols: LanguageString
+  options: string[]
   priority: number
-  type: string
+  type: 'text' | 'select' | 'color' | 'number' | 'boolean' | 'multiSelect'
   isRequired: boolean
   showInTable: boolean
   showInStatistics: boolean
@@ -16,89 +25,28 @@ export interface ProductProperty {
   updatedAt: Date
 }
 
-export interface getProductPropertiesResult {
-  status: Status
-  code: Code
-  message: Message
-  productProperties: ProductProperty[]
-  productPropertiesCount: number
+export type GetProductPropertiesPayload = z.output<typeof getProductPropertySchema>
+export function parseGetProductProperties(x: unknown): GetProductPropertiesPayload {
+  return getProductPropertySchema.parse(x)
 }
 
-export interface getProductPropertiesFilters {
-  ids: IdType[]
-  names: LanguageString
-  symbols: LanguageString
-  language: SUPPORTED_LANGUAGES_TYPE
-  options: IdType[]
-  type: string
-  priority: number
-  isRequired: boolean
-  showInTable: boolean
-  showInStatistics: boolean
-  active: boolean[]
-  createdAt: DateRange
-  updatedAt: DateRange
+export type CreateProductPropertyPayload = z.output<typeof createProductPropertySchema>
+export function parseCreateProductProperty(x: unknown): CreateProductPropertyPayload {
+  return createProductPropertySchema.parse(x)
 }
 
-export interface getProductPropertiesSorters {
-  names: Sorter
-  priority: Sorter
-  type: Sorter
-  isRequired: Sorter
-  showInTable: Sorter
-  showInStatistics: Sorter
-  active: Sorter
+export type EditProductPropertyPayload = z.output<typeof editProductPropertySchema>
+export function parseEditProductProperty(x: unknown): EditProductPropertyPayload {
+  return editProductPropertySchema.parse(x)
 }
 
-export interface getProductPropertiesParams {
-  filters?: Partial<getProductPropertiesFilters>
-  sorters?: Partial<getProductPropertiesSorters>
-  pagination?: Partial<Pagination>
+export type RemoveProductPropertiesPayload = z.output<typeof removeProductPropertySchema>
+export function parseRemoveProductProperties(x: unknown): RemoveProductPropertiesPayload {
+  return removeProductPropertySchema.parse(x)
 }
 
-export interface createProductPropertyResult {
-  status: Status
-  code: Code
-  message: Message
-  productProperty: ProductProperty
-}
+export type GetProductPropertiesRepoPayload = GetProductPropertiesPayload
 
-export interface createProductPropertyParams {
-  names: LanguageString
-  symbols: LanguageString
-  priority?: number
-  type: string
-  showInTable: boolean
-  isRequired: boolean
-  showInStatistics: boolean
-  active?: boolean
-}
+export type CreateProductPropertyRepoPayload = CreateProductPropertyPayload
 
-export interface editProductPropertyResult {
-  status: Status
-  code: Code
-  message: Message
-  productProperty: ProductProperty
-}
-
-export interface editProductPropertyParams {
-  id: IdType
-  names: LanguageString
-  symbols: LanguageString
-  priority?: number
-  type: string
-  showInTable: boolean
-  isRequired: boolean
-  showInStatistics: boolean
-  active?: boolean
-}
-
-export interface removeProductPropertiesResult {
-  status: Status
-  code: Code
-  message: Message
-}
-
-export interface removeProductPropertiesParams {
-  ids: IdType[]
-}
+export type EditProductPropertyRepoPayload = EditProductPropertyPayload

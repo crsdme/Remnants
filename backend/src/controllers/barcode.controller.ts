@@ -1,9 +1,16 @@
 import type { NextFunction, Request, Response } from 'express'
-import * as BarcodeService from '../services/barcode.service'
+import type { CreateBarcodesPayload, EditBarcodesPayload, GetBarcodesPayload, PrintBarcodePayload, RemoveBarcodesPayload, ValidatedRequest } from '@/types'
+import * as BarcodeService from '@/services/barcode.service'
 
-export async function get(req: Request, res: Response, next: NextFunction) {
+export async function get(
+  req: ValidatedRequest<GetBarcodesPayload>,
+  res: Response,
+  next: NextFunction,
+) {
   try {
-    const serviceResponse = await BarcodeService.get(req.body)
+    const serviceResponse = await BarcodeService.get({
+      payload: req.validated.query,
+    })
 
     res.status(200).json(serviceResponse)
   }
@@ -12,9 +19,15 @@ export async function get(req: Request, res: Response, next: NextFunction) {
   }
 }
 
-export async function create(req: Request, res: Response, next: NextFunction) {
+export async function create(
+  req: ValidatedRequest<never, CreateBarcodesPayload>,
+  res: Response,
+  next: NextFunction,
+) {
   try {
-    const serviceResponse = await BarcodeService.create(req.body)
+    const serviceResponse = await BarcodeService.create({
+      payload: req.validated.body,
+    })
 
     res.status(201).json(serviceResponse)
   }
@@ -23,9 +36,15 @@ export async function create(req: Request, res: Response, next: NextFunction) {
   }
 }
 
-export async function edit(req: Request, res: Response, next: NextFunction) {
+export async function edit(
+  req: ValidatedRequest<never, EditBarcodesPayload>,
+  res: Response,
+  next: NextFunction,
+) {
   try {
-    const serviceResponse = await BarcodeService.edit(req.body)
+    const serviceResponse = await BarcodeService.edit({
+      payload: req.validated.body,
+    })
 
     res.status(200).json(serviceResponse)
   }
@@ -34,9 +53,15 @@ export async function edit(req: Request, res: Response, next: NextFunction) {
   }
 }
 
-export async function remove(req: Request, res: Response, next: NextFunction) {
+export async function remove(
+  req: ValidatedRequest<never, RemoveBarcodesPayload>,
+  res: Response,
+  next: NextFunction,
+) {
   try {
-    const serviceResponse = await BarcodeService.remove(req.body)
+    const serviceResponse = await BarcodeService.remove({
+      payload: req.validated.body,
+    })
 
     res.status(200).json(serviceResponse)
   }
@@ -45,7 +70,11 @@ export async function remove(req: Request, res: Response, next: NextFunction) {
   }
 }
 
-export async function generateCode(req: Request, res: Response, next: NextFunction) {
+export async function generateCode(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) {
   try {
     const serviceResponse = await BarcodeService.generateCode()
 
@@ -56,9 +85,15 @@ export async function generateCode(req: Request, res: Response, next: NextFuncti
   }
 }
 
-export async function print(req: Request, res: Response, next: NextFunction) {
+export async function print(
+  req: ValidatedRequest<never, PrintBarcodePayload>,
+  res: Response,
+  next: NextFunction,
+) {
   try {
-    const { doc } = await BarcodeService.print(req.body)
+    const { doc } = await BarcodeService.print({
+      payload: req.validated.body,
+    })
 
     res.setHeader('Content-Type', 'application/pdf')
     res.setHeader('Content-Disposition', 'inline; filename=barcode.pdf')

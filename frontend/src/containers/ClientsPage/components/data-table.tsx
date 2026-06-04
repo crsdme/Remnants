@@ -40,9 +40,9 @@ export function DataTable() {
   const { data: { clients = [], clientsCount = 0 } = {}, isLoading, isFetching } = useClientQuery(
     { pagination, filters, sorters },
     { options: {
-      select: response => ({
-        clients: response.data.clients,
-        clientsCount: response.data.clientsCount,
+      select: ({ data }) => ({
+        clients: data.data.items,
+        clientsCount: data.data.pagination.total,
       }),
       placeholderData: prevData => prevData,
     } },

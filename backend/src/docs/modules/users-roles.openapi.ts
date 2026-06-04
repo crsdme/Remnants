@@ -1,5 +1,5 @@
-import { createUserRoleSchema, duplicateUserRoleSchema, editUserRoleSchema, getUserRoleSchema, removeUserRoleSchema } from '../../schemas/user-role.schema'
-import { registry } from '../registry'
+import { createUserRoleSchema, duplicateUserRoleSchema, editUserRoleSchema, getUserRoleSchema, removeUserRoleSchema } from '@remnant/shared'
+import { registry } from '@/docs/registry'
 
 registry.registerPath({
   method: 'get',

@@ -1,5 +1,5 @@
 import type { NextFunction, Request, Response } from 'express'
-import * as ProcurementService from '../services/procurement.service'
+import * as ProcurementService from '@/services/procurement.service'
 
 export async function get(req: Request, res: Response, next: NextFunction) {
   try {

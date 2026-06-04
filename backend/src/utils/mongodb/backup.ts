@@ -8,7 +8,7 @@ const execAsync = promisify(exec)
 
 config()
 
-const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/db'
+const MONGO_URI = process.env.MONGO_URI ?? 'mongodb://localhost:27017/db'
 const BACKUP_DIR = path.resolve(__dirname, '../../../backups')
 
 export async function backupDB() {

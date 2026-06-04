@@ -1,7 +1,9 @@
 export default (async () => {
   const antfu = await import('@antfu/eslint-config')
   return antfu.default({
-    typescript: true,
+    typescript: {
+      tsconfigPath: 'tsconfig.json',
+    },
     stylistic: true,
     react: false,
     isInEditor: true,
@@ -11,14 +13,14 @@ export default (async () => {
       'test/prefer-lowercase-title': 'off',
       // 'node/prefer-global/buffer': 'off',
 
-      // "eqeqeq": "warn",
-      // "no-invalid-this": "error",
-      // "no-return-assign": "error",
+      'eqeqeq': 'error',
+      // 'no-invalid-this': 'error',
+      // 'no-return-assign': 'error',
       // "no-unused-expressions": ["error", { "allowTernary": true }],
       // "no-useless-concat": "error",
       // "no-useless-return": "error",
       // "no-constant-condition": "warn",
-      // "no-unused-vars": ["warn", { "argsIgnorePattern": "req|res|next|__" }],
+      'no-unused-vars': ['warn', { argsIgnorePattern: 'req|res|next|__' }],
     },
     ignores: ['dist', 'node_modules', 'public', 'dist-test'],
   })

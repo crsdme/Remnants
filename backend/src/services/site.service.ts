@@ -1,10 +1,19 @@
-import type * as SiteTypes from '../types/site.type'
-import { SiteModel } from '../models/site.model'
-import { HttpError } from '../utils/httpError'
-import { buildQuery, buildSortQuery } from '../utils/queryBuilder'
-import * as StatisticService from './statistic.service'
+import type {
+  CreateSiteParams,
+  CreateSiteResponse,
+  EditSiteParams,
+  EditSiteResponse,
+  GetSitesParams,
+  GetSitesResponse,
+  RemoveSitesParams,
+  RemoveSitesResponse,
+} from '@remnant/shared'
+import { SiteModel } from '@/models/'
+import * as StatisticService from '@/services/statistic.service'
 
-export async function get(payload: SiteTypes.getSitesParams): Promise<SiteTypes.getSitesResult> {
+import { buildQuery, buildSortQuery, HttpError } from '@/utils/'
+
+export async function get(payload: GetSitesParams): Promise<GetSitesResponse> {
   const { current = 1, pageSize = 10 } = payload.pagination || {}
 
   await StatisticService.get({
@@ -72,16 +81,33 @@ export async function get(payload: SiteTypes.getSitesParams): Promise<SiteTypes.
   const sites = sitesRaw[0].sites.map((doc: any) => SiteModel.hydrate(doc))
   const sitesCount = sitesRaw[0].totalCount[0]?.count || 0
 
-  return { status: 'success', code: 'SITES_FETCHED', message: 'Sites fetched', sites, sitesCount }
+  return {
+    status: 'success',
+    code: 'SITES_FETCHED',
+    message: 'Sites fetched',
+    data: {
+      items: sites,
+      pagination: {
+        page: current,
+        pageSize,
+        total: sitesCount,
+      },
+    },
+  }
 }
 
-export async function create(payload: SiteTypes.createSiteParams): Promise<SiteTypes.createSiteResult> {
+export async function create(payload: CreateSiteParams): Promise<CreateSiteResponse> {
   const site = await SiteModel.create(payload)
 
-  return { status: 'success', code: 'SITE_CREATED', message: 'Site created', site }
+  return {
+    status: 'success',
+    code: 'SITE_CREATED',
+    message: 'Site created',
+    data: site,
+  }
 }
 
-export async function edit(payload: SiteTypes.editSiteParams): Promise<SiteTypes.editSiteResult> {
+export async function edit(payload: EditSiteParams): Promise<EditSiteResponse> {
   const { id } = payload
 
   const site = await SiteModel.findOneAndUpdate({ _id: id }, payload)
@@ -90,10 +116,15 @@ export async function edit(payload: SiteTypes.editSiteParams): Promise<SiteTypes
     throw new HttpError(400, 'Site not edited', 'SITE_NOT_EDITED')
   }
 
-  return { status: 'success', code: 'SITE_EDITED', message: 'Site edited', site }
+  return {
+    status: 'success',
+    code: 'SITE_EDITED',
+    message: 'Site edited',
+    data: site,
+  }
 }
 
-export async function remove(payload: SiteTypes.removeSitesParams): Promise<SiteTypes.removeSitesResult> {
+export async function remove(payload: RemoveSitesParams): Promise<RemoveSitesResponse> {
   const { ids } = payload
 
   const sites = await SiteModel.updateMany(
@@ -105,5 +136,9 @@ export async function remove(payload: SiteTypes.removeSitesParams): Promise<Site
     throw new HttpError(400, 'Sites not removed', 'SITES_NOT_REMOVED')
   }
 
-  return { status: 'success', code: 'SITES_REMOVED', message: 'Sites removed' }
+  return {
+    status: 'success',
+    code: 'SITES_REMOVED',
+    message: 'Sites removed',
+  }
 }

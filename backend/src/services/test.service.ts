@@ -1,10 +1,9 @@
-import { ProductModel, SiteModel } from '../models'
-import * as ProductService from '../services/product.service'
-import * as SyncEntryService from '../services/sync-entry.service'
-import * as TelegramBotService from '../services/telegram-bot.service'
-// import * as WarehouseTransactionService from '../services/warehouse-transaction.service'
-import { HttpError } from '../utils/httpError'
-import { getHardcodeData } from '../utils/mongodb/hardcode'
+import { ProductModel, SiteModel } from '@/models/'
+import * as ProductService from '@/services/product.service'
+import * as SyncEntryService from '@/services/sync-entry.service'
+import * as TelegramBotService from '@/services/telegram-bot.service'
+import { HttpError } from '@/utils/'
+import { getHardcodeData } from '@/utils/mongodb/hardcode'
 
 export async function start(payload: { key: string }) {
   const actions = {

@@ -1,11 +1,22 @@
+import type {
+  CountQuantitiesParams,
+  CountQuantitiesResponse,
+  CreateQuantitiesParams,
+  CreateQuantitiesResponse,
+  EditQuantitiesParams,
+  EditQuantitiesResponse,
+  GetQuantitiesParams,
+  GetQuantitiesResponse,
+  RemoveQuantitiesParams,
+  RemoveQuantitiesResponse,
+} from '@remnant/shared'
 import type { ClientSession } from 'mongoose'
-import type * as QuantityTypes from '../types/quantity.type'
-import { ProductModel, QuantityModel } from '../models'
-import { HttpError } from '../utils/httpError'
-import { buildQuery, buildSortQuery } from '../utils/queryBuilder'
-import * as WarehouseTransactionLogService from './warehouse-transaction-log.service'
+import { ProductModel, QuantityModel } from '@/models/'
+import * as WarehouseTransactionLogService from '@/services/warehouse-transaction-log.service'
+import { HttpError } from '@/utils/'
+import { buildQuery, buildSortQuery } from '@/utils/queryBuilder'
 
-export async function get(payload: QuantityTypes.getQuantitiesParams): Promise<QuantityTypes.getQuantitiesResult> {
+export async function get(payload: GetQuantitiesParams): Promise<GetQuantitiesResponse> {
   const { current = 1, pageSize = 10 } = payload.pagination || {}
 
   const {
@@ -54,10 +65,22 @@ export async function get(payload: QuantityTypes.getQuantitiesParams): Promise<Q
   const quantities = quantitiesRaw[0].quantities
   const quantitiesCount = quantitiesRaw[0].totalCount[0]?.count || 0
 
-  return { status: 'success', code: 'QUANTITIES_FETCHED', message: 'Quantities fetched', quantities, quantitiesCount }
+  return {
+    status: 'success',
+    code: 'QUANTITIES_FETCHED',
+    message: 'Quantities fetched',
+    data: {
+      items: quantities,
+      pagination: {
+        page: current,
+        pageSize,
+        total: quantitiesCount,
+      },
+    },
+  }
 }
 
-export async function create(payload: QuantityTypes.createQuantitiesParams, session?: ClientSession): Promise<QuantityTypes.createQuantitiesResult> {
+export async function create(payload: CreateQuantitiesParams, session?: ClientSession): Promise<CreateQuantitiesResponse> {
   const {
     count,
     product,
@@ -72,10 +95,15 @@ export async function create(payload: QuantityTypes.createQuantitiesParams, sess
 
   await ProductModel.updateOne({ _id: product }, { $push: { quantity: quantity[0]._id } }, { session })
 
-  return { status: 'success', code: 'QUANTITY_CREATED', message: 'Quantity created', quantity: quantity[0] }
+  return {
+    status: 'success',
+    code: 'QUANTITY_CREATED',
+    message: 'Quantity created',
+    data: quantity[0],
+  }
 }
 
-export async function count(payload: QuantityTypes.countQuantitiesParams, session?: ClientSession): Promise<QuantityTypes.countQuantitiesResult> {
+export async function count(payload: CountQuantitiesParams, session?: ClientSession): Promise<CountQuantitiesResponse> {
   const {
     count,
     product,
@@ -106,10 +134,14 @@ export async function count(payload: QuantityTypes.countQuantitiesParams, sessio
     await create({ count, product, warehouse }, session)
   }
 
-  return { status: 'success', code: 'QUANTITY_COUNTED', message: 'Quantity counted' }
+  return {
+    status: 'success',
+    code: 'QUANTITY_COUNTED',
+    message: 'Quantity counted',
+  }
 }
 
-export async function edit(payload: QuantityTypes.editQuantitiesParams): Promise<QuantityTypes.editQuantitiesResult> {
+export async function edit(payload: EditQuantitiesParams): Promise<EditQuantitiesResponse> {
   const {
     id,
     count,
@@ -127,10 +159,15 @@ export async function edit(payload: QuantityTypes.editQuantitiesParams): Promise
     throw new HttpError(400, 'Quantity not edited', 'QUANTITY_NOT_EDITED')
   }
 
-  return { status: 'success', code: 'QUANTITY_EDITED', message: 'Quantity edited', quantity }
+  return {
+    status: 'success',
+    code: 'QUANTITY_EDITED',
+    message: 'Quantity edited',
+    data: quantity,
+  }
 }
 
-export async function remove(payload: QuantityTypes.removeQuantitiesParams): Promise<QuantityTypes.removeQuantitiesResult> {
+export async function remove(payload: RemoveQuantitiesParams): Promise<RemoveQuantitiesResponse> {
   const { ids } = payload
 
   const quantities = await QuantityModel.updateMany(
@@ -142,5 +179,9 @@ export async function remove(payload: QuantityTypes.removeQuantitiesParams): Pro
     throw new HttpError(400, 'Quantities not removed', 'QUANTITIES_NOT_REMOVED')
   }
 
-  return { status: 'success', code: 'QUANTITIES_REMOVED', message: 'Quantities removed' }
+  return {
+    status: 'success',
+    code: 'QUANTITIES_REMOVED',
+    message: 'Quantities removed',
+  }
 }

@@ -1,14 +1,19 @@
-import type * as ProductTypes from '../types/product.type'
-import type * as UserTypes from '../types/user.type'
+import type { GetProductsPayload, UserDTO } from '@/types/'
 import { Buffer } from 'node:buffer'
 import path from 'node:path'
 import ExcelJS from 'exceljs'
 import { v4 as uuidv4 } from 'uuid'
-import { STORAGE_PATHS, STORAGE_URLS } from '../config/constants'
-import { CategoryModel, CurrencyModel, LanguageModel, ProductModel, ProductPropertyGroupModel, ProductPropertyModel, UnitModel } from '../models'
-import { SiteModel } from '../models/site.model'
-import { diffToChangesFromDeep, getDifferenceDeep } from '../utils/getDiff'
-import { HttpError } from '../utils/httpError'
+import { STORAGE_PATHS, STORAGE_URLS } from '@/config/constants'
+import { CategoryModel, CurrencyModel, LanguageModel, ProductModel, ProductPropertyGroupModel, ProductPropertyModel, SiteModel, UnitModel } from '@/models/'
+import * as ProductRepository from '@/repositories/products.repo'
+import * as AuditLogsService from '@/services/audit-logs.service'
+import * as BarcodeService from '@/services/barcode.service'
+import * as ProductPropertyOptionService from '@/services/product-property-option.service'
+import * as ProductService from '@/services/product.service'
+import * as SyncEntryService from '@/services/sync-entry.service'
+import * as UserService from '@/services/user.service'
+import { HttpError } from '@/utils'
+import { buildQuery, buildSortQuery, diffToChangesFromDeep, getDifferenceDeep } from '@/utils/'
 import {
   extractLangMap,
   parseBarcodes,
@@ -18,426 +23,27 @@ import {
   parseId,
   parseProductProperties,
   toNumber,
-} from '../utils/parseTools'
-import { buildQuery, buildSortQuery } from '../utils/queryBuilder'
-import * as AuditLogsService from './audit-logs.service'
-import * as BarcodeService from './barcode.service'
-import * as ProductPropertyOptionService from './product-property-option.service'
-import * as ProductService from './product.service'
-import * as SyncEntryService from './sync-entry.service'
-import * as UserService from './user.service'
+} from '@/utils/parseTools'
 
-export async function get(payload: ProductTypes.getProductsParams, user?: UserTypes.User): Promise<ProductTypes.getProductsResult> {
-  const { current = 1, pageSize = 10, full = false } = payload.pagination || {}
+export async function get(payload: GetProductsPayload, user: UserDTO): Promise<GetProductsResponse> {
+  const { items, total, page, pageSize } = await ProductRepository.list({ ...payload, user })
 
-  const hasPurchasePricePermission = await UserService.checkUserPermissions('product.purchasePrice', user)
-
-  const {
-    search = '',
-    ids = [],
-    seq = undefined,
-    names = '',
-    language = 'en',
-    price = undefined,
-    currency = undefined,
-    purchasePrice = undefined,
-    purchaseCurrency = undefined,
-    barcodes = undefined,
-    categories = undefined,
-    unit = undefined,
-    productPropertiesGroup = undefined,
-    productProperties = undefined,
-    createdAt = {
-      from: undefined,
-      to: undefined,
-    },
-    updatedAt = {
-      from: undefined,
-      to: undefined,
-    },
-    selectedWarehouse = undefined,
-  } = payload.filters || {}
-
-  if (payload.sorters?.productProperties) {
-    payload.sorters.productPropertiesSort = payload.sorters.productProperties
-    delete payload.sorters.productProperties
-  }
-
-  if (payload.sorters?.quantity) {
-    payload.sorters.quantitySort = payload.sorters.quantity
-    delete payload.sorters.quantity
-  }
-
-  const sorters = buildSortQuery(payload.sorters || {}, { seq: 1, _id: 1 }, { seq: 1 })
-
-  const filterRules: any = {
-    _id: { type: 'array' },
-    seq: { type: 'exact' },
-    names: { type: 'string', langAware: true },
-    active: { type: 'array' },
-    price: { type: 'exact' },
-    purchasePrice: { type: 'exact' },
-    currency: { type: 'array' },
-    purchaseCurrency: { type: 'array' },
-    barcodes: { type: 'string' },
-    categories: { type: 'array' },
-    unit: { type: 'array' },
-    productPropertiesGroup: { type: 'array' },
-    productProperties: { type: 'array' },
-    createdAt: { type: 'dateRange' },
-    updatedAt: { type: 'dateRange' },
-  }
-
-  const query = buildQuery({
-    filters: { _id: ids, seq, names, price, purchasePrice, barcodes, categories, unit, productPropertiesGroup, productProperties, createdAt, updatedAt, currency, purchaseCurrency },
-    rules: filterRules,
-    language,
-  })
-
-  const filterRulesLast: any = {
-    search: {
-      type: 'multiFieldSearch',
-      multiFields: [
-        { field: `names`, langAware: true },
-        { field: `categories.names`, langAware: true, isArray: true },
-        { field: `barcodes.code`, isArray: true },
-      ],
+  return {
+    status: 'success',
+    code: 'PRODUCTS_FETCHED',
+    message: 'Products fetched',
+    data: {
+      items,
+      pagination: {
+        page,
+        pageSize,
+        total,
+      },
     },
   }
-
-  const queryLast = buildQuery({
-    filters: { barcodes, categories, unit, productPropertiesGroup, productProperties, search },
-    rules: filterRulesLast,
-    language,
-    removed: false,
-  })
-
-  const pipeline = [
-    {
-      $match: query,
-    },
-    { $unwind: { path: '$productProperties', preserveNullAndEmptyArrays: true } },
-    {
-      $lookup: {
-        from: 'product-properties',
-        localField: 'productProperties._id',
-        foreignField: '_id',
-        as: 'productProperties.data',
-      },
-    },
-    {
-      $lookup: {
-        from: 'product-property-options',
-        localField: 'productProperties.value',
-        foreignField: '_id',
-        as: 'productProperties.optionData',
-      },
-    },
-    {
-      $lookup: {
-        from: 'product-property-options',
-        let: { valueArr: { $ifNull: ['$productProperties.value', []] } },
-        pipeline: [
-          {
-            $match: {
-              $expr: {
-                $in: [
-                  '$_id',
-                  {
-                    $cond: [
-                      { $isArray: ['$$valueArr'] },
-                      '$$valueArr',
-                      [{ $ifNull: ['$$valueArr', null] }],
-                    ],
-                  },
-                ],
-              },
-            },
-          },
-        ],
-        as: 'productProperties.optionData',
-      },
-    },
-    {
-      $group: {
-        _id: '$_id',
-        doc: { $first: '$$ROOT' },
-        productProperties: { $push: '$productProperties' },
-      },
-    },
-    {
-      $addFields: {
-        'doc.productProperties': '$productProperties',
-      },
-    },
-    {
-      $replaceRoot: {
-        newRoot: '$doc',
-      },
-    },
-    {
-      $lookup: {
-        from: 'currencies',
-        localField: 'currency',
-        foreignField: '_id',
-        as: 'currency',
-      },
-    },
-    {
-      $lookup: {
-        from: 'currencies',
-        localField: 'purchaseCurrency',
-        foreignField: '_id',
-        as: 'purchaseCurrency',
-      },
-    },
-    {
-      $lookup: {
-        from: 'units',
-        localField: 'unit',
-        foreignField: '_id',
-        as: 'unit',
-      },
-    },
-    {
-      $lookup: {
-        from: 'categories',
-        localField: 'categories',
-        foreignField: '_id',
-        as: 'categories',
-      },
-    },
-    {
-      $lookup: {
-        from: 'quantities',
-        localField: 'quantity',
-        foreignField: '_id',
-        as: 'quantity',
-      },
-    },
-    {
-      $lookup: {
-        from: 'product-property-groups',
-        localField: 'productPropertiesGroup',
-        foreignField: '_id',
-        as: 'productPropertiesGroup',
-      },
-    },
-    {
-      $lookup: {
-        from: 'barcodes',
-        localField: 'barcodes',
-        foreignField: '_id',
-        as: 'barcodes',
-      },
-    },
-    {
-      $addFields: {
-        currency: { $arrayElemAt: ['$currency', 0] },
-        purchaseCurrency: { $arrayElemAt: ['$purchaseCurrency', 0] },
-        unit: { $arrayElemAt: ['$unit', 0] },
-        productPropertiesGroup: { $arrayElemAt: ['$productPropertiesGroup', 0] },
-        productProperties: {
-          $map: {
-            input: '$productProperties',
-            as: 'prop',
-            in: {
-              $mergeObjects: [
-                '$$prop',
-                {
-                  id: '$$prop._id',
-                  data: { $arrayElemAt: ['$$prop.data', 0] },
-                  optionData: {
-                    $map: {
-                      input: '$$prop.optionData',
-                      as: 'option',
-                      in: {
-                        $mergeObjects: [
-                          '$$option',
-                          {
-                            id: '$$option._id',
-                            names: '$$option.names',
-                            color: '$$option.color',
-                          },
-                        ],
-                      },
-                    },
-                  },
-                },
-              ],
-            },
-          },
-        },
-        categories: {
-          $map: {
-            input: '$categories',
-            as: 'prop',
-            in: {
-              $mergeObjects: [
-                '$$prop',
-                {
-                  id: '$$prop._id',
-                },
-              ],
-            },
-          },
-        },
-        barcodes: {
-          $map: {
-            input: '$barcodes',
-            as: 'barcode',
-            in: { $mergeObjects: ['$$barcode', { id: '$$barcode._id', code: '$$barcode.code' }] },
-          },
-        },
-      },
-    },
-    {
-      $addFields: {
-        productPropertiesSort: {
-          $arrayToObject: {
-            $map: {
-              input: '$productProperties',
-              as: 'pp',
-              in: {
-                k: { $toString: '$$pp.id' },
-                v: {
-                  $switch: {
-                    branches: [
-                      { case: { $in: ['$$pp.data.type', ['text', 'number']] }, then: '$$pp.value' },
-                      { case: { $eq: ['$$pp.data.type', 'boolean'] }, then: { $cond: [{ $eq: ['$$pp.value', true] }, 1, 0] } },
-                      { case: { $in: ['$$pp.data.type', ['select', 'color']] }, then: {
-                        $let: {
-                          vars: {
-                            names: {
-                              $map: { input: '$$pp.optionData', as: 'opt', in: { $ifNull: [`$$opt.names.${language}`, ''] } },
-                            },
-                          },
-                          in: { $ifNull: [{ $arrayElemAt: ['$$names', 0] }, ''] },
-                        },
-                      } },
-                      { case: { $eq: ['$$pp.data.type', 'multiSelect'] }, then: {
-                        $let: {
-                          vars: {
-                            names: { $map: { input: '$$pp.optionData', as: 'opt', in: { $ifNull: [`$$opt.names.${language}`, ''] } } },
-                          },
-                          in: {
-                            $reduce: {
-                              input: { $sortArray: { input: '$$names', sortBy: 1 } },
-                              initialValue: '',
-                              in: { $concat: [{ $cond: [{ $eq: ['$$value', ''] }, '', { $concat: ['$$value', ','] }] }, '$$this'] },
-                            },
-                          },
-                        },
-                      } },
-                    ],
-                    default: '',
-                  },
-                },
-              },
-            },
-          },
-        },
-        quantitySort: {
-          $let: {
-            vars: {
-              hit: {
-                $first: {
-                  $filter: {
-                    input: '$quantity',
-                    as: 'q',
-                    cond: { $eq: ['$$q.warehouse', selectedWarehouse] },
-                  },
-                },
-              },
-            },
-            in: { $ifNull: ['$$hit.count', 0] },
-          },
-        },
-      },
-    },
-    {
-      $project: {
-        _id: 0,
-        seq: 1,
-        names: 1,
-        price: 1,
-        currency: { id: '$currency._id', names: 1, symbols: 1 },
-        purchasePrice: {
-          $cond: [
-            hasPurchasePricePermission,
-            '$purchasePrice',
-            '$$REMOVE',
-          ],
-        },
-        purchaseCurrency: {
-          $cond: [
-            hasPurchasePricePermission,
-            {
-              id: '$purchaseCurrency._id',
-              names: '$purchaseCurrency.names',
-              symbols: '$purchaseCurrency.symbols',
-            },
-            '$$REMOVE',
-          ],
-        },
-        barcodes: { id: 1, code: 1 },
-        categories: { id: 1, names: 1 },
-        unit: { id: '$unit._id', names: 1, symbols: 1 },
-        quantitySort: 1,
-        quantity: { count: 1, warehouse: 1, status: 1 },
-        images: 1,
-        productProperties: { id: 1, value: 1, data: { names: 1, symbols: 1, type: 1, isRequired: 1, showInTable: 1 }, optionData: { id: 1, names: 1, color: 1 } },
-        productPropertiesSort: 1,
-        productPropertiesGroup: { id: '$productPropertiesGroup._id', names: 1 },
-        createdAt: 1,
-        updatedAt: 1,
-        id: '$_id',
-      },
-    },
-    {
-      $match: queryLast,
-    },
-    {
-      $sort: sorters,
-    },
-    {
-      $unset: ['productPropertiesSort'],
-    },
-    {
-      $facet: {
-        products: full
-          ? []
-          : [
-              { $skip: (current - 1) * pageSize },
-              { $limit: pageSize },
-            ],
-        totalCount: [
-          { $count: 'count' },
-        ],
-      },
-    },
-  ]
-
-  const productsRaw = await ProductModel.aggregate(pipeline).exec()
-
-  let products = productsRaw[0].products
-  const productsCount = productsRaw[0].totalCount[0]?.count || 0
-
-  products = products.map((product: any) => ({
-    ...product,
-    images: product.images.map((image: any) => ({
-      id: image._id,
-      path: `${STORAGE_URLS.productImages}/${image.filename}`,
-      filename: image.filename,
-      name: image.name,
-      type: image.type,
-    })),
-  }))
-
-  return { status: 'success', code: 'PRODUCTS_FETCHED', message: 'Products fetched', products, productsCount }
 }
 
-export async function getIndex(payload: ProductTypes.getProductsIndexParams): Promise<ProductTypes.getProductsIndexResult> {
+export async function getIndex(payload: GetProductsIndexParams): Promise<GetProductsIndexResponse> {
   const {
     productId,
     search = '',
@@ -519,10 +125,15 @@ export async function getIndex(payload: ProductTypes.getProductsIndexParams): Pr
 
   const productIndex = productsRaw.findIndex(doc => String(doc._id) === String(productId))
 
-  return { status: 'success', code: 'PRODUCTS_FETCHED', message: 'Products fetched', productIndex }
+  return {
+    status: 'success',
+    code: 'PRODUCTS_FETCHED',
+    message: 'Products fetched',
+    productIndex,
+  }
 }
 
-export async function create(payload: ProductTypes.createProductParams): Promise<ProductTypes.createProductResult> {
+export async function create(payload: CreateProductParams): Promise<CreateProductResponse> {
   const {
     names,
     price,
@@ -606,10 +217,15 @@ export async function create(payload: ProductTypes.createProductParams): Promise
     ),
   })
 
-  return { status: 'success', code: 'PRODUCT_CREATED', message: 'Product created', product }
+  return {
+    status: 'success',
+    code: 'PRODUCT_CREATED',
+    message: 'Product created',
+    data: product,
+  }
 }
 
-export async function edit(payload: ProductTypes.editProductParams): Promise<ProductTypes.editProductResult> {
+export async function edit(payload: EditProductParams): Promise<EditProductResponse> {
   const {
     names,
     price,
@@ -714,10 +330,15 @@ export async function edit(payload: ProductTypes.editProductParams): Promise<Pro
     ),
   })
 
-  return { status: 'success', code: 'PRODUCT_EDITED', message: 'Product edited', product }
+  return {
+    status: 'success',
+    code: 'PRODUCT_EDITED',
+    message: 'Product edited',
+    data: product,
+  }
 }
 
-export async function remove(payload: ProductTypes.removeProductsParams): Promise<ProductTypes.removeProductsResult> {
+export async function remove(payload: RemoveProductsParams): Promise<RemoveProductsResponse> {
   const { ids } = payload
 
   const products = await ProductModel.updateMany(
@@ -743,10 +364,14 @@ export async function remove(payload: ProductTypes.removeProductsParams): Promis
     })
   }
 
-  return { status: 'success', code: 'PRODUCTS_REMOVED', message: 'Products removed' }
+  return {
+    status: 'success',
+    code: 'PRODUCTS_REMOVED',
+    message: 'Products removed',
+  }
 }
 
-export async function batch(payload: ProductTypes.batchProductsParams): Promise<ProductTypes.batchProductsResult> {
+export async function batch(payload: BatchProductsParams): Promise<BatchProductsResponse> {
   const { ids, filters, params } = payload
 
   const {
@@ -806,31 +431,39 @@ export async function batch(payload: ProductTypes.batchProductsParams): Promise<
     throw new HttpError(400, 'Products not batch edited', 'PRODUCTS_NOT_BATCH_EDITED')
   }
 
-  return { status: 'success', code: 'PRODUCTS_BATCH_EDITED', message: 'Products batch edited' }
+  return {
+    status: 'success',
+    code: 'PRODUCTS_BATCH_EDITED',
+    message: 'Products batch edited',
+  }
 }
 
-export async function duplicate(payload: ProductTypes.duplicateProductParams): Promise<ProductTypes.duplicateProductResult> {
-  const { ids } = payload
+// export async function duplicate(payload: DuplicateProductParams): Promise<DuplicateProductResponse> {
+//   const { ids } = payload
 
-  const products = await ProductModel.find({ _id: { $in: ids } })
+//   const products = await ProductModel.find({ _id: { $in: ids } })
 
-  const parsedProducts = products.map(product => ({
-    names: product.names,
-    price: product.price,
-    purchasePrice: product.purchasePrice,
-    barcodes: product.barcodes,
-    categories: product.categories,
-    unit: product.unit,
-    productPropertiesGroup: product.productPropertiesGroup,
-    productProperties: product.productProperties,
-  }))
+//   const parsedProducts = products.map(product => ({
+//     names: product.names,
+//     price: product.price,
+//     purchasePrice: product.purchasePrice,
+//     barcodes: product.barcodes,
+//     categories: product.categories,
+//     unit: product.unit,
+//     productPropertiesGroup: product.productPropertiesGroup,
+//     productProperties: product.productProperties,
+//   }))
 
-  await ProductModel.create(parsedProducts)
+//   await ProductModel.create(parsedProducts)
 
-  return { status: 'success', code: 'PRODUCTS_DUPLICATED', message: 'Products duplicated' }
-}
+//   return {
+//     status: 'success',
+//     code: 'PRODUCTS_DUPLICATED',
+//     message: 'Products duplicated',
+//   }
+// }
 
-export async function importHandler(payload: ProductTypes.importProductsParams): Promise<ProductTypes.importProductsResult> {
+export async function importHandler(payload: ImportProductsParams): Promise<ImportProductsResponse> {
   const { file } = payload
 
   const storedFile = await parseFile(file.path)
@@ -884,7 +517,7 @@ export async function importHandler(payload: ProductTypes.importProductsParams):
 
   if (productsForCreate.length > 0) {
     for (const product of productsForCreate) {
-      const { product: createdProduct } = await ProductService.create({
+      const { data: createdProduct } = await ProductService.create({
         ...product,
         productProperties: product.productProperties.map(property => ({
           id: property._id,
@@ -904,10 +537,15 @@ export async function importHandler(payload: ProductTypes.importProductsParams):
 
   const productIds = [...productsForEdit, ...productsForCreate].map(product => product?._id)
 
-  return { status: 'success', code: 'PRODUCTS_IMPORTED', message: 'Products imported', productIds }
+  return {
+    status: 'success',
+    code: 'PRODUCTS_IMPORTED',
+    message: 'Products imported',
+    productIds,
+  }
 }
 
-export async function exportHandler(payload: ProductTypes.exportProductsParams, user?: UserTypes.User): Promise<ProductTypes.exportProductsResult> {
+export async function exportHandler(payload: ExportProductsParams, user?: User): Promise<ExportProductsResponse> {
   const { ids } = payload
   const language = 'ru'
 
@@ -927,7 +565,7 @@ export async function exportHandler(payload: ProductTypes.exportProductsParams, 
   const selectedProducts = await get({ filters: { ids }, pagination: { full: true }, sorters: { seq: 'asc' } }, user)
 
   const groupedProducts: Record<string, any[]> = {}
-  for (const product of selectedProducts.products) {
+  for (const product of selectedProducts.data.items) {
     const groupId = product.productPropertiesGroup.id.toString()
     if (!groupedProducts[groupId]) {
       groupedProducts[groupId] = []
@@ -1062,7 +700,7 @@ export async function exportHandler(payload: ProductTypes.exportProductsParams, 
     const propertiesLetters: Record<string, string> = {}
     for (const [index, property] of dynamicKeys.entries()) {
       if (['select', 'multiSelect', 'color'].includes(property.type)) {
-        const { productPropertiesOptions } = await ProductPropertyOptionService.get({
+        const { data: { items: productPropertiesOptions } } = await ProductPropertyOptionService.get({
           filters: { productProperty: property.id },
           pagination: { full: true },
         })
@@ -1113,10 +751,15 @@ export async function exportHandler(payload: ProductTypes.exportProductsParams, 
 
   const buffer = await workbook.xlsx.writeBuffer()
 
-  return { status: 'success', code: 'PRODUCTS_EXPORTED', message: 'Products exported', buffer: Buffer.from(buffer) }
+  return {
+    status: 'success',
+    code: 'PRODUCTS_EXPORTED',
+    message: 'Products exported',
+    buffer: Buffer.from(buffer),
+  }
 }
 
-export async function downloadTemplate(user?: UserTypes.User): Promise<ProductTypes.downloadTemplateResult> {
+export async function downloadTemplate(user?: User): Promise<DownloadTemplateResponse> {
   const language = 'en'
 
   const languages = await LanguageModel.find({ active: true, removed: false })
@@ -1132,10 +775,10 @@ export async function downloadTemplate(user?: UserTypes.User): Promise<ProductTy
   const hiddenSheet = workbook.addWorksheet('hidden')
   hiddenSheet.state = 'veryHidden'
 
-  const selectedProducts = await get({ pagination: { current: 1, pageSize: 1 }, sorters: {} }, user)
+  const { data: { items: selectedProducts } } = await get({ pagination: { current: 1, pageSize: 1 }, sorters: {} }, user)
 
   const groupedProducts: Record<string, any[]> = {}
-  for (const product of selectedProducts.products) {
+  for (const product of selectedProducts) {
     const groupId = product.productPropertiesGroup.id.toString()
     if (!groupedProducts[groupId]) {
       groupedProducts[groupId] = []
@@ -1270,7 +913,7 @@ export async function downloadTemplate(user?: UserTypes.User): Promise<ProductTy
     const propertiesLetters: Record<string, string> = {}
     for (const [index, property] of dynamicKeys.entries()) {
       if (['select', 'multiSelect', 'color'].includes(property.type)) {
-        const { productPropertiesOptions } = await ProductPropertyOptionService.get({
+        const { data: { items: productPropertiesOptions } } = await ProductPropertyOptionService.get({
           filters: { productProperty: property.id },
           pagination: { full: true },
         })
@@ -1341,7 +984,12 @@ export async function downloadTemplate(user?: UserTypes.User): Promise<ProductTy
 
   const buffer = await workbook.xlsx.writeBuffer()
 
-  return { status: 'success', code: 'PRODUCTS_TEMPLATE_DOWNLOADED', message: 'Products template downloaded', buffer: Buffer.from(buffer) }
+  return {
+    status: 'success',
+    code: 'PRODUCTS_TEMPLATE_DOWNLOADED',
+    message: 'Products template downloaded',
+    buffer: Buffer.from(buffer),
+  }
 }
 
 function normalizeProduct(product: any) {
@@ -1372,18 +1020,18 @@ function normalizeProduct(product: any) {
     productPropertiesGroup,
     productProperties: Array.isArray(productProperties)
       ? productProperties
-          .map((p: any) => ({ _id: p._id, value: p.value }))
-          .sort((a, b) => a._id.localeCompare(b._id))
+        .map((p: any) => ({ _id: p._id, value: p.value }))
+        .sort((a, b) => a._id.localeCompare(b._id))
       : [],
     unit,
     images: Array.isArray(images)
       ? images.map((img: any) => ({
-          id: img.id,
-          path: img.path,
-          filename: img.filename,
-          name: img.name,
-          type: img.type,
-        }))
+        id: img.id,
+        path: img.path,
+        filename: img.filename,
+        name: img.name,
+        type: img.type,
+      }))
       : [],
   }
 }

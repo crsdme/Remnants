@@ -1,7 +1,10 @@
-import type { Automation } from '../types/automation.type'
+import type { HydratedDocument } from 'mongoose'
+import type { AutomationDB } from '@/types'
 import mongoose, { Schema } from 'mongoose'
 import { v4 as uuidv4 } from 'uuid'
-import { uuidValidator } from '../utils/uuidValidator'
+import { uuidValidator } from '@/utils/'
+
+export type AutomationDoc = HydratedDocument<AutomationDB>
 
 const TriggerSchema = new Schema({
   type: {
@@ -92,4 +95,4 @@ AutomationSchema.set('toJSON', {
   },
 })
 
-export const AutomationModel = mongoose.model<Automation>('automation', AutomationSchema)
+export const AutomationModel = mongoose.model<AutomationDoc>('automation', AutomationSchema)

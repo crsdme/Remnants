@@ -1,7 +1,10 @@
-import type { AuditLog } from '../types/audit-logs.type'
+import type { HydratedDocument } from 'mongoose'
+import type { AuditLogDB } from '@/types'
 import mongoose, { Schema } from 'mongoose'
 import { v4 as uuidv4 } from 'uuid'
-import { uuidValidator } from '../utils/uuidValidator'
+import { uuidValidator } from '@/utils/'
+
+export type AuditLogDoc = HydratedDocument<AuditLogDB>
 
 const AuditLogsSchema: Schema = new Schema(
   {
@@ -57,13 +60,6 @@ const AuditLogsSchema: Schema = new Schema(
   { timestamps: true },
 )
 
-AuditLogsSchema.set('toJSON', {
-  virtuals: true,
-  versionKey: false,
-  transform: (_, ret) => {
-    ret.id = ret._id
-    delete ret._id
-  },
-})
+AuditLogsSchema.index({ resourceType: 1, resourceId: 1, createdAt: -1 })
 
-export const AuditLogsModel = mongoose.model<AuditLog>('audit-logs', AuditLogsSchema)
+export const AuditLogsModel = mongoose.model<AuditLogDoc>('audit-logs', AuditLogsSchema)

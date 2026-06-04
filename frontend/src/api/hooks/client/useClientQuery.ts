@@ -1,4 +1,4 @@
-import type { getClientsParams } from '@/api/types'
+import type { getClientsParams } from '@remnant/shared'
 
 import { useQuery } from '@tanstack/react-query'
 import { getClients } from '@/api/requests'

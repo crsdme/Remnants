@@ -1,122 +1,60 @@
-import type { Code, DateRange, IdType, Message, Pagination, Sorter, Status } from './common.type'
-import type { Currency } from './currency.type'
+import type {
+  OrderPaymentDTO,
+} from '@remnant/shared'
+import type { z } from 'zod'
+import type { CurrencyDB } from '@/types'
+import {
+  createOrderPaymentSchema,
+  editOrderPaymentSchema,
+  getOrderPaymentsSchema,
+  removeOrderPaymentsSchema,
+} from '@remnant/shared'
 
-export interface OrderPayment {
-  id: IdType
+export interface OrderPaymentDB {
+  _id: string
   order: string
   cashregister: string
   cashregisterAccount: string
   amount: number
-  currency: Currency
+  currency: string
   paymentStatus: string
   paymentDate: Date
   transaction: string
   comment: string
   createdBy: string
   removedBy: string
+  removed: boolean
   createdAt: Date
   updatedAt: Date
 }
 
-export interface OrderPaymentParams {
-  order: string
-  cashregister: string
-  cashregisterAccount: string
-  amount: number
-  currency: string
-  paymentStatus: string
-  paymentDate: Date
-  comment: string
-  createdBy: string
+export interface OrderPaymentDBPopulated extends Omit<OrderPaymentDB, 'currency'> {
+  currency: CurrencyDB
 }
 
-export interface getOrderPaymentsResult {
-  status: Status
-  code: Code
-  message: Message
-  orderPayments: OrderPayment[]
-  orderPaymentsCount: number
+export type GetOrderPaymentsPayload = z.output<typeof getOrderPaymentsSchema>
+export function parseGetOrderPayments(x: unknown): GetOrderPaymentsPayload {
+  return (getOrderPaymentsSchema as z.ZodType<GetOrderPaymentsPayload>).parse(x)
 }
 
-export interface getOrderPaymentsFilters {
-  order?: string[]
-  cashregister: string
-  cashregisterAccount: string
-  amount: number
-  currency: string
-  paymentStatus: string
-  paymentDate: DateRange
-  transaction: string
-  createdBy: string
-  removedBy: string
-  removed: boolean
-  createdAt: DateRange
-  updatedAt: DateRange
-  removedAt: DateRange
+export type CreateOrderPaymentsPayload = z.output<typeof createOrderPaymentSchema>
+export function parseCreateOrderPayments(x: unknown): CreateOrderPaymentsPayload {
+  return createOrderPaymentSchema.parse(x)
 }
 
-export interface getOrderPaymentsSorters {
-  amount: Sorter
-  currency: Sorter
-  paymentStatus: Sorter
-  paymentDate: Sorter
-  createdAt: Sorter
-  updatedAt: Sorter
+export type EditOrderPaymentsPayload = z.output<typeof editOrderPaymentSchema>
+export function parseEditOrderPayments(x: unknown): EditOrderPaymentsPayload {
+  return editOrderPaymentSchema.parse(x)
 }
 
-export interface getOrderPaymentsParams {
-  filters?: Partial<getOrderPaymentsFilters>
-  sorters?: Partial<getOrderPaymentsSorters>
-  pagination?: Partial<Pagination>
+export type RemoveOrderPaymentsPayload = z.output<typeof removeOrderPaymentsSchema>
+export function parseRemoveOrderPayments(x: unknown): RemoveOrderPaymentsPayload {
+  return removeOrderPaymentsSchema.parse(x)
 }
 
-export interface createOrderPaymentResult {
-  status: Status
-  code: Code
-  message: Message
-  orderPayment: OrderPayment
-}
+export type GetOrderPaymentsRepoPayload = GetOrderPaymentsPayload
+export interface GetOrderPaymentsRepoResult { items: OrderPaymentDTO[], total: number, page: number, pageSize: number }
 
-export interface createOrderPaymentParams {
-  order: IdType
-  cashregister: string
-  cashregisterAccount: string
-  amount: number
-  currency: string
-  paymentStatus: string
-  paymentDate: Date
-  comment: string
-  createdBy: string
-}
+export type CreateOrderPaymentsRepoPayload = CreateOrderPaymentsPayload
 
-export interface editOrderPaymentResult {
-  status: Status
-  code: Code
-  message: Message
-  orderPayment: OrderPayment
-}
-
-export interface editOrderPaymentParams {
-  id: IdType
-  order: string
-  cashregister: string
-  cashregisterAccount: string
-  amount: number
-  currency: string
-  paymentStatus: string
-  paymentDate: Date
-  transaction: string
-  comment: string
-  createdBy: string
-  removedBy: string
-}
-
-export interface removeOrderPaymentsResult {
-  status: Status
-  code: Code
-  message: Message
-}
-
-export interface removeOrderPaymentsParams {
-  ids: IdType[]
-}
+export type EditOrderPaymentsRepoPayload = EditOrderPaymentsPayload

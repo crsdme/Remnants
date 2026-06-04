@@ -1,23 +1,47 @@
-import type PDFDocument from 'pdfkit'
-import type { SUPPORTED_LANGUAGES_TYPE } from '../config/constants'
-import type { Client } from './client.type'
-import type { Code, DateRange, IdType, Message, Pagination, Sorter, Status } from './common.type'
-import type { Currency } from './currency.type'
-import type { OrderPayment, OrderPaymentParams } from './order-payment.type'
+import type {
+  LanguageString,
+  OrderDTO,
+  OrderItemDTO,
+  OrderPaymentDTO,
+} from '@remnant/shared'
+import type { ClientSession } from 'mongoose'
+import type { z } from 'zod'
+import type { editOrderItemRepoSchema } from '@/schemas'
+import type {
+  ClientDB,
+  DeliveryServiceDB,
+  OrderSourceDB,
+  OrderStatusDB,
+} from '@/types'
+import {
+  createOrderItemSchema,
+  createOrderSchema,
+  editOrderSchema,
+  getOrderItemsSchema,
+  getOrdersSchema,
+  printDraftInvoiceOrderSchema,
+  printInvoiceOrderSchema,
+  printOrderLabelOrderSchema,
+  removeOrdersSchema,
+} from '@remnant/shared'
+import {
+  createOrderRepoSchema,
+  editOrderRepoSchema,
+} from '@/schemas'
 
-export interface Order {
-  id: IdType
+export interface OrderDB {
+  _id: string
   seq: number
   warehouse: string
   deliveryService: string
   orderSource: string
   orderStatus: string
-  orderPayments: OrderPayment[]
+  orderPayments: OrderPaymentDTO[]
   totals: {
-    currency: IdType
+    currency: string
     total: number
   }[]
-  client: IdType
+  client: string
   comment: string
   createdBy: string
   confirmedBy: string
@@ -27,202 +51,106 @@ export interface Order {
   updatedAt: Date
 }
 
-export interface OrderItem {
-  _id?: IdType
-  id?: IdType
-  order: IdType
-  product: IdType
+export interface OrderItemDB {
+  _id: string
+  seq: number
+  order: string
+  product: string
   quantity: number
   price: number
-  currency: Currency
+}
+
+export interface OrderDBPopulated {
+  _id: string
+  seq: number
+  // warehouse: WarehouseDB
+  warehouse: {
+    id: string
+    names: LanguageString
+  }
+  deliveryService: DeliveryServiceDB
+  orderSource: OrderSourceDB
+  orderStatus: OrderStatusDB
+  orderPayments: OrderPaymentDTO[]
+  totals: {
+    currency: string
+    total: number
+  }[]
+  client: ClientDB
+  comment: string
+  createdBy: string
+  confirmedBy: string
   removedBy: string
   removed: boolean
-  profit: number
-  exchangeRate: number
-  purchasePrice: number
-  purchaseCurrency: string
+  createdAt: Date
+  updatedAt: Date
 }
 
-export interface getOrdersResult {
-  status: Status
-  code: Code
-  message: Message
-  orders: Order[]
-  ordersCount: number
+export type GetOrdersPayload = z.output<typeof getOrdersSchema>
+export function parseGetOrders(x: unknown): GetOrdersPayload {
+  return getOrdersSchema.parse(x)
 }
 
-export interface getOrdersFilters {
-  ids: IdType[]
-  seq: string
-  warehouse: string
-  deliveryService: string
-  orderSource: string
-  orderStatus: string[]
-  orderPayments: OrderPayment[]
-  client: IdType
-  comment: string
-  createdBy: string
-  confirmedBy: string
-  removedBy: string
-  createdAt: DateRange
-  updatedAt: DateRange
-  removedAt: DateRange
-  removed: boolean
+export type GetOrderItemsPayload = z.output<typeof getOrderItemsSchema>
+export function parseGetOrderItems(x: unknown): GetOrderItemsPayload {
+  return getOrderItemsSchema.parse(x)
 }
 
-export interface getOrdersSorters {
-  names: Sorter
-  color: Sorter
-  priority: Sorter
-  updatedAt: Sorter
-  createdAt: Sorter
+export type CreateOrderPayload = z.output<typeof createOrderSchema>
+export function parseCreateOrder(x: unknown): CreateOrderPayload {
+  return createOrderSchema.parse(x)
 }
 
-export interface getOrdersParams {
-  filters?: Partial<getOrdersFilters>
-  sorters?: Partial<getOrdersSorters>
-  pagination?: Partial<Pagination>
+export type CreateOrderItemPayload = z.output<typeof createOrderItemSchema>
+export function parseCreateOrderItem(x: unknown): CreateOrderItemPayload {
+  return (createOrderItemSchema as z.ZodType<CreateOrderItemPayload>).parse(x)
 }
 
-export interface createOrderResult {
-  status: Status
-  code: Code
-  message: Message
-  order: Order
+export type EditOrderPayload = z.output<typeof editOrderSchema>
+export function parseEditOrder(x: unknown): EditOrderPayload {
+  return editOrderSchema.parse(x)
 }
 
-export interface createOrderParams {
-  warehouse: string
-  deliveryService: string
-  orderSource: string
-  orderStatus: string
-  orderPayments: OrderPaymentParams[]
-  client: IdType
-  items: OrderItem[]
-  comment: string
-  createdBy: string
-  confirmedBy: string
-  removedBy: string
+export type RemoveOrdersPayload = z.output<typeof removeOrdersSchema>
+export function parseRemoveOrders(x: unknown): RemoveOrdersPayload {
+  return removeOrdersSchema.parse(x)
 }
 
-export interface editOrderResult {
-  status: Status
-  code: Code
-  message: Message
-  order: Order
+export type GetOrdersRepoPayload = GetOrdersPayload & { hasProfitPermission: boolean }
+export interface GetOrdersRepoResult { items: OrderDTO[], total: number, page: number, pageSize: number }
+
+export type GetOrderItemsRepoPayload = GetOrderItemsPayload & { hasProfitPermission: boolean, session?: ClientSession }
+export interface GetOrderItemsRepoResult { items: OrderItemDTO[], total: number, page: number, pageSize: number }
+
+export type CreateOrderRepoPayload = z.output<typeof createOrderRepoSchema>
+export function parseCreateOrderRepo(x: unknown): CreateOrderRepoPayload {
+  return createOrderRepoSchema.parse(x)
 }
 
-export interface editOrderParams {
-  id: IdType
-  warehouse: string
-  deliveryService: string
-  orderSource: string
-  orderStatus: string
-  orderPayments: OrderPayment[]
-  client: IdType
-  items: (OrderItem & { basePrice: number, manualPrice: number, discountAmount: number, discountPercent: number })[]
-  comment: string
-  createdBy: string
-  confirmedBy: string
-  removedBy: string
+export type CreateOrderItemRepoPayload = CreateOrderItemPayload
+
+export type EditOrderItemRepoPayload = z.output<typeof editOrderItemRepoSchema>
+
+export type EditOrderRepoPayload = z.output<typeof editOrderRepoSchema>
+export function parseEditOrderRepo(x: unknown): EditOrderRepoPayload {
+  return editOrderRepoSchema.parse(x)
 }
 
-export interface removeOrdersResult {
-  status: Status
-  code: Code
-  message: Message
+export type PrintInvoiceOrderPayload = z.output<typeof printInvoiceOrderSchema>
+export function parsePrintInvoiceOrder(x: unknown): PrintInvoiceOrderPayload {
+  return printInvoiceOrderSchema.parse(x)
 }
 
-export interface removeOrdersParams {
-  ids: IdType[]
+export type PrintDraftInvoiceOrderPayload = z.output<typeof printDraftInvoiceOrderSchema>
+export function parsePrintDraftInvoiceOrder(x: unknown): PrintDraftInvoiceOrderPayload {
+  return printDraftInvoiceOrderSchema.parse(x)
 }
 
-export interface getOrderItemsFilters {
-  order: IdType[]
-  showFullData?: boolean
+export type PrintOrderLabelOrderPayload = z.output<typeof printOrderLabelOrderSchema>
+export function parsePrintOrderLabelOrder(x: unknown): PrintOrderLabelOrderPayload {
+  return printOrderLabelOrderSchema.parse(x)
 }
 
-export interface getOrderItemsParams {
-  filters?: Partial<getOrderItemsFilters>
-  pagination?: Partial<Pagination>
-  sorters?: Partial<getOrderItemsSorters>
-}
+export interface PayOrderPayload { id: string }
 
-export interface getOrderItemsSorters {
-  seq: Sorter
-  names: Sorter
-  price: Sorter
-  purchasePrice: Sorter
-}
-
-export interface getOrderItemsResult {
-  status: Status
-  code: Code
-  message: Message
-  orderItems: OrderItem[]
-  orderItemsCount: number
-}
-
-export interface getOrderPaymentsFilters {
-  order: IdType
-}
-
-export interface getOrderPaymentsParams {
-  filters?: Partial<getOrderPaymentsFilters>
-  pagination?: Partial<Pagination>
-}
-
-export interface getOrderPaymentsResult {
-  status: Status
-  code: Code
-  message: Message
-  orderPayments: OrderPayment[]
-  orderPaymentsCount: number
-}
-
-export interface payOrderResult {
-  status: Status
-  code: Code
-  message: Message
-}
-
-export interface payOrderParams {
-  id: IdType
-}
-
-export interface printInvoiceOrderParams {
-  seq: number
-  language: SUPPORTED_LANGUAGES_TYPE
-}
-
-export interface printInvoiceOrderResult {
-  status: Status
-  code: Code
-  message: Message
-  doc: typeof PDFDocument
-}
-
-export interface printDraftInvoiceOrderParams {
-  products: OrderItem[]
-  client: Client
-  language: SUPPORTED_LANGUAGES_TYPE
-}
-
-export interface printDraftInvoiceOrderResult {
-  status: Status
-  code: Code
-  message: Message
-  doc: typeof PDFDocument
-}
-
-export interface printOrderLabelParams {
-  seq: number
-  language: SUPPORTED_LANGUAGES_TYPE
-}
-
-export interface printOrderLabelResult {
-  status: Status
-  code: Code
-  message: Message
-  doc: typeof PDFDocument
-}
+export interface FindOneOrderRepoPayload { id?: string, seq?: number }

@@ -1,9 +1,14 @@
+import type {
+  CreateWarehouseTransactionLogsParams,
+  CreateWarehouseTransactionLogsResponse,
+  GetWarehouseTransactionLogsParams,
+  GetWarehouseTransactionLogsResponse,
+} from '@remnant/shared'
 import type { ClientSession } from 'mongoose'
-import type * as WarehouseTransactionLogTypes from '../types/warehouse-transaction-log.type'
-import { WarehouseTransactionLogModel } from '../models'
-import { buildQuery, buildSortQuery } from '../utils/queryBuilder'
+import { WarehouseTransactionLogModel } from '@/models/'
+import { buildQuery, buildSortQuery } from '@/utils/'
 
-export async function get(payload: WarehouseTransactionLogTypes.getWarehouseTransactionLogsParams): Promise<WarehouseTransactionLogTypes.getWarehouseTransactionLogsResult> {
+export async function get(payload: GetWarehouseTransactionLogsParams): Promise<GetWarehouseTransactionLogsResponse> {
   const { current = 1, pageSize = 10 } = payload.pagination || {}
 
   const {
@@ -131,10 +136,22 @@ export async function get(payload: WarehouseTransactionLogTypes.getWarehouseTran
   const warehouseTransactionLogs = warehouseTransactionLogsRaw[0].warehouseTransactionLogs || []
   const warehouseTransactionLogsCount = warehouseTransactionLogsRaw[0].totalCount[0]?.count || 0
 
-  return { status: 'success', code: 'WAREHOUSE_TRANSACTION_LOGS_FETCHED', message: 'Warehouse transaction logs fetched', warehouseTransactionLogs, warehouseTransactionLogsCount }
+  return {
+    status: 'success',
+    code: 'WAREHOUSE_TRANSACTION_LOGS_FETCHED',
+    message: 'Warehouse transaction logs fetched',
+    data: {
+      items: warehouseTransactionLogs,
+      pagination: {
+        total: warehouseTransactionLogsCount,
+        page: current,
+        pageSize,
+      },
+    },
+  }
 }
 
-export async function create(payload: WarehouseTransactionLogTypes.createWarehouseTransactionLogsParams, session?: ClientSession) {
+export async function create(payload: CreateWarehouseTransactionLogsParams, session?: ClientSession): Promise<CreateWarehouseTransactionLogsResponse> {
   const { productId, warehouseId, deltaCount, refType, refId, userId } = payload
 
   const warehouseTransactionLog = await WarehouseTransactionLogModel.create([{
@@ -147,5 +164,10 @@ export async function create(payload: WarehouseTransactionLogTypes.createWarehou
     createdBy: userId,
   }], { session })
 
-  return { status: 'success', code: 'WAREHOUSE_TRANSACTION_LOG_CREATED', message: 'Warehouse transaction log created', warehouseTransactionLog }
+  return {
+    status: 'success',
+    code: 'WAREHOUSE_TRANSACTION_LOG_CREATED',
+    message: 'Warehouse transaction log created',
+    data: warehouseTransactionLog[0],
+  }
 }

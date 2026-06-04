@@ -1,7 +1,17 @@
-import type { Code, DateRange, IdType, LanguageString, Message, Pagination, Sorter, Status } from './common.type'
+import type {
+  ExpenseCategoryDTO,
+  LanguageString,
+} from '@remnant/shared'
+import type { z } from 'zod'
+import {
+  createExpenseCategorySchema,
+  editExpenseCategorySchema,
+  getExpenseCategoriesSchema,
+  removeExpenseCategoriesSchema,
+} from '@remnant/shared'
 
-export interface ExpenseCategory {
-  id: IdType
+export interface ExpenseCategoryDB {
+  _id: string
   names: LanguageString
   color: string
   comment: string
@@ -11,71 +21,29 @@ export interface ExpenseCategory {
   updatedAt: Date
 }
 
-export interface getExpenseCategoriesResult {
-  status: Status
-  code: Code
-  message: Message
-  expenseCategories: ExpenseCategory[]
-  expenseCategoriesCount: number
+export type GetExpenseCategoriesPayload = z.output<typeof getExpenseCategoriesSchema>
+export function parseGetExpenseCategories(x: unknown): GetExpenseCategoriesPayload {
+  return getExpenseCategoriesSchema.parse(x)
 }
 
-export interface getExpenseCategoriesFilters {
-  ids: IdType[]
-  names: LanguageString
-  color: string
-  comment: string
-  priority: number
-  createdAt: DateRange
-  updatedAt: DateRange
+export type CreateExpenseCategoriesPayload = z.output<typeof createExpenseCategorySchema>
+export function parseCreateExpenseCategories(x: unknown): CreateExpenseCategoriesPayload {
+  return createExpenseCategorySchema.parse(x)
 }
 
-export interface getExpenseCategoriesSorters {
-  priority: Sorter
-  updatedAt: Sorter
-  createdAt: Sorter
+export type EditExpenseCategoriesPayload = z.output<typeof editExpenseCategorySchema>
+export function parseEditExpenseCategories(x: unknown): EditExpenseCategoriesPayload {
+  return editExpenseCategorySchema.parse(x)
 }
 
-export interface getExpenseCategoriesParams {
-  filters?: Partial<getExpenseCategoriesFilters>
-  sorters?: Partial<getExpenseCategoriesSorters>
-  pagination?: Partial<Pagination>
+export type RemoveExpenseCategoriesPayload = z.output<typeof removeExpenseCategoriesSchema>
+export function parseRemoveExpenseCategories(x: unknown): RemoveExpenseCategoriesPayload {
+  return removeExpenseCategoriesSchema.parse(x)
 }
 
-export interface createExpenseCategoryResult {
-  status: Status
-  code: Code
-  message: Message
-  expenseCategory: ExpenseCategory
-}
+export type GetExpenseCategoriesRepoPayload = GetExpenseCategoriesPayload
+export interface GetExpenseCategoriesRepoResult { items: ExpenseCategoryDTO[], total: number, page: number, pageSize: number }
 
-export interface createExpenseCategoryParams {
-  names: LanguageString
-  color: string
-  comment?: string
-  priority?: number
-}
+export type CreateExpenseCategoriesRepoPayload = CreateExpenseCategoriesPayload
 
-export interface editExpenseCategoryResult {
-  status: Status
-  code: Code
-  message: Message
-  expenseCategory: ExpenseCategory
-}
-
-export interface editExpenseCategoryParams {
-  id: IdType
-  names: LanguageString
-  color: string
-  comment?: string
-  priority?: number
-}
-
-export interface removeExpenseCategoriesResult {
-  status: Status
-  code: Code
-  message: Message
-}
-
-export interface removeExpenseCategoriesParams {
-  ids: IdType[]
-}
+export type EditExpenseCategoriesRepoPayload = EditExpenseCategoriesPayload
