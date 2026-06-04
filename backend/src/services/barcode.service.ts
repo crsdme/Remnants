@@ -765,10 +765,10 @@ async function print55x40(payload: {
       = product?.categories
         ?.map((cat: any) => providerPrice[cat.id as keyof typeof providerPrice])
         ?.filter(Boolean)
-        .join('') || ''
+        .join('') || '1000'
 
     const providerPreffix
-      = providerPrice.toString() === '929dc694-afd4-406c-b766-00a1d483c68f'
+      = providerSuffix.toString() === '1212'
         ? '-e'
         : ''
 
