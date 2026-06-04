@@ -768,7 +768,7 @@ async function print55x40(payload: {
         .join('') || '1000'
 
     const providerPreffix
-      = providerSuffix.toString() === '1212'
+      = Number(providerSuffix) === 1212
         ? '-e'
         : ''
 
