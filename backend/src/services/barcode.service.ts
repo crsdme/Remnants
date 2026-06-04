@@ -763,17 +763,17 @@ async function print55x40(payload: {
 
     const providerSuffix
       = product?.categories
-        ?.map((cat: any) => providerPrice[cat.id as keyof typeof providerPrice])
+        ?.map((cat: any) => ({ price: providerPrice[cat.id as keyof typeof providerPrice], id: cat.id }))
         ?.filter(Boolean)
-        .join('') || '1000'
+        .join('') || { price: 1000, id: null }
 
     const providerPreffix
-      = Number(providerSuffix) === 1212
+      = providerSuffix.id?.toString() === '929dc694-afd4-406c-b766-00a1d483c68f'
         ? '-e'
         : ''
 
     doc.text(
-      `${barcode.code}${providerSuffix ? `-${Number(providerSuffix) + 5000}${providerPreffix}` : ''}`,
+      `${barcode.code}${providerSuffix.price ? `-${providerSuffix.price + 5000}${providerPreffix}` : ''}`,
       padding,
       contentHeight / 2 + 10,
       {
