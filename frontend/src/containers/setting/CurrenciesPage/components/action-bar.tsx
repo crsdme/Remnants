@@ -1,9 +1,7 @@
 import { Plus } from 'lucide-react'
 
-import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useLanguageQuery } from '@/api/hooks'
-import { ImportButton, PermissionGate } from '@/components'
+import { PermissionGate } from '@/components'
 import {
   Button,
   Sheet,
@@ -13,7 +11,6 @@ import {
   SheetTitle,
   SheetTrigger,
 } from '@/components/ui'
-import { downloadCsv } from '@/utils/helpers/download'
 import { useCurrencyContext } from '../context'
 
 import { CurrencyForm, ExchangeRateForm } from './form'
@@ -27,55 +24,8 @@ export function ActionBar() {
     isExchangeRateModalOpen,
     openModal,
     closeModal,
-    importCurrencies,
     closeExchangeRateModal,
   } = useCurrencyContext()
-  const [file, setFile] = useState<File | null>(null)
-
-  const { data: { languages = [] } = {} } = useLanguageQuery(
-    { pagination: { full: true } },
-    { options: {
-      select: response => ({
-        languages: response.data.languages,
-      }),
-    } },
-  )
-
-  const handleFileChange = (event) => {
-    const file = event.target.files?.[0]
-    if (file) {
-      setFile(file)
-    }
-  }
-
-  const handleDownloadTemplate = () => {
-    const headers = [
-      ...languages.map(l => `names_${l.code}`),
-      ...languages.map(l => `symbols_${l.code}`),
-      'scale',
-      'priority',
-      'active',
-    ]
-
-    const row = [
-      ...languages.map(() => t(`component.import.dialog.template.name`)),
-      ...languages.map(() => t(`component.import.dialog.template.symbol`)),
-      '2',
-      '1',
-      'true',
-    ]
-
-    const csv = [headers, row].map(r => r.join(',')).join('\n')
-
-    downloadCsv(csv, 'currencies-template.csv', false)
-  }
-
-  const onImport = async () => {
-    const formData = new FormData()
-    formData.append('file', file)
-    importCurrencies(formData)
-    setFile(null)
-  }
 
   return (
     <div className="flex items-center justify-between flex-wrap gap-2">
@@ -84,15 +34,6 @@ export function ActionBar() {
         <p className="text-muted-foreground">{t('page.currencies.description')}</p>
       </div>
       <div className="flex items-center flex-wrap gap-2">
-        <PermissionGate permission="other.admin">
-          <ImportButton
-            handleFileChange={handleFileChange}
-            handleDownloadTemplate={handleDownloadTemplate}
-            isFileSelected={!!file}
-            isLoading={isLoading}
-            onSubmit={onImport}
-          />
-        </PermissionGate>
         <PermissionGate permission={['currency.create']}>
           <Sheet open={isModalOpen} onOpenChange={() => closeModal()}>
             <SheetTrigger asChild>

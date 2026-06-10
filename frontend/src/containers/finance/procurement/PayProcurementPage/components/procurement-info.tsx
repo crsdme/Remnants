@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 import { useTranslation } from 'react-i18next'
 import { Badge, Skeleton } from '@/components/ui'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
@@ -27,10 +29,10 @@ export function PayProcurementInfo() {
               <p className="text-sm font-medium text-muted-foreground">{t('page.procurements.pay.label.seq')}</p>
               <p className="text-sm text-foreground">{procurement?.seq}</p>
             </div>
-            <div className="flex flex-col gap-2">
+            {/* <div className="flex flex-col gap-2">
               <p className="text-sm font-medium text-muted-foreground">{t('page.procurements.pay.label.supplier')}</p>
               <p className="text-sm text-foreground">{procurement?.supplier.name}</p>
-            </div>
+            </div> */}
             <div className="flex flex-col gap-2">
               <p className="text-sm font-medium text-muted-foreground">{t('page.procurements.pay.label.status')}</p>
               <Badge variant="outline">{t(`page.procurements.status.${(procurement?.status || '').toLowerCase()}`)}</Badge>

@@ -6,11 +6,25 @@ import {
   languageStringSchema,
   numberFromStringSchema,
   paginationSchema,
+  responseItemSchema,
+  responseListSchema,
+  responseSchema,
   sorterParamsSchema,
 } from './common'
 
+export const unitSchema = z.object({
+  id: idSchema,
+  names: languageStringSchema,
+  symbols: languageStringSchema,
+  priority: z.number(),
+  active: z.boolean(),
+  createdAt: z.coerce.date(),
+  updatedAt: z.coerce.date(),
+})
+
+export type UnitDTO = z.output<typeof unitSchema>
+
 export const getUnitSchema = z.object({
-  pagination: paginationSchema.optional(),
   filters: z.object({
     names: z.string().optional(),
     symbols: z.string().optional(),
@@ -28,6 +42,7 @@ export const getUnitSchema = z.object({
     updatedAt: sorterParamsSchema.optional(),
     createdAt: sorterParamsSchema.optional(),
   }).optional().default({}),
+  pagination: paginationSchema.optional().default({}),
 })
 
 export type GetUnitRequest = z.input<typeof getUnitSchema>
@@ -56,3 +71,15 @@ export const removeUnitSchema = z.object({
 })
 
 export type RemoveUnitRequest = z.input<typeof removeUnitSchema>
+
+export const getUnitsResponseSchema = responseListSchema(unitSchema)
+export type GetUnitsResponse = z.output<typeof getUnitsResponseSchema>
+
+export const createUnitResponseSchema = responseItemSchema(unitSchema)
+export type CreateUnitResponse = z.output<typeof createUnitResponseSchema>
+
+export const editUnitResponseSchema = responseItemSchema(unitSchema)
+export type EditUnitResponse = z.output<typeof editUnitResponseSchema>
+
+export const removeUnitsResponseSchema = responseSchema
+export type RemoveUnitsResponse = z.output<typeof removeUnitsResponseSchema>

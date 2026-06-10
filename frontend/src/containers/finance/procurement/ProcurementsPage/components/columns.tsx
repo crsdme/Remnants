@@ -1,3 +1,8 @@
+import type { ProcurementDTO } from '@remnant/shared'
+
+import type { Column } from '@tanstack/react-table'
+
+import { createColumnHelper } from '@tanstack/react-table'
 import {
   ArrowDown,
   ArrowUp,
@@ -5,28 +10,38 @@ import {
   ChevronsUpDown,
   Copy,
   CreditCard,
-  Pencil,
   Trash,
 } from 'lucide-react'
+
 import { useMemo } from 'react'
-import { useTranslation } from 'react-i18next'
 
 import { useNavigate } from 'react-router-dom'
 import { TableActionDropdown } from '@/components'
 import { Badge, Button } from '@/components/ui'
 import { formatDate } from '@/utils/helpers'
+import { useLocale } from '@/utils/hooks'
+
 import { useProcurementContext } from '../context'
+
+/** Строка списка: API отдаёт закупку с заполненным поставщиком и статусом оплаты */
+type ProcurementTableRow = Omit<ProcurementDTO, 'supplier'> & {
+  supplier: { id: string, name: string }
+  paymentStatus?: string
+}
 
 const sortIcons = { asc: ArrowUp, desc: ArrowDown }
 
+const columnHelper = createColumnHelper<ProcurementTableRow>()
+
 export function useColumns() {
-  const { t, i18n } = useTranslation()
+  const { t, language } = useLocale()
   const { removeProcurement } = useProcurementContext()
   const navigate = useNavigate()
 
   const columns = useMemo(() => {
-    function sortHeader(column, label) {
-      const Icon = sortIcons[column.getIsSorted() || undefined] || ChevronsUpDown
+    function sortHeader(column: Column<ProcurementTableRow, unknown>, label: string) {
+      const sorted = column.getIsSorted()
+      const Icon = sorted ? sortIcons[sorted] : ChevronsUpDown
 
       return (
         <Button
@@ -41,7 +56,7 @@ export function useColumns() {
     }
 
     function actionColumn() {
-      return ({
+      return columnHelper.display({
         id: 'action',
         size: 85,
         meta: {
@@ -54,16 +69,10 @@ export function useColumns() {
           const actions = [
             {
               permission: 'procurement.copy',
-              onClick: () => navigator.clipboard.writeText(item.id),
+              onClick: async () => navigator.clipboard.writeText(item.id),
               label: t('table.copy'),
               icon: <Copy className="h-4 w-4" />,
             },
-            // {
-            //   permission: 'procurement.edit',
-            //   onClick: async () => await editModal(item),
-            //   label: t('table.edit'),
-            //   icon: <Pencil className="h-4 w-4" />,
-            // },
             {
               permission: 'procurement.pay',
               onClick: async () => navigate(`/procurements/pay/${item.seq}`),
@@ -92,7 +101,7 @@ export function useColumns() {
     }
 
     return [
-      {
+      columnHelper.display({
         id: 'seq',
         meta: {
           title: t('table.seq'),
@@ -101,8 +110,8 @@ export function useColumns() {
           sortable: true,
         },
         cell: ({ row }) => row.original.seq,
-      },
-      {
+      }),
+      columnHelper.display({
         id: 'supplier',
         size: 150,
         meta: {
@@ -114,10 +123,9 @@ export function useColumns() {
         },
         header: () => t('page.procurements.table.supplier'),
         cell: ({ row }) => <Badge variant="outline">{row.original.supplier.name}</Badge>,
-      },
-      {
+      }),
+      columnHelper.accessor('status', {
         id: 'status',
-        accessorKey: 'status',
         meta: {
           title: t('page.procurements.table.status'),
           filterable: true,
@@ -130,13 +138,17 @@ export function useColumns() {
             confirmed: 'success',
             cancelled: 'destructive',
             received: 'success',
-          }
-          return <Badge variant={badgeType[row.original.status]}>{t(`page.procurements.status.${(row.original?.status || '').toLowerCase()}`)}</Badge>
+          } as const
+          const status = row.original.status
+          return (
+            <Badge variant={badgeType[status as keyof typeof badgeType] ?? 'default'}>
+              {t(`page.procurements.status.${(status || '').toLowerCase()}`)}
+            </Badge>
+          )
         },
-      },
-      {
+      }),
+      columnHelper.display({
         id: 'payments',
-        accessorKey: 'payments',
         meta: {
           title: t('page.procurements.table.payments'),
         },
@@ -147,16 +159,15 @@ export function useColumns() {
             <div className="flex flex-col gap-2">
               {payments.map(item => (
                 <Badge key={item.currency.id}>
-                  {`${item.amount} ${item.currency.symbols[i18n.language] || ''}`}
+                  {`${item.amount} ${item.currency.symbols[language] || ''}`}
                 </Badge>
               ))}
             </div>
           )
         },
-      },
-      {
+      }),
+      columnHelper.display({
         id: 'total',
-        accessorKey: 'total',
         meta: {
           title: t('page.procurements.table.total'),
         },
@@ -167,16 +178,15 @@ export function useColumns() {
             <div className="flex flex-col gap-2">
               {total.map(item => (
                 <Badge key={item.currency.id}>
-                  {`${item.amount} ${item.currency.symbols[i18n.language] || ''}`}
+                  {`${item.amount} ${item.currency.symbols[language] || ''}`}
                 </Badge>
               ))}
             </div>
           )
         },
-      },
-      {
+      }),
+      columnHelper.display({
         id: 'debt',
-        accessorKey: 'debt',
         meta: {
           title: t('page.procurements.table.debt'),
         },
@@ -187,49 +197,48 @@ export function useColumns() {
             <div className="flex flex-col gap-2">
               {debt.map(item => (
                 <Badge key={item.currency.id}>
-                  {`${item.amount} ${item.currency.symbols[i18n.language] || ''}`}
+                  {`${item.amount} ${item.currency.symbols[language] || ''}`}
                 </Badge>
               ))}
             </div>
           )
         },
-      },
-      {
+      }),
+      columnHelper.display({
         id: 'paymentStatus',
-        accessorKey: 'paymentStatus',
         meta: {
           title: t('page.procurements.table.paymentStatus'),
         },
         header: () => t('page.procurements.table.paymentStatus'),
         cell: ({ row }) => {
-          const paymentStatus = row.original.paymentStatus
+          const paymentStatus = row.original.paymentStatus ?? ''
           const paymentStatusVariant = {
             'paid': 'success',
             'partially-paid': 'warning',
             'unpaid': 'destructive',
             'overpaid': 'warning',
-          }
+          } as const
+
+          const variant = paymentStatusVariant[paymentStatus as keyof typeof paymentStatusVariant] ?? 'default'
 
           return (
             <div className="flex flex-col gap-2">
-              <Badge variant={paymentStatusVariant[paymentStatus]}>
+              <Badge variant={variant}>
                 {t(`page.procurements.paymentStatus.${paymentStatus}`)}
               </Badge>
             </div>
           )
         },
-      },
-      {
+      }),
+      columnHelper.accessor('comment', {
         id: 'comment',
-        accessorKey: 'comment',
         meta: {
           title: t('page.procurements.table.comment'),
         },
         header: () => t('page.procurements.table.comment'),
-      },
-      {
+      }),
+      columnHelper.accessor('createdAt', {
         id: 'createdAt',
-        accessorKey: 'createdAt',
         meta: {
           title: t('table.createdAt'),
           filterable: true,
@@ -237,11 +246,10 @@ export function useColumns() {
           sortable: true,
         },
         header: ({ column }) => sortHeader(column, t('table.createdAt')),
-        cell: ({ row }) => formatDate(row.getValue('createdAt'), 'dd.MM.yyyy HH:mm', i18n.language),
-      },
-      {
+        cell: ({ row }) => formatDate(row.getValue('createdAt'), 'dd.MM.yyyy HH:mm', language),
+      }),
+      columnHelper.accessor('updatedAt', {
         id: 'updatedAt',
-        accessorKey: 'updatedAt',
         meta: {
           title: t('table.updatedAt'),
           filterable: true,
@@ -249,10 +257,11 @@ export function useColumns() {
           sortable: true,
         },
         header: () => t('table.updatedAt'),
-        cell: ({ row }) => formatDate(row.getValue('updatedAt'), 'dd.MM.yyyy HH:mm', i18n.language),
-      },
+        cell: ({ row }) => formatDate(row.getValue('updatedAt'), 'dd.MM.yyyy HH:mm', language),
+      }),
       actionColumn(),
     ]
-  }, [i18n.language])
+  }, [language, navigate, removeProcurement, t])
+
   return columns
 }

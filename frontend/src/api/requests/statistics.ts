@@ -1,9 +1,9 @@
 import type {
-  getOrderStatisticParams,
-  OrderStatisticResponse,
-} from '@/api/types'
+  GetOrderStatisticRequest,
+  GetStatisticResponse,
+} from '@remnant/shared'
 import { api } from '@/api/instance'
 
-export async function getOrderStatistic(params: getOrderStatisticParams) {
-  return api.get<OrderStatisticResponse>('statistics/orders/get', { params })
+export async function getOrderStatistic(params: GetOrderStatisticRequest) {
+  return api.get<GetStatisticResponse>('statistics/orders/get', { params })
 }

@@ -1,3 +1,6 @@
+import type { ExpensePopulatedDTO } from '@remnant/shared'
+import type { Column } from '@tanstack/react-table'
+import { createColumnHelper } from '@tanstack/react-table'
 import {
   ArrowDown,
   ArrowUp,
@@ -7,22 +10,24 @@ import {
   Trash,
 } from 'lucide-react'
 import { useMemo } from 'react'
-import { useTranslation } from 'react-i18next'
 
 import { TableActionDropdown } from '@/components'
 import { Badge, Button, Checkbox } from '@/components/ui'
 import { formatDate } from '@/utils/helpers'
+import { useLocale } from '@/utils/hooks'
 import { useExpenseContext } from '../context'
 
 const sortIcons = { asc: ArrowUp, desc: ArrowDown }
+const columnHelper = createColumnHelper<ExpensePopulatedDTO>()
 
 export function useColumns() {
-  const { t, i18n } = useTranslation()
+  const { t, language } = useLocale()
   const { isLoading, openModal, removeExpense } = useExpenseContext()
 
   const columns = useMemo(() => {
-    function sortHeader(column, label) {
-      const Icon = sortIcons[column.getIsSorted() || undefined] || ChevronsUpDown
+    function sortHeader(column: Column<ExpensePopulatedDTO>, label: string) {
+      const sorted = column.getIsSorted()
+      const Icon = sorted ? sortIcons[sorted] : ChevronsUpDown
 
       return (
         <Button
@@ -38,7 +43,7 @@ export function useColumns() {
     }
 
     function selectColumn() {
-      return ({
+      return columnHelper.display({
         id: 'select',
         size: 35,
         meta: { title: t('component.columnMenu.columns.select') },
@@ -70,7 +75,7 @@ export function useColumns() {
     }
 
     function actionColumn() {
-      return ({
+      return columnHelper.display({
         id: 'action',
         size: 85,
         meta: {
@@ -83,7 +88,7 @@ export function useColumns() {
           const actions = [
             {
               permission: 'expense.copy',
-              onClick: () => navigator.clipboard.writeText(item.id),
+              onClick: async () => navigator.clipboard.writeText(item.id),
               label: t('table.copy'),
               icon: <Copy className="h-4 w-4" />,
             },
@@ -110,7 +115,7 @@ export function useColumns() {
 
     return [
       selectColumn(),
-      {
+      columnHelper.accessor('seq', {
         id: 'seq',
         size: 150,
         meta: {
@@ -123,11 +128,9 @@ export function useColumns() {
           defaultVisible: true,
         },
         header: ({ column }) => sortHeader(column, t('table.seq')),
-        accessorFn: row => row.seq,
-      },
-      {
+      }),
+      columnHelper.accessor('amount', {
         id: 'amount',
-        accessorKey: 'amount',
         meta: {
           title: t('page.expenses.table.amount'),
           batchEdit: true,
@@ -139,13 +142,12 @@ export function useColumns() {
         header: () => t('page.expenses.table.amount'),
         cell: ({ row }) => {
           const amount = row.original.amount
-          const currency = row.original.currency.symbols[i18n.language]
+          const currency = row.original.currency.symbols[language]
           return <Badge variant="outline">{`${amount} ${currency}`}</Badge>
         },
-      },
-      {
+      }),
+      columnHelper.accessor('cashregister', {
         id: 'cashregister',
-        accessorKey: 'cashregister',
         meta: {
           title: t('page.expenses.table.cashregister'),
           batchEdit: true,
@@ -155,11 +157,10 @@ export function useColumns() {
           sortable: true,
         },
         header: () => t('page.expenses.table.cashregister'),
-        cell: ({ row }) => <Badge variant="outline">{`${row.original.cashregister.names[i18n.language]}`}</Badge>,
-      },
-      {
+        cell: ({ row }) => <Badge variant="outline">{`${row.original.cashregister.names[language]}`}</Badge>,
+      }),
+      columnHelper.accessor('cashregisterAccount', {
         id: 'cashregisterAccount',
-        accessorKey: 'cashregisterAccount',
         meta: {
           title: t('page.expenses.table.cashregisterAccount'),
           batchEdit: true,
@@ -169,11 +170,10 @@ export function useColumns() {
           sortable: true,
         },
         header: () => t('page.expenses.table.cashregisterAccount'),
-        cell: ({ row }) => <Badge variant="outline">{`${row.original.cashregisterAccount.names[i18n.language]}`}</Badge>,
-      },
-      {
+        cell: ({ row }) => <Badge variant="outline">{`${row.original.cashregisterAccount.names[language]}`}</Badge>,
+      }),
+      columnHelper.accessor('categories', {
         id: 'categories',
-        accessorKey: 'categories',
         meta: {
           title: t('page.expenses.table.categories'),
           batchEdit: true,
@@ -185,13 +185,12 @@ export function useColumns() {
         header: () => t('page.expenses.table.categories'),
         cell: ({ row }) => (
           <div className="flex flex-wrap gap-2">
-            {row.original.categories.map(category => <Badge variant="outline" key={category.id}>{`${category.names[i18n.language]}`}</Badge>)}
+            {row.original.categories.map(category => <Badge variant="outline" key={category.id}>{`${category.names[language]}`}</Badge>)}
           </div>
         ),
-      },
-      {
+      }),
+      columnHelper.accessor('type', {
         id: 'type',
-        accessorKey: 'type',
         meta: {
           title: t('page.expenses.table.type'),
           batchEdit: true,
@@ -202,10 +201,9 @@ export function useColumns() {
         },
         header: () => t('page.expenses.table.type'),
         cell: ({ row }) => <Badge variant="outline">{t(`page.expenses.table.type.${row.original.type}`)}</Badge>,
-      },
-      {
+      }),
+      columnHelper.accessor('comment', {
         id: 'comment',
-        accessorKey: 'comment',
         meta: {
           title: t('page.expenses.table.comment'),
           batchEdit: true,
@@ -215,11 +213,9 @@ export function useColumns() {
           sortable: true,
         },
         header: () => t('page.expenses.table.comment'),
-        accessorFn: row => row.comment,
-      },
-      {
+      }),
+      columnHelper.accessor('createdAt', {
         id: 'createdAt',
-        accessorKey: 'createdAt',
         meta: {
           title: t('table.createdAt'),
           filterable: true,
@@ -227,11 +223,10 @@ export function useColumns() {
           sortable: true,
         },
         header: ({ column }) => sortHeader(column, t('table.createdAt')),
-        cell: ({ row }) => formatDate(row.getValue('createdAt'), 'dd.MM.yyyy HH:mm', i18n.language),
-      },
-      {
+        cell: ({ row }) => formatDate(row.getValue('createdAt'), 'dd.MM.yyyy HH:mm', language),
+      }),
+      columnHelper.accessor('updatedAt', {
         id: 'updatedAt',
-        accessorKey: 'updatedAt',
         meta: {
           title: t('table.updatedAt'),
           filterable: true,
@@ -239,10 +234,10 @@ export function useColumns() {
           sortable: true,
         },
         header: ({ column }) => sortHeader(column, t('table.updatedAt')),
-        cell: ({ row }) => formatDate(row.getValue('updatedAt'), 'dd.MM.yyyy HH:mm', i18n.language),
-      },
+        cell: ({ row }) => formatDate(row.getValue('updatedAt'), 'dd.MM.yyyy HH:mm', language),
+      }),
       actionColumn(),
     ]
-  }, [i18n.language])
+  }, [language, isLoading, openModal, removeExpense, t])
   return columns
 }

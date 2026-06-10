@@ -1,9 +1,9 @@
-import type { removeAutomationsParams } from '@/api/types'
+import type { RemoveAutomationsRequest } from '@remnant/shared'
 
 import { useMutation } from '@tanstack/react-query'
 import { removeAutomation } from '@/api/requests'
 
-export function useAutomationRemove(settings?: MutationSettings<removeAutomationsParams, typeof removeAutomation>) {
+export function useAutomationRemove(settings?: MutationSettings<RemoveAutomationsRequest>) {
   return useMutation({
     mutationFn: removeAutomation,
     ...settings?.options,

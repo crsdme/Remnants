@@ -1,5 +1,5 @@
 import type {
-  OrderPaymentDTO,
+  OrderPaymentDTOPopulated,
 } from '@remnant/shared'
 import type { z } from 'zod'
 import type { CurrencyDB } from '@/types'
@@ -53,8 +53,19 @@ export function parseRemoveOrderPayments(x: unknown): RemoveOrderPaymentsPayload
 }
 
 export type GetOrderPaymentsRepoPayload = GetOrderPaymentsPayload
-export interface GetOrderPaymentsRepoResult { items: OrderPaymentDTO[], total: number, page: number, pageSize: number }
+export interface GetOrderPaymentsRepoResult { items: OrderPaymentDTOPopulated[], total: number, page: number, pageSize: number }
 
 export type CreateOrderPaymentsRepoPayload = CreateOrderPaymentsPayload
 
-export type EditOrderPaymentsRepoPayload = EditOrderPaymentsPayload
+export interface EditOrderPaymentsRepoPayload {
+  order?: string
+  cashregister?: string
+  cashregisterAccount?: string
+  amount?: number
+  currency?: string
+  paymentStatus?: string
+  paymentDate?: Date
+  comment?: string
+  removed?: boolean
+  removedBy?: string
+}

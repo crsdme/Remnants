@@ -1,17 +1,21 @@
 import type {
-  LanguageString,
-  OrderDTO,
-  OrderItemDTO,
-  OrderPaymentDTO,
+  getOrderDetailsSchema,
+  OrderDTOPopulated,
+  OrderItemDTOPopulated,
+  Replace,
 } from '@remnant/shared'
 import type { ClientSession } from 'mongoose'
 import type { z } from 'zod'
 import type { editOrderItemRepoSchema } from '@/schemas'
 import type {
   ClientDB,
+  CurrencyDB,
   DeliveryServiceDB,
+  OrderPaymentDB,
   OrderSourceDB,
   OrderStatusDB,
+  ProductDB,
+  WarehouseDB,
 } from '@/types'
 import {
   createOrderItemSchema,
@@ -36,7 +40,7 @@ export interface OrderDB {
   deliveryService: string
   orderSource: string
   orderStatus: string
-  orderPayments: OrderPaymentDTO[]
+  orderPayments: string[]
   totals: {
     currency: string
     total: number
@@ -60,31 +64,26 @@ export interface OrderItemDB {
   price: number
 }
 
-export interface OrderDBPopulated {
-  _id: string
-  seq: number
-  // warehouse: WarehouseDB
-  warehouse: {
-    id: string
-    names: LanguageString
+export type OrderDBPopulated = Replace<
+  OrderDB,
+  {
+    warehouse: WarehouseDB
+    deliveryService: DeliveryServiceDB
+    orderSource: OrderSourceDB
+    orderStatus: OrderStatusDB
+    orderPayments: OrderPaymentDB[]
+    client: ClientDB
   }
-  deliveryService: DeliveryServiceDB
-  orderSource: OrderSourceDB
-  orderStatus: OrderStatusDB
-  orderPayments: OrderPaymentDTO[]
-  totals: {
-    currency: string
-    total: number
-  }[]
-  client: ClientDB
-  comment: string
-  createdBy: string
-  confirmedBy: string
-  removedBy: string
-  removed: boolean
-  createdAt: Date
-  updatedAt: Date
-}
+>
+
+export type OrderItemDBPopulated = Replace<
+  OrderItemDB,
+  {
+    product: ProductDB
+    currency: CurrencyDB
+    purchaseCurrency: CurrencyDB
+  }
+>
 
 export type GetOrdersPayload = z.output<typeof getOrdersSchema>
 export function parseGetOrders(x: unknown): GetOrdersPayload {
@@ -95,6 +94,8 @@ export type GetOrderItemsPayload = z.output<typeof getOrderItemsSchema>
 export function parseGetOrderItems(x: unknown): GetOrderItemsPayload {
   return getOrderItemsSchema.parse(x)
 }
+
+export type GetOrderDetailsPayload = z.output<typeof getOrderDetailsSchema>
 
 export type CreateOrderPayload = z.output<typeof createOrderSchema>
 export function parseCreateOrder(x: unknown): CreateOrderPayload {
@@ -117,10 +118,10 @@ export function parseRemoveOrders(x: unknown): RemoveOrdersPayload {
 }
 
 export type GetOrdersRepoPayload = GetOrdersPayload & { hasProfitPermission: boolean }
-export interface GetOrdersRepoResult { items: OrderDTO[], total: number, page: number, pageSize: number }
+export interface GetOrdersRepoResult { items: OrderDTOPopulated[], total: number, page: number, pageSize: number }
 
 export type GetOrderItemsRepoPayload = GetOrderItemsPayload & { hasProfitPermission: boolean, session?: ClientSession }
-export interface GetOrderItemsRepoResult { items: OrderItemDTO[], total: number, page: number, pageSize: number }
+export interface GetOrderItemsRepoResult { items: OrderItemDTOPopulated[], total: number, page: number, pageSize: number }
 
 export type CreateOrderRepoPayload = z.output<typeof createOrderRepoSchema>
 export function parseCreateOrderRepo(x: unknown): CreateOrderRepoPayload {

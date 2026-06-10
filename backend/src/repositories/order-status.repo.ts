@@ -124,7 +124,7 @@ export async function list(payload: GetOrderStatusesRepoPayload): Promise<GetOrd
       priority: -1,
       createdAt: new Date(),
       updatedAt: new Date(),
-      ordersCount: items.reduce<number>((acc, orderStatus) => acc + (orderStatus.ordersCount ?? 0), 0),
+      ordersCount: items.reduce<number>((acc, item) => acc + (item.ordersCount ?? 0), 0),
     }
 
     items.unshift(virtualAllStatus)

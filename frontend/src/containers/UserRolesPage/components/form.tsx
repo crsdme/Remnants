@@ -1,4 +1,3 @@
-import { useTranslation } from 'react-i18next'
 import { useLanguageQuery } from '@/api/hooks'
 import {
   Button,
@@ -16,28 +15,23 @@ import {
   Input,
 } from '@/components/ui'
 import { USER_ROLE_PERMISSIONS } from '@/utils/constants'
+import { useLocale } from '@/utils/hooks'
 import { useUserRoleContext } from '../context'
 
 export function UserRoleForm() {
-  const { t } = useTranslation()
+  const { t } = useLocale()
   const { isLoading, form, closeModal, submitUserRoleForm } = useUserRoleContext()
 
-  const { data: { languages = [] } = {} } = useLanguageQuery(
+  const { languages } = useLanguageQuery(
     { pagination: { full: true } },
-    { options: {
-      select: response => ({
-        languages: response.data.languages,
-      }),
-    } },
+    { options: { placeholderData: prevData => prevData } },
   )
-
-  const onSubmit = (values) => {
-    submitUserRoleForm(values)
-  }
-
   return (
     <Form {...form}>
-      <form className="w-full space-y-1" onSubmit={form.handleSubmit(onSubmit)}>
+      <form
+        className="w-full space-y-1"
+        onSubmit={(e) => { void form.handleSubmit(submitUserRoleForm)(e) }}
+      >
         {languages.map(language => (
           <FormField
             control={form.control}

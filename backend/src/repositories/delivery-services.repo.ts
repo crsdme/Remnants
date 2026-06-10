@@ -47,6 +47,20 @@ export async function list(payload: GetDeliveryServicesRepoPayload): Promise<Get
       $sort: sorters,
     },
     {
+      $project: {
+        _id: 0,
+        id: '$_id',
+        seq: 1,
+        names: 1,
+        color: 1,
+        type: 1,
+        priority: 1,
+        active: 1,
+        createdAt: 1,
+        updatedAt: 1,
+      },
+    },
+    {
       $facet: {
         items: [
           { $skip: (current - 1) * pageSize },

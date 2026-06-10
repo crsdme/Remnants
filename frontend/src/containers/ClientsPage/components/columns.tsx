@@ -1,3 +1,6 @@
+import type { ClientDTO } from '@remnant/shared'
+import type { Column } from '@tanstack/react-table'
+import { createColumnHelper } from '@tanstack/react-table'
 import {
   ArrowDown,
   ArrowUp,
@@ -7,22 +10,25 @@ import {
   Trash,
 } from 'lucide-react'
 import { useMemo } from 'react'
-import { useTranslation } from 'react-i18next'
 
 import { TableActionDropdown } from '@/components'
 import { Badge, Button, Checkbox } from '@/components/ui'
 import { formatDate } from '@/utils/helpers'
+import { useLocale } from '@/utils/hooks'
 import { useClientContext } from '../context'
 
 const sortIcons = { asc: ArrowUp, desc: ArrowDown }
+const columnHelper = createColumnHelper<ClientDTO>()
+type ClientSocial = NonNullable<ClientDTO['socials']>[number]
 
 export function useColumns() {
-  const { t, i18n } = useTranslation()
+  const { t, language } = useLocale()
   const { isLoading, openModal, removeClient } = useClientContext()
 
   const columns = useMemo(() => {
-    function sortHeader(column, label) {
-      const Icon = sortIcons[column.getIsSorted() || undefined] || ChevronsUpDown
+    function sortHeader(column: Column<ClientDTO>, label: string) {
+      const sorted = column.getIsSorted()
+      const Icon = sorted ? sortIcons[sorted] : ChevronsUpDown
 
       return (
         <Button
@@ -38,7 +44,7 @@ export function useColumns() {
     }
 
     function selectColumn() {
-      return ({
+      return columnHelper.display({
         id: 'select',
         size: 35,
         meta: { title: t('component.columnMenu.columns.select') },
@@ -70,7 +76,7 @@ export function useColumns() {
     }
 
     function actionColumn() {
-      return ({
+      return columnHelper.display({
         id: 'action',
         size: 85,
         meta: {
@@ -83,7 +89,7 @@ export function useColumns() {
           const actions = [
             {
               permission: 'client.copy',
-              onClick: () => navigator.clipboard.writeText(item.id),
+              onClick: async () => navigator.clipboard.writeText(item.id),
               label: t('table.copy'),
               icon: <Copy className="h-4 w-4" />,
             },
@@ -110,7 +116,7 @@ export function useColumns() {
 
     return [
       selectColumn(),
-      {
+      columnHelper.accessor(row => `${row.name} ${row.middleName || ''} ${row.lastName || ''}`.trim(), {
         id: 'name',
         size: 150,
         meta: {
@@ -123,11 +129,9 @@ export function useColumns() {
           defaultVisible: true,
         },
         header: ({ column }) => sortHeader(column, t('page.clients.table.name')),
-        accessorFn: row => `${row.name} ${row.middleName || ''} ${row.lastName || ''}`.trim(),
-      },
-      {
+      }),
+      columnHelper.accessor('phones', {
         id: 'phones',
-        accessorKey: 'phones',
         meta: {
           title: t('page.clients.table.phones'),
           batchEdit: true,
@@ -137,18 +141,17 @@ export function useColumns() {
           sortable: true,
         },
         header: t('page.clients.table.phones'),
-        cell: ({ row }) => {
-          const phones = row.original.phones || []
+        cell: ({ getValue, row }) => {
+          const phones = getValue() ?? []
           return (
             <div className="flex flex-wrap gap-2">
-              {phones.map(phone => <Badge key={`${row.original.id}-${phone}-${Math.random()}`} variant="outline">{phone}</Badge>)}
+              {phones.map(phone => <Badge key={`${row.original.id}-phone-${phone}`} variant="outline">{phone}</Badge>)}
             </div>
           )
         },
-      },
-      {
+      }),
+      columnHelper.accessor('emails', {
         id: 'emails',
-        accessorKey: 'emails',
         meta: {
           title: t('page.clients.table.emails'),
           batchEdit: true,
@@ -158,18 +161,17 @@ export function useColumns() {
           sortable: true,
         },
         header: t('page.clients.table.emails'),
-        cell: ({ row }) => {
-          const emails = row.original.emails || []
+        cell: ({ getValue, row }) => {
+          const emails = getValue() ?? []
           return (
             <div className="flex flex-wrap gap-2">
-              {emails.map(email => <Badge key={`${row.original.id}-${email}-${Math.random()}`} variant="outline">{email}</Badge>)}
+              {emails.map(email => <Badge key={`${row.original.id}-email-${email}`} variant="outline">{email}</Badge>)}
             </div>
           )
         },
-      },
-      {
+      }),
+      columnHelper.accessor('socials', {
         id: 'socials',
-        accessorKey: 'socials',
         meta: {
           title: t('page.clients.table.socials'),
           batchEdit: true,
@@ -179,22 +181,21 @@ export function useColumns() {
           sortable: true,
         },
         header: t('page.clients.table.socials'),
-        cell: ({ row }) => {
-          const socials = row.original.socials || []
+        cell: ({ getValue, row }) => {
+          const socials = getValue() ?? []
           return (
             <div className="flex flex-wrap gap-2">
-              {socials.map(social => (
-                <Badge key={`${row.original.id}-${social.value}}`} variant="outline">
+              {socials.map((social: ClientSocial) => (
+                <Badge key={`${row.original.id}-social-${social.type}-${social.value}`} variant="outline">
                   {`${t(`socials.type.${social.type}`)}: ${social.value}`}
                 </Badge>
               ))}
             </div>
           )
         },
-      },
-      {
+      }),
+      columnHelper.accessor('country', {
         id: 'country',
-        accessorKey: 'country',
         meta: {
           title: t('page.clients.table.country'),
           batchEdit: true,
@@ -204,18 +205,17 @@ export function useColumns() {
           sortable: true,
         },
         header: t('page.clients.table.country'),
-        cell: ({ row }) => {
-          const country = row.original.country
+        cell: ({ getValue }) => {
+          const country = getValue()
           if (!country)
             return null
           return (
             <Badge variant="outline">{country}</Badge>
           )
         },
-      },
-      {
+      }),
+      columnHelper.accessor('createdAt', {
         id: 'createdAt',
-        accessorKey: 'createdAt',
         meta: {
           title: t('table.createdAt'),
           filterable: true,
@@ -223,11 +223,10 @@ export function useColumns() {
           sortable: true,
         },
         header: ({ column }) => sortHeader(column, t('table.createdAt')),
-        cell: ({ row }) => formatDate(row.getValue('createdAt'), 'dd.MM.yyyy HH:mm', i18n.language),
-      },
-      {
+        cell: ({ getValue }) => formatDate(getValue(), 'dd.MM.yyyy HH:mm', language),
+      }),
+      columnHelper.accessor('updatedAt', {
         id: 'updatedAt',
-        accessorKey: 'updatedAt',
         meta: {
           title: t('table.updatedAt'),
           filterable: true,
@@ -235,10 +234,10 @@ export function useColumns() {
           sortable: true,
         },
         header: ({ column }) => sortHeader(column, t('table.updatedAt')),
-        cell: ({ row }) => formatDate(row.getValue('updatedAt'), 'dd.MM.yyyy HH:mm', i18n.language),
-      },
+        cell: ({ getValue }) => formatDate(getValue(), 'dd.MM.yyyy HH:mm', language),
+      }),
       actionColumn(),
     ]
-  }, [i18n.language])
+  }, [language, isLoading, openModal, removeClient, t])
   return columns
 }

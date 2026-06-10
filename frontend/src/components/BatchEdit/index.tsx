@@ -1,12 +1,13 @@
-import type { ColumnDef } from '@tanstack/react-table'
+import type { LanguageDTO } from '@remnant/shared'
 
+import type { ColumnDef } from '@tanstack/react-table'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Check, Filter, MousePointerClick, Pencil, Plus, X, XCircle } from 'lucide-react'
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
-import { z } from 'zod'
 
+import { z } from 'zod'
 import {
   Button,
   Form,
@@ -38,8 +39,8 @@ interface BatchEditProps {
   isLoading?: boolean
   buttonLabel?: string
   columns: ColumnDef<any>[]
-  languages: Language[]
-  onSubmit: (data) => void
+  languages: LanguageDTO[]
+  onSubmit: (data: FormItemType[]) => void
   onToggle: (status: 'filter' | 'select') => void
 }
 
@@ -124,9 +125,9 @@ export function BatchEdit({
     )
   }
 
-  const handleAccept = (values) => {
+  const handleAccept = (values: FormValues) => {
     const validItems = values.items.filter(
-      item =>
+      (item: any) =>
         item.id !== undefined && item.column !== '' && item.value !== '',
     )
 
@@ -201,7 +202,7 @@ export function BatchEdit({
       case 'asyncValue':
         return (
           <AsyncSelectNew
-            loadOptions={column.loadOptions}
+            loadOptions={column.loadOptions ?? (async () => Promise.resolve([]))}
             renderOption={e => e.label}
             getDisplayValue={e => e.label}
             getOptionValue={e => e.value}
@@ -255,7 +256,10 @@ export function BatchEdit({
       </PopoverTrigger>
       <PopoverContent className="w-xl" align="start">
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleAccept)} className="space-y-4">
+          <form
+            onSubmit={(e) => { void form.handleSubmit(handleAccept)(e) }}
+            className="space-y-4"
+          >
             <div className="space-y-2">
               <h4 className="font-medium leading-none">{t('component.batchEdit.title')}</h4>
               <p className="text-sm text-muted-foreground">
@@ -288,7 +292,7 @@ export function BatchEdit({
                             {editableColumns.map(column => (
                               <SelectItem
                                 key={column.id}
-                                value={column.id}
+                                value={column.id ?? ''}
                                 disabled={column.disabled}
                               >
                                 {column.label}

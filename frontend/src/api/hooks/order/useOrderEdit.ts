@@ -1,9 +1,9 @@
-import type { editOrderParams } from '@/api/types'
+import type { EditOrderRequest } from '@remnant/shared'
 
 import { useMutation } from '@tanstack/react-query'
 import { editOrder } from '@/api/requests'
 
-export function useOrderEdit(settings?: MutationSettings<editOrderParams, typeof editOrder>) {
+export function useOrderEdit(settings?: MutationSettings<EditOrderRequest>) {
   return useMutation({
     mutationFn: editOrder,
     ...settings?.options,

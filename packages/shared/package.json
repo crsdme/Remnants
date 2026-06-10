@@ -12,12 +12,11 @@
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
-  "files": [
-    "dist"
-  ],
+  "files": ["dist"],
   "scripts": {
     "build": "tsup src/index.ts --dts --format esm,cjs --clean",
-    "dev": "tsup src/index.ts --dts --format esm,cjs --watch",
+    "dev": "tsup src/index.ts --dts --format esm,cjs --watch src --ignore-watch dist",
+    "check": "eslint . && tsc --noEmit && npm run build",
     "lint": "eslint . --fix"
   },
   "peerDependencies": {

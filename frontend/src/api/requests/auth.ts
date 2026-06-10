@@ -1,10 +1,10 @@
-import type { authLoginResponse, postAuthLoginParams, refreshTokenResponse } from '@/api/types'
+import type { LoginRequest, LoginResponse, RefreshResponse } from '@remnant/shared'
 import { api } from '@/api/instance'
 
-export async function postAuthLogin(params: postAuthLoginParams) {
-  return api.post<authLoginResponse>('auth/login', { ...params })
+export async function postAuthLogin(params: LoginRequest) {
+  return api.post<LoginResponse>('auth/login', { ...params })
 }
 
-export const postRefreshToken = async () => api.post<refreshTokenResponse>('auth/refresh')
+export const postRefreshToken = async () => api.post<RefreshResponse>('auth/refresh')
 
-export const postAuthLogout = async () => api.post<refreshTokenResponse>('auth/logout')
+export const postAuthLogout = async () => api.post<RefreshResponse>('auth/logout')

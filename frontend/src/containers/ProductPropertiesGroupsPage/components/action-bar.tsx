@@ -1,8 +1,9 @@
 import { Plus } from 'lucide-react'
-import { useTranslation } from 'react-i18next'
 
 import { useLanguageQuery, useProductPropertyOptions } from '@/api/hooks'
-import { AsyncSelect, PermissionGate } from '@/components'
+import { PermissionGate } from '@/components'
+import { AsyncSelectNew } from '@/components/AsyncSelectNew'
+
 import {
   Button,
   Checkbox,
@@ -21,24 +22,17 @@ import {
   SheetTitle,
   SheetTrigger,
 } from '@/components/ui'
+import { useLocale } from '@/utils/hooks'
 import { useProductPropertiesGroupsContext } from '../context'
 
 export function ActionBar() {
-  const { t, i18n } = useTranslation()
+  const { t, language } = useLocale()
   const { isLoading, isEdit, form, submitGroupForm, openModal, closeModal, isModalOpen } = useProductPropertiesGroupsContext()
 
-  const { data: { languages = [] } = {} } = useLanguageQuery(
+  const { languages = [] } = useLanguageQuery(
     { pagination: { full: true } },
-    { options: {
-      select: response => ({
-        languages: response.data.languages,
-      }),
-    } },
+    { options: { placeholderData: prevData => prevData } },
   )
-
-  const onSubmit = (values) => {
-    submitGroupForm(values)
-  }
 
   const loadProductPropertiesOptions = useProductPropertyOptions()
 
@@ -67,7 +61,10 @@ export function ActionBar() {
               </SheetHeader>
               <div className="w-full pb-4 px-4">
                 <Form {...form}>
-                  <form className="w-full space-y-1" onSubmit={form.handleSubmit(onSubmit)}>
+                  <form
+                    className="w-full space-y-1"
+                    onSubmit={(e) => { void form.handleSubmit(submitGroupForm)(e) }}
+                  >
                     {languages.map(language => (
                       <FormField
                         control={form.control}
@@ -105,12 +102,11 @@ export function ActionBar() {
                         <FormItem>
                           <FormLabel>{t('page.product-properties-groups.form.productProperties')}</FormLabel>
                           <FormControl>
-                            <AsyncSelect
-                              fetcher={loadProductPropertiesOptions}
-                              renderOption={e => e.names[i18n.language]}
-                              getDisplayValue={e => e.names[i18n.language]}
+                            <AsyncSelectNew
+                              loadOptions={loadProductPropertiesOptions}
+                              renderOption={e => e.names[language]}
+                              getDisplayValue={e => e.names[language]}
                               getOptionValue={e => e.id}
-                              width="100%"
                               className="w-full"
                               name="productProperties"
                               value={field.value}

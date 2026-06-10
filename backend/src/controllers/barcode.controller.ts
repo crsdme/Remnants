@@ -1,5 +1,5 @@
 import type { NextFunction, Request, Response } from 'express'
-import type { CreateBarcodesPayload, EditBarcodesPayload, GetBarcodesPayload, PrintBarcodePayload, RemoveBarcodesPayload, ValidatedRequest } from '@/types'
+import type { CreateBarcodesPayload, EditBarcodesPayload, GetBarcodeByCodePayload, GetBarcodesPayload, PrintBarcodePayload, RemoveBarcodesPayload, ValidatedRequest } from '@/types'
 import * as BarcodeService from '@/services/barcode.service'
 
 export async function get(
@@ -9,6 +9,23 @@ export async function get(
 ) {
   try {
     const serviceResponse = await BarcodeService.get({
+      payload: req.validated.query,
+    })
+
+    res.status(200).json(serviceResponse)
+  }
+  catch (err) {
+    next(err)
+  }
+}
+
+export async function getByCode(
+  req: ValidatedRequest<GetBarcodeByCodePayload>,
+  res: Response,
+  next: NextFunction,
+) {
+  try {
+    const serviceResponse = await BarcodeService.getByCode({
       payload: req.validated.query,
     })
 

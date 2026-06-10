@@ -4,7 +4,7 @@ import { parse as parseCSVFile } from 'fast-csv'
 import xlsx from 'xlsx'
 import { HttpError } from './httpError'
 
-export async function parseFile(filePath: string): Promise<any[]> {
+export async function parseFile(filePath: string): Promise<Record<string, unknown>[]> {
   const ext = path.extname(filePath).toLowerCase()
 
   switch (ext) {
@@ -21,60 +21,65 @@ export async function parseFile(filePath: string): Promise<any[]> {
   }
 }
 
-async function parseCSV(filePath: string, delimiter = ','): Promise<any[]> {
-  const results: any[] = []
+async function parseCSV(filePath: string, delimiter = ','): Promise<Record<string, unknown>[]> {
+  const results: Record<string, unknown>[] = []
 
   return new Promise((resolve, reject) => {
     fs.createReadStream(filePath)
       .pipe(parseCSVFile({ headers: true, delimiter }))
       .on('error', reject)
-      .on('data', (row: any) => results.push(row))
+      .on('data', (row: Record<string, unknown>) => results.push(row))
       .on('end', () => resolve(results))
   })
 }
 
-function parseXLSX(filePath: string): any[] {
+function parseXLSX(filePath: string): Record<string, unknown>[] {
   const workbook = xlsx.readFile(filePath)
   const sheetName = workbook.SheetNames[0]
   const sheet = workbook.Sheets[sheetName]
   return xlsx.utils.sheet_to_json(sheet)
 }
 
-async function parseJSON(filePath: string): Promise<any[]> {
+async function parseJSON(filePath: string): Promise<Record<string, unknown>[]> {
   return new Promise((resolve, reject) => {
     readFile(filePath, 'utf-8', (err, data) => {
       if (err) {
         reject(err)
       }
       else {
-        const parsed = JSON.parse(data)
+        const parsed = JSON.parse(data) as Record<string, unknown>[]
         resolve(Array.isArray(parsed) ? parsed : [parsed])
       }
     })
   })
 }
 
-export function toBoolean(value?: string): boolean {
-  if (!value)
+export function toBoolean(record: Record<string, unknown>, key: string): boolean {
+  if (typeof record[key] !== 'string')
     return false
 
-  return value.toString().toLowerCase() === 'true'
+  return record[key].toString().toLowerCase() === 'true' || record[key].toString().toLowerCase() === 'yes'
 }
 
-export const toNumber = (value?: string): number => Number(value?.replace(',', '.') ?? 0) || 0
+export function toNumber(record: Record<string, unknown>, key: string): number {
+  if (typeof record[key] !== 'string')
+    return 0
 
-export function getId(value?: string): string {
-  if (!value)
+  return Number(record[key].toString().replace(',', '.') ?? 0) || 0
+}
+
+export function getId(record: Record<string, unknown>, key: string): string {
+  if (typeof record[key] !== 'string')
     return ''
 
-  const match = value.match(/\(([\w-]{36})\)$/)
+  const match = record[key].toString().match(/\(([\w-]{36})\)$/)
   return match ? match[1] : ''
 }
 
-export function extractLangMap(row: Record<string, string>, prefix: string): Record<string, string> {
-  const result: Record<string, string> = {}
+export function extractLangMap(record: Record<string, unknown>, prefix: string): Record<string, unknown> {
+  const result: Record<string, unknown> = {}
 
-  for (const [key, value] of Object.entries(row)) {
+  for (const [key, value] of Object.entries(record)) {
     if (key.startsWith(`${prefix}_`)) {
       const lang = key.replace(`${prefix}_`, '')
       result[lang] = value
@@ -101,25 +106,18 @@ export function parseFormData(body: Record<string, unknown>): Record<string, unk
   return obj
 }
 
-export function parseId(value?: string): string {
-  if (!value)
+export function parseId(record: Record<string, unknown>, key: string): string {
+  if (typeof record[key] !== 'string')
     return ''
 
-  const match = value.match(/\(\s*([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})\s*\)/i)
+  const match = record[key].toString().match(/\(\s*([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})\s*\)/i)
   return match ? match[1] : ''
 }
 
-export function parseCategories(row: Record<string, string>): string[] {
-  return Object.entries(row)
-    .filter(([key]) => key.toLowerCase().startsWith('categories_'))
-    .map(([, val]) => getId(val))
-    .filter(Boolean)
-}
-
-export function parseBarcodes(row: Record<string, string>): string[] {
-  return Object.entries(row)
-    .filter(([key]) => key.toLowerCase().startsWith('barcodes_'))
-    .map(([, val]) => val)
+export function parseMultiSelect(record: Record<string, unknown>, key: string, mode: 'values' | 'id' = 'values'): string[] {
+  return Object.entries(record)
+    .filter(([key]) => key.toLowerCase().startsWith(`${key}_`))
+    .map(([, val]) => mode === 'values' ? val as string : getId(record, key))
     .filter(Boolean)
 }
 
@@ -128,12 +126,12 @@ const PROPERTY_KEY_RE = new RegExp(`\\((${UUID_RE.source})(?:_(\\d+))?\\)\\s*$`,
 const UUID_IN_VALUE_RE = new RegExp(`\\((${UUID_RE.source})\\)`, 'gi')
 
 export function parseProductProperties(
-  row: Record<string, string>,
+  row: Record<string, unknown>,
 ): Array<{ _id: string, value: unknown }> {
   const items: Array<{ id: string, idx: number, value: unknown }> = []
 
   for (const [rawKey, rawVal] of Object.entries(row)) {
-    if (!rawVal)
+    if (typeof rawVal !== 'string')
       continue
     const m = PROPERTY_KEY_RE.exec(rawKey.trim())
     if (!m)
@@ -162,16 +160,9 @@ export function parseProductProperties(
   return result
 }
 
-export function parseGenerateBarcode(row: Record<string, string>): boolean {
-  if (row.generateBarcode?.toLowerCase() === 'yes')
-    return true
-  if (row.generateBarcode?.toLowerCase() === 'no')
-    return false
-  return false
-}
-
 function mergeValues(values: unknown[]): unknown {
   const flat = values
+    // eslint-disable-next-line ts/no-unsafe-return
     .flatMap(v => (Array.isArray(v) ? v : [v]))
     .filter(v => v !== '' && v != null)
 

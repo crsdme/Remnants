@@ -20,21 +20,23 @@ import {
   TooltipTrigger,
 } from '@/components/ui'
 import { formatDate } from '@/utils/helpers'
+import { useLocale } from '@/utils/hooks'
 import { useProductContext } from '../context'
 
 export function LogsSheet() {
-  const { t } = useTranslation()
-  const { isLogsModalOpen, closeLogsModal, selectedProductLogs, selectedWarehouse } = useProductContext()
+  const { t } = useLocale()
+  const { isLogsModalOpen, closeLogsModal, selectedProductLogs, listQueryState } = useProductContext()
+
   const title = selectedProductLogs?.type === 'audit' ? t('page.products.audit.logs.title') : t('page.products.quantity.logs.title')
   const description = selectedProductLogs?.type === 'audit' ? t('page.products.audit.logs.description') : t('page.products.quantity.logs.description')
 
   const content = () => {
     switch (selectedProductLogs?.type) {
       case 'audit':
-        return <AuditLogsBlock selectedProductLogs={selectedProductLogs} />
+        return <AuditLogsBlock selectedProductLogs={selectedProductLogs as { type: 'audit', id: string }} />
       case 'quantity':
-        return <QuantityLogsBlock selectedProductLogs={selectedProductLogs} selectedWarehouse={selectedWarehouse} />
-      default:
+        return <QuantityLogsBlock selectedProductLogs={selectedProductLogs as { type: 'quantity', id: string }} selectedWarehouse={listQueryState.filters.selectedWarehouse} />
+      case undefined:
         return (
           <div className="flex flex-col gap-2 h-[100%] overflow-auto">
             {Array.from({ length: 10 }).map((_, index) => <Skeleton className="h-10 w-full" key={index} />)}
@@ -60,18 +62,24 @@ export function LogsSheet() {
   )
 }
 
-function AuditLogsBlock({ selectedProductLogs }) {
+function AuditLogsBlock({ selectedProductLogs }: { selectedProductLogs: { type: 'audit', id: string } }) {
   const { t } = useTranslation()
 
-  const { data: { auditLogs = [] } = {}, isLoading, isFetching } = useAuditLogQuery(
+  // const { data: { auditLogs = [] } = {}, isLoading, isFetching } = useAuditLogQuery(
+  //   { pagination: { full: true }, filters: { resourceType: ['product'], resourceId: [selectedProductLogs.id] } },
+  //   {
+  //     options: {
+  //       select: response => ({
+  //         auditLogs: response.data.auditLogs,
+  //         auditLogsCount: response.data.auditLogsCount,
+  //       }),
+  //       placeholderData: prevData => prevData,
+  //     },
+  //   },
+  // )
+
+  const { auditLogs, isLoading, isFetching } = useAuditLogQuery(
     { pagination: { full: true }, filters: { resourceType: ['product'], resourceId: [selectedProductLogs.id] } },
-    { options: {
-      select: response => ({
-        auditLogs: response.data.auditLogs,
-        auditLogsCount: response.data.auditLogsCount,
-      }),
-      placeholderData: prevData => prevData,
-    } },
   )
 
   if (isLoading || isFetching) {
@@ -92,7 +100,7 @@ function AuditLogsBlock({ selectedProductLogs }) {
           <CardHeader>
             <CardTitle className="text-base flex items-center gap-2">
               <Badge variant="outline">{t(`page.audit-logs.table.action.${auditLog.action}`)}</Badge>
-              <span className="text-sm text-muted-foreground">{auditLog?.user?.name}</span>
+              <span className="text-sm text-muted-foreground">{auditLog?.createdBy?.name}</span>
               <span className="text-xs text-muted-foreground ml-auto">{formatDate(auditLog.createdAt, 'dd.MM.yyyy HH:mm')}</span>
             </CardTitle>
           </CardHeader>
@@ -107,17 +115,11 @@ function AuditLogsBlock({ selectedProductLogs }) {
   )
 }
 
-function QuantityLogsBlock({ selectedProductLogs, selectedWarehouse }) {
-  const { t, i18n } = useTranslation()
+function QuantityLogsBlock({ selectedProductLogs, selectedWarehouse }: { selectedProductLogs: { type: 'quantity', id: string }, selectedWarehouse: string }) {
+  const { t, language } = useLocale()
 
-  const { data: { warehouseTransactionLogs = [] } = {}, isLoading, isFetching } = useWarehouseTransactionLogQuery(
-    { pagination: { current: 1, pageSize: 100 }, filters: { productId: selectedProductLogs.id, warehouseId: selectedWarehouse } },
-    { options: {
-      select: response => ({
-        warehouseTransactionLogs: response.data.warehouseTransactionLogs,
-      }),
-      placeholderData: prevData => prevData,
-    } },
+  const { warehouseTransactionLogs, isLoading, isFetching } = useWarehouseTransactionLogQuery(
+    { pagination: { full: true }, filters: { productId: selectedProductLogs.id, warehouseId: selectedWarehouse } },
   )
 
   if (isLoading || isFetching) {
@@ -149,9 +151,8 @@ function QuantityLogsBlock({ selectedProductLogs, selectedWarehouse }) {
           <div className="group relative rounded-lg border border-border bg-card transition-all hover:border-accent hover:bg-accent/5" key={wtLog.id}>
             <div className="flex items-center gap-4 p-4">
               <div
-                className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-md font-mono text-sm font-semibold transition-colors ${
-                  isPositive ? 'bg-green-500/15 text-green-500' : 'bg-destructive/15 text-destructive'
-                }`}
+                className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-md font-mono text-sm font-semibold transition-colors 
+                  ${isPositive ? 'bg-green-500/15 text-green-500' : 'bg-destructive/15 text-destructive'}`}
               >
                 <div className="flex items-center gap-0.5">
                   {isPositive ? '+' : '-'}
@@ -170,16 +171,16 @@ function QuantityLogsBlock({ selectedProductLogs, selectedWarehouse }) {
                         {wtLog?.user?.name}
                       </Badge>
                       <Badge variant="outline" className="text-xs">
-                        {wtLog?.warehouse?.names[i18n.language]}
+                        {wtLog?.warehouse?.names[language]}
                       </Badge>
                     </div>
                   </div>
                   <div className="flex items-center gap-2 text-xs text-muted-foreground">
                     <span className="font-mono">{formatDate(wtLog.createdAt, 'dd.MM.yyyy HH:mm')}</span>
                   </div>
-                  { ['order'].includes(wtLog.refType) && (
+                  {['order'].includes(wtLog.refType) && (
                     <Button size="sm" variant="ghost" asChild>
-                      <Link to={onViewClick()}>
+                      <Link to={onViewClick() || ''}>
                         {t('page.products.quantity.logs.view')}
                       </Link>
                     </Button>
@@ -205,9 +206,9 @@ function formatValue(value: unknown): string {
   return json.length > 120 ? `${json.slice(0, 120)}...` : json
 }
 
-function ChangeRow({ change }) {
-  const beforeStr = formatValue(change.before)
-  const afterStr = formatValue(change.after)
+function ChangeRow({ change }: { change: { path: string, before?: unknown, after?: unknown } }) {
+  const beforeStr = formatValue(change.before || '')
+  const afterStr = formatValue(change.after || '')
   const fullBefore = JSON.stringify(change.before, null, 2)
   const fullAfter = JSON.stringify(change.after, null, 2)
 

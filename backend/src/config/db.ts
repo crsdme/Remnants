@@ -37,3 +37,11 @@ export async function dropDB() {
     logger.warn('[MongoDB] Cannot drop non-test DB')
   }
 }
+
+export async function clearDB() {
+  const collections = mongoose.connection.collections
+
+  await Promise.all(
+    Object.values(collections).map(async collection => collection.deleteMany({})),
+  )
+}

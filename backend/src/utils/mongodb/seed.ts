@@ -20,6 +20,14 @@ import * as UnitService from '../../services/unit.service'
 import * as UserRoleService from '../../services/user-role.service'
 import * as UserService from '../../services/user.service'
 import * as WarehouseService from '../../services/warehouse.service'
+import {
+  parseCreateProducts,
+  parseGetCategories,
+  parseGetCurrency,
+  parseGetProductPropertyGroups,
+  parseGetProductPropertyOptions,
+  parseGetUnits,
+} from '../../types/'
 
 // import { backupDB } from './backup'
 import { clearDB } from './clear'
@@ -61,228 +69,263 @@ async function seedData() {
   }
 }
 
-async function createSites(warehouses: any) {
+async function createSites(warehouses: { warehouse1: { id: string }, warehouse2: { id: string } }) {
   await SiteService.create({
-    names: {
-      en: 'Example',
-      ru: 'Example',
+    payload: {
+      names: {
+        en: 'Example',
+        ru: 'Example',
+      },
+      url: 'http://example.com/',
+      key: 'example',
+      priority: 1,
+      active: true,
+      warehouses: [warehouses.warehouse1.id, warehouses.warehouse2.id],
     },
-    url: 'http://example.com/',
-    key: 'example',
-    priority: 1,
-    active: true,
-    warehouses: [warehouses.warehouse1.id, warehouses.warehouse2.id],
   })
 }
 
 async function createLanguages() {
   await LanguageService.create({
-    name: 'English',
-    code: 'en',
-    priority: 1,
-    main: true,
-    active: true,
+    payload: {
+      name: 'English',
+      code: 'en',
+      priority: 1,
+      main: true,
+      active: true,
+    },
   })
 
   await LanguageService.create({
-    name: 'Russian',
-    code: 'ru',
-    priority: 2,
-    main: false,
-    active: true,
+    payload: {
+      name: 'Russian',
+      code: 'ru',
+      priority: 2,
+      main: false,
+      active: true,
+    },
   })
 }
 
 async function createCurrencies() {
   await CurrencyService.create({
-    names: {
-      en: 'USD',
-      ru: 'Доллар США',
+    payload: {
+      names: {
+        en: 'USD',
+        ru: 'Доллар США',
+      },
+      symbols: {
+        en: '$',
+        ru: '$',
+      },
+      priority: 1,
+      scale: 2,
+      active: true,
     },
-    symbols: {
-      en: '$',
-      ru: '$',
-    },
-    priority: 1,
-    active: true,
   })
 
   await CurrencyService.create({
-    names: {
-      en: 'Hryvnia',
-      ru: 'Гривна',
+    payload: {
+      names: {
+        en: 'Hryvnia',
+        ru: 'Гривна',
+      },
+      symbols: {
+        en: '₴',
+        ru: '₴',
+      },
+      priority: 2,
+      scale: 2,
+      active: true,
     },
-    symbols: {
-      en: '₴',
-      ru: '₴',
-    },
-    priority: 2,
-    active: true,
   })
 
   await CurrencyService.create({
-    names: {
-      en: 'Euro',
-      ru: 'Евро',
+    payload: {
+      names: {
+        en: 'Euro',
+        ru: 'Евро',
+      },
+      symbols: {
+        en: '€',
+        ru: '€',
+      },
+      priority: 3,
+      scale: 2,
+      active: true,
     },
-    symbols: {
-      en: '€',
-      ru: '€',
-    },
-    priority: 3,
-    active: true,
   })
 }
 
 async function createUnits() {
   await UnitService.create({
-    names: {
-      en: 'Piece',
-      ru: 'Штука',
+    payload: {
+      names: {
+        en: 'Piece',
+        ru: 'Штука',
+      },
+      symbols: {
+        en: 'pcs',
+        ru: 'шт',
+      },
+      priority: 1,
+      active: true,
     },
-    symbols: {
-      en: 'pcs',
-      ru: 'шт',
-    },
-    priority: 1,
-    active: true,
   })
 
   await UnitService.create({
-    names: {
-      en: 'Kilogram',
-      ru: 'Килограмм',
+    payload: {
+      names: {
+        en: 'Kilogram',
+        ru: 'Килограмм',
+      },
+      symbols: {
+        en: 'kg',
+        ru: 'кг',
+      },
+      priority: 1,
+      active: true,
     },
-    symbols: {
-      en: 'kg',
-      ru: 'кг',
-    },
-    priority: 1,
-    active: true,
   })
 }
 
 async function createCategories() {
   await CategoryService.create({
-    names: {
-      en: 'Electronics',
-      ru: 'Электроника',
+    payload: {
+      names: {
+        en: 'Electronics',
+        ru: 'Электроника',
+      },
+      priority: 1,
+      active: true,
     },
-    priority: 1,
-    active: true,
   })
 
   await CategoryService.create({
-    names: {
-      en: 'Clothing',
-      ru: 'Одежда',
+    payload: {
+      names: {
+        en: 'Clothing',
+        ru: 'Одежда',
+      },
+      priority: 2,
+      active: true,
     },
-    priority: 2,
-    active: true,
   })
 }
 
 async function createProductProperties() {
-  const { productProperty: sku } = await ProductPropertyService.create({
-    names: {
-      en: 'SKU',
-      ru: 'Артикул',
+  const { data: sku } = await ProductPropertyService.create({
+    payload: {
+      names: {
+        en: 'SKU',
+        ru: 'Артикул',
+      },
+      symbols: {
+        en: 'SKU',
+        ru: 'Артикул',
+      },
+      type: 'text',
+      showInTable: true,
+      showInStatistics: true,
+      isRequired: true,
+      priority: 1,
+      active: true,
     },
-    symbols: {
-      en: 'SKU',
-      ru: 'Артикул',
-    },
-    type: 'text',
-    showInTable: true,
-    showInStatistics: true,
-    isRequired: true,
-    priority: 1,
-    active: true,
   })
 
-  const { productProperty: boxes } = await ProductPropertyService.create({
-    names: {
-      en: 'Boxes',
-      ru: 'Коробки',
+  const { data: boxes } = await ProductPropertyService.create({
+    payload: {
+      names: {
+        en: 'Boxes',
+        ru: 'Коробки',
+      },
+      symbols: {
+        en: 'Boxes',
+        ru: 'Коробки',
+      },
+      type: 'number',
+      showInTable: true,
+      showInStatistics: true,
+      isRequired: true,
+      priority: 1,
+      active: true,
     },
-    symbols: {
-      en: 'Boxes',
-      ru: 'Коробки',
-    },
-    type: 'number',
-    showInTable: true,
-    showInStatistics: true,
-    isRequired: true,
-    priority: 1,
-    active: true,
   })
 
-  const { productProperty: isNew } = await ProductPropertyService.create({
-    names: {
-      en: 'New',
-      ru: 'Новый',
+  const { data: isNew } = await ProductPropertyService.create({
+    payload: {
+      names: {
+        en: 'New',
+        ru: 'Новый',
+      },
+      symbols: {
+        en: 'New',
+        ru: 'Новый',
+      },
+      type: 'boolean',
+      showInTable: true,
+      isRequired: true,
+      showInStatistics: true,
+      priority: 1,
+      active: true,
     },
-    symbols: {
-      en: 'New',
-      ru: 'Новый',
-    },
-    type: 'boolean',
-    showInTable: true,
-    isRequired: true,
-    showInStatistics: true,
-    priority: 1,
-    active: true,
   })
 
-  const { productProperty: color } = await ProductPropertyService.create({
-    names: {
-      en: 'Color',
-      ru: 'Цвет',
+  const { data: color } = await ProductPropertyService.create({
+    payload: {
+      names: {
+        en: 'Color',
+        ru: 'Цвет',
+      },
+      symbols: {
+        en: 'Color',
+        ru: 'Цвет',
+      },
+      type: 'color',
+      showInTable: true,
+      showInStatistics: true,
+      isRequired: true,
+      priority: 1,
+      active: true,
     },
-    symbols: {
-      en: 'Color',
-      ru: 'Цвет',
-    },
-    type: 'color',
-    showInTable: true,
-    showInStatistics: true,
-    isRequired: true,
-    priority: 1,
-    active: true,
   })
 
-  const { productProperty: model } = await ProductPropertyService.create({
-    names: {
-      en: 'Model',
-      ru: 'Модель',
+  const { data: model } = await ProductPropertyService.create({
+    payload: {
+      names: {
+        en: 'Model',
+        ru: 'Модель',
+      },
+      symbols: {
+        en: 'Model',
+        ru: 'Модель',
+      },
+      type: 'select',
+      showInTable: true,
+      showInStatistics: true,
+      isRequired: true,
+      priority: 1,
+      active: true,
     },
-    symbols: {
-      en: 'Model',
-      ru: 'Модель',
-    },
-    type: 'select',
-    showInTable: true,
-    showInStatistics: true,
-    isRequired: true,
-    priority: 1,
-    active: true,
   })
 
-  const { productProperty: parameters } = await ProductPropertyService.create({
-    names: {
-      en: 'Parameters',
-      ru: 'Параметры',
+  const { data: parameters } = await ProductPropertyService.create({
+    payload: {
+      names: {
+        en: 'Parameters',
+        ru: 'Параметры',
+      },
+      symbols: {
+        en: 'Parameters',
+        ru: 'Параметры',
+      },
+      type: 'multiSelect',
+      showInTable: true,
+      showInStatistics: true,
+      isRequired: true,
+      priority: 1,
+      active: true,
     },
-    symbols: {
-      en: 'Parameters',
-      ru: 'Параметры',
-    },
-    type: 'multiSelect',
-    showInTable: true,
-    showInStatistics: true,
-    isRequired: true,
-    priority: 1,
-    active: true,
   })
 
   const colorData = [
@@ -330,58 +373,74 @@ async function createProductProperties() {
 
   for (const colorItem of colorData) {
     await ProductPropertyOptionService.create({
-      names: colorItem.names,
-      productProperty: colorItem.id,
-      active: true,
-      priority: 1,
-      color: colorItem.color,
+      payload: {
+        names: colorItem.names,
+        productProperty: colorItem.id,
+        active: true,
+        priority: 1,
+        color: colorItem.color,
+      },
     })
   }
 
   for (let i = 0; i < 5; i++) {
     await ProductPropertyOptionService.create({
-      names: {
-        en: `SK${i + 1}`,
-        ru: `SK${i + 1}`,
+      payload: {
+        names: {
+          en: `SK${i + 1}`,
+          ru: `SK${i + 1}`,
+        },
+        productProperty: model.id,
+        active: true,
+        priority: 1,
       },
-      productProperty: model.id,
-      active: true,
-      priority: 1,
     })
   }
 
   for (let i = 0; i < 5; i++) {
     await ProductPropertyOptionService.create({
-      names: {
-        en: `Parameter ${i + 1}`,
-        ru: `Параметр ${i + 1}`,
+      payload: {
+        names: {
+          en: `Parameter ${i + 1}`,
+          ru: `Параметр ${i + 1}`,
+        },
+        productProperty: parameters.id,
+        active: true,
+        priority: i + 1,
       },
-      productProperty: parameters.id,
-      active: true,
-      priority: i + 1,
     })
   }
 
   await ProductPropertyGroupService.create({
-    names: {
-      en: 'Product Properties',
-      ru: 'Свойства продукта',
+    payload: {
+      names: {
+        en: 'Product Properties',
+        ru: 'Свойства продукта',
+      },
+      priority: 1,
+      productProperties: [sku.id, boxes.id, isNew.id, color.id, model.id, parameters.id],
+      active: true,
     },
-    productProperties: [sku.id, boxes.id, isNew.id, color.id, model.id, parameters.id],
-    active: true,
   })
 
   return { sku, boxes, isNew, color, model, parameters }
 }
 
-async function createProducts(productProperties: any) {
-  const { categories } = await CategoryService.get({})
-  const { currencies } = await CurrencyService.get({})
-  const { units } = await UnitService.get({})
-  const { productPropertyGroups } = await ProductPropertyGroupService.get({})
-  const { productPropertiesOptions: modelOptions } = await ProductPropertyOptionService.get({ filters: { productProperty: productProperties.model.id } })
-  const { productPropertiesOptions: colorOptions } = await ProductPropertyOptionService.get({ filters: { productProperty: productProperties.color.id } })
-  const { productPropertiesOptions: parametersOptions } = await ProductPropertyOptionService.get({ filters: { productProperty: productProperties.parameters.id } })
+async function createProducts(productProperties: {
+  model: { id: string }
+  color: { id: string }
+  parameters: { id: string }
+  isNew: { id: string }
+  sku: { id: string }
+  boxes: { id: string }
+}) {
+  const { data: { items: categories } } = await CategoryService.get({ payload: parseGetCategories({}) })
+  const { data: { items: currencies } } = await CurrencyService.get({ payload: parseGetCurrency({}) })
+  const { data: { items: units } } = await UnitService.get({ payload: parseGetUnits({}) })
+  const { data: { items: productPropertyGroups } } = await ProductPropertyGroupService.get({ payload: parseGetProductPropertyGroups({}) })
+  const { data: { items: modelOptions } } = await ProductPropertyOptionService.get({ payload: parseGetProductPropertyOptions({ filters: { productProperty: productProperties.model.id } }) })
+  const { data: { items: colorOptions } } = await ProductPropertyOptionService.get({ payload: parseGetProductPropertyOptions({ filters: { productProperty: productProperties.color.id } }) })
+  const { data: { items: parametersOptions } } = await ProductPropertyOptionService.get({ payload: parseGetProductPropertyOptions({ filters: { productProperty: productProperties.parameters.id } }) })
 
   const products = [
     {
@@ -1166,41 +1225,54 @@ async function createProducts(productProperties: any) {
     },
   ]
 
-  for (const product of [...products, ...products, ...products]) {
+  const bigProducts = []
+
+  for (let i = 0; i < 100; i++) {
+    bigProducts.push(...products)
+  }
+
+  for (const product of bigProducts) {
     await ProductService.create({
-      names: product.names,
-      price: product.price,
-      currency: product.currency,
-      purchasePrice: product.purchasePrice,
-      purchaseCurrency: product.purchaseCurrency,
-      categories: product.categories,
-      unit: product.unit,
-      productPropertiesGroup: product.productPropertiesGroup,
-      productProperties: product.productProperties,
-      images: [],
+      payload: parseCreateProducts({
+        names: product.names,
+        price: product.price,
+        currency: product.currency,
+        purchasePrice: product.purchasePrice,
+        purchaseCurrency: product.purchaseCurrency,
+        categories: product.categories,
+        unit: product.unit,
+        productPropertiesGroup: product.productPropertiesGroup,
+        productProperties: product.productProperties,
+        images: [],
+        uploadedImages: [],
+        generateBarcode: true,
+      }),
       uploadedImages: [],
-      generateBarcode: true,
     })
   }
 }
 
 async function createDeliveryServices() {
-  const { deliveryService: novaposhta } = await DeliveryService.create({
-    names: {
-      en: 'Nova Poshta',
-      ru: 'Нова Пошта',
+  const { data: novaposhta } = await DeliveryService.create({
+    payload: {
+      names: {
+        en: 'Nova Poshta',
+        ru: 'Нова Пошта',
+      },
+      priority: 2,
+      type: 'novaposhta',
     },
-    priority: 2,
-    type: 'novaposhta',
   })
 
-  const { deliveryService: selfpickup } = await DeliveryService.create({
-    names: {
-      en: 'Self Pickup',
-      ru: 'Самовывоз',
+  const { data: selfpickup } = await DeliveryService.create({
+    payload: {
+      names: {
+        en: 'Self Pickup',
+        ru: 'Самовывоз',
+      },
+      priority: 1,
+      type: 'selfpickup',
     },
-    priority: 1,
-    type: 'selfpickup',
   })
 
   return { novaposhta, selfpickup }
@@ -1208,131 +1280,134 @@ async function createDeliveryServices() {
 
 async function createOrderSources() {
   await OrderSourceService.create({
-    names: {
-      en: 'Website',
-      ru: 'Веб-сайт',
+    payload: {
+      names: {
+        en: 'Website',
+        ru: 'Веб-сайт',
+      },
+      priority: 1,
     },
-    priority: 1,
   })
 
   await OrderSourceService.create({
-    names: {
-      en: 'Telegram',
-      ru: 'Телеграм',
+    payload: {
+      names: {
+        en: 'Telegram',
+        ru: 'Телеграм',
+      },
+      priority: 2,
     },
-    priority: 2,
   })
 }
 
 async function createOrderStatuses() {
-  const { orderStatus: isNew } = await OrderStatusService.create({
-    names: {
-      en: 'New',
-      ru: 'Новый',
+  const { data: inProgress } = await OrderStatusService.create({
+    payload: {
+      names: {
+        en: 'In Progress',
+        ru: 'В работе',
+      },
+      priority: 2,
+      isSelectable: true,
+      isLocked: false,
     },
-    priority: 1,
-    isSelectable: true,
-    isLocked: false,
   })
 
-  const { orderStatus: inProgress } = await OrderStatusService.create({
-    names: {
-      en: 'In Progress',
-      ru: 'В работе',
+  const { data: completed } = await OrderStatusService.create({
+    payload: {
+      names: {
+        en: 'Completed',
+        ru: 'Завершен',
+      },
+      isLocked: true,
+      priority: 4,
+      isSelectable: false,
     },
-    priority: 2,
-    isSelectable: true,
-    isLocked: false,
   })
 
-  const { orderStatus: sent } = await OrderStatusService.create({
-    names: {
-      en: 'Sent',
-      ru: 'Отправлен',
+  const { data: removed } = await OrderStatusService.create({
+    payload: {
+      names: {
+        en: 'Removed',
+        ru: 'Удалён',
+      },
+      isLocked: true,
+      priority: 5,
+      isSelectable: false,
     },
-    priority: 3,
-    isSelectable: true,
-    isLocked: false,
   })
 
-  const { orderStatus: completed } = await OrderStatusService.create({
-    names: {
-      en: 'Completed',
-      ru: 'Завершен',
-    },
-    isLocked: true,
-    priority: 4,
-    isSelectable: false,
-  })
-
-  const { orderStatus: removed } = await OrderStatusService.create({
-    names: {
-      en: 'Removed',
-      ru: 'Удалён',
-    },
-    isLocked: true,
-    priority: 5,
-    isSelectable: false,
-  })
-
-  return { isNew, inProgress, sent, completed, removed }
+  return { inProgress, completed, removed }
 }
 
 async function createCashregisters() {
-  const { currencies } = await CurrencyService.get({})
+  const { data: { items: currencies } } = await CurrencyService.get({ payload: parseGetCurrency({}) })
 
   const cashAccount = await CashregisterAccountService.create({
-    names: {
-      en: 'Cash',
-      ru: 'Наличные',
+    payload: {
+      names: {
+        en: 'Cash',
+        ru: 'Наличные',
+      },
+      active: true,
+      priority: 1,
+      currencies: [currencies[0].id],
     },
-    priority: 1,
-    currencies: [currencies[0].id],
   })
 
   const cardAccount = await CashregisterAccountService.create({
-    names: {
-      en: 'Card',
-      ru: 'Карта',
+    payload: {
+      names: {
+        en: 'Card',
+        ru: 'Карта',
+      },
+      active: true,
+      priority: 1,
+      currencies: [currencies[0].id, currencies[1].id],
     },
-    priority: 1,
-    currencies: [currencies[0].id, currencies[1].id],
   })
 
   await CashregisterService.create({
-    names: {
-      en: 'Cash Register',
-      ru: 'Касса',
+    payload: {
+      names: {
+        en: 'Cash Register',
+        ru: 'Касса',
+      },
+      active: true,
+      priority: 1,
+      accounts: [cashAccount.data.id, cardAccount.data.id],
     },
-    priority: 1,
-    accounts: [cashAccount.cashregisterAccount.id, cardAccount.cashregisterAccount.id],
   })
 }
 
 async function createWarehouses() {
-  const { warehouse: warehouse1 } = await WarehouseService.create({
-    names: {
-      en: 'Warehouse 1',
-      ru: 'Склад 1',
+  const { data: warehouse1 } = await WarehouseService.create({
+    payload: {
+      names: {
+        en: 'Warehouse 1',
+        ru: 'Склад 1',
+      },
+      priority: 1,
+      active: true,
     },
-    priority: 1,
-    active: true,
   })
 
-  const { warehouse: warehouse2 } = await WarehouseService.create({
-    names: {
-      en: 'Warehouse 2',
-      ru: 'Склад 2',
+  const { data: warehouse2 } = await WarehouseService.create({
+    payload: {
+      names: {
+        en: 'Warehouse 2',
+        ru: 'Склад 2',
+      },
+      priority: 2,
+      active: true,
     },
-    priority: 2,
-    active: true,
   })
 
   return { warehouse1, warehouse2 }
 }
 
 async function createUserRoles() {
-  const { userRole: admin } = await UserRoleService.create({
+  const { data: admin } = await UserRoleService.create({
     names: {
       en: 'Admin',
       ru: 'Администратор',
@@ -1341,7 +1416,7 @@ async function createUserRoles() {
     permissions: ['other.admin'],
   })
 
-  const { userRole: manager } = await UserRoleService.create({
+  const { data: manager } = await UserRoleService.create({
     names: {
       en: 'Manager',
       ru: 'Менеджер',
@@ -1413,71 +1488,77 @@ async function createUserRoles() {
   })
 }
 
-async function createAutomations({ removed, selfpickup, completed }: { removed: any, selfpickup: any, completed: any }) {
+async function createAutomations({ removed, selfpickup, completed }: { removed: { id: string }, selfpickup: { id: string }, completed: { id: string } }) {
   await AutomationService.create({
-    name: 'Add "Removed" status to order',
-    active: true,
-    trigger: {
-      type: 'order-removed',
-      params: [],
-    },
-    conditions: [
-      {
-        field: 'orderStatus',
-        operator: 'not-contains',
-        params: [removed.id],
-      },
-    ],
-    actions: [
-      {
-        field: 'order-status-update',
-        params: [removed.id],
-      },
-    ],
-  })
-
-  await AutomationService.create({
-    name: 'Auto Pay Order When Selfpickup',
-    active: true,
-    trigger: {
-      type: 'order-created',
-      params: [],
-    },
-    conditions: [
-      {
-        field: 'deliveryService',
-        operator: 'contains',
-        params: [selfpickup.id],
-      },
-    ],
-    actions: [
-      {
-        field: 'pay-order',
+    payload: {
+      name: 'Add "Removed" status to order',
+      active: true,
+      trigger: {
+        type: 'order-removed',
         params: [],
       },
-    ],
+      conditions: [
+        {
+          field: 'orderStatus',
+          operator: 'not-contains',
+          params: [removed.id],
+        },
+      ],
+      actions: [
+        {
+          field: 'order-status-update',
+          params: [removed.id],
+        },
+      ],
+    },
   })
 
   await AutomationService.create({
-    name: 'Auto Update Order Status When Selfpickup',
-    active: true,
-    trigger: {
-      type: 'order-created',
-      params: [],
+    payload: {
+      name: 'Auto Pay Order When Selfpickup',
+      active: true,
+      trigger: {
+        type: 'order-created',
+        params: [],
+      },
+      conditions: [
+        {
+          field: 'deliveryService',
+          operator: 'contains',
+          params: [selfpickup.id],
+        },
+      ],
+      actions: [
+        {
+          field: 'pay-order',
+          params: [],
+        },
+      ],
     },
-    conditions: [
-      {
-        field: 'deliveryService',
-        operator: 'contains',
-        params: [selfpickup.id],
+  })
+
+  await AutomationService.create({
+    payload: {
+      name: 'Auto Update Order Status When Selfpickup',
+      active: true,
+      trigger: {
+        type: 'order-created',
+        params: [],
       },
-    ],
-    actions: [
-      {
-        field: 'order-status-update',
-        params: [completed.id],
-      },
-    ],
+      conditions: [
+        {
+          field: 'deliveryService',
+          operator: 'contains',
+          params: [selfpickup.id],
+        },
+      ],
+      actions: [
+        {
+          field: 'order-status-update',
+          params: [completed.id],
+        },
+      ],
+    },
   })
 }
 
@@ -1786,72 +1867,86 @@ async function createClients() {
   ]
 
   for (const client of clients) {
-    await ClientService.create(client)
+    await ClientService.create({ payload: client })
   }
 }
 
 async function createExpenseCategories() {
   await ExpenseCategoryService.create({
-    names: {
-      en: 'Store #1',
-      ru: 'Склад #1',
+    payload: {
+      names: {
+        en: 'Store #1',
+        ru: 'Склад #1',
+      },
+      color: '#FF0000',
+      priority: 1,
     },
-    color: '#FF0000',
-    priority: 1,
   })
 
   await ExpenseCategoryService.create({
-    names: {
-      en: 'Store #2',
-      ru: 'Склад #2',
+    payload: {
+      names: {
+        en: 'Store #2',
+        ru: 'Склад #2',
+      },
+      color: '#00FF00',
+      priority: 2,
     },
-    color: '#00FF00',
-    priority: 2,
   })
 
   await ExpenseCategoryService.create({
-    names: {
-      en: 'Fee',
-      ru: 'Комиссия',
+    payload: {
+      names: {
+        en: 'Fee',
+        ru: 'Комиссия',
+      },
+      color: '#00FF00',
+      priority: 3,
     },
-    color: '#00FF00',
-    priority: 3,
   })
 
   await ExpenseCategoryService.create({
-    names: {
-      en: 'Salary',
-      ru: 'Зарплата',
+    payload: {
+      names: {
+        en: 'Salary',
+        ru: 'Зарплата',
+      },
+      color: '#00FF00',
+      priority: 4,
     },
-    color: '#00FF00',
-    priority: 4,
   })
 
   await ExpenseCategoryService.create({
-    names: {
-      en: 'Consumables',
-      ru: 'Расходники',
+    payload: {
+      names: {
+        en: 'Consumables',
+        ru: 'Расходники',
+      },
+      color: '#00FF00',
+      priority: 5,
     },
-    color: '#00FF00',
-    priority: 5,
   })
 
   await ExpenseCategoryService.create({
-    names: {
-      en: 'Utilities',
-      ru: 'Комунальные платежи',
+    payload: {
+      names: {
+        en: 'Utilities',
+        ru: 'Комунальные платежи',
+      },
+      color: '#00FF00',
+      priority: 6,
     },
-    color: '#00FF00',
-    priority: 6,
   })
 
   await ExpenseCategoryService.create({
-    names: {
-      en: 'Other',
-      ru: 'Другое',
+    payload: {
+      names: {
+        en: 'Other',
+        ru: 'Другое',
+      },
+      color: '#00FF00',
+      priority: 7,
     },
-    color: '#00FF00',
-    priority: 7,
   })
 }
 

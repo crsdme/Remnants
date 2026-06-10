@@ -42,6 +42,19 @@ export async function list(payload: GetLanguagesRepoPayload): Promise<GetLanguag
     { $match: query },
     { $sort: sorters },
     {
+      $project: {
+        id: '$_id',
+        seq: 1,
+        name: 1,
+        code: 1,
+        main: 1,
+        priority: 1,
+        active: 1,
+        createdAt: 1,
+        updatedAt: 1,
+      },
+    },
+    {
       $facet: {
         items: [
           { $skip: (current - 1) * pageSize },

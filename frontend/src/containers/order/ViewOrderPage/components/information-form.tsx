@@ -1,7 +1,6 @@
 import type { UseFormReturn } from 'react-hook-form'
 
 import { Trash2Icon } from 'lucide-react'
-import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import { useClientOptions, useDeliveryServiceOptions, useOrderSourceOptions, useOrderStatusOptions, useWarehouseOptions } from '@/api/hooks'
 import { AsyncSelectNew } from '@/components/AsyncSelectNew'
@@ -18,10 +17,11 @@ import {
   Textarea,
 } from '@/components/ui'
 import { formatDate } from '@/utils/helpers/formatDate'
+import { useLocale } from '@/utils/hooks'
 import { useViewOrderContext } from '../context'
 
-export function InformationForm({ form, onSubmit }: { form: UseFormReturn, onSubmit: (payments: any) => void }) {
-  const { t, i18n } = useTranslation()
+export function InformationForm({ form, onSubmit }: { form: UseFormReturn<any>, onSubmit: (payments: any) => void }) {
+  const { t, language } = useLocale()
   const { isLoading, payments, disabled } = useViewOrderContext()
   const navigate = useNavigate()
 
@@ -55,8 +55,8 @@ export function InformationForm({ form, onSubmit }: { form: UseFormReturn, onSub
                     <AsyncSelectNew
                       {...field}
                       loadOptions={loadWarehouseOptions}
-                      renderOption={e => e.names[i18n.language]}
-                      getDisplayValue={e => e.names[i18n.language]}
+                      renderOption={e => e.names[language]}
+                      getDisplayValue={e => e.names[language]}
                       getOptionValue={e => e.id}
                       disabled={isLoading || disabled}
                       selectFirstOption
@@ -82,8 +82,8 @@ export function InformationForm({ form, onSubmit }: { form: UseFormReturn, onSub
                     <AsyncSelectNew
                       {...field}
                       loadOptions={loadOrderSourceOptions}
-                      renderOption={e => e.names[i18n.language]}
-                      getDisplayValue={e => e.names[i18n.language]}
+                      renderOption={e => e.names[language]}
+                      getDisplayValue={e => e.names[language]}
                       getOptionValue={e => e.id}
                       disabled={isLoading || disabled}
                       selectFirstOption
@@ -109,8 +109,8 @@ export function InformationForm({ form, onSubmit }: { form: UseFormReturn, onSub
                     <AsyncSelectNew
                       {...field}
                       loadOptions={loadOrderStatusOptions}
-                      renderOption={e => e.names[i18n.language]}
-                      getDisplayValue={e => e.names[i18n.language]}
+                      renderOption={e => e.names[language]}
+                      getDisplayValue={e => e.names[language]}
                       getOptionValue={e => e.id}
                       disabled={isLoading || disabled}
                       selectFirstOption
@@ -136,8 +136,8 @@ export function InformationForm({ form, onSubmit }: { form: UseFormReturn, onSub
                     <AsyncSelectNew
                       {...field}
                       loadOptions={loadDeliveryServiceOptions}
-                      renderOption={e => e.names[i18n.language]}
-                      getDisplayValue={e => e.names[i18n.language]}
+                      renderOption={e => e.names[language]}
+                      getDisplayValue={e => e.names[language]}
                       getOptionValue={e => e.id}
                       disabled={isLoading || disabled}
                       selectFirstOption
@@ -159,8 +159,8 @@ export function InformationForm({ form, onSubmit }: { form: UseFormReturn, onSub
                     <AsyncSelectNew
                       {...field}
                       loadOptions={loadClientsOptions}
-                      renderOption={e => `${e.name} ${e.middleName} ${e.lastName} (${e.emails.join(', ')}) (${e.phones.join(', ')})`}
-                      getDisplayValue={e => `${e.name} ${e.middleName} ${e.lastName} (${e.emails.join(', ')}) (${e.phones.join(', ')})`}
+                      renderOption={e => `${e.name} ${e.middleName} ${e.lastName} (${e.emails?.join(', ')}) (${e.phones?.join(', ')})`}
+                      getDisplayValue={e => `${e.name} ${e.middleName} ${e.lastName} (${e.emails?.join(', ')}) (${e.phones?.join(', ')})`}
                       getOptionValue={e => e.id}
                       disabled={isLoading || disabled}
                       searchable
@@ -197,8 +197,8 @@ export function InformationForm({ form, onSubmit }: { form: UseFormReturn, onSub
               return (
                 <div key={payment.id} className="border border-gray-300 dark:border-gray-700 rounded-md p-2">
                   <div className="flex items-center flex-wrap gap-2">
-                    <Badge variant="outline">{`${payment.amount} ${payment.currency.symbols[i18n.language]}`}</Badge>
-                    <Badge variant="outline">{`${payment.cashregister.names[i18n.language]} | ${payment.cashregisterAccount.names[i18n.language]}`}</Badge>
+                    <Badge variant="outline">{`${payment.amount} ${payment.currency.symbols[language]}`}</Badge>
+                    <Badge variant="outline">{`${payment.cashregister.names[language]} | ${payment.cashregisterAccount.names[language]}`}</Badge>
                     <Badge variant="outline">{`${formatDate(payment.paymentDate, 'PPP')}`}</Badge>
                     <Badge variant="outline">{t(`payment-status.${payment.paymentStatus}`)}</Badge>
                     {payment.comment && <Badge variant="outline">{payment.comment}</Badge>}
@@ -207,7 +207,7 @@ export function InformationForm({ form, onSubmit }: { form: UseFormReturn, onSub
                     className="mt-2"
                     variant="destructive"
                     size="icon"
-                    onClick={() => {}}
+                    onClick={() => { }}
                     disabled={isLoading || disabled}
                   >
                     <Trash2Icon className="w-4 h-4" />
@@ -218,7 +218,7 @@ export function InformationForm({ form, onSubmit }: { form: UseFormReturn, onSub
           </div>
 
           <div className="flex justify-end gap-2">
-            <Button type="button" disabled={isLoading} loading={isLoading} onClick={() => navigate('/orders')}>
+            <Button type="button" disabled={isLoading} loading={isLoading} onClick={() => void navigate('/orders')}>
               {t('button.back')}
             </Button>
           </div>

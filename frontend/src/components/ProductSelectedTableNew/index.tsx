@@ -1,4 +1,4 @@
-import type { ColumnDef, ColumnSort } from '@tanstack/react-table'
+import type { ColumnDef, ColumnSort, Row } from '@tanstack/react-table'
 import { flexRender, getCoreRowModel, getExpandedRowModel, useReactTable } from '@tanstack/react-table'
 import { Package } from 'lucide-react'
 import { Fragment, useState } from 'react'
@@ -107,7 +107,7 @@ export function ProductSelectedTableNew<TData extends BaseProductRow>({
     ))
   }
 
-  function renderRow(row) {
+  function renderRow(row: Row<TData>) {
     return (
       <Fragment key={row.id}>
         <TableRow data-state={row.getIsSelected() && 'selected'}>

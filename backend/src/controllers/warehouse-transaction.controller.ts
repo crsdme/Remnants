@@ -1,9 +1,26 @@
-import type { NextFunction, Request, Response } from 'express'
+import type { NextFunction, Response } from 'express'
+import type {
+  CreateWarehouseTransactionPayload,
+  EditWarehouseTransactionPayload,
+  GetWarehouseTransactionsItemsPayload,
+  GetWarehouseTransactionsPayload,
+  ReceiveWarehouseTransactionPayload,
+  RemoveWarehouseTransactionsPayload,
+  ScanBarcodeToDraftPayload,
+  ValidatedAuthedRequest,
+  ValidatedRequest,
+} from '@/types/'
 import * as WarehouseTransactionService from '@/services/warehouse-transaction.service'
 
-export async function get(req: Request, res: Response, next: NextFunction) {
+export async function get(
+  req: ValidatedRequest<GetWarehouseTransactionsPayload, never>,
+  res: Response,
+  next: NextFunction,
+) {
   try {
-    const serviceResponse = await WarehouseTransactionService.get(req.body)
+    const serviceResponse = await WarehouseTransactionService.get({
+      payload: req.validated.query,
+    })
 
     res.status(200).json(serviceResponse)
   }
@@ -12,9 +29,15 @@ export async function get(req: Request, res: Response, next: NextFunction) {
   }
 }
 
-export async function getItems(req: Request, res: Response, next: NextFunction) {
+export async function getItems(
+  req: ValidatedRequest<GetWarehouseTransactionsItemsPayload, never>,
+  res: Response,
+  next: NextFunction,
+) {
   try {
-    const serviceResponse = await WarehouseTransactionService.getItems(req.body)
+    const serviceResponse = await WarehouseTransactionService.getItems({
+      payload: req.validated.query,
+    })
 
     res.status(200).json(serviceResponse)
   }
@@ -23,9 +46,15 @@ export async function getItems(req: Request, res: Response, next: NextFunction) 
   }
 }
 
-export async function scanBarcodeToDraft(req: Request, res: Response, next: NextFunction) {
+export async function scanBarcodeToDraft(
+  req: ValidatedRequest<ScanBarcodeToDraftPayload, never>,
+  res: Response,
+  next: NextFunction,
+) {
   try {
-    const serviceResponse = await WarehouseTransactionService.scanBarcodeToDraft(req.body)
+    const serviceResponse = await WarehouseTransactionService.scanBarcodeToDraft({
+      payload: req.validated.body,
+    })
 
     res.status(200).json(serviceResponse)
   }
@@ -34,9 +63,16 @@ export async function scanBarcodeToDraft(req: Request, res: Response, next: Next
   }
 }
 
-export async function create(req: Request, res: Response, next: NextFunction) {
+export async function create(
+  req: ValidatedAuthedRequest<CreateWarehouseTransactionPayload, never>,
+  res: Response,
+  next: NextFunction,
+) {
   try {
-    const serviceResponse = await WarehouseTransactionService.create(req.body, req.user)
+    const serviceResponse = await WarehouseTransactionService.create({
+      payload: req.validated.body,
+      user: req.user,
+    })
 
     res.status(201).json(serviceResponse)
   }
@@ -45,9 +81,15 @@ export async function create(req: Request, res: Response, next: NextFunction) {
   }
 }
 
-export async function edit(req: Request, res: Response, next: NextFunction) {
+export async function edit(
+  req: ValidatedRequest<EditWarehouseTransactionPayload, never>,
+  res: Response,
+  next: NextFunction,
+) {
   try {
-    const serviceResponse = await WarehouseTransactionService.edit(req.body, req.user)
+    const serviceResponse = await WarehouseTransactionService.edit({
+      payload: req.validated.body,
+    })
 
     res.status(200).json(serviceResponse)
   }
@@ -56,9 +98,16 @@ export async function edit(req: Request, res: Response, next: NextFunction) {
   }
 }
 
-export async function remove(req: Request, res: Response, next: NextFunction) {
+export async function remove(
+  req: ValidatedAuthedRequest<RemoveWarehouseTransactionsPayload, never>,
+  res: Response,
+  next: NextFunction,
+) {
   try {
-    const serviceResponse = await WarehouseTransactionService.remove(req.body, req.user)
+    const serviceResponse = await WarehouseTransactionService.remove({
+      payload: req.validated.body,
+      user: req.user,
+    })
 
     res.status(200).json(serviceResponse)
   }
@@ -67,9 +116,16 @@ export async function remove(req: Request, res: Response, next: NextFunction) {
   }
 }
 
-export async function receive(req: Request, res: Response, next: NextFunction) {
+export async function receive(
+  req: ValidatedAuthedRequest<ReceiveWarehouseTransactionPayload, never>,
+  res: Response,
+  next: NextFunction,
+) {
   try {
-    const serviceResponse = await WarehouseTransactionService.receive(req.body, req.user)
+    const serviceResponse = await WarehouseTransactionService.receive({
+      payload: req.validated.body,
+      user: req.user,
+    })
 
     res.status(201).json(serviceResponse)
   }

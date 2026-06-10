@@ -1,3 +1,4 @@
+import type { AuditLogPopulatedDTO } from '@remnant/shared'
 import { useTranslation } from 'react-i18next'
 import { PermissionGate } from '@/components'
 import {
@@ -29,7 +30,7 @@ function formatValue(value: unknown): string {
   return json.length > 120 ? `${json.slice(0, 120)}...` : json
 }
 
-function ChangeRow({ change }) {
+function ChangeRow({ change }: { change: { path: string, before?: unknown, after?: unknown } }) {
   const beforeStr = formatValue(change.before)
   const afterStr = formatValue(change.after)
   const fullBefore = JSON.stringify(change.before, null, 2)
@@ -68,15 +69,15 @@ function ChangeRow({ change }) {
   )
 }
 
-function AuditLogChanges({ selectedAuditLog, change }) {
+function AuditLogChanges({ selectedAuditLog, change }: { selectedAuditLog: AuditLogPopulatedDTO, change: { path: string, before?: unknown, after?: unknown } }) {
   const { t } = useTranslation()
   return (
     <Card className="mb-2">
       <CardHeader>
         <CardTitle className="text-base flex items-center gap-2">
           <Badge variant="outline">{t(`page.audit-logs.table.action.${selectedAuditLog.action}`)}</Badge>
-          <span className="text-sm text-muted-foreground">{selectedAuditLog?.user?.name}</span>
-          <span className="text-xs text-muted-foreground ml-auto">{selectedAuditLog.createdAt}</span>
+          <span className="text-sm text-muted-foreground">{selectedAuditLog?.createdBy?.name}</span>
+          <span className="text-xs text-muted-foreground ml-auto">{selectedAuditLog.createdAt.toLocaleString()}</span>
         </CardTitle>
       </CardHeader>
       <CardContent>

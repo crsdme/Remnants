@@ -64,6 +64,34 @@ export async function list(payload: GetProductPropertyGroupsRepoPayload): Promis
       },
     },
     {
+      $project: {
+        _id: 0,
+        id: '$_id',
+        seq: 1,
+        names: 1,
+        priority: 1,
+        productProperties: {
+          $map: {
+            input: '$productProperties',
+            as: 'pp',
+            in: {
+              id: '$$pp._id',
+              names: '$$pp.names',
+              priority: '$$pp.priority',
+              type: '$$pp.type',
+              isRequired: '$$pp.isRequired',
+              showInTable: '$$pp.showInTable',
+              showInStatistics: '$$pp.showInStatistics',
+              active: '$$pp.active',
+            },
+          },
+        },
+        active: 1,
+        createdAt: 1,
+        updatedAt: 1,
+      },
+    },
+    {
       $facet: {
         items: [
           { $skip: (current - 1) * pageSize },

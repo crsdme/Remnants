@@ -3,6 +3,7 @@ import type { z } from 'zod'
 import {
   createMoneyTransactionRepoSchema,
   createMoneyTransactionSchema,
+  createMoneyTransactionTransferSchema,
   getMoneyTransactionsSchema,
 } from '@remnant/shared'
 
@@ -33,6 +34,11 @@ export function parseGetMoneyTransactions(x: unknown): GetMoneyTransactionsPaylo
 export type CreateMoneyTransactionsPayload = z.output<typeof createMoneyTransactionSchema>
 export function parseCreateMoneyTransactions(x: unknown): CreateMoneyTransactionsPayload {
   return (createMoneyTransactionSchema as z.ZodType<CreateMoneyTransactionsPayload>).parse(x)
+}
+
+export type CreateMoneyTransactionTransferPayload = z.output<typeof createMoneyTransactionTransferSchema>
+export function parseCreateMoneyTransactionTransfer(x: unknown): CreateMoneyTransactionTransferPayload {
+  return (createMoneyTransactionTransferSchema as z.ZodType<CreateMoneyTransactionTransferPayload>).parse(x)
 }
 
 export type GetMoneyTransactionsRepoPayload = GetMoneyTransactionsPayload

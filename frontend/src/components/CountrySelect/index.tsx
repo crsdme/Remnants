@@ -1,6 +1,5 @@
 import { Check, ChevronsUpDown } from 'lucide-react'
 
-import * as React from 'react'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
@@ -122,7 +121,7 @@ export function CountrySelect({
 
       <PopoverContent style={{ width: popoverWidth }} className="p-0">
         <Command
-          filter={(value, search, keywords) => {
+          filter={(_value, search, keywords) => {
             if (!keywords)
               return 0
             return String(keywords).includes(norm(search)) ? 1 : 0

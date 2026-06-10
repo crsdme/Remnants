@@ -1,13 +1,14 @@
-import type { ReactNode } from 'react'
-import type { UseFormReturn } from 'react-hook-form'
+import type { ProductPopulatedDTO, ProductPropertyGroupPopulatedDTO } from '@remnant/shared'
+import type { Dispatch, ReactNode, SetStateAction } from 'react'
+import type { Resolver, UseFormReturn } from 'react-hook-form'
+
+import type { UseListQueryStateReturn } from '@/utils/hooks'
 
 import { zodResolver } from '@hookform/resolvers/zod'
-
 import { useQueryClient } from '@tanstack/react-query'
-import { createContext, useCallback, useContext, useMemo, useState } from 'react'
 
+import { createContext, useContext, useMemo, useState } from 'react'
 import { useForm } from 'react-hook-form'
-import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { z } from 'zod'
 import {
@@ -15,7 +16,6 @@ import {
   useProductBatch,
   useProductCreate,
   useProductDownloadTemplate,
-  useProductDuplicate,
   useProductEdit,
   useProductExport,
   useProductImport,
@@ -23,201 +23,139 @@ import {
   useProductRemove,
   useUnitQuery,
 } from '@/api/hooks/'
-import { getCategories, getCurrencies, getProductPropertiesGroups, getUnits } from '@/api/requests'
 import { downloadBlob } from '@/utils/helpers/download'
+import { useListQueryState, useLocale } from '@/utils/hooks'
 
-interface UploadedFile {
+export interface UploadedFile {
   id: string
-  file: File
+  filename?: string
+  file: File | string
   preview: string
   name: string
   type: string
+  path: string
+  isNew: boolean
 }
 
 interface ProductContextType {
-  selectedProduct: Product
+  selectedProduct: ProductPopulatedDTO | null
   isModalOpen: boolean
   isLogsModalOpen: boolean
   isLoading: boolean
-  form: UseFormReturn
+  form: UseFormReturn<ProductFormValues>
   images: UploadedFile[]
-  selectedGroup: string
-  selectedWarehouse: string
+  selectedGroup: string | null
   selectedProductLogs: { type: 'quantity' | 'audit', id: string } | null
   isEdit: boolean
-  getPropertiesDefaultValues: (selectedGroup: string, productPropertiesGroups: ProductPropertyGroup[]) => Record<string, any>
-  setSelectedWarehouse: (warehouse: string) => void
+  listQueryState: UseListQueryStateReturn<{ search: string, selectedWarehouse: string }>
+  getPropertiesDefaultValues: (selectedGroup: string, productPropertiesGroups: ProductPropertyGroupPopulatedDTO[]) => Record<string, any>
   setSelectedGroup: (group: string) => void
-  setImages: (images: UploadedFile[]) => void
-  openModal: (product?: Product) => void
+  setImages: Dispatch<SetStateAction<UploadedFile[]>>
+  openModal: (product?: ProductPopulatedDTO) => void
   closeModal: () => void
   openLogsModal: (type: 'quantity' | 'audit', id: string) => void
   closeLogsModal: () => void
-  submitProductForm: (params) => void
-  batchProduct: (params) => void
+  submitProductForm: (params: ProductFormValues) => void
+  batchProduct: (params: any) => void
   removeProduct: (params: { ids: string[] }) => void
-  importProducts: (params) => void
-  duplicateProducts: (params: { ids: string[] }) => void
+  importProducts: (params: { file: File }) => void
   exportProducts: (params: { ids: string[] }) => void
   downloadTemplate: () => void
-  loadCategoryOptions: (params: { query: string, selectedValue: string[] }) => Promise<Category[]>
-  loadUnitsOptions: (params: { query: string, selectedValue: string[] }) => Promise<Unit[]>
-  loadCurrencyOptions: (params: { query: string, selectedValue: string[] }) => Promise<Currency[]>
-  loadProductPropertyGroupOptions: (params: { query: string, selectedValue: string[] }) => Promise<ProductPropertyGroup[]>
 }
 
 const ProductContext = createContext<ProductContextType | undefined>(undefined)
 
-interface ProductProviderProps {
-  children: ReactNode
+export interface ProductFormValues {
+  id?: string
+  images: UploadedFile[]
+  names: Record<string, string>
+  categories: string[]
+  price: number
+  currency: string
+  purchasePrice: number
+  purchaseCurrency: string
+  productPropertiesGroup: string
+  unit: string
+  generateBarcode: boolean
+  isAutoSyncEnabled: boolean
+  syncSites: string[]
+  productProperties: Record<string, any>
 }
 
-export function ProductProvider({ children }: ProductProviderProps) {
+export function ProductProvider({ children }: { children: ReactNode }) {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [isLogsModalOpen, setIsLogsModalOpen] = useState(false)
-  const [selectedProductLogs, setSelectedProductLogs] = useState<{ type: 'quantity' | 'audit', id: string } | null>({ type: null, id: null })
+  const [selectedProductLogs, setSelectedProductLogs] = useState<{ type: 'quantity' | 'audit', id: string } | null>(null)
   const [isEdit, setIsEdit] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
-  const [selectedProduct, setSelectedProduct] = useState(null)
-  const [images, setImages] = useState([])
-  const [selectedGroup, setSelectedGroup] = useState(null)
-  const [selectedWarehouse, setSelectedWarehouse] = useState(null)
+  const [selectedProduct, setSelectedProduct] = useState<ProductPopulatedDTO | null>(null)
+  const [images, setImages] = useState<UploadedFile[]>([])
+  const [selectedGroup, setSelectedGroup] = useState<string | null>(null)
 
-  const { t, i18n } = useTranslation()
-
-  const requestProductPropertiesGroups = useProductPropertyGroupQuery({ pagination: { full: true }, filters: { active: [true], language: i18n.language } })
-  const productPropertiesGroups = requestProductPropertiesGroups?.data?.data?.productPropertyGroups || []
-
-  const requestCurrencies = useCurrencyQuery({ pagination: { full: true }, filters: { active: [true], language: i18n.language } })
-  const currencies = requestCurrencies?.data?.data?.currencies || []
-
-  const requestUnits = useUnitQuery({ pagination: { full: true }, filters: { active: [true], language: i18n.language } })
-  const units = requestUnits?.data?.data?.units || []
-
-  const productPropertiesSchema = getFormPropertiesSchema(selectedGroup, productPropertiesGroups, t)
-
-  const formSchema = z.object({
-    names: z.record(
-      z.string({ required_error: t('form.errors.required') }).min(3, { message: t('form.errors.min_length', { count: 3 }) }).trim(),
-    ),
-    categories: z.array(z.string()).min(1, { message: t('form.errors.required') }),
-    price: z.number().min(1, { message: t('form.errors.required') }),
-    currency: z.string().min(1, { message: t('form.errors.required') }),
-    purchasePrice: z.number().optional(),
-    purchaseCurrency: z.string().optional(),
-    productPropertiesGroup: z.string().optional(),
-    unit: z.string().min(1, { message: t('form.errors.required') }),
-    productProperties: productPropertiesSchema,
-    generateBarcode: z.boolean().optional(),
-    isAutoSyncEnabled: z.boolean().optional(),
-    syncSites: z.array(z.string()).optional(),
-  }).superRefine((data, ctx) => {
-    if (
-      data.purchasePrice !== undefined
-      && data.purchasePrice !== null
-      && data.purchaseCurrency === undefined
-    ) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: t('form.errors.required'),
-        path: ['purchaseCurrency'],
-      })
-    }
-  })
-
-  const form = useForm({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      names: {},
-      price: 0,
-      currency: '',
-      purchasePrice: 0,
-      purchaseCurrency: '',
-      categories: [],
-      productProperties: {},
-      productPropertiesGroup: '',
-      unit: '',
-      generateBarcode: false,
-      isAutoSyncEnabled: true,
-      syncSites: [],
+  const listQueryState = useListQueryState({
+    readFilters: params => ({
+      search: params.get('search'),
+      selectedWarehouse: params.get('selectedWarehouse'),
+    }),
+    writeFilters: (params, filters) => {
+      params.set('search', filters.search || '')
+      params.set('selectedWarehouse', filters.selectedWarehouse || '')
     },
   })
 
-  const getProductFormValues = (product) => {
-    if (product) {
-      setSelectedGroup(product.productPropertiesGroup.id)
-      setImages(product.images.map((image, index) => ({
-        ...image,
-        id: index,
-        file: image.path,
-        preview: image.path,
-        path: image.path,
-        isNew: false,
-      })))
-      return {
-        names: { ...product.names },
-        categories: product.categories.map(category => category.id),
-        price: product.price,
-        currency: product.currency.id,
-        purchasePrice: product.purchasePrice,
-        purchaseCurrency: product.purchaseCurrency.id,
-        productProperties: product.productProperties.reduce((acc, property) => ({ ...acc, [`${property.id}`]: property.value }), {}),
-        productPropertiesGroup: product.productPropertiesGroup.id,
-        unit: product.unit.id,
-        isAutoSyncEnabled: true,
-        syncSites: [],
-      }
-    }
-    else {
-      setSelectedGroup(productPropertiesGroups[0]?.id)
-      setImages([])
-      return {
-        names: {},
-        price: 0,
-        currency: currencies[0]?.id || '',
-        purchasePrice: 0,
-        purchaseCurrency: currencies[0]?.id || '',
-        categories: [],
-        productProperties: getPropertiesDefaultValues(productPropertiesGroups[0]?.id, productPropertiesGroups),
-        productPropertiesGroup: productPropertiesGroups[0]?.id || '',
-        unit: units[0]?.id || '',
-        generateBarcode: false,
-        isAutoSyncEnabled: true,
-        syncSites: [],
-      }
-    }
-  }
+  const { t, language } = useLocale()
+
+  const { productPropertyGroups } = useProductPropertyGroupQuery({ pagination: { full: true }, filters: { active: [true], language } })
+
+  const { currencies } = useCurrencyQuery({ pagination: { full: true }, filters: { active: [true], language } })
+
+  const { units } = useUnitQuery({ pagination: { full: true }, filters: { active: [true], language } })
+
+  const productPropertiesSchema = getFormPropertiesSchema(selectedGroup || '', productPropertyGroups, t)
+
+  const formSchema = useMemo(
+    () => createProductFormSchema(t, productPropertiesSchema),
+    [t, productPropertiesSchema],
+  )
+
+  const form = useForm<ProductFormValues>({
+    resolver: zodResolver(formSchema) as unknown as Resolver<ProductFormValues>,
+    defaultValues: getProductFormDefaults(undefined, { currencies, units, productPropertyGroups }),
+  })
 
   const closeModal = () => {
     if (!isModalOpen)
       return
     setIsModalOpen(false)
-    setIsLoading(false)
     setIsEdit(false)
     setSelectedProduct(null)
     setImages([])
     setSelectedGroup(null)
-    form.reset({
-      names: {},
-      price: 0,
-      currency: '',
-      purchasePrice: 0,
-      purchaseCurrency: '',
-      categories: [],
-      productProperties: {},
-      productPropertiesGroup: '',
-      unit: '',
-      generateBarcode: false,
-      isAutoSyncEnabled: true,
-      syncSites: [],
-    })
+    form.reset(getProductFormDefaults(undefined, { currencies, units, productPropertyGroups }))
   }
 
-  const openModal = (product) => {
+  const openModal = (product?: ProductPopulatedDTO) => {
     setIsModalOpen(true)
     setIsEdit(!!product)
-    setSelectedProduct(product)
-    form.reset(getProductFormValues(product))
+    setSelectedProduct(product ?? null)
+
+    if (product) {
+      setSelectedGroup(product.productPropertiesGroup.id)
+      setImages(product.images.map(image => ({
+        id: image.id,
+        filename: image.filename,
+        file: image.path,
+        preview: image.path,
+        name: image.name,
+        type: image.type,
+        path: image.path,
+        isNew: false,
+      })))
+    }
+    else {
+      setSelectedGroup(productPropertyGroups[0]?.id)
+      setImages([])
+    }
+    form.reset(getProductFormDefaults(product, { currencies, units, productPropertyGroups }))
   }
 
   const openLogsModal = (type: 'quantity' | 'audit', id: string) => {
@@ -236,26 +174,13 @@ export function ProductProvider({ children }: ProductProviderProps) {
     options: {
       onSuccess: ({ data }) => {
         closeModal()
-        queryClient.invalidateQueries({ queryKey: ['products'] })
-        queryClient.invalidateQueries({ queryKey: ['barcodes'] })
+        void queryClient.invalidateQueries({ queryKey: ['products'] })
+        void queryClient.invalidateQueries({ queryKey: ['barcodes'] })
         toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description || ''}` })
       },
       onError: ({ response }) => {
         const error = response.data.error
         closeModal()
-        toast.error(t(`error.title.${error.code}`), { description: `${t(`error.description.${error.code}`)} ${error.description || ''}` })
-      },
-    },
-  })
-
-  const useMutateDuplicateProduct = useProductDuplicate({
-    options: {
-      onSuccess: ({ data }) => {
-        queryClient.invalidateQueries({ queryKey: ['products'] })
-        toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description || ''}` })
-      },
-      onError: ({ response }) => {
-        const error = response.data.error
         toast.error(t(`error.title.${error.code}`), { description: `${t(`error.description.${error.code}`)} ${error.description || ''}` })
       },
     },
@@ -265,7 +190,7 @@ export function ProductProvider({ children }: ProductProviderProps) {
     options: {
       onSuccess: ({ data }) => {
         closeModal()
-        queryClient.invalidateQueries({ queryKey: ['products'] })
+        void queryClient.invalidateQueries({ queryKey: ['products'] })
         toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description || ''}` })
       },
       onError: ({ response }) => {
@@ -279,7 +204,7 @@ export function ProductProvider({ children }: ProductProviderProps) {
   const useMutateRemoveProduct = useProductRemove({
     options: {
       onSuccess: ({ data }) => {
-        queryClient.invalidateQueries({ queryKey: ['products'] })
+        void queryClient.invalidateQueries({ queryKey: ['products'] })
         toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description || ''}` })
       },
       onError: ({ response }) => {
@@ -292,7 +217,7 @@ export function ProductProvider({ children }: ProductProviderProps) {
   const useMutateImportProduct = useProductImport({
     options: {
       onSuccess: ({ data }) => {
-        queryClient.invalidateQueries({ queryKey: ['products'] })
+        void queryClient.invalidateQueries({ queryKey: ['products'] })
         toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description || ''}` })
       },
       onError: ({ response }) => {
@@ -305,7 +230,7 @@ export function ProductProvider({ children }: ProductProviderProps) {
   const useMutateBatchProduct = useProductBatch({
     options: {
       onSuccess: ({ data }) => {
-        queryClient.invalidateQueries({ queryKey: ['products'] })
+        void queryClient.invalidateQueries({ queryKey: ['products'] })
         toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description || ''}` })
       },
       onError: ({ response }) => {
@@ -341,60 +266,59 @@ export function ProductProvider({ children }: ProductProviderProps) {
     },
   })
 
-  const submitProductForm = (params) => {
-    setIsLoading(true)
-    if (params.productProperties) {
-      params.productProperties = Object.entries(params.productProperties).map(([id, value]) => ({ id, value }))
+  const submitProductForm = (params: ProductFormValues) => {
+    const productParams = {
+      ...params,
+      images: (params.images || []).map((image: any) => ({
+        id: image.id,
+        filename: image.filename,
+        name: image.name,
+        type: image.type,
+        path: image.path,
+        isNew: image.isNew,
+      })),
+      uploadedImages: (params.images || []).filter(
+        (image): image is UploadedFile & { file: File } => typeof image.file !== 'string',
+      ),
     }
 
-    params.images = images.map(image => ({
-      id: image.id,
-      filename: image.filename,
-      name: image.name,
-      type: image.type,
-      path: image.path,
-      isNew: image.isNew,
-    }))
-
-    params.uploadedImages = images.filter(image => typeof image.file !== 'string')
+    if (params.productProperties) {
+      productParams.productProperties = Object.entries(params.productProperties).map(([id, value]) => ({ id, value }))
+    }
 
     const formData = new FormData()
 
-    for (const [key, value] of Object.entries(params)) {
+    for (const [key, value] of Object.entries(productParams)) {
       if (key !== 'uploadedImages') {
         formData.append(key, typeof value === 'object' ? JSON.stringify(value) : value as string)
       }
     }
 
-    params.uploadedImages.forEach((img) => {
+    productParams.uploadedImages.forEach((img) => {
       formData.append('uploadedImages', img.file, img.name)
       formData.append('uploadedImagesIds', img.id)
     })
 
     if (!selectedProduct)
-      return useMutateCreateProduct.mutate(formData)
+      return useMutateCreateProduct.mutate(formData as unknown as any)
 
     formData.append('id', selectedProduct.id)
-    return useMutateEditProduct.mutate(formData)
+    return useMutateEditProduct.mutate(formData as unknown as any)
   }
 
-  const removeProduct = (params) => {
+  const removeProduct = (params: { ids: string[] }) => {
     useMutateRemoveProduct.mutate(params)
   }
 
-  const batchProduct = (params) => {
+  const batchProduct = (params: any) => {
     useMutateBatchProduct.mutate(params)
   }
 
-  const importProducts = (params) => {
+  const importProducts = (params: { file: File }) => {
     useMutateImportProduct.mutate(params)
   }
 
-  const duplicateProducts = (params) => {
-    useMutateDuplicateProduct.mutate(params)
-  }
-
-  const exportProducts = (params) => {
+  const exportProducts = (params: { ids: string[] }) => {
     useMutateExportProduct.mutate(params)
   }
 
@@ -402,53 +326,7 @@ export function ProductProvider({ children }: ProductProviderProps) {
     useMutateDownloadTemplate.mutate()
   }
 
-  const loadCategoryOptions = useCallback(async ({ query, selectedValue }) => {
-    const response = await getCategories({
-      pagination: { full: true },
-      filters: {
-        ...(selectedValue ? { ids: selectedValue } : { names: query }),
-        active: [true],
-        language: i18n.language,
-      },
-    })
-    return response?.data?.categories || []
-  }, [i18n.language])
-
-  const loadUnitsOptions = useCallback(async ({ query, selectedValue }) => {
-    const response = await getUnits({
-      pagination: { full: true },
-      filters: {
-        ...(selectedValue ? { ids: selectedValue } : { names: query }),
-        active: [true],
-        language: i18n.language,
-      },
-    })
-    return response?.data?.units || []
-  }, [i18n.language])
-
-  const loadCurrencyOptions = useCallback(async ({ query, selectedValue }) => {
-    const response = await getCurrencies({
-      pagination: { full: true },
-      filters: {
-        ...(selectedValue ? { ids: selectedValue } : { names: query }),
-        active: [true],
-        language: i18n.language,
-      },
-    })
-    return response?.data?.currencies || []
-  }, [i18n.language])
-
-  const loadProductPropertyGroupOptions = useCallback(async ({ query, selectedValue }) => {
-    const response = await getProductPropertiesGroups({
-      pagination: { full: true },
-      filters: {
-        ...(selectedValue ? { ids: selectedValue } : { names: query }),
-        active: [true],
-        language: i18n.language,
-      },
-    })
-    return response?.data?.productPropertyGroups || []
-  }, [i18n.language])
+  const isLoading = false
 
   const value: ProductContextType = useMemo(
     () => ({
@@ -459,13 +337,12 @@ export function ProductProvider({ children }: ProductProviderProps) {
       form,
       images,
       selectedGroup,
-      selectedWarehouse,
       selectedProductLogs,
       isEdit,
+      listQueryState,
       getPropertiesDefaultValues,
       setImages,
       setSelectedGroup,
-      setSelectedWarehouse,
       openModal,
       closeModal,
       openLogsModal,
@@ -474,71 +351,180 @@ export function ProductProvider({ children }: ProductProviderProps) {
       removeProduct,
       batchProduct,
       importProducts,
-      duplicateProducts,
       exportProducts,
       downloadTemplate,
-      loadCategoryOptions,
-      loadUnitsOptions,
-      loadCurrencyOptions,
-      loadProductPropertyGroupOptions,
     }),
-    [selectedProduct, isModalOpen, selectedWarehouse, isLoading, isEdit, form, images, selectedGroup, selectedProductLogs],
+    [
+      selectedProduct,
+      selectedGroup,
+      selectedProductLogs,
+      isEdit,
+      form,
+      images,
+      isLoading,
+      isModalOpen,
+      isLogsModalOpen,
+      getPropertiesDefaultValues,
+      setImages,
+      setSelectedGroup,
+      openModal,
+      closeModal,
+      openLogsModal,
+      closeLogsModal,
+      submitProductForm,
+      removeProduct,
+      batchProduct,
+      importProducts,
+      exportProducts,
+      downloadTemplate,
+    ],
   )
 
   return <ProductContext.Provider value={value}>{children}</ProductContext.Provider>
 }
 
-function getFormPropertiesSchema(selectedGroup, productPropertiesGroups, t) {
+function createProductFormSchema(
+  t: (key: string, options?: Record<string, unknown>) => string,
+  productPropertiesSchema: z.ZodTypeAny,
+) {
+  return z.object({
+    names: z.record(
+      z.string({ required_error: t('form.errors.required') }).min(3, { message: t('form.errors.min_length', { count: 3 }) }).trim(),
+    ),
+    categories: z.array(z.string()).min(1, { message: t('form.errors.required') }),
+    price: z.number().min(1, { message: t('form.errors.required') }),
+    currency: z.string().min(1, { message: t('form.errors.required') }),
+    purchasePrice: z.number().optional(),
+    purchaseCurrency: z.string().optional(),
+    productPropertiesGroup: z.string().optional(),
+    unit: z.string().min(1, { message: t('form.errors.required') }),
+    productProperties: productPropertiesSchema,
+    generateBarcode: z.boolean().optional(),
+    isAutoSyncEnabled: z.boolean().optional(),
+    syncSites: z.array(z.string()).optional(),
+  }).superRefine((data, ctx) => {
+    if (
+      data.purchasePrice !== undefined
+      && data.purchasePrice !== null
+      && data.purchaseCurrency === undefined
+    ) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: t('form.errors.required'),
+        path: ['purchaseCurrency'],
+      })
+    }
+  })
+}
+
+interface ProductFormDefaultsDeps {
+  currencies: Array<{ id: string }>
+  units: Array<{ id: string }>
+  productPropertyGroups: ProductPropertyGroupPopulatedDTO[]
+}
+
+function getProductFormDefaults(
+  product: ProductPopulatedDTO | undefined,
+  { currencies, units, productPropertyGroups }: ProductFormDefaultsDeps,
+): ProductFormValues {
+  if (product) {
+    return {
+      names: { ...product.names },
+      categories: product.categories.map((category: { id: string }) => category.id),
+      price: product.price,
+      currency: product.currency.id,
+      purchasePrice: product.purchasePrice,
+      purchaseCurrency: product.purchaseCurrency.id,
+      productProperties: product.productProperties.reduce(
+        (acc, property) => ({ ...acc, [`${property.id}`]: property.value }),
+        {} as Record<string, unknown>,
+      ),
+      productPropertiesGroup: product.productPropertiesGroup.id,
+      images: product.images.map(image => ({
+        id: image.id,
+        filename: image.filename,
+        file: image.path,
+        preview: image.path,
+        name: image.name,
+        type: image.type,
+        path: image.path,
+        isNew: false,
+      })),
+      unit: product.unit.id,
+      generateBarcode: false,
+      isAutoSyncEnabled: true,
+      syncSites: [],
+    }
+  }
+  return {
+    names: {},
+    images: [],
+    price: 0,
+    currency: currencies[0]?.id || '',
+    purchasePrice: 0,
+    purchaseCurrency: currencies[0]?.id || '',
+    categories: [],
+    productProperties: getPropertiesDefaultValues(productPropertyGroups[0]?.id, productPropertyGroups),
+    productPropertiesGroup: productPropertyGroups[0]?.id || '',
+    unit: units[0]?.id || '',
+    generateBarcode: false,
+    isAutoSyncEnabled: true,
+    syncSites: [],
+  }
+}
+
+function getFormPropertiesSchema(selectedGroup: string, productPropertiesGroups: ProductPropertyGroupPopulatedDTO[], t: (key: string, options?: Record<string, unknown>) => string) {
   const group = productPropertiesGroups.find(g => g.id === selectedGroup)
+  let schema: z.ZodTypeAny = z.record(z.string(), z.any()).optional()
 
-  const schema = group
-    ? z.object(
-        Object.fromEntries(
-          group.productProperties.map((prop) => {
-            let base: z.ZodTypeAny
+  if (group) {
+    schema = z.object(
+      Object.fromEntries(
+        group.productProperties.map((prop) => {
+          let base: z.ZodTypeAny
 
-            switch (prop.type) {
-              case 'text':
-                base = z.string({ required_error: t('form.errors.required') })
-                break
-              case 'number':
-                base = z.number({ required_error: t('form.errors.required') })
-                break
-              case 'boolean':
-                base = z.boolean({ required_error: t('form.errors.required') })
-                break
-              case 'select':
-                base = z.string({ required_error: t('form.errors.required') })
-                break
-              case 'color':
-                base = z.string({ required_error: t('form.errors.required') })
-                break
-              case 'multiSelect':
-                base = z.array(z.string())
-                break
-              default:
-                base = z.any()
+          switch (prop.type) {
+            case 'text':
+              base = z.string({ required_error: t('form.errors.required') })
+              break
+            case 'number':
+              base = z.number({ required_error: t('form.errors.required') })
+              break
+            case 'boolean':
+              base = z.boolean({ required_error: t('form.errors.required') })
+              break
+            case 'select':
+              base = z.string({ required_error: t('form.errors.required') })
+              break
+            case 'color':
+              base = z.string({ required_error: t('form.errors.required') })
+              break
+            case 'multiSelect':
+              base = z.array(z.string())
+              break
+            default:
+              base = z.any()
+          }
+
+          if (prop.isRequired) {
+            if (base instanceof z.ZodString) {
+              base = base.min(1, { message: t('form.errors.required') })
             }
+          }
+          else {
+            base = base.optional()
+          }
 
-            if (prop.isRequired) {
-              if (base instanceof z.ZodString) {
-                base = base.min(1, { message: t('form.errors.required') })
-              }
-            }
-            else {
-              base = base.optional()
-            }
-
-            return [prop.id, base]
-          }),
-        ),
-      )
-    : z.record(z.string(), z.any()).optional()
+          return [prop.id, base]
+        }),
+      ),
+    )
+  }
 
   return schema
 }
 
-function getPropertiesDefaultValues(selectedGroup, productPropertiesGroups): Record<string, any> {
+function getPropertiesDefaultValues(selectedGroup: string, productPropertiesGroups: ProductPropertyGroupPopulatedDTO[]): Record<string, any> {
   const group = productPropertiesGroups.find(g => g.id === selectedGroup)
 
   if (!group)

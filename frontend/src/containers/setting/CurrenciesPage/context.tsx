@@ -1,5 +1,6 @@
+import type { CurrencyDTO, ExchangeRateDTOPopulated } from '@remnant/shared'
 import type { ReactNode } from 'react'
-import type { UseFormReturn } from 'react-hook-form'
+import type { Resolver, UseFormReturn } from 'react-hook-form'
 
 import { zodResolver } from '@hookform/resolvers/zod'
 
@@ -7,131 +8,81 @@ import { useQueryClient } from '@tanstack/react-query'
 import { createContext, useContext, useMemo, useState } from 'react'
 
 import { useForm } from 'react-hook-form'
-import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { z } from 'zod'
 import {
-  useCurrencyBatch,
   useCurrencyCreate,
-  useCurrencyDuplicate,
   useCurrencyEdit,
   useCurrencyExchangeRateEdit,
-  useCurrencyImport,
   useCurrencyRemove,
 } from '@/api/hooks/'
-
-import { SUPPORTED_LANGUAGES } from '@/utils/constants'
+import { useLocale } from '@/utils/hooks'
 
 interface CurrencyContextType {
-  selectedCurrency: Currency
+  selectedCurrency: CurrencyDTO | undefined
   isModalOpen: boolean
   isExchangeRateModalOpen: boolean
   isLoading: boolean
   isEdit: boolean
-  form: UseFormReturn
-  exchangeRateForm: UseFormReturn
-  openModal: (currency?: Currency) => void
+  form: UseFormReturn<CurrencyFormValues>
+  exchangeRateForm: UseFormReturn<ExchangeRateFormValues>
+  openModal: (currency?: CurrencyDTO) => void
   closeModal: () => void
-  submitCurrencyForm: (params) => void
-  batchCurrency: (params) => void
+  submitCurrencyForm: (params: CurrencyFormValues) => void
   removeCurrency: (params: { ids: string[] }) => void
-  importCurrencies: (params) => void
-  duplicateCurrencies: (params: { ids: string[] }) => void
-  openExchangeRateModal: (exchangeRate: ExchangeRate) => void
+  openExchangeRateModal: (exchangeRate?: ExchangeRateDTOPopulated & { id?: string }) => void
   closeExchangeRateModal: () => void
-  submitExchangeRateForm: (params) => void
+  submitExchangeRateForm: (params: ExchangeRateFormValues) => void
 }
 
 const CurrencyContext = createContext<CurrencyContextType | undefined>(undefined)
 
-interface CurrencyProviderProps {
-  children: ReactNode
+interface CurrencyFormValues {
+  names: Record<string, string>
+  symbols: Record<string, string>
+  scale: number
+  priority: number
+  active: boolean
 }
 
-export function CurrencyProvider({ children }: CurrencyProviderProps) {
+interface ExchangeRateFormValues {
+  rate: number
+  comment: string
+}
+
+export function CurrencyProvider({ children }: { children: ReactNode }) {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [isExchangeRateModalOpen, setIsExchangeRateModalOpen] = useState(false)
   const [isEdit, setIsEdit] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
-  const [selectedCurrency, setSelectedCurrency] = useState(null)
-  const [selectedExchangeRate, setSelectedExchangeRate] = useState(null)
+  const [selectedCurrency, setSelectedCurrency] = useState<CurrencyDTO | undefined>(undefined)
+  const [selectedExchangeRate, setSelectedExchangeRate] = useState<ExchangeRateDTOPopulated & { id?: string } | undefined>(undefined)
 
-  const { t } = useTranslation()
+  const { t } = useLocale()
 
-  const defaultLanguageValues = SUPPORTED_LANGUAGES.reduce((acc, lang) => ({ ...acc, [lang]: '' }), {})
+  const formSchema = useMemo(() => createCurrencyFormSchema(t), [t])
 
-  const formSchema = useMemo(() =>
-    z.object({
-      names: z.record(
-        z.string({ required_error: t('form.errors.required') })
-          .min(3, { message: t('form.errors.min_length', { count: 3 }) })
-          .trim(),
-      ),
-      symbols: z.record(
-        z.string({ required_error: t('form.errors.required') })
-          .min(1, { message: t('form.errors.min_length', { count: 1 }) })
-          .trim(),
-      ),
-      scale: z.number().default(2),
-      priority: z.number().default(0),
-      active: z.boolean().default(true),
-    }), [t])
-
-  const form = useForm({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      names: defaultLanguageValues,
-      symbols: defaultLanguageValues,
-      scale: 2,
-      priority: 0,
-      active: true,
-    },
+  const form = useForm<CurrencyFormValues>({
+    resolver: zodResolver(formSchema) as Resolver<CurrencyFormValues>,
+    defaultValues: getCurrencyFormValues(),
   })
 
-  const exchangeRateFormSchema = useMemo(() =>
-    z.object({
-      rate: z.number().default(0),
-      comment: z.string().optional(),
-    }), [t])
+  const exchangeRateFormSchema = useMemo(() => createExchangeRateFormSchema(), [])
 
-  const exchangeRateForm = useForm({
-    resolver: zodResolver(exchangeRateFormSchema),
-    defaultValues: {
-      rate: 0,
-      comment: '',
-    },
+  const exchangeRateForm = useForm<ExchangeRateFormValues>({
+    resolver: zodResolver(exchangeRateFormSchema) as Resolver<ExchangeRateFormValues>,
+    defaultValues: getExchangeRateFormValues(),
   })
-
-  const getCurrencyFormValues = (currency) => {
-    if (!currency) {
-      return {
-        names: defaultLanguageValues,
-        symbols: defaultLanguageValues,
-        scale: 2,
-        priority: 0,
-        active: true,
-      }
-    }
-    return {
-      names: { ...currency.names },
-      symbols: { ...currency.symbols },
-      scale: currency.scale,
-      priority: currency.priority,
-      active: currency.active,
-    }
-  }
 
   const closeModal = () => {
     if (!isModalOpen)
       return
     setIsModalOpen(false)
-    setIsLoading(false)
     setIsEdit(false)
-    setSelectedCurrency(null)
+    setSelectedCurrency(undefined)
     form.reset()
   }
 
-  const openModal = (currency) => {
+  const openModal = (currency?: CurrencyDTO) => {
     setIsModalOpen(true)
     setIsEdit(!!currency)
     setSelectedCurrency(currency)
@@ -142,18 +93,14 @@ export function CurrencyProvider({ children }: CurrencyProviderProps) {
     if (!isExchangeRateModalOpen)
       return
     setIsExchangeRateModalOpen(false)
-    setIsLoading(false)
-    setSelectedExchangeRate(null)
+    setSelectedExchangeRate(undefined)
     exchangeRateForm.reset()
   }
 
-  const openExchangeRateModal = (exchangeRate) => {
+  const openExchangeRateModal = (exchangeRate?: ExchangeRateDTOPopulated) => {
     setIsExchangeRateModalOpen(true)
     setSelectedExchangeRate(exchangeRate)
-    exchangeRateForm.reset({
-      rate: exchangeRate?.rate,
-      comment: exchangeRate?.comment,
-    })
+    exchangeRateForm.reset(getExchangeRateFormValues(exchangeRate))
   }
 
   const queryClient = useQueryClient()
@@ -162,25 +109,12 @@ export function CurrencyProvider({ children }: CurrencyProviderProps) {
     options: {
       onSuccess: ({ data }) => {
         closeModal()
-        queryClient.invalidateQueries({ queryKey: ['currencies'] })
+        void queryClient.invalidateQueries({ queryKey: ['currencies'] })
         toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description || ''}` })
       },
       onError: ({ response }) => {
         const error = response.data.error
         closeModal()
-        toast.error(t(`error.title.${error.code}`), { description: `${t(`error.description.${error.code}`)} ${error.description || ''}` })
-      },
-    },
-  })
-
-  const useMutateDuplicateCurrencies = useCurrencyDuplicate({
-    options: {
-      onSuccess: ({ data }) => {
-        queryClient.invalidateQueries({ queryKey: ['currencies'] })
-        toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description || ''}` })
-      },
-      onError: ({ response }) => {
-        const error = response.data.error
         toast.error(t(`error.title.${error.code}`), { description: `${t(`error.description.${error.code}`)} ${error.description || ''}` })
       },
     },
@@ -190,7 +124,7 @@ export function CurrencyProvider({ children }: CurrencyProviderProps) {
     options: {
       onSuccess: ({ data }) => {
         closeExchangeRateModal()
-        queryClient.invalidateQueries({ queryKey: ['currencies', 'get', 'exchange-rate'] })
+        void queryClient.invalidateQueries({ queryKey: ['currencies', 'get', 'exchange-rate'] })
         toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description || ''}` })
       },
       onError: ({ response }) => {
@@ -205,7 +139,7 @@ export function CurrencyProvider({ children }: CurrencyProviderProps) {
     options: {
       onSuccess: ({ data }) => {
         closeModal()
-        queryClient.invalidateQueries({ queryKey: ['currencies'] })
+        void queryClient.invalidateQueries({ queryKey: ['currencies'] })
         toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description || ''}` })
       },
       onError: ({ response }) => {
@@ -219,7 +153,7 @@ export function CurrencyProvider({ children }: CurrencyProviderProps) {
   const useMutateRemoveCurrency = useCurrencyRemove({
     options: {
       onSuccess: ({ data }) => {
-        queryClient.invalidateQueries({ queryKey: ['currencies'] })
+        void queryClient.invalidateQueries({ queryKey: ['currencies'] })
         toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description || ''}` })
       },
       onError: ({ response }) => {
@@ -229,61 +163,27 @@ export function CurrencyProvider({ children }: CurrencyProviderProps) {
     },
   })
 
-  const useMutateImportCurrencies = useCurrencyImport({
-    options: {
-      onSuccess: ({ data }) => {
-        queryClient.invalidateQueries({ queryKey: ['currencies'] })
-        toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description || ''}` })
-      },
-      onError: ({ response }) => {
-        const error = response.data.error
-        toast.error(t(`error.title.${error.code}`), { description: `${t(`error.description.${error.code}`)} ${error.description || ''}` })
-      },
-    },
-  })
-
-  const useMutateBatchCurrency = useCurrencyBatch({
-    options: {
-      onSuccess: ({ data }) => {
-        queryClient.invalidateQueries({ queryKey: ['currencies'] })
-        toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description || ''}` })
-      },
-      onError: ({ response }) => {
-        const error = response.data.error
-        toast.error(t(`error.title.${error.code}`), { description: `${t(`error.description.${error.code}`)} ${error.description || ''}` })
-      },
-    },
-  })
-
-  const submitCurrencyForm = (params) => {
-    setIsLoading(true)
+  const submitCurrencyForm = (params: CurrencyFormValues) => {
     if (!isEdit)
       return useMutateCreateCurrency.mutate(params)
+
+    if (!selectedCurrency)
+      return
 
     return useMutateEditCurrency.mutate({ ...params, id: selectedCurrency.id })
   }
 
-  const submitExchangeRateForm = (params) => {
-    setIsLoading(true)
-    params.id = selectedExchangeRate.id
-    useMutateEditExchangeRate.mutate(params)
+  const submitExchangeRateForm = (params: ExchangeRateFormValues) => {
+    if (!selectedExchangeRate?.id)
+      return
+    useMutateEditExchangeRate.mutate({ ...params, id: selectedExchangeRate.id })
   }
 
-  const removeCurrency = (params) => {
+  const removeCurrency = (params: { ids: string[] }) => {
     useMutateRemoveCurrency.mutate(params)
   }
 
-  const batchCurrency = (params) => {
-    useMutateBatchCurrency.mutate(params)
-  }
-
-  const importCurrencies = (params) => {
-    useMutateImportCurrencies.mutate(params)
-  }
-
-  const duplicateCurrencies = (params) => {
-    useMutateDuplicateCurrencies.mutate(params)
-  }
+  const isLoading = useMutateCreateCurrency.isPending || useMutateEditCurrency.isPending || useMutateRemoveCurrency.isPending || useMutateEditExchangeRate.isPending
 
   const value: CurrencyContextType = useMemo(
     () => ({
@@ -299,9 +199,6 @@ export function CurrencyProvider({ children }: CurrencyProviderProps) {
       closeModal,
       submitCurrencyForm,
       removeCurrency,
-      batchCurrency,
-      importCurrencies,
-      duplicateCurrencies,
       openExchangeRateModal,
       closeExchangeRateModal,
       submitExchangeRateForm,
@@ -319,4 +216,61 @@ export function useCurrencyContext(): CurrencyContextType {
     throw new Error('useCurrencyContext - CurrencyContext')
   }
   return context
+}
+
+function createCurrencyFormSchema(t: (key: string, options?: Record<string, unknown>) => string) {
+  return z.object({
+    names: z.record(
+      z.string({ required_error: t('form.errors.required') })
+        .min(3, { message: t('form.errors.min_length', { count: 3 }) })
+        .trim(),
+    ),
+    symbols: z.record(
+      z.string({ required_error: t('form.errors.required') })
+        .min(1, { message: t('form.errors.min_length', { count: 1 }) })
+        .trim(),
+    ),
+    scale: z.number().default(2),
+    priority: z.number().default(0),
+    active: z.boolean().default(true),
+  })
+}
+
+function getCurrencyFormValues(currency?: CurrencyFormValues): CurrencyFormValues {
+  if (!currency) {
+    return {
+      names: {},
+      symbols: {},
+      scale: 2,
+      priority: 0,
+      active: true,
+    }
+  }
+  return {
+    names: { ...currency.names },
+    symbols: { ...currency.symbols },
+    scale: currency.scale,
+    priority: currency.priority,
+    active: currency.active,
+  }
+}
+
+function createExchangeRateFormSchema() {
+  return z.object({
+    rate: z.number().default(0),
+    comment: z.string().optional(),
+  })
+}
+
+function getExchangeRateFormValues(exchangeRate?: Pick<ExchangeRateDTOPopulated, 'rate' | 'comment'>): ExchangeRateFormValues {
+  if (!exchangeRate) {
+    return {
+      rate: 0,
+      comment: '',
+    }
+  }
+  return {
+    rate: exchangeRate.rate,
+    comment: exchangeRate.comment ?? '',
+  }
 }

@@ -8,8 +8,38 @@ export const api = axios.create({
   headers: { 'Content-Type': 'application/json' },
 })
 
-let requestInterceptor
-let responseInterceptor
+let requestInterceptor: number
+let responseInterceptor: number
+
+let isRefreshing = false
+let isLoggingOut = false
+let refreshPromise: Promise<void> | null = null
+
+const failedQueue: Array<{
+  resolve: () => void
+  reject: (error: unknown) => void
+}> = []
+
+function processQueue(error: unknown) {
+  failedQueue.forEach(({ resolve, reject }) => {
+    if (error)
+      reject(error)
+    else
+      resolve()
+  })
+  failedQueue.length = 0
+}
+
+function isAuthRequest(url?: string) {
+  return url?.includes('auth/refresh') || url?.includes('auth/logout') || url?.includes('auth/login')
+}
+
+function handleLogout(logout: () => void) {
+  if (isLoggingOut)
+    return
+  isLoggingOut = true
+  logout()
+}
 
 export function setupAxiosInterceptors({
   logout,
@@ -17,7 +47,7 @@ export function setupAxiosInterceptors({
   sendToast,
 }: {
   logout: () => void
-  refresh: () => void
+  refresh: () => Promise<void>
   sendToast: ({ message, code, description }: { message: string, code: string, description: string }) => void
 }) {
   if (requestInterceptor)
@@ -25,9 +55,14 @@ export function setupAxiosInterceptors({
   if (responseInterceptor)
     api.interceptors.response.eject(responseInterceptor)
 
+  isRefreshing = false
+  isLoggingOut = false
+  refreshPromise = null
+  failedQueue.length = 0
+
   requestInterceptor = api.interceptors.request.use(
     config => config,
-    error => Promise.reject(error),
+    async error => Promise.reject(error),
   )
 
   responseInterceptor = api.interceptors.response.use(
@@ -35,25 +70,45 @@ export function setupAxiosInterceptors({
     async (error) => {
       const originalRequest = error.config
 
-      if (error.response?.status === 401 && !originalRequest._retry) {
+      if (error.response?.status === 401 && !originalRequest._retry && !isAuthRequest(originalRequest.url)) {
+        if (isRefreshing) {
+          return new Promise<void>((resolve, reject) => {
+            failedQueue.push({ resolve, reject })
+          }).then(async () => api.request(originalRequest))
+        }
+
         originalRequest._retry = true
+        isRefreshing = true
+
+        refreshPromise ??= refresh()
+
         try {
-          refresh()
-          return api.request(originalRequest)
+          await refreshPromise
+          processQueue(null)
+          return await api.request(originalRequest)
         }
         catch (refreshError) {
-          logout()
-          return Promise.reject(refreshError)
+          processQueue(refreshError)
+          handleLogout(logout)
+          throw refreshError
+        }
+        finally {
+          isRefreshing = false
+          refreshPromise = null
         }
       }
 
       if (error.response?.status === 403) {
-        logout()
-        sendToast({
-          message: error.response?.data?.error?.message || 'Request failed',
-          code: error.response?.data?.error?.code || 'INTERNAL_ERROR',
-          description: error.response?.data?.error?.description || '',
-        })
+        if (isAuthRequest(originalRequest.url)) {
+          handleLogout(logout)
+        }
+        else {
+          sendToast({
+            message: error.response?.data?.error?.message || 'Request failed',
+            code: error.response?.data?.error?.code || 'INTERNAL_ERROR',
+            description: error.response?.data?.error?.description || '',
+          })
+        }
 
         return Promise.reject(error)
       }

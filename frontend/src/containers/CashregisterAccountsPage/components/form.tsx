@@ -1,6 +1,5 @@
-import { useTranslation } from 'react-i18next'
 import { useCurrencyOptions, useLanguageQuery } from '@/api/hooks'
-import { AsyncSelect } from '@/components/AsyncSelect'
+import { AsyncSelectNew } from '@/components/AsyncSelectNew'
 import {
   Button,
   Checkbox,
@@ -13,30 +12,23 @@ import {
   FormMessage,
   Input,
 } from '@/components/ui'
+import { useLocale } from '@/utils/hooks'
 import { useCashregisterAccountContext } from '../context'
 
 export function CashregisterAccountForm() {
-  const { t, i18n } = useTranslation()
+  const { t, language } = useLocale()
   const { isLoading, form, closeModal, submitCashregisterAccountForm } = useCashregisterAccountContext()
 
-  const { data: { languages = [] } = {} } = useLanguageQuery(
-    { pagination: { full: true } },
-    { options: {
-      select: response => ({
-        languages: response.data.languages,
-      }),
-    } },
-  )
+  const { languages } = useLanguageQuery({ pagination: { full: true } })
 
   const loadCurrenciesOptions = useCurrencyOptions()
 
-  const onSubmit = (values) => {
-    submitCashregisterAccountForm(values)
-  }
-
   return (
     <Form {...form}>
-      <form className="w-full space-y-1" onSubmit={form.handleSubmit(onSubmit)}>
+      <form
+        className="w-full space-y-1"
+        onSubmit={(e) => { void form.handleSubmit(v => submitCashregisterAccountForm(v))(e) }}
+      >
         {languages.map(language => (
           <FormField
             control={form.control}
@@ -75,12 +67,11 @@ export function CashregisterAccountForm() {
             <FormItem>
               <FormLabel>{t('page.cashregister-accounts.form.currencies')}</FormLabel>
               <FormControl>
-                <AsyncSelect
-                  fetcher={loadCurrenciesOptions}
-                  renderOption={e => e.names[i18n.language]}
-                  getDisplayValue={e => e.names[i18n.language]}
+                <AsyncSelectNew
+                  loadOptions={loadCurrenciesOptions}
+                  renderOption={e => e.names[language]}
+                  getDisplayValue={e => e.names[language]}
                   getOptionValue={e => e.id}
-                  width="100%"
                   className="w-full"
                   name="currencies"
                   value={field.value}

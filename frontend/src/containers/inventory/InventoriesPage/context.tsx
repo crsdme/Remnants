@@ -9,11 +9,7 @@ interface InventoryContextType {
 
 const InventoryContext = createContext<InventoryContextType | undefined>(undefined)
 
-interface InventoryProviderProps {
-  children: ReactNode
-}
-
-export function InventoryProvider({ children }: InventoryProviderProps) {
+export function InventoryProvider({ children }: { children: ReactNode }) {
   const blank = {}
   const value: InventoryContextType = useMemo(
     () => ({

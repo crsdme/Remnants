@@ -10,7 +10,7 @@ export function ActionBar() {
   return (
     <>
       <div className="flex items-center justify-between flex-wrap gap- mb-4">
-        <Button variant="ghost" onClick={() => navigate('/procurements')}>
+        <Button variant="ghost" onClick={() => void navigate('/procurements')}>
           <ArrowLeft className="h-4 w-4" />
           {t('button.back')}
         </Button>

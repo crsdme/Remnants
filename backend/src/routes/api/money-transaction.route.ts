@@ -1,5 +1,5 @@
 import type { RequestHandler } from 'express'
-import { createMoneyTransactionSchema, getMoneyTransactionsSchema } from '@remnant/shared'
+import { createMoneyTransactionSchema, createMoneyTransactionTransferSchema, getMoneyTransactionsSchema } from '@remnant/shared'
 import { Router } from 'express'
 import * as MoneyTransactionController from '@/controllers/money-transaction.controller'
 import { checkPermissions, validateBodyRequest, validateQueryRequest } from '@/middleware'
@@ -13,10 +13,17 @@ router.get(
 )
 
 router.post(
-  '/create',
+  '/create-transaction',
   validateBodyRequest(createMoneyTransactionSchema),
   checkPermissions('money-transaction.create'),
-  MoneyTransactionController.create as RequestHandler,
+  MoneyTransactionController.createTransaction as RequestHandler,
+)
+
+router.post(
+  '/create-transfer',
+  validateBodyRequest(createMoneyTransactionTransferSchema),
+  checkPermissions('money-transaction.create'),
+  MoneyTransactionController.createTransfer as RequestHandler,
 )
 
 export default router

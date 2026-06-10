@@ -1,82 +1,112 @@
+import type { GetWarehousesRequest, WarehouseDTO } from '@remnant/shared'
 import { useQueryClient } from '@tanstack/react-query'
+import { useCallback } from 'react'
 import { getWarehouses } from '@/api/requests'
 
-interface DefaultFilters {
-  ids?: string[]
-  sites?: string[]
-}
-
-interface LoadOptionsParams {
-  query: string
-  selectedValue?: string[]
-}
-
-export function useWarehouseOptions({ defaultFilters }: { defaultFilters?: DefaultFilters } = {}) {
+export function useWarehouseOptions({ defaultFilters }: { defaultFilters?: GetWarehousesRequest['filters'] } = {}) {
   const queryClient = useQueryClient()
 
-  return async function loadWarehouseOptions({ query, selectedValue }: LoadOptionsParams): Promise<Warehouse[]> {
-    const filters = {
-      ...(selectedValue ? { ids: selectedValue } : { names: query }),
-      ...defaultFilters,
-    }
-    const pagination = { full: true }
+  return useCallback(
+    async ({ query = '', selectedValue }: { query?: string, selectedValue?: string[] } = {}): Promise<WarehouseDTO[]> => {
+      const params: GetWarehousesRequest = {
+        pagination: { full: true },
+        filters: {
+          ...(selectedValue ? { ids: selectedValue } : { names: query }),
+          ...defaultFilters,
+        },
+      }
 
-    const data = await queryClient.fetchQuery({
-      queryKey: ['warehouses', 'get', pagination, filters],
-      queryFn: () => getWarehouses({ pagination, filters }),
-      staleTime: 60000,
-    })
+      const { data } = await queryClient.fetchQuery({
+        queryKey: ['warehouses', 'get', params],
+        queryFn: async () => getWarehouses(params),
+        staleTime: 60000,
+      })
 
-    return data?.data?.warehouses || []
-  }
+      return data?.data?.items ?? []
+    },
+    [queryClient],
+  )
 }
 
-// import type { getWarehousesParams } from '@/api/types'
+// import { getWarehouses } from '@remnant/shared'
 // import { useQueryClient } from '@tanstack/react-query'
-// import { getWarehouses } from '@/api/requests'
+
+// interface DefaultFilters {
+//   ids?: string[]
+//   sites?: string[]
+// }
 
 // interface LoadOptionsParams {
 //   query: string
 //   selectedValue?: string[]
 // }
 
-// interface UseWarehouseOptionsParams {
-//   defaultFilters?: { ids?: string[] }
-//   mapFn?: (warehouse: Warehouse) => { value: string, label: string }
-// }
-
-// export function useWarehouseOptions({ defaultFilters, mapFn }: UseWarehouseOptionsParams = {}) {
+// export function useWarehouseOptions({ defaultFilters }: { defaultFilters?: DefaultFilters } = {}) {
 //   const queryClient = useQueryClient()
 
 //   return async function loadWarehouseOptions({ query, selectedValue }: LoadOptionsParams): Promise<Warehouse[]> {
-//     const params: getWarehousesParams = {}
-//     let filters = {}
-
-//     if (query) {
-//       filters = {
-//         ...(selectedValue ? { ids: selectedValue } : { names: query }),
-//       }
+//     const filters = {
+//       ...(selectedValue ? { ids: selectedValue } : { names: query }),
+//       ...defaultFilters,
 //     }
-
-//     if (defaultFilters) {
-//       filters = {
-//         ...filters,
-//         ...defaultFilters,
-//       }
-//     }
-
-//     if (Object.keys(filters).length > 0) {
-//       params.filters = filters
-//     }
+//     const pagination = { full: true }
 
 //     const data = await queryClient.fetchQuery({
-//       queryKey: ['warehouses', 'get', params],
-//       queryFn: () => getWarehouses(params),
+//       queryKey: ['warehouses', 'get', pagination, filters],
+//       queryFn: () => getWarehouses({ pagination, filters }),
 //       staleTime: 60000,
 //     })
 
-//     const warehouses = data?.data?.warehouses || []
-
-//     return mapFn ? warehouses.map(mapFn) as unknown as Warehouse[] : warehouses
+//     return data?.data?.warehouses || []
 //   }
 // }
+
+// // import type { getWarehousesParams } from '@/api/types'
+// // import { useQueryClient } from '@tanstack/react-query'
+// // import { getWarehouses } from '@/api/requests'
+
+// // interface LoadOptionsParams {
+// //   query: string
+// //   selectedValue?: string[]
+// // }
+
+// // interface UseWarehouseOptionsParams {
+// //   defaultFilters?: { ids?: string[] }
+// //   mapFn?: (warehouse: Warehouse) => { value: string, label: string }
+// // }
+
+// // export function useWarehouseOptions({ defaultFilters, mapFn }: UseWarehouseOptionsParams = {}) {
+// //   const queryClient = useQueryClient()
+
+// //   return async function loadWarehouseOptions({ query, selectedValue }: LoadOptionsParams): Promise<Warehouse[]> {
+// //     const params: getWarehousesParams = {}
+// //     let filters = {}
+
+// //     if (query) {
+// //       filters = {
+// //         ...(selectedValue ? { ids: selectedValue } : { names: query }),
+// //       }
+// //     }
+
+// //     if (defaultFilters) {
+// //       filters = {
+// //         ...filters,
+// //         ...defaultFilters,
+// //       }
+// //     }
+
+// //     if (Object.keys(filters).length > 0) {
+// //       params.filters = filters
+// //     }
+
+// //     const data = await queryClient.fetchQuery({
+// //       queryKey: ['warehouses', 'get', params],
+// //       queryFn: () => getWarehouses(params),
+// //       staleTime: 60000,
+// //     })
+
+// //     const warehouses = data?.data?.warehouses || []
+
+// //     return mapFn ? warehouses.map(mapFn) as unknown as Warehouse[] : warehouses
+// //   }
+// // }

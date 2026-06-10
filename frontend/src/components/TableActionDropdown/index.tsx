@@ -102,7 +102,7 @@ export function TableActionDropdown({ actions }: { actions?: Action[] }) {
             </AlertDialogCancel>
 
             <AlertDialogAction
-              onClick={handleConfirm}
+              onClick={() => void handleConfirm()}
               className={cn(
                 'bg-destructive text-white hover:bg-destructive/70 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40',
               )}
@@ -139,7 +139,7 @@ function MenuItem({
     if (action.type === 'link') {
       return (
         <DropdownMenuItem asChild className={className}>
-          <Link to={action.link || ''} target="_blank" onClick={() => action.onClick?.()}>
+          <Link to={action.link || ''} target="_blank" onClick={() => void action.onClick?.()}>
             {Content}
           </Link>
         </DropdownMenuItem>
@@ -148,7 +148,7 @@ function MenuItem({
     return (
       <DropdownMenuItem
         className={className}
-        onSelect={() => action.onClick?.()}
+        onSelect={() => void action.onClick?.()}
       >
         {Content}
       </DropdownMenuItem>

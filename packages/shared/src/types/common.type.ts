@@ -23,6 +23,8 @@ export type Pagination = PaginationRequest
 
 export type IdType = string
 
+export type Replace<T, R> = Omit<T, keyof R> & R
+
 export interface DateRange {
   from: Date
   to: Date
@@ -94,7 +96,7 @@ export interface AggregateResult<T> {
 }
 
 export interface PipeableDocument {
-  pipe: (destination: unknown) => unknown
+  pipe: (destination: unknown) => void
   end: () => void
-  on?: (event: 'error', handler: (err: unknown) => void) => unknown
+  on?: (event: 'error', handler: (err: unknown) => void) => void
 }

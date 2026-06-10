@@ -1,5 +1,18 @@
 import { z } from 'zod'
-import { dateRangeSchema, idSchema, languageStringSchema, numberFromStringSchema, paginationSchema, sorterParamsSchema } from './common'
+import { dateRangeSchema, idSchema, languageStringSchema, numberFromStringSchema, paginationSchema, responseItemSchema, responseListSchema, responseSchema, sorterParamsSchema } from './common'
+
+export const deliveryServiceSchema = z.object({
+  id: idSchema,
+  names: languageStringSchema,
+  priority: z.number().optional().default(0),
+  color: z.string().optional(),
+  type: z.enum(['novaposhta', 'selfpickup']),
+  active: z.boolean().optional().default(true),
+  createdAt: z.coerce.date(),
+  updatedAt: z.coerce.date(),
+})
+
+export type DeliveryServiceDTO = z.output<typeof deliveryServiceSchema>
 
 export const getDeliveryServicesSchema = z.object({
   filters: z.object({
@@ -46,3 +59,15 @@ export const removeDeliveryServicesSchema = z.object({
 })
 
 export type RemoveDeliveryServicesRequest = z.input<typeof removeDeliveryServicesSchema>
+
+export const getDeliveryServicesResponseSchema = responseListSchema(deliveryServiceSchema)
+export type GetDeliveryServicesResponse = z.output<typeof getDeliveryServicesResponseSchema>
+
+export const createDeliveryServiceResponseSchema = responseItemSchema(deliveryServiceSchema)
+export type CreateDeliveryServiceResponse = z.output<typeof createDeliveryServiceResponseSchema>
+
+export const editDeliveryServiceResponseSchema = responseItemSchema(deliveryServiceSchema)
+export type EditDeliveryServiceResponse = z.output<typeof editDeliveryServiceResponseSchema>
+
+export const removeDeliveryServicesResponseSchema = responseSchema
+export type RemoveDeliveryServicesResponse = z.output<typeof removeDeliveryServicesResponseSchema>

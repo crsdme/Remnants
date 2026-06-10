@@ -1,3 +1,4 @@
+import type { responseSchema } from './common/'
 import { z } from 'zod'
 import { dateRangeSchema } from './common/'
 
@@ -13,3 +14,7 @@ export const getStatisticSchema = z.object({
     },
   }),
 })
+
+export type GetOrderStatisticRequest = z.input<typeof getStatisticSchema>
+
+export type GetStatisticResponse = z.infer<typeof responseSchema>

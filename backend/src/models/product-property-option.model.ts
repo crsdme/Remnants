@@ -1,8 +1,12 @@
-import type { ProductPropertyOption } from '@remnant/shared'
+import type { HydratedDocument } from 'mongoose'
+import type { SUPPORTED_LANGUAGES_TYPE } from '@/config/constants'
+import type { ProductPropertyOptionDB } from '@/types/'
 import mongoose, { Schema } from 'mongoose'
 import { v4 as uuidv4 } from 'uuid'
 import { SUPPORTED_LANGUAGES } from '@/config/constants'
 import { uuidValidator } from '@/utils/'
+
+type ProductPropertyOptionDoc = HydratedDocument<ProductPropertyOptionDB>
 
 const ProductPropertyOptionSchema: Schema = new Schema(
   {
@@ -18,7 +22,7 @@ const ProductPropertyOptionSchema: Schema = new Schema(
       validate: {
         validator(value: Map<string, string>) {
           return Array.from(value.keys()).every(key =>
-            SUPPORTED_LANGUAGES.includes(key as any),
+            SUPPORTED_LANGUAGES.includes(key as SUPPORTED_LANGUAGES_TYPE),
           )
         },
         message: 'Supported languages only',
@@ -59,4 +63,4 @@ ProductPropertyOptionSchema.set('toJSON', {
 
 ProductPropertyOptionSchema.index({ removed: 1 })
 
-export const ProductPropertyOptionModel = mongoose.model<ProductPropertyOption>('product-property-option', ProductPropertyOptionSchema)
+export const ProductPropertyOptionModel = mongoose.model<ProductPropertyOptionDoc>('product-property-option', ProductPropertyOptionSchema)

@@ -1,17 +1,25 @@
-import type { getProductsParams } from '@/api/types'
+import type { GetProductRequest } from '@remnant/shared'
 
 import { useQuery } from '@tanstack/react-query'
-import { useTranslation } from 'react-i18next'
 import { getProducts } from '@/api/requests'
 
-export function useProductQuery(params: getProductsParams, settings?: QuerySettings) {
-  const { i18n } = useTranslation()
-  params.filters.language = i18n.language
+/** Stable fallback so list identity does not change every render while loading. */
+const EMPTY_ITEMS: never[] = []
 
-  return useQuery({
+export function useProductQuery(params: GetProductRequest, settings?: QuerySettings<typeof getProducts>) {
+  const query = useQuery({
     queryKey: ['products', 'get', params],
-    queryFn: () => getProducts(params),
+    queryFn: async () => getProducts(params),
     staleTime: 60000,
     ...settings?.options,
   })
+
+  const products = query.data?.data?.data?.items ?? EMPTY_ITEMS
+  const productsCount = query.data?.data?.data?.pagination?.total ?? 0
+
+  return {
+    ...query,
+    products,
+    productsCount,
+  }
 }

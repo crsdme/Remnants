@@ -1,3 +1,6 @@
+import type { CashregisterPopulatedDTO } from '@remnant/shared'
+import type { Column } from '@tanstack/react-table'
+import { createColumnHelper } from '@tanstack/react-table'
 import {
   ArrowDown,
   ArrowUp,
@@ -9,22 +12,24 @@ import {
   Trash,
 } from 'lucide-react'
 import { useMemo } from 'react'
-import { useTranslation } from 'react-i18next'
 
 import { TableActionDropdown } from '@/components'
 import { Badge, Button, Checkbox } from '@/components/ui'
 import { formatDate } from '@/utils/helpers'
+import { useLocale } from '@/utils/hooks'
 import { useCashregisterContext } from '../context'
 
 const sortIcons = { asc: ArrowUp, desc: ArrowDown }
+const columnHelper = createColumnHelper<CashregisterPopulatedDTO>()
 
 export function useColumns() {
-  const { t, i18n } = useTranslation()
+  const { t, language } = useLocale()
   const { isLoading, openModal, removeCashregister } = useCashregisterContext()
 
   const columns = useMemo(() => {
-    function sortHeader(column, label) {
-      const Icon = sortIcons[column.getIsSorted() || undefined] || ChevronsUpDown
+    function sortHeader(column: Column<CashregisterPopulatedDTO>, label: string) {
+      const sorted = column.getIsSorted()
+      const Icon = sorted ? sortIcons[sorted] : ChevronsUpDown
 
       return (
         <Button
@@ -40,7 +45,7 @@ export function useColumns() {
     }
 
     function selectColumn() {
-      return ({
+      return columnHelper.display({
         id: 'select',
         size: 35,
         meta: { title: t('component.columnMenu.columns.select') },
@@ -72,7 +77,7 @@ export function useColumns() {
     }
 
     function expanderColumn() {
-      return ({
+      return columnHelper.display({
         id: 'expander',
         header: '',
         cell: ({ row }) => {
@@ -99,7 +104,7 @@ export function useColumns() {
     }
 
     function actionColumn() {
-      return ({
+      return columnHelper.display({
         id: 'action',
         size: 85,
         meta: {
@@ -112,7 +117,7 @@ export function useColumns() {
           const actions = [
             {
               permission: 'cashregister.copy',
-              onClick: () => navigator.clipboard.writeText(item.id),
+              onClick: async () => navigator.clipboard.writeText(item.id),
               label: t('table.copy'),
               icon: <Copy className="h-4 w-4" />,
             },
@@ -140,7 +145,7 @@ export function useColumns() {
     return [
       selectColumn(),
       expanderColumn(),
-      {
+      columnHelper.accessor('names', {
         id: 'names',
         size: 150,
         meta: {
@@ -153,11 +158,10 @@ export function useColumns() {
           defaultVisible: true,
         },
         header: ({ column }) => sortHeader(column, t('page.cashregisters.table.names')),
-        accessorFn: row => row.names?.[i18n.language] || row.names?.en,
-      },
-      {
+        cell: ({ getValue }) => getValue()?.[language] ?? getValue()?.en,
+      }),
+      columnHelper.display({
         id: 'balance',
-        accessorKey: 'balance',
         meta: {
           title: t('page.cashregisters.table.balance'),
           defaultVisible: true,
@@ -174,9 +178,9 @@ export function useColumns() {
                 const currencies = account.currencies || []
                 return (
                   <div className="flex gap-2" key={account.id}>
-                    <Badge>{account.names?.[i18n.language]}</Badge>
+                    <Badge>{account.names?.[language]}</Badge>
                     {currencies.map((currency) => {
-                      return <Badge key={currency.id} variant="outline">{`${currency.balance} ${currency.symbols?.[i18n.language]}`}</Badge>
+                      return <Badge key={currency.id} variant="outline">{`${currency.balance} ${currency.symbols?.[language]}`}</Badge>
                     })}
                   </div>
                 )
@@ -188,10 +192,9 @@ export function useColumns() {
           //   <Badge key={account.id} variant="outline">{`${account.names?.[i18n.language]} ${account.balance} ${account.currencies.map(currency => currency.symbols?.[i18n.language]).join(', ')}`}</Badge>
           // ))
         },
-      },
-      {
+      }),
+      columnHelper.accessor('priority', {
         id: 'priority',
-        accessorKey: 'priority',
         meta: {
           title: t('page.cashregisters.table.priority'),
           batchEdit: true,
@@ -201,11 +204,10 @@ export function useColumns() {
           sortable: true,
         },
         header: ({ column }) => sortHeader(column, t('page.cashregisters.table.priority')),
-        cell: ({ row }) => <Badge variant="outline">{row.original.priority}</Badge>,
-      },
-      {
+        cell: ({ getValue }) => <Badge variant="outline">{getValue()}</Badge>,
+      }),
+      columnHelper.accessor('active', {
         id: 'active',
-        accessorKey: 'active',
         meta: {
           title: t('page.cashregisters.table.active'),
           batchEdit: true,
@@ -215,11 +217,13 @@ export function useColumns() {
           sortable: true,
         },
         header: t('page.cashregisters.table.active'),
-        cell: ({ row }) => <Badge variant={row.original.active ? 'success' : 'destructive'}>{t(`table.active.${row.original.active}`)}</Badge>,
-      },
-      {
+        cell: ({ getValue }) => {
+          const isActive = getValue()
+          return <Badge variant={isActive ? 'success' : 'destructive'}>{t(`table.active.${isActive}`)}</Badge>
+        },
+      }),
+      columnHelper.accessor('createdAt', {
         id: 'createdAt',
-        accessorKey: 'createdAt',
         meta: {
           title: t('table.createdAt'),
           filterable: true,
@@ -227,11 +231,10 @@ export function useColumns() {
           sortable: true,
         },
         header: ({ column }) => sortHeader(column, t('table.createdAt')),
-        cell: ({ row }) => formatDate(row.getValue('createdAt'), 'dd.MM.yyyy HH:mm', i18n.language),
-      },
-      {
+        cell: ({ getValue }) => formatDate(getValue(), 'dd.MM.yyyy HH:mm', language),
+      }),
+      columnHelper.accessor('updatedAt', {
         id: 'updatedAt',
-        accessorKey: 'updatedAt',
         meta: {
           title: t('table.updatedAt'),
           filterable: true,
@@ -239,10 +242,10 @@ export function useColumns() {
           sortable: true,
         },
         header: ({ column }) => sortHeader(column, t('table.updatedAt')),
-        cell: ({ row }) => formatDate(row.getValue('updatedAt'), 'dd.MM.yyyy HH:mm', i18n.language),
-      },
+        cell: ({ getValue }) => formatDate(getValue(), 'dd.MM.yyyy HH:mm', language),
+      }),
       actionColumn(),
     ]
-  }, [i18n.language])
+  }, [language, isLoading, openModal, removeCashregister, t])
   return columns
 }

@@ -1,4 +1,4 @@
-import type { ColumnSort } from '@tanstack/react-table'
+import type { ColumnSort, Row } from '@tanstack/react-table'
 import { flexRender, getCoreRowModel, getExpandedRowModel, useReactTable } from '@tanstack/react-table'
 import { Package } from 'lucide-react'
 import { Fragment, useState } from 'react'
@@ -15,10 +15,11 @@ import { ProductSelectedTotal } from './product-selected-total'
 interface ProductSelectedTableProps {
   products: any[]
   removeProduct: (product: any) => void
-  changeProduct: (options: { productId: string, field: string, value: any }) => void
+  changeProduct: (options: { productId: string, field: any, value: any }) => void
   isReceiving?: boolean
   isSelectedPrice?: boolean
   isDiscount?: boolean
+  isQuantity?: boolean
   disabled?: boolean
   isLoading?: boolean
   className?: string
@@ -37,6 +38,7 @@ export function ProductSelectedTable(
     isReceiving = false,
     isSelectedPrice = false,
     isDiscount = false,
+    isQuantity = false,
     disabled = false,
     includeTotal = false,
     includeFooterTotal = false,
@@ -52,7 +54,7 @@ export function ProductSelectedTable(
     changeProduct?.({ productId, field, value })
   }, 500)
 
-  function handleChange({ productId, field, value, isDebounced = false }: { productId: string, field: string, value: number, isDebounced?: boolean }) {
+  function handleChange({ productId, field, value, isDebounced = false }: { productId: string, field: string, value: string | number | string[], isDebounced?: boolean }) {
     if (isDebounced) {
       debouncedUpdate({ productId, field, value })
     }
@@ -65,6 +67,7 @@ export function ProductSelectedTable(
     removeProduct,
     isReceiving,
     isSelectedPrice,
+    isQuantity,
     disabled,
     handleChange,
     isDiscount,
@@ -118,7 +121,7 @@ export function ProductSelectedTable(
     ))
   }
 
-  const renderRow = row => (
+  const renderRow = (row: Row<any>) => (
     <Fragment key={row.id}>
       <TableRow
         data-state={row.getIsSelected() && 'selected'}
@@ -189,12 +192,12 @@ export function ProductSelectedTable(
       <div className="flex justify-between items-center max-md:flex-col gap-2 py-2">
         <h3 className="text-lg font-medium flex items-center gap-2">
           <Package className="size-5" />
-          <p className="text-lg font-medium">{t('component.productTable.table.selectedProducts', { count: products.reduce((acc, product) => acc + product.quantity, 0) })}</p>
+          <p className="text-lg font-medium">{t('component.productTable.table.selectedProducts', { count: products.reduce((acc, product) => acc + product.lineQuantity, 0) })}</p>
         </h3>
         <ColumnVisibilityMenu
           table={table}
           tableId="selected-products-component"
-          className="min-w-[100%] sm:min-w-[100px]"
+          className="min-w-full sm:min-w-[100px]"
         />
       </div>
       <div className="border rounded-sm">

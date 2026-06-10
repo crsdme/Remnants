@@ -1,5 +1,3 @@
-import { useTranslation } from 'react-i18next'
-
 import {
   Button,
   Pagination,
@@ -12,6 +10,7 @@ import {
   SelectItem,
   SelectTrigger,
 } from '@/components/ui'
+import { useDebounceCallback, useLocale } from '@/utils/hooks'
 
 export function TablePagination({
   pagination,
@@ -19,10 +18,18 @@ export function TablePagination({
   changePagination,
   selectedCount = 0,
   totalCount,
+}: {
+  pagination: { current: number, pageSize: number }
+  totalPages: number
+  changePagination: (value: { current: number, pageSize: number }) => void
+  selectedCount?: number
+  totalCount: number
 }) {
-  const { t } = useTranslation()
-  if (totalPages <= 1)
-    return null
+  const { t } = useLocale()
+
+  const changePaginationCallback = useDebounceCallback((value: { current: number, pageSize: number }) => {
+    changePagination(value)
+  }, 50)
 
   return (
     <div className="flex justify-end py-2 max-md:flex-col gap-4">
@@ -41,7 +48,7 @@ export function TablePagination({
             total: totalPages,
           })}
         </span>
-        <Select onValueChange={value => changePagination({ pageSize: Number(value) })}>
+        <Select onValueChange={value => changePaginationCallback({ current: pagination.current, pageSize: Number(value) })}>
           <SelectTrigger>{pagination.pageSize}</SelectTrigger>
           <SelectContent align="center">
             <SelectItem value="10">10</SelectItem>
@@ -55,8 +62,9 @@ export function TablePagination({
             <PaginationItem>
               <PaginationPrevious
                 onClick={() =>
-                  changePagination({
+                  changePaginationCallback({
                     current: Math.max(pagination.current - 1, 1),
+                    pageSize: pagination.pageSize,
                   })}
                 variant="outline"
                 aria-disabled={pagination.current <= 1}
@@ -77,7 +85,7 @@ export function TablePagination({
                     <Button
                       variant={pagination.current === pageNumber ? 'default' : 'outline'}
                       size="icon"
-                      onClick={() => changePagination({ current: pageNumber })}
+                      onClick={() => changePaginationCallback({ current: pageNumber, pageSize: pagination.pageSize })}
                     >
                       {pageNumber}
                     </Button>
@@ -89,8 +97,9 @@ export function TablePagination({
             <PaginationItem>
               <PaginationNext
                 onClick={() =>
-                  changePagination({
+                  changePaginationCallback({
                     current: Math.max(pagination.current + 1, totalPages),
+                    pageSize: pagination.pageSize,
                   })}
                 variant="outline"
                 aria-disabled={!(pagination.current < totalPages)}

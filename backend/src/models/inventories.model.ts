@@ -1,8 +1,12 @@
-import type { Inventory, InventoryItem } from '@remnant/shared'
+import type { HydratedDocument } from 'mongoose'
+import type { InventoryDB, InventoryItemDB } from '@/types/'
 import mongoose, { Schema } from 'mongoose'
 import { v4 as uuidv4 } from 'uuid'
 
 import { CounterModel } from '@/models/'
+
+type InventoryDoc = HydratedDocument<InventoryDB>
+type InventoryItemDoc = HydratedDocument<InventoryItemDB>
 
 const InventorySchema: Schema = new Schema(
   {
@@ -83,20 +87,17 @@ InventorySchema.set('toJSON', {
   },
 })
 
-InventorySchema.pre('save', async function (next) {
-  const doc = this as any
-
-  if (doc.isNew && !doc.seq) {
+InventorySchema.pre('save', async function (this: InventoryDoc, next) {
+  if (this.isNew) {
     const counter = await CounterModel.findByIdAndUpdate(
-      'inventories',
+      'orders',
       { $inc: { seq: 1 } },
       { new: true, upsert: true },
     )
-    doc.seq = counter.seq
+    this.seq = counter.seq
   }
-
   next()
 })
 
-export const InventoryModel = mongoose.model<Inventory>('inventory', InventorySchema)
-export const InventoryItemModel = mongoose.model<InventoryItem>('inventory-item', InventoryItemSchema)
+export const InventoryModel = mongoose.model<InventoryDoc>('inventory', InventorySchema)
+export const InventoryItemModel = mongoose.model<InventoryItemDoc>('inventory-item', InventoryItemSchema)

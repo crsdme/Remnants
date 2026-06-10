@@ -1,769 +1,131 @@
 import type {
-  CreateInventoryParams,
+  AuthUser,
   CreateInventoryResponse,
-  EditInventoryParams,
   EditInventoryResponse,
-  GetInventoriesParams,
   GetInventoriesResponse,
-  GetInventoryItemsParams,
   GetInventoryItemsResponse,
-  RemoveInventoriesParams,
   RemoveInventoriesResponse,
-  RequestUser,
-  ScanBarcodeToDraftParams,
   ScanBarcodeToDraftResponse,
 } from '@remnant/shared'
+import type {
+  CreateInventoriesPayload,
+  EditInventoriesPayload,
+  GetInventoriesPayload,
+  GetInventoryItemsPayload,
+  RemoveInventoriesPayload,
+  ScanBarcodeToDraftInventoryPayload,
+} from '@/types/'
 import { v4 as uuidv4 } from 'uuid'
-import { STORAGE_URLS } from '@/config/constants'
-import { BarcodeModel, InventoryItemModel, InventoryModel } from '@/models/'
+import { mapInventoryToDTO } from '@/mappers'
+import * as InventoryRepo from '@/repositories/inventory.repo'
 import * as ProductService from '@/services/product.service'
 import * as QuantityService from '@/services/quantity.service'
-import { buildQuery, buildSortQuery, HttpError } from '@/utils/'
+import {
+  parseGetProducts,
+  parseGetProductsIndex,
+} from '@/types/'
+import { HttpError } from '@/utils/'
 
-export async function get(payload: GetInventoriesParams): Promise<GetInventoriesResponse> {
-  const { current = 1, pageSize = 10 } = payload.pagination || {}
-
-  const {
-    seq = undefined,
-    createdAt = {
-      from: undefined,
-      to: undefined,
-    },
-    updatedAt = {
-      from: undefined,
-      to: undefined,
-    },
-  } = payload.filters || {}
-
-  const filterRules = {
-    seq: { type: 'number' },
-    createdAt: { type: 'dateRange' },
-    updatedAt: { type: 'dateRange' },
-  } as const
-
-  const query = buildQuery({
-    filters: { seq, createdAt, updatedAt },
-    rules: filterRules,
-    removed: false,
-  })
-
-  const sorters = buildSortQuery(payload.sorters || {}, { seq: -1, createdAt: -1 })
-
-  const pipeline = [
-    {
-      $match: query,
-    },
-    {
-      $sort: sorters,
-    },
-    {
-      $lookup: {
-        from: 'categories',
-        localField: 'category',
-        foreignField: '_id',
-        as: 'category',
-      },
-    },
-    {
-      $lookup: {
-        from: 'warehouses',
-        localField: 'warehouse',
-        foreignField: '_id',
-        as: 'warehouse',
-      },
-    },
-    {
-      $addFields: {
-        warehouse: {
-          $first: '$warehouse',
-        },
-        category: {
-          $first: '$category',
-        },
-      },
-    },
-    {
-      $project: {
-        _id: 0,
-        id: '$_id',
-        seq: 1,
-        status: 1,
-        warehouse: {
-          $cond: {
-            if: { $gt: ['$warehouse', null] },
-            then: {
-              id: '$warehouse._id',
-              names: '$warehouse.names',
-            },
-            else: '$$REMOVE',
-          },
-        },
-        category: {
-          $cond: {
-            if: { $gt: ['$category', null] },
-            then: {
-              id: '$category._id',
-              names: '$category.names',
-            },
-            else: '$$REMOVE',
-          },
-        },
-        comment: 1,
-        createdAt: 1,
-        updatedAt: 1,
-      },
-    },
-    {
-      $facet: {
-        inventories: [
-          { $skip: (current - 1) * pageSize },
-          { $limit: pageSize },
-        ],
-        totalCount: [
-          { $count: 'count' },
-        ],
-      },
-    },
-  ]
-
-  const inventoriesRaw = await InventoryModel.aggregate(pipeline).exec()
-
-  const inventories = inventoriesRaw[0].inventories || []
-  const inventoriesCount = inventoriesRaw[0].totalCount[0]?.count || 0
+export async function get({ payload }: { payload: GetInventoriesPayload }): Promise<GetInventoriesResponse> {
+  const { items, total, page, pageSize } = await InventoryRepo.list({ payload })
 
   return {
     status: 'success',
     code: 'INVENTORIES_FETCHED',
     message: 'Inventories fetched',
     data: {
-      items: inventories,
+      items,
       pagination: {
-        page: current,
+        page,
         pageSize,
-        total: inventoriesCount,
+        total,
       },
     },
   }
 }
 
-export async function getItems(payload: GetInventoryItemsParams): Promise<GetInventoryItemsResponse> {
-  const { current = 1, pageSize = 10 } = payload.pagination || {}
+export async function getItems({ payload }: { payload: GetInventoryItemsPayload }): Promise<GetInventoryItemsResponse> {
+  const { items, total, page, pageSize } = await InventoryRepo.listItems({ payload })
 
-  const {
-    inventoryId,
-  } = payload.filters || {}
-
-  const filterRules = {
-    inventoryId: { type: 'string' },
-  } as const
-
-  const query = buildQuery({
-    filters: { inventoryId },
-    rules: filterRules,
-    removed: false,
-  })
-
-  const pipeline = [
-    {
-      $match: query,
-    },
-    {
-      $lookup: {
-        from: 'products',
-        let: { productId: '$productId' },
-        pipeline: [
-          { $match: { $expr: { $eq: ['$_id', '$$productId'] } } },
-          { $unwind: { path: '$productProperties', preserveNullAndEmptyArrays: true } },
-          {
-            $lookup: {
-              from: 'product-properties',
-              localField: 'productProperties._id',
-              foreignField: '_id',
-              as: 'productProperties.data',
-            },
-          },
-          {
-            $lookup: {
-              from: 'product-property-options',
-              localField: 'productProperties.value',
-              foreignField: '_id',
-              as: 'productProperties.optionData',
-            },
-          },
-          {
-            $lookup: {
-              from: 'product-property-options',
-              let: { valueArr: '$productProperties.value' },
-              pipeline: [
-                {
-                  $match: {
-                    $expr: {
-                      $in: [
-                        '$_id',
-                        {
-                          $cond: [
-                            { $isArray: ['$$valueArr'] },
-                            '$$valueArr',
-                            [{ $ifNull: ['$$valueArr', null] }],
-                          ],
-                        },
-                      ],
-                    },
-                  },
-                },
-              ],
-              as: 'productProperties.optionData',
-            },
-          },
-          {
-            $group: {
-              _id: '$_id',
-              doc: { $first: '$$ROOT' },
-              productProperties: { $push: '$productProperties' },
-            },
-          },
-          {
-            $addFields: {
-              'doc.productProperties': '$productProperties',
-            },
-          },
-          {
-            $replaceRoot: {
-              newRoot: '$doc',
-            },
-          },
-          {
-            $lookup: {
-              from: 'currencies',
-              localField: 'currency',
-              foreignField: '_id',
-              as: 'currency',
-            },
-          },
-          {
-            $lookup: {
-              from: 'currencies',
-              localField: 'purchaseCurrency',
-              foreignField: '_id',
-              as: 'purchaseCurrency',
-            },
-          },
-          {
-            $lookup: {
-              from: 'units',
-              localField: 'unit',
-              foreignField: '_id',
-              as: 'unit',
-            },
-          },
-          {
-            $lookup: {
-              from: 'categories',
-              localField: 'categories',
-              foreignField: '_id',
-              as: 'categories',
-            },
-          },
-          {
-            $lookup: {
-              from: 'quantities',
-              localField: 'quantity',
-              foreignField: '_id',
-              as: 'quantity',
-            },
-          },
-          {
-            $lookup: {
-              from: 'product-property-groups',
-              localField: 'productPropertiesGroup',
-              foreignField: '_id',
-              as: 'productPropertiesGroup',
-            },
-          },
-          {
-            $lookup: {
-              from: 'barcodes',
-              localField: 'barcodes',
-              foreignField: '_id',
-              as: 'barcodes',
-            },
-          },
-          {
-            $addFields: {
-              currency: { $arrayElemAt: ['$currency', 0] },
-              purchaseCurrency: { $arrayElemAt: ['$purchaseCurrency', 0] },
-              unit: { $arrayElemAt: ['$unit', 0] },
-              productPropertiesGroup: { $arrayElemAt: ['$productPropertiesGroup', 0] },
-              productProperties: {
-                $map: {
-                  input: '$productProperties',
-                  as: 'prop',
-                  in: {
-                    $mergeObjects: [
-                      '$$prop',
-                      {
-                        id: '$$prop._id',
-                        data: { $arrayElemAt: ['$$prop.data', 0] },
-                        optionData: {
-                          $map: {
-                            input: '$$prop.optionData',
-                            as: 'option',
-                            in: {
-                              $mergeObjects: [
-                                '$$option',
-                                {
-                                  id: '$$option._id',
-                                  names: '$$option.names',
-                                  color: '$$option.color',
-                                },
-                              ],
-                            },
-                          },
-                        },
-                      },
-                    ],
-                  },
-                },
-              },
-              categories: {
-                $map: {
-                  input: '$categories',
-                  as: 'prop',
-                  in: {
-                    $mergeObjects: [
-                      '$$prop',
-                      {
-                        id: '$$prop._id',
-                      },
-                    ],
-                  },
-                },
-              },
-              barcodes: {
-                $map: {
-                  input: '$barcodes',
-                  as: 'barcode',
-                  in: { $mergeObjects: ['$$barcode', { id: '$$barcode._id', code: '$$barcode.code' }] },
-                },
-              },
-            },
-          },
-          {
-            $project: {
-              _id: 0,
-              seq: 1,
-              names: 1,
-              price: 1,
-              currency: { id: '$currency._id', names: 1, symbols: 1 },
-              purchasePrice: 1,
-              purchaseCurrency: { id: '$purchaseCurrency._id', names: 1, symbols: 1 },
-              barcodes: { id: 1, code: 1 },
-              categories: { id: 1, names: 1 },
-              unit: { id: '$unit._id', names: 1, symbols: 1 },
-              quantity: { count: 1, warehouse: 1, status: 1 },
-              images: 1,
-              productProperties: { id: 1, value: 1, data: { names: 1, type: 1, isRequired: 1, showInTable: 1 }, optionData: { id: 1, names: 1, color: 1 } },
-              productPropertiesGroup: { id: '$productPropertiesGroup._id', names: 1 },
-              createdAt: 1,
-              updatedAt: 1,
-              id: '$_id',
-            },
-          },
-        ],
-        as: 'product',
-      },
-    },
-    {
-      $addFields: {
-        product: {
-          $first: '$product',
-        },
-      },
-    },
-    {
-      $project: {
-        _id: 0,
-        id: '$_id',
-        product: 1,
-        quantity: 1,
-        inventoryId: 1,
-        createdAt: 1,
-      },
-    },
-    {
-      $facet: {
-        inventoryItems: [
-          { $skip: (current - 1) * pageSize },
-          { $limit: pageSize },
-        ],
-        totalCount: [
-          { $count: 'count' },
-        ],
-      },
-    },
-  ]
-
-  const inventoryItemsRaw = await InventoryItemModel.aggregate(pipeline).exec()
-
-  let inventoryItems = inventoryItemsRaw[0].inventoryItems || []
-  const inventoryItemsCount = inventoryItemsRaw[0].totalCount[0]?.count || 0
-
-  inventoryItems = inventoryItems.map((item: any) => ({
-    ...item,
-    product: {
-      ...item.product,
-      images: item.product.images.map((image: any) => ({
-        id: image._id,
-        path: `${STORAGE_URLS.productImages}/${image.filename}`,
-        filename: image.filename,
-        name: image.name,
-        type: image.type,
-      })),
-    },
-  }))
+  // inventoryItems = inventoryItems.map((item: any) => ({
+  //   ...item,
+  //   product: {
+  //     ...item.product,
+  //     images: item.product.images.map((image: any) => ({
+  //       id: image._id,
+  //       path: `${STORAGE_URLS.productImages}/${image.filename}`,
+  //       filename: image.filename,
+  //       name: image.name,
+  //       type: image.type,
+  //     })),
+  //   },
+  // }))
 
   return {
     status: 'success',
     code: 'INVENTORY_ITEMS_FETCHED',
     message: 'Inventory items fetched',
     data: {
-      items: inventoryItems,
+      items,
       pagination: {
-        page: current,
+        page,
         pageSize,
-        total: inventoryItemsCount,
+        total,
       },
     },
   }
 }
 
-export async function scanBarcodeToDraft(payload: ScanBarcodeToDraftParams): Promise<ScanBarcodeToDraftResponse> {
-  const { barcode, category } = payload.filters
+export async function scanBarcodeToDraft({ payload }: { payload: ScanBarcodeToDraftInventoryPayload }): Promise<ScanBarcodeToDraftResponse> {
+  const { barcode, category } = payload
 
-  const filterRules = {
-    code: { type: 'exact' },
-  } as const
-
-  const query = buildQuery({
-    filters: { code: barcode },
-    rules: filterRules,
-    removed: false,
+  const { data: { items: [product] } } = await ProductService.get({
+    payload: parseGetProducts({ filters: { codes: [barcode] }, pagination: { full: true } }),
   })
 
-  const pipeline = [
-    {
-      $match: query,
-    },
-    {
-      $unwind: {
-        path: '$products',
-        preserveNullAndEmptyArrays: true,
-      },
-    },
-    {
-      $lookup: {
-        from: 'products',
-        let: { productId: '$products._id' },
-        pipeline: [
-          { $match: { $expr: { $eq: ['$_id', '$$productId'] } } },
-          { $unwind: { path: '$productProperties', preserveNullAndEmptyArrays: true } },
-          {
-            $lookup: {
-              from: 'product-properties',
-              localField: 'productProperties._id',
-              foreignField: '_id',
-              as: 'productProperties.data',
-            },
-          },
-          {
-            $lookup: {
-              from: 'product-property-options',
-              localField: 'productProperties.value',
-              foreignField: '_id',
-              as: 'productProperties.optionData',
-            },
-          },
-          {
-            $lookup: {
-              from: 'product-property-options',
-              let: { valueArr: '$productProperties.value' },
-              pipeline: [
-                {
-                  $match: {
-                    $expr: {
-                      $in: [
-                        '$_id',
-                        {
-                          $cond: [
-                            { $isArray: ['$$valueArr'] },
-                            '$$valueArr',
-                            [{ $ifNull: ['$$valueArr', null] }],
-                          ],
-                        },
-                      ],
-                    },
-                  },
-                },
-              ],
-              as: 'productProperties.optionData',
-            },
-          },
-          {
-            $group: {
-              _id: '$_id',
-              doc: { $first: '$$ROOT' },
-              productProperties: { $push: '$productProperties' },
-            },
-          },
-          {
-            $addFields: {
-              'doc.productProperties': '$productProperties',
-            },
-          },
-          {
-            $replaceRoot: {
-              newRoot: '$doc',
-            },
-          },
-          {
-            $lookup: {
-              from: 'currencies',
-              localField: 'currency',
-              foreignField: '_id',
-              as: 'currency',
-            },
-          },
-          {
-            $lookup: {
-              from: 'currencies',
-              localField: 'purchaseCurrency',
-              foreignField: '_id',
-              as: 'purchaseCurrency',
-            },
-          },
-          {
-            $lookup: {
-              from: 'units',
-              localField: 'unit',
-              foreignField: '_id',
-              as: 'unit',
-            },
-          },
-          {
-            $lookup: {
-              from: 'categories',
-              localField: 'categories',
-              foreignField: '_id',
-              as: 'categories',
-            },
-          },
-          {
-            $lookup: {
-              from: 'quantities',
-              localField: 'quantity',
-              foreignField: '_id',
-              as: 'quantity',
-            },
-          },
-          {
-            $lookup: {
-              from: 'product-property-groups',
-              localField: 'productPropertiesGroup',
-              foreignField: '_id',
-              as: 'productPropertiesGroup',
-            },
-          },
-          {
-            $lookup: {
-              from: 'barcodes',
-              localField: 'barcodes',
-              foreignField: '_id',
-              as: 'barcodes',
-            },
-          },
-          {
-            $addFields: {
-              currency: { $arrayElemAt: ['$currency', 0] },
-              purchaseCurrency: { $arrayElemAt: ['$purchaseCurrency', 0] },
-              unit: { $arrayElemAt: ['$unit', 0] },
-              productPropertiesGroup: { $arrayElemAt: ['$productPropertiesGroup', 0] },
-              productProperties: {
-                $map: {
-                  input: '$productProperties',
-                  as: 'prop',
-                  in: {
-                    $mergeObjects: [
-                      '$$prop',
-                      {
-                        id: '$$prop._id',
-                        data: { $arrayElemAt: ['$$prop.data', 0] },
-                        optionData: {
-                          $map: {
-                            input: '$$prop.optionData',
-                            as: 'option',
-                            in: {
-                              $mergeObjects: [
-                                '$$option',
-                                {
-                                  id: '$$option._id',
-                                  names: '$$option.names',
-                                  color: '$$option.color',
-                                },
-                              ],
-                            },
-                          },
-                        },
-                      },
-                    ],
-                  },
-                },
-              },
-              categories: {
-                $map: {
-                  input: '$categories',
-                  as: 'prop',
-                  in: {
-                    $mergeObjects: [
-                      '$$prop',
-                      {
-                        id: '$$prop._id',
-                      },
-                    ],
-                  },
-                },
-              },
-              barcodes: {
-                $map: {
-                  input: '$barcodes',
-                  as: 'barcode',
-                  in: { $mergeObjects: ['$$barcode', { id: '$$barcode._id', code: '$$barcode.code' }] },
-                },
-              },
-            },
-          },
-          {
-            $project: {
-              _id: 0,
-              seq: 1,
-              names: 1,
-              price: 1,
-              currency: { id: '$currency._id', names: 1, symbols: 1 },
-              purchasePrice: 1,
-              purchaseCurrency: { id: '$purchaseCurrency._id', names: 1, symbols: 1 },
-              barcodes: { id: 1, code: 1 },
-              categories: { id: 1, names: 1 },
-              unit: { id: '$unit._id', names: 1, symbols: 1 },
-              quantity: { count: 1, warehouse: 1, status: 1 },
-              images: 1,
-              productProperties: { id: 1, value: 1, data: { names: 1, type: 1, isRequired: 1, showInTable: 1 }, optionData: { id: 1, names: 1, color: 1 } },
-              productPropertiesGroup: { id: '$productPropertiesGroup._id', names: 1 },
-              createdAt: 1,
-              updatedAt: 1,
-              id: '$_id',
-            },
-          },
-        ],
-        as: 'products.product',
-      },
-    },
-    {
-      $group: {
-        _id: '$_id',
-        doc: { $first: '$$ROOT' },
-        products: {
-          $push: {
-            quantity: '$products.quantity',
-            product: { $first: '$products.product' }, // т.к. product — это массив из $lookup
-          },
-        },
-      },
-    },
-    {
-      $addFields: {
-        'doc.products': '$products',
-      },
-    },
-    {
-      $replaceRoot: {
-        newRoot: '$doc',
-      },
-    },
-    {
-      $project: {
-        _id: 0,
-        id: '$_id',
-        code: 1,
-        products: 1,
-      },
-    },
-
-  ]
-
-  const barcodeRaw = await BarcodeModel.aggregate(pipeline).exec()
-  let inventoryItems = barcodeRaw[0].products || []
-
-  inventoryItems = inventoryItems.map((item: any) => ({
-    ...item,
-    product: {
-      ...item.product,
-      images: item.product.images.map((image: any) => ({
-        id: image._id,
-        path: `${STORAGE_URLS.productImages}/${image.filename}`,
-        filename: image.filename,
-        name: image.name,
-        type: image.type,
-      })),
-    },
-  }))
-
   const { productIndex } = await ProductService.getIndex({
-    filters: {
-      productId: inventoryItems[0].product.id,
-      categories: [category],
-    },
+    payload: parseGetProductsIndex({ productId: product.id, filters: { categories: [category] } }),
   })
 
   return {
     status: 'success',
     code: 'INVENTORY_ITEMS_FETCHED',
     message: 'Inventory items fetched',
-    inventoryItems,
+    product,
     productIndex,
   }
 }
 
-export async function create(payload: CreateInventoryParams, user: RequestUser): Promise<CreateInventoryResponse> {
-  const { warehouse, category, comment, items } = payload
+export async function create({ payload, user }: { payload: CreateInventoriesPayload, user: AuthUser }): Promise<CreateInventoryResponse> {
+  const { warehouse, categories, comment, items } = payload
   const createdBy = user.id
   const inventoryId = uuidv4()
 
-  const { products } = await ProductService.get({
-    filters: {
-      categories: [category],
-    },
-    pagination: {
-      full: true,
+  const { data: { items: products } } = await ProductService.get({
+    payload: parseGetProducts({ filters: { categories }, pagination: { full: true } }),
+  })
+
+  const [inventory] = await InventoryRepo.create({
+    payload: {
+      _id: inventoryId,
+      warehouse,
+      categories,
+      comment,
     },
   })
 
-  const inventory = await InventoryModel.create({
-    _id: inventoryId,
-    status: 'confirmed',
-    warehouse,
-    category,
-    comment,
-    createdBy,
-  })
+  if (inventory === null)
+    throw new HttpError(400, 'Inventory not created', 'INVENTORY_NOT_CREATED')
 
   const mappedItems = products.map((product) => {
     const item = items.find(p => p.id === product.id)
 
     if (!item) {
-      const productQuantity = product.quantity.find(q => q.warehouse === warehouse)?.count || 0
+      const productQuantity = product.warehouseStock.find(q => q.warehouse === warehouse)
       return {
         inventoryId,
         productId: product.id,
-        quantity: productQuantity,
+        quantity: productQuantity?.count ?? 0,
         receivedQuantity: 0,
       }
     }
@@ -777,67 +139,55 @@ export async function create(payload: CreateInventoryParams, user: RequestUser):
   })
 
   for (const item of mappedItems) {
-    QuantityService.count({
-      product: item.productId,
-      warehouse,
-      count: item.receivedQuantity,
-      mode: 'set',
-      userId: createdBy,
-      refType: 'inventory',
-      refId: inventoryId,
+    await QuantityService.count({
+      payload: {
+        productId: item.productId,
+        warehouse,
+        count: item.receivedQuantity,
+        mode: 'set',
+        userId: createdBy,
+        refType: 'inventory',
+        refId: inventoryId,
+      },
     })
   }
 
-  await InventoryItemModel.create(mappedItems)
+  await InventoryRepo.createItems({ payload: mappedItems })
 
   return {
     status: 'success',
     code: 'INVENTORY_CREATED',
     message: 'Inventory created',
-    data: inventory,
+    data: mapInventoryToDTO(inventory),
   }
 }
 
-export async function edit(payload: EditInventoryParams): Promise<EditInventoryResponse> {
-  const { id, status, warehouse, comment } = payload
+export async function edit({ payload }: { payload: EditInventoriesPayload }): Promise<EditInventoryResponse> {
+  const { id, warehouse, comment } = payload
 
-  // const oldInventory = await InventoryModel.findById(id)
+  const inventory = await InventoryRepo.updateById({
+    id,
+    payload: {
+      status: 'draft',
+      warehouse,
+      comment,
+    },
+  })
 
-  // const oldItems = await InventoryItemModel.find({ inventoryId: id })
-
-  const inventory = await InventoryModel.findByIdAndUpdate(id, {
-    status,
-    warehouse,
-    comment,
-  }, { new: true })
-
-  if (!inventory) {
+  if (inventory === null)
     throw new HttpError(400, 'Inventory not edited', 'INVENTORY_NOT_EDITED')
-  }
 
   return {
     status: 'success',
     code: 'INVENTORY_EDITED',
     message: 'Inventory edited',
-    data: inventory,
+    data: mapInventoryToDTO(inventory),
   }
 }
 
-export async function remove(payload: RemoveInventoriesParams, user: RequestUser): Promise<RemoveInventoriesResponse> {
-  const { ids } = payload
-  const removedBy = user.id
-
-  await InventoryModel.updateMany(
-    { _id: { $in: ids } },
-    { status: 'cancelled', removedBy, removedAt: new Date() },
-  )
-
-  for (const id of ids) {
-    const inventory = await InventoryModel.findById(id)
-    if (!inventory)
-      continue
-
-    // const items = await InventoryItemModel.find({ inventoryId: id })
+export async function remove({ payload, user }: { payload: RemoveInventoriesPayload, user: AuthUser }): Promise<RemoveInventoriesResponse> {
+  for (const id of payload.ids) {
+    await InventoryRepo.removeById(id, user.id)
   }
 
   return {

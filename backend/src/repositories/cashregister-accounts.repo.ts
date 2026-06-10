@@ -96,11 +96,11 @@ export async function list(payload: GetCashregisterAccountsRepoPayload): Promise
     },
     {
       $facet: {
-        cashregisterAccounts: [
+        items: [
           { $skip: (current - 1) * pageSize },
           { $limit: pageSize },
         ],
-        totalCount: [
+        count: [
           { $count: 'count' },
         ],
       },

@@ -1,7 +1,7 @@
-import type { CashregisterDTO } from '@remnant/shared'
-import type { CashregisterDB } from '@/types'
+import type { CashregisterDTO, CashregisterPopulatedDTO } from '@remnant/shared'
+import type { CashregisterDB, CashregisterDBPopulated } from '@/types'
 
-export function mapCashregisterToDTO(cashregister: CashregisterDB): CashregisterDTO {
+export function mapCashregisterToPopulatedDTO(cashregister: CashregisterDBPopulated): CashregisterPopulatedDTO {
   return {
     id: cashregister._id,
     names: cashregister.names,
@@ -10,10 +10,28 @@ export function mapCashregisterToDTO(cashregister: CashregisterDB): Cashregister
       id: account._id,
       seq: account.seq,
       names: account.names,
-      currencies: account.currencies,
+      currencies: account.currencies.map(currency => ({
+        id: currency._id,
+        names: currency.names,
+        symbols: currency.symbols,
+        scale: currency.scale,
+        balance: 0,
+      })),
       priority: account.priority,
       active: account.active,
     })),
+    active: cashregister.active,
+    createdAt: cashregister.createdAt,
+    updatedAt: cashregister.updatedAt,
+  }
+}
+
+export function mapCashregisterToDTO(cashregister: CashregisterDB): CashregisterDTO {
+  return {
+    id: cashregister._id,
+    names: cashregister.names,
+    priority: cashregister.priority,
+    accounts: cashregister.accounts,
     active: cashregister.active,
     createdAt: cashregister.createdAt,
     updatedAt: cashregister.updatedAt,

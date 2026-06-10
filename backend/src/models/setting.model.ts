@@ -1,7 +1,10 @@
-import type { Setting } from '@remnant/shared'
+import type { HydratedDocument } from 'mongoose'
+import type { SettingDB } from '@/types/'
 import mongoose, { Schema } from 'mongoose'
 import { v4 as uuidv4 } from 'uuid'
 import { uuidValidator } from '@/utils/'
+
+type SettingDoc = HydratedDocument<SettingDB>
 
 const SettingSchema: Schema = new Schema(
   {
@@ -50,4 +53,4 @@ SettingSchema.set('toJSON', {
 
 SettingSchema.index({ key: 1 })
 
-export const SettingModel = mongoose.model<Setting>('Setting', SettingSchema)
+export const SettingModel = mongoose.model<SettingDoc>('Setting', SettingSchema)

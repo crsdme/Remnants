@@ -1,65 +1,44 @@
-import type { ColumnSort } from '@tanstack/react-table'
-
+import type { CategoryDTO } from '@remnant/shared'
+import type { Row } from '@tanstack/react-table'
 import { flexRender, getCoreRowModel, getExpandedRowModel, useReactTable } from '@tanstack/react-table'
-import { Fragment, useMemo, useState } from 'react'
-import { useTranslation } from 'react-i18next'
+import { Fragment, useState } from 'react'
 
-import { useCategoryQuery, useLanguageQuery } from '@/api/hooks'
-import { AdvancedFilters, AdvancedSorters, BatchEdit, ColumnVisibilityMenu, PermissionGate, TablePagination, TableSelectionDropdown } from '@/components'
+import { useCategoryQuery } from '@/api/hooks'
+import { ColumnVisibilityMenu, TablePagination, TableSelectionDropdown } from '@/components'
 import { Separator, Skeleton, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui'
 
-import { useDebounceCallback } from '@/utils/hooks'
+import { useListQueryState, useLocale } from '@/utils/hooks'
 import { useCategoryContext } from '../context'
 
 import { useColumns } from './columns'
 import { DataTableFilters } from './data-table-filters'
 
 export function DataTable() {
-  const { t, i18n } = useTranslation()
+  const { t } = useLocale()
   const categoryContext = useCategoryContext()
-
-  const filtersInitialState = {
-    names: '',
-    symbols: '',
-    priority: undefined,
-    active: [],
-    createdAt: { from: undefined, to: undefined },
-    language: i18n.language,
-  }
-
   const [columnVisibility, setColumnVisibility] = useState({})
   const [rowSelection, setRowSelection] = useState({})
-  const [sorting, setSorting] = useState<ColumnSort[]>([])
-  const [batchEditMode, setBatchEditMode] = useState<'filter' | 'select'>('select')
-  const [pagination, setPagination] = useState({
-    current: 1,
-    pageSize: 10,
-  })
-  const [filters, setFilters] = useState(filtersInitialState)
   const [expanded, setExpanded] = useState({})
+  const {
+    pagination,
+    setPagination,
+    sorting,
+    setSorting,
+    filters,
+    setFilters,
+    sorters,
+  } = useListQueryState({
+    readFilters: params => ({
+      names: params.get('names'),
+    }),
+    writeFilters: (params, filters) => {
+      params.set('names', filters.names ?? '')
+    },
+  })
 
-  const sorters = useMemo(() => (
-    Object.fromEntries(sorting.map(({ id, desc }) => [id, desc ? 'desc' : 'asc']))
-  ), [sorting])
-
-  const { data: { categories = [], categoriesCount = 0 } = {}, isLoading, isFetching } = useCategoryQuery(
+  const { categories = [], categoriesCount = 0, isLoading, isFetching } = useCategoryQuery(
     { pagination, filters, sorters, isTree: true },
-    { options: {
-      select: response => ({
-        categories: response.data.categories,
-        categoriesCount: response.data.categoriesCount,
-      }),
-      placeholderData: prevData => prevData,
-    } },
-  )
-
-  const { data: { languages = [] } = {} } = useLanguageQuery(
-    { pagination: { full: true } },
-    { options: {
-      select: response => ({
-        languages: response.data.languages,
-      }),
-    } },
+    { options: { placeholderData: prevData => prevData } },
   )
 
   const columns = useColumns()
@@ -72,8 +51,8 @@ export function DataTable() {
     onRowSelectionChange: setRowSelection,
     getExpandedRowModel: getExpandedRowModel(),
     onExpandedChange: setExpanded,
-    getSubRows: row => row.children as any,
-    getRowId: row => row.id as string,
+    // getSubRows: row => row.children,
+    getRowId: row => row.id,
     onSortingChange: setSorting,
     manualSorting: true,
     enableSortingRemoval: true,
@@ -121,12 +100,12 @@ export function DataTable() {
     ))
   }
 
-  const renderRow = row => (
+  const renderRow = (row: Row<CategoryDTO>) => (
     <Fragment key={row.id}>
       <TableRow
         data-state={row.getIsSelected() && 'selected'}
       >
-        {row.getVisibleCells().map(cell => (
+        {row.getVisibleCells().map((cell: any) => (
           <TableCell
             key={cell.id}
             className={`max-w-[${cell.column.columnDef.size}px]`}
@@ -157,101 +136,22 @@ export function DataTable() {
     )
   }
 
-  const changePagination = useDebounceCallback((value: Pagination) => {
-    setPagination(state => ({ ...state, ...value }))
-  }, 50)
-
-  const handleBulkExport = () => {
-    categoryContext.exportCategories({ ids: Object.keys(rowSelection) })
-    setRowSelection({})
-  }
-
   const handleBulkRemove = () => {
     categoryContext.removeCategories({ ids: Object.keys(rowSelection) })
     setRowSelection({})
-  }
-
-  const handleBulkDuplicate = () => {
-    categoryContext.duplicateCategories({ ids: Object.keys(rowSelection) })
-    setRowSelection({})
-  }
-
-  const advancedFiltersSubmit = (filters) => {
-    const filterValues = Object.fromEntries(filters.map(({ column, value }) => [column, value]))
-    setFilters(state => ({
-      ...state,
-      ...filterValues,
-    }))
-  }
-
-  const advancedFiltersCancel = () => {
-    setFilters(filtersInitialState)
-  }
-
-  const handleBatchSubmit = (data) => {
-    const selectedCategories = Object.keys(rowSelection)
-
-    const params = data.map(item => ({
-      column: item.column,
-      value: item.value,
-    }))
-
-    categoryContext.batchCategories({
-      ...(batchEditMode === 'filter' ? { filters } : { ids: selectedCategories }),
-      params,
-    })
-
-    setRowSelection({})
-  }
-
-  const handleBatchToggle = (status: 'filter' | 'select') => {
-    setBatchEditMode(status)
-  }
-
-  const advancedSortersSubmit = (sorters) => {
-    const mapedSorters = sorters.map(({ column, value }) => ({
-      id: column,
-      desc: value === 'desc',
-    }))
-
-    setSorting(mapedSorters)
-  }
-
-  const advancedSortersCancel = () => {
-    setSorting([])
   }
 
   return (
     <>
       <div className="w-full flex justify-between items-start max-md:flex-col gap-2 py-2">
         <div className="flex flex-wrap gap-2 items-center">
-          <AdvancedFilters
-            columns={columns}
-            onSubmit={advancedFiltersSubmit}
-            onCancel={advancedFiltersCancel}
-          />
-          <AdvancedSorters
-            columns={columns}
-            onSubmit={advancedSortersSubmit}
-            onCancel={advancedSortersCancel}
-          />
-          <PermissionGate permission="category.batchEdit">
-            <BatchEdit
-              columns={columns}
-              languages={languages}
-              onSubmit={handleBatchSubmit}
-              onToggle={handleBatchToggle}
-            />
-          </PermissionGate>
           <Separator orientation="vertical" className="min-h-6 max-md:hidden" />
           <DataTableFilters filters={filters} setFilters={setFilters} />
         </div>
         <div className="flex gap-2">
           <TableSelectionDropdown
             selectedCount={Object.keys(rowSelection).length}
-            onExport={handleBulkExport}
             onRemove={handleBulkRemove}
-            onDuplicate={handleBulkDuplicate}
           />
           <ColumnVisibilityMenu table={table} tableId="category" />
         </div>
@@ -265,7 +165,7 @@ export function DataTable() {
       <TablePagination
         pagination={pagination}
         totalPages={Math.ceil(categoriesCount / pagination.pageSize)}
-        changePagination={changePagination}
+        changePagination={setPagination}
         selectedCount={Object.keys(rowSelection).length}
         totalCount={categoriesCount}
       />

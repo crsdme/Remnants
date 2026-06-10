@@ -1,4 +1,4 @@
-import type { AggregateResult, OrderPaymentDTO } from '@remnant/shared'
+import type { AggregateResult, OrderPaymentDTOPopulated } from '@remnant/shared'
 import type { ClientSession, PipelineStage } from 'mongoose'
 import type {
   CreateOrderPaymentsRepoPayload,
@@ -117,7 +117,7 @@ export async function list({ payload }: { payload: GetOrderPaymentsRepoPayload }
     },
   ]
 
-  const raw = await OrderPaymentModel.aggregate<AggregateResult<OrderPaymentDTO>>(pipeline).exec()
+  const raw = await OrderPaymentModel.aggregate<AggregateResult<OrderPaymentDTOPopulated>>(pipeline).exec()
   const { items, total } = unwrapAggregate(raw)
 
   return { items, total, page: current, pageSize }

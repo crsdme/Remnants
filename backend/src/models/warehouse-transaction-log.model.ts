@@ -1,7 +1,10 @@
-import type { WarehouseTransactionLog } from '@remnant/shared'
+import type { HydratedDocument } from 'mongoose'
+import type { WarehouseTransactionLogDB } from '@/types/'
 import mongoose, { Schema } from 'mongoose'
 import { v4 as uuidv4 } from 'uuid'
 import { uuidValidator } from '@/utils/'
+
+type WarehouseTransactionLogDoc = HydratedDocument<WarehouseTransactionLogDB>
 
 const WarehouseTransactionLogSchema: Schema = new Schema(
   {
@@ -27,6 +30,7 @@ const WarehouseTransactionLogSchema: Schema = new Schema(
     refType: {
       type: String,
       required: true,
+      enum: ['product', 'warehouse', 'order', 'warehouse-transaction', 'inventory'],
     },
     refId: {
       type: String,
@@ -52,4 +56,4 @@ WarehouseTransactionLogSchema.set('toJSON', {
   },
 })
 
-export const WarehouseTransactionLogModel = mongoose.model<WarehouseTransactionLog>('warehouse-transaction-log', WarehouseTransactionLogSchema)
+export const WarehouseTransactionLogModel = mongoose.model<WarehouseTransactionLogDoc>('warehouse-transaction-log', WarehouseTransactionLogSchema)

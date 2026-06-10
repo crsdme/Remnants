@@ -1,24 +1,27 @@
 import type {
-  createExpenseParams,
-  editExpenseParams,
-  ExpenseResponse,
-  getExpensesParams,
-  removeExpensesParams,
-} from '@/api/types'
+  CreateExpenseRequest,
+  CreateExpenseResponse,
+  EditExpenseRequest,
+  EditExpenseResponse,
+  GetExpensesRequest,
+  GetExpensesResponse,
+  RemoveExpensesRequest,
+  RemoveExpensesResponse,
+} from '@remnant/shared'
 import { api } from '@/api/instance'
 
-export async function getExpenses(params: getExpensesParams) {
-  return api.get<ExpenseResponse>('expenses/get', { params })
+export async function getExpenses(params: GetExpensesRequest) {
+  return api.get<GetExpensesResponse>('expenses/get', { params })
 }
 
-export async function createExpense(params: createExpenseParams) {
-  return api.post<ExpenseResponse>('expenses/create', { ...params })
+export async function createExpense(params: CreateExpenseRequest) {
+  return api.post<CreateExpenseResponse>('expenses/create', { ...params })
 }
 
-export async function editExpense(params: editExpenseParams) {
-  return api.post<ExpenseResponse>('expenses/edit', params)
+export async function editExpense(params: EditExpenseRequest) {
+  return api.post<EditExpenseResponse>('expenses/edit', params)
 }
 
-export async function removeExpense(params: removeExpensesParams) {
-  return api.post<ExpenseResponse>('expenses/remove', params)
+export async function removeExpense(params: RemoveExpensesRequest) {
+  return api.post<RemoveExpensesResponse>('expenses/remove', params)
 }

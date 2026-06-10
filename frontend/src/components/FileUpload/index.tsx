@@ -1,13 +1,13 @@
 import { useRef, useState } from 'react'
-import { useTranslation } from 'react-i18next'
 
 import { Button } from '@/components/ui'
+import { useLocale } from '@/utils/hooks'
 
-export function FileUpload({ handleFileChange, accept }) {
-  const { t } = useTranslation()
+export function FileUpload({ handleFileChange, accept }: { handleFileChange: (e: React.ChangeEvent<HTMLInputElement>) => void, accept: string }) {
+  const { t } = useLocale()
 
   const [fileName, setFileName] = useState<string | null>(null)
-  const inputRef = useRef(null)
+  const inputRef = useRef<HTMLInputElement>(null)
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]

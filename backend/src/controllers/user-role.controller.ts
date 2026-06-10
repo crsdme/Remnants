@@ -1,10 +1,9 @@
-import type { CreateUserRoleRequest, EditUserRoleRequest, GetUserRoleRequest, RemoveUserRoleRequest } from '@remnant/shared'
 import type { NextFunction, Response } from 'express'
-import type { ValidatedRequest } from '@/types/'
+import type { CreateUserRolesPayload, EditUserRolesPayload, GetUserRolesPayload, RemoveUserRolesPayload, ValidatedRequest } from '@/types/'
 import * as UserRoleService from '@/services/user-role.service'
 
 export async function get(
-  req: ValidatedRequest<GetUserRoleRequest>,
+  req: ValidatedRequest<never, GetUserRolesPayload>,
   res: Response,
   next: NextFunction,
 ) {
@@ -19,7 +18,7 @@ export async function get(
 }
 
 export async function create(
-  req: ValidatedRequest<CreateUserRoleRequest>,
+  req: ValidatedRequest<never, CreateUserRolesPayload>,
   res: Response,
   next: NextFunction,
 ) {
@@ -34,12 +33,12 @@ export async function create(
 }
 
 export async function edit(
-  req: ValidatedRequest<EditUserRoleRequest>,
+  req: ValidatedRequest<never, EditUserRolesPayload>,
   res: Response,
   next: NextFunction,
 ) {
   try {
-    const serviceResponse = await UserRoleService.edit(req.body)
+    const serviceResponse = await UserRoleService.edit(req.validated.body)
 
     res.status(200).json(serviceResponse)
   }
@@ -49,7 +48,7 @@ export async function edit(
 }
 
 export async function remove(
-  req: ValidatedRequest<RemoveUserRoleRequest>,
+  req: ValidatedRequest<never, RemoveUserRolesPayload>,
   res: Response,
   next: NextFunction,
 ) {

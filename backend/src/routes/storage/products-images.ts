@@ -1,3 +1,4 @@
+import type { Request, Response } from 'express'
 import fs from 'node:fs'
 import path from 'node:path'
 import { Router } from 'express'
@@ -7,10 +8,12 @@ import { HttpError } from '@/utils/httpError'
 
 const router = Router()
 
-router.get('/:filename', async (req: any, res: any) => {
-  const { filename } = req.params
-  const width = Number.parseInt(req.query.width)
-  const height = Number.parseInt(req.query.height)
+router.get('/:filename', async (req: Request, res: Response) => {
+  const { filename } = req.params as { filename: string }
+  const query = req.query as { width: string, height: string }
+
+  const width = Number.parseInt(query.width || '100')
+  const height = Number.parseInt(query.height || '100')
   const imagePath = path.join(STORAGE_PATHS.productImages, filename)
 
   if (!fs.existsSync(imagePath))

@@ -18,7 +18,7 @@ export function ErrorPage({ status }: { status: number }) {
       <div className="flex flex-col items-center justify-center h-[calc(100vh-200px)]">
         <h1 className="text-4xl font-bold">{t(`page.error.title.${status}`)}</h1>
         <p className="text-lg text-muted-foreground">{t(`page.error.description.${status}`)}</p>
-        <Button className="mt-4" onClick={() => navigate('/')}>
+        <Button className="mt-4" onClick={() => void navigate('/')}>
           {t('button.back')}
         </Button>
       </div>

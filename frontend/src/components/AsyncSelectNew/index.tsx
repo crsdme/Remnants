@@ -61,6 +61,10 @@ function toIdArray(v: unknown): string[] {
   return []
 }
 
+function isDefined<T>(value: T | undefined): value is T {
+  return value !== undefined
+}
+
 export function AsyncSelectNew<T>({
   loadOptions,
   renderOption,
@@ -120,12 +124,16 @@ export function AsyncSelectNew<T>({
   // LIFECYCLE 2
   const controlled = value !== undefined
   const normalizedValue = useMemo<string[]>(
-    () => toIdArray(controlled ? value! : defaultValue),
+    () => toIdArray(controlled ? value : defaultValue),
     [controlled, value, defaultValue],
   )
 
   useEffect(() => {
-    setSelectedSafe(normalizedValue)
+    setSelectedIds((prev) => {
+      if (prev.length === normalizedValue.length && prev.every((id, index) => id === normalizedValue[index]))
+        return prev
+      return normalizedValue
+    })
   }, [normalizedValue])
 
   // LIFECYCLE 3
@@ -138,11 +146,7 @@ export function AsyncSelectNew<T>({
     for (const opt of list) {
       const id = getOptionValue(opt)
       const prev = map.get(id)
-      if (!prev) {
-        map.set(id, opt)
-        changed = true
-      }
-      else {
+      if (prev !== opt) {
         map.set(id, opt)
         changed = true
       }
@@ -205,7 +209,7 @@ export function AsyncSelectNew<T>({
   useEffect(() => {
     if (!open)
       return
-    fetchMenu(debouncedSearch || '')
+    void fetchMenu(debouncedSearch || '')
   }, [open, debouncedSearch, fetchMenu])
 
   // LIFECYCLE 5
@@ -227,7 +231,7 @@ export function AsyncSelectNew<T>({
       catch { /* ignore */ }
     }
 
-    hydrate()
+    void hydrate()
 
     return () => {
       cancelled = true
@@ -238,12 +242,12 @@ export function AsyncSelectNew<T>({
 
   const menuOptions: T[] = useMemo(() => {
     const map = cacheRef.current
-    return menuOptionIds.map(id => map.get(id)).filter(Boolean) as T[]
+    return menuOptionIds.map(id => map.get(id)).filter(isDefined)
   }, [menuOptionIds, cacheTick])
 
   const selectedOptions: T[] = useMemo(() => {
     const map = cacheRef.current
-    return selectedIds.map(id => map.get(id)).filter(Boolean) as T[]
+    return selectedIds.map(id => map.get(id)).filter(isDefined)
   }, [selectedIds, cacheTick])
 
   // LIFECYCLE 7
@@ -264,24 +268,39 @@ export function AsyncSelectNew<T>({
     onChange?.(multi ? [firstId] : firstId)
   }, [selectFirstOption, controlled, open, selectedIds.length, menuOptionIds, onChange, multi])
 
+  const triggerButton = (
+    <Button
+      variant="outline"
+      role="combobox"
+      aria-expanded={open}
+      className={cn(
+        'w-full max-w-full min-w-0 justify-between min-h-9',
+        disabled && 'opacity-50 cursor-not-allowed',
+        (multi && selectedOptions.length > 0) && 'h-auto p-1 has-[>svg]:pl-1',
+        triggerClassName,
+      )}
+      disabled={disabled}
+      {...field}
+      ref={triggerRef}
+      type="button"
+    >
+      {renderSelectedOptions({
+        selectedOptions,
+        multi,
+        getOptionValue,
+        getDisplayValue,
+        placeholder: placeholder || t('component.asyncSelect.placeholder'),
+        onRemove: removeTag,
+      })}
+      <ChevronDown className="opacity-50" size={10} />
+    </Button>
+  )
+
   return (
     <>
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
-          {RenderSelectTrigger({
-            isForm,
-            disabled,
-            multi,
-            triggerClassName,
-            field,
-            triggerRef,
-            open,
-            selectedOptions,
-            getOptionValue,
-            getDisplayValue,
-            placeholder,
-            handleRemoveTag: removeTag,
-          })}
+          {isForm ? <FormControl>{triggerButton}</FormControl> : triggerButton}
         </PopoverTrigger>
 
         {isForm && <FormMessage />}
@@ -330,7 +349,7 @@ export function AsyncSelectNew<T>({
         </PopoverContent>
       </Popover>
 
-      { name && (
+      {name && (
         <input
           type="hidden"
           name={name}
@@ -410,50 +429,4 @@ function renderSelectedOptions<T>({
       ))}
     </div>
   )
-}
-
-function RenderSelectTrigger({
-  isForm,
-  disabled,
-  multi,
-  triggerClassName,
-  field,
-  triggerRef,
-  open,
-  selectedOptions,
-  getOptionValue,
-  getDisplayValue,
-  placeholder,
-  handleRemoveTag,
-}) {
-  const { t } = useTranslation()
-
-  const btn = (
-    <Button
-      variant="outline"
-      role="combobox"
-      aria-expanded={open}
-      className={cn(
-        'w-full max-w-full min-w-0 justify-between min-h-9',
-        disabled && 'opacity-50 cursor-not-allowed',
-        (multi && selectedOptions.length > 0) && 'h-auto p-1 has-[>svg]:pl-1',
-        triggerClassName,
-      )}
-      disabled={disabled}
-      {...field}
-      ref={triggerRef}
-      // type="button"
-    >
-      {renderSelectedOptions({
-        selectedOptions,
-        multi,
-        getOptionValue,
-        getDisplayValue,
-        placeholder: placeholder || <p className="text-muted-foreground">{t('component.asyncSelect.placeholder')}</p>,
-        onRemove: handleRemoveTag,
-      })}
-      <ChevronDown className="opacity-50" size={10} />
-    </Button>
-  )
-  return isForm ? <FormControl>{btn}</FormControl> : btn
 }

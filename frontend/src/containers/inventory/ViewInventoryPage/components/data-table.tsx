@@ -1,7 +1,6 @@
 import { useMemo, useState } from 'react'
 
 import { useFieldArray, useWatch } from 'react-hook-form'
-import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import { useCategoryOptions, useProductQuery, useWarehouseOptions } from '@/api/hooks'
 import { AsyncSelectNew } from '@/components/AsyncSelectNew'
@@ -16,12 +15,12 @@ import {
   Input,
   Separator,
 } from '@/components/ui'
-import { useDebounceCallback } from '@/utils/hooks'
+import { useDebounceCallback, useLocale } from '@/utils/hooks'
 import { useViewInventoryContext } from '../context'
 import { ProductSelectedTable } from './ProductTable'
 
 export function DataTable() {
-  const { t, i18n } = useTranslation()
+  const { t, language } = useLocale()
   const navigate = useNavigate()
   const { form, isLoading } = useViewInventoryContext()
   const [pagination, setPagination] = useState({
@@ -44,29 +43,16 @@ export function DataTable() {
     name: 'items',
   })
 
-  const { data: { products = [], productsCount = 0 } = {} } = useProductQuery(
+  const { products, productsCount } = useProductQuery(
     { pagination, filters: { categories: [selectedCategory] }, sorters: {} },
-    { options: {
-      enabled: !!selectedCategory && !!selectedWarehouse,
-      select: (response) => {
-        const products = response.data.products.map((product) => {
-          return {
-            ...product,
-            quantity: product.quantity.find(q => q.warehouse === selectedWarehouse)?.count || 0,
-            receivedQuantity: 0,
-          }
-        })
-
-        return {
-          products,
-          productsCount: response.data.productsCount,
-        }
+    {
+      options: {
+        enabled: !!selectedCategory && !!selectedWarehouse,
       },
-      placeholderData: prevData => prevData,
-    } },
+    },
   )
 
-  const changeProduct = ({ productId, field, value }) => {
+  const changeProduct = ({ productId, field, value }: { productId: string, field: string, value: any }) => {
     const selectedItems = form.watch('items')
 
     const index = selectedItems.findIndex(p => p.id === productId)
@@ -81,7 +67,7 @@ export function DataTable() {
 
       itemsField.append({
         id: product.id,
-        quantity: product.quantity,
+        lineQuantity: 1,
         receivedQuantity: 1,
       })
     }
@@ -96,7 +82,7 @@ export function DataTable() {
 
   const mergedProducts = useMemo(() => {
     const selectedItems = form.watch('items')
-    return products.map((product) => {
+    return products.map((product: any) => {
       const item = selectedItems.find(i => i.id === product.id)
       return {
         ...product,
@@ -134,8 +120,8 @@ export function DataTable() {
                   <AsyncSelectNew
                     {...field}
                     loadOptions={loadWarehouseOptions}
-                    renderOption={e => e.names[i18n.language]}
-                    getDisplayValue={e => e.names[i18n.language]}
+                    renderOption={e => e.names[language]}
+                    getDisplayValue={e => e.names[language]}
                     getOptionValue={e => e.id}
                     disabled={isLoading}
                   />
@@ -164,8 +150,8 @@ export function DataTable() {
                       form.setValue('items', [])
                     }}
                     loadOptions={loadCategoryOptions}
-                    renderOption={e => e.names[i18n.language]}
-                    getDisplayValue={e => e.names[i18n.language]}
+                    renderOption={e => e.names[language]}
+                    getDisplayValue={e => e.names[language]}
                     getOptionValue={e => e.id}
                     disabled={isLoading}
                     searchable
@@ -204,7 +190,7 @@ export function DataTable() {
           <Button
             type="button"
             variant="secondary"
-            onClick={() => navigate('/inventories')}
+            onClick={() => void navigate('/inventories')}
             disabled={isLoading}
           >
             {t('button.cancel')}

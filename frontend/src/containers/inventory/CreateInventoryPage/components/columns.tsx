@@ -1,3 +1,8 @@
+import type { Column } from '@tanstack/react-table'
+
+import type { WarehouseTransactionTableRow } from '../../../warehouseTransaction/WarehouseTransactionsPage/context'
+
+import { createColumnHelper } from '@tanstack/react-table'
 import {
   ArrowDown,
   ArrowUp,
@@ -9,23 +14,28 @@ import {
   Pencil,
   Trash,
 } from 'lucide-react'
+
 import { useMemo } from 'react'
-import { useTranslation } from 'react-i18next'
 
 import { TableActionDropdown } from '@/components'
 import { Badge, Button } from '@/components/ui'
 import { formatDate } from '@/utils/helpers'
+import { useLocale } from '@/utils/hooks'
+
 import { useCreateInventoryContext } from '../context'
 
 const sortIcons = { asc: ArrowUp, desc: ArrowDown }
 
+const columnHelper = createColumnHelper<WarehouseTransactionTableRow>()
+
 export function useColumns() {
-  const { t, i18n } = useTranslation()
+  const { t, language } = useLocale()
   const { isLoading } = useCreateInventoryContext()
 
   const columns = useMemo(() => {
-    function sortHeader(column, label) {
-      const Icon = sortIcons[column.getIsSorted() || undefined] || ChevronsUpDown
+    function sortHeader(column: Column<WarehouseTransactionTableRow, unknown>, label: string) {
+      const sorted = column.getIsSorted()
+      const Icon = sorted ? sortIcons[sorted] : ChevronsUpDown
 
       return (
         <Button
@@ -40,8 +50,32 @@ export function useColumns() {
       )
     }
 
+    function expanderColumn() {
+      return columnHelper.display({
+        id: 'expander',
+        header: '',
+        cell: ({ row }) => {
+          return (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => row.toggleExpanded()}
+              style={{ width: 24, height: 24, padding: 0 }}
+            >
+              {row.getIsExpanded()
+                ? <ChevronDown size={16} />
+                : <ChevronRight size={16} />}
+            </Button>
+          )
+        },
+        size: 24,
+        enableSorting: false,
+        enableHiding: false,
+      })
+    }
+
     function actionColumn() {
-      return ({
+      return columnHelper.display({
         id: 'action',
         size: 85,
         meta: {
@@ -54,7 +88,7 @@ export function useColumns() {
           const actions = [
             {
               permission: 'warehouse-transaction.copy',
-              onClick: () => navigator.clipboard.writeText(item.id),
+              onClick: async () => navigator.clipboard.writeText(item.id),
               label: t('table.copy'),
               icon: <Copy className="h-4 w-4" />,
             },
@@ -87,33 +121,9 @@ export function useColumns() {
       })
     }
 
-    function expanderColumn() {
-      return ({
-        id: 'expander',
-        header: '',
-        cell: ({ row }) => {
-          return (
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => row.toggleExpanded()}
-              style={{ width: 24, height: 24, padding: 0 }}
-            >
-              {row.getIsExpanded()
-                ? <ChevronDown size={16} />
-                : <ChevronRight size={16} />}
-            </Button>
-          )
-        },
-        size: 24,
-        enableSorting: false,
-        enableHiding: false,
-      })
-    }
-
     return [
       expanderColumn(),
-      {
+      columnHelper.display({
         id: 'seq',
         meta: {
           title: t('page.products.table.seq'),
@@ -122,8 +132,8 @@ export function useColumns() {
           sortable: true,
         },
         cell: ({ row }) => row.original.seq,
-      },
-      {
+      }),
+      columnHelper.accessor('type', {
         id: 'type',
         size: 150,
         meta: {
@@ -139,35 +149,48 @@ export function useColumns() {
             in: 'success',
             out: 'destructive',
             transfer: 'default',
-          }
-          return <Badge variant={badgeType[row.original.type]}>{t(`page.warehouse-transactions.table.type.${row.original.type.toLowerCase()}`)}</Badge>
+          } as const
+          return (
+            <Badge variant={badgeType[row.original.type as keyof typeof badgeType] ?? 'default'}>
+              {t(`page.warehouse-transactions.table.type.${row.original.type.toLowerCase()}`)}
+            </Badge>
+          )
         },
-      },
-      {
+      }),
+      columnHelper.display({
         id: 'fromWarehouse',
-        accessorKey: 'fromWarehouse',
         meta: {
           title: t('page.warehouse-transactions.table.fromWarehouse'),
           filterable: true,
           filterType: 'select',
         },
         header: () => t('page.warehouse-transactions.table.fromWarehouse'),
-        cell: ({ row }) => <Badge variant="outline">{row.original?.fromWarehouse?.names[i18n.language] || t('page.warehouse-transactions.table.empty')}</Badge>,
-      },
-      {
+        cell: ({ row }) => {
+          const fw = row.original.fromWarehouse
+          const label = typeof fw === 'object' && fw !== null
+            ? (fw.names?.[language] ?? t('page.warehouse-transactions.table.empty'))
+            : t('page.warehouse-transactions.table.empty')
+          return <Badge variant="outline">{label}</Badge>
+        },
+      }),
+      columnHelper.display({
         id: 'toWarehouse',
-        accessorKey: 'toWarehouse',
         meta: {
           title: t('page.warehouse-transactions.table.toWarehouse'),
           filterable: true,
           filterType: 'select',
         },
         header: () => t('page.warehouse-transactions.table.toWarehouse'),
-        cell: ({ row }) => <Badge variant="outline">{row.original?.toWarehouse?.names[i18n.language] || t('page.warehouse-transactions.table.empty')}</Badge>,
-      },
-      {
+        cell: ({ row }) => {
+          const tw = row.original.toWarehouse
+          const label = typeof tw === 'object' && tw !== null
+            ? (tw.names?.[language] ?? t('page.warehouse-transactions.table.empty'))
+            : t('page.warehouse-transactions.table.empty')
+          return <Badge variant="outline">{label}</Badge>
+        },
+      }),
+      columnHelper.accessor('status', {
         id: 'status',
-        accessorKey: 'status',
         meta: {
           title: t('page.warehouse-transactions.table.status'),
           filterable: true,
@@ -180,21 +203,23 @@ export function useColumns() {
             confirmed: 'success',
             cancelled: 'destructive',
             received: 'success',
-          }
-          return <Badge variant={badgeType[row.original.status]}>{t(`page.warehouse-transactions.table.status.${row.original.status.toLowerCase()}`)}</Badge>
+          } as const
+          return (
+            <Badge variant={badgeType[row.original.status as keyof typeof badgeType] ?? 'default'}>
+              {t(`page.warehouse-transactions.table.status.${row.original.status.toLowerCase()}`)}
+            </Badge>
+          )
         },
-      },
-      {
+      }),
+      columnHelper.accessor('comment', {
         id: 'comment',
-        accessorKey: 'comment',
         meta: {
           title: t('page.warehouse-transactions.table.comment'),
         },
         header: () => t('page.warehouse-transactions.table.comment'),
-      },
-      {
+      }),
+      columnHelper.accessor('createdAt', {
         id: 'createdAt',
-        accessorKey: 'createdAt',
         meta: {
           title: t('table.createdAt'),
           filterable: true,
@@ -202,11 +227,10 @@ export function useColumns() {
           sortable: true,
         },
         header: ({ column }) => sortHeader(column, t('table.createdAt')),
-        cell: ({ row }) => formatDate(row.getValue('createdAt'), 'dd.MM.yyyy HH:mm', i18n.language),
-      },
-      {
+        cell: ({ row }) => formatDate(row.getValue('createdAt'), 'dd.MM.yyyy HH:mm', language),
+      }),
+      columnHelper.accessor('updatedAt', {
         id: 'updatedAt',
-        accessorKey: 'updatedAt',
         meta: {
           title: t('table.updatedAt'),
           filterable: true,
@@ -214,10 +238,11 @@ export function useColumns() {
           sortable: true,
         },
         header: ({ column }) => sortHeader(column, t('table.updatedAt')),
-        cell: ({ row }) => formatDate(row.getValue('updatedAt'), 'dd.MM.yyyy HH:mm', i18n.language),
-      },
+        cell: ({ row }) => formatDate(row.getValue('updatedAt'), 'dd.MM.yyyy HH:mm', language),
+      }),
       actionColumn(),
     ]
-  }, [i18n.language])
+  }, [isLoading, language, t])
+
   return columns
 }

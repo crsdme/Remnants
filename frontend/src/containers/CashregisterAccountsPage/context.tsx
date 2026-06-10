@@ -1,11 +1,11 @@
+import type { CashregisterAccountPopulatedDTO } from '@remnant/shared'
 import type { ReactNode } from 'react'
-import type { UseFormReturn } from 'react-hook-form'
+import type { Resolver, UseFormReturn } from 'react-hook-form'
 
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useQueryClient } from '@tanstack/react-query'
 import { createContext, useContext, useMemo, useState } from 'react'
 import { useForm } from 'react-hook-form'
-import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { z } from 'zod'
 
@@ -14,35 +14,52 @@ import {
   useCashregisterAccountEdit,
   useCashregisterAccountRemove,
 } from '@/api/hooks'
-import { SUPPORTED_LANGUAGES } from '@/utils/constants'
+import { useLocale } from '@/utils/hooks'
 
 interface CashregisterAccountContextType {
-  selectedCashregisterAccount: CashregisterAccount
+  selectedCashregisterAccount: CashregisterAccountPopulatedDTO | undefined
   isModalOpen: boolean
   isLoading: boolean
   isEdit: boolean
-  form: UseFormReturn
-  openModal: (cashregisterAccount?: CashregisterAccount) => void
+  form: UseFormReturn<CashregisterAccountFormValues>
+  openModal: (cashregisterAccount?: CashregisterAccountPopulatedDTO) => void
   closeModal: () => void
-  submitCashregisterAccountForm: (params) => void
+  submitCashregisterAccountForm: (params: CashregisterAccountFormValues) => void
   removeCashregisterAccount: (params: { ids: string[] }) => void
 }
 
 const CashregisterAccountContext = createContext<CashregisterAccountContextType | undefined>(undefined)
 
-interface CashregisterAccountProviderProps {
-  children: ReactNode
+interface CashregisterAccountFormValues {
+  names: Record<string, string>
+  currencies: string[]
+  priority: number
+  active: boolean
 }
 
-export function CashregisterAccountProvider({ children }: CashregisterAccountProviderProps) {
+function getCashregisterAccountFormValues(cashregisterAccount?: CashregisterAccountPopulatedDTO): CashregisterAccountFormValues {
+  if (!cashregisterAccount) {
+    return {
+      names: {},
+      currencies: [],
+      priority: 0,
+      active: true,
+    }
+  }
+  return {
+    names: { ...cashregisterAccount.names },
+    currencies: cashregisterAccount.currencies.map(currency => currency.id),
+    priority: cashregisterAccount.priority,
+    active: cashregisterAccount.active,
+  }
+}
+
+export function CashregisterAccountProvider({ children }: { children: ReactNode }) {
   const [isModalOpen, setIsModalOpen] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
   const [isEdit, setIsEdit] = useState(false)
-  const [selectedCashregisterAccount, setSelectedCashregisterAccount] = useState(null)
+  const [selectedCashregisterAccount, setSelectedCashregisterAccount] = useState<CashregisterAccountPopulatedDTO | undefined>(undefined)
 
-  const { t } = useTranslation()
-
-  const defaultLanguageValues = SUPPORTED_LANGUAGES.reduce((acc, lang) => ({ ...acc, [lang]: '' }), {})
+  const { t } = useLocale()
 
   const formSchema = useMemo(() =>
     z.object({
@@ -52,49 +69,26 @@ export function CashregisterAccountProvider({ children }: CashregisterAccountPro
       active: z.boolean().default(true),
     }), [t])
 
-  const form = useForm({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      names: defaultLanguageValues,
-      currencies: [],
-      priority: 0,
-      active: true,
-    },
+  const form = useForm<CashregisterAccountFormValues>({
+    resolver: zodResolver(formSchema) as Resolver<CashregisterAccountFormValues>,
+    defaultValues: getCashregisterAccountFormValues(),
   })
 
   const queryClient = useQueryClient()
-
-  function getCashregisterAccountFormValues(cashregisterAccount) {
-    if (!cashregisterAccount) {
-      return {
-        names: defaultLanguageValues,
-        currencies: [],
-        priority: 0,
-        active: true,
-      }
-    }
-    return {
-      names: { ...cashregisterAccount.names },
-      currencies: cashregisterAccount.currencies.map(currency => currency.id),
-      priority: cashregisterAccount.priority,
-      active: cashregisterAccount.active,
-    }
-  }
 
   const closeModal = () => {
     if (!isModalOpen)
       return
     setIsModalOpen(false)
-    setIsLoading(false)
     setIsEdit(false)
-    setSelectedCashregisterAccount(null)
+    setSelectedCashregisterAccount(undefined)
     form.reset()
   }
 
-  const openModal = (cashregisterAccount) => {
+  const openModal = (cashregisterAccount?: CashregisterAccountPopulatedDTO) => {
     setIsModalOpen(true)
     setIsEdit(!!cashregisterAccount)
-    setSelectedCashregisterAccount(cashregisterAccount)
+    setSelectedCashregisterAccount(cashregisterAccount ?? undefined)
     form.reset(getCashregisterAccountFormValues(cashregisterAccount))
   }
 
@@ -102,7 +96,7 @@ export function CashregisterAccountProvider({ children }: CashregisterAccountPro
     options: {
       onSuccess: ({ data }) => {
         closeModal()
-        queryClient.invalidateQueries({ queryKey: ['cashregister-accounts'] })
+        void queryClient.invalidateQueries({ queryKey: ['cashregister-accounts'] })
         toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description || ''}` })
       },
       onError: ({ response }) => {
@@ -117,7 +111,7 @@ export function CashregisterAccountProvider({ children }: CashregisterAccountPro
     options: {
       onSuccess: ({ data }) => {
         closeModal()
-        queryClient.invalidateQueries({ queryKey: ['cashregister-accounts'] })
+        void queryClient.invalidateQueries({ queryKey: ['cashregister-accounts'] })
         toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description || ''}` })
       },
       onError: ({ response }) => {
@@ -131,7 +125,7 @@ export function CashregisterAccountProvider({ children }: CashregisterAccountPro
   const useMutateRemoveCashregisterAccount = useCashregisterAccountRemove({
     options: {
       onSuccess: ({ data }) => {
-        queryClient.invalidateQueries({ queryKey: ['cashregister-accounts'] })
+        void queryClient.invalidateQueries({ queryKey: ['cashregister-accounts'] })
         toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description || ''}` })
       },
       onError: ({ response }) => {
@@ -141,17 +135,18 @@ export function CashregisterAccountProvider({ children }: CashregisterAccountPro
     },
   })
 
-  const removeCashregisterAccount = (params) => {
+  const removeCashregisterAccount = (params: { ids: string[] }) => {
     useMutateRemoveCashregisterAccount.mutate(params)
   }
 
-  const submitCashregisterAccountForm = (params) => {
-    setIsLoading(true)
-    if (!selectedCashregisterAccount)
+  const submitCashregisterAccountForm = (params: CashregisterAccountFormValues) => {
+    if (selectedCashregisterAccount === undefined)
       return useMutateCreateCashregisterAccount.mutate(params)
 
     return useMutateEditCashregisterAccount.mutate({ ...params, id: selectedCashregisterAccount.id })
   }
+
+  const isLoading = useMutateCreateCashregisterAccount.isPending || useMutateEditCashregisterAccount.isPending || useMutateRemoveCashregisterAccount.isPending
 
   const value: CashregisterAccountContextType = useMemo(
     () => ({

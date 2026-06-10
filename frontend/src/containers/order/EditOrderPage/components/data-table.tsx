@@ -1,10 +1,11 @@
-import { useFieldArray } from 'react-hook-form'
+import type { ProductPopulatedDTO } from '@remnant/shared'
 
+import type { OrderLineItemFormValues } from '../context'
+
+import { useFieldArray } from 'react-hook-form'
 import { ProductSelectedTable, ProductTable } from '@/components'
 import { Separator } from '@/components/ui'
-
 import { roundNumber } from '@/utils/helpers'
-
 import { useBarcodeScanned } from '@/utils/hooks'
 import { useEditOrderContext } from '../context'
 import { ClientForm } from './client-form'
@@ -19,114 +20,67 @@ export function DataTable() {
     name: 'items',
   })
 
-  const onSubmitInformation = (value) => {
+  const onSubmitInformation = (value: any) => {
     editOrder(value)
   }
 
-  const onSubmitClient = (value) => {
+  const onSubmitClient = (value: any) => {
     createClient(value)
   }
 
-  const onSubmitPayment = (value) => {
+  const onSubmitPayment = (value: any) => {
     createPayment(value)
   }
 
-  const addProduct = (product, selectedQuantity = 1) => {
+  const addProduct = (product: ProductPopulatedDTO, selectedQuantity = 1) => {
     const selectedProducts = informationForm.getValues('items')
-    const existing = selectedProducts.find(p => p.product === product.id) as any
+    const existingProduct = selectedProducts.find(item => item.product === product.id)
 
-    if (existing) {
-      const index = selectedProducts.findIndex(p => p.product === product.id)
-      itemsField.update(index, {
-        ...existing,
-        quantity: existing.quantity + selectedQuantity,
+    if (existingProduct) {
+      const existingProductIndex = selectedProducts.findIndex(item => item.product === product.id)
+      itemsField.update(existingProductIndex, {
+        ...existingProduct,
+        lineQuantity: existingProduct.lineQuantity + selectedQuantity,
       })
     }
     else {
       itemsField.append({
         ...product,
-        id: undefined,
         product: product.id,
-        quantity: selectedQuantity,
+        lineQuantity: selectedQuantity,
         receivedQuantity: 0,
+        selectedPrice: product.price,
+        price: product.price,
         manualPrice: undefined,
         basePrice: product.price,
-        price: product.price,
-        selectedPrice: product.price,
+        selectedCurrencyId: product.currency.id,
         discountAmount: 0,
         discountPercent: 0,
-        selectedCurrency: product.currency,
       })
     }
   }
 
-  const removeProduct = (product) => {
+  const removeProduct = (productId: string) => {
     const selectedProducts = informationForm.getValues('items')
-    const index = selectedProducts.findIndex(p => p.product === product.product)
+    const index = selectedProducts.findIndex(item => item.product === productId)
     if (index !== -1) {
       itemsField.remove(index)
     }
   }
 
-  // const changeQuantity = (product, { quantity, receivedQuantity }: { quantity?: number, receivedQuantity?: number }) => {
-  //   const selectedProducts = informationForm.getValues('items')
-  //   const index = selectedProducts.findIndex(p => p.id === product.id)
-  //   if (index !== -1) {
-  //     itemsField.update(index, {
-  //       ...selectedProducts[index],
-  //       quantity: quantity ?? product.quantity,
-  //       receivedQuantity: receivedQuantity ?? product.receivedQuantity ?? 0,
-  //     })
-  //   }
-  // }
-
-  // const changePrice = (product, { selectedPrice }: { selectedPrice?: number }) => {
-  //   const selectedProducts = informationForm.getValues('items')
-  //   const index = selectedProducts.findIndex(p => p.id === product.id)
-  //   if (index !== -1) {
-  //     itemsField.update(index, { ...selectedProducts[index], selectedPrice })
-  //   }
-  // }
-
-  // const changeDiscount = (product, { discountPercent = 0, discountAmount = 0 }: { discountPercent?: number, discountAmount?: number }) => {
-  //   const selectedProducts = informationForm.getValues('items')
-  //   const index = selectedProducts.findIndex(p => p.id === product.id)
-  //   if (index !== -1) {
-  //     const product = selectedProducts[index]
-
-  //     let discountPrice = product.price
-  //     if (discountPercent > 0) {
-  //       discountPrice = product.price - (product.price * discountPercent) / 100
-  //     }
-  //     else if (discountAmount > 0) {
-  //       discountPrice = product.price - discountAmount
-  //     }
-
-  //     itemsField.update(index, {
-  //       ...product,
-  //       discountPercent,
-  //       discountAmount,
-  //       selectedPrice: discountPrice,
-  //     })
-  //   }
-  // }
-
-  const updateProduct = ({ productId, field, value }: { productId: string, field: string, value: any }) => {
+  const updateProduct = <Key extends keyof OrderLineItemFormValues>({ productId, field, value }: { productId: string, field: Key, value: OrderLineItemFormValues[Key] }) => {
     const selectedProducts = informationForm.getValues('items')
-    const index = selectedProducts.findIndex(p => p.product === productId)
-
-    console.log(productId, index, selectedProducts)
+    const index = selectedProducts.findIndex(item => item.id === productId)
 
     if (index === -1)
       return
 
     const current = selectedProducts[index]
-    const updated = { ...current }
+    const updated: OrderLineItemFormValues = { ...current }
 
     updated[field] = value
-
-    if (field === 'quantity' || field === 'receivedQuantity') {
-      updated.quantity = value ?? current.quantity
+    if (field === 'lineQuantity' || field === 'receivedQuantity') {
+      updated.lineQuantity = value ?? current.lineQuantity ?? 0
       updated.receivedQuantity = value ?? current.receivedQuantity ?? 0
     }
 
@@ -169,7 +123,7 @@ export function DataTable() {
   useBarcodeScanned(async (barcode: string) => {
     const products = await getBarcode(barcode)
     for (const product of products) {
-      addProduct(product, product.quantity)
+      addProduct(product, product.unitsPerScan)
     }
   })
 
@@ -187,6 +141,7 @@ export function DataTable() {
         isDiscount={true}
         includeTotal={true}
         isProfit={true}
+        isQuantity={true}
       />
       <InformationForm form={informationForm} onSubmit={onSubmitInformation} />
       <PaymentForm form={paymentForm} onSubmit={onSubmitPayment} />

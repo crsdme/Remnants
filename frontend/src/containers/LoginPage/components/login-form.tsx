@@ -3,7 +3,6 @@ import { Barcode, QrCode } from 'lucide-react'
 import { useMemo } from 'react'
 
 import { useForm } from 'react-hook-form'
-import { useTranslation } from 'react-i18next'
 import { z } from 'zod'
 
 import {
@@ -16,11 +15,12 @@ import {
   Input,
 } from '@/components/ui'
 import { useAuthContext } from '@/contexts'
+import { useLocale } from '@/utils/hooks'
 import { cn } from '@/utils/lib'
 
 export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRef<'div'>) {
   const authContenxt = useAuthContext()
-  const { t } = useTranslation()
+  const { t } = useLocale()
 
   const formSchema = useMemo(() =>
     z.object({
@@ -52,7 +52,10 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
         <p className="text-balance text-sm text-muted-foreground text-center">{t('page.login.form.description')}</p>
       </div>
       <Form {...form}>
-        <form className="w-full space-y-1" onSubmit={form.handleSubmit(onSubmit)}>
+        <form
+          className="w-full space-y-1"
+          onSubmit={(e) => { void form.handleSubmit(onSubmit)(e) }}
+        >
           <FormField
             control={form.control}
             name="login"

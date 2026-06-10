@@ -23,7 +23,7 @@ async function initializeApp() {
       name: 'Admin',
       login: 'admin',
       password: 'admin',
-      role: roleRequest.userRole.id.toString(),
+      role: roleRequest.data?.id?.toString() ?? '',
       active: true,
     })
     console.log('✅ Admin user created')

@@ -1,99 +1,49 @@
-import type { ColumnSort } from '@tanstack/react-table'
+import type { ProductPopulatedDTO } from '@remnant/shared'
+import type { Row } from '@tanstack/react-table'
 import { flexRender, getCoreRowModel, getExpandedRowModel, useReactTable } from '@tanstack/react-table'
 import { Warehouse } from 'lucide-react'
-import { Fragment, useEffect, useMemo, useState } from 'react'
 
-import { useTranslation } from 'react-i18next'
+import { Fragment, useEffect, useState } from 'react'
 import { useLanguageQuery, useProductQuery, useWarehouseQuery } from '@/api/hooks'
-import { AdvancedFilters, AdvancedSorters, BatchEdit, ColumnVisibilityMenu, PermissionGate, TablePagination, TableSelectionDropdown } from '@/components'
+import { BatchEdit, ColumnVisibilityMenu, PermissionGate, TablePagination, TableSelectionDropdown } from '@/components'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Separator, Skeleton, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui'
-import { useDebounceCallback } from '@/utils/hooks'
 
+import { useLocale } from '@/utils/hooks'
 import { useProductContext } from '../context'
 import { useColumns } from './columns'
 import { DataTableFilters } from './data-table-filters'
 
 export function DataTable() {
-  const { t, i18n } = useTranslation()
+  const { t, language } = useLocale()
   const productContext = useProductContext()
-
-  const filtersInitialState = {
-    names: '',
-    symbols: '',
-    priority: undefined,
-    selectedWarehouse: undefined,
-    active: [],
-    createdAt: { from: undefined, to: undefined },
-  }
-
   const [columnVisibility, setColumnVisibility] = useState({})
   const [rowSelection, setRowSelection] = useState({})
-  const [sorting, setSorting] = useState<ColumnSort[]>([])
   const [batchEditMode, setBatchEditMode] = useState<'filter' | 'select'>('select')
-  const [pagination, setPagination] = useState({
-    current: 1,
-    pageSize: 10,
-  })
-  const [filters, setFilters] = useState(filtersInitialState)
-  const [expanded, setExpanded] = useState({})
 
-  const sorters = useMemo(() => {
-    return sorting.reduce<Record<string, any>>((acc, { id, desc }) => {
-      const dir = desc ? 'desc' : 'asc'
-      const parts = Array.isArray(id) ? id : String(id).split(/[,.]/)
+  const {
+    pagination,
+    setPagination,
+    setSorting,
+    filters,
+    setFilters,
+    sorters,
+    sorting,
+  } = productContext.listQueryState
 
-      if (parts.length === 2) {
-        const [scope, key] = parts
-        ;(acc[scope] ??= {})[key] = dir
-      }
-      else {
-        acc[parts[0]] = dir
-      }
-
-      return acc
-    }, {})
-  }, [sorting])
-
-  const { data: { products = [], productsCount = 0 } = {}, isLoading, isFetching } = useProductQuery(
+  const { products, productsCount, isLoading, isFetching } = useProductQuery(
     { pagination, filters, sorters },
-    { options: {
-      select: response => ({
-        products: response.data.data.items,
-        productsCount: response.data.data.total,
-      }),
-      placeholderData: prevData => prevData,
-    } },
+    // { options: { placeholderData: prevData => prevData } },
   )
 
-  const { data: { languages = [] } = {} } = useLanguageQuery(
+  const { languages } = useLanguageQuery(
     { pagination: { full: true } },
-    { options: {
-      select: response => ({
-        languages: response.data.languages,
-      }),
-    } },
   )
 
-  const { data: { warehouses = [] } = {} } = useWarehouseQuery(
-    { filters: { active: [true], language: i18n.language }, pagination: { full: true } },
-    { options: {
-      select: response => ({
-        warehouses: response.data.warehouses,
-      }),
-    } },
+  const { warehouses } = useWarehouseQuery(
+    { filters: { active: [true] }, pagination: { full: true } },
   )
 
-  useEffect(() => {
-    if (!productContext.selectedWarehouse && warehouses.length > 0) {
-      productContext.setSelectedWarehouse(warehouses[0].id)
-      setFilters(state => ({
-        ...state,
-        selectedWarehouse: warehouses[0].id,
-      }))
-    }
-  }, [warehouses])
-
-  const columns = useColumns()
+  const columns = useColumns({ filters })
 
   const table = useReactTable({
     data: products,
@@ -101,24 +51,26 @@ export function DataTable() {
     getCoreRowModel: getCoreRowModel(),
     onColumnVisibilityChange: setColumnVisibility,
     onRowSelectionChange: setRowSelection,
-    getExpandedRowModel: getExpandedRowModel(),
-    onExpandedChange: setExpanded,
-    // getSubRows: row => row.children,
-    getRowId: row => (row as Product).id,
     onSortingChange: setSorting,
     manualSorting: true,
+    getExpandedRowModel: getExpandedRowModel(),
+    getRowId: row => row.id,
     enableSortingRemoval: true,
     state: {
       sorting,
       columnVisibility,
       rowSelection,
-      expanded,
       pagination: {
         pageIndex: pagination.current - 1,
         pageSize: pagination.pageSize,
       },
     },
   })
+
+  useEffect(() => {
+    if (!filters.selectedWarehouse && warehouses.length > 0)
+      setFilters({ ...filters, selectedWarehouse: warehouses[0].id })
+  }, [warehouses])
 
   const renderTableHeader = () => {
     return table.getHeaderGroups().map(headerGroup => (
@@ -152,7 +104,7 @@ export function DataTable() {
     ))
   }
 
-  const renderRow = row => (
+  const renderRow = (row: Row<ProductPopulatedDTO>) => (
     <Fragment key={row.id}>
       <TableRow
         data-state={row.getIsSelected() && 'selected'}
@@ -181,16 +133,12 @@ export function DataTable() {
 
     return (
       <TableRow>
-        <TableCell colSpan={columns.length} className="h-24 text-center">
+        <TableCell colSpan={1} className="h-24 text-center">
           {t('table.noResults')}
         </TableCell>
       </TableRow>
     )
   }
-
-  const changePagination = useDebounceCallback((value: Pagination) => {
-    setPagination(state => ({ ...state, ...value }))
-  }, 50)
 
   const handleBulkExport = () => {
     productContext.exportProducts({ ids: Object.keys(rowSelection) })
@@ -202,27 +150,10 @@ export function DataTable() {
     setRowSelection({})
   }
 
-  const handleBulkDuplicate = () => {
-    productContext.duplicateProducts({ ids: Object.keys(rowSelection) })
-    setRowSelection({})
-  }
-
-  const advancedFiltersSubmit = (filters) => {
-    const filterValues = Object.fromEntries(filters.map(({ column, value }) => [column, value]))
-    setFilters(state => ({
-      ...state,
-      ...filterValues,
-    }))
-  }
-
-  const advancedFiltersCancel = () => {
-    setFilters(filtersInitialState)
-  }
-
-  const handleBatchSubmit = (data) => {
+  const handleBatchSubmit = (data: any) => {
     const selectedCategories = Object.keys(rowSelection)
 
-    const params = data.map(item => ({
+    const params = data.map((item: any) => ({
       column: item.column,
       value: item.value,
     }))
@@ -239,24 +170,11 @@ export function DataTable() {
     setBatchEditMode(status)
   }
 
-  const advancedSortersSubmit = (sorters) => {
-    const mapedSorters = sorters.map(({ column, value }) => ({
-      id: column,
-      desc: value === 'desc',
-    }))
-
-    setSorting(mapedSorters)
-  }
-
-  const advancedSortersCancel = () => {
-    setSorting([])
-  }
-
   return (
     <>
       <div className="w-full flex justify-between items-start max-md:flex-col gap-2 py-2">
         <div className="flex flex-wrap gap-2 items-center">
-          <AdvancedFilters
+          {/* <AdvancedFilters
             columns={columns}
             onSubmit={advancedFiltersSubmit}
             onCancel={advancedFiltersCancel}
@@ -265,7 +183,7 @@ export function DataTable() {
             columns={columns}
             onSubmit={advancedSortersSubmit}
             onCancel={advancedSortersCancel}
-          />
+          /> */}
           <PermissionGate permission="category.batchEdit">
             <BatchEdit
               columns={columns}
@@ -275,15 +193,11 @@ export function DataTable() {
             />
           </PermissionGate>
           <Separator orientation="vertical" className="min-h-6 max-md:hidden" />
-          <DataTableFilters filters={filters} setFilters={setFilters} />
+          <DataTableFilters filters={filters} setFilters={v => setFilters({ ...filters, ...v })} />
           <Select
-            value={productContext.selectedWarehouse}
+            value={filters.selectedWarehouse}
             onValueChange={(v) => {
-              productContext.setSelectedWarehouse(v)
-              setFilters(state => ({
-                ...state,
-                selectedWarehouse: v,
-              }))
+              setFilters({ ...filters, selectedWarehouse: v })
             }}
           >
             <SelectTrigger className="w-[150px]">
@@ -293,7 +207,7 @@ export function DataTable() {
             <SelectContent>
               {warehouses.map(warehouse => (
                 <SelectItem key={warehouse.id} value={warehouse.id}>
-                  {warehouse.names[i18n.language]}
+                  {warehouse.names[language]}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -304,7 +218,6 @@ export function DataTable() {
             selectedCount={Object.keys(rowSelection).length}
             onExport={handleBulkExport}
             onRemove={handleBulkRemove}
-            onDuplicate={handleBulkDuplicate}
           />
           <ColumnVisibilityMenu
             table={table}
@@ -321,7 +234,7 @@ export function DataTable() {
       <TablePagination
         pagination={pagination}
         totalPages={Math.ceil(productsCount / pagination.pageSize)}
-        changePagination={changePagination}
+        changePagination={setPagination}
         selectedCount={Object.keys(rowSelection).length}
         totalCount={productsCount}
       />

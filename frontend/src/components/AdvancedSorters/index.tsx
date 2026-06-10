@@ -80,9 +80,9 @@ export function AdvancedSorters({ columns, onSubmit, onCancel }: AdvancedSorters
     )
   }
 
-  const handleSubmit = (values) => {
+  const handleSubmit = (values: FormValues) => {
     const validItems = values.items.filter(
-      item =>
+      (item: any) =>
         item.column !== '' && item.value !== '',
     )
     if (validItems.length === 0)
@@ -150,7 +150,10 @@ export function AdvancedSorters({ columns, onSubmit, onCancel }: AdvancedSorters
       </PopoverTrigger>
       <PopoverContent className="w-[520px]" align="start">
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+          <form
+            onSubmit={(e) => { void form.handleSubmit(handleSubmit)(e) }}
+            className="space-y-4"
+          >
             <div className="space-y-2">
               <h4 className="font-medium leading-none">{t('component.advancedSorters.title')}</h4>
               <p className="text-sm text-muted-foreground">
@@ -176,7 +179,7 @@ export function AdvancedSorters({ columns, onSubmit, onCancel }: AdvancedSorters
                             {sortableColumns.map(column => (
                               <SelectItem
                                 key={column.id}
-                                value={column.id}
+                                value={column.id ?? ''}
                                 disabled={column.disabled}
                               >
                                 {column.label}

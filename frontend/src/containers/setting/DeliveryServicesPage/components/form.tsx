@@ -23,22 +23,17 @@ export function DeliveryServiceForm() {
   const { t } = useTranslation()
   const { isLoading, form, closeModal, submitDeliveryServiceForm } = useDeliveryServiceContext()
 
-  const { data: { languages = [] } = {} } = useLanguageQuery(
+  const { languages = [] } = useLanguageQuery(
     { pagination: { full: true } },
-    { options: {
-      select: response => ({
-        languages: response.data.languages,
-      }),
-    } },
+    { options: { placeholderData: prevData => prevData } },
   )
-
-  const onSubmit = (values) => {
-    submitDeliveryServiceForm(values)
-  }
 
   return (
     <Form {...form}>
-      <form className="w-full space-y-1" onSubmit={form.handleSubmit(onSubmit)}>
+      <form
+        className="w-full space-y-1"
+        onSubmit={(e) => { void form.handleSubmit(submitDeliveryServiceForm)(e) }}
+      >
         {languages.map(language => (
           <FormField
             control={form.control}
@@ -104,7 +99,6 @@ export function DeliveryServiceForm() {
               </FormLabel>
 
               <Select
-                value={field.value}
                 onValueChange={field.onChange}
                 disabled={isLoading}
                 {...field}
@@ -135,6 +129,7 @@ export function DeliveryServiceForm() {
             <FormItem className="flex flex-row items-center space-x-3 space-y-0 rounded-md border p-4">
               <FormControl>
                 <ColorPicker
+                  ref={field.ref}
                   value={field.value}
                   onChange={field.onChange}
                   disabled={isLoading}

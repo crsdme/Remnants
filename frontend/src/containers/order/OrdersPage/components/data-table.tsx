@@ -1,67 +1,49 @@
 import { flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table'
-import { useMemo, useState } from 'react'
-import { useTranslation } from 'react-i18next'
+import { useState } from 'react'
 
 import { useOrderQuery, useOrderStatusQuery } from '@/api/hooks'
-import { AdvancedFilters, AdvancedSorters, ColumnVisibilityMenu, TablePagination, TableSelectionDropdown } from '@/components'
-import { Separator, Skeleton, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Tabs, TabsList, TabsTrigger } from '@/components/ui'
+import { ColumnVisibilityMenu, TablePagination, TableSelectionDropdown } from '@/components'
+import { Skeleton, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Tabs, TabsList, TabsTrigger } from '@/components/ui'
 import { useThemeContext } from '@/contexts'
 import { hexToRgba } from '@/utils/helpers'
-import { useDebounceCallback } from '@/utils/hooks'
+import { parseQueryCsv, setQueryParamCsv, useListQueryState, useLocale } from '@/utils/hooks'
 
-import { useOrderContext } from '../context'
 import { useColumns } from './columns'
 import { DataTableFilters } from './data-table-filters'
 
 export function DataTable() {
-  const { t, i18n } = useTranslation()
-  const { removeOrder } = useOrderContext()
+  const { t, language } = useLocale()
   const { theme } = useThemeContext()
-
-  const filtersInitialState = {
-    warehouse: '',
-    deliveryService: '',
-    orderSource: '',
-    orderStatus: '',
-    orderPayments: '',
-    client: '',
-    comment: '',
-  }
 
   const [columnVisibility, setColumnVisibility] = useState({})
   const [rowSelection, setRowSelection] = useState({})
-  const [sorting, setSorting] = useState([])
-  const [pagination, setPagination] = useState({
-    current: 1,
-    pageSize: 10,
+  const {
+    pagination,
+    setPagination,
+    sorting,
+    setSorting,
+    filters,
+    setFilters,
+    sorters,
+  } = useListQueryState({
+    defaults: { filters: { orderStatus: ['all'] } },
+    readFilters: params => ({
+      orderStatus: parseQueryCsv(params.get('orderStatus')),
+    }),
+    writeFilters: (params, filters) => {
+      setQueryParamCsv(params, 'orderStatus', filters.orderStatus ?? [])
+    },
   })
-  const [filters, setFilters] = useState(filtersInitialState)
-  const [selectedStatus, setSelectedStatus] = useState('all')
   const columns = useColumns()
 
-  const sorters = useMemo(() => (
-    Object.fromEntries(sorting.map(({ id, desc }) => [id, desc ? 'desc' : 'asc']))
-  ), [sorting])
-
-  const { data: { orders = [], ordersCount = 0 } = {}, isLoading, isFetching } = useOrderQuery(
-    { pagination, filters: { ...filters, orderStatus: [selectedStatus] }, sorters },
-    { options: {
-      select: response => ({
-        orders: response.data.orders,
-        ordersCount: response.data.ordersCount,
-      }),
-      placeholderData: prevData => prevData,
-    } },
+  const { orders = [], ordersCount = 0, isLoading, isFetching } = useOrderQuery(
+    { pagination, filters, sorters },
+    { options: { placeholderData: prevData => prevData } },
   )
 
-  const { data: { orderStatuses = [] } = {} } = useOrderStatusQuery(
+  const { orderStatuses = [] } = useOrderStatusQuery(
     { filters: { includeAll: true, includeCount: true } },
-    { options: {
-      select: response => ({
-        orderStatuses: response.data.orderStatuses,
-      }),
-      placeholderData: prevData => prevData,
-    } },
+    { options: { placeholderData: prevData => prevData } },
   )
 
   const table = useReactTable({
@@ -152,80 +134,29 @@ export function DataTable() {
     )
   }
 
-  const advancedFiltersSubmit = (filters) => {
-    const filterValues = Object.fromEntries(filters.map(({ column, value }) => [column, value]))
-    setFilters(state => ({
-      ...state,
-      ...filterValues,
-    }))
-  }
-
-  const advancedFiltersCancel = () => {
-    setFilters(filtersInitialState)
-  }
-
-  const handleBulkRemove = () => {
-    const ids = orders.filter((_, index) => rowSelection[index]).map(item => item.id)
-    removeOrder({ ids })
-    setRowSelection({})
-  }
-
-  const changePagination = useDebounceCallback((value: Pagination) => {
-    setPagination(state => ({ ...state, ...value }))
-  }, 50)
-
-  const advancedSortersSubmit = (sorters) => {
-    const mapedSorters = sorters.map(({ column, value }) => ({
-      id: column,
-      desc: value === 'desc',
-    }))
-
-    setSorting(mapedSorters)
-  }
-
-  const advancedSortersCancel = () => {
-    setSorting([])
-  }
-
-  const changeOrderStatus = (statusId: string) => {
-    setSelectedStatus(statusId)
-  }
-
   return (
     <>
       <div className="w-full flex justify-between items-start max-md:flex-col gap-2 py-2">
         <div className="flex flex-wrap gap-2 items-center">
-          <AdvancedFilters
-            columns={columns}
-            onSubmit={advancedFiltersSubmit}
-            onCancel={advancedFiltersCancel}
-          />
-          <AdvancedSorters
-            columns={columns}
-            onSubmit={advancedSortersSubmit}
-            onCancel={advancedSortersCancel}
-          />
-          <Separator orientation="vertical" className="min-h-6 max-md:hidden" />
           <DataTableFilters filters={filters} setFilters={setFilters} />
         </div>
         <div className="flex gap-2">
           <TableSelectionDropdown
             selectedCount={Object.keys(rowSelection).length}
-            onRemove={handleBulkRemove}
           />
           <ColumnVisibilityMenu table={table} tableId="order" />
         </div>
       </div>
       <div className="w-full flex items-start max-md:flex-col gap-2 py-2">
-        <Tabs defaultValue="all" className="flex flex-wrap">
+        <Tabs defaultValue="all" className="flex flex-wrap" value={filters.orderStatus?.[0] || 'all'}>
           <TabsList className="flex flex-wrap">
             {orderStatuses.map(status => (
               <TabsTrigger
                 key={status.id}
                 value={status.id}
-                onClick={() => changeOrderStatus(status.id)}
+                onClick={() => setFilters({ ...filters, orderStatus: [status.id] })}
               >
-                {`${status?.names?.[i18n.language] || t('order-status.all')} ${status.ordersCount || 0}`}
+                {`${status?.names?.[language] || t('order-status.all')} ${status.ordersCount || 0}`}
               </TabsTrigger>
             ))}
           </TabsList>
@@ -240,7 +171,7 @@ export function DataTable() {
       <TablePagination
         pagination={pagination}
         totalPages={Math.ceil(ordersCount / pagination.pageSize)}
-        changePagination={changePagination}
+        changePagination={setPagination}
         selectedCount={Object.keys(rowSelection).length}
         totalCount={ordersCount}
       />

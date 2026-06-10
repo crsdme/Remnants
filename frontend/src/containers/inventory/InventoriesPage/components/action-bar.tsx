@@ -18,7 +18,7 @@ export function ActionBar() {
       <div className="flex items-center flex-wrap gap-2">
         <PermissionGate permission={['inventory.create', 'inventory.edit']}>
           <Button
-            onClick={() => navigate('/inventories/create')}
+            onClick={() => void navigate('/inventories/create')}
           >
             <Plus />
             {t('page.inventories.button.create')}

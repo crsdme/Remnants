@@ -1,9 +1,23 @@
-import type { NextFunction, Request, Response } from 'express'
+import type { NextFunction, Response } from 'express'
+import type {
+  CreateBalancesPayload,
+  GetBalancesPayload,
+  GetCurrentBalancePayload,
+  RemoveBalancesPayload,
+  ValidatedAuthedRequest,
+  ValidatedRequest,
+} from '@/types'
 import * as BalanceService from '@/services/balance.service'
 
-export async function get(req: Request, res: Response, next: NextFunction) {
+export async function get(
+  req: ValidatedRequest<GetBalancesPayload>,
+  res: Response,
+  next: NextFunction,
+) {
   try {
-    const serviceResponse = await BalanceService.get(req.query)
+    const serviceResponse = await BalanceService.get({
+      payload: req.validated.query,
+    })
 
     res.status(200).json(serviceResponse)
   }
@@ -12,9 +26,16 @@ export async function get(req: Request, res: Response, next: NextFunction) {
   }
 }
 
-export async function getCurrent(req: Request, res: Response, next: NextFunction) {
+export async function getCurrent(
+  req: ValidatedAuthedRequest<GetCurrentBalancePayload>,
+  res: Response,
+  next: NextFunction,
+) {
   try {
-    const serviceResponse = await BalanceService.getCurrent(req.query)
+    const serviceResponse = await BalanceService.getCurrent({
+      payload: req.validated.query,
+      user: req.user,
+    })
 
     res.status(200).json(serviceResponse)
   }
@@ -23,9 +44,16 @@ export async function getCurrent(req: Request, res: Response, next: NextFunction
   }
 }
 
-export async function create(req: Request, res: Response, next: NextFunction) {
+export async function create(
+  req: ValidatedAuthedRequest<never, CreateBalancesPayload>,
+  res: Response,
+  next: NextFunction,
+) {
   try {
-    const serviceResponse = await BalanceService.create(req.body, req.user)
+    const serviceResponse = await BalanceService.create({
+      payload: req.validated.body,
+      user: req.user,
+    })
 
     res.status(200).json(serviceResponse)
   }
@@ -34,9 +62,15 @@ export async function create(req: Request, res: Response, next: NextFunction) {
   }
 }
 
-export async function remove(req: Request, res: Response, next: NextFunction) {
+export async function remove(
+  req: ValidatedRequest<never, RemoveBalancesPayload>,
+  res: Response,
+  next: NextFunction,
+) {
   try {
-    const serviceResponse = await BalanceService.remove(req.params.id, req.user)
+    const serviceResponse = await BalanceService.remove({
+      payload: req.validated.body,
+    })
 
     res.status(200).json(serviceResponse)
   }

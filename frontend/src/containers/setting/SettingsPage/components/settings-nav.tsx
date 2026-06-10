@@ -1,8 +1,8 @@
-import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
+import { useLocale } from '@/utils/hooks'
 
 export function SettingsNav() {
-  const { t } = useTranslation()
+  const { t } = useLocale()
 
   return (
     <div className="flex flex-col gap-2 w-96">

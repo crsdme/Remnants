@@ -1,21 +1,18 @@
+import type { SettingDTO } from '@remnant/shared'
 import type { ReactNode } from 'react'
 import { createContext, useContext, useEffect, useMemo, useState } from 'react'
 
 const LOCAL_STORAGE_KEY = 'settings'
 
 interface AppSettingsContextType {
-  settings: Setting[]
+  settings: SettingDTO[]
   getSetting: (key: string) => string | undefined
 }
 
 const AppSettingsContext = createContext<AppSettingsContextType | undefined>(undefined)
 
-interface AppSettingsProviderProps {
-  children: ReactNode
-}
-
-export function AppSettingsProvider({ children }: AppSettingsProviderProps) {
-  const [settings, setSettings] = useState([])
+export function AppSettingsProvider({ children }: { children: ReactNode }) {
+  const [settings, setSettings] = useState<SettingDTO[]>([])
 
   const getSetting = (key: string) => {
     return settings.find(setting => setting.key === key)?.value || undefined

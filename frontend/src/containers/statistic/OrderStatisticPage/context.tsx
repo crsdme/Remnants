@@ -1,10 +1,8 @@
 import type { ReactNode } from 'react'
-import type { UseFormReturn } from 'react-hook-form'
 
 import { zodResolver } from '@hookform/resolvers/zod'
 import { createContext, useContext, useMemo, useState } from 'react'
 import { useForm } from 'react-hook-form'
-import { useTranslation } from 'react-i18next'
 
 import { z } from 'zod'
 import {
@@ -14,33 +12,17 @@ import {
 interface OrderStatisticContextType {
   isLoading: boolean
   isFetching: boolean
-  form: UseFormReturn
+  form: any
   statistics: any
   onSubmit: (data: any) => void
 }
 
 const OrderStatisticContext = createContext<OrderStatisticContextType | undefined>(undefined)
 
-interface OrderStatisticProviderProps {
-  children: ReactNode
-}
+export function OrderStatisticProvider({ children }: { children: ReactNode }) {
+  const [filters, setFilters] = useState(() => getDefaultFilters())
 
-const defaultFilters = {
-  date: {
-    from: new Date(new Date().setHours(0, 0, 0, 0)),
-    to: new Date(new Date().setHours(23, 59, 59, 999)),
-  },
-  cashregister: [],
-  cashregisterAccount: [],
-  currency: '',
-}
-
-export function OrderStatisticProvider({ children }: OrderStatisticProviderProps) {
-  const [filters, setFilters] = useState(defaultFilters)
-
-  const { t } = useTranslation()
-
-  const { data: {
+  const {
     statistics = {
       range: { from: new Date(new Date().setHours(0, 0, 0, 0)), to: new Date(new Date().setHours(23, 59, 59, 999)) },
       orders: {
@@ -78,37 +60,22 @@ export function OrderStatisticProvider({ children }: OrderStatisticProviderProps
         categories: [],
       },
     },
-  } = {}, isLoading, isFetching } = useOrderStatisticQuery(
-    { pagination: { full: true }, filters },
-    { options: {
-      select: response => ({
-        statistics: response.data.statistics,
-      }),
-      placeholderData: prevData => prevData,
-    } },
+    isLoading,
+    isFetching,
+  } = useOrderStatisticQuery(
+    { filters },
+    { options: { placeholderData: prevData => prevData } },
   )
 
   const onSubmit = (data: any) => {
     setFilters(data)
   }
 
-  const formSchema = useMemo(() =>
-    z.object({
-      date: z.record(z.date()),
-      cashregister: z.array(z.string()).optional(),
-      cashregisterAccount: z.array(z.string()).optional(),
-    }), [t])
+  const formSchema = useMemo(() => createOrderStatisticFilterSchema(), [])
 
   const form = useForm({
     resolver: zodResolver(formSchema),
-    defaultValues: {
-      date: {
-        from: new Date(new Date().setHours(0, 0, 0, 0)),
-        to: new Date(new Date().setHours(23, 59, 59, 999)),
-      },
-      cashregister: [],
-      cashregisterAccount: [],
-    },
+    defaultValues: getDefaultStatisticFormValues(),
   })
 
   const value: OrderStatisticContextType = useMemo(
@@ -132,4 +99,36 @@ export function useOrderStatisticContext(): OrderStatisticContextType {
     throw new Error('useOrderStatisticContext - OrderStatisticContext')
   }
   return context
+}
+
+function createOrderStatisticFilterSchema() {
+  return z.object({
+    date: z.record(z.date()),
+    cashregister: z.array(z.string()).optional(),
+    cashregisterAccount: z.array(z.string()).optional(),
+  })
+}
+
+function getDefaultDateRange() {
+  return {
+    from: new Date(new Date().setHours(0, 0, 0, 0)),
+    to: new Date(new Date().setHours(23, 59, 59, 999)),
+  }
+}
+
+function getDefaultFilters() {
+  return {
+    date: getDefaultDateRange(),
+    cashregister: [],
+    cashregisterAccount: [],
+    currency: '',
+  }
+}
+
+function getDefaultStatisticFormValues() {
+  return {
+    date: getDefaultDateRange(),
+    cashregister: [],
+    cashregisterAccount: [],
+  }
 }

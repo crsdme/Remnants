@@ -1,4 +1,4 @@
-import type { CurrencyDTO, ExchangeRateDTO } from '@remnant/shared'
+import type { CurrencyDTO, ExchangeRateDTO, ExchangeRateDTOPopulated } from '@remnant/shared'
 import type { CurrencyDB, ExchangeRateDB } from '@/types/'
 
 export function mapCurrencyToDTO(currency: CurrencyDB): CurrencyDTO {

@@ -15,11 +15,7 @@ interface ProcurementContextType {
 
 const ProcurementContext = createContext<ProcurementContextType | undefined>(undefined)
 
-interface ProcurementProviderProps {
-  children: ReactNode
-}
-
-export function ProcurementProvider({ children }: ProcurementProviderProps) {
+export function ProcurementProvider({ children }: { children: ReactNode }) {
   const { t } = useTranslation()
 
   const queryClient = useQueryClient()
@@ -81,9 +77,9 @@ export function ProcurementProvider({ children }: ProcurementProviderProps) {
   const useMutateRemoveProcurement = useProcurementRemove({
     options: {
       onSuccess: ({ data }) => {
-        queryClient.invalidateQueries({ queryKey: ['procurements'] })
-        queryClient.invalidateQueries({ queryKey: ['products'] })
-        toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description || ''}` })
+        void queryClient.invalidateQueries({ queryKey: ['procurements'] })
+        void queryClient.invalidateQueries({ queryKey: ['products'] })
+        toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data?.message ?? ''}` })
       },
       onError: ({ response }) => {
         const error = response.data.error
@@ -99,7 +95,7 @@ export function ProcurementProvider({ children }: ProcurementProviderProps) {
   //   return procurementItems
   // }
 
-  const removeProcurement = (params) => {
+  const removeProcurement = (params: { ids: string[] }) => {
     useMutateRemoveProcurement.mutate(params)
   }
 

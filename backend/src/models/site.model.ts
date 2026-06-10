@@ -1,8 +1,12 @@
-import type { Site } from '@remnant/shared'
+import type { HydratedDocument } from 'mongoose'
+import type { SUPPORTED_LANGUAGES_TYPE } from '@/config/constants'
+import type { SiteDB } from '@/types/'
 import mongoose, { Schema } from 'mongoose'
 import { v4 as uuidv4 } from 'uuid'
 import { SUPPORTED_LANGUAGES } from '@/config/constants'
 import { uuidValidator } from '@/utils/'
+
+type SiteDoc = HydratedDocument<SiteDB>
 
 const SiteSchema: Schema = new Schema(
   {
@@ -18,7 +22,7 @@ const SiteSchema: Schema = new Schema(
       validate: {
         validator(value: Map<string, string>) {
           return Array.from(value.keys()).every(key =>
-            SUPPORTED_LANGUAGES.includes(key as any),
+            SUPPORTED_LANGUAGES.includes(key as SUPPORTED_LANGUAGES_TYPE),
           )
         },
         message: 'Supported languages only',
@@ -61,4 +65,4 @@ SiteSchema.set('toJSON', {
   },
 })
 
-export const SiteModel = mongoose.model<Site>('site', SiteSchema)
+export const SiteModel = mongoose.model<SiteDoc>('site', SiteSchema)

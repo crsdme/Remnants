@@ -1,3 +1,6 @@
+import type { MoneyTransactionPopulatedDTO } from '@remnant/shared'
+import type { Column } from '@tanstack/react-table'
+import { createColumnHelper } from '@tanstack/react-table'
 import {
   ArrowDown,
   ArrowUp,
@@ -6,25 +9,27 @@ import {
   ChevronsUpDown,
   Copy,
   Pencil,
-  Trash,
 } from 'lucide-react'
 import { useMemo } from 'react'
-import { useTranslation } from 'react-i18next'
 
 import { TableActionDropdown } from '@/components'
 import { Badge, Button, Checkbox } from '@/components/ui'
 import { formatDate } from '@/utils/helpers'
+import { useLocale } from '@/utils/hooks'
 import { useMoneyTransactionContext } from '../context'
 
 const sortIcons = { asc: ArrowUp, desc: ArrowDown }
 
+const columnHelper = createColumnHelper<MoneyTransactionPopulatedDTO>()
+
 export function useColumns() {
-  const { t, i18n } = useTranslation()
-  const { isLoading, openModal, removeMoneyTransaction } = useMoneyTransactionContext()
+  const { t, language } = useLocale()
+  const { isLoading, openModal } = useMoneyTransactionContext()
 
   const columns = useMemo(() => {
-    function sortHeader(column, label) {
-      const Icon = sortIcons[column.getIsSorted() || undefined] || ChevronsUpDown
+    function sortHeader(column: Column<MoneyTransactionPopulatedDTO>, label: string) {
+      const sorted = column.getIsSorted()
+      const Icon = sorted ? sortIcons[sorted] : ChevronsUpDown
 
       return (
         <Button
@@ -40,7 +45,7 @@ export function useColumns() {
     }
 
     function selectColumn() {
-      return ({
+      return columnHelper.display({
         id: 'select',
         size: 35,
         meta: { title: t('component.columnMenu.columns.select') },
@@ -72,7 +77,7 @@ export function useColumns() {
     }
 
     function expanderColumn() {
-      return ({
+      return columnHelper.display({
         id: 'expander',
         header: '',
         cell: ({ row }) => {
@@ -99,7 +104,7 @@ export function useColumns() {
     }
 
     function actionColumn() {
-      return ({
+      return columnHelper.display({
         id: 'action',
         size: 85,
         meta: {
@@ -112,23 +117,15 @@ export function useColumns() {
           const actions = [
             {
               permission: 'money-transaction.copy',
-              onClick: () => navigator.clipboard.writeText(item.id),
+              onClick: async () => navigator.clipboard.writeText(item.id),
               label: t('table.copy'),
               icon: <Copy className="h-4 w-4" />,
             },
             {
               permission: 'money-transaction.edit',
-              onClick: () => openModal(item),
+              onClick: () => openModal(item as any),
               label: t('table.edit'),
               icon: <Pencil className="h-4 w-4" />,
-            },
-            {
-              permission: 'money-transaction.delete',
-              onClick: () => removeMoneyTransaction({ ids: [item.id] }),
-              label: t('table.delete'),
-              icon: <Trash className="h-4 w-4" />,
-              isDestructive: true,
-              isConfirm: true,
             },
           ]
 
@@ -140,7 +137,7 @@ export function useColumns() {
     return [
       selectColumn(),
       expanderColumn(),
-      {
+      columnHelper.accessor('type', {
         id: 'type',
         size: 150,
         meta: {
@@ -157,8 +154,8 @@ export function useColumns() {
         },
         header: ({ column }) => sortHeader(column, t('page.money-transactions.table.type')),
         cell: ({ row }) => <Badge variant="outline">{t(`page.money-transactions.table.type.${row.original.type.toLowerCase()}`)}</Badge>,
-      },
-      {
+      }),
+      columnHelper.accessor(row => row.account.names?.[language], {
         id: 'account',
         size: 100,
         meta: {
@@ -169,9 +166,8 @@ export function useColumns() {
           defaultVisible: true,
         },
         header: ({ column }) => sortHeader(column, t('page.money-transactions.table.account')),
-        accessorFn: row => row.account.names?.[i18n.language],
-      },
-      {
+      }),
+      columnHelper.accessor(row => row.cashregister.names?.[language], {
         id: 'cashregister',
         size: 100,
         meta: {
@@ -182,11 +178,9 @@ export function useColumns() {
           defaultVisible: true,
         },
         header: ({ column }) => sortHeader(column, t('page.money-transactions.table.cashregister')),
-        accessorFn: row => row.cashregister.names?.[i18n.language],
-      },
-      {
+      }),
+      columnHelper.accessor('amount', {
         id: 'amount',
-        accessorKey: 'amount',
         meta: {
           title: t('page.money-transactions.table.amount'),
           filterable: true,
@@ -195,9 +189,13 @@ export function useColumns() {
           defaultVisible: true,
         },
         header: ({ column }) => sortHeader(column, t('page.money-transactions.table.amount')),
-        cell: ({ row }) => <Badge variant={row.original.direction === 'in' ? 'success' : 'destructive'}>{`${row.original.direction === 'in' ? '+' : '-'} ${row.original.amount} ${row.original.currency.symbols?.[i18n.language]}`}</Badge>,
-      },
-      {
+        cell: ({ row }) => (
+          <Badge variant={row.original.direction === 'in' ? 'success' : 'destructive'}>
+            {`${row.original.direction === 'in' ? '+' : '-'} ${row.original.amount} ${row.original.currency.symbols?.[language]}`}
+          </Badge>
+        ),
+      }),
+      columnHelper.accessor(row => row.description, {
         id: 'description',
         size: 100,
         meta: {
@@ -208,11 +206,9 @@ export function useColumns() {
           defaultVisible: true,
         },
         header: ({ column }) => sortHeader(column, t('page.money-transactions.table.description')),
-        accessorFn: row => row.description,
-      },
-      {
+      }),
+      columnHelper.accessor('sourceModel', {
         id: 'sourceModel',
-        accessorKey: 'sourceModel',
         meta: {
           title: t('page.money-transactions.table.sourceModel'),
           filterable: true,
@@ -225,10 +221,9 @@ export function useColumns() {
         },
         header: ({ column }) => sortHeader(column, t('page.money-transactions.table.sourceModel')),
         cell: ({ row }) => <Badge variant="outline">{t(`page.money-transactions.table.sourceModel.${row.original.sourceModel.toLowerCase()}`)}</Badge>,
-      },
-      {
+      }),
+      columnHelper.accessor('confirmed', {
         id: 'confirmed',
-        accessorKey: 'confirmed',
         meta: {
           title: t('page.money-transactions.table.confirmed'),
           filterable: true,
@@ -237,10 +232,9 @@ export function useColumns() {
         },
         header: t('page.money-transactions.table.confirmed'),
         cell: ({ row }) => <Badge variant={row.original.confirmed ? 'success' : 'destructive'}>{t(`table.yesno.${row.original.confirmed}`)}</Badge>,
-      },
-      {
+      }),
+      columnHelper.accessor('createdAt', {
         id: 'createdAt',
-        accessorKey: 'createdAt',
         meta: {
           title: t('table.createdAt'),
           filterable: true,
@@ -248,11 +242,10 @@ export function useColumns() {
           sortable: true,
         },
         header: ({ column }) => sortHeader(column, t('table.createdAt')),
-        cell: ({ row }) => formatDate(row.getValue('createdAt'), 'dd.MM.yyyy HH:mm:ss', i18n.language),
-      },
-      {
+        cell: ({ row }) => formatDate(row.getValue('createdAt'), 'dd.MM.yyyy HH:mm:ss', language),
+      }),
+      columnHelper.accessor('updatedAt', {
         id: 'updatedAt',
-        accessorKey: 'updatedAt',
         meta: {
           title: t('table.updatedAt'),
           filterable: true,
@@ -260,10 +253,10 @@ export function useColumns() {
           sortable: true,
         },
         header: ({ column }) => sortHeader(column, t('table.updatedAt')),
-        cell: ({ row }) => formatDate(row.getValue('updatedAt'), 'dd.MM.yyyy HH:mm:ss', i18n.language),
-      },
+        cell: ({ row }) => formatDate(row.getValue('updatedAt'), 'dd.MM.yyyy HH:mm:ss', language),
+      }),
       actionColumn(),
     ]
-  }, [i18n.language])
+  }, [language, isLoading, openModal, t])
   return columns
 }

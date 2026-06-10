@@ -1,76 +1,43 @@
-import path from 'node:path'
+import type { CreateLanguageRequest, EditLanguageRequest, GetLanguagesRequest, RemoveLanguageRequest } from '@remnant/shared'
 import request from 'supertest'
-import app from '../../src/'
+import app from '@/index'
 import { LanguageModel } from '../../src/models/language.model'
 
-export async function create(language?: any) {
-  if (!language) {
-    language = {
-      name: 'English',
-      code: 'en',
-      priority: 1,
-      main: true,
-      active: true,
-      removed: false,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    }
-  }
+export async function create(params: CreateLanguageRequest): Promise<unknown> {
+  const response = await request(app).post('/api/languages/create').send(params)
 
-  const res = await request(app).post('/api/languages/create').send(language)
-
-  return res
+  return response.body
 }
 
-export async function get(params?: any) {
+export async function get(params?: GetLanguagesRequest): Promise<unknown> {
   if (!params) {
     params = {
-      'pagination[current]': 1,
-      'pagination[pageSize]': 10,
+      pagination: {
+        current: 1,
+        pageSize: 10,
+      },
     }
   }
 
-  const res = await request(app).get('/api/languages/get').query(params)
+  const response = await request(app).get('/api/languages/get').query(params)
 
-  return res
+  return response.body
 }
 
-export async function edit(params: any) {
-  const res = await request(app).post('/api/languages/edit').send(params)
+export async function edit(params: EditLanguageRequest): Promise<unknown> {
+  const response = await request(app).post('/api/languages/edit').send(params)
 
-  return res
+  return response.body
 }
 
-export async function duplicate(ids: string[]) {
-  const res = await request(app).post('/api/languages/duplicate').send({ ids })
+export async function remove(params: RemoveLanguageRequest): Promise<unknown> {
+  const response = await request(app).post('/api/languages/remove').send(params)
 
-  return res
+  return response.body
 }
 
-export async function upload(filePath?: string) {
-  if (!filePath) {
-    filePath = path.join(__dirname, '../files/test-import-languages.csv')
-  }
+export async function removeAll(): Promise<unknown> {
+  const response = await LanguageModel.deleteMany({})
 
-  const res = await request(app).post('/api/languages/import').attach('file', filePath)
-
-  return res
-}
-
-export async function batch(params: any) {
-  const res = await request(app).post('/api/languages/batch').send(params)
-
-  return res
-}
-
-export async function remove(ids: string[]) {
-  const res = await request(app).post('/api/languages/remove').send({ ids })
-
-  return res
-}
-
-export async function removeAll() {
-  const res = await LanguageModel.deleteMany({})
-
-  return res
+  return response
 }

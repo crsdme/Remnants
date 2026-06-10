@@ -1,4 +1,4 @@
-import { batchCategorySchema, createCategorySchema, editCategorySchema, getCategorySchema, removeCategorySchema } from '@remnant/shared'
+import { batchCategorySchema, createCategorySchema, editCategorySchema, getCategoriesSchema, removeCategoriesSchema } from '@remnant/shared'
 import { registry } from '@/docs/registry'
 
 registry.registerPath({
@@ -8,7 +8,7 @@ registry.registerPath({
   operationId: 'getCategories',
   tags: ['Categories'],
   request: {
-    query: getCategorySchema,
+    query: getCategoriesSchema,
   },
   responses: {
     200: {
@@ -81,7 +81,7 @@ registry.registerPath({
     body: {
       content: {
         'application/json': {
-          schema: removeCategorySchema,
+          schema: removeCategoriesSchema,
         },
       },
     },

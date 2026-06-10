@@ -1,79 +1,48 @@
-import path from 'node:path'
+import type {
+  CreateUnitRequest,
+  EditUnitRequest,
+  GetUnitRequest,
+  RemoveUnitRequest,
+} from '@remnant/shared'
 import request from 'supertest'
-import app from '../../src/'
-import { UnitModel } from '../../src/models/unit.model'
+import app from '@/index'
+import { UnitModel } from '@/models/unit.model'
 
-export async function create(unit?: any) {
-  if (!unit) {
-    unit = {
-      names: {
-        en: 'Meter',
-        ru: 'Метр',
-      },
-      symbols: {
-        en: 'm',
-        ru: 'м',
-      },
-      priority: 1,
-      main: true,
-      active: true,
-    }
-  }
+export async function create(params: CreateUnitRequest): Promise<unknown> {
+  const response = await request(app).post('/api/units/create').send(params)
 
-  const res = await request(app).post('/api/units/create').send(unit)
-
-  return res
+  return response.body
 }
 
-export async function get(params?: any) {
+export async function get(params?: GetUnitRequest): Promise<unknown> {
   if (!params) {
     params = {
-      'pagination[current]': 1,
-      'pagination[pageSize]': 10,
+      pagination: {
+        current: 1,
+        pageSize: 10,
+      },
     }
   }
 
-  const res = await request(app).get('/api/units/get').query(params)
+  const response = await request(app).get('/api/units/get').query(params)
 
-  return res
+  return response.body
 }
 
-export async function edit(params: any) {
-  const res = await request(app).post('/api/units/edit').send(params)
+export async function edit(params: EditUnitRequest): Promise<unknown> {
+  const response = await request(app).post('/api/units/edit').send(params)
 
-  return res
+  return response.body
 }
 
-export async function duplicate(ids: string[]) {
-  const res = await request(app).post('/api/units/duplicate').send({ ids })
+export async function remove(params: RemoveUnitRequest): Promise<unknown> {
+  const response = await request(app).post('/api/units/remove').send(params)
 
-  return res
+  return response.body
 }
 
-export async function upload(filePath?: string) {
-  if (!filePath) {
-    filePath = path.join(__dirname, '../files/test-import-units.csv')
-  }
+export async function removeAll(): Promise<unknown> {
+  const response = await UnitModel.deleteMany({})
 
-  const res = await request(app).post('/api/units/import').attach('file', filePath)
-
-  return res
-}
-
-export async function batch(params: any) {
-  const res = await request(app).post('/api/units/batch').send(params)
-
-  return res
-}
-
-export async function remove(ids: string[]) {
-  const res = await request(app).post('/api/units/remove').send({ ids })
-
-  return res
-}
-
-export async function removeAll() {
-  const res = await UnitModel.deleteMany({})
-
-  return res
+  return response
 }

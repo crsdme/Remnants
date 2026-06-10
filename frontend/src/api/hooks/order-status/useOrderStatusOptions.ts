@@ -1,35 +1,67 @@
+import type { GetOrderStatusesRequest } from '@remnant/shared'
 import { useQueryClient } from '@tanstack/react-query'
+import { useCallback } from 'react'
 import { getOrderStatuses } from '@/api/requests'
 
-interface DefaultFilters {
-  ids?: string[]
-  isSelectable?: boolean
-}
+const EMPTY_ITEMS: never[] = []
 
-interface LoadOptionsParams {
-  query: string
-  selectedValue?: string[]
-}
-
-export function useOrderStatusOptions({ defaultFilters }: { defaultFilters?: DefaultFilters } = {}) {
+export function useOrderStatusOptions({ defaultFilters }: { defaultFilters?: GetOrderStatusesRequest['filters'] } = {}) {
   const queryClient = useQueryClient()
 
-  return async function loadOrderStatusOptions({ query, selectedValue }: LoadOptionsParams): Promise<OrderStatus[]> {
-    const filters = {
-      ...(selectedValue ? { ids: selectedValue } : { names: query }),
-      ...defaultFilters,
-    }
-    const pagination = { full: true }
+  return useCallback(
+    async ({ query = '', selectedValue }: { query?: string, selectedValue?: string[] } = {}) => {
+      const params: GetOrderStatusesRequest = {
+        pagination: { full: true },
+        filters: {
+          ...(selectedValue ? { ids: selectedValue } : { names: query }),
+          ...defaultFilters,
+        },
+      }
 
-    const data = await queryClient.fetchQuery({
-      queryKey: ['order-statuses', 'get', pagination, filters],
-      queryFn: () => getOrderStatuses({ pagination, filters }),
-      staleTime: 60000,
-    })
+      const response = await queryClient.fetchQuery({
+        queryKey: ['order-statuses', 'get', params],
+        queryFn: async () => getOrderStatuses(params),
+        staleTime: 60000,
+      })
 
-    return data?.data?.orderStatuses || []
-  }
+      return response?.data?.data?.items ?? EMPTY_ITEMS
+    },
+    [queryClient],
+  )
 }
+
+// import { useQueryClient } from '@tanstack/react-query'
+// import { getOrderStatuses } from '@/api/requests'
+
+// interface DefaultFilters {
+//   ids?: string[]
+//   isSelectable?: boolean
+// }
+
+// interface LoadOptionsParams {
+//   query: string
+//   selectedValue?: string[]
+// }
+
+// export function useOrderStatusOptions({ defaultFilters }: { defaultFilters?: DefaultFilters } = {}) {
+//   const queryClient = useQueryClient()
+
+//   return async function loadOrderStatusOptions({ query, selectedValue }: LoadOptionsParams): Promise<OrderStatus[]> {
+//     const filters = {
+//       ...(selectedValue ? { ids: selectedValue } : { names: query }),
+//       ...defaultFilters,
+//     }
+//     const pagination = { full: true }
+
+//     const data = await queryClient.fetchQuery({
+//       queryKey: ['order-statuses', 'get', pagination, filters],
+//       queryFn: () => getOrderStatuses({ pagination, filters }),
+//       staleTime: 60000,
+//     })
+
+//     return data?.data?.orderStatuses || []
+//   }
+// }
 
 // import type { getOrderStatusesParams } from '@/api/types'
 // import { useQueryClient } from '@tanstack/react-query'

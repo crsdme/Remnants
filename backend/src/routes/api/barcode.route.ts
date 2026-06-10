@@ -1,5 +1,5 @@
 import type { RequestHandler } from 'express'
-import { createBarcodeSchema, editBarcodeSchema, getBarcodesSchema, printBarcodeSchema, removeBarcodesSchema } from '@remnant/shared'
+import { createBarcodeSchema, editBarcodeSchema, getBarcodeByCodeSchema, getBarcodesSchema, printBarcodeSchema, removeBarcodesSchema } from '@remnant/shared'
 import { Router } from 'express'
 import * as BarcodeController from '@/controllers/barcode.controller'
 
@@ -11,6 +11,12 @@ router.get(
   '/get',
   validateQueryRequest(getBarcodesSchema),
   BarcodeController.get as RequestHandler,
+)
+
+router.get(
+  '/get-by-code',
+  validateQueryRequest(getBarcodeByCodeSchema),
+  BarcodeController.getByCode as RequestHandler,
 )
 
 router.post(

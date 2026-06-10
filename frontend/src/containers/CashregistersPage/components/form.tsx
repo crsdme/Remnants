@@ -1,7 +1,5 @@
-import { useTranslation } from 'react-i18next'
-
 import { useCashregisterAccountOptions, useLanguageQuery } from '@/api/hooks'
-import { AsyncSelect } from '@/components'
+import { AsyncSelectNew } from '@/components/AsyncSelectNew'
 import {
   Button,
   Checkbox,
@@ -14,31 +12,23 @@ import {
   FormMessage,
   Input,
 } from '@/components/ui'
-import i18n from '@/locales/i18n'
+import { useLocale } from '@/utils/hooks/'
 import { useCashregisterContext } from '../context'
 
 export function CashregisterForm() {
-  const { t } = useTranslation()
+  const { t, language } = useLocale()
   const { isLoading, form, closeModal, submitCashregisterForm } = useCashregisterContext()
 
   const loadCashregisterAccountsOptions = useCashregisterAccountOptions()
 
-  const { data: { languages = [] } = {} } = useLanguageQuery(
-    { pagination: { full: true } },
-    { options: {
-      select: response => ({
-        languages: response.data.languages,
-      }),
-    } },
-  )
-
-  const onSubmit = (values) => {
-    submitCashregisterForm(values)
-  }
+  const { languages } = useLanguageQuery({ pagination: { full: true } })
 
   return (
     <Form {...form}>
-      <form className="w-full space-y-1" onSubmit={form.handleSubmit(onSubmit)}>
+      <form
+        className="w-full space-y-1"
+        onSubmit={(e) => { void form.handleSubmit(v => submitCashregisterForm(v))(e) }}
+      >
         {languages.map(language => (
           <FormField
             control={form.control}
@@ -77,12 +67,12 @@ export function CashregisterForm() {
             <FormItem>
               <FormLabel>{t('page.cashregisters.form.accounts')}</FormLabel>
               <FormControl>
-                <AsyncSelect
-                  fetcher={loadCashregisterAccountsOptions}
-                  renderOption={e => `${e.seq} ${e.names[i18n.language]}`}
-                  getDisplayValue={e => `${e.seq} ${e.names[i18n.language]}`}
+                <AsyncSelectNew
+                  loadOptions={loadCashregisterAccountsOptions}
+                  renderOption={e => `${e.seq} ${e.names[language]}`}
+                  getDisplayValue={e => `${e.seq} ${e.names[language]}`}
                   getOptionValue={e => e.id}
-                  width="100%"
+                  triggerClassName="w-full"
                   className="w-full"
                   name="accounts"
                   value={field.value}

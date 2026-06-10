@@ -1,8 +1,7 @@
 import { Plus } from 'lucide-react'
 
-import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { ImportButton, PermissionGate } from '@/components'
+import { PermissionGate } from '@/components'
 import { Button, Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui'
 import { useCategoryContext } from '../context'
 
@@ -11,27 +10,8 @@ import { CategoryForm } from './form'
 export function ActionBar() {
   const { t } = useTranslation()
   const categoryContext = useCategoryContext()
-  const [file, setFile] = useState<File | null>(null)
 
   const { isLoading, isEdit } = categoryContext
-
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0]
-    if (file) {
-      setFile(file)
-    }
-  }
-
-  const handleDownloadTemplate = async () => {
-    categoryContext.exportCategories({ ids: [] })
-  }
-
-  const onImport = async () => {
-    const formData = new FormData()
-    formData.append('file', file)
-    categoryContext.importCategories(formData)
-    setFile(null)
-  }
 
   return (
     <div className="flex items-center justify-between flex-wrap gap-2">
@@ -40,15 +20,6 @@ export function ActionBar() {
         <p className="text-muted-foreground">{t('page.categories.description')}</p>
       </div>
       <div className="flex items-center flex-wrap gap-2">
-        <PermissionGate permission="category.import">
-          <ImportButton
-            handleFileChange={handleFileChange}
-            handleDownloadTemplate={handleDownloadTemplate}
-            isFileSelected={!!file}
-            isLoading={isLoading}
-            onSubmit={onImport}
-          />
-        </PermissionGate>
         <PermissionGate permission={['category.create', 'category.edit']}>
           <Sheet open={categoryContext.isModalOpen} onOpenChange={categoryContext.closeModal}>
             <SheetTrigger asChild>

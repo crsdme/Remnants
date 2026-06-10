@@ -1,4 +1,4 @@
-const APP_INSTANCE = process.env.APP_INSTANCE || 'default'
+const APP_INSTANCE = process.env.APP_INSTANCE ?? 'default'
 
 const CONFIGS = {
   default: {

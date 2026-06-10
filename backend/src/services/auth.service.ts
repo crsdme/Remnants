@@ -47,7 +47,7 @@ export async function login(payload: LoginPayload): Promise<LoginResponse> {
     permissions: user.role.permissions,
   })
 
-  const { data: { items: settings } } = await SettingsService.get({})
+  const { data: { items: settings } } = await SettingsService.get({ payload: { filters: { isPublic: true }, pagination: { current: 1, pageSize: 1000, full: true } } })
   const mappedSettings = settings.map(setting => ({
     key: setting.key,
     value: setting.value,
@@ -68,6 +68,7 @@ export async function login(payload: LoginPayload): Promise<LoginResponse> {
 
 export async function refresh(payload: RefreshPayload): Promise<RefreshResponse> {
   const userData = jwt.verify(payload.refreshToken, JWT_SECRET) as TokenPayload
+
   const accessToken = generateAccessToken({
     id: userData.id,
     login: userData.login,

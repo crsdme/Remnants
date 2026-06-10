@@ -2,25 +2,25 @@ import type {
   AuthUser,
   CreateOrderResponse,
   EditOrderResponse,
+  GetOrderDetailsResponse,
   GetOrderItemsResponse,
   GetOrderPaymentsResponse,
   GetOrdersResponse,
-  OrderItemDTO,
-  OrderPaymentDTO,
   PayOrderResponse,
+  PipeableDocument,
   PrintDraftInvoiceOrderResponse,
   PrintInvoiceOrderResponse,
-  PrintOrderLabelResponse,
+  PrintOrderLabelOrderResponse,
   RemoveOrdersResponse,
 } from '@remnant/shared'
 import type { ClientSession } from 'mongoose'
 import type {
   CreateOrderPayload,
   EditOrderPayload,
+  GetOrderDetailsPayload,
   GetOrderItemsPayload,
   GetOrderPaymentsPayload,
   GetOrdersPayload,
-  OrderItemDB,
   PayOrderPayload,
   PrintDraftInvoiceOrderPayload,
   PrintInvoiceOrderPayload,
@@ -32,7 +32,7 @@ import mongoose from 'mongoose'
 import PDFDocument from 'pdfkit'
 import { v4 as uuidv4 } from 'uuid'
 import { mapOrderToDTO } from '@/mappers'
-import { OrderItemModel } from '@/models/order.model'
+import * as OrderPaymentRepository from '@/repositories/order-payment.repo'
 import * as OrderRepository from '@/repositories/order.repo'
 import * as ProductsRepository from '@/repositories/products.repo'
 import * as AutomationService from '@/services/automation.service'
@@ -41,6 +41,7 @@ import * as MoneyTransactionService from '@/services/money-transaction.service'
 import * as OrderPaymentService from '@/services/order-payment.service'
 import * as QuantityService from '@/services/quantity.service'
 import * as UserService from '@/services/user.service'
+import { parseGetOrderItems, parseGetOrderPayments, parseGetOrders } from '@/types/'
 import { drawHr, getDifferenceDeep, getHardcodeData, HttpError } from '@/utils'
 
 type PDFDoc = PDFKit.PDFDocument
@@ -57,14 +58,6 @@ export async function get({ payload, user }: { payload: GetOrdersPayload, user: 
     },
   })
 
-  // for (const order of orders) {
-  //   const { data: { items: orderItems } } = await getItems({ filters: { order: [order.id], showFullData: hasProfitPermission }, pagination: { full: true } })
-  //   order.items = orderItems
-
-  //   const { data: { items: orderPayments } } = await getOrderPayments({ filters: { order: order.id } })
-  //   order.payments = orderPayments
-  // }
-
   return {
     status: 'success',
     code: 'ORDERS_FETCHED',
@@ -80,17 +73,15 @@ export async function get({ payload, user }: { payload: GetOrdersPayload, user: 
   }
 }
 
-export async function getItems({ payload, user, session }: { payload: GetOrderItemsPayload, user: AuthUser, session?: ClientSession }): Promise<GetOrderItemsResponse> {
+export async function getItems({ payload, user }: { payload: GetOrderItemsPayload, user: AuthUser }): Promise<GetOrderItemsResponse> {
   const hasProfitPermission = await UserService.checkPermission('order.profit', user.id)
 
   const { items, total, page, pageSize } = await OrderRepository.listItems({
     payload: {
       filters: payload.filters,
       pagination: payload.pagination,
-      sorters: payload.sorters,
       hasProfitPermission,
     },
-    session,
   })
 
   // orderItems = orderItems.map((item: any) => ({
@@ -118,6 +109,36 @@ export async function getItems({ payload, user, session }: { payload: GetOrderIt
         pageSize,
         total,
       },
+    },
+  }
+}
+
+export async function getDetails({ payload, user }: { payload: GetOrderDetailsPayload, user: AuthUser }): Promise<GetOrderDetailsResponse> {
+  const { data: { items: [order] } } = await get({
+    payload: parseGetOrders({ filters: { seq: String(payload.seq) }, pagination: { full: true } }),
+    user,
+  })
+
+  if (order === null)
+    throw new HttpError(404, 'Order not found', 'ORDER_NOT_FOUND')
+
+  const { data: { items } } = await getItems({
+    payload: parseGetOrderItems({ filters: { order: [order.id] }, pagination: { full: true } }),
+    user,
+  })
+
+  const { data: { items: payments } } = await getOrderPayments({
+    payload: parseGetOrderPayments({ filters: { order: [order.id] }, pagination: { full: true } }),
+  })
+
+  return {
+    status: 'success',
+    code: 'ORDER_DETAILS_FETCHED',
+    message: 'Order details fetched',
+    data: {
+      order,
+      items,
+      payments,
     },
   }
 }
@@ -158,7 +179,7 @@ export async function create({ payload, user }: { payload: CreateOrderPayload, u
 
     createdOrderPayments.push(orderPayment)
 
-    await MoneyTransactionService.create({
+    await MoneyTransactionService.createTransaction({
       payload: {
         type: 'income',
         direction: 'in',
@@ -201,12 +222,15 @@ export async function create({ payload, user }: { payload: CreateOrderPayload, u
     })
 
     await QuantityService.count({
-      product: item.product,
-      count: -item.quantity,
-      warehouse: payload.warehouse,
-      userId: user.id.toString(),
-      refType: 'order',
-      refId: orderId,
+      payload: {
+        mode: 'dec',
+        productId: item.product,
+        count: item.quantity,
+        warehouse: payload.warehouse,
+        userId: user.id.toString(),
+        refType: 'order',
+        refId: orderId,
+      },
     })
   }
 
@@ -214,8 +238,9 @@ export async function create({ payload, user }: { payload: CreateOrderPayload, u
     payload.items.reduce<Record<string, { currency: string, total: number }>>((acc, item) => {
       const { currency, price, quantity } = item
 
-      if (acc[currency] !== undefined)
+      if (acc[currency] === undefined)
         acc[currency] = { currency, total: 0 }
+
       acc[currency].total += price * quantity
 
       return acc
@@ -245,7 +270,7 @@ export async function create({ payload, user }: { payload: CreateOrderPayload, u
   await AutomationService.run({
     payload: {
       type: 'order-created',
-      entityId: order._id,
+      entityId: order[0]._id,
       user: user.id,
     },
   })
@@ -254,7 +279,7 @@ export async function create({ payload, user }: { payload: CreateOrderPayload, u
     status: 'success',
     code: 'ORDER_CREATED',
     message: 'Order created',
-    data: mapOrderToDTO(order),
+    data: mapOrderToDTO(order[0]),
   }
 }
 
@@ -360,7 +385,7 @@ export async function edit({ payload, user }: { payload: EditOrderPayload, user:
 
       const activePaymentIds = await applyPaymentsDiff({
         orderId: id,
-        payments: orderPayments,
+        payments: orderPayments.filter(p => p !== undefined),
         userId,
         session,
       })
@@ -369,19 +394,16 @@ export async function edit({ payload, user }: { payload: EditOrderPayload, user:
         payload: {
           filters: { order: [id] },
           pagination: { current: 1, pageSize: 1000, full: true },
-          sorters: { seq: 'desc' },
           hasProfitPermission: false,
         },
-        session,
       })
 
       const { items: dbPayments } = await OrderRepository.listPayments({
         payload: {
-          filters: { order: id },
+          filters: { order: [id] },
           pagination: { current: 1, pageSize: 1000, full: true },
           sorters: { createdAt: 'desc' },
         },
-        session,
       })
 
       const totalPriceByCurrency = Object.values(
@@ -501,12 +523,11 @@ export async function printInvoice({ payload }: { payload: PrintInvoiceOrderPayl
     payload: {
       filters: { order: [order._id] },
       pagination: { current: 1, pageSize: 1000, full: true },
-      sorters: { seq: 'desc' },
       hasProfitPermission: false,
     },
   })
 
-  const hasDiscount = items.some((item: OrderItemDTO) => item.discountAmount > 0 || item.discountPercent > 0)
+  const hasDiscount = items.some(item => item.discountAmount > 0 || item.discountPercent > 0)
 
   const tableColumns = {
     name: { key: 'name', width: 100, x: config.margins.left, align: 'left', type: 'text' },
@@ -931,7 +952,7 @@ export async function printInvoice({ payload }: { payload: PrintInvoiceOrderPayl
     status: 'success',
     code: 'INVOICE_PRINTED',
     message: 'Invoice printed',
-    doc,
+    doc: doc as unknown as PipeableDocument,
   }
 }
 
@@ -1240,16 +1261,16 @@ export async function printDraftInvoice({ payload }: { payload: PrintDraftInvoic
       },
       {
         ...tableColumns.price,
-        value: `${item.price} ${item.currency.symbols[language] || ''}`,
+        value: `${item.price}`,
       },
       {
         ...tableColumns.quantity,
         value: `${item.quantity} pcs`,
       },
-      ...(hasDiscount ? [{ ...tableColumns.discount, value: `${item.discount} ${item.discountType === 'amount' ? item.currency.symbols[language] : '%'}` }] : []),
+      ...(hasDiscount ? [{ ...tableColumns.discount, value: `${item.discount} ${item.discountType === 'amount' ? '' : '%'}` }] : []),
       {
         ...tableColumns.total,
-        value: `${item.total.toFixed(0)} ${item.currency.symbols[language] || ''}`,
+        value: `${item.total.toFixed(0)}`,
       },
     ]
 
@@ -1308,11 +1329,11 @@ export async function printDraftInvoice({ payload }: { payload: PrintDraftInvoic
     status: 'success',
     code: 'DRAFT_INVOICE_PRINTED',
     message: 'Draft invoice printed',
-    doc,
+    doc: doc as unknown as PipeableDocument,
   }
 }
 
-export async function printOrderLabel({ payload }: { payload: PrintOrderLabelOrderPayload }): Promise<PrintOrderLabelResponse> {
+export async function printOrderLabel({ payload }: { payload: PrintOrderLabelOrderPayload }): Promise<PrintOrderLabelOrderResponse> {
   const { seq } = payload
 
   const order = await OrderRepository.findOne({ payload: { seq } })
@@ -1389,7 +1410,7 @@ export async function printOrderLabel({ payload }: { payload: PrintOrderLabelOrd
     status: 'success',
     code: 'ORDER_LABEL_PRINTED',
     message: 'Order label printed',
-    doc,
+    doc: doc as unknown as PipeableDocument,
   }
 }
 
@@ -1503,60 +1524,70 @@ export function getPaymentStatus(
 async function applyItemsDiff(params: {
   orderId: string
   warehouseId: string
-  items: OrderItemDTO[]
+  items: {
+    id?: string
+    product: string
+    quantity: number
+    price: number
+    currency: string
+    basePrice: number
+    manualPrice?: number
+    discountAmount?: number
+    discountPercent?: number
+  }[]
   userId: string
   session: ClientSession
 }) {
   const { orderId, warehouseId, items, userId, session } = params
 
-  const order = await OrderRepository.findOne({ payload: { id: orderId }, session })
+  const order = await OrderRepository.findOne({ payload: { id: orderId } })
 
   if (!order)
     throw new HttpError(400, 'Order not found', 'ORDER_NOT_FOUND')
 
   const prevWarehouseId = order.warehouse.toString()
   const newWarehouseId = warehouseId.toString()
-  const warehouseChanged = prevWarehouseId !== newWarehouseId
 
   const oldItems = await OrderRepository.listItems({
     payload: {
       filters: { order: [orderId] },
       pagination: { current: 1, pageSize: 1000, full: true },
-      sorters: { seq: 'desc' },
       hasProfitPermission: false,
     },
-    session,
   })
 
-  const oldById = new Map(oldItems.items.map(i => [i.id!, i]))
+  const oldById = new Map(oldItems.items.map(i => [i.id.toString(), i]))
 
   for (const newItem of items) {
     if (newItem.id !== undefined && oldById.has(newItem.id)) {
+      // ЕСЛИ ТОВАР УЖЕ БЫЛ В ЗАКАЗЕ
       const oldItem = oldById.get(newItem.id)!
 
       const oldQuantity = oldItem.quantity
       const newQuantity = newItem.quantity
       const deltaQuantity = newQuantity - oldQuantity
 
-      if (!warehouseChanged) {
+      if (prevWarehouseId === newWarehouseId) {
         if (deltaQuantity !== 0) {
-          await QuantityService.count(
-            {
-              product: newItem.product,
-              count: -deltaQuantity,
+          await QuantityService.count({
+            payload: {
+              mode: 'dec',
+              productId: newItem.product,
+              count: deltaQuantity,
               warehouse: newWarehouseId,
               userId,
               refType: 'order',
               refId: orderId,
             },
             session,
-          )
+          })
         }
       }
       else {
-        await QuantityService.count(
-          {
-            product: oldItem.product,
+        await QuantityService.count({
+          payload: {
+            mode: 'inc',
+            productId: oldItem.product.id,
             count: oldQuantity,
             warehouse: prevWarehouseId,
             userId,
@@ -1564,22 +1595,23 @@ async function applyItemsDiff(params: {
             refId: orderId,
           },
           session,
-        )
+        })
 
-        await QuantityService.count(
-          {
-            product: newItem.product,
-            count: -newQuantity,
+        await QuantityService.count({
+          payload: {
+            mode: 'dec',
+            productId: newItem.product,
+            count: newQuantity,
             warehouse: newWarehouseId,
             userId,
             refType: 'order',
             refId: orderId,
           },
           session,
-        )
+        })
       }
 
-      const product = await ProductsRepository.findById(newItem.product.id, session)
+      const product = await ProductsRepository.findById(newItem.product)
 
       if (!product)
         throw new HttpError(400, 'Product not found', 'PRODUCT_NOT_FOUND')
@@ -1587,7 +1619,7 @@ async function applyItemsDiff(params: {
       const { profit, exchangeRate } = await calculateProfit({
         item: {
           price: newItem.price,
-          currency: newItem.currency.id,
+          currency: newItem.currency,
         },
         purchasePrice: product.purchasePrice,
         purchaseCurrency: product.purchaseCurrency,
@@ -1599,9 +1631,9 @@ async function applyItemsDiff(params: {
         product: newItem.product,
         quantity: newItem.quantity,
         basePrice: newItem.basePrice,
-        manualPrice: newItem.manualPrice,
-        discountAmount: newItem.discountAmount,
-        discountPercent: newItem.discountPercent,
+        manualPrice: newItem.manualPrice ?? 0,
+        discountAmount: newItem.discountAmount ?? undefined,
+        discountPercent: newItem.discountPercent ?? undefined,
         price: newItem.price,
         currency: newItem.currency,
         purchasePrice: product.purchasePrice,
@@ -1618,16 +1650,10 @@ async function applyItemsDiff(params: {
         delete diff.createdBy
       }
 
-      if (Object.keys(diff).length > 0 && oldItem._id !== undefined) {
-        await OrderItemModel.updateOne(
-          { _id: oldItem._id },
-          { $set: diff },
-          { session },
-        )
-
+      if (Object.keys(diff).length > 0 && oldItem.id !== undefined) {
         await OrderRepository.updateOneItem({
           payload: {
-            id: oldItem._id,
+            id: oldItem.id,
             ...diff,
           },
           session,
@@ -1637,7 +1663,8 @@ async function applyItemsDiff(params: {
       oldById.delete(newItem.id)
     }
     else {
-      const product = await ProductsRepository.findById(newItem.product.id, session)
+      // ЕСЛИ ТОВАР НЕ БЫЛ В ЗАКАЗЕ
+      const product = await ProductsRepository.findById(newItem.product, session)
 
       if (!product)
         throw new HttpError(400, 'Product not found', 'PRODUCT_NOT_FOUND')
@@ -1645,7 +1672,7 @@ async function applyItemsDiff(params: {
       const { profit, exchangeRate } = await calculateProfit({
         item: {
           price: newItem.price,
-          currency: newItem.currency.id,
+          currency: newItem.currency,
         },
         purchasePrice: product.purchasePrice,
         purchaseCurrency: product.purchaseCurrency,
@@ -1654,8 +1681,8 @@ async function applyItemsDiff(params: {
       await OrderRepository.createOneItem({
         payload: {
           ...newItem,
-          product: newItem.product.id,
-          currency: newItem.currency.id,
+          product: newItem.product,
+          currency: newItem.currency,
           order: orderId,
           purchasePrice: product.purchasePrice,
           purchaseCurrency: product.purchaseCurrency,
@@ -1666,33 +1693,35 @@ async function applyItemsDiff(params: {
         session,
       })
 
-      await QuantityService.count(
-        {
-          product: newItem.product,
-          count: -newItem.quantity,
+      await QuantityService.count({
+        payload: {
+          mode: 'dec',
+          productId: newItem.product,
+          count: newItem.quantity,
           warehouse: newWarehouseId,
           userId,
           refType: 'order',
           refId: orderId,
         },
         session,
-      )
+      })
     }
   }
 
   for (const [, oldItem] of oldById) {
     await OrderRepository.updateOneItem({
       payload: {
-        id: oldItem._id!,
+        id: oldItem.id,
         removed: true,
         removedBy: userId,
       },
       session,
     })
 
-    await QuantityService.count(
-      {
-        product: oldItem.product,
+    await QuantityService.count({
+      payload: {
+        mode: 'inc',
+        productId: oldItem.product.id,
         count: oldItem.quantity,
         warehouse: prevWarehouseId,
         userId,
@@ -1700,166 +1729,173 @@ async function applyItemsDiff(params: {
         refId: orderId,
       },
       session,
-    )
+    })
   }
 }
 
-// async function applyPaymentsDiff(params: {
-//   orderId: string
-//   payments: OrderPaymentDTO[]
-//   userId: string
-//   session: ClientSession
-// }): Promise<string[]> {
-//   const { orderId, payments, userId, session } = params
+async function applyPaymentsDiff(params: {
+  orderId: string
+  payments: {
+    id?: string
+    cashregister: string
+    cashregisterAccount: string
+    amount: number
+    currency: string
+  }[]
+  userId: string
+  session: ClientSession
+}): Promise<string[]> {
+  const { orderId, payments, userId, session } = params
 
-//   const oldPayments = await OrderPaymentModel.find(
-//     { order: orderId, removed: false },
-//     null,
-//     { session },
-//   )
+  if (payments.length === 0)
+    return []
 
-//   const oldById = new Map<string, any>(
-//     oldPayments.map(p => [p.id.toString(), p]),
-//   )
+  const oldPayments = await OrderRepository.listPayments({
+    payload: parseGetOrderPayments({ filters: { order: [orderId] }, pagination: { full: true } }),
+  })
 
-//   const activePaymentIds: string[] = []
+  const oldById = new Map(oldPayments.items.map(p => [p.id, p]))
 
-//   for (const payment of payments) {
-//     if (payment.id && oldById.has(payment.id)) {
-//       const oldPayment = oldById.get(payment.id)!
+  const activePaymentIds: string[] = []
 
-//       const amountChanged = payment.amount !== oldPayment.amount
-//       const currencyChanged = payment.currency.toString() !== oldPayment.currency.toString()
-//       const accountChanged = payment.cashregisterAccount.toString() !== oldPayment.cashregisterAccount.toString()
-//       const cashregisterChanged = payment.cashregister.toString() !== oldPayment.cashregister.toString()
+  for (const payment of payments) {
+    if (payment.id !== undefined && oldById.has(payment.id)) {
+      const oldPayment = oldById.get(payment.id)!
 
-//       // Если что-то важное изменилось — отменяем старый, создаём новый
-//       if (amountChanged || currencyChanged || accountChanged || cashregisterChanged) {
-//         // 1) отменяем старый платёж
-//         await OrderPaymentModel.updateOne(
-//           { _id: oldPayment.id },
-//           {
-//             $set: {
-//               removed: true,
-//               removedBy: userId,
-//               paymentStatus: 'cancelled',
-//             },
-//           },
-//           { session },
-//         )
+      const amountChanged = payment.amount !== oldPayment.amount
+      const currencyChanged = payment.currency.toString() !== oldPayment.currency.toString()
+      const accountChanged = payment.cashregisterAccount.toString() !== oldPayment.cashregisterAccount.toString()
+      const cashregisterChanged = payment.cashregister.toString() !== oldPayment.cashregister.toString()
 
-//         await MoneyTransactionService.create(
-//           {
-//             type: 'income',
-//             direction: 'out',
-//             account: oldPayment.cashregisterAccount,
-//             cashregister: oldPayment.cashregister,
-//             sourceModel: 'order',
-//             sourceId: orderId,
-//             currency: oldPayment.currency,
-//             amount: oldPayment.amount,
-//             description: `Cancelled payment for order ${orderId}`,
-//           },
-//           session,
-//         )
+      // Если что-то важное изменилось — отменяем старый, создаём новый
+      if (amountChanged || currencyChanged || accountChanged || cashregisterChanged) {
+        // 1) отменяем старый платёж
+        await OrderPaymentRepository.updateById({
+          id: oldPayment.id,
+          payload: {
+            removed: true,
+            removedBy: userId,
+            paymentStatus: 'cancelled',
+          },
+          session,
+        })
 
-//         // 2) создаём новый
-//         const createdPaymentArr = await OrderPaymentModel.create(
-//           [{
-//             ...payment,
-//             order: orderId,
-//             createdBy: userId,
-//             paymentStatus: 'paid',
-//           }],
-//           { session },
-//         )
+        await MoneyTransactionService.create({
+          payload: {
+            type: 'income',
+            direction: 'out',
+            account: oldPayment.cashregisterAccount,
+            cashregister: oldPayment.cashregister,
+            sourceModel: 'order',
+            sourceId: orderId,
+            currency: oldPayment.currency.id,
+            amount: oldPayment.amount,
+            description: `Cancelled payment for order ${orderId}`,
+          },
+          session,
+        })
 
-//         const createdPayment = createdPaymentArr[0]
-//         activePaymentIds.push(createdPayment.id.toString())
+        // 2) создаём новый
+        const createdPaymentArr = await OrderPaymentRepository.createOne({
+          payload: {
+            order: orderId,
+            createdBy: userId,
+            paymentStatus: 'paid',
+            paymentDate: new Date(),
+            cashregister: payment.cashregister,
+            cashregisterAccount: payment.cashregisterAccount,
+            amount: payment.amount,
+            currency: payment.currency,
+          },
+          session,
+        })
 
-//         await MoneyTransactionService.create(
-//           {
-//             type: 'income',
-//             direction: 'in',
-//             account: payment.cashregisterAccount,
-//             cashregister: payment.cashregister,
-//             sourceModel: 'order',
-//             sourceId: orderId,
-//             currency: payment.currency,
-//             amount: payment.amount,
-//             description: `Payment for order ${orderId}`,
-//           },
-//           session,
-//         )
-//       }
-//       else {
-//         // Ничего важного не изменилось — оставляем старый платёж как есть
-//         activePaymentIds.push(oldPayment.id.toString())
-//       }
+        const createdPayment = createdPaymentArr[0]
+        activePaymentIds.push(createdPayment._id)
 
-//       oldById.delete(payment.id)
-//     }
-//     else {
-//       // Новый платёж
-//       const createdPaymentArr = await OrderPaymentModel.create(
-//         [{
-//           ...payment,
-//           order: orderId,
-//           createdBy: userId,
-//           paymentStatus: 'paid',
-//         }],
-//         { session },
-//       )
+        await MoneyTransactionService.create({
+          payload: {
+            type: 'income',
+            direction: 'in',
+            account: payment.cashregisterAccount,
+            cashregister: payment.cashregister,
+            sourceModel: 'order',
+            sourceId: orderId,
+            currency: payment.currency,
+            amount: payment.amount,
+            description: `Payment for order ${orderId}`,
+          },
+          session,
+        })
+      }
+      else {
+        activePaymentIds.push(oldPayment.id.toString())
+      }
 
-//       const createdPayment = createdPaymentArr[0]
-//       activePaymentIds.push(createdPayment.id.toString())
+      oldById.delete(payment.id)
+    }
+    else {
+      const createdPaymentArr = await OrderPaymentRepository.createOne({
+        payload: {
+          order: orderId,
+          createdBy: userId,
+          currency: payment.currency,
+          paymentStatus: 'paid',
+          paymentDate: new Date(),
+          cashregister: payment.cashregister,
+          cashregisterAccount: payment.cashregisterAccount,
+          amount: payment.amount,
+        },
+        session,
+      })
 
-//       await MoneyTransactionService.create(
-//         {
-//           type: 'income',
-//           direction: 'in',
-//           account: payment.cashregisterAccount,
-//           cashregister: payment.cashregister,
-//           sourceModel: 'order',
-//           sourceId: orderId,
-//           currency: payment.currency,
-//           amount: payment.amount,
-//           description: `Payment for order ${orderId}`,
-//         },
-//         session,
-//       )
-//     }
-//   }
+      const createdPayment = createdPaymentArr[0]
+      activePaymentIds.push(createdPayment._id)
 
-//   // Всё, что осталось в oldById — удалённые платежи
-//   for (const [, oldPayment] of oldById) {
-//     await OrderPaymentModel.updateOne(
-//       { _id: oldPayment.id },
-//       {
-//         $set: {
-//           removed: true,
-//           removedBy: userId,
-//           paymentStatus: 'cancelled',
-//         },
-//       },
-//       { session },
-//     )
+      await MoneyTransactionService.create({
+        payload: {
+          type: 'income',
+          direction: 'in',
+          account: payment.cashregisterAccount,
+          cashregister: payment.cashregister,
+          sourceModel: 'order',
+          sourceId: orderId,
+          currency: payment.currency,
+          amount: payment.amount,
+          description: `Payment for order ${orderId}`,
+        },
+        session,
+      })
+    }
+  }
 
-//     await MoneyTransactionService.create(
-//       {
-//         type: 'income',
-//         direction: 'out',
-//         account: oldPayment.cashregisterAccount,
-//         cashregister: oldPayment.cashregister,
-//         sourceModel: 'order',
-//         sourceId: orderId,
-//         currency: oldPayment.currency,
-//         amount: oldPayment.amount,
-//         description: `Cancelled payment for order ${orderId}`,
-//       },
-//       session,
-//     )
-//   }
+  // Всё, что осталось в oldById — удалённые платежи
+  for (const [, oldPayment] of oldById) {
+    await OrderPaymentRepository.updateById({
+      id: oldPayment.id,
+      payload: {
+        removed: true,
+        removedBy: userId,
+        paymentStatus: 'cancelled',
+      },
+      session,
+    })
 
-//   return activePaymentIds
-// }
+    await MoneyTransactionService.create({
+      payload: {
+        type: 'income',
+        direction: 'out',
+        account: oldPayment.cashregisterAccount,
+        cashregister: oldPayment.cashregister,
+        sourceModel: 'order',
+        sourceId: orderId,
+        currency: oldPayment.currency.id,
+        amount: oldPayment.amount,
+        description: `Cancelled payment for order ${orderId}`,
+      },
+      session,
+    })
+  }
+
+  return activePaymentIds
+}

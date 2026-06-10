@@ -16,7 +16,7 @@ export function ColumnVisibilityMenu(
     const savedVisibility = JSON.parse(localStorage.getItem(`${tableId}-columns`) || '{}')
     const updatedVisibility = { ...savedVisibility }
 
-    table.getAllColumns().forEach((column) => {
+    table.getAllColumns().forEach((column: any) => {
       const id = column.id
       const defaultVisible = column.columnDef.meta?.defaultVisible ?? false
 
@@ -32,7 +32,7 @@ export function ColumnVisibilityMenu(
     // eslint-disable-next-line react-hooks-extra/no-direct-set-state-in-use-effect
     setColumnVisibility(updatedVisibility)
     table.setColumnVisibility(updatedVisibility)
-  }, [tableId, table.getAllColumns().map(col => col.id).join(',')])
+  }, [tableId, table.getAllColumns().map((col: any) => col.id).join(',')])
 
   useEffect(() => {
     localStorage.setItem(`${tableId}-columns`, JSON.stringify(columnVisibility))
@@ -61,8 +61,8 @@ export function ColumnVisibilityMenu(
         <DropdownMenuSeparator />
         {table
           .getAllColumns()
-          .filter(column => column.getCanHide())
-          .map((column) => {
+          .filter((column: any) => column.getCanHide())
+          .map((column: any) => {
             const displayName = column.columnDef.meta?.title || column.id
 
             if (
@@ -77,7 +77,7 @@ export function ColumnVisibilityMenu(
               <DropdownMenuCheckboxItem
                 key={column.id}
                 className="capitalize"
-                checked={columnVisibility[column.id] ?? column.getIsVisible()}
+                checked={columnVisibility[column.id as keyof typeof columnVisibility] ?? column.getIsVisible()}
                 onCheckedChange={(value) => {
                   const newVisibility = { ...columnVisibility, [column.id]: value }
                   setColumnVisibility(newVisibility)

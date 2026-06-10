@@ -1,14 +1,14 @@
 import { useWatch } from 'react-hook-form'
-import { useTranslation } from 'react-i18next'
 
 import { useCashregisterAccountQuery, useCashregisterQuery, useCurrencyQuery } from '@/api/hooks'
 
 import { Button, Form, FormControl, FormField, FormItem, FormLabel, FormMessage, Input, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Textarea } from '@/components/ui'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
+import { useLocale } from '@/utils/hooks'
 import { usePayProcurementContext } from '../context'
 
 export function PayProcurementForm() {
-  const { t, i18n } = useTranslation()
+  const { t, language } = useLocale()
   const { isLoading, form, submitPayProcurementForm } = usePayProcurementContext()
 
   const selectedCashregister = useWatch({
@@ -20,36 +20,21 @@ export function PayProcurementForm() {
     name: 'account',
   })
 
-  const { data: { cashregisters = [] } = {} } = useCashregisterQuery(
+  const { cashregisters } = useCashregisterQuery(
     { pagination: { full: true }, filters: { active: [true] } },
-    { options: {
-      select: response => ({
-        cashregisters: response.data.cashregisters,
-      }),
-    } },
   )
 
-  const { data: { cashregisterAccounts = [] } = {} } = useCashregisterAccountQuery(
-    { pagination: { full: true }, filters: { ids: cashregisters.find(cashregister => cashregister.id === selectedCashregister)?.accounts.map(account => account.id) } },
-    { options: {
-      select: response => ({
-        cashregisterAccounts: response.data.cashregisterAccounts,
-      }),
-    } },
+  const { cashregisterAccounts } = useCashregisterAccountQuery(
+    {
+      pagination: { full: true },
+      filters: { ids: cashregisters.find(cashregister => cashregister.id === selectedCashregister)?.accounts.map(account => account.id) },
+    },
   )
 
-  const { data: { currencies = [] } = {} } = useCurrencyQuery(
-    { pagination: { full: true }, filters: { ids: cashregisterAccounts.find(account => account.id === selectedCashregisterAccount)?.currencies.map(currency => currency.id) } },
-    { options: {
-      select: response => ({
-        currencies: response.data.currencies,
-      }),
-    } },
-  )
-
-  const onSubmit = (value) => {
-    submitPayProcurementForm(value)
-  }
+  const { currencies } = useCurrencyQuery({
+    pagination: { full: true },
+    filters: { ids: cashregisterAccounts.find(account => account.id === selectedCashregisterAccount)?.currencies.map(currency => currency.id) },
+  })
 
   return (
     <>
@@ -57,7 +42,10 @@ export function PayProcurementForm() {
         <CardHeader>{t('page.procurements.pay.title')}</CardHeader>
         <CardContent>
           <Form {...form}>
-            <form className="w-full space-y-1" onSubmit={form.handleSubmit(onSubmit)}>
+            <form
+              className="w-full space-y-1"
+              onSubmit={(e) => { void form.handleSubmit(submitPayProcurementForm)(e) }}
+            >
 
               <FormField
                 control={form.control}
@@ -72,7 +60,6 @@ export function PayProcurementForm() {
                     </FormLabel>
                     <FormControl>
                       <Select
-                        value={field.value}
                         onValueChange={(e) => {
                           field.onChange(e)
                           form.setValue('account', '')
@@ -89,7 +76,7 @@ export function PayProcurementForm() {
                         <SelectContent>
                           {cashregisters.map(cashregister => (
                             <SelectItem key={cashregister.id} value={cashregister.id}>
-                              {cashregister.names[i18n.language]}
+                              {cashregister.names[language]}
                             </SelectItem>
                           ))}
                         </SelectContent>
@@ -113,7 +100,6 @@ export function PayProcurementForm() {
                     </FormLabel>
                     <FormControl>
                       <Select
-                        value={field.value}
                         onValueChange={(e) => {
                           field.onChange(e)
                           form.setValue('currency', '')
@@ -129,7 +115,7 @@ export function PayProcurementForm() {
                         <SelectContent>
                           {cashregisterAccounts.map(account => (
                             <SelectItem key={account.id} value={account.id}>
-                              {account.names[i18n.language]}
+                              {account.names[language]}
                             </SelectItem>
                           ))}
                         </SelectContent>
@@ -167,7 +153,6 @@ export function PayProcurementForm() {
                         name="currency"
                         render={({ field: currencyField }) => (
                           <Select
-                            value={currencyField.value}
                             onValueChange={currencyField.onChange}
                             disabled={isLoading || !selectedCashregisterAccount}
                             {...currencyField}
@@ -180,7 +165,7 @@ export function PayProcurementForm() {
                             <SelectContent>
                               {currencies.map(currency => (
                                 <SelectItem key={currency.id} value={currency.id}>
-                                  {currency.symbols[i18n.language]}
+                                  {currency.symbols[language]}
                                 </SelectItem>
                               ))}
                             </SelectContent>

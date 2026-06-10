@@ -1,9 +1,9 @@
 import type {
-  getWarehouseTransactionsLogsParams,
-  WarehouseTransactionsLogsResponse,
-} from '@/api/types'
+  GetWarehouseTransactionLogsRequest,
+  GetWarehouseTransactionLogsResponse,
+} from '@remnant/shared'
 import { api } from '@/api/instance'
 
-export async function getWarehouseTransactionsLogs(params: getWarehouseTransactionsLogsParams) {
-  return api.get<WarehouseTransactionsLogsResponse>('warehouse-transactions-logs/get', { params })
+export async function getWarehouseTransactionsLogs(params: GetWarehouseTransactionLogsRequest) {
+  return api.get<GetWarehouseTransactionLogsResponse>('warehouse-transactions-logs/get', { params })
 }

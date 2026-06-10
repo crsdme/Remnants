@@ -62,9 +62,9 @@ export function LayoutSidebar({ ...props }: React.ComponentProps<typeof Sidebar>
 
   data.navMain = sidebarPermission(data.navMain, authContext.permissions)
 
-  function parseNavItems(items, t) {
-    return items.map((item) => {
-      const icon = item.icon && SIDEMENU_ICONS[item.icon]
+  function parseNavItems(items: any, t: any) {
+    return items.map((item: any) => {
+      const icon = item.icon && SIDEMENU_ICONS[item.icon as keyof typeof SIDEMENU_ICONS]
       return {
         ...item,
         title: t(`component.sidemenu.label.${item.id}`),
@@ -102,9 +102,9 @@ export function LayoutSidebar({ ...props }: React.ComponentProps<typeof Sidebar>
   )
 }
 
-function sidebarPermission(items, permissions) {
+function sidebarPermission(items: any, permissions: any) {
   return items
-    .map((item) => {
+    .map((item: any) => {
       const hasAccess = hasPermission(permissions, item.permissions || [])
 
       let children = item.items || undefined

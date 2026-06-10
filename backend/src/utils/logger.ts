@@ -11,7 +11,7 @@ const myFormat = format.combine(
   format.colorize({ all: true }),
   format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
   format.printf(({ timestamp, level, message }) => {
-    return `[${timestamp}] ${level}: ${message}`
+    return `[${String(timestamp)}] ${level}: ${String(message)}`
   }),
 )
 

@@ -1,43 +1,27 @@
 import type {
-  batchLanguageParams,
-  createLanguagesParams,
-  duplicateLanguageParams,
-  editLanguageParams,
-  getLanguagesParams,
-  importLanguagesParams,
-  LanguagesResponse,
-  removeLanguageParams,
-} from '@/api/types'
+  CreateLanguageRequest,
+  CreateLanguageResponse,
+  EditLanguageRequest,
+  EditLanguageResponse,
+  GetLanguageResponse,
+  GetLanguagesRequest,
+  RemoveLanguageRequest,
+  RemoveLanguageResponse,
+} from '@remnant/shared'
 import { api } from '@/api/instance'
 
-export async function getLanguages(params: getLanguagesParams) {
-  return api.get<LanguagesResponse>('languages/get', { params })
+export async function getLanguages(params: GetLanguagesRequest) {
+  return api.get<GetLanguageResponse>('languages/get', { params })
 }
 
-export async function createLanguage(params: createLanguagesParams) {
-  return api.post<LanguagesResponse>('languages/create', { ...params })
+export async function createLanguage(params: CreateLanguageRequest) {
+  return api.post<CreateLanguageResponse>('languages/create', { ...params })
 }
 
-export async function editLanguage(params: editLanguageParams) {
-  return api.post<LanguagesResponse>('languages/edit', params)
+export async function editLanguage(params: EditLanguageRequest) {
+  return api.post<EditLanguageResponse>('languages/edit', params)
 }
 
-export async function removeLanguage(params: removeLanguageParams) {
-  return api.post<LanguagesResponse>('languages/remove', params)
-}
-
-export async function batchLanguage(params: batchLanguageParams) {
-  return api.post<LanguagesResponse>('languages/batch', params)
-}
-
-export async function importLanguages(params: importLanguagesParams) {
-  return api.post<LanguagesResponse>('languages/import', params, {
-    headers: {
-      'Content-Type': 'multipart/form-data',
-    },
-  })
-}
-
-export async function duplicateLanguage(params: duplicateLanguageParams) {
-  return api.post<LanguagesResponse>('languages/duplicate', params)
+export async function removeLanguage(params: RemoveLanguageRequest) {
+  return api.post<RemoveLanguageResponse>('languages/remove', params)
 }

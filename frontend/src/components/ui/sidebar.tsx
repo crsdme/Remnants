@@ -478,8 +478,8 @@ const sidebarMenuButtonVariants = cva(
   },
 )
 
-type SidebarMenuButtonProps = React.ComponentProps<'button'> &
-  VariantProps<typeof sidebarMenuButtonVariants> & {
+type SidebarMenuButtonProps = React.ComponentProps<'button'>
+  & VariantProps<typeof sidebarMenuButtonVariants> & {
     asChild?: boolean
     isActive?: boolean
     tooltip?: string | React.ComponentProps<typeof TooltipContent>

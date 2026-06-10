@@ -1,6 +1,7 @@
+import type { WarehouseDTO } from '@remnant/shared'
 import type { ReactNode } from 'react'
-import type { UseFormReturn } from 'react-hook-form'
 
+import type { Resolver, UseFormReturn } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useQueryClient } from '@tanstack/react-query'
 import { createContext, useContext, useMemo, useState } from 'react'
@@ -14,80 +15,53 @@ import {
   useWarehouseEdit,
   useWarehouseRemove,
 } from '@/api/hooks'
-import { SUPPORTED_LANGUAGES } from '@/utils/constants'
 
 interface WarehouseContextType {
-  selectedWarehouse: Warehouse
+  selectedWarehouse: WarehouseDTO | undefined
   isModalOpen: boolean
   isLoading: boolean
   isEdit: boolean
-  form: UseFormReturn
-  openModal: (warehouse?: Warehouse) => void
+  form: UseFormReturn<WarehouseFormValues>
+  openModal: (warehouse?: WarehouseDTO) => void
   closeModal: () => void
-  submitWarehouseForm: (params) => void
+  submitWarehouseForm: (params: WarehouseFormValues) => void
   removeWarehouses: (params: { ids: string[] }) => void
 }
 
 const WarehouseContext = createContext<WarehouseContextType | undefined>(undefined)
 
-interface WarehouseProviderProps {
-  children: ReactNode
+interface WarehouseFormValues {
+  names: Record<string, string>
+  priority: number
+  active: boolean
 }
 
-export function WarehouseProvider({ children }: WarehouseProviderProps) {
+export function WarehouseProvider({ children }: { children: ReactNode }) {
   const [isModalOpen, setIsModalOpen] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
   const [isEdit, setIsEdit] = useState(false)
-  const [selectedWarehouse, setSelectedWarehouse] = useState(null)
+  const [selectedWarehouse, setSelectedWarehouse] = useState<WarehouseDTO | undefined>(undefined)
 
   const { t } = useTranslation()
 
-  const defaultLanguageValues = SUPPORTED_LANGUAGES.reduce((acc, lang) => ({ ...acc, [lang]: '' }), {})
+  const formSchema = useMemo(() => createWarehouseFormSchema(t), [t])
 
-  const formSchema = useMemo(() =>
-    z.object({
-      names: z.record(z.string({ required_error: t('form.errors.required') }).min(3, { message: t('form.errors.min_length', { count: 3 }) }).trim()),
-      priority: z.number().default(0),
-      active: z.boolean().default(true),
-    }), [t])
-
-  const form = useForm({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      names: defaultLanguageValues,
-      priority: 0,
-      active: true,
-    },
+  const form = useForm<WarehouseFormValues>({
+    resolver: zodResolver(formSchema) as Resolver<WarehouseFormValues>,
+    defaultValues: getWarehouseFormValues(),
   })
 
   const queryClient = useQueryClient()
-
-  function getWarehouseFormValues(warehouse) {
-    if (!warehouse) {
-      return {
-        names: defaultLanguageValues,
-        priority: 0,
-        active: true,
-      }
-    }
-    return {
-      names: { ...warehouse.names },
-      priority: warehouse.priority,
-      active: warehouse.active,
-    }
-  }
 
   const closeModal = () => {
     if (!isModalOpen)
       return
     setIsModalOpen(false)
-    setIsLoading(false)
     setIsEdit(false)
-    setSelectedWarehouse(null)
+    setSelectedWarehouse(undefined)
     form.reset()
   }
 
-  const openModal = (warehouse) => {
+  const openModal = (warehouse?: WarehouseDTO) => {
     setIsModalOpen(true)
     setIsEdit(!!warehouse)
     setSelectedWarehouse(warehouse)
@@ -98,7 +72,7 @@ export function WarehouseProvider({ children }: WarehouseProviderProps) {
     options: {
       onSuccess: ({ data }) => {
         closeModal()
-        queryClient.invalidateQueries({ queryKey: ['warehouses'] })
+        void queryClient.invalidateQueries({ queryKey: ['warehouses'] })
         toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description || ''}` })
       },
       onError: ({ response }) => {
@@ -113,7 +87,7 @@ export function WarehouseProvider({ children }: WarehouseProviderProps) {
     options: {
       onSuccess: ({ data }) => {
         closeModal()
-        queryClient.invalidateQueries({ queryKey: ['warehouses'] })
+        void queryClient.invalidateQueries({ queryKey: ['warehouses'] })
         toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description || ''}` })
       },
       onError: ({ response }) => {
@@ -127,7 +101,7 @@ export function WarehouseProvider({ children }: WarehouseProviderProps) {
   const useMutateRemoveWarehouse = useWarehouseRemove({
     options: {
       onSuccess: ({ data }) => {
-        queryClient.invalidateQueries({ queryKey: ['warehouses'] })
+        void queryClient.invalidateQueries({ queryKey: ['warehouses'] })
         toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description || ''}` })
       },
       onError: ({ response }) => {
@@ -137,17 +111,18 @@ export function WarehouseProvider({ children }: WarehouseProviderProps) {
     },
   })
 
-  const removeWarehouses = (params) => {
+  const removeWarehouses = (params: { ids: string[] }) => {
     useMutateRemoveWarehouse.mutate(params)
   }
 
-  const submitWarehouseForm = (params) => {
-    setIsLoading(true)
-    if (!selectedWarehouse)
+  const submitWarehouseForm = (params: WarehouseFormValues) => {
+    if (!selectedWarehouse || !isEdit)
       return useMutateCreateWarehouse.mutate(params)
 
     return useMutateEditWarehouse.mutate({ ...params, id: selectedWarehouse.id })
   }
+
+  const isLoading = useMutateCreateWarehouse.isPending || useMutateEditWarehouse.isPending || useMutateRemoveWarehouse.isPending
 
   const value: WarehouseContextType = useMemo(
     () => ({
@@ -174,4 +149,27 @@ export function useWarehouseContext(): WarehouseContextType {
     throw new Error('useWarehouseContext - WarehouseContext')
   }
   return context
+}
+
+function createWarehouseFormSchema(t: (key: string, options?: Record<string, unknown>) => string) {
+  return z.object({
+    names: z.record(z.string({ required_error: t('form.errors.required') }).min(3, { message: t('form.errors.min_length', { count: 3 }) }).trim()),
+    priority: z.number().default(0),
+    active: z.boolean().default(true),
+  })
+}
+
+function getWarehouseFormValues(warehouse?: WarehouseDTO): WarehouseFormValues {
+  if (!warehouse) {
+    return {
+      names: {},
+      priority: 0,
+      active: true,
+    }
+  }
+  return {
+    names: { ...warehouse.names },
+    priority: warehouse.priority,
+    active: warehouse.active,
+  }
 }

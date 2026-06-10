@@ -1,7 +1,10 @@
-import type { Balance } from '@remnant/shared'
+import type { HydratedDocument } from 'mongoose'
+import type { BalanceDB } from '@/types'
 import mongoose, { Schema } from 'mongoose'
 import { v4 as uuidv4 } from 'uuid'
 import { CounterModel } from '@/models/'
+
+type BalanceDoc = HydratedDocument<BalanceDB>
 
 const WarehouseBalanceSchema = new Schema(
   {
@@ -79,19 +82,17 @@ BalanceSchema.set('toJSON', {
   },
 })
 
-BalanceSchema.pre('save', async function (next) {
-  const doc = this as any
-
-  if (doc.isNew && !doc.seq) {
+BalanceSchema.pre('save', async function (this: BalanceDoc, next) {
+  if (this.isNew && !this.seq) {
     const counter = await CounterModel.findByIdAndUpdate(
       'balances',
       { $inc: { seq: 1 } },
       { new: true, upsert: true },
     )
-    doc.seq = counter.seq
+    this.seq = counter.seq
   }
 
   next()
 })
 
-export const BalanceModel = mongoose.model<Balance>('balance', BalanceSchema)
+export const BalanceModel = mongoose.model<BalanceDoc>('balance', BalanceSchema)

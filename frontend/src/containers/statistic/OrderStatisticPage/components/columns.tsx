@@ -1,3 +1,5 @@
+import type { Column } from '@tanstack/react-table'
+import { createColumnHelper } from '@tanstack/react-table'
 import {
   ArrowDown,
   ArrowUp,
@@ -7,22 +9,24 @@ import {
   Trash,
 } from 'lucide-react'
 import { useMemo } from 'react'
-import { useTranslation } from 'react-i18next'
 
 import { TableActionDropdown } from '@/components'
 import { Badge, Button, Checkbox } from '@/components/ui'
 import { formatDate } from '@/utils/helpers'
+import { useLocale } from '@/utils/hooks'
 import { useOrderStatisticContext } from '../context'
 
 const sortIcons = { asc: ArrowUp, desc: ArrowDown }
+const columnHelper = createColumnHelper<any>()
 
 export function useColumns() {
-  const { t, i18n } = useTranslation()
+  const { t, language } = useLocale()
   const { isLoading } = useOrderStatisticContext()
 
   const columns = useMemo(() => {
-    function sortHeader(column, label) {
-      const Icon = sortIcons[column.getIsSorted() || undefined] || ChevronsUpDown
+    function sortHeader(column: Column<any, unknown>, label: string) {
+      const sorted = column.getIsSorted()
+      const Icon = sorted ? sortIcons[sorted] : ChevronsUpDown
 
       return (
         <Button
@@ -38,7 +42,7 @@ export function useColumns() {
     }
 
     function selectColumn() {
-      return ({
+      return columnHelper.display({
         id: 'select',
         size: 35,
         meta: { title: t('component.columnMenu.columns.select') },
@@ -70,7 +74,7 @@ export function useColumns() {
     }
 
     function actionColumn() {
-      return ({
+      return columnHelper.display({
         id: 'action',
         size: 85,
         meta: {
@@ -83,19 +87,19 @@ export function useColumns() {
           const actions = [
             {
               permission: 'order.copy',
-              onClick: () => navigator.clipboard.writeText(item.id),
+              onClick: async () => navigator.clipboard.writeText(item.id),
               label: t('table.copy'),
               icon: <Copy className="h-4 w-4" />,
             },
             {
               permission: 'order.edit',
-              onClick: () => {},
+              onClick: () => { },
               label: t('table.edit'),
               icon: <Pencil className="h-4 w-4" />,
             },
             {
               permission: 'order.delete',
-              onClick: () => {},
+              onClick: () => { },
               label: t('table.delete'),
               icon: <Trash className="h-4 w-4" />,
               isDestructive: true,
@@ -110,7 +114,7 @@ export function useColumns() {
 
     return [
       selectColumn(),
-      {
+      columnHelper.accessor(row => row.names?.[language] || row.names?.en, {
         id: 'names',
         size: 150,
         meta: {
@@ -123,11 +127,9 @@ export function useColumns() {
           defaultVisible: true,
         },
         header: ({ column }) => sortHeader(column, t('page.orders.table.names')),
-        accessorFn: row => row.names?.[i18n.language] || row.names?.en,
-      },
-      {
+      }),
+      columnHelper.accessor('priority', {
         id: 'priority',
-        accessorKey: 'priority',
         meta: {
           title: t('page.orders.table.priority'),
           batchEdit: true,
@@ -138,10 +140,9 @@ export function useColumns() {
         },
         header: ({ column }) => sortHeader(column, t('page.orders.table.priority')),
         cell: ({ row }) => <Badge variant="outline">{row.original.priority}</Badge>,
-      },
-      {
+      }),
+      columnHelper.accessor('color', {
         id: 'color',
-        accessorKey: 'color',
         meta: {
           title: t('page.orders.table.color'),
           batchEdit: true,
@@ -155,10 +156,9 @@ export function useColumns() {
           const color = row.original.color || '#ffffff'
           return <div className="w-6 h-6 rounded-full border border-gray-300" style={{ backgroundColor: color }} />
         },
-      },
-      {
+      }),
+      columnHelper.accessor('createdAt', {
         id: 'createdAt',
-        accessorKey: 'createdAt',
         meta: {
           title: t('table.createdAt'),
           filterable: true,
@@ -166,11 +166,10 @@ export function useColumns() {
           sortable: true,
         },
         header: ({ column }) => sortHeader(column, t('table.createdAt')),
-        cell: ({ row }) => formatDate(row.getValue('createdAt'), 'dd.MM.yyyy HH:mm', i18n.language),
-      },
-      {
+        cell: ({ row }) => formatDate(row.getValue('createdAt'), 'dd.MM.yyyy HH:mm', language),
+      }),
+      columnHelper.accessor('updatedAt', {
         id: 'updatedAt',
-        accessorKey: 'updatedAt',
         meta: {
           title: t('table.updatedAt'),
           filterable: true,
@@ -178,10 +177,10 @@ export function useColumns() {
           sortable: true,
         },
         header: ({ column }) => sortHeader(column, t('table.updatedAt')),
-        cell: ({ row }) => formatDate(row.getValue('updatedAt'), 'dd.MM.yyyy HH:mm', i18n.language),
-      },
+        cell: ({ row }) => formatDate(row.getValue('updatedAt'), 'dd.MM.yyyy HH:mm', language),
+      }),
       actionColumn(),
     ]
-  }, [i18n.language])
+  }, [language, isLoading, t])
   return columns
 }

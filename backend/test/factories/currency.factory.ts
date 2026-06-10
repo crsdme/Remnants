@@ -1,79 +1,48 @@
-import path from 'node:path'
+import type {
+  CreateCurrencyRequest,
+  EditCurrencyRequest,
+  GetCurrencyRequest,
+  RemoveCurrencyRequest,
+} from '@remnant/shared'
 import request from 'supertest'
-import app from '../../src/'
+import app from '@/index'
 import { CurrencyModel } from '../../src/models/currency.model'
 
-export async function create(currency?: any) {
-  if (!currency) {
-    currency = {
-      names: {
-        en: 'Dollar',
-        ru: 'Доллар',
-      },
-      symbols: {
-        en: '$',
-        ru: '$',
-      },
-      priority: 1,
-      main: true,
-      active: true,
-    }
-  }
+export async function create(params: CreateCurrencyRequest): Promise<unknown> {
+  const response = await request(app).post('/api/currencies/create').send(params)
 
-  const res = await request(app).post('/api/currencies/create').send(currency)
-
-  return res
+  return response.body
 }
 
-export async function get(params?: any) {
+export async function get(params?: GetCurrencyRequest): Promise<unknown> {
   if (!params) {
     params = {
-      'pagination[current]': 1,
-      'pagination[pageSize]': 10,
+      pagination: {
+        current: 1,
+        pageSize: 10,
+      },
     }
   }
 
-  const res = await request(app).get('/api/currencies/get').query(params)
+  const response = await request(app).get('/api/currencies/get').query(params)
 
-  return res
+  return response.body
 }
 
-export async function edit(params: any) {
-  const res = await request(app).post('/api/currencies/edit').send(params)
+export async function edit(params: EditCurrencyRequest): Promise<unknown> {
+  const response = await request(app).post('/api/currencies/edit').send(params)
 
-  return res
+  return response.body
 }
 
-export async function duplicate(ids: string[]) {
-  const res = await request(app).post('/api/currencies/duplicate').send({ ids })
+export async function remove(params: RemoveCurrencyRequest): Promise<unknown> {
+  const response = await request(app).post('/api/currencies/remove').send(params)
 
-  return res
+  return response.body
 }
 
-export async function upload(filePath?: string) {
-  if (!filePath) {
-    filePath = path.join(__dirname, '../files/test-import-currencies.csv')
-  }
+export async function removeAll(): Promise<unknown> {
+  const response = await CurrencyModel.deleteMany({})
 
-  const res = await request(app).post('/api/currencies/import').attach('file', filePath)
-
-  return res
-}
-
-export async function batch(params: any) {
-  const res = await request(app).post('/api/currencies/batch').send(params)
-
-  return res
-}
-
-export async function remove(ids: string[]) {
-  const res = await request(app).post('/api/currencies/remove').send({ ids })
-
-  return res
-}
-
-export async function removeAll() {
-  const res = await CurrencyModel.deleteMany({})
-
-  return res
+  return response
 }

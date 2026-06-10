@@ -2,8 +2,9 @@ import path from 'node:path'
 import process from 'node:process'
 import tailwindcss from '@tailwindcss/vite'
 import react from '@vitejs/plugin-react-swc'
-
 import { defineConfig, loadEnv } from 'vite'
+
+import checker from 'vite-plugin-checker'
 
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => {
@@ -12,7 +13,16 @@ export default defineConfig(({ mode }) => {
   const HOST = env.VITE_HOST || '0.0.0.0'
 
   return {
-    plugins: [react(), tailwindcss()],
+    plugins: [
+      react(),
+      tailwindcss(),
+      checker({
+        typescript: {
+          tsconfigPath: './tsconfig.app.json',
+        },
+        overlay: false,
+      }),
+    ],
     resolve: {
       alias: {
         '@': path.resolve(__dirname, './src'),
@@ -24,7 +34,7 @@ export default defineConfig(({ mode }) => {
       strictPort: true,
       watch: {
         usePolling: false,
-        ignored: ['**/node_modules/**', '**/dist/**'],
+        ignored: ['**/node_modules/**', '**/dist/**', '**/src/containers/finance/procurement/**'],
       },
       // hmr: {
       //   protocol: 'ws',

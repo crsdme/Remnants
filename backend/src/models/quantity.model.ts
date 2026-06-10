@@ -1,7 +1,10 @@
-import type { Quantity } from '@remnant/shared'
+import type { HydratedDocument } from 'mongoose'
+import type { QuantityDB } from '@/types/'
 import mongoose, { Schema } from 'mongoose'
 import { v4 as uuidv4 } from 'uuid'
 import { uuidValidator } from '@/utils/'
+
+type QuantityDoc = HydratedDocument<QuantityDB>
 
 const QuantitySchema: Schema = new Schema(
   {
@@ -14,7 +17,7 @@ const QuantitySchema: Schema = new Schema(
       type: Number,
       default: 0,
     },
-    product: {
+    productId: {
       type: String,
       ref: 'Product',
       required: true,
@@ -28,7 +31,7 @@ const QuantitySchema: Schema = new Schema(
   { timestamps: true },
 )
 
-QuantitySchema.virtual('autoStatus').get(function (this: any) {
+QuantitySchema.virtual('status').get(function (this: QuantityDoc) {
   if (this.count > 0)
     return 'available'
   if (this.count === 0)
@@ -45,6 +48,6 @@ QuantitySchema.set('toJSON', {
   },
 })
 
-QuantitySchema.index({ product: 1, warehouse: 1 })
+QuantitySchema.index({ productId: 1, warehouse: 1 })
 
-export const QuantityModel = mongoose.model<Quantity>('Quantity', QuantitySchema)
+export const QuantityModel = mongoose.model<QuantityDoc>('quantity', QuantitySchema)

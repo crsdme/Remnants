@@ -1,9 +1,9 @@
-import type { createOrderSourcesParams } from '@/api/types'
+import type { CreateOrderSourceRequest } from '@remnant/shared'
 
 import { useMutation } from '@tanstack/react-query'
 import { createOrderSource } from '@/api/requests'
 
-export function useOrderSourceCreate(settings?: MutationSettings<createOrderSourcesParams, typeof createOrderSource>) {
+export function useOrderSourceCreate(settings?: MutationSettings<CreateOrderSourceRequest>) {
   return useMutation({
     mutationFn: createOrderSource,
     ...settings?.options,

@@ -1,21 +1,18 @@
 import { Filter } from 'lucide-react'
 
 import { useState } from 'react'
-import { useTranslation } from 'react-i18next'
 
 import { Input } from '@/components/ui'
-import { useDebounceCallback } from '@/utils/hooks'
+import { useDebounceCallback, useLocale } from '@/utils/hooks'
 
-export function DataTableFilters({ filters, setFilters }) {
-  const { t } = useTranslation()
+export function DataTableFilters({ filters, setFilters }: { filters: any, setFilters: (filters: any) => void }) {
+  const { t } = useLocale()
   const [localFilters, setLocalFilters] = useState(filters)
 
-  const debouncedSetFilters = useDebounceCallback((value: object) => {
-    setFilters(prev => ({ ...prev, ...value }))
-  }, 300)
+  const debouncedSetFilters = useDebounceCallback(setFilters, 300)
 
-  const handleFilter = (field, value) => {
-    setLocalFilters(prev => ({ ...prev, [field]: value }))
+  const handleFilter = (field: string, value: string) => {
+    setLocalFilters({ [field]: value })
     debouncedSetFilters({ [field]: value })
   }
 
@@ -25,7 +22,7 @@ export function DataTableFilters({ filters, setFilters }) {
         <Filter className="h-4 w-4 text-gray-400" />
       </div>
       <Input
-        placeholder={t('page.categories.filter.names')}
+        placeholder={t('page.product-properties.filter.names')}
         value={localFilters.names}
         onChange={event => handleFilter('names', event.target.value)}
         className="pl-10"

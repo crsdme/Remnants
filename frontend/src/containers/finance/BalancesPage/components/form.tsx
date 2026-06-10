@@ -1,4 +1,3 @@
-import { useTranslation } from 'react-i18next'
 import {
   Button,
   Form,
@@ -9,19 +8,19 @@ import {
   FormMessage,
   Textarea,
 } from '@/components/ui'
+import { useLocale } from '@/utils/hooks'
 import { useBalanceContext } from '../context'
 
 export function BalanceForm() {
-  const { t } = useTranslation()
+  const { t } = useLocale()
   const { isLoading, form, closeModal, submitBalanceForm } = useBalanceContext()
-
-  const onSubmit = (values) => {
-    submitBalanceForm(values)
-  }
 
   return (
     <Form {...form}>
-      <form className="w-full space-y-1" onSubmit={form.handleSubmit(onSubmit)}>
+      <form
+        className="w-full space-y-1"
+        onSubmit={(e) => { void form.handleSubmit(submitBalanceForm)(e) }}
+      >
         <FormField
           control={form.control}
           name="comment"

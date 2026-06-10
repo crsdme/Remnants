@@ -1,11 +1,11 @@
-import type { removeProductPropertiesGroupsParams } from '@/api/types'
+import type { RemoveProductPropertyGroupRequest } from '@remnant/shared'
 
 import { useMutation } from '@tanstack/react-query'
-import { removeProductPropertiesGroups } from '@/api/requests'
+import { removeProductPropertyGroups } from '@/api/requests'
 
-export function useProductPropertyGroupRemove(settings?: MutationSettings<removeProductPropertiesGroupsParams, typeof removeProductPropertiesGroups>) {
+export function useProductPropertyGroupRemove(settings?: MutationSettings<RemoveProductPropertyGroupRequest>) {
   return useMutation({
-    mutationFn: removeProductPropertiesGroups,
+    mutationFn: removeProductPropertyGroups,
     ...settings?.options,
   })
 }

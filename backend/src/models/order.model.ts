@@ -20,27 +20,27 @@ const OrderSchema: Schema = new Schema(
     },
     warehouse: {
       type: String,
-      ref: 'Warehouse',
+      ref: 'warehouse',
       required: true,
     },
     deliveryService: {
       type: String,
-      ref: 'DeliveryService',
+      ref: 'deliveryService',
       required: true,
     },
     orderSource: {
       type: String,
-      ref: 'OrderSource',
+      ref: 'orderSource',
       required: true,
     },
     orderStatus: {
       type: String,
-      ref: 'OrderStatus',
+      ref: 'orderStatus',
       required: true,
     },
     orderPayments: [{
       type: String,
-      ref: 'OrderPayment',
+      ref: 'orderPayment',
       required: true,
     }],
     orderPaymentStatus: {
@@ -50,7 +50,7 @@ const OrderSchema: Schema = new Schema(
     },
     client: {
       type: String,
-      ref: 'Client',
+      ref: 'client',
     },
     comment: {
       type: String,
@@ -58,15 +58,15 @@ const OrderSchema: Schema = new Schema(
     },
     createdBy: {
       type: String,
-      ref: 'User',
+      ref: 'user',
     },
     confirmedBy: {
       type: String,
-      ref: 'User',
+      ref: 'user',
     },
     removedBy: {
       type: String,
-      ref: 'User',
+      ref: 'user',
     },
     removed: {
       type: Boolean,
@@ -171,13 +171,15 @@ OrderItemSchema.set('toJSON', {
 
 OrderSchema.pre('save', async function (this: OrderDoc, next) {
   if (this.isNew) {
-    await CounterModel.findByIdAndUpdate(
+    const counter = await CounterModel.findByIdAndUpdate(
       'orders',
       { $inc: { seq: 1 } },
       { new: true, upsert: true },
     )
+    this.seq = counter.seq
   }
   next()
 })
+
 export const OrderModel = mongoose.model<OrderDoc>('order', OrderSchema)
 export const OrderItemModel = mongoose.model<OrderItemDoc>('order-item', OrderItemSchema)

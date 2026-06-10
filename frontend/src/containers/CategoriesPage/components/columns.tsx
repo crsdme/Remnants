@@ -1,3 +1,6 @@
+import type { CategoryDTO } from '@remnant/shared'
+import type { Column } from '@tanstack/react-table'
+import { createColumnHelper } from '@tanstack/react-table'
 import {
   ArrowDown,
   ArrowUp,
@@ -5,36 +8,30 @@ import {
   ChevronRight,
   ChevronsUpDown,
   Copy,
-  CopyPlus,
   Pencil,
   Trash,
 } from 'lucide-react'
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import { useCategoryOptions } from '@/api/hooks'
 import { TableActionDropdown } from '@/components'
 import { Badge, Button, Checkbox } from '@/components/ui'
 import { formatDate } from '@/utils/helpers'
 import { useCategoryContext } from '../context'
 
 const sortIcons = { asc: ArrowUp, desc: ArrowDown }
+const columnHelper = createColumnHelper<CategoryDTO>()
 
 export function useColumns() {
   const { t, i18n } = useTranslation()
-  const categoryContext = useCategoryContext()
-
-  const loadCategoriesOptions = useCategoryOptions({
-    mapFn: category => ({
-      value: category.id,
-      label: category.names[i18n.language],
-    }),
-  })
+  const { isLoading, openModal, removeCategories } = useCategoryContext()
 
   const columns = useMemo(() => {
-    function sortHeader(column, label) {
-      const isLoading = categoryContext.isLoading
-      const Icon = sortIcons[column.getIsSorted() || undefined] || ChevronsUpDown
+    const language = i18n.language as keyof CategoryDTO['names']
+
+    function sortHeader(column: Column<CategoryDTO>, label: string) {
+      const sorted = column.getIsSorted()
+      const Icon = sorted ? sortIcons[sorted] : ChevronsUpDown
 
       return (
         <Button
@@ -50,7 +47,7 @@ export function useColumns() {
     }
 
     function selectColumn() {
-      return ({
+      return columnHelper.display({
         id: 'select',
         size: 35,
         meta: { title: t('component.columnMenu.columns.select') },
@@ -82,7 +79,7 @@ export function useColumns() {
     }
 
     function expanderColumn() {
-      return ({
+      return columnHelper.display({
         id: 'expander',
         header: '',
         cell: ({ row }) => {
@@ -109,7 +106,7 @@ export function useColumns() {
     }
 
     function actionColumn() {
-      return ({
+      return columnHelper.display({
         id: 'action',
         size: 85,
         meta: {
@@ -122,25 +119,19 @@ export function useColumns() {
           const actions = [
             {
               permission: 'category.copy',
-              onClick: () => navigator.clipboard.writeText(item.id),
+              onClick: async () => navigator.clipboard.writeText(item.id),
               label: t('table.copy'),
               icon: <Copy className="h-4 w-4" />,
             },
             {
               permission: 'category.edit',
-              onClick: () => categoryContext.openModal(item),
+              onClick: () => openModal(item),
               label: t('table.edit'),
               icon: <Pencil className="h-4 w-4" />,
             },
             {
-              permission: 'category.duplicate',
-              onClick: () => categoryContext.duplicateCategories({ ids: [item.id] }),
-              label: t('table.duplicate'),
-              icon: <CopyPlus className="h-4 w-4" />,
-            },
-            {
               permission: 'category.delete',
-              onClick: () => categoryContext.removeCategories({ ids: [item.id] }),
+              onClick: () => removeCategories({ ids: [item.id] }),
               label: t('table.delete'),
               icon: <Trash className="h-4 w-4" />,
               isDestructive: true,
@@ -156,7 +147,7 @@ export function useColumns() {
     return [
       selectColumn(),
       expanderColumn(),
-      {
+      columnHelper.accessor('names', {
         id: 'names',
         size: 150,
         meta: {
@@ -169,11 +160,10 @@ export function useColumns() {
           defaultVisible: true,
         },
         header: ({ column }) => sortHeader(column, t('page.categories.table.names')),
-        cell: ({ row }) => row.original.names?.[i18n.language],
-      },
-      {
+        cell: ({ getValue }) => getValue()?.[language],
+      }),
+      columnHelper.accessor('priority', {
         id: 'priority',
-        accessorKey: 'priority',
         meta: {
           title: t('page.categories.table.priority'),
           batchEdit: true,
@@ -184,11 +174,10 @@ export function useColumns() {
           defaultVisible: true,
         },
         header: ({ column }) => sortHeader(column, t('page.categories.table.priority')),
-        cell: ({ row }) => <Badge variant="outline">{row.original.priority}</Badge>,
-      },
-      {
+        cell: ({ getValue }) => <Badge variant="outline">{getValue()}</Badge>,
+      }),
+      columnHelper.accessor('active', {
         id: 'active',
-        accessorKey: 'active',
         meta: {
           title: t('page.categories.table.active'),
           batchEdit: true,
@@ -199,26 +188,22 @@ export function useColumns() {
           defaultVisible: true,
         },
         header: t('page.categories.table.active'),
-        cell: ({ row }) => <Badge variant={row.original.active ? 'success' : 'destructive'}>{t(`table.active.${row.original.active}`)}</Badge>,
-      },
-      {
+        cell: ({ getValue }) => {
+          const isActive = getValue()
+          return <Badge variant={isActive ? 'success' : 'destructive'}>{t(`table.active.${isActive}`)}</Badge>
+        },
+      }),
+      columnHelper.accessor('parent', {
         id: 'parent',
-        accessorKey: 'parent',
         meta: {
           title: t('page.categories.table.parent'),
-          batchEdit: true,
-          batchEditType: 'asyncValue',
-          filterable: true,
-          filterType: 'asyncValue',
-          loadOptions: loadCategoriesOptions,
         },
         header: t('page.categories.table.parent'),
         enableSorting: false,
         enableHiding: false,
-      },
-      {
+      }),
+      columnHelper.accessor('createdAt', {
         id: 'createdAt',
-        accessorKey: 'createdAt',
         meta: {
           title: t('table.createdAt'),
           filterable: true,
@@ -226,11 +211,10 @@ export function useColumns() {
           sortable: true,
         },
         header: ({ column }) => sortHeader(column, t('table.createdAt')),
-        cell: ({ row }) => formatDate(row.getValue('createdAt'), 'dd.MM.yyyy HH:mm', i18n.language),
-      },
-      {
+        cell: ({ getValue }) => formatDate(getValue(), 'dd.MM.yyyy HH:mm', i18n.language),
+      }),
+      columnHelper.accessor('updatedAt', {
         id: 'updatedAt',
-        accessorKey: 'updatedAt',
         meta: {
           title: t('table.updatedAt'),
           filterable: true,
@@ -238,10 +222,10 @@ export function useColumns() {
           sortable: true,
         },
         header: ({ column }) => sortHeader(column, t('table.updatedAt')),
-        cell: ({ row }) => formatDate(row.getValue('updatedAt'), 'dd.MM.yyyy HH:mm', i18n.language),
-      },
+        cell: ({ getValue }) => formatDate(getValue(), 'dd.MM.yyyy HH:mm', i18n.language),
+      }),
       actionColumn(),
     ]
-  }, [i18n.language])
+  }, [i18n.language, isLoading, openModal, removeCategories, t])
   return columns
 }

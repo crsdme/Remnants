@@ -80,12 +80,25 @@ export async function list(payload: GetCategoriesRepoPayload): Promise<GetCatego
       $sort: sorters,
     },
     {
+      $project: {
+        _id: 0,
+        id: '$_id',
+        seq: 1,
+        names: 1,
+        priority: 1,
+        parent: 1,
+        active: 1,
+        createdAt: 1,
+        updatedAt: 1,
+      },
+    },
+    {
       $facet: {
-        categories: [
+        items: [
           { $skip: (current - 1) * pageSize },
           { $limit: pageSize },
         ],
-        totalCount: [
+        count: [
           { $count: 'count' },
         ],
       },

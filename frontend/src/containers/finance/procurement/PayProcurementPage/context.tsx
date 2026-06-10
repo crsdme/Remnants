@@ -1,3 +1,4 @@
+import type { ProcurementDTO } from '@remnant/shared'
 import type { ReactNode } from 'react'
 import type { UseFormReturn } from 'react-hook-form'
 
@@ -16,20 +17,15 @@ import {
 import { useProcurementPay } from '@/api/hooks/procurement/useProcurementPay'
 
 interface PayProcurementContextType {
-  procurement?: Procurement
+  procurement?: ProcurementDTO
   isLoading: boolean
-  form: UseFormReturn
-  onError: (formErrors) => void
-  submitPayProcurementForm: (params) => void
+  form: UseFormReturn<{ cashregister: string, account: string, currency: string, amount: number, description?: string }>
+  submitPayProcurementForm: (params: { cashregister: string, account: string, currency: string, amount: number, description?: string }) => void
 }
 
 const PayProcurementContext = createContext<PayProcurementContextType | undefined>(undefined)
 
-interface PayProcurementProviderProps {
-  children: ReactNode
-}
-
-export function PayProcurementProvider({ children }: PayProcurementProviderProps) {
+export function PayProcurementProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(false)
   const { procurementSeq } = useParams()
 
@@ -56,19 +52,16 @@ export function PayProcurementProvider({ children }: PayProcurementProviderProps
 
   const queryClient = useQueryClient()
 
-  const { data: { procurement = null } = {} } = useProcurementQuery(
+  const { procurements: [procurement] } = useProcurementQuery(
     { filters: { seq: [procurementSeq] } },
-    { options: { select: response => ({
-      procurement: response.data.procurements[0],
-    }) } },
   )
 
   const useMutatePayProcurement = useProcurementPay({
     options: {
       onSuccess: ({ data }) => {
-        queryClient.invalidateQueries({ queryKey: ['procurements'] })
-        queryClient.invalidateQueries({ queryKey: ['products'] })
-        toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description || ''}` })
+        void queryClient.invalidateQueries({ queryKey: ['procurements'] })
+        void queryClient.invalidateQueries({ queryKey: ['products'] })
+        toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.message}` })
       },
       onError: ({ response }) => {
         setIsLoading(false)
@@ -78,7 +71,7 @@ export function PayProcurementProvider({ children }: PayProcurementProviderProps
     },
   })
 
-  const submitPayProcurementForm = (params) => {
+  const submitPayProcurementForm = (params: { cashregister: string, account: string, currency: string, amount: number, description?: string }) => {
     setIsLoading(true)
 
     return useMutatePayProcurement.mutate({
@@ -88,14 +81,8 @@ export function PayProcurementProvider({ children }: PayProcurementProviderProps
       account: params.account,
       currency: params.currency,
       amount: params.amount,
-      comment: params.comment,
+      comment: params.description,
     })
-  }
-
-  const onError = (formErrors) => {
-    if (formErrors.products) {
-      toast.error(formErrors.products.message)
-    }
   }
 
   const value: PayProcurementContextType = useMemo(
@@ -103,7 +90,6 @@ export function PayProcurementProvider({ children }: PayProcurementProviderProps
       procurement,
       isLoading,
       form,
-      onError,
       submitPayProcurementForm,
     }),
     [procurement, isLoading, form],

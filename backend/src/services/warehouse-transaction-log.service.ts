@@ -1,173 +1,40 @@
 import type {
-  CreateWarehouseTransactionLogsParams,
   CreateWarehouseTransactionLogsResponse,
-  GetWarehouseTransactionLogsParams,
   GetWarehouseTransactionLogsResponse,
 } from '@remnant/shared'
 import type { ClientSession } from 'mongoose'
-import { WarehouseTransactionLogModel } from '@/models/'
-import { buildQuery, buildSortQuery } from '@/utils/'
+import type {
+  CreateWarehouseTransactionLogsPayload,
+  GetWarehouseTransactionLogsPayload,
+} from '@/types/'
+import { mapWarehouseTransactionLogToDTO } from '@/mappers/'
+import * as WarehouseTransactionLogRepo from '@/repositories/warehouse-transaction-log.repo'
 
-export async function get(payload: GetWarehouseTransactionLogsParams): Promise<GetWarehouseTransactionLogsResponse> {
-  const { current = 1, pageSize = 10 } = payload.pagination || {}
-
-  const {
-    productId,
-    warehouseId,
-    refType,
-    refId,
-    userId,
-    createdAt = {
-      from: undefined,
-      to: undefined,
-    },
-    updatedAt = {
-      from: undefined,
-      to: undefined,
-    },
-  } = payload.filters || {}
-
-  const filterRules = {
-    productId: { type: 'string' },
-    warehouseId: { type: 'string' },
-    refType: { type: 'string' },
-    refId: { type: 'string' },
-    userId: { type: 'string' },
-    createdAt: { type: 'dateRange' },
-    updatedAt: { type: 'dateRange' },
-  } as const
-
-  const query = buildQuery({
-    filters: { productId, warehouseId, refType, refId, userId, createdAt, updatedAt },
-    rules: filterRules,
-    removed: false,
-  })
-
-  const sorters = buildSortQuery(payload.sorters || {}, { createdAt: -1 })
-
-  const pipeline = [
-    {
-      $match: query,
-    },
-    {
-      $sort: sorters,
-    },
-    {
-      $lookup: {
-        from: 'warehouse-transactions',
-        localField: 'refId',
-        foreignField: '_id',
-        as: 'warehouse-transaction',
-      },
-    },
-    {
-      $lookup: {
-        from: 'orders',
-        localField: 'refId',
-        foreignField: '_id',
-        as: 'order',
-      },
-    },
-    {
-      $lookup: {
-        from: 'warehouses',
-        localField: 'warehouseId',
-        foreignField: '_id',
-        as: 'warehouse',
-      },
-    },
-    {
-      $lookup: {
-        from: 'users',
-        localField: 'userId',
-        foreignField: '_id',
-        as: 'user',
-      },
-    },
-    {
-      $addFields: {
-        resource: {
-          $cond: [
-            { $eq: ['$resourceType', 'warehouse-transaction'] },
-            { $first: '$warehouse-transaction' },
-            { $first: '$order' },
-          ],
-        },
-        warehouse: {
-          $first: '$warehouse',
-        },
-        user: {
-          $first: '$user',
-        },
-      },
-    },
-    {
-      $project: {
-        _id: 0,
-        id: '$_id',
-        deltaCount: 1,
-        refType: 1,
-        refId: 1,
-        resource: 1,
-        warehouse: 1,
-        user: {
-          id: '$user._id',
-          name: '$user.name',
-        },
-        createdAt: 1,
-        updatedAt: 1,
-      },
-    },
-    {
-      $facet: {
-        warehouseTransactionLogs: [
-          { $skip: (current - 1) * pageSize },
-          { $limit: pageSize },
-        ],
-        totalCount: [
-          { $count: 'count' },
-        ],
-      },
-    },
-  ]
-
-  const warehouseTransactionLogsRaw = await WarehouseTransactionLogModel.aggregate(pipeline).exec()
-
-  const warehouseTransactionLogs = warehouseTransactionLogsRaw[0].warehouseTransactionLogs || []
-  const warehouseTransactionLogsCount = warehouseTransactionLogsRaw[0].totalCount[0]?.count || 0
+export async function get({ payload }: { payload: GetWarehouseTransactionLogsPayload }): Promise<GetWarehouseTransactionLogsResponse> {
+  const { items, total, page, pageSize } = await WarehouseTransactionLogRepo.list(payload)
 
   return {
     status: 'success',
     code: 'WAREHOUSE_TRANSACTION_LOGS_FETCHED',
     message: 'Warehouse transaction logs fetched',
     data: {
-      items: warehouseTransactionLogs,
+      items,
       pagination: {
-        total: warehouseTransactionLogsCount,
-        page: current,
+        total,
+        page,
         pageSize,
       },
     },
   }
 }
 
-export async function create(payload: CreateWarehouseTransactionLogsParams, session?: ClientSession): Promise<CreateWarehouseTransactionLogsResponse> {
-  const { productId, warehouseId, deltaCount, refType, refId, userId } = payload
-
-  const warehouseTransactionLog = await WarehouseTransactionLogModel.create([{
-    productId,
-    warehouseId,
-    deltaCount,
-    refType,
-    refId,
-    userId,
-    createdBy: userId,
-  }], { session })
+export async function create(payload: CreateWarehouseTransactionLogsPayload, session?: ClientSession): Promise<CreateWarehouseTransactionLogsResponse> {
+  const warehouseTransactionLog = await WarehouseTransactionLogRepo.createOne({ payload, session })
 
   return {
     status: 'success',
     code: 'WAREHOUSE_TRANSACTION_LOG_CREATED',
     message: 'Warehouse transaction log created',
-    data: warehouseTransactionLog[0],
+    data: mapWarehouseTransactionLogToDTO(warehouseTransactionLog[0]),
   }
 }

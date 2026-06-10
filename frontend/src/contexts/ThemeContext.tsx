@@ -19,19 +19,15 @@ interface ThemeContextType {
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined)
 
-interface ThemeProviderProps {
-  children: ReactNode
-}
-
-export function ThemeProvider({ children }: ThemeProviderProps) {
+export function ThemeProvider({ children }: { children: ReactNode }) {
   const [theme, setTheme] = useState({ language: 'en', layoutTheme: 'light' })
   const { i18n } = useTranslation()
 
-  const updateTheme = ({ language, layoutTheme }) => {
+  const updateTheme = ({ language, layoutTheme }: Partial<Theme>) => {
     // eslint-disable-next-line react-hooks-extra/no-direct-set-state-in-use-effect
-    setTheme(state => ({ ...state, language, layoutTheme }))
+    setTheme(state => ({ ...state, language: language ?? state.language, layoutTheme: layoutTheme ?? state.layoutTheme }))
     if (language)
-      i18n.changeLanguage(language)
+      void i18n.changeLanguage(language)
     if (layoutTheme)
       document.documentElement.classList.toggle('dark', layoutTheme === 'dark')
   }

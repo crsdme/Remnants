@@ -5,16 +5,14 @@ import { useTranslation } from 'react-i18next'
 import { Input } from '@/components/ui'
 import { useDebounceCallback } from '@/utils/hooks'
 
-export function DataTableFilters({ filters, setFilters }) {
+export function DataTableFilters({ filters, setFilters }: { filters: { seq?: string }, setFilters: (filters: { seq?: string }) => void }) {
   const { t } = useTranslation()
   const [localFilters, setLocalFilters] = useState(filters)
 
-  const debouncedSetFilters = useDebounceCallback((value: object) => {
-    setFilters(prev => ({ ...prev, ...value }))
-  }, 300)
+  const debouncedSetFilters = useDebounceCallback(setFilters, 300)
 
-  const handleFilter = (field, value) => {
-    setLocalFilters(prev => ({ ...prev, [field]: value }))
+  const handleFilter = (field: string, value: string) => {
+    setLocalFilters((prev: { seq?: string }) => ({ ...prev, [field]: value }))
     debouncedSetFilters({ [field]: value })
   }
 
@@ -24,9 +22,9 @@ export function DataTableFilters({ filters, setFilters }) {
         <Filter className="h-4 w-4 text-gray-400" />
       </div>
       <Input
-        placeholder={t('page.expenses.filter.name')}
-        value={localFilters.name}
-        onChange={event => handleFilter('name', event.target.value)}
+        placeholder={t('page.expenses.filter.seq')}
+        value={localFilters.seq}
+        onChange={event => handleFilter('seq', event.target.value)}
         className="pl-10"
       />
     </div>

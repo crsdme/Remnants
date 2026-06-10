@@ -1,6 +1,5 @@
 import type { LucideIcon } from 'lucide-react'
 import { ChevronRight } from 'lucide-react'
-import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 
 import {
@@ -17,6 +16,7 @@ import {
   SidebarMenuSubItem,
   useSidebar,
 } from '@/components/ui'
+import { useLocale } from '@/utils/hooks'
 
 export function NavMain({
   items,
@@ -32,7 +32,7 @@ export function NavMain({
     }[]
   }[]
 }) {
-  const { t } = useTranslation()
+  const { t } = useLocale()
   const { isMobile, setOpenMobile } = useSidebar()
 
   const handleClick = () => {
@@ -49,7 +49,7 @@ export function NavMain({
             return (
               <SidebarMenuItem key={item.title}>
                 <SidebarMenuButton tooltip={item.title} asChild>
-                  <Link to={item.url} onClick={handleClick}>
+                  <Link to={item.url ?? ''} onClick={handleClick}>
                     {item.icon && <item.icon />}
                     <span>{item.title}</span>
                   </Link>

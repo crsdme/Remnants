@@ -476,13 +476,13 @@ function YearGrid({
           const isBefore
             = differenceInCalendarDays(
               new Date(displayYears.from + i, 11, 31),
-              startMonth!,
+              startMonth ?? new Date(),
             ) < 0
 
           const isAfter
             = differenceInCalendarDays(
               new Date(displayYears.from + i, 0, 0),
-              endMonth!,
+              endMonth ?? new Date(),
             ) > 0
 
           const isDisabled = isBefore || isAfter

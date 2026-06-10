@@ -1,139 +1,76 @@
 import type {
-  CreateProductPropertyOptionParams,
   CreateProductPropertyOptionResponse,
-  EditProductPropertyOptionParams,
   EditProductPropertyOptionResponse,
-  GetProductPropertyOptionsParams,
   GetProductPropertyOptionsResponse,
-  RemoveProductPropertyOptionsParams,
   RemoveProductPropertyOptionsResponse,
 } from '@remnant/shared'
-import { ProductPropertyModel, ProductPropertyOptionModel } from '@/models/'
-import { buildQuery, buildSortQuery, HttpError } from '@/utils/'
+import type {
+  CreateProductPropertyOptionPayload,
+  EditProductPropertyOptionPayload,
+  GetProductPropertyOptionsPayload,
+  RemoveProductPropertyOptionsPayload,
+} from '@/types'
+import { mapProductPropertyOptionToDTO } from '@/mappers/'
+import * as ProductPropertyOptionRepo from '@/repositories/product-property-option.repo'
+import * as ProductPropertyRepo from '@/repositories/product-property.repo'
+import { HttpError } from '@/utils/'
 
-export async function get(payload: GetProductPropertyOptionsParams): Promise<GetProductPropertyOptionsResponse> {
-  const { current = 1, pageSize = 10 } = payload.pagination || {}
-
-  const {
-    ids = [],
-    names = '',
-    language = 'en',
-    priority = undefined,
-    active = undefined,
-    productProperty = undefined,
-    createdAt = {
-      from: undefined,
-      to: undefined,
-    },
-    updatedAt = {
-      from: undefined,
-      to: undefined,
-    },
-  } = payload.filters || {}
-
-  const sorters = buildSortQuery(payload.sorters || {}, { priority: 1 })
-
-  const filterRules = {
-    _id: { type: 'array' },
-    names: { type: 'string', langAware: true },
-    active: { type: 'array' },
-    priority: { type: 'exact' },
-    productProperty: { type: 'exact' },
-    createdAt: { type: 'dateRange' },
-    updatedAt: { type: 'dateRange' },
-  } as const
-
-  const query = buildQuery({
-    filters: { _id: ids, names, priority, active, createdAt, updatedAt, productProperty },
-    rules: filterRules,
-    language,
-  })
-
-  const pipeline = [
-    {
-      $match: query,
-    },
-    {
-      $sort: sorters,
-    },
-    {
-      $facet: {
-        documents: [
-          { $skip: (current - 1) * pageSize },
-          { $limit: pageSize },
-        ],
-        totalCount: [
-          { $count: 'count' },
-        ],
-      },
-    },
-  ]
-
-  const productPropertiesOptionsRaw = await ProductPropertyOptionModel.aggregate(pipeline).exec()
-
-  const productPropertiesOptions = productPropertiesOptionsRaw[0].documents.map((doc: any) => ProductPropertyOptionModel.hydrate(doc))
-  const productPropertiesOptionsCount = productPropertiesOptionsRaw[0].totalCount[0]?.count || 0
+export async function get({ payload }: { payload: GetProductPropertyOptionsPayload }): Promise<GetProductPropertyOptionsResponse> {
+  const { items, total, page, pageSize } = await ProductPropertyOptionRepo.list(payload)
 
   return {
     status: 'success',
     code: 'PRODUCT_PROPERTY_OPTIONS_FETCHED',
     message: 'Product property options fetched',
     data: {
-      items: productPropertiesOptions,
+      items,
       pagination: {
-        page: current,
+        page,
         pageSize,
-        total: productPropertiesOptionsCount,
+        total,
       },
     },
   }
 }
 
-export async function create(payload: CreateProductPropertyOptionParams): Promise<CreateProductPropertyOptionResponse> {
-  const productPropertyOption = await ProductPropertyOptionModel.create(payload)
+export async function create({ payload }: { payload: CreateProductPropertyOptionPayload }): Promise<CreateProductPropertyOptionResponse> {
+  const productPropertyOption = await ProductPropertyOptionRepo.createOne(payload)
 
-  await ProductPropertyModel.updateOne({ _id: payload.productProperty }, { $push: { options: productPropertyOption._id } })
+  if (productPropertyOption === null)
+    throw new HttpError(400, 'Product property option not created', 'PRODUCT_PROPERTY_OPTION_NOT_CREATED')
+
+  await ProductPropertyRepo.updateOptions(payload.productProperty, { $push: { options: productPropertyOption._id } })
 
   return {
     status: 'success',
     code: 'PRODUCT_PROPERTY_OPTION_CREATED',
     message: 'Product property option created',
-    data: productPropertyOption,
+    data: mapProductPropertyOptionToDTO(productPropertyOption),
   }
 }
 
-export async function edit(payload: EditProductPropertyOptionParams): Promise<EditProductPropertyOptionResponse> {
-  const { id } = payload
+export async function edit({ payload }: { payload: EditProductPropertyOptionPayload }): Promise<EditProductPropertyOptionResponse> {
+  const productPropertyOption = await ProductPropertyOptionRepo.updateById(payload.id, payload)
 
-  const productPropertyOption = await ProductPropertyOptionModel.findOneAndUpdate({ _id: id }, payload)
-
-  if (!productPropertyOption) {
+  if (productPropertyOption === null)
     throw new HttpError(400, 'Product property option not edited', 'PRODUCT_PROPERTY_OPTION_NOT_EDITED')
-  }
 
   return {
     status: 'success',
     code: 'PRODUCT_PROPERTY_OPTION_EDITED',
     message: 'Product property option edited',
-    data: productPropertyOption,
+    data: mapProductPropertyOptionToDTO(productPropertyOption),
   }
 }
 
-export async function remove(payload: RemoveProductPropertyOptionsParams): Promise<RemoveProductPropertyOptionsResponse> {
-  const { ids } = payload
+export async function remove({ payload }: { payload: RemoveProductPropertyOptionsPayload }): Promise<RemoveProductPropertyOptionsResponse> {
+  for (const id of payload.ids) {
+    const productPropertyOption = await ProductPropertyOptionRepo.removeById(id)
 
-  const productPropertyOptions = await ProductPropertyOptionModel.updateMany(
-    { _id: { $in: ids } },
-    { $set: { removed: true } },
-  )
+    if (productPropertyOption === null)
+      throw new HttpError(400, 'Product property option not removed', 'PRODUCT_PROPERTY_OPTION_NOT_REMOVED')
 
-  await ProductPropertyModel.updateMany(
-    { options: { $in: ids } },
-    { $pull: { options: { $in: ids } } },
-  )
-
-  if (!productPropertyOptions) {
-    throw new HttpError(400, 'Product property options not removed', 'PRODUCT_PROPERTY_OPTIONS_NOT_REMOVED')
+    await ProductPropertyRepo.updateOptions(productPropertyOption.productProperty, { $pull: { options: id } })
   }
 
   return {

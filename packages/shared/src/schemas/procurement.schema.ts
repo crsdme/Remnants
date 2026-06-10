@@ -1,5 +1,42 @@
 import { z } from 'zod'
-import { dateRangeSchema, idSchema, numberFromStringSchema, paginationSchema, sorterParamsSchema } from './common'
+import { dateRangeSchema, idSchema, numberFromStringSchema, paginationSchema, responseItemSchema, responseListSchema, responseSchema, sorterParamsSchema } from './common'
+import { currencySchema } from './currency.schema'
+
+export const procurementSchema = z.object({
+  id: idSchema,
+  seq: z.number(),
+  supplier: idSchema,
+  status: z.string().trim(),
+  warehouse: idSchema,
+  expenses: z.array(idSchema),
+  payments: z.array(idSchema),
+  itemsByCurrency: z.array(z.object({
+    currency: currencySchema,
+    amount: z.number(),
+  })),
+  paymentsByCurrency: z.array(z.object({
+    currency: currencySchema,
+    amount: z.number(),
+  })),
+  balanceByCurrency: z.array(z.object({
+    currency: currencySchema,
+    amount: z.number(),
+  })),
+  createdBy: idSchema,
+  removedBy: idSchema,
+  comment: z.string().trim().optional(),
+  createdAt: z.coerce.date(),
+  updatedAt: z.coerce.date(),
+})
+export type ProcurementDTO = z.infer<typeof procurementSchema>
+
+export const procurementItemSchema = z.object({
+  id: idSchema,
+  procurementId: idSchema,
+  productId: idSchema,
+  quantity: z.number(),
+})
+export type ProcurementItemDTO = z.infer<typeof procurementItemSchema>
 
 export const getProcurementsSchema = z.object({
   filters: z.object({
@@ -20,6 +57,8 @@ export const getProcurementsSchema = z.object({
   pagination: paginationSchema.optional().default({}),
 })
 
+export type GetProcurementsRequest = z.input<typeof getProcurementsSchema>
+
 export const createProcurementSchema = z.object({
   comment: z.string().trim().optional(),
   items: z.array(z.object({
@@ -33,9 +72,13 @@ export const createProcurementSchema = z.object({
   supplier: idSchema,
 })
 
+export type CreateProcurementRequest = z.input<typeof createProcurementSchema>
+
 export const removeProcurementsSchema = z.object({
   ids: z.array(idSchema).min(1),
 })
+
+export type RemoveProcurementsRequest = z.input<typeof removeProcurementsSchema>
 
 export const getProcurementItemsSchema = z.object({
   filters: z.object({
@@ -43,6 +86,8 @@ export const getProcurementItemsSchema = z.object({
   }).optional().default({}),
   pagination: paginationSchema.optional().default({}),
 })
+
+export type GetProcurementItemsRequest = z.input<typeof getProcurementItemsSchema>
 
 export const editProcurementSchema = z.object({
   id: idSchema,
@@ -54,10 +99,14 @@ export const editProcurementSchema = z.object({
   payments: z.array(idSchema),
 })
 
+export type EditProcurementRequest = z.input<typeof editProcurementSchema>
+
 export const scanBarcodeSchema = z.object({
   barcode: z.string().trim(),
   procurementId: idSchema.optional(),
 })
+
+export type ScanBarcodeProcurementRequest = z.input<typeof scanBarcodeSchema>
 
 export const payProcurementSchema = z.object({
   id: idSchema,
@@ -68,3 +117,26 @@ export const payProcurementSchema = z.object({
   amount: z.number(),
   comment: z.string().trim().optional(),
 })
+
+export type PayProcurementRequest = z.input<typeof payProcurementSchema>
+
+export const getProcurementsResponseSchema = responseListSchema(procurementSchema)
+export type GetProcurementsResponse = z.infer<typeof getProcurementsResponseSchema>
+
+export const createProcurementResponseSchema = responseItemSchema(procurementSchema)
+export type CreateProcurementResponse = z.infer<typeof createProcurementResponseSchema>
+
+export const editProcurementResponseSchema = responseItemSchema(procurementSchema)
+export type EditProcurementResponse = z.infer<typeof editProcurementResponseSchema>
+
+export const removeProcurementsResponseSchema = responseSchema
+export type RemoveProcurementsResponse = z.infer<typeof removeProcurementsResponseSchema>
+
+export const getProcurementItemsResponseSchema = responseListSchema(procurementItemSchema)
+export type GetProcurementItemsResponse = z.infer<typeof getProcurementItemsResponseSchema>
+
+export const scanBarcodeProcurementResponseSchema = responseSchema
+export type ScanBarcodeProcurementResponse = z.infer<typeof scanBarcodeProcurementResponseSchema>
+
+export const payProcurementResponseSchema = responseSchema
+export type PayProcurementResponse = z.infer<typeof payProcurementResponseSchema>

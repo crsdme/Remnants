@@ -1,5 +1,6 @@
+import type { ProductPropertyDTO, ProductPropertyOptionDTO } from '@remnant/shared'
 import type { ReactNode } from 'react'
-import type { UseFormReturn } from 'react-hook-form'
+import type { Resolver, UseFormReturn } from 'react-hook-form'
 
 import { zodResolver } from '@hookform/resolvers/zod'
 
@@ -19,169 +20,147 @@ import {
   useProductPropertyRemove,
 } from '@/api/hooks/'
 
-interface ProductPropertiesContextType {
-  selectedProperty: ProductProperty
-  isPropertyModalOpen: boolean
-  isOptionModalOpen: boolean
-  isLoading: boolean
-  isPropertyEdit: boolean
-  isOptionsEdit: boolean
-  propertyForm: UseFormReturn
-  optionForm: UseFormReturn
-  openPropertyModal: (productProperty?: ProductProperty) => void
-  closePropertyModal: () => void
-  submitProductPropertyForm: (params) => void
-  removeProperty: (params: { ids: string[] }) => void
-  openOptionsModal: (option?: ProductPropertyOption, property?: ProductProperty) => void
-  closeOptionsModal: () => void
-  submitOptionsForm: (params) => void
-  removeOption: (params: { ids: string[] }) => void
+function createPropertyFormSchema(t: (key: string, options?: Record<string, unknown>) => string) {
+  return z.object({
+    names: z.record(z.string({ required_error: t('form.errors.required') }).min(3, { message: t('form.errors.min_length', { count: 3 }) }).trim()),
+    symbols: z.record(z.string()),
+    priority: z.number().optional(),
+    isRequired: z.boolean().optional(),
+    showInTable: z.boolean().optional(),
+    showInStatistics: z.boolean().optional(),
+    type: z.string({ required_error: t('form.errors.required') }),
+    active: z.boolean().optional(),
+  })
 }
 
-const ProductPropertiesContext = createContext<ProductPropertiesContextType | undefined>(undefined)
+export type ProductPropertyFormValues = z.infer<ReturnType<typeof createPropertyFormSchema>>
 
-interface ProductPropertiesProviderProps {
-  children: ReactNode
-}
-
-export function ProductPropertiesProvider({ children }: ProductPropertiesProviderProps) {
-  const [isPropertyModalOpen, setIsPropertyModalOpen] = useState(false)
-  const [isOptionModalOpen, setIsOptionModalOpen] = useState(false)
-  const [isPropertyEdit, setIsPropertyEdit] = useState(false)
-  const [isOptionsEdit, setIsOptionsEdit] = useState(false)
-  const [selectedProperty, setSelectedProperty] = useState(null)
-  const [selectedOption, setSelectedOption] = useState(null)
-  const [isLoading, setIsLoading] = useState(false)
-
-  const { t } = useTranslation()
-
-  const propertyFormSchema = useMemo(() =>
-    z.object({
-      names: z.record(z.string({ required_error: t('form.errors.required') }).min(3, { message: t('form.errors.min_length', { count: 3 }) }).trim()),
-      symbols: z.record(z.string()).optional(),
-      priority: z.number().optional(),
-      isRequired: z.boolean().optional(),
-      showInTable: z.boolean().optional(),
-      showInStatistics: z.boolean().optional(),
-      type: z.string().optional(),
-      active: z.boolean().optional(),
-    }), [t])
-
-  const propertyForm = useForm({
-    resolver: zodResolver(propertyFormSchema),
-    defaultValues: {
-      names: {
-        en: '',
-        ru: '',
-      },
-      symbols: {
-        en: '',
-        ru: '',
-      },
+function getPropertyFormDefaults(property?: ProductPropertyDTO): ProductPropertyFormValues {
+  if (!property) {
+    return {
+      names: {},
+      symbols: {},
       priority: 0,
       isRequired: false,
       showInTable: false,
       showInStatistics: true,
       type: '',
       active: true,
-    },
+    }
+  }
+  return {
+    names: { ...property.names } as Record<string, string>,
+    symbols: { ...property.symbols } as Record<string, string>,
+    priority: property.priority,
+    isRequired: property.isRequired,
+    showInTable: property.showInTable,
+    showInStatistics: property.showInStatistics,
+    type: property.type,
+    active: property.active,
+  }
+}
+
+function createOptionFormSchema(t: (key: string, options?: Record<string, unknown>) => string) {
+  return z.object({
+    names: z.record(z.string({ required_error: t('form.errors.required') }).min(3, { message: t('form.errors.min_length', { count: 3 }) }).trim()),
+    priority: z.number().optional(),
+    active: z.boolean().optional(),
+    color: z.string().optional(),
   })
+}
 
-  const optionFormSchema = useMemo(() =>
-    z.object({
-      names: z.record(z.string({ required_error: t('form.errors.required') }).min(3, { message: t('form.errors.min_length', { count: 3 }) }).trim()),
-      priority: z.number().optional(),
-      active: z.boolean().optional(),
-      color: z.string().optional(),
-    }), [t])
+export type ProductPropertyOptionFormValues = z.infer<ReturnType<typeof createOptionFormSchema>>
 
-  const optionForm = useForm({
-    resolver: zodResolver(optionFormSchema),
-    defaultValues: {
-      names: {
-        en: '',
-        ru: '',
-      },
+function getOptionFormDefaults(option?: ProductPropertyOptionDTO): ProductPropertyOptionFormValues {
+  if (!option) {
+    return {
+      names: {},
       priority: 0,
-      active: true,
       color: '',
-    },
+      active: true,
+    }
+  }
+  return {
+    names: { ...option.names } as Record<string, string>,
+    priority: option.priority,
+    color: option.color,
+    active: option.active,
+  }
+}
+
+interface ProductPropertiesContextType {
+  selectedProperty: ProductPropertyDTO | null
+  isPropertyModalOpen: boolean
+  isOptionModalOpen: boolean
+  isLoading: boolean
+  isPropertyEdit: boolean
+  isOptionsEdit: boolean
+  propertyForm: UseFormReturn<ProductPropertyFormValues>
+  optionForm: UseFormReturn<ProductPropertyOptionFormValues>
+  openPropertyModal: (productProperty?: ProductPropertyDTO) => void
+  closePropertyModal: () => void
+  submitProductPropertyForm: (params: ProductPropertyFormValues) => void
+  removeProperty: (params: { ids: string[] }) => void
+  openOptionsModal: (option?: ProductPropertyOptionDTO, property?: ProductPropertyDTO) => void
+  closeOptionsModal: () => void
+  submitOptionsForm: (params: ProductPropertyOptionFormValues) => void
+  removeOption: (params: { ids: string[] }) => void
+}
+
+const ProductPropertiesContext = createContext<ProductPropertiesContextType | undefined>(undefined)
+
+export function ProductPropertiesProvider({ children }: { children: ReactNode }) {
+  const [isPropertyModalOpen, setIsPropertyModalOpen] = useState(false)
+  const [isOptionModalOpen, setIsOptionModalOpen] = useState(false)
+  const [isPropertyEdit, setIsPropertyEdit] = useState(false)
+  const [isOptionsEdit, setIsOptionsEdit] = useState(false)
+  const [selectedProperty, setSelectedProperty] = useState<ProductPropertyDTO | null>(null)
+  const [selectedOption, setSelectedOption] = useState<ProductPropertyOptionDTO | null>(null)
+
+  const { t } = useTranslation()
+
+  const propertyFormSchema = useMemo(() => createPropertyFormSchema(t), [t])
+
+  const propertyForm = useForm<ProductPropertyFormValues>({
+    resolver: zodResolver(propertyFormSchema) as Resolver<ProductPropertyFormValues>,
+    defaultValues: getPropertyFormDefaults(),
   })
 
-  const getPropertyValues = (property) => {
-    if (!property) {
-      return {
-        names: {},
-        symbols: {},
-        priority: 0,
-        isRequired: false,
-        showInTable: false,
-        showInStatistics: true,
-        type: '',
-        active: true,
-      }
-    }
-    return {
-      names: { ...property.names },
-      symbols: { ...property.symbols },
-      priority: property.priority,
-      isRequired: property.isRequired,
-      showInTable: property.showInTable,
-      showInStatistics: property.showInStatistics,
-      type: property.type,
-      active: property.active,
-    }
-  }
+  const optionFormSchema = useMemo(() => createOptionFormSchema(t), [t])
 
-  const getOptionValues = (option) => {
-    if (!option) {
-      return {
-        names: {},
-        symbols: {},
-        priority: 0,
-        color: '',
-        active: true,
-      }
-    }
-    return {
-      names: { ...option.names },
-      symbols: { ...option.symbols },
-      priority: option.priority,
-      color: option.color,
-      active: option.active,
-    }
-  }
+  const optionForm = useForm<ProductPropertyOptionFormValues>({
+    resolver: zodResolver(optionFormSchema) as Resolver<ProductPropertyOptionFormValues>,
+    defaultValues: getOptionFormDefaults(),
+  })
 
   const closePropertyModal = () => {
     if (!isPropertyModalOpen)
       return
     setIsPropertyModalOpen(false)
-    setIsLoading(false)
     setIsPropertyEdit(false)
     setSelectedProperty(null)
     propertyForm.reset()
   }
 
-  const openPropertyModal = (property) => {
+  const openPropertyModal = (property?: ProductPropertyDTO) => {
     setIsPropertyModalOpen(true)
     setIsPropertyEdit(!!property)
-    setSelectedProperty(property)
-    propertyForm.reset(getPropertyValues(property))
+    setSelectedProperty(property ?? null)
+    propertyForm.reset(getPropertyFormDefaults(property))
   }
 
-  const openOptionsModal = (option, property) => {
+  const openOptionsModal = (option?: ProductPropertyOptionDTO, property?: ProductPropertyDTO) => {
     setIsOptionModalOpen(true)
     setIsOptionsEdit(!!option)
-    setSelectedOption(option)
-    setSelectedProperty(property)
-    optionForm.reset(getOptionValues(option))
+    setSelectedOption(option ?? null)
+    setSelectedProperty(property ?? null)
+    optionForm.reset(getOptionFormDefaults(option))
   }
 
   const closeOptionsModal = () => {
     setIsOptionModalOpen(false)
     setSelectedOption(null)
     setSelectedProperty(null)
-    setIsLoading(false)
     optionForm.reset()
   }
 
@@ -191,7 +170,7 @@ export function ProductPropertiesProvider({ children }: ProductPropertiesProvide
     options: {
       onSuccess: ({ data }) => {
         closePropertyModal()
-        queryClient.invalidateQueries({ queryKey: ['product-properties'] })
+        void queryClient.invalidateQueries({ queryKey: ['product-properties'] })
         toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description || ''}` })
       },
       onError: ({ response }) => {
@@ -206,7 +185,7 @@ export function ProductPropertiesProvider({ children }: ProductPropertiesProvide
     options: {
       onSuccess: ({ data }) => {
         closePropertyModal()
-        queryClient.invalidateQueries({ queryKey: ['product-properties'] })
+        void queryClient.invalidateQueries({ queryKey: ['product-properties'] })
         toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description || ''}` })
       },
       onError: ({ response }) => {
@@ -220,7 +199,7 @@ export function ProductPropertiesProvider({ children }: ProductPropertiesProvide
   const useMutateRemoveProductProperty = useProductPropertyRemove({
     options: {
       onSuccess: ({ data }) => {
-        queryClient.invalidateQueries({ queryKey: ['product-properties'] })
+        void queryClient.invalidateQueries({ queryKey: ['product-properties'] })
         toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description || ''}` })
       },
       onError: ({ response }) => {
@@ -234,7 +213,7 @@ export function ProductPropertiesProvider({ children }: ProductPropertiesProvide
     options: {
       onSuccess: ({ data }) => {
         closeOptionsModal()
-        queryClient.invalidateQueries({ queryKey: ['product-properties'] })
+        void queryClient.invalidateQueries({ queryKey: ['product-properties'] })
         toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description || ''}` })
       },
       onError: ({ response }) => {
@@ -249,7 +228,7 @@ export function ProductPropertiesProvider({ children }: ProductPropertiesProvide
     options: {
       onSuccess: ({ data }) => {
         closeOptionsModal()
-        queryClient.invalidateQueries({ queryKey: ['product-properties-options'] })
+        void queryClient.invalidateQueries({ queryKey: ['product-properties-options'] })
         toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description || ''}` })
       },
       onError: ({ response }) => {
@@ -263,7 +242,7 @@ export function ProductPropertiesProvider({ children }: ProductPropertiesProvide
   const useMutateRemoveProductPropertyOption = useProductPropertyOptionRemove({
     options: {
       onSuccess: ({ data }) => {
-        queryClient.invalidateQueries({ queryKey: ['product-properties'] })
+        void queryClient.invalidateQueries({ queryKey: ['product-properties'] })
         toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description || ''}` })
       },
       onError: ({ response }) => {
@@ -273,29 +252,37 @@ export function ProductPropertiesProvider({ children }: ProductPropertiesProvide
     },
   })
 
-  const submitProductPropertyForm = (params) => {
-    setIsLoading(true)
+  const submitProductPropertyForm = (params: ProductPropertyFormValues) => {
     if (!selectedProperty)
       return useMutateCreateProductProperty.mutate(params)
 
     return useMutateEditProductProperty.mutate({ ...params, id: selectedProperty.id })
   }
 
-  const submitOptionsForm = (params) => {
-    setIsLoading(true)
+  const submitOptionsForm = (params: ProductPropertyOptionFormValues) => {
+    if (!selectedProperty)
+      return
     if (!selectedOption)
       return useMutateCreateProductPropertyOption.mutate({ ...params, productProperty: selectedProperty.id })
 
     return useMutateEditProductPropertyOption.mutate({ ...params, id: selectedOption.id, productProperty: selectedProperty.id })
   }
 
-  const removeProperty = (params) => {
+  const removeProperty = (params: { ids: string[] }) => {
     useMutateRemoveProductProperty.mutate(params)
   }
 
-  const removeOption = (params) => {
+  const removeOption = (params: { ids: string[] }) => {
     useMutateRemoveProductPropertyOption.mutate(params)
   }
+
+  const isLoading
+    = useMutateCreateProductProperty.isPending
+      || useMutateEditProductProperty.isPending
+      || useMutateRemoveProductProperty.isPending
+      || useMutateCreateProductPropertyOption.isPending
+      || useMutateEditProductPropertyOption.isPending
+      || useMutateRemoveProductPropertyOption.isPending
 
   const value: ProductPropertiesContextType = useMemo(
     () => ({
@@ -316,7 +303,24 @@ export function ProductPropertiesProvider({ children }: ProductPropertiesProvide
       submitOptionsForm,
       removeOption,
     }),
-    [selectedProperty, isPropertyModalOpen, isLoading, isOptionModalOpen, optionForm],
+    [
+      selectedProperty,
+      isPropertyModalOpen,
+      isPropertyEdit,
+      isLoading,
+      propertyForm,
+      isOptionModalOpen,
+      isOptionsEdit,
+      optionForm,
+      openPropertyModal,
+      closePropertyModal,
+      submitProductPropertyForm,
+      removeProperty,
+      openOptionsModal,
+      closeOptionsModal,
+      submitOptionsForm,
+      removeOption,
+    ],
   )
 
   return <ProductPropertiesContext.Provider value={value}>{children}</ProductPropertiesContext.Provider>

@@ -31,6 +31,9 @@ export async function get({ payload }: { payload: GetCashregistersPayload }): Pr
 export async function create({ payload }: { payload: CreateCashregisterPayload }): Promise<CreateCashregisterResponse> {
   const cashregister = await cashregisterRepo.createOne(payload)
 
+  if (cashregister === undefined)
+    throw new HttpError(400, 'Cashregister not created', 'CASHREGISTER_NOT_CREATED')
+
   return {
     status: 'success',
     code: 'CASHREGISTER_CREATED',

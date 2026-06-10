@@ -1,5 +1,90 @@
+import type { PipeableDocument } from '..'
 import { z } from 'zod'
-import { dateRangeSchema, idSchema, languageStringSchema, numberFromStringSchema, paginationSchema, sorterParamsSchema } from './common'
+import { clientSchema } from './client.schema'
+import { dateRangeSchema, idSchema, languageStringSchema, numberFromStringSchema, paginationSchema, responseItemSchema, responseListSchema, responseSchema, sorterParamsSchema } from './common'
+import { currencySchema } from './currency.schema'
+import { deliveryServiceSchema } from './delivery-service.schema'
+import { orderPaymentDTOPopulatedSchema, orderPaymentSchema } from './order-payment.schema'
+import { orderSourceSchema } from './order-source.schema'
+import { orderStatusSchema } from './order-status.schema'
+import { productSchemaPopulated } from './product.schema'
+import { warehouseSchema } from './warehouse.schema'
+
+export const orderSchema = z.object({
+  id: idSchema,
+  seq: z.number(),
+  warehouse: idSchema,
+  deliveryService: idSchema,
+  orderSource: idSchema,
+  orderStatus: idSchema,
+  orderPayments: z.array(idSchema),
+  totals: z.array(z.object({
+    currency: idSchema,
+    total: z.number(),
+  })),
+  profit: z.array(z.object({
+    currency: idSchema,
+    total: z.number(),
+  })),
+  orderPaymentStatus: z.string(),
+  client: idSchema,
+  comment: z.string().trim().optional(),
+  createdBy: idSchema,
+  confirmedBy: idSchema,
+  removedBy: idSchema,
+  createdAt: z.coerce.date(),
+  updatedAt: z.coerce.date(),
+})
+
+export type OrderDTO = z.infer<typeof orderSchema>
+
+export const orderDTOPopulatedSchema = orderSchema.omit({
+  removedBy: true,
+  createdBy: true,
+  confirmedBy: true,
+}).extend({
+  warehouse: warehouseSchema,
+  deliveryService: deliveryServiceSchema,
+  orderSource: orderSourceSchema,
+  orderStatus: orderStatusSchema,
+  orderPayments: orderPaymentSchema,
+  client: clientSchema,
+})
+
+export type OrderDTOPopulated = z.infer<typeof orderDTOPopulatedSchema>
+
+export const orderItemSchema = z.object({
+  id: idSchema,
+  order: idSchema,
+  product: idSchema,
+  quantity: z.number(),
+  price: z.number(),
+  discountAmount: z.number(),
+  discountPercent: z.number(),
+  basePrice: z.number(),
+  manualPrice: z.number(),
+  currency: idSchema,
+  removedBy: idSchema,
+  removed: z.boolean().default(false),
+  profit: z.number().optional(),
+  exchangeRate: z.number().optional(),
+  purchasePrice: z.number().optional(),
+  purchaseCurrency: idSchema.optional(),
+})
+export type OrderItemDTO = z.infer<typeof orderItemSchema>
+
+export const orderItemDTOPopulatedSchema = orderItemSchema.omit({
+  removedBy: true,
+  removed: true,
+  currency: true,
+  purchaseCurrency: true,
+}).extend({
+  product: productSchemaPopulated,
+  currency: currencySchema,
+  purchaseCurrency: currencySchema,
+})
+
+export type OrderItemDTOPopulated = z.infer<typeof orderItemDTOPopulatedSchema>
 
 export const getOrdersSchema = z.object({
   filters: z.object({
@@ -16,7 +101,6 @@ export const getOrdersSchema = z.object({
     removedBy: z.string().trim().optional(),
     removed: z.boolean().default(false),
     orderPayments: z.array(z.string().trim()).default([]),
-    hasProfitPermission: z.boolean().optional(),
     createdAt: dateRangeSchema.optional(),
     updatedAt: dateRangeSchema.optional(),
   }).optional().default({}),
@@ -29,6 +113,9 @@ export const getOrdersSchema = z.object({
     updatedAt: sorterParamsSchema.optional(),
     createdAt: sorterParamsSchema.optional(),
   }).optional().default({}),
+  include: z.object({
+    items: z.boolean().optional().default(false),
+  }).optional(),
   pagination: paginationSchema.optional().default({}),
 })
 
@@ -38,9 +125,6 @@ export const getOrderItemsSchema = z.object({
   filters: z.object({
     order: z.array(idSchema).optional(),
     showFullData: z.boolean().optional(),
-  }).optional().default({}),
-  sorters: z.object({
-    seq: sorterParamsSchema.optional(),
   }).optional().default({}),
   pagination: paginationSchema.optional().default({}),
 })
@@ -126,21 +210,18 @@ export type PrintInvoiceOrderRequest = z.input<typeof printInvoiceOrderSchema>
 export const printDraftInvoiceOrderSchema = z.object({
   items: z.array(z.object({
     id: idSchema,
-    names: z.record(z.string(), z.string()),
+    names: languageStringSchema,
     quantity: z.number(),
     productProperties: z.array(z.object({
       id: idSchema,
-      names: z.record(z.string(), z.string()),
+      names: languageStringSchema,
       options: z.array(z.object({
         id: idSchema,
-        names: z.record(z.string(), z.string()),
+        names: languageStringSchema,
       })),
       value: z.unknown(),
     })),
-    currency: z.object({
-      id: z.string(),
-      symbols: z.record(z.string(), z.string()),
-    }),
+    currency: z.string(),
     price: z.number(),
     manualPrice: z.number().optional(),
     basePrice: z.number(),
@@ -157,4 +238,46 @@ export const printOrderLabelOrderSchema = z.object({
   language: z.string().optional().default('en'),
 })
 
+export const getOrderDetailsSchema = z.object({
+  seq: numberFromStringSchema,
+})
+
+export type GetOrderDetailsRequest = z.input<typeof getOrderDetailsSchema>
+
 export type PrintOrderLabelOrderRequest = z.input<typeof printOrderLabelOrderSchema>
+
+export const getOrdersResponseSchema = responseListSchema(orderDTOPopulatedSchema)
+export type GetOrdersResponse = z.infer<typeof getOrdersResponseSchema>
+
+export const createOrderResponseSchema = responseItemSchema(orderSchema)
+export type CreateOrderResponse = z.infer<typeof createOrderResponseSchema>
+
+export const editOrderResponseSchema = responseItemSchema(orderSchema)
+export type EditOrderResponse = z.infer<typeof editOrderResponseSchema>
+
+export const removeOrdersResponseSchema = responseSchema
+export type RemoveOrdersResponse = z.infer<typeof removeOrdersResponseSchema>
+
+export const getOrderItemsResponseSchema = responseListSchema(orderItemDTOPopulatedSchema)
+export type GetOrderItemsResponse = z.infer<typeof getOrderItemsResponseSchema>
+
+export const payOrderResponseSchema = responseSchema
+export type PayOrderResponse = z.infer<typeof payOrderResponseSchema>
+
+export const printInvoiceOrderResponseSchema = responseSchema
+export type PrintInvoiceOrderResponse = z.infer<typeof printInvoiceOrderResponseSchema> & { doc: PipeableDocument }
+
+export const printDraftInvoiceOrderResponseSchema = responseSchema
+export type PrintDraftInvoiceOrderResponse = z.infer<typeof printDraftInvoiceOrderResponseSchema> & { doc: PipeableDocument }
+
+export const printOrderLabelOrderResponseSchema = responseSchema
+export type PrintOrderLabelOrderResponse = z.infer<typeof printOrderLabelOrderResponseSchema> & { doc: PipeableDocument }
+
+export const getOrderDetailsResponseSchema = responseSchema.extend({
+  data: z.object({
+    order: orderDTOPopulatedSchema,
+    items: z.array(orderItemDTOPopulatedSchema),
+    payments: z.array(orderPaymentDTOPopulatedSchema),
+  }),
+})
+export type GetOrderDetailsResponse = z.infer<typeof getOrderDetailsResponseSchema>

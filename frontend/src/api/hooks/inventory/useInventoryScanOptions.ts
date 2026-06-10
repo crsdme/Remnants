@@ -1,4 +1,3 @@
-import type { scanInventoryBarcodeResponse } from '@/api/types'
 import { useQueryClient } from '@tanstack/react-query'
 import { scanInventoryBarcode } from '@/api/requests'
 
@@ -9,17 +8,17 @@ interface LoadOptionsParams {
     inventoryId?: string
   }
   sorters: {
-    createdAt?: string
+    createdAt?: 'desc' | 'asc'
   }
 }
 
 export function useInventoryScanOptions() {
   const queryClient = useQueryClient()
 
-  return async function loadInventoryScanOptions({ filters, sorters }: LoadOptionsParams): Promise<scanInventoryBarcodeResponse> {
+  return async function loadInventoryScanOptions({ filters, sorters }: LoadOptionsParams) {
     const data = await queryClient.fetchQuery({
       queryKey: ['inventories', 'scan', 'item', filters, sorters],
-      queryFn: () => scanInventoryBarcode({ filters, sorters }),
+      queryFn: async () => scanInventoryBarcode({ filters, sorters }),
     })
 
     return data?.data

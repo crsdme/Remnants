@@ -93,7 +93,7 @@ export function AdvancedFilters({ columns, onSubmit, onCancel, className, align 
 
   const addItem = () => {
     const currentItems = form.getValues('items')
-    const newItem: FilterItem = {
+    const newItem: FormItemType = {
       id: Math.random().toString(36).substr(2, 9),
       column: '',
       value: '',
@@ -109,9 +109,9 @@ export function AdvancedFilters({ columns, onSubmit, onCancel, className, align 
     )
   }
 
-  const handleSubmit = (values) => {
+  const handleSubmit = (values: FormValues) => {
     const validItems = values.items.filter(
-      item =>
+      (item: any) =>
         item.id !== undefined && item.column !== '' && item.value !== '',
     )
     if (validItems.length === 0)
@@ -174,8 +174,13 @@ export function AdvancedFilters({ columns, onSubmit, onCancel, className, align 
           <DateRangePicker
             value={item.value as DateRange}
             onSelect={(selectedValues) => {
+              if (selectedValues?.from == null || selectedValues?.to == null)
+                return
               const currentItems = form.getValues('items')
-              currentItems[index].value = selectedValues
+              currentItems[index].value = {
+                from: selectedValues.from,
+                to: selectedValues.to,
+              }
               form.setValue('items', currentItems)
             }}
             className="w-full"
@@ -184,7 +189,7 @@ export function AdvancedFilters({ columns, onSubmit, onCancel, className, align 
       case 'asyncValue':
         return (
           <AsyncSelectNew
-            loadOptions={column.loadOptions}
+            loadOptions={column.loadOptions ?? (async () => Promise.resolve([]))}
             renderOption={e => e.label}
             getDisplayValue={e => e.label}
             getOptionValue={e => e.value}
@@ -245,7 +250,10 @@ export function AdvancedFilters({ columns, onSubmit, onCancel, className, align 
       </PopoverTrigger>
       <PopoverContent className="w-[520px]" align={align}>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+          <form
+            onSubmit={(e) => { void form.handleSubmit(handleSubmit)(e) }}
+            className="space-y-4"
+          >
             <div className="space-y-2">
               <h4 className="font-medium leading-none">{t('component.advancedFilters.title')}</h4>
               <p className="text-sm text-muted-foreground">
@@ -280,7 +288,7 @@ export function AdvancedFilters({ columns, onSubmit, onCancel, className, align 
                             {filterableColumns.map(column => (
                               <SelectItem
                                 key={column.id}
-                                value={column.id}
+                                value={column.id ?? ''}
                                 disabled={column.disabled}
                               >
                                 {column.label}

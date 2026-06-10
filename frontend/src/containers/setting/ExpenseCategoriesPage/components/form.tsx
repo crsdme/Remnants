@@ -1,4 +1,3 @@
-import { useTranslation } from 'react-i18next'
 import { useLanguageQuery } from '@/api/hooks'
 import { ColorPicker } from '@/components/ColorPicker'
 import {
@@ -12,28 +11,24 @@ import {
   Input,
   Textarea,
 } from '@/components/ui'
+import { useLocale } from '@/utils/hooks'
 import { useExpenseCategoryContext } from '../context'
 
 export function ExpenseCategoryForm() {
-  const { t } = useTranslation()
+  const { t } = useLocale()
   const { isLoading, form, closeModal, submitExpenseCategoryForm } = useExpenseCategoryContext()
 
-  const onSubmit = (values) => {
-    submitExpenseCategoryForm(values)
-  }
-
-  const { data: { languages = [] } = {} } = useLanguageQuery(
+  const { languages = [] } = useLanguageQuery(
     { pagination: { full: true } },
-    { options: {
-      select: response => ({
-        languages: response.data.languages,
-      }),
-    } },
+    { options: { placeholderData: prevData => prevData } },
   )
 
   return (
     <Form {...form}>
-      <form className="w-full space-y-1" onSubmit={form.handleSubmit(onSubmit)}>
+      <form
+        className="w-full space-y-1"
+        onSubmit={(e) => { void form.handleSubmit(submitExpenseCategoryForm)(e) }}
+      >
         {languages.map(language => (
           <FormField
             control={form.control}
@@ -112,6 +107,7 @@ export function ExpenseCategoryForm() {
             <FormItem className="flex flex-row items-center space-x-3 space-y-0 rounded-md border p-4 mb-6">
               <FormControl>
                 <ColorPicker
+                  ref={field.ref}
                   value={field.value}
                   onChange={field.onChange}
                   disabled={isLoading}

@@ -1,6 +1,6 @@
 import type {
-  CreateCurrenciesResponse,
-  EditCurrenciesResponse,
+  CreateCurrencyResponse,
+  EditCurrencyResponse,
   EditExchangeRateResponse,
   GetCurrenciesResponse,
   GetExchangeRatesResponse,
@@ -37,7 +37,7 @@ export async function get({ payload }: { payload: GetCurrencyPayload }): Promise
   }
 }
 
-export async function create({ payload }: { payload: CreateCurrencyPayload }): Promise<CreateCurrenciesResponse> {
+export async function create({ payload }: { payload: CreateCurrencyPayload }): Promise<CreateCurrencyResponse> {
   const currencies = await CurrencyModel.find({})
 
   const currency = await CurrencyModel.create(payload)
@@ -72,7 +72,7 @@ export async function create({ payload }: { payload: CreateCurrencyPayload }): P
   }
 }
 
-export async function edit({ payload }: { payload: EditCurrencyPayload }): Promise<EditCurrenciesResponse> {
+export async function edit({ payload }: { payload: EditCurrencyPayload }): Promise<EditCurrencyResponse> {
   const { id } = payload
 
   const currency = await CurrencyModel.findOneAndUpdate({ _id: id }, payload)

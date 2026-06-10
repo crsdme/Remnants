@@ -1,5 +1,6 @@
+import type { CategoryDTO } from '@remnant/shared'
 import type { ReactNode } from 'react'
-import type { UseFormReturn } from 'react-hook-form'
+import type { Resolver, UseFormReturn } from 'react-hook-form'
 
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useQueryClient } from '@tanstack/react-query'
@@ -10,46 +11,53 @@ import { toast } from 'sonner'
 import { z } from 'zod'
 
 import {
-  useCategoryBatch,
   useCategoryCreate,
-  useCategoryDuplicate,
   useCategoryEdit,
-  useCategoryExport,
-  useCategoryImport,
   useCategoryRemove,
 } from '@/api/hooks'
-import { SUPPORTED_LANGUAGES } from '@/utils/constants'
-import { downloadBlob } from '@/utils/helpers/download'
 
 interface CategoryContextType {
-  selectedCategory: Category
+  selectedCategory: CategoryDTO | undefined
   isModalOpen: boolean
   isLoading: boolean
   isEdit: boolean
-  form: UseFormReturn
-  openModal: (category?: Category) => void
+  form: UseFormReturn<CategoryFormValues>
+  openModal: (category?: CategoryDTO) => void
   closeModal: () => void
-  submitCategoryForm: (params) => void
-  batchCategories: (params) => void
+  submitCategoryForm: (params: CategoryFormValues) => void
   removeCategories: (params: { ids: string[] }) => void
-  importCategories: (params) => void
-  duplicateCategories: (params: { ids: string[] }) => void
-  exportCategories: (params: { ids: string[] }) => void
 }
 
 const CategoryContext = createContext<CategoryContextType | undefined>(undefined)
 
-interface CategoryProviderProps {
-  children: ReactNode
+export interface CategoryFormValues {
+  names: Record<string, string>
+  priority: number
+  parent: string | undefined
+  active: boolean
 }
 
-export function CategoryProvider({ children }: CategoryProviderProps) {
-  const [isModalOpen, setIsModalOpen] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
-  const [isEdit, setIsEdit] = useState(false)
-  const [selectedCategory, setSelectedCategory] = useState(null)
+function getCategoryFormValues(category?: CategoryDTO): CategoryFormValues {
+  if (!category) {
+    return {
+      names: {},
+      priority: 0,
+      parent: undefined,
+      active: true,
+    }
+  }
+  return {
+    names: { ...category.names },
+    priority: category.priority,
+    parent: category.parent || undefined,
+    active: category.active,
+  }
+}
 
-  const defaultLanguageValues = SUPPORTED_LANGUAGES.reduce((acc, lang) => ({ ...acc, [lang]: '' }), {})
+export function CategoryProvider({ children }: { children: ReactNode }) {
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [isEdit, setIsEdit] = useState(false)
+  const [selectedCategory, setSelectedCategory] = useState<CategoryDTO | undefined>(undefined)
 
   const { t } = useTranslation()
 
@@ -61,49 +69,26 @@ export function CategoryProvider({ children }: CategoryProviderProps) {
       active: z.boolean().default(true),
     }), [t])
 
-  const form = useForm({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      names: defaultLanguageValues,
-      priority: 0,
-      parent: '',
-      active: true,
-    },
+  const form = useForm<CategoryFormValues>({
+    resolver: zodResolver(formSchema) as Resolver<CategoryFormValues>,
+    defaultValues: getCategoryFormValues(),
   })
 
   const queryClient = useQueryClient()
-
-  const getCategoryFormValues = (category) => {
-    if (!category) {
-      return {
-        names: defaultLanguageValues,
-        priority: 0,
-        parent: '',
-        active: true,
-      }
-    }
-    return {
-      names: { ...category.names },
-      priority: category.priority,
-      parent: category.parent || undefined,
-      active: category.active,
-    }
-  }
 
   const closeModal = () => {
     if (!isModalOpen)
       return
     setIsModalOpen(false)
-    setIsLoading(false)
     setIsEdit(false)
-    setSelectedCategory(null)
+    setSelectedCategory(undefined)
     form.reset()
   }
 
-  const openModal = (category) => {
+  const openModal = (category?: CategoryDTO) => {
     setIsModalOpen(true)
     setIsEdit(!!category)
-    setSelectedCategory(category)
+    setSelectedCategory(category ?? undefined)
     form.reset(getCategoryFormValues(category))
   }
 
@@ -111,25 +96,12 @@ export function CategoryProvider({ children }: CategoryProviderProps) {
     options: {
       onSuccess: ({ data }) => {
         closeModal()
-        queryClient.invalidateQueries({ queryKey: ['categories'] })
+        void queryClient.invalidateQueries({ queryKey: ['categories'] })
         toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description || ''}` })
       },
       onError: ({ response }) => {
         const error = response.data.error
         closeModal()
-        toast.error(t(`error.title.${error.code}`), { description: `${t(`error.description.${error.code}`)} ${error.description || ''}` })
-      },
-    },
-  })
-
-  const useMutateDuplicateCategories = useCategoryDuplicate({
-    options: {
-      onSuccess: ({ data }) => {
-        queryClient.invalidateQueries({ queryKey: ['categories'] })
-        toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description || ''}` })
-      },
-      onError: ({ response }) => {
-        const error = response.data.error
         toast.error(t(`error.title.${error.code}`), { description: `${t(`error.description.${error.code}`)} ${error.description || ''}` })
       },
     },
@@ -139,7 +111,7 @@ export function CategoryProvider({ children }: CategoryProviderProps) {
     options: {
       onSuccess: ({ data }) => {
         closeModal()
-        queryClient.invalidateQueries({ queryKey: ['categories'] })
+        void queryClient.invalidateQueries({ queryKey: ['categories'] })
         toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description || ''}` })
       },
       onError: ({ response }) => {
@@ -153,7 +125,7 @@ export function CategoryProvider({ children }: CategoryProviderProps) {
   const useMutateRemoveCategory = useCategoryRemove({
     options: {
       onSuccess: ({ data }) => {
-        queryClient.invalidateQueries({ queryKey: ['categories'] })
+        void queryClient.invalidateQueries({ queryKey: ['categories'] })
         toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description || ''}` })
       },
       onError: ({ response }) => {
@@ -163,72 +135,30 @@ export function CategoryProvider({ children }: CategoryProviderProps) {
     },
   })
 
-  const useMutateImportCategories = useCategoryImport({
-    options: {
-      onSuccess: ({ data }) => {
-        queryClient.invalidateQueries({ queryKey: ['categories'] })
-        toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description || ''}` })
-      },
-      onError: ({ response }) => {
-        const error = response.data.error
-        toast.error(t(`error.title.${error.code}`), { description: `${t(`error.description.${error.code}`)} ${error.description || ''}` })
-      },
-    },
-  })
-
-  const useMutateBatchCategory = useCategoryBatch({
-    options: {
-      onSuccess: ({ data }) => {
-        queryClient.invalidateQueries({ queryKey: ['categories'] })
-        toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description || ''}` })
-      },
-      onError: ({ response }) => {
-        const error = response.data.error
-        toast.error(t(`error.title.${error.code}`), { description: `${t(`error.description.${error.code}`)} ${error.description || ''}` })
-      },
-    },
-  })
-
-  const useMutateExportCategories = useCategoryExport({
-    options: {
-      onSuccess: ({ data, headers }) => {
-        downloadBlob(data, 'categories-template.xlsx')
-        toast.success(t(`response.title.${headers['x-export-code']}`), { description: `${t(`response.description.${headers['x-export-code']}`)} ${headers['x-export-message'] || ''}` })
-      },
-      onError: ({ response }) => {
-        const error = response.data.error
-        toast.error(t(`error.title.${error.code}`), { description: `${t(`error.description.${error.code}`)} ${error.description || ''}` })
-      },
-    },
-  })
-
-  const removeCategories = (params) => {
+  const removeCategories = (params: { ids: string[] }) => {
     useMutateRemoveCategory.mutate(params)
   }
 
-  const batchCategories = (params) => {
-    useMutateBatchCategory.mutate(params)
+  const submitCategoryForm = (params: CategoryFormValues) => {
+    if (!selectedCategory) {
+      return useMutateCreateCategory.mutate({
+        names: params.names,
+        priority: params.priority,
+        parent: params.parent,
+        active: params.active,
+      })
+    }
+
+    return useMutateEditCategory.mutate({
+      id: selectedCategory.id,
+      names: params.names,
+      priority: params.priority,
+      parent: params.parent,
+      active: params.active,
+    })
   }
 
-  const importCategories = (params) => {
-    useMutateImportCategories.mutate(params)
-  }
-
-  const duplicateCategories = (params) => {
-    useMutateDuplicateCategories.mutate(params)
-  }
-
-  const exportCategories = (params) => {
-    useMutateExportCategories.mutate(params)
-  }
-
-  const submitCategoryForm = (params) => {
-    setIsLoading(true)
-    if (!isEdit)
-      return useMutateCreateCategory.mutate(params)
-
-    return useMutateEditCategory.mutate({ ...params, id: selectedCategory?.id })
-  }
+  const isLoading = useMutateCreateCategory.isPending || useMutateEditCategory.isPending || useMutateRemoveCategory.isPending
 
   const value: CategoryContextType = useMemo(
     () => ({
@@ -241,10 +171,6 @@ export function CategoryProvider({ children }: CategoryProviderProps) {
       closeModal,
       submitCategoryForm,
       removeCategories,
-      batchCategories,
-      importCategories,
-      duplicateCategories,
-      exportCategories,
     }),
     [selectedCategory, isModalOpen, isLoading, isEdit, form],
   )

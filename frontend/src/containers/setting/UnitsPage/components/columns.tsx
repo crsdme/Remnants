@@ -1,31 +1,33 @@
+import type { UnitDTO } from '@remnant/shared'
+import type { Column } from '@tanstack/react-table'
+import { createColumnHelper } from '@tanstack/react-table'
 import {
   ArrowDown,
   ArrowUp,
-  ChevronDown,
-  ChevronRight,
   ChevronsUpDown,
   Copy,
-  CopyPlus,
   Pencil,
   Trash,
 } from 'lucide-react'
 import { useMemo } from 'react'
-import { useTranslation } from 'react-i18next'
 
 import { TableActionDropdown } from '@/components'
-import { Badge, Button, Checkbox } from '@/components/ui'
+import { Badge, Button } from '@/components/ui'
 import { formatDate } from '@/utils/helpers'
+import { useLocale } from '@/utils/hooks'
 import { useUnitContext } from '../context'
 
 const sortIcons = { asc: ArrowUp, desc: ArrowDown }
+const columnHelper = createColumnHelper<UnitDTO>()
 
 export function useColumns() {
-  const { t, i18n } = useTranslation()
-  const { isLoading, removeUnit, duplicateUnits, openModal } = useUnitContext()
+  const { t, language } = useLocale()
+  const { isLoading, removeUnit, openModal } = useUnitContext()
 
   const columns = useMemo(() => {
-    function sortHeader(column, label) {
-      const Icon = sortIcons[column.getIsSorted() || undefined] || ChevronsUpDown
+    function sortHeader(column: Column<UnitDTO, unknown>, label: string) {
+      const sorted = column.getIsSorted()
+      const Icon = sorted ? sortIcons[sorted] : ChevronsUpDown
 
       return (
         <Button
@@ -40,67 +42,8 @@ export function useColumns() {
       )
     }
 
-    function selectColumn() {
-      return ({
-        id: 'select',
-        size: 35,
-        meta: { title: t('component.columnMenu.columns.select') },
-        header: ({ table }) => {
-          const isChecked = table.getIsAllPageRowsSelected()
-            ? true
-            : table.getIsSomePageRowsSelected()
-              ? 'indeterminate'
-              : false
-
-          return (
-            <Checkbox
-              checked={isChecked}
-              onCheckedChange={value => table.toggleAllPageRowsSelected(!!value)}
-              aria-label="Select all"
-            />
-          )
-        },
-        cell: ({ row }) => (
-          <Checkbox
-            checked={row.getIsSelected()}
-            onCheckedChange={value => row.toggleSelected(!!value)}
-            aria-label="Select row"
-          />
-        ),
-        enableSorting: false,
-        enableHiding: false,
-      })
-    }
-
-    function expanderColumn() {
-      return ({
-        id: 'expander',
-        header: '',
-        cell: ({ row }) => {
-          if (row.getCanExpand()) {
-            return (
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={row.getToggleExpandedHandler()}
-                style={{ width: 24, height: 24, padding: 0 }}
-              >
-                {row.getIsExpanded()
-                  ? <ChevronDown size={16} />
-                  : <ChevronRight size={16} />}
-              </Button>
-            )
-          }
-          return null
-        },
-        size: 24,
-        enableSorting: false,
-        enableHiding: false,
-      })
-    }
-
     function actionColumn() {
-      return ({
+      return columnHelper.display({
         id: 'action',
         size: 85,
         meta: {
@@ -113,7 +56,7 @@ export function useColumns() {
           const actions = [
             {
               permission: 'unit.copy',
-              onClick: () => navigator.clipboard.writeText(item.id),
+              onClick: async () => navigator.clipboard.writeText(item.id),
               label: t('table.copy'),
               icon: <Copy className="h-4 w-4" />,
             },
@@ -122,12 +65,6 @@ export function useColumns() {
               onClick: () => openModal(item),
               label: t('table.edit'),
               icon: <Pencil className="h-4 w-4" />,
-            },
-            {
-              permission: 'unit.duplicate',
-              onClick: () => duplicateUnits({ ids: [item.id] }),
-              label: t('table.duplicate'),
-              icon: <CopyPlus className="h-4 w-4" />,
             },
             {
               permission: 'unit.delete',
@@ -145,9 +82,7 @@ export function useColumns() {
     }
 
     return [
-      selectColumn(),
-      expanderColumn(),
-      {
+      columnHelper.accessor(row => row.names?.[language] || row.names?.en, {
         id: 'names',
         size: 150,
         meta: {
@@ -160,9 +95,8 @@ export function useColumns() {
           defaultVisible: true,
         },
         header: ({ column }) => sortHeader(column, t('page.units.table.names')),
-        accessorFn: row => row.names?.[i18n.language] || row.names?.en,
-      },
-      {
+      }),
+      columnHelper.accessor(row => row.symbols?.[language] || row.symbols?.en, {
         id: 'symbols',
         size: 100,
         meta: {
@@ -175,16 +109,14 @@ export function useColumns() {
           defaultVisible: true,
         },
         header: () => t('page.units.table.symbols'),
-        accessorFn: row => row.symbols?.[i18n.language] || row.symbols?.en,
         cell: ({ row }) => (
           <Badge variant="outline">
-            {row.original.symbols?.[i18n.language] || row.original.symbols?.en}
+            {row.original.symbols?.[language] || row.original.symbols?.en}
           </Badge>
         ),
-      },
-      {
+      }),
+      columnHelper.accessor('priority', {
         id: 'priority',
-        accessorKey: 'priority',
         meta: {
           title: t('page.units.table.priority'),
           batchEdit: true,
@@ -196,10 +128,9 @@ export function useColumns() {
         },
         header: ({ column }) => sortHeader(column, t('page.units.table.priority')),
         cell: ({ row }) => <Badge variant="outline">{row.original.priority}</Badge>,
-      },
-      {
+      }),
+      columnHelper.accessor('active', {
         id: 'active',
-        accessorKey: 'active',
         meta: {
           title: t('page.units.table.active'),
           batchEdit: true,
@@ -211,10 +142,9 @@ export function useColumns() {
         },
         header: t('page.units.table.active'),
         cell: ({ row }) => <Badge variant={row.original.active ? 'success' : 'destructive'}>{t(`table.active.${row.original.active}`)}</Badge>,
-      },
-      {
+      }),
+      columnHelper.accessor('createdAt', {
         id: 'createdAt',
-        accessorKey: 'createdAt',
         meta: {
           title: t('table.createdAt'),
           filterable: true,
@@ -222,11 +152,10 @@ export function useColumns() {
           sortable: true,
         },
         header: ({ column }) => sortHeader(column, t('table.createdAt')),
-        cell: ({ row }) => formatDate(row.getValue('createdAt'), 'dd.MM.yyyy HH:mm', i18n.language),
-      },
-      {
+        cell: ({ row }) => formatDate(row.getValue('createdAt'), 'dd.MM.yyyy HH:mm', language),
+      }),
+      columnHelper.accessor('updatedAt', {
         id: 'updatedAt',
-        accessorKey: 'updatedAt',
         meta: {
           title: t('table.updatedAt'),
           filterable: true,
@@ -234,10 +163,10 @@ export function useColumns() {
           sortable: true,
         },
         header: ({ column }) => sortHeader(column, t('table.updatedAt')),
-        cell: ({ row }) => formatDate(row.getValue('updatedAt'), 'dd.MM.yyyy HH:mm', i18n.language),
-      },
+        cell: ({ row }) => formatDate(row.getValue('updatedAt'), 'dd.MM.yyyy HH:mm', language),
+      }),
       actionColumn(),
     ]
-  }, [i18n.language])
+  }, [language, isLoading, openModal, removeUnit, t])
   return columns
 }

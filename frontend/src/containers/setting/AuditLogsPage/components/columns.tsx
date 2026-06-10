@@ -1,3 +1,6 @@
+import type { AuditLogPopulatedDTO } from '@remnant/shared'
+import type { Column } from '@tanstack/react-table'
+import { createColumnHelper } from '@tanstack/react-table'
 import {
   ArrowDown,
   ArrowUp,
@@ -6,22 +9,24 @@ import {
   Eye,
 } from 'lucide-react'
 import { useMemo } from 'react'
-import { useTranslation } from 'react-i18next'
 
 import { TableActionDropdown } from '@/components'
 import { Badge, Button } from '@/components/ui'
 import { formatDate } from '@/utils/helpers'
+import { useLocale } from '@/utils/hooks'
 import { useAuditLogsContext } from '../context'
 
 const sortIcons = { asc: ArrowUp, desc: ArrowDown }
+const columnHelper = createColumnHelper<AuditLogPopulatedDTO>()
 
 export function useColumns() {
-  const { t, i18n } = useTranslation()
+  const { t, language } = useLocale()
   const { isLoading, openModal } = useAuditLogsContext()
 
   const columns = useMemo(() => {
-    function sortHeader(column, label) {
-      const Icon = sortIcons[column.getIsSorted() || undefined] || ChevronsUpDown
+    function sortHeader(column: Column<AuditLogPopulatedDTO, unknown>, label: string) {
+      const sorted = column.getIsSorted()
+      const Icon = sorted ? sortIcons[sorted] : ChevronsUpDown
 
       return (
         <Button
@@ -37,8 +42,8 @@ export function useColumns() {
     }
 
     function actionColumn() {
-      return ({
-        id: 'action',
+      return columnHelper.display({
+        id: 'actionMenu',
         size: 85,
         meta: {
           title: t('table.actions'),
@@ -50,7 +55,7 @@ export function useColumns() {
           const actions = [
             {
               permission: 'audit-log.copy',
-              onClick: () => navigator.clipboard.writeText(item.id),
+              onClick: () => void navigator.clipboard.writeText(item.id),
               label: t('table.copy'),
               icon: <Copy className="h-4 w-4" />,
             },
@@ -68,22 +73,21 @@ export function useColumns() {
     }
 
     return [
-      {
+      columnHelper.display({
         id: 'resourseInfo',
-        accessorKey: 'resourceInfo',
         meta: {
           title: t('page.audit-logs.table.resourceInfo'),
         },
         header: () => t('page.audit-logs.table.resourceInfo'),
         cell: ({ row }) => {
-          const resource = row.original.resource
+          const resource = row.original.resource as Record<string, any>
 
           switch (row.original.resourceType) {
             case 'product':
               return (
                 <div className="flex items-center gap-2">
                   <Badge variant="outline">{`#${resource.seq}`}</Badge>
-                  <Badge variant="outline">{resource.names?.[i18n.language]}</Badge>
+                  <Badge variant="outline">{resource.names?.[language]}</Badge>
                 </div>
               )
             case 'order':
@@ -92,28 +96,25 @@ export function useColumns() {
               return <p>{resource.name}</p>
           }
         },
-      },
-      {
+      }),
+      columnHelper.accessor('resourceType', {
         id: 'resourceType',
-        accessorKey: 'resourceType',
         meta: {
           title: t('page.audit-logs.table.resourceType'),
         },
         header: () => t('page.audit-logs.table.resourceType'),
         cell: ({ row }) => <Badge variant="outline">{t(`page.audit-logs.table.resourceType.${row.original.resourceType}`)}</Badge>,
-      },
-      {
+      }),
+      columnHelper.accessor('action', {
         id: 'action',
-        accessorKey: 'action',
         meta: {
           title: t('page.audit-logs.table.action'),
         },
         header: () => t('page.audit-logs.table.action'),
         cell: ({ row }) => <Badge variant="outline">{t(`page.audit-logs.table.action.${row.original.action}`)}</Badge>,
-      },
-      {
+      }),
+      columnHelper.accessor('createdAt', {
         id: 'createdAt',
-        accessorKey: 'createdAt',
         meta: {
           title: t('table.createdAt'),
           filterable: true,
@@ -121,11 +122,10 @@ export function useColumns() {
           sortable: true,
         },
         header: ({ column }) => sortHeader(column, t('table.createdAt')),
-        cell: ({ row }) => formatDate(row.getValue('createdAt'), 'dd.MM.yyyy HH:mm', i18n.language),
-      },
-      {
+        cell: ({ row }) => formatDate(row.getValue('createdAt'), 'dd.MM.yyyy HH:mm', language),
+      }),
+      columnHelper.accessor('updatedAt', {
         id: 'updatedAt',
-        accessorKey: 'updatedAt',
         meta: {
           title: t('table.updatedAt'),
           filterable: true,
@@ -133,10 +133,10 @@ export function useColumns() {
           sortable: true,
         },
         header: ({ column }) => sortHeader(column, t('table.updatedAt')),
-        cell: ({ row }) => formatDate(row.getValue('updatedAt'), 'dd.MM.yyyy HH:mm', i18n.language),
-      },
+        cell: ({ row }) => formatDate(row.getValue('updatedAt'), 'dd.MM.yyyy HH:mm', language),
+      }),
       actionColumn(),
     ]
-  }, [i18n.language])
+  }, [language, isLoading, openModal, t])
   return columns
 }

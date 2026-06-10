@@ -1,11 +1,11 @@
-import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { useTestStart } from '@/api/hooks/test/useTestStart'
 import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Switch } from '@/components/ui'
+import { useLocale } from '@/utils/hooks'
 import { useSettingContext } from './context'
 
 export function MainSettingsPage() {
-  const { t } = useTranslation()
+  const { t } = useLocale()
   const { editSetting, isLoading, getSetting } = useSettingContext()
 
   const { mutate: startTest } = useTestStart({

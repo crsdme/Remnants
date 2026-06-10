@@ -1,11 +1,11 @@
-import type { editProductPropertiesGroupsParams } from '@/api/types'
+import type { EditProductPropertyGroupRequest } from '@remnant/shared'
 
 import { useMutation } from '@tanstack/react-query'
-import { editProductPropertiesGroups } from '@/api/requests'
+import { editProductPropertyGroups } from '@/api/requests'
 
-export function useProductPropertyGroupEdit(settings?: MutationSettings<editProductPropertiesGroupsParams, typeof editProductPropertiesGroups>) {
+export function useProductPropertyGroupEdit(settings?: MutationSettings<EditProductPropertyGroupRequest>) {
   return useMutation({
-    mutationFn: editProductPropertiesGroups,
+    mutationFn: editProductPropertyGroups,
     ...settings?.options,
   })
 }

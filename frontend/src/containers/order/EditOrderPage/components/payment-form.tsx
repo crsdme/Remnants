@@ -2,7 +2,6 @@ import type { UseFormReturn } from 'react-hook-form'
 
 import { useCallback } from 'react'
 import { useWatch } from 'react-hook-form'
-import { useTranslation } from 'react-i18next'
 import { useCashregisterAccountOptions, useCashregisterOptions, useCurrencyOptions } from '@/api/hooks'
 import { DatePicker } from '@/components'
 import { AsyncSelectNew } from '@/components/AsyncSelectNew'
@@ -28,10 +27,11 @@ import {
   Textarea,
 } from '@/components/ui'
 import { PAYMENT_STATUSES } from '@/utils/constants'
+import { useLocale } from '@/utils/hooks'
 import { useEditOrderContext } from '../context'
 
-export function PaymentForm({ form, onSubmit }: { form: UseFormReturn, onSubmit: (payments: any) => void }) {
-  const { t } = useTranslation()
+export function PaymentForm({ form, onSubmit }: { form: any, onSubmit: (payments: any) => void }) {
+  const { t } = useLocale()
   const { isPaymentModalOpen, closePaymentModal } = useEditOrderContext()
 
   return (
@@ -54,7 +54,7 @@ export function PaymentForm({ form, onSubmit }: { form: UseFormReturn, onSubmit:
 }
 
 export function FullForm({ form, onSubmit }: { form: UseFormReturn, onSubmit: (payments: any) => void }) {
-  const { t, i18n } = useTranslation()
+  const { t, language } = useLocale()
   const { isLoading } = useEditOrderContext()
 
   const selectedCashregister = useWatch({ control: form.control, name: 'cashregister' })
@@ -82,7 +82,9 @@ export function FullForm({ form, onSubmit }: { form: UseFormReturn, onSubmit: (p
   return (
     <div className="flex flex-col gap-4 flex-1">
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)}>
+        <form
+          onSubmit={(e) => { void form.handleSubmit(onSubmit)(e) }}
+        >
           <div className="flex gap-2 w-full">
             <FormField
               control={form.control}
@@ -94,8 +96,8 @@ export function FullForm({ form, onSubmit }: { form: UseFormReturn, onSubmit: (p
                     <AsyncSelectNew
                       {...field}
                       loadOptions={loadCashregisterOptions}
-                      renderOption={e => e.names[i18n.language]}
-                      getDisplayValue={e => e.names[i18n.language]}
+                      renderOption={e => e.names[language]}
+                      getDisplayValue={e => e.names[language]}
                       getOptionValue={e => e.id}
                       disabled={isLoading}
                       onChange={(e) => {
@@ -123,8 +125,8 @@ export function FullForm({ form, onSubmit }: { form: UseFormReturn, onSubmit: (p
                     <AsyncSelectNew
                       {...field}
                       loadOptions={loadCashregisterAccountOptions}
-                      renderOption={e => e.names[i18n.language]}
-                      getDisplayValue={e => e.names[i18n.language]}
+                      renderOption={e => e.names[language]}
+                      getDisplayValue={e => e.names[language]}
                       getOptionValue={e => e.id}
                       disabled={isLoading || !selectedCashregister}
                       onChange={(e) => {
@@ -166,8 +168,8 @@ export function FullForm({ form, onSubmit }: { form: UseFormReturn, onSubmit: (p
                       <AsyncSelectNew
                         {...currencyField}
                         loadOptions={loadCurrencyOptions}
-                        renderOption={e => e.symbols[i18n.language]}
-                        getDisplayValue={e => e.symbols[i18n.language]}
+                        renderOption={e => e.symbols[language]}
+                        getDisplayValue={e => e.symbols[language]}
                         getOptionValue={e => e.id}
                         disabled={isLoading || !selectedAccount}
                         clearable
@@ -209,7 +211,6 @@ export function FullForm({ form, onSubmit }: { form: UseFormReturn, onSubmit: (p
                 <FormItem className="flex-1">
                   <FormLabel>{t('page.edit-order.form.payment-status')}</FormLabel>
                   <Select
-                    value={currencyField.value}
                     onValueChange={currencyField.onChange}
                     disabled={isLoading}
                     {...currencyField}

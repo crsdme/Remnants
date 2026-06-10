@@ -1,24 +1,27 @@
 import type {
-  createSupplierParams,
-  editSupplierParams,
-  getSuppliersParams,
-  removeSuppliersParams,
-  SupplierResponse,
-} from '@/api/types'
+  CreateSupplierRequest,
+  CreateSupplierResponse,
+  EditSupplierRequest,
+  EditSupplierResponse,
+  GetSuppliersRequest,
+  GetSuppliersResponse,
+  RemoveSuppliersRequest,
+  RemoveSuppliersResponse,
+} from '@remnant/shared'
 import { api } from '@/api/instance'
 
-export async function getSuppliers(params: getSuppliersParams) {
-  return api.get<SupplierResponse>('suppliers/get', { params })
+export async function getSuppliers(params: GetSuppliersRequest) {
+  return api.get<GetSuppliersResponse>('suppliers/get', { params })
 }
 
-export async function createSupplier(params: createSupplierParams) {
-  return api.post<SupplierResponse>('suppliers/create', { ...params })
+export async function createSupplier(params: CreateSupplierRequest) {
+  return api.post<CreateSupplierResponse>('suppliers/create', { ...params })
 }
 
-export async function editSupplier(params: editSupplierParams) {
-  return api.post<SupplierResponse>('suppliers/edit', params)
+export async function editSupplier(params: EditSupplierRequest) {
+  return api.post<EditSupplierResponse>('suppliers/edit', params)
 }
 
-export async function removeSupplier(params: removeSuppliersParams) {
-  return api.post<SupplierResponse>('suppliers/remove', params)
+export async function removeSupplier(params: RemoveSuppliersRequest) {
+  return api.post<RemoveSuppliersResponse>('suppliers/remove', params)
 }

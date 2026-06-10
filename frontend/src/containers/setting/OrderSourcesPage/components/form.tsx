@@ -18,22 +18,17 @@ export function OrderSourceForm() {
   const { t } = useTranslation()
   const { isLoading, form, closeModal, submitOrderSourceForm } = useOrderSourceContext()
 
-  const { data: { languages = [] } = {} } = useLanguageQuery(
+  const { languages = [] } = useLanguageQuery(
     { pagination: { full: true } },
-    { options: {
-      select: response => ({
-        languages: response.data.languages,
-      }),
-    } },
+    { options: { placeholderData: prevData => prevData } },
   )
-
-  const onSubmit = (values) => {
-    submitOrderSourceForm(values)
-  }
 
   return (
     <Form {...form}>
-      <form className="w-full space-y-1" onSubmit={form.handleSubmit(onSubmit)}>
+      <form
+        className="w-full space-y-1"
+        onSubmit={(e) => { void form.handleSubmit(submitOrderSourceForm)(e) }}
+      >
         {languages.map(language => (
           <FormField
             control={form.control}
@@ -93,6 +88,7 @@ export function OrderSourceForm() {
             <FormItem className="flex flex-row items-center space-x-3 space-y-0 rounded-md border p-4">
               <FormControl>
                 <ColorPicker
+                  ref={field.ref}
                   value={field.value}
                   onChange={field.onChange}
                   disabled={isLoading}

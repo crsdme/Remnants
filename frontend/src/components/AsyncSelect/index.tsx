@@ -87,7 +87,7 @@ export function AsyncSelect<T>({
 }: AsyncSelectProps<T>) {
   const [mounted, setMounted] = useState(false)
   const [open, setOpen] = useState(false)
-  const [options, setOptions] = useState([])
+  const [options, setOptions] = useState<T[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -96,7 +96,7 @@ export function AsyncSelect<T>({
   const [popoverWidth, setPopoverWidth] = useState<number>()
 
   const [selectedValues, setSelectedValues] = useState(value || [])
-  const [selectedOptions, setSelectedOptions] = useState([])
+  const [selectedOptions, setSelectedOptions] = useState<T[]>([])
   const [search, setSearch] = useState('')
   const debouncedSearch = useDebounceValue(search, preload ? 0 : 200)
 
@@ -129,7 +129,7 @@ export function AsyncSelect<T>({
       }
     }
 
-    initializeOptions()
+    void initializeOptions()
   }, [mounted, value, fetcher])
 
   useEffect(() => {
@@ -156,7 +156,7 @@ export function AsyncSelect<T>({
       }
     }
 
-    fetchOptions()
+    void fetchOptions()
 
     return () => {
       ignore = true
@@ -178,9 +178,9 @@ export function AsyncSelect<T>({
         ? selectedValues.filter(v => v !== currentValue)
         : [...selectedValues, currentValue]
 
-      const newSelectedOptions = selectedOptions.find(item => item.id === currentValue)
-        ? selectedOptions.filter(item => item.id !== currentValue)
-        : [...selectedOptions, options.find(item => item?.id === currentValue)!]
+      const newSelectedOptions = selectedOptions.find((item: any) => item.id === currentValue)
+        ? selectedOptions.filter((item: any) => item.id !== currentValue)
+        : [...selectedOptions, options.find((item: any) => item?.id === currentValue)!]
 
       setSelectedValues(newSelectedValeus)
       setSelectedOptions(newSelectedOptions)
@@ -200,12 +200,12 @@ export function AsyncSelect<T>({
     const nextValues = selectedValues.filter(v => v !== val)
     setSelectedValues(nextValues)
     setSelectedOptions(
-      nextValues.map(val => options.find(opt => getOptionValue(opt) === val)).filter(Boolean),
+      nextValues.map((val: any) => options.find((opt: any) => getOptionValue(opt) === val)).filter((option: any) => option !== undefined) as T[],
     )
     onChange?.(nextValues)
   }
 
-  const selectedOptionRender = () => {
+  const selectedOptionRender = async () => {
     if (selectedOptions.length === 0)
       return placeholder ?? <p className="text-muted-foreground">{t('component.asyncSelect.placeholder')}</p>
 
@@ -214,7 +214,7 @@ export function AsyncSelect<T>({
 
     return (
       <div className="flex flex-wrap items-center gap-1">
-        {selectedOptions.map(option => (
+        {selectedOptions.map((option: any) => (
           <span
             key={option.id}
             className="flex items-center bg-muted rounded px-2 py-1 text-xs gap-1"
@@ -292,7 +292,7 @@ export function AsyncSelect<T>({
                 notFound || <CommandEmpty>{noResultsMessage ?? t('component.asyncSelect.noResultsMessage')}</CommandEmpty>
               )}
               <CommandGroup>
-                {options.map(option => (
+                {options.map((option: any) => (
                   <CommandItem
                     key={getOptionValue(option)}
                     value={getOptionValue(option)}
@@ -302,7 +302,7 @@ export function AsyncSelect<T>({
                     <Check
                       className={cn(
                         'ml-auto h-3 w-3',
-                        selectedOptions.find(item => item.id === option.id) ? 'opacity-100' : 'opacity-0',
+                        selectedOptions.find((item: any) => item.id === option.id) ? 'opacity-100' : 'opacity-0',
                       )}
                     />
                   </CommandItem>

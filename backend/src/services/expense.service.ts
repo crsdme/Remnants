@@ -37,16 +37,18 @@ export async function get({ payload }: { payload: GetExpensesPayload }): Promise
 export async function create({ payload }: { payload: CreateExpensePayload }): Promise<CreateExpenseResponse> {
   const expense = await ExpenseRepo.createOne(payload)
 
-  await MoneyTransactionService.create({
-    type: 'expense',
-    direction: 'out',
-    account: payload.cashregisterAccount,
-    cashregister: payload.cashregister,
-    sourceModel: 'expense',
-    sourceId: expense._id.toString(),
-    currency: payload.currency,
-    amount: payload.amount,
-    description: `Expense ${expense.id}`,
+  await MoneyTransactionService.createTransaction({
+    payload: {
+      type: 'expense',
+      direction: 'out',
+      account: payload.cashregisterAccount,
+      cashregister: payload.cashregister,
+      sourceModel: 'expense',
+      sourceId: expense._id.toString(),
+      currency: payload.currency,
+      amount: payload.amount,
+      description: `Expense ${expense.id}`,
+    },
   })
 
   return {
@@ -68,28 +70,32 @@ export async function edit({ payload }: { payload: EditExpensePayload }): Promis
     throw new HttpError(400, 'Expense not edited', 'EXPENSE_NOT_EDITED')
   }
 
-  await MoneyTransactionService.create({
-    type: 'expense',
-    direction: 'in',
-    account: oldExpense.cashregisterAccount,
-    cashregister: oldExpense.cashregister,
-    sourceModel: 'expense',
-    sourceId: id,
-    currency: oldExpense.currency,
-    amount: oldExpense.amount,
-    description: `Expense edited ${id}`,
+  await MoneyTransactionService.createTransaction({
+    payload: {
+      type: 'expense',
+      direction: 'in',
+      account: oldExpense.cashregisterAccount,
+      cashregister: oldExpense.cashregister,
+      sourceModel: 'expense',
+      sourceId: id,
+      currency: oldExpense.currency,
+      amount: oldExpense.amount,
+      description: `Expense edited ${id}`,
+    },
   })
 
-  await MoneyTransactionService.create({
-    type: 'expense',
-    direction: 'out',
-    account: payload.cashregisterAccount,
-    cashregister: payload.cashregister,
-    sourceModel: 'expense',
-    sourceId: id,
-    currency: payload.currency,
-    amount: payload.amount,
-    description: `Expense ${id}`,
+  await MoneyTransactionService.createTransaction({
+    payload: {
+      type: 'expense',
+      direction: 'out',
+      account: payload.cashregisterAccount,
+      cashregister: payload.cashregister,
+      sourceModel: 'expense',
+      sourceId: id,
+      currency: payload.currency,
+      amount: payload.amount,
+      description: `Expense ${id}`,
+    },
   })
 
   return {
@@ -115,16 +121,18 @@ export async function remove({ payload }: { payload: RemoveExpensesPayload }): P
       throw new HttpError(400, 'Expense not removed', 'EXPENSE_NOT_REMOVED')
     }
 
-    await MoneyTransactionService.create({
-      type: 'expense',
-      direction: 'in',
-      account: expense.cashregisterAccount,
-      cashregister: expense.cashregister,
-      sourceModel: 'expense',
-      sourceId: expense._id.toString(),
-      currency: expense.currency,
-      amount: expense.amount,
-      description: `Expense removed ${expense.id}`,
+    await MoneyTransactionService.createTransaction({
+      payload: {
+        type: 'expense',
+        direction: 'in',
+        account: expense.cashregisterAccount,
+        cashregister: expense.cashregister,
+        sourceModel: 'expense',
+        sourceId: expense._id.toString(),
+        currency: expense.currency,
+        amount: expense.amount,
+        description: `Expense removed ${expense.id}`,
+      },
     })
   }
 

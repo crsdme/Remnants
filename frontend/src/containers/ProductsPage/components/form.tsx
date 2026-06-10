@@ -1,8 +1,21 @@
+import type { ProductPropertyDTO } from '@remnant/shared'
+import type { ReactNode } from 'react'
+import type { UseFormReturn } from 'react-hook-form'
+import type { ProductFormValues } from '../context'
+import type { SupportedLanguage } from '@/utils/constants'
 import { useWatch } from 'react-hook-form'
-import { useTranslation } from 'react-i18next'
-import { useCurrencyQuery, useLanguageQuery, useProductPropertyGroupQuery, useSiteOptions, useUnitQuery } from '@/api/hooks'
+import {
+  useCategoryOptions,
+  useCurrencyQuery,
+  useLanguageQuery,
+  useProductPropertyGroupQuery,
+  useSiteOptions,
+  useUnitQuery,
+} from '@/api/hooks'
+import { useCategorySelectOptions } from '@/api/hooks/category/useCategorySelectOptions'
 import { getProductPropertiesOptions } from '@/api/requests'
-import { AsyncSelect, FileUploadDnd } from '@/components'
+import { FileUploadDnd } from '@/components'
+import { AsyncSelectMenu } from '@/components/AsyncSelectMenu'
 import { AsyncSelectNew } from '@/components/AsyncSelectNew'
 import {
   Button,
@@ -22,355 +35,22 @@ import {
   SelectValue,
   Switch,
 } from '@/components/ui'
+import { useLocale } from '@/utils/hooks'
 import { useProductContext } from '../context'
 
 export function ProductForm() {
-  const { i18n } = useTranslation()
-  const { isLoading, isEdit, form, submitProductForm } = useProductContext()
+  const { isEdit } = useProductContext()
 
-  const requestLanguages = useLanguageQuery({ pagination: { full: true } })
-  const languages = requestLanguages?.data?.data?.languages || []
-
-  const requestCurrencies = useCurrencyQuery({ pagination: { full: true }, filters: { active: [true], language: i18n.language } })
-  const currencies = requestCurrencies?.data?.data?.currencies || []
-
-  const requestUnits = useUnitQuery({ pagination: { full: true }, filters: { active: [true], language: i18n.language } })
-  const units = requestUnits?.data?.data?.units || []
-
-  const requestProductPropertiesGroups = useProductPropertyGroupQuery({ pagination: { full: true }, filters: { active: [true], language: i18n.language } })
-  const productPropertiesGroups = requestProductPropertiesGroups?.data?.data?.productPropertyGroups || []
-
-  const onSubmit = (values) => {
-    submitProductForm(values)
-  }
-
-  const renderProductProperty = (property) => {
-    switch (property.type) {
-      case 'text':
-        return (
-          <FormField
-            control={form.control}
-            name={`productProperties.${property.id}`}
-            key={property.id}
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>
-                  <p>
-                    {property.names[i18n.language]}
-                    {property.isRequired && <span className="text-destructive ml-1">*</span>}
-                  </p>
-                </FormLabel>
-                <FormControl>
-                  <Input
-                    type="text"
-                    value={field.value || ''}
-                    onChange={e => field.onChange(e.target.value)}
-                    disabled={isLoading}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        )
-      case 'number':
-        return (
-          <FormField
-            control={form.control}
-            name={`productProperties.${property.id}`}
-            key={property.id}
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>
-                  <p>
-                    {property.names[i18n.language]}
-                    {property.isRequired && <span className="text-destructive ml-1">*</span>}
-                  </p>
-                </FormLabel>
-                <FormControl>
-                  <Input
-                    type="number"
-                    value={field.value || 0}
-                    onChange={e => field.onChange(Number(e.target.value))}
-                    disabled={isLoading}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        )
-      case 'boolean':
-        return (
-          <FormField
-            control={form.control}
-            name={`productProperties.${property.id}`}
-            key={property.id}
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>
-                  <p>
-                    {property.names[i18n.language]}
-                    {property.isRequired && <span className="text-destructive ml-1">*</span>}
-                  </p>
-                </FormLabel>
-                <FormControl>
-                  <Switch
-                    checked={field.value || false}
-                    onCheckedChange={field.onChange}
-                    disabled={isLoading}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        )
-      case 'select':
-        return (
-          <FormField
-            control={form.control}
-            name={`productProperties.${property.id}`}
-            key={property.id}
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>
-                  <p>
-                    {property.names[i18n.language]}
-                    {property.isRequired && <span className="text-destructive ml-1">*</span>}
-                  </p>
-                </FormLabel>
-                {/* <AsyncSelect
-                  fetcher={async ({ query, selectedValue }) => {
-                    const response = await getProductPropertiesOptions({
-                      pagination: { full: true },
-                      filters: {
-                        ...(selectedValue ? { ids: [selectedValue] } : { names: query }),
-                        productProperty: property.id,
-                        active: [true],
-                        language: i18n.language,
-                      },
-                    })
-                    return response?.data?.productPropertiesOptions || []
-                  }}
-                  renderOption={e => e.names[i18n.language]}
-                  getDisplayValue={e => e.names[i18n.language]}
-                  getOptionValue={e => e.id}
-                  width="100%"
-                  className="w-full"
-                  name="categories"
-                  value={field.value || []}
-                  onChange={field.onChange}
-                  disabled={isLoading}
-                /> */}
-                <AsyncSelectNew
-                  {...field}
-                  loadOptions={async ({ query, selectedValue }) => {
-                    const response = await getProductPropertiesOptions({
-                      pagination: { full: true },
-                      filters: {
-                        ...(selectedValue ? { ids: selectedValue } : { names: query }),
-                        productProperty: property.id,
-                        active: [true],
-                        language: i18n.language,
-                      },
-                    })
-                    return response?.data?.productPropertiesOptions || []
-                  }}
-                  field={field}
-                  value={field.value || []}
-                  renderOption={e => e.names[i18n.language]}
-                  getDisplayValue={e => e.names[i18n.language]}
-                  getOptionValue={e => e.id}
-                  triggerClassName="w-full"
-                  disabled={isLoading}
-                  searchable
-                />
-              </FormItem>
-            )}
-          />
-        )
-      case 'multiSelect':
-        return (
-          <FormField
-            control={form.control}
-            name={`productProperties.${property.id}`}
-            key={property.id}
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>
-                  <p>
-                    {property.names[i18n.language]}
-                    {property.isRequired && <span className="text-destructive ml-1">*</span>}
-                  </p>
-                </FormLabel>
-                {/* <AsyncSelect
-                  fetcher={async ({ query, selectedValue }) => {
-                    const response = await getProductPropertiesOptions({
-                      pagination: { full: true },
-                      filters: {
-                        ...(selectedValue ? { ids: selectedValue } : { names: query }),
-                        productProperty: property.id,
-                        active: [true],
-                        language: i18n.language,
-                      },
-                    })
-                    return response?.data?.productPropertiesOptions || []
-                  }}
-                  renderOption={e => e.names[i18n.language]}
-                  getDisplayValue={e => e.names[i18n.language]}
-                  getOptionValue={e => e.id}
-                  width="100%"
-                  className="w-full"
-                  name="categories"
-                  value={field.value || []}
-                  onChange={field.onChange}
-                  multi
-                  disabled={isLoading}
-                /> */}
-                <AsyncSelectNew
-                  {...field}
-                  loadOptions={async ({ query, selectedValue }) => {
-                    const response = await getProductPropertiesOptions({
-                      pagination: { full: true },
-                      filters: {
-                        ...(selectedValue ? { ids: selectedValue } : { names: query }),
-                        productProperty: property.id,
-                        active: [true],
-                        language: i18n.language,
-                      },
-                    })
-                    return response?.data?.productPropertiesOptions || []
-                  }}
-                  field={field}
-                  value={field.value || []}
-                  renderOption={e => e.names[i18n.language]}
-                  getDisplayValue={e => e.names[i18n.language]}
-                  getOptionValue={e => e.id}
-                  triggerClassName="w-full"
-                  searchable
-                  clearable
-                  multi
-                />
-              </FormItem>
-            )}
-          />
-        )
-      case 'color':
-        return (
-          <FormField
-            control={form.control}
-            name={`productProperties.${property.id}`}
-            key={property.id}
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>
-                  <p>
-                    {property.names[i18n.language]}
-                    {property.isRequired && <span className="text-destructive ml-1">*</span>}
-                  </p>
-                </FormLabel>
-                {/* <AsyncSelect
-                  fetcher={async ({ query, selectedValue }) => {
-                    const response = await getProductPropertiesOptions({
-                      pagination: { full: true },
-                      filters: {
-                        ...(selectedValue ? { ids: [selectedValue] } : { names: query }),
-                        productProperty: property.id,
-                        active: [true],
-                        language: i18n.language,
-                      },
-                    })
-                    return response?.data?.productPropertiesOptions || []
-                  }}
-                  renderOption={e => (
-                    <div className="flex items-center gap-2">
-                      <div className="w-3 h-3 rounded-full border border-gray-300" style={{ backgroundColor: e.color }} />
-                      {e.names[i18n.language]}
-                    </div>
-                  )}
-                  getDisplayValue={e => (
-                    <div className="flex items-center gap-2">
-                      <div className="w-3 h-3 rounded-full border border-gray-300" style={{ backgroundColor: e.color }} />
-                      {e.names[i18n.language]}
-                    </div>
-                  )}
-                  getOptionValue={e => e.id}
-                  width="100%"
-                  className="w-full"
-                  name="categories"
-                  value={field.value}
-                  onChange={field.onChange}
-                  disabled={isLoading}
-                  field={field}
-                /> */}
-                <AsyncSelectNew
-                  {...field}
-                  loadOptions={async ({ query, selectedValue }) => {
-                    const response = await getProductPropertiesOptions({
-                      pagination: { full: true },
-                      filters: {
-                        ...(selectedValue ? { ids: selectedValue } : { names: query }),
-                        productProperty: property.id,
-                        active: [true],
-                        language: i18n.language,
-                      },
-                    })
-                    return response?.data?.productPropertiesOptions || []
-                  }}
-                  renderOption={e => (
-                    <div className="flex items-center gap-2">
-                      <div className="w-3 h-3 rounded-full border border-gray-300" style={{ backgroundColor: e.color }} />
-                      {e.names[i18n.language]}
-                    </div>
-                  )}
-                  getDisplayValue={e => (
-                    <div className="flex items-center gap-2">
-                      <div className="w-3 h-3 rounded-full border border-gray-300" style={{ backgroundColor: e.color }} />
-                      {e.names[i18n.language]}
-                    </div>
-                  )}
-                  field={field}
-                  value={field.value || []}
-                  getOptionValue={e => e.id}
-                  triggerClassName="w-full"
-                  disabled={isLoading}
-                  searchable
-                />
-              </FormItem>
-            )}
-          />
-        )
-    }
-  }
-
-  if (isEdit) {
-    return (
-      <EditForm
-        languages={languages}
-        currencies={currencies}
-        units={units}
-        productPropertiesGroups={productPropertiesGroups}
-        onSubmit={onSubmit}
-        renderProductProperty={renderProductProperty}
-      />
-    )
-  }
+  if (isEdit)
+    return <EditForm />
 
   return (
-    <CreateForm
-      languages={languages}
-      currencies={currencies}
-      units={units}
-      productPropertiesGroups={productPropertiesGroups}
-      onSubmit={onSubmit}
-      renderProductProperty={renderProductProperty}
-    />
+    <CreateForm />
   )
 }
 
-function CreateForm({ languages, currencies, units, productPropertiesGroups, onSubmit, renderProductProperty }) {
-  const { t, i18n } = useTranslation()
+function CreateForm() {
+  const { t, language } = useLocale()
   const {
     isLoading,
     form,
@@ -379,8 +59,8 @@ function CreateForm({ languages, currencies, units, productPropertiesGroups, onS
     images,
     setImages,
     closeModal,
-    loadCategoryOptions,
     getPropertiesDefaultValues,
+    submitProductForm,
   } = useProductContext()
 
   const isAutoSyncEnabled = useWatch({
@@ -390,13 +70,36 @@ function CreateForm({ languages, currencies, units, productPropertiesGroups, onS
 
   const loadSitesOptions = useSiteOptions()
 
+  const { loadSearchOptions, loadSelectedOptions } = useCategorySelectOptions({
+    defaultFilters: { active: [true], language },
+  })
+
+  const { languages } = useLanguageQuery({
+    pagination: { full: true },
+  })
+
+  const { currencies } = useCurrencyQuery({
+    pagination: { full: true },
+    filters: { active: [true], language },
+  })
+
+  const { units } = useUnitQuery({
+    pagination: { full: true },
+    filters: { active: [true], language },
+  })
+
+  const { productPropertyGroups } = useProductPropertyGroupQuery({
+    pagination: { full: true },
+    filters: { active: [true], language },
+  })
+
   return (
     <Form {...form}>
       <form
         className="w-full space-y-1"
         onSubmit={(e) => {
           e.preventDefault()
-          form.handleSubmit(onSubmit)(e)
+          void form.handleSubmit(submitProductForm)(e)
         }}
       >
         {languages.map(language => (
@@ -462,7 +165,6 @@ function CreateForm({ languages, currencies, units, productPropertiesGroups, onS
                         value={currencyField.value}
                         onValueChange={currencyField.onChange}
                         disabled={isLoading}
-                        {...currencyField}
                       >
                         <FormControl>
                           <SelectTrigger className="w-[80px]">
@@ -472,7 +174,7 @@ function CreateForm({ languages, currencies, units, productPropertiesGroups, onS
                         <SelectContent>
                           {currencies.map(currency => (
                             <SelectItem key={currency.id} value={currency.id}>
-                              {currency.symbols[i18n.language]}
+                              {currency.symbols[language]}
                             </SelectItem>
                           ))}
                         </SelectContent>
@@ -519,7 +221,7 @@ function CreateForm({ languages, currencies, units, productPropertiesGroups, onS
                         <SelectContent>
                           {currencies.map(currency => (
                             <SelectItem key={currency.id} value={currency.id}>
-                              {currency.symbols[i18n.language]}
+                              {currency.symbols[language]}
                             </SelectItem>
                           ))}
                         </SelectContent>
@@ -544,34 +246,21 @@ function CreateForm({ languages, currencies, units, productPropertiesGroups, onS
                   <span className="text-destructive ml-1">*</span>
                 </p>
               </FormLabel>
-              {/* <AsyncSelect
-                fetcher={loadCategoryOptions}
-                renderOption={e => e.names[i18n.language]}
-                getDisplayValue={e => e.names[i18n.language]}
-                getOptionValue={e => e.id}
-                width="100%"
-                className="w-full"
-                name="categories"
-                value={field.value}
+              <AsyncSelectMenu
+                loadSearchOptions={loadSearchOptions}
+                loadSelectedOptions={loadSelectedOptions}
                 onChange={field.onChange}
-                multi
-                disabled={isLoading}
                 field={field}
-              /> */}
-              <AsyncSelectNew
-                  {...field}
-                  loadOptions={loadCategoryOptions}
-                  field={field}
-                  value={field.value || []}
-                  renderOption={e => e.names[i18n.language]}
-                  getDisplayValue={e => e.names[i18n.language]}
-                  getOptionValue={e => e.id}
-                  triggerClassName="w-full"
-                  disabled={isLoading}
-                  searchable
-                  clearable
-                  multi
-                />
+                value={field.value || []}
+                renderOption={e => e.names[language]}
+                getDisplayValue={e => e.names[language]}
+                getOptionValue={e => e.id}
+                triggerClassName="w-full"
+                disabled={isLoading}
+                searchable
+                clearable
+                multi
+              />
             </FormItem>
           )}
         />
@@ -591,7 +280,6 @@ function CreateForm({ languages, currencies, units, productPropertiesGroups, onS
                 value={field.value}
                 onValueChange={field.onChange}
                 disabled={isLoading}
-                {...field}
               >
                 <FormControl>
                   <SelectTrigger className="w-full">
@@ -601,7 +289,7 @@ function CreateForm({ languages, currencies, units, productPropertiesGroups, onS
                 <SelectContent>
                   {units.map(unit => (
                     <SelectItem key={unit.id} value={unit.id}>
-                      {unit.names[i18n.language]}
+                      {unit.names[language]}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -622,7 +310,7 @@ function CreateForm({ languages, currencies, units, productPropertiesGroups, onS
                   value={field.value}
                   onValueChange={(value) => {
                     field.onChange(value)
-                    form.setValue('productProperties', getPropertiesDefaultValues(value, productPropertiesGroups))
+                    form.setValue('productProperties', getPropertiesDefaultValues(value, productPropertyGroups))
                     setSelectedGroup(value)
                   }}
                   disabled={isLoading}
@@ -631,9 +319,9 @@ function CreateForm({ languages, currencies, units, productPropertiesGroups, onS
                     <SelectValue placeholder={t('page.products.form.productPropertiesGroup')} />
                   </SelectTrigger>
                   <SelectContent>
-                    {productPropertiesGroups.map(group => (
+                    {productPropertyGroups.map(group => (
                       <SelectItem key={group.id} value={group.id}>
-                        {group.names[i18n.language]}
+                        {group.names[language]}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -646,9 +334,9 @@ function CreateForm({ languages, currencies, units, productPropertiesGroups, onS
 
         {selectedGroup && (
           <div>
-            {(productPropertiesGroups.find(group => group.id === selectedGroup)?.productProperties || []).map(property => (
-              renderProductProperty(property)
-            ))}
+            {(productPropertyGroups.find(group => group.id === selectedGroup)?.productProperties ?? []).map(
+              (property): ReactNode => renderProductProperty({ property, form, isLoading, language }),
+            )}
           </div>
         )}
 
@@ -726,9 +414,9 @@ function CreateForm({ languages, currencies, units, productPropertiesGroups, onS
                 <FormControl>
                   <AsyncSelectNew
                     {...field}
-                    loadOptions={loadSitesOptions}
-                    renderOption={e => `${e.names[i18n.language]}`}
-                    getDisplayValue={e => `${e.names[i18n.language]}`}
+                    loadOptions={async ({ query = '', selectedValue } = {}) => loadSitesOptions({ query, selectedValue })}
+                    renderOption={e => `${e.names[language]}`}
+                    getDisplayValue={e => `${e.names[language]}`}
                     getOptionValue={e => e.id}
                     disabled={isLoading}
                     triggerClassName="flex-1"
@@ -761,8 +449,8 @@ function CreateForm({ languages, currencies, units, productPropertiesGroups, onS
   )
 }
 
-function EditForm({ languages, currencies, units, productPropertiesGroups, onSubmit, renderProductProperty }) {
-  const { t, i18n } = useTranslation()
+function EditForm() {
+  const { t, language } = useLocale()
   const {
     isLoading,
     form,
@@ -771,7 +459,7 @@ function EditForm({ languages, currencies, units, productPropertiesGroups, onSub
     images,
     setImages,
     closeModal,
-    loadCategoryOptions,
+    submitProductForm,
   } = useProductContext()
 
   const isAutoSyncEnabled = useWatch({
@@ -781,13 +469,36 @@ function EditForm({ languages, currencies, units, productPropertiesGroups, onSub
 
   const loadSitesOptions = useSiteOptions()
 
+  const loadCategoryOptions = useCategoryOptions({
+    defaultFilters: { active: [true], language },
+  })
+
+  const { languages } = useLanguageQuery({
+    pagination: { full: true },
+  })
+
+  const { currencies } = useCurrencyQuery({
+    pagination: { full: true },
+    filters: { active: [true], language },
+  })
+
+  const { units } = useUnitQuery({
+    pagination: { full: true },
+    filters: { active: [true], language },
+  })
+
+  const { productPropertyGroups } = useProductPropertyGroupQuery({
+    pagination: { full: true },
+    filters: { active: [true], language },
+  })
+
   return (
     <Form {...form}>
       <form
         className="w-full"
         onSubmit={(e) => {
           e.preventDefault()
-          form.handleSubmit(onSubmit)(e)
+          void form.handleSubmit(submitProductForm)(e)
         }}
       >
         {languages.map(language => (
@@ -844,7 +555,6 @@ function EditForm({ languages, currencies, units, productPropertiesGroups, onSub
                         value={currencyField.value}
                         onValueChange={currencyField.onChange}
                         disabled={isLoading}
-                        {...currencyField}
                       >
                         <FormControl>
                           <SelectTrigger className="w-[80px]">
@@ -854,7 +564,7 @@ function EditForm({ languages, currencies, units, productPropertiesGroups, onSub
                         <SelectContent>
                           {currencies.map(currency => (
                             <SelectItem key={currency.id} value={currency.id}>
-                              {currency.symbols[i18n.language]}
+                              {currency.symbols[language]}
                             </SelectItem>
                           ))}
                         </SelectContent>
@@ -901,7 +611,7 @@ function EditForm({ languages, currencies, units, productPropertiesGroups, onSub
                         <SelectContent>
                           {currencies.map(currency => (
                             <SelectItem key={currency.id} value={currency.id}>
-                              {currency.symbols[i18n.language]}
+                              {currency.symbols[language]}
                             </SelectItem>
                           ))}
                         </SelectContent>
@@ -922,27 +632,13 @@ function EditForm({ languages, currencies, units, productPropertiesGroups, onSub
             <FormItem>
               <FormLabel>{t('page.products.form.categories')}</FormLabel>
               <FormControl>
-                {/* <AsyncSelect
-                  fetcher={loadCategoryOptions}
-                  renderOption={e => e.names[i18n.language]}
-                  getDisplayValue={e => e.names[i18n.language]}
-                  getOptionValue={e => e.id}
-                  width="100%"
-                  className="w-full"
-                  name="categories"
-                  value={field.value}
-                  onChange={field.onChange}
-                  multi
-                  disabled={isLoading}
-                  field={field}
-                /> */}
                 <AsyncSelectNew
                   {...field}
                   loadOptions={loadCategoryOptions}
                   field={field}
                   value={field.value || []}
-                  renderOption={e => e.names[i18n.language]}
-                  getDisplayValue={e => e.names[i18n.language]}
+                  renderOption={e => e.names[language]}
+                  getDisplayValue={e => e.names[language]}
                   getOptionValue={e => e.id}
                   triggerClassName="w-full"
                   searchable
@@ -965,7 +661,6 @@ function EditForm({ languages, currencies, units, productPropertiesGroups, onSub
                 value={field.value}
                 onValueChange={field.onChange}
                 disabled={isLoading}
-                {...field}
               >
                 <FormControl>
                   <SelectTrigger className="w-full">
@@ -975,7 +670,7 @@ function EditForm({ languages, currencies, units, productPropertiesGroups, onSub
                 <SelectContent>
                   {units.map(unit => (
                     <SelectItem key={unit.id} value={unit.id}>
-                      {unit.names[i18n.language]}
+                      {unit.names[language]}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -1004,9 +699,9 @@ function EditForm({ languages, currencies, units, productPropertiesGroups, onSub
                     <SelectValue placeholder="..." />
                   </SelectTrigger>
                   <SelectContent>
-                    {productPropertiesGroups.map(group => (
+                    {productPropertyGroups.map(group => (
                       <SelectItem key={group.id} value={group.id}>
-                        {group.names[i18n.language]}
+                        {group.names[language]}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -1019,9 +714,9 @@ function EditForm({ languages, currencies, units, productPropertiesGroups, onSub
 
         {selectedGroup && (
           <div className="space-y-2">
-            {(productPropertiesGroups.find(group => group.id === selectedGroup)?.productProperties || []).map(property => (
-              renderProductProperty(property)
-            ))}
+            {(productPropertyGroups.find(group => group.id === selectedGroup)?.productProperties ?? []).map(
+              (property): ReactNode => renderProductProperty({ property, form, isLoading, language }),
+            )}
           </div>
         )}
 
@@ -1075,9 +770,9 @@ function EditForm({ languages, currencies, units, productPropertiesGroups, onSub
                 <FormControl>
                   <AsyncSelectNew
                     {...field}
-                    loadOptions={loadSitesOptions}
-                    renderOption={e => `${e.names[i18n.language]}`}
-                    getDisplayValue={e => `${e.names[i18n.language]}`}
+                    loadOptions={async ({ query = '', selectedValue } = {}) => loadSitesOptions({ query, selectedValue })}
+                    renderOption={e => `${e.names[language]}`}
+                    getDisplayValue={e => `${e.names[language]}`}
                     getOptionValue={e => e.id}
                     disabled={isLoading}
                     triggerClassName="flex-1"
@@ -1108,4 +803,228 @@ function EditForm({ languages, currencies, units, productPropertiesGroups, onSub
       </form>
     </Form>
   )
+}
+
+function renderProductProperty({ property, form, isLoading, language }: {
+  property: ProductPropertyDTO
+  form: UseFormReturn<ProductFormValues>
+  isLoading: boolean
+  language: SupportedLanguage
+}) {
+  switch (property.type) {
+    case 'text':
+      return (
+        <FormField
+          control={form.control}
+          name={`productProperties.${property.id}`}
+          key={property.id}
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>
+                <p>
+                  {property.names[language]}
+                  {property.isRequired && <span className="text-destructive ml-1">*</span>}
+                </p>
+              </FormLabel>
+              <FormControl>
+                <Input
+                  type="text"
+                  value={field.value || ''}
+                  onChange={e => field.onChange(e.target.value)}
+                  disabled={isLoading}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+      )
+    case 'number':
+      return (
+        <FormField
+          control={form.control}
+          name={`productProperties.${property.id}`}
+          key={property.id}
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>
+                <p>
+                  {property.names[language]}
+                  {property.isRequired && <span className="text-destructive ml-1">*</span>}
+                </p>
+              </FormLabel>
+              <FormControl>
+                <Input
+                  type="number"
+                  value={field.value || 0}
+                  onChange={e => field.onChange(Number(e.target.value))}
+                  disabled={isLoading}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+      )
+    case 'boolean':
+      return (
+        <FormField
+          control={form.control}
+          name={`productProperties.${property.id}`}
+          key={property.id}
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>
+                <p>
+                  {property.names[language]}
+                  {property.isRequired && <span className="text-destructive ml-1">*</span>}
+                </p>
+              </FormLabel>
+              <FormControl>
+                <Switch
+                  checked={field.value || false}
+                  onCheckedChange={field.onChange}
+                  disabled={isLoading}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+      )
+    case 'select':
+      return (
+        <FormField
+          control={form.control}
+          name={`productProperties.${property.id}`}
+          key={property.id}
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>
+                <p>
+                  {property.names[language]}
+                  {property.isRequired && <span className="text-destructive ml-1">*</span>}
+                </p>
+              </FormLabel>
+              <AsyncSelectNew
+                {...field}
+                loadOptions={async ({ query = '', selectedValue } = {}) => {
+                  const response = await getProductPropertiesOptions({
+                    pagination: { full: true },
+                    filters: {
+                      ...(selectedValue ? { ids: selectedValue } : { names: query }),
+                      productProperty: property.id,
+                      active: [true],
+                      language,
+                    },
+                  })
+                  return response?.data?.data?.items || []
+                }}
+                field={field}
+                value={field.value || []}
+                renderOption={e => e.names[language]}
+                getDisplayValue={e => e.names[language]}
+                getOptionValue={e => e.id}
+                triggerClassName="w-full"
+                disabled={isLoading}
+                searchable
+              />
+            </FormItem>
+          )}
+        />
+      )
+    case 'multiSelect':
+      return (
+        <FormField
+          control={form.control}
+          name={`productProperties.${property.id}`}
+          key={property.id}
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>
+                <p>
+                  {property.names[language]}
+                  {property.isRequired && <span className="text-destructive ml-1">*</span>}
+                </p>
+              </FormLabel>
+              <AsyncSelectNew
+                {...field}
+                loadOptions={async ({ query = '', selectedValue } = {}) => {
+                  const response = await getProductPropertiesOptions({
+                    pagination: { full: true },
+                    filters: {
+                      ...(selectedValue ? { ids: selectedValue } : { names: query }),
+                      productProperty: property.id,
+                      active: [true],
+                      language,
+                    },
+                  })
+                  return response?.data?.data?.items || []
+                }}
+                field={field}
+                value={field.value || []}
+                renderOption={e => e.names[language]}
+                getDisplayValue={e => e.names[language]}
+                getOptionValue={e => e.id}
+                triggerClassName="w-full"
+                searchable
+                clearable
+                multi
+              />
+            </FormItem>
+          )}
+        />
+      )
+    case 'color':
+      return (
+        <FormField
+          control={form.control}
+          name={`productProperties.${property.id}`}
+          key={property.id}
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>
+                <p>
+                  {property.names[language]}
+                  {property.isRequired && <span className="text-destructive ml-1">*</span>}
+                </p>
+              </FormLabel>
+              <AsyncSelectNew
+                {...field}
+                loadOptions={async ({ query = '', selectedValue } = {}) => {
+                  const response = await getProductPropertiesOptions({
+                    pagination: { full: true },
+                    filters: {
+                      ...(selectedValue ? { ids: selectedValue } : { names: query }),
+                      productProperty: property.id,
+                      active: [true],
+                      language,
+                    },
+                  })
+                  return response?.data?.data?.items || []
+                }}
+                renderOption={e => (
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full border border-gray-300" style={{ backgroundColor: e.color }} />
+                    {e.names[language]}
+                  </div>
+                )}
+                getDisplayValue={e => (
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full border border-gray-300" style={{ backgroundColor: e.color }} />
+                    {e.names[language]}
+                  </div>
+                )}
+                field={field}
+                value={field.value || []}
+                getOptionValue={e => e.id}
+                triggerClassName="w-full"
+                disabled={isLoading}
+                searchable
+              />
+            </FormItem>
+          )}
+        />
+      )
+  }
 }

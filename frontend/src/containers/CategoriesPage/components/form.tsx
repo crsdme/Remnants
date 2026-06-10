@@ -1,6 +1,9 @@
-import { useTranslation } from 'react-i18next'
+import type { LanguageDTO } from '@remnant/shared'
+import type { UseFormReturn } from 'react-hook-form'
+
+import type { CategoryFormValues } from '../context'
 import { useCategoryOptions, useLanguageQuery } from '@/api/hooks'
-import { AsyncSelect } from '@/components'
+import { AsyncSelectNew } from '@/components/AsyncSelectNew'
 import {
   Button,
   Checkbox,
@@ -13,22 +16,18 @@ import {
   FormMessage,
   Input,
 } from '@/components/ui'
+import { useLocale } from '@/utils/hooks'
 import { useCategoryContext } from '../context'
 
 export function CategoryForm() {
   const { isLoading, isEdit, form, submitCategoryForm, closeModal } = useCategoryContext()
 
-  const { data: { languages = [] } = {} } = useLanguageQuery(
+  const { languages = [] } = useLanguageQuery(
     { pagination: { full: true } },
-    { options: { select: response => ({
-      languages: response.data.languages,
-      count: response.data.languagesCount,
-    }) } },
+    { options: { placeholderData: prevData => prevData } },
   )
 
-  const onSubmit = (values) => {
-    if (values.parent === '')
-      values.parent = undefined
+  const onSubmit = (values: CategoryFormValues) => {
     submitCategoryForm(values)
   }
 
@@ -55,14 +54,21 @@ export function CategoryForm() {
   )
 }
 
-function CreateForm({ form, languages, isLoading, onSubmit, closeModal }) {
-  const { t, i18n } = useTranslation()
+function CreateForm({ form, languages, isLoading, onSubmit, closeModal }:
+{
+  form: UseFormReturn<CategoryFormValues>
+  languages: LanguageDTO[]
+  isLoading: boolean
+  onSubmit: (values: CategoryFormValues) => void
+  closeModal: () => void
+}) {
+  const { t, language } = useLocale()
 
   const loadCategoriesOptions = useCategoryOptions()
 
   return (
     <Form {...form}>
-      <form className="w-full space-y-1" onSubmit={form.handleSubmit(onSubmit)}>
+      <form className="w-full space-y-1" onSubmit={e => void form.handleSubmit(v => onSubmit(v))(e)}>
         {languages.map(language => (
           <FormField
             control={form.control}
@@ -100,12 +106,12 @@ function CreateForm({ form, languages, isLoading, onSubmit, closeModal }) {
             <FormItem>
               <FormLabel>{t('page.categories.form.parent')}</FormLabel>
               <FormControl>
-                <AsyncSelect
-                  fetcher={loadCategoriesOptions}
-                  renderOption={e => e.names[i18n.language]}
-                  getDisplayValue={e => e.names[i18n.language]}
+                <AsyncSelectNew
+                  loadOptions={loadCategoriesOptions}
+                  renderOption={e => e.names[language]}
+                  getDisplayValue={e => e.names[language]}
                   getOptionValue={e => e.id}
-                  width="100%"
+                  triggerClassName="w-full"
                   className="w-full"
                   name="parent"
                   value={field.value}
@@ -178,14 +184,20 @@ function CreateForm({ form, languages, isLoading, onSubmit, closeModal }) {
   )
 }
 
-function EditForm({ form, languages, isLoading, onSubmit, closeModal }) {
-  const { t, i18n } = useTranslation()
+function EditForm({ form, languages, isLoading, onSubmit, closeModal }: {
+  form: UseFormReturn<CategoryFormValues>
+  languages: LanguageDTO[]
+  isLoading: boolean
+  onSubmit: (values: CategoryFormValues) => void
+  closeModal: () => void
+}) {
+  const { t, language } = useLocale()
 
   const loadCategoriesOptions = useCategoryOptions()
 
   return (
     <Form {...form}>
-      <form className="w-full space-y-1" onSubmit={form.handleSubmit(onSubmit)}>
+      <form className="w-full space-y-1" onSubmit={e => void form.handleSubmit(v => onSubmit(v))(e)}>
         {languages.map(language => (
           <FormField
             control={form.control}
@@ -220,12 +232,12 @@ function EditForm({ form, languages, isLoading, onSubmit, closeModal }) {
             <FormItem>
               <FormLabel>{t('page.categories.form.parent')}</FormLabel>
               <FormControl>
-                <AsyncSelect
-                  fetcher={loadCategoriesOptions}
-                  renderOption={e => e.names[i18n.language]}
-                  getDisplayValue={e => e.names[i18n.language]}
+                <AsyncSelectNew
+                  loadOptions={loadCategoriesOptions}
+                  renderOption={e => e.names[language]}
+                  getDisplayValue={e => e.names[language]}
                   getOptionValue={e => e.id}
-                  width="100%"
+                  triggerClassName="w-full"
                   className="w-full"
                   name="parent"
                   value={field.value}

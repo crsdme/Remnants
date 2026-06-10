@@ -1,5 +1,5 @@
 import { afterAll, beforeAll } from 'vitest'
-import { connectDB, disconnectDB, dropDB } from '../src/config/db'
+import { connectDB, disconnectDB } from '../src/config/db'
 
 beforeAll(async () => {
   await connectDB()
@@ -10,6 +10,5 @@ beforeAll(async () => {
 // })
 
 afterAll(async () => {
-  await dropDB()
   await disconnectDB()
 })

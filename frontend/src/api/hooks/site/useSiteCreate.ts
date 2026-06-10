@@ -1,9 +1,9 @@
-import type { createSitesParams } from '@/api/types'
+import type { CreateSiteRequest } from '@remnant/shared'
 
 import { useMutation } from '@tanstack/react-query'
 import { createSite } from '@/api/requests'
 
-export function useSiteCreate(settings?: MutationSettings<createSitesParams, typeof createSite>) {
+export function useSiteCreate(settings?: MutationSettings<CreateSiteRequest>) {
   return useMutation({
     mutationFn: createSite,
     ...settings?.options,

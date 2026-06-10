@@ -1,5 +1,48 @@
 import { z } from 'zod'
-import { dateRangeSchema, idSchema, numberFromStringSchema, paginationSchema, sorterParamsSchema } from './common'
+import { cashregisterAccountSchemaPopulatedDTO } from './cashregister-account.schema'
+import { cashregisterSchema } from './cashregister.schema'
+import { dateRangeSchema, idSchema, numberFromStringSchema, paginationSchema, responseItemSchema, responseListSchema, responseSchema, sorterParamsSchema } from './common'
+import { currencySchema } from './currency.schema'
+
+export const moneyTransactionSchema = z.object({
+  id: idSchema,
+  seq: z.number(),
+  type: z.string().trim(),
+  direction: z.string().trim(),
+  account: idSchema,
+  amount: z.number(),
+  currency: idSchema,
+  cashregister: idSchema,
+  description: z.string().trim().optional(),
+  sourceModel: z.string().trim(),
+  sourceId: idSchema,
+  confirmed: z.boolean(),
+  createdBy: idSchema,
+  removedBy: idSchema,
+  createdAt: z.coerce.date(),
+  updatedAt: z.coerce.date(),
+})
+export type MoneyTransactionDTO = z.output<typeof moneyTransactionSchema>
+
+export const moneyTransactionPopulatedSchema = z.object({
+  id: idSchema,
+  seq: z.number(),
+  type: z.string().trim(),
+  direction: z.string().trim(),
+  account: cashregisterAccountSchemaPopulatedDTO,
+  amount: z.number(),
+  currency: currencySchema,
+  cashregister: cashregisterSchema,
+  description: z.string().trim().optional(),
+  sourceModel: z.string().trim(),
+  sourceId: idSchema,
+  confirmed: z.boolean(),
+  createdBy: idSchema,
+  removedBy: idSchema,
+  createdAt: z.coerce.date(),
+  updatedAt: z.coerce.date(),
+})
+export type MoneyTransactionPopulatedDTO = z.output<typeof moneyTransactionPopulatedSchema>
 
 export const getMoneyTransactionsSchema = z.object({
   filters: z.object({
@@ -29,70 +72,65 @@ export const getMoneyTransactionsSchema = z.object({
 
 export type GetMoneyTransactionsRequest = z.input<typeof getMoneyTransactionsSchema>
 
-const baseCreateMoneyTransactionSchema = z.object({
+export const createMoneyTransactionSchema = z.object({
   currency: idSchema,
   amount: z.number(),
-  sourceModel: z.enum(['manual', 'cashregister', 'cashregisterAccount', 'order']),
+  sourceModel: z.enum(['manual', 'cashregister', 'cashregisterAccount', 'order', 'expense', 'procurement']),
+  type: z.enum(['income', 'expense', 'procurement']),
   sourceId: idSchema.optional(),
   role: z.string().trim().optional(),
   transferId: idSchema.optional(),
   description: z.string().trim().optional(),
-})
-
-const singleTransactionSchema = baseCreateMoneyTransactionSchema.extend({
-  type: z.literal('income'),
   direction: z.enum(['in', 'out']),
   account: idSchema,
   cashregister: idSchema,
 })
 
-const transferAccountTransactionSchema = baseCreateMoneyTransactionSchema.extend({
-  type: z.literal('transfer-account'),
-  accountFrom: idSchema,
-  accountTo: idSchema,
-  cashregister: idSchema,
-})
-
-const transferCashregisterTransactionSchema = baseCreateMoneyTransactionSchema.extend({
-  type: z.literal('transfer-cashregister'),
+export const createMoneyTransactionTransferSchema = z.object({
+  currency: idSchema,
+  amount: z.number(),
+  sourceModel: z.enum(['manual', 'cashregister', 'cashregisterAccount', 'order', 'expense', 'procurement']),
+  type: z.enum(['transfer-account', 'transfer-cashregister']),
+  sourceId: idSchema.optional(),
+  role: z.string().trim().optional(),
+  transferId: idSchema.optional(),
+  description: z.string().trim().optional(),
   accountFrom: idSchema,
   accountTo: idSchema,
   cashregisterFrom: idSchema,
   cashregisterTo: idSchema,
 })
 
-const expenseTransactionSchema = baseCreateMoneyTransactionSchema.extend({
-  type: z.literal('expense'),
-  account: idSchema,
-  cashregister: idSchema,
-})
-
-const procurementTransactionSchema = baseCreateMoneyTransactionSchema.extend({
-  type: z.literal('procurement'),
-  account: idSchema,
-  cashregister: idSchema,
-})
-
-export const createMoneyTransactionSchema = z.discriminatedUnion('type', [
-  singleTransactionSchema,
-  transferAccountTransactionSchema,
-  transferCashregisterTransactionSchema,
-  expenseTransactionSchema,
-  procurementTransactionSchema,
-])
-
 export type CreateMoneyTransactionRequest = z.input<typeof createMoneyTransactionSchema>
+export type CreateMoneyTransactionTransferRequest = z.input<typeof createMoneyTransactionTransferSchema>
 
 export const createMoneyTransactionRepoSchema = z.object({
   type: z.enum(['income', 'transfer', 'expense', 'procurement']),
-  currency: idSchema,
+  currencyId: idSchema,
   amount: z.number(),
   direction: z.enum(['in', 'out']),
   accountId: idSchema,
   cashregisterId: idSchema,
-  sourceModel: z.enum(['manual', 'cashregister', 'cashregisterAccount']),
+  sourceModel: z.enum(['manual', 'cashregister', 'cashregisterAccount', 'order', 'expense', 'procurement']),
   sourceId: idSchema.optional(),
   role: z.string().trim().optional(),
   transferId: idSchema.optional(),
   description: z.string().trim().optional(),
 })
+
+export const getMoneyTransactionsResponseSchema = responseListSchema(moneyTransactionPopulatedSchema)
+export type GetMoneyTransactionsResponse = z.output<typeof getMoneyTransactionsResponseSchema>
+
+export const createMoneyTransactionResponseSchema = responseItemSchema(moneyTransactionSchema)
+export type CreateMoneyTransactionResponse = z.output<typeof createMoneyTransactionResponseSchema>
+
+export const createMoneyTransactionTransferResponseSchema = responseSchema.extend({
+  data: z.object({
+    transferOut: moneyTransactionSchema,
+    transferIn: moneyTransactionSchema,
+  }),
+})
+export type CreateMoneyTransactionTransferResponse = z.output<typeof createMoneyTransactionTransferResponseSchema>
+
+export const removeMoneyTransactionsResponseSchema = responseSchema
+export type RemoveMoneyTransactionsResponse = z.output<typeof removeMoneyTransactionsResponseSchema>

@@ -14,7 +14,7 @@ export function ActionBar() {
   const navigate = useNavigate()
 
   const createOrder = () => {
-    navigate('/orders/create')
+    void navigate('/orders/create')
   }
 
   return (

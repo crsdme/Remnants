@@ -1,97 +1,146 @@
+import type { OrderDTOPopulated, OrderPaymentDTOPopulated } from '@remnant/shared'
 import type { ReactNode } from 'react'
-import type { UseFormReturn } from 'react-hook-form'
+import type { Resolver, UseFormReturn } from 'react-hook-form'
 
 import { zodResolver } from '@hookform/resolvers/zod'
 import { createContext, useContext, useEffect, useMemo, useState } from 'react'
 import { useForm } from 'react-hook-form'
-import { useTranslation } from 'react-i18next'
 import { useParams } from 'react-router-dom'
 import { toast } from 'sonner'
-
 import { z } from 'zod'
-import {
-  useOrderQuery,
-} from '@/api/hooks'
+
+import { useOrderDetailQuery } from '@/api/hooks'
 import { PAYMENT_STATUSES } from '@/utils/constants'
+import { useLocale } from '@/utils/hooks'
 
-interface ViewOrderContextType {
-  isLoading: boolean
-  paymentForm: UseFormReturn
-  informationForm: UseFormReturn
-  clientForm: UseFormReturn
-  payments: any[]
-  disabled: boolean
-}
-
-const ViewOrderContext = createContext<ViewOrderContextType | undefined>(undefined)
-
-interface ViewOrderProviderProps {
-  children: ReactNode
-}
-
-export function ViewOrderProvider({ children }: ViewOrderProviderProps) {
-  const [isLoading, setIsLoading] = useState(false)
-  const [payments, setPayments] = useState([])
-  const { t } = useTranslation()
-  const { id } = useParams()
-
-  const disabled = true
-
-  const { data: { order = {} } = {} } = useOrderQuery(
-    { filters: { seq: id } },
-    { options: { select: response => ({
-      order: response.data.orders[0],
-    }) } },
-  )
-
-  const paymentFormSchema = useMemo(() =>
-    z.object({
-      cashregister: z.string({ required_error: t('form.errors.required') }).min(1, { message: t('form.errors.required') }),
-      cashregisterAccount: z.string({ required_error: t('form.errors.required') }).min(1, { message: t('form.errors.required') }),
-      amount: z.number().default(0),
-      currency: z.string({ required_error: t('form.errors.required') }).min(1, { message: t('form.errors.required') }),
-      paymentDate: z.date().optional(),
-      paymentStatus: z.string({ required_error: t('form.errors.required') }).min(1, { message: t('form.errors.required') }),
-      comment: z.string().optional(),
-    }), [t])
-
-  const paymentForm = useForm({
-    resolver: zodResolver(paymentFormSchema),
-    defaultValues: {
-      cashregister: '',
-      cashregisterAccount: '',
-      amount: 0,
-      currency: '',
-      paymentDate: undefined,
-      paymentStatus: PAYMENT_STATUSES[0].id,
-      comment: '',
-    },
+function createPaymentFormSchema(t: (key: string) => string) {
+  return z.object({
+    cashregister: z.string({ required_error: t('form.errors.required') }).min(1, { message: t('form.errors.required') }),
+    cashregisterAccount: z.string({ required_error: t('form.errors.required') }).min(1, { message: t('form.errors.required') }),
+    amount: z.number().default(0),
+    currency: z.string({ required_error: t('form.errors.required') }).min(1, { message: t('form.errors.required') }),
+    paymentDate: z.date().optional(),
+    paymentStatus: z.string({ required_error: t('form.errors.required') }).min(1, { message: t('form.errors.required') }),
+    comment: z.string().optional(),
   })
+}
 
-  const informationFormSchema = z.object({
+type PaymentFormValues = z.infer<ReturnType<typeof createPaymentFormSchema>>
+
+function createOrderLineItemSchema() {
+  return z.object({
+    product: z.string(),
+    lineQuantity: z.number(),
+    selectedCurrencyId: z.string(),
+    basePrice: z.number(),
+    price: z.number(),
+    manualPrice: z.number().optional(),
+    discountAmount: z.number().optional(),
+    discountPercent: z.number().optional(),
+  }).merge(z.object({
+    id: z.string().optional(),
+    names: z.record(z.string(), z.string()).optional(),
+    receivedQuantity: z.number().optional(),
+    selectedPrice: z.number().optional(),
+    profit: z.number().optional(),
+    productProperties: z.any().optional(),
+    seq: z.number().optional(),
+    barcodes: z.any().optional(),
+    categories: z.any().optional(),
+    unit: z.any().optional(),
+    currency: z.any().optional(),
+    purchaseCurrency: z.any().optional(),
+    warehouseStock: z.any().optional(),
+    images: z.any().optional(),
+    productPropertiesGroup: z.any().optional(),
+    purchasePrice: z.number().optional(),
+    createdAt: z.coerce.date().optional(),
+    updatedAt: z.coerce.date().optional(),
+  }))
+}
+
+export type OrderLineItemFormValues = z.infer<ReturnType<typeof createOrderLineItemSchema>>
+
+function createInformationFormSchema(t: (key: string) => string) {
+  return z.object({
     warehouse: z.string({ required_error: t('form.errors.required') }).min(1, { message: t('form.errors.required') }),
     orderSource: z.string({ required_error: t('form.errors.required') }).min(1, { message: t('form.errors.required') }),
     orderStatus: z.string({ required_error: t('form.errors.required') }).min(1, { message: t('form.errors.required') }),
     deliveryService: z.string({ required_error: t('form.errors.required') }).min(1, { message: t('form.errors.required') }),
     client: z.string().optional(),
-    items: z.array(z.object({
-      product: z.string(),
-      quantity: z.number(),
-      currency: z.object({
-        id: z.string(),
-      }),
-      price: z.number(),
-      discountAmount: z.number().optional(),
-      discountPercent: z.number().optional(),
-    })).min(1, { message: t('form.errors.required') }),
+    items: z.array(createOrderLineItemSchema()).min(1, { message: t('form.errors.required') }),
     comment: z.string().optional(),
   }).superRefine((data) => {
     if (data.items.length === 0)
       toast.error(t('form.errors.required.products'))
   })
+}
 
-  const informationForm = useForm({
-    resolver: zodResolver(informationFormSchema),
+type InformationFormValues = z.infer<ReturnType<typeof createInformationFormSchema>>
+
+function createClientFormSchema(t: (key: string) => string) {
+  return z.object({
+    name: z.string({ required_error: t('form.errors.required') }).min(1, { message: t('form.errors.required') }),
+    middleName: z.string().optional(),
+    lastName: z.string().optional(),
+    country: z.string().optional(),
+    phones: z.array(z.string().min(7)).optional(),
+    emails: z.array(z.string().email()).optional(),
+    socials: z.array(z.object({
+      type: z.string(),
+      value: z.string(),
+    })).optional(),
+    comment: z.string().optional(),
+  })
+}
+
+type ClientFormValues = z.infer<ReturnType<typeof createClientFormSchema>>
+
+interface ViewOrderContextType {
+  order: OrderDTOPopulated | null
+  isLoading: boolean
+  paymentForm: UseFormReturn<PaymentFormValues>
+  informationForm: UseFormReturn<InformationFormValues>
+  clientForm: UseFormReturn<ClientFormValues>
+  payments: OrderPaymentDTOPopulated[]
+  disabled: boolean
+}
+
+const ViewOrderContext = createContext<ViewOrderContextType | undefined>(undefined)
+
+export function ViewOrderProvider({ children }: { children: ReactNode }) {
+  const [payments, setPayments] = useState<OrderPaymentDTOPopulated[]>([])
+  const { t } = useLocale()
+  const { seq } = useParams()
+
+  const disabled = true
+
+  const { order, items, payments: defaultPayments, isPending, isFetching } = useOrderDetailQuery(
+    { seq },
+    { options: { enabled: Boolean(seq) } },
+  )
+
+  const isLoading = isPending || isFetching
+
+  const paymentFormSchema = useMemo(() => createPaymentFormSchema(t), [t])
+
+  const paymentForm = useForm<PaymentFormValues>({
+    resolver: zodResolver(paymentFormSchema) as Resolver<PaymentFormValues>,
+    defaultValues: {
+      cashregister: '',
+      cashregisterAccount: '',
+      amount: 0,
+      currency: '',
+      paymentDate: new Date(),
+      paymentStatus: PAYMENT_STATUSES[0].id,
+      comment: '',
+    },
+  })
+
+  const informationFormSchema = useMemo(() => createInformationFormSchema(t), [t])
+
+  const informationForm = useForm<InformationFormValues>({
+    resolver: zodResolver(informationFormSchema) as Resolver<InformationFormValues>,
     defaultValues: {
       warehouse: '',
       orderSource: '',
@@ -103,71 +152,56 @@ export function ViewOrderProvider({ children }: ViewOrderProviderProps) {
     },
   })
 
-  const clientFormSchema = useMemo(() =>
-    z.object({
-      name: z.string({ required_error: t('form.errors.required') }).min(1, { message: t('form.errors.required') }),
-      middleName: z.string().optional(),
-      lastName: z.string().optional(),
-      phones: z.array(z.string().min(7)).optional(),
-      emails: z.array(z.string().email()).optional(),
-      socials: z.array(z.object({
-        type: z.string(),
-        value: z.string(),
-      })).optional(),
-      comment: z.string().optional(),
-    }), [t])
+  const clientFormSchema = useMemo(() => createClientFormSchema(t), [t])
 
-  const clientForm = useForm({
-    resolver: zodResolver(clientFormSchema),
+  const clientForm = useForm<ClientFormValues>({
+    resolver: zodResolver(clientFormSchema) as Resolver<ClientFormValues>,
     defaultValues: {
       name: '',
       middleName: '',
       lastName: '',
+      country: '',
       phones: [],
       emails: [],
+      comment: '',
     },
   })
 
-  // CAN BE REWORKED
   useEffect(() => {
-    setIsLoading(true)
-    if (order.id) {
-      informationForm.reset({
-        warehouse: order.warehouse.id,
-        orderSource: order.orderSource.id,
-        orderStatus: order.orderStatus.id,
-        deliveryService: order.deliveryService.id,
-        client: order.client.id,
-        items: order.items.map((item) => {
-          let discountPrice = item.price || item.product.price
-          if (item.discountPercent > 0) {
-            discountPrice = item.price - (item.price * item.discountPercent) / 100
-          }
-          else if (item.discountAmount > 0) {
-            discountPrice = item.price - item.discountAmount
-          }
-          return {
-            ...item.product,
-            product: item.product.id,
-            quantity: item.quantity,
-            price: item.price || item.product.price,
-            profit: item.profit || 0,
-            selectedPrice: discountPrice,
-            discountAmount: item.discountAmount || 0,
-            discountPercent: item.discountPercent || 0,
-            selectedCurrency: item.currency,
-            currency: item.product.currency,
-          }
-        }),
-        comment: order.comment,
-      })
-      setPayments(order.payments)
-      setIsLoading(false)
-    }
-  }, [order])
+    if (!order?.id)
+      return
+
+    informationForm.reset({
+      warehouse: order.warehouse.id,
+      orderSource: order.orderSource.id,
+      orderStatus: order.orderStatus.id,
+      deliveryService: order.deliveryService.id,
+      client: order.client.id,
+      items: items.map(item => ({
+        ...item.product,
+        id: item.id,
+        product: item.product.id,
+        lineQuantity: item.quantity,
+        selectedCurrencyId: item.currency.id,
+        price: item.price,
+        profit: item.profit || 0,
+        manualPrice: item.manualPrice || undefined,
+        basePrice: item.basePrice,
+        selectedPrice: item.price,
+        discountAmount: item.discountAmount || 0,
+        discountPercent: item.discountPercent || 0,
+        currency: item.currency,
+      })),
+      comment: order.comment,
+    })
+
+    // eslint-disable-next-line react-hooks-extra/no-direct-set-state-in-use-effect -- синхронизация платежей при загрузке заказа
+    setPayments(defaultPayments)
+  }, [order, items, defaultPayments, informationForm])
 
   const value: ViewOrderContextType = useMemo(
     () => ({
+      order,
       isLoading,
       paymentForm,
       informationForm,
@@ -175,7 +209,7 @@ export function ViewOrderProvider({ children }: ViewOrderProviderProps) {
       clientForm,
       disabled,
     }),
-    [isLoading, paymentForm, informationForm, clientForm, payments, disabled],
+    [order, isLoading, paymentForm, informationForm, clientForm, payments, disabled],
   )
 
   return <ViewOrderContext.Provider value={value}>{children}</ViewOrderContext.Provider>

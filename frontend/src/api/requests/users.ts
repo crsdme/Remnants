@@ -1,38 +1,27 @@
 import type {
-  createUsersParams,
-  duplicateUserParams,
-  editUserParams,
-  getUsersParams,
-  importUsersParams,
-  removeUserParams,
-  UsersResponse,
-} from '@/api/types'
+  CreateUserRequest,
+  CreateUserResponse,
+  EditUserRequest,
+  EditUserResponse,
+  GetUserRequest,
+  GetUsersResponse,
+  RemoveUserRequest,
+  RemoveUserResponse,
+} from '@remnant/shared'
 import { api } from '@/api/instance'
 
-export async function getUsers(params: getUsersParams) {
-  return api.get<UsersResponse>('users/get', { params })
+export async function getUsers(params: GetUserRequest) {
+  return api.get<GetUsersResponse>('users/get', { params })
 }
 
-export async function createUser(params: createUsersParams) {
-  return api.post<UsersResponse>('users/create', { ...params })
+export async function createUser(params: CreateUserRequest) {
+  return api.post<CreateUserResponse>('users/create', { ...params })
 }
 
-export async function editUser(params: editUserParams) {
-  return api.post<UsersResponse>('users/edit', params)
+export async function editUser(params: EditUserRequest) {
+  return api.post<EditUserResponse>('users/edit', params)
 }
 
-export async function removeUser(params: removeUserParams) {
-  return api.post<UsersResponse>('users/remove', params)
-}
-
-export async function importUsers(params: importUsersParams) {
-  return api.post<UsersResponse>('users/import', params, {
-    headers: {
-      'Content-Type': 'multipart/form-data',
-    },
-  })
-}
-
-export async function duplicateUser(params: duplicateUserParams) {
-  return api.post<UsersResponse>('users/duplicate', params)
+export async function removeUser(params: RemoveUserRequest) {
+  return api.post<RemoveUserResponse>('users/remove', params)
 }

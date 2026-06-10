@@ -1,9 +1,9 @@
 import type {
-  AuthUser,
   BarcodeDTO,
   CreateBarcodeResponse,
   EditBarcodeResponse,
   GenerateCodeResponse,
+  GetBarcodeByCodeResponse,
   GetBarcodesResponse,
   PrintBarcodeResponse,
   RemoveBarcodesResponse,
@@ -11,6 +11,7 @@ import type {
 import type {
   CreateBarcodesPayload,
   EditBarcodesPayload,
+  GetBarcodeByCodePayload,
   GetBarcodesPayload,
   PrintBarcodePayload,
   RemoveBarcodesPayload,
@@ -23,6 +24,11 @@ import { CounterModel } from '@/models/'
 import * as barcodesRepo from '@/repositories/barcodes.repo'
 import * as productsRepo from '@/repositories/products.repo'
 import * as AuditLogsService from '@/services/audit-logs.service'
+import * as ProductService from '@/services/product.service'
+import {
+  parseGetBarcodes,
+  parseGetProducts,
+} from '@/types/'
 import { getHardcodeData, HttpError } from '@/utils/'
 
 export type PdfKitDoc = InstanceType<typeof PDFDocument>
@@ -41,12 +47,26 @@ export async function get({ payload }: { payload: GetBarcodesPayload }): Promise
   }
 }
 
+export async function getByCode({ payload }: { payload: GetBarcodeByCodePayload }): Promise<GetBarcodeByCodeResponse> {
+  const { items: [data] } = await barcodesRepo.list(parseGetBarcodes({ filters: { codes: [payload.code] } }))
+
+  if (data === null)
+    throw new HttpError(400, 'Barcode not found', 'BARCODE_NOT_FOUND')
+
+  return {
+    status: 'success',
+    code: 'BARCODE_FETCHED',
+    message: 'Barcode fetched',
+    data,
+  }
+}
+
 export async function create({ payload }: { payload: CreateBarcodesPayload }): Promise<CreateBarcodeResponse> {
   let { code, products, active } = payload
 
   const parsedProducts = products.map(product => ({
     _id: product.id,
-    quantity: product.quantity,
+    lineQuantity: product.lineQuantity,
   }))
 
   if (code === undefined || code.length === 0) {
@@ -102,7 +122,7 @@ export async function edit({ payload }: { payload: EditBarcodesPayload }): Promi
 
   const parsedProducts = products.map(product => ({
     _id: product.id,
-    quantity: product.quantity,
+    lineQuantity: product.lineQuantity,
   }))
 
   await productsRepo.removeBarcodeFromProducts(id)
@@ -199,7 +219,9 @@ async function print20x30(payload: { barcodes: BarcodeDTO[], size: string, langu
     doc.fontSize(18)
     doc.addPage({ size: [w * 8.49, h * 8.49] })
 
-    const product = barcode.products[0]
+    // const product = barcode.products[0]
+
+    const { data: { items: [product] } } = await ProductService.get({ payload: parseGetProducts({ filters: { ids: [barcode.products[0].id] } }) })
 
     if (typeof product === 'undefined')
       throw new HttpError(400, 'Product not found', 'PRODUCT_NOT_FOUND')
@@ -228,7 +250,7 @@ async function print20x30(payload: { barcodes: BarcodeDTO[], size: string, langu
     )
 
     doc.text(
-      product.names[language],
+      product.names?.[language] || 'ERROR',
       padding,
       doc.y,
       { width: contentWidth, height: 50, ellipsis: true, lineBreak: false },
@@ -256,9 +278,11 @@ async function print60x30(payload: { barcodes: BarcodeDTO[], size: string, langu
   doc.font('Manrope')
 
   for (const barcode of barcodes) {
-    const product = barcode.products[0]
+    const { data: { items: [product] } } = await ProductService.get({ payload: parseGetProducts({ filters: { ids: [barcode.products[0].id] } }) })
+
     if (typeof product === 'undefined')
       continue
+
     doc.fontSize(25)
     doc.addPage({ size: [w * 8.49, h * 8.49] })
 
@@ -286,7 +310,7 @@ async function print60x30(payload: { barcodes: BarcodeDTO[], size: string, langu
     )
 
     doc.text(
-      product.names[language],
+      product.names?.[language] || 'ERROR',
       padding,
       doc.y,
       { width: contentWidth, height: 50, ellipsis: true, lineBreak: false },
@@ -316,7 +340,8 @@ async function print55x40(payload: { barcodes: BarcodeDTO[], size: string, langu
   doc.registerFont('Manrope-Bold', path.resolve(__dirname, '../utils/fonts/Manrope-Bold.ttf'))
 
   for (const barcode of barcodes) {
-    const product = barcode.products[0]
+    const { data: { items: [product] } } = await ProductService.get({ payload: parseGetProducts({ filters: { ids: [barcode.products[0].id] } }) })
+
     if (typeof product === 'undefined')
       throw new HttpError(400, 'Product not found', 'PRODUCT_NOT_FOUND')
 

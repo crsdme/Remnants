@@ -94,7 +94,7 @@ const ProductSchema: Schema = new Schema(
         type: Schema.Types.Mixed,
       },
     }],
-    quantity: [{
+    quantityIds: [{
       type: String,
       ref: 'Quantity',
     }],

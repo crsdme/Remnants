@@ -1,9 +1,9 @@
-import type { editUserParams } from '@/api/types'
+import type { EditUserRequest } from '@remnant/shared'
 
 import { useMutation } from '@tanstack/react-query'
 import { editUser } from '@/api/requests'
 
-export function useUserEdit(settings?: MutationSettings<editUserParams, typeof editUser>) {
+export function useUserEdit(settings?: MutationSettings<EditUserRequest>) {
   return useMutation({
     mutationFn: editUser,
     ...settings?.options,

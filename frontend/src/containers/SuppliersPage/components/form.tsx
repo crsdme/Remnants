@@ -1,7 +1,6 @@
 import { TrashIcon } from 'lucide-react'
 import { useFieldArray } from 'react-hook-form'
 
-import { useTranslation } from 'react-i18next'
 import {
   Button,
   Form,
@@ -19,15 +18,12 @@ import {
   Textarea,
 } from '@/components/ui'
 import { SOCIAL_TYPES } from '@/utils/constants'
+import { useLocale } from '@/utils/hooks'
 import { useSupplierContext } from '../context'
 
 export function SupplierForm() {
-  const { t } = useTranslation()
+  const { t } = useLocale()
   const { isLoading, form, closeModal, submitForm } = useSupplierContext()
-
-  const onSubmit = (values) => {
-    submitForm(values)
-  }
 
   const { fields: phoneFields, append: appendPhone, remove: removePhone } = useFieldArray({
     control: form.control,
@@ -46,7 +42,10 @@ export function SupplierForm() {
 
   return (
     <Form {...form}>
-      <form className="w-full space-y-1" onSubmit={form.handleSubmit(onSubmit)}>
+      <form
+        className="w-full space-y-1"
+        onSubmit={(e) => { void form.handleSubmit(submitForm)(e) }}
+      >
         <FormField
           control={form.control}
           name="name"
@@ -67,7 +66,7 @@ export function SupplierForm() {
           {phoneFields.map((field, index) => (
             <div key={field.id} className="flex items-center gap-2 mb-2">
               <Input
-                {...form.register(`phones.${index}`)}
+                {...form.register(`phones.${index}.value`)}
                 placeholder={t('page.suppliers.form.phones')}
                 disabled={isLoading}
               />
@@ -83,7 +82,7 @@ export function SupplierForm() {
             </div>
           ))}
 
-          <Button type="button" onClick={() => appendPhone('')} disabled={isLoading}>
+          <Button type="button" onClick={() => appendPhone({ value: '' })} disabled={isLoading}>
             {t('button.add')}
           </Button>
 
@@ -112,7 +111,7 @@ export function SupplierForm() {
             </div>
           ))}
 
-          <Button type="button" onClick={() => appendEmail('')} disabled={isLoading}>
+          <Button type="button" onClick={() => appendEmail({ value: '' })} disabled={isLoading}>
             {t('button.add')}
           </Button>
 

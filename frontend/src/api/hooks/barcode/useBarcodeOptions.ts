@@ -1,29 +1,31 @@
+import type { BarcodeDTO, GetBarcodesRequest } from '@remnant/shared'
 import { useQueryClient } from '@tanstack/react-query'
-import { useTranslation } from 'react-i18next'
+import { useCallback } from 'react'
 import { getBarcodes } from '@/api/requests'
 
-interface LoadOptionsParams {
-  query: string
-  selectedValue?: string[]
-}
+const EMPTY_ITEMS: never[] = []
 
 export function useBarcodeOptions() {
   const queryClient = useQueryClient()
-  const { i18n } = useTranslation()
 
-  return async function loadBarcodeOptions({ query, selectedValue }: LoadOptionsParams): Promise<Barcode[]> {
-    const filters = {
-      ...(selectedValue ? { ids: selectedValue } : { code: query }),
-      active: [true],
-      language: i18n.language,
-    }
+  return useCallback(
+    async ({ query, selectedValue }: { query: string, selectedValue?: string[] }): Promise<BarcodeDTO[]> => {
+      const params: GetBarcodesRequest = {
+        pagination: { full: true },
+        filters: {
+          ...(selectedValue?.length ? { ids: selectedValue } : { codes: query ? [query] : [] }),
+          active: [true],
+        },
+      }
 
-    const data = await queryClient.fetchQuery({
-      queryKey: ['barcodes', 'get', { full: true }, filters, undefined],
-      queryFn: () => getBarcodes({ pagination: { full: true }, filters }),
-      staleTime: 60000,
-    })
+      const { data } = await queryClient.fetchQuery({
+        queryKey: ['barcodes', 'get', params],
+        queryFn: async () => getBarcodes(params),
+        staleTime: 60000,
+      })
 
-    return data?.data?.barcodes || []
-  }
+      return data?.data?.items ?? EMPTY_ITEMS
+    },
+    [queryClient],
+  )
 }

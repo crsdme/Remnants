@@ -34,8 +34,8 @@ const buttonVariants = cva(
   },
 )
 
-function Button({ ref, className, variant, size, asChild = false, loading = false, children, ...props }: React.ComponentProps<'button'> &
-  VariantProps<typeof buttonVariants> & {
+function Button({ ref, className, variant, size, asChild = false, loading = false, children, ...props }: React.ComponentProps<'button'>
+  & VariantProps<typeof buttonVariants> & {
     asChild?: boolean
     loading?: boolean
   } & { ref?: React.RefObject<HTMLButtonElement | null> }) {

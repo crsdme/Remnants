@@ -1,3 +1,4 @@
+import type { CurrencyDTO } from '@remnant/shared'
 import type { ReactNode } from 'react'
 import type { UseFormReturn } from 'react-hook-form'
 
@@ -5,7 +6,6 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useQueryClient } from '@tanstack/react-query'
 import { createContext, useContext, useMemo, useState } from 'react'
 import { useForm } from 'react-hook-form'
-import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { z } from 'zod'
 
@@ -15,39 +15,36 @@ import {
 import { useBalanceCreate } from '@/api/hooks/balance/useBalanceCreate'
 import { useBalanceQuery } from '@/api/hooks/balance/useBalanceQuery'
 import { useBalanceRemove } from '@/api/hooks/balance/useBalanceRemove'
+import { useLocale } from '@/utils/hooks'
 
 interface BalanceContextType {
-  selectedBalance: Balance
-  balances: Balance[]
-  currencies: Currency[]
+  selectedBalance: any
+  balances: any[]
+  currencies: CurrencyDTO[]
   isModalOpen: boolean
   isLoading: boolean
   isEdit: boolean
-  form: UseFormReturn
-  openModal: (balance?: Balance) => void
+  form: UseFormReturn<{ comment?: string }>
+  openModal: (balance?: any) => void
   closeModal: () => void
-  submitBalanceForm: (params) => void
+  submitBalanceForm: (params: { comment?: string }) => void
   removeBalance: (params: { ids: string[] }) => void
 }
 
 const BalanceContext = createContext<BalanceContextType | undefined>(undefined)
 
-interface BalanceProviderProps {
-  children: ReactNode
-}
-
-export function BalanceProvider({ children }: BalanceProviderProps) {
+export function BalanceProvider({ children }: { children: ReactNode }) {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [isEdit, setIsEdit] = useState(false)
   const [selectedBalance, setSelectedBalance] = useState(null)
 
-  const { t } = useTranslation()
+  const { t } = useLocale()
 
   const formSchema = useMemo(() =>
     z.object({
       comment: z.string().optional(),
-    }), [t])
+    }), [])
 
   const form = useForm({
     resolver: zodResolver(formSchema),
@@ -58,17 +55,11 @@ export function BalanceProvider({ children }: BalanceProviderProps) {
 
   const queryClient = useQueryClient()
 
-  const { data: { balances = [] } = {} } = useBalanceQuery(
-    { filters: {} },
-    { options: { select: response => ({ balances: response.data.balances }) } },
-  )
+  const { balances } = useBalanceQuery({ filters: {} })
 
-  const { data: { currencies = [] } = {} } = useCurrencyQuery(
-    { filters: { active: [true] } },
-    { options: { select: response => ({ currencies: response.data.currencies }) } },
-  )
+  const { currencies } = useCurrencyQuery({ filters: { active: [true] } })
 
-  function getBalanceFormValues(balance) {
+  function getBalanceFormValues(balance: any) {
     if (!balance) {
       return {
         comment: '',
@@ -89,7 +80,7 @@ export function BalanceProvider({ children }: BalanceProviderProps) {
     form.reset()
   }
 
-  const openModal = (balance) => {
+  const openModal = (balance: any) => {
     setIsModalOpen(true)
     setIsEdit(!!balance)
     setSelectedBalance(balance)
@@ -100,7 +91,7 @@ export function BalanceProvider({ children }: BalanceProviderProps) {
     options: {
       onSuccess: ({ data }) => {
         closeModal()
-        queryClient.invalidateQueries({ queryKey: ['balance', 'get'] })
+        void queryClient.invalidateQueries({ queryKey: ['balance', 'get'] })
         toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.message || ''}` })
       },
       onError: ({ response }) => {
@@ -114,7 +105,7 @@ export function BalanceProvider({ children }: BalanceProviderProps) {
   const useMutateRemoveBalance = useBalanceRemove({
     options: {
       onSuccess: ({ data }) => {
-        queryClient.invalidateQueries({ queryKey: ['balance', 'get'] })
+        void queryClient.invalidateQueries({ queryKey: ['balance', 'get'] })
         toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.message || ''}` })
       },
       onError: ({ response }) => {
@@ -124,11 +115,11 @@ export function BalanceProvider({ children }: BalanceProviderProps) {
     },
   })
 
-  const removeBalance = (params) => {
-    useMutateRemoveBalance.mutate(params)
+  const removeBalance = (params: { ids: string[] }) => {
+    useMutateRemoveBalance.mutate({ id: params.ids[0] })
   }
 
-  const submitBalanceForm = (params) => {
+  const submitBalanceForm = (params: { comment?: string }) => {
     setIsLoading(true)
     return useMutateCreateBalance.mutate(params)
   }

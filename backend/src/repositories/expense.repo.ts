@@ -17,6 +17,7 @@ export async function list(payload: GetExpensesRepoPayload): Promise<GetExpenses
 
   const {
     ids,
+    seq,
     amount,
     currency,
     cashregister,
@@ -29,9 +30,10 @@ export async function list(payload: GetExpensesRepoPayload): Promise<GetExpenses
   } = payload.filters
 
   const query = buildQuery({
-    filters: { ids, amount, currency, cashregister, cashregisterAccount, sourceModel, sourceId, type, createdAt, updatedAt },
+    filters: { ids, seq, amount, currency, cashregister, cashregisterAccount, sourceModel, sourceId, type, createdAt, updatedAt },
     rules: {
       _id: { type: 'array' },
+      seq: { type: 'exact' },
       amount: { type: 'exact' },
       currency: { type: 'exact' },
       cashregister: { type: 'exact' },
@@ -44,7 +46,7 @@ export async function list(payload: GetExpensesRepoPayload): Promise<GetExpenses
     },
   })
 
-  const sorters = buildSortQuery(payload.sorters, { priority: 1 })
+  const sorters = buildSortQuery(payload.sorters, { seq: 1 })
 
   const pipeline: PipelineStage[] = [
     {

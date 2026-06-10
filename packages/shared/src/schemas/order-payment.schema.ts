@@ -1,9 +1,57 @@
 import { z } from 'zod'
-import { dateRangeSchema, idSchema, numberFromStringSchema, paginationSchema, sorterParamsSchema } from './common'
+import { dateRangeSchema, idSchema, languageStringSchema, numberFromStringSchema, paginationSchema, responseItemSchema, responseListSchema, responseSchema, sorterParamsSchema } from './common'
+
+export const orderPaymentSchema = z.object({
+  id: idSchema,
+  order: idSchema,
+  cashregister: idSchema,
+  cashregisterAccount: idSchema,
+  amount: numberFromStringSchema,
+  currency: idSchema,
+  paymentStatus: z.string().trim(),
+  paymentDate: z.date(),
+  transaction: idSchema,
+  comment: z.string().trim().optional(),
+  createdBy: idSchema,
+  removedBy: idSchema,
+  createdAt: z.coerce.date(),
+  updatedAt: z.coerce.date(),
+})
+
+export type OrderPaymentDTO = z.output<typeof orderPaymentSchema>
+
+export const orderPaymentDTOPopulatedSchema = z.object({
+  id: idSchema,
+  order: idSchema,
+  cashregister: z.object({
+    id: idSchema,
+    names: languageStringSchema,
+  }),
+  cashregisterAccount: z.object({
+    id: idSchema,
+    names: languageStringSchema,
+  }),
+  amount: numberFromStringSchema,
+  currency: z.object({
+    id: idSchema,
+    names: languageStringSchema,
+    symbols: languageStringSchema,
+  }),
+  paymentStatus: z.string().trim(),
+  paymentDate: z.date(),
+  transaction: idSchema,
+  comment: z.string().trim().optional(),
+  createdBy: idSchema,
+  removedBy: idSchema,
+  createdAt: z.coerce.date(),
+  updatedAt: z.coerce.date(),
+})
+
+export type OrderPaymentDTOPopulated = z.output<typeof orderPaymentDTOPopulatedSchema>
 
 export const getOrderPaymentsSchema = z.object({
   filters: z.object({
-    order: z.string().trim().optional(),
+    order: z.array(idSchema).optional().default([]),
     cashregister: z.string().trim().optional(),
     cashregisterAccount: z.string().trim().optional(),
     amount: numberFromStringSchema.optional(),
@@ -31,7 +79,8 @@ export const createOrderPaymentSchema = z.object({
   amount: numberFromStringSchema,
   currency: z.string(),
   paymentStatus: z.string(),
-  paymentDate: z.date(),
+  createdBy: idSchema.optional(),
+  paymentDate: z.date().optional().default(() => new Date()),
   comment: z.string().optional(),
 })
 
@@ -73,3 +122,15 @@ export const createOrderItemSchema = z.object({
   exchangeRate: numberFromStringSchema.optional(),
   createdBy: idSchema,
 })
+
+export const getOrderPaymentsResponseSchema = responseListSchema(orderPaymentDTOPopulatedSchema)
+export type GetOrderPaymentsResponse = z.output<typeof getOrderPaymentsResponseSchema>
+
+export const createOrderPaymentResponseSchema = responseItemSchema(orderPaymentSchema)
+export type CreateOrderPaymentResponse = z.output<typeof createOrderPaymentResponseSchema>
+
+export const editOrderPaymentResponseSchema = responseItemSchema(orderPaymentSchema)
+export type EditOrderPaymentResponse = z.output<typeof editOrderPaymentResponseSchema>
+
+export const removeOrderPaymentsResponseSchema = responseSchema
+export type RemoveOrderPaymentsResponse = z.output<typeof removeOrderPaymentsResponseSchema>

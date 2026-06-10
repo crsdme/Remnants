@@ -1,12 +1,19 @@
 import { z } from 'zod'
-import { booleanArraySchema, dateRangeSchema, idSchema, numberFromStringSchema, paginationSchema, sorterParamsSchema } from './common'
+import { booleanArraySchema, dateRangeSchema, idSchema, numberFromStringSchema, paginationSchema, responseItemSchema, responseListSchema, responseSchema, sorterParamsSchema } from './common'
 
-function hasIdsOrFilters(data: {
-  ids?: unknown
-  filters?: unknown
-}) {
-  return !!data.ids || !!data.filters
-}
+export const languageSchema = z.object({
+  id: idSchema,
+  seq: z.number(),
+  name: z.string().trim(),
+  code: z.string().trim(),
+  priority: z.number().optional().default(0),
+  main: z.boolean().optional().default(false),
+  active: z.boolean().optional().default(true),
+  createdAt: z.coerce.date(),
+  updatedAt: z.coerce.date(),
+})
+
+export type LanguageDTO = z.infer<typeof languageSchema>
 
 export const getLanguageSchema = z.object({
   filters: z.object({
@@ -59,37 +66,14 @@ export const removeLanguageSchema = z.object({
 
 export type RemoveLanguageRequest = z.input<typeof removeLanguageSchema>
 
-export const duplicateLanguageSchema = z.object({
-  ids: z.array(idSchema).min(1),
-})
+export const getLanguagesResponseSchema = responseListSchema(languageSchema)
+export type GetLanguageResponse = z.output<typeof getLanguagesResponseSchema>
 
-export type DuplicateLanguageRequest = z.input<typeof duplicateLanguageSchema>
+export const createLanguageResponseSchema = responseItemSchema(languageSchema)
+export type CreateLanguageResponse = z.output<typeof createLanguageResponseSchema>
 
-export const batchLanguageSchema = z.object({
-  ids: z.array(idSchema).optional(),
-  filters: z.object({
-    name: z.string().trim().optional(),
-    code: z.string().trim().optional(),
-    active: booleanArraySchema.optional(),
-    priority: numberFromStringSchema.optional(),
-    createdAt: dateRangeSchema.optional(),
-    updatedAt: dateRangeSchema.optional(),
-    main: booleanArraySchema.optional(),
-  }).optional().default({}),
-  params: z.array(
-    z.object({
-      column: z.string(),
-      value: z.any(),
-    }),
-  ).min(1),
-}).refine(hasIdsOrFilters, {
-  message: 'Either ids or filters are required.',
-})
+export const editLanguageResponseSchema = responseItemSchema(languageSchema)
+export type EditLanguageResponse = z.output<typeof editLanguageResponseSchema>
 
-export type BatchLanguageRequest = z.input<typeof batchLanguageSchema>
-
-export const importLanguagesSchema = z.object({
-  file: z.instanceof(File),
-})
-
-export type ImportLanguagesRequest = z.input<typeof importLanguagesSchema>
+export const removeLanguageResponseSchema = responseSchema
+export type RemoveLanguageResponse = z.output<typeof removeLanguageResponseSchema>

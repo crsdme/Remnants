@@ -1,19 +1,23 @@
-import type { NextFunction, Request, Response } from 'express'
+import type { NextFunction, Response } from 'express'
 import type {
   CreateOrderPayload,
   EditOrderPayload,
+  GetOrderDetailsPayload,
+  GetOrderItemsPayload,
   GetOrdersPayload,
   PrintDraftInvoiceOrderPayload,
   PrintInvoiceOrderPayload,
-  PrintOrderLabelPayload,
+  PrintOrderLabelOrderPayload,
   RemoveOrdersPayload,
+  ValidatedAuthedRequest,
   ValidatedRequest,
 } from '@/types'
 
 import * as OrderService from '@/services/order.service'
+import { HttpError } from '@/utils/httpError'
 
 export async function get(
-  req: ValidatedRequest<GetOrdersPayload, never>,
+  req: ValidatedAuthedRequest<GetOrdersPayload, never>,
   res: Response,
   next: NextFunction,
 ) {
@@ -30,14 +34,50 @@ export async function get(
   }
 }
 
+export async function getItems(
+  req: ValidatedAuthedRequest<GetOrderItemsPayload, never>,
+  res: Response,
+  next: NextFunction,
+) {
+  try {
+    const serviceResponse = await OrderService.getItems({
+      payload: req.validated.query,
+      user: req.user,
+    })
+
+    res.status(200).json(serviceResponse)
+  }
+  catch (err) {
+    next(err)
+  }
+}
+
+export async function getDetails(
+  req: ValidatedAuthedRequest<GetOrderDetailsPayload, never>,
+  res: Response,
+  next: NextFunction,
+) {
+  try {
+    const serviceResponse = await OrderService.getDetails({
+      payload: req.validated.query,
+      user: req.user,
+    })
+
+    res.status(200).json(serviceResponse)
+  }
+  catch (err) {
+    next(err)
+  }
+}
+
 export async function create(
-  req: ValidatedRequest<CreateOrderPayload, never>,
+  req: ValidatedAuthedRequest<never, CreateOrderPayload>,
   res: Response,
   next: NextFunction,
 ) {
   try {
     const serviceResponse = await OrderService.create({
-      payload: req.body,
+      payload: req.validated.body,
       user: req.user,
     })
 
@@ -49,13 +89,13 @@ export async function create(
 }
 
 export async function edit(
-  req: ValidatedRequest<EditOrderPayload, never>,
+  req: ValidatedAuthedRequest<never, EditOrderPayload>,
   res: Response,
   next: NextFunction,
 ) {
   try {
     const serviceResponse = await OrderService.edit({
-      payload: req.body,
+      payload: req.validated.body,
       user: req.user,
     })
 
@@ -67,13 +107,13 @@ export async function edit(
 }
 
 export async function remove(
-  req: ValidatedRequest<RemoveOrdersPayload, never>,
+  req: ValidatedAuthedRequest<never, RemoveOrdersPayload>,
   res: Response,
   next: NextFunction,
 ) {
   try {
     const serviceResponse = await OrderService.remove({
-      payload: req.body,
+      payload: req.validated.body,
       user: req.user,
     })
 
@@ -95,7 +135,8 @@ export async function printInvoice(
     })
 
     res.setHeader('Content-Type', 'application/pdf')
-    res.setHeader('Content-Disposition', `inline; filename=order-invoice-${req.validated.body.seq}.pdf`)
+    res.setHeader('Content-Disposition', `inline; filename=order-invoice-${req.validated.query.seq}.pdf`)
+
     doc.pipe(res)
     doc.end()
   }
@@ -125,7 +166,7 @@ export async function printDraftInvoice(
 }
 
 export async function printOrderLabel(
-  req: ValidatedRequest<PrintOrderLabelPayload, never>,
+  req: ValidatedRequest<PrintOrderLabelOrderPayload, never>,
   res: Response,
   next: NextFunction,
 ) {
@@ -135,7 +176,7 @@ export async function printOrderLabel(
     })
 
     res.setHeader('Content-Type', 'application/pdf')
-    res.setHeader('Content-Disposition', `inline; filename=order-label-${req.validated.body.order}.pdf`)
+    res.setHeader('Content-Disposition', `inline; filename=order-label-${req.validated.query.seq}.pdf`)
     doc.pipe(res)
     doc.end()
   }

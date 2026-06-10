@@ -1,7 +1,11 @@
-import type { Procurement, ProcurementItem } from '@remnant/shared'
+import type { ProcurementDTO, ProcurementItemDTO } from '@remnant/shared'
+import type { HydratedDocument } from 'mongoose'
 import mongoose, { Schema } from 'mongoose'
 import { v4 as uuidv4 } from 'uuid'
 import { CounterModel } from '@/models/'
+
+type ProcurementDoc = HydratedDocument<ProcurementDTO>
+type ProcurementItemDoc = HydratedDocument<ProcurementItemDTO>
 
 const ProcurementSchema: Schema = new Schema(
   {
@@ -96,20 +100,17 @@ ProcurementSchema.set('toJSON', {
   },
 })
 
-ProcurementSchema.pre('save', async function (next) {
-  const doc = this as any
-
-  if (doc.isNew && !doc.seq) {
+ProcurementSchema.pre('save', async function (this: ProcurementDoc, next) {
+  if (this.isNew) {
     const counter = await CounterModel.findByIdAndUpdate(
       'procurements',
       { $inc: { seq: 1 } },
       { new: true, upsert: true },
     )
-    doc.seq = counter.seq
+    this.seq = counter?.seq || 0
   }
-
   next()
 })
 
-export const ProcurementModel = mongoose.model<Procurement>('procurement', ProcurementSchema)
-export const ProcurementItemModel = mongoose.model<ProcurementItem>('procurement-item', ProcurementItemSchema)
+export const ProcurementModel = mongoose.model<ProcurementDoc>('procurement', ProcurementSchema)
+export const ProcurementItemModel = mongoose.model<ProcurementItemDoc>('procurement-item', ProcurementItemSchema)

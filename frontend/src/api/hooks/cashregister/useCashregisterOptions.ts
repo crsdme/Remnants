@@ -1,32 +1,30 @@
+import type { GetCashregistersRequest } from '@remnant/shared'
 import { useQueryClient } from '@tanstack/react-query'
+import { useCallback } from 'react'
 import { getCashregisters } from '@/api/requests'
 
-interface DefaultFilters {
-  ids?: string[]
-  cashregisterAccounts?: string[]
-}
-
-interface LoadOptionsParams {
-  query: string
-  selectedValue?: string[]
-}
-
-export function useCashregisterOptions({ defaultFilters }: { defaultFilters?: DefaultFilters } = {}) {
+export function useCashregisterOptions({ defaultFilters }: { defaultFilters?: GetCashregistersRequest['filters'] } = {}) {
   const queryClient = useQueryClient()
 
-  return async function loadCashregisterOptions({ query, selectedValue }: LoadOptionsParams): Promise<Cashregister[]> {
-    const filters = {
-      ...(selectedValue ? { ids: selectedValue } : { names: query }),
-      ...defaultFilters,
-    }
-    const pagination = { full: true }
+  return useCallback(
+    async ({ query = '', selectedValue }: { query?: string, selectedValue?: string[] } = {}) => {
+      const params: GetCashregistersRequest = {
+        pagination: { full: true },
+        filters: {
+          ...(selectedValue ? { ids: selectedValue } : { names: query }),
+          ...defaultFilters,
+          active: [true],
+        },
+      }
 
-    const data = await queryClient.fetchQuery({
-      queryKey: ['cashregisters', 'get', pagination, filters],
-      queryFn: () => getCashregisters({ pagination, filters }),
-      staleTime: 60000,
-    })
+      const response = await queryClient.fetchQuery({
+        queryKey: ['cashregisters', 'get', params],
+        queryFn: async () => getCashregisters(params),
+        staleTime: 60000,
+      })
 
-    return data?.data?.cashregisters || []
-  }
+      return response.data.data.items ?? []
+    },
+    [queryClient],
+  )
 }

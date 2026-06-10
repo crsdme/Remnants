@@ -5,6 +5,8 @@ export const loginSchema = z.object({
   password: z.string(),
 })
 
+export type LoginRequest = z.infer<typeof loginSchema>
+
 export const refreshSchema = z.object({ refreshToken: z.string() })
 
 export const tokenSchema = z.object({
@@ -16,8 +18,8 @@ export const tokenSchema = z.object({
 export const authUserSchema = z.object({
   id: z.string(),
   login: z.string(),
-  name: z.string(),
-  role: z.string(),
+  // name: z.string(),
+  // role: z.string(),
   permissions: z.array(z.string()),
 })
 

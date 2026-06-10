@@ -1,48 +1,44 @@
-import type { ColumnSort } from '@tanstack/react-table'
+import type { ProductPopulatedDTO } from '@remnant/shared'
+import type { Row } from '@tanstack/react-table'
 import { flexRender, getCoreRowModel, getExpandedRowModel, useReactTable } from '@tanstack/react-table'
-import { Fragment, useMemo, useState } from 'react'
+import { Fragment, useState } from 'react'
+
 import { useTranslation } from 'react-i18next'
-
 import { useProductQuery } from '@/api/hooks'
-import { AdvancedFilters, ColumnVisibilityMenu, TablePagination } from '@/components'
+import { ColumnVisibilityMenu, TablePagination } from '@/components'
 import { Skeleton, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui'
-import { useDebounceCallback } from '@/utils/hooks'
 
+import { useListQueryState } from '@/utils/hooks'
 import { useColumns } from './columns'
 import { DataTableFilters } from './data-table-filters'
 
-export function ProductTable({ addProduct }: { addProduct: (product: any) => void }) {
-  const { t, i18n } = useTranslation()
-
-  const filtersInitialState = {
-    names: '',
-    symbols: '',
-    priority: undefined,
-    active: [],
-    createdAt: { from: undefined, to: undefined },
-    language: i18n.language,
-  }
+export function ProductTable({ addProduct }: { addProduct: (product: ProductPopulatedDTO) => void }) {
+  const { t } = useTranslation()
 
   const [columnVisibility, setColumnVisibility] = useState({})
-  const [sorting, setSorting] = useState<ColumnSort[]>([])
-  const [pagination, setPagination] = useState({
-    current: 1,
-    pageSize: 10,
+  const {
+    pagination,
+    setPagination,
+    sorting,
+    setSorting,
+    filters,
+    setFilters,
+    sorters,
+  } = useListQueryState({
+    readFilters: params => ({
+      search: params.get('search'),
+    }),
+    writeFilters: (params, filters) => {
+      params.set('search', filters.search || '')
+    },
   })
-  const [filters, setFilters] = useState(filtersInitialState)
 
-  const sorters = useMemo(() => (
-    Object.fromEntries(sorting.map(({ id, desc }) => [id, desc ? 'desc' : 'asc']))
-  ), [sorting])
-
-  const requestProducts = useProductQuery(
-    { pagination, filters, sorters, isTree: true },
+  const { products = [], productsCount = 0, isLoading, isFetching } = useProductQuery(
+    { pagination, filters, sorters },
     { options: { placeholderData: prevData => prevData } },
   )
-  const products = requestProducts?.data?.data?.products || []
-  const productsCount = requestProducts?.data?.data?.productsCount || 0
 
-  const columns = useColumns({ isLoading: requestProducts.isLoading, addProduct })
+  const columns = useColumns({ isLoading, addProduct, filters })
 
   const table = useReactTable({
     data: products,
@@ -95,7 +91,7 @@ export function ProductTable({ addProduct }: { addProduct: (product: any) => voi
     ))
   }
 
-  const renderRow = row => (
+  const renderRow = (row: Row<ProductPopulatedDTO>) => (
     <Fragment key={row.id}>
       <TableRow
         data-state={row.getIsSelected() && 'selected'}
@@ -113,7 +109,7 @@ export function ProductTable({ addProduct }: { addProduct: (product: any) => voi
   )
 
   const renderTableBody = () => {
-    if (requestProducts.isLoading || requestProducts.isFetching)
+    if (isLoading || isFetching)
       return renderSkeletonRows()
 
     const rows = table.getRowModel().rows
@@ -131,42 +127,19 @@ export function ProductTable({ addProduct }: { addProduct: (product: any) => voi
     )
   }
 
-  const changePagination = useDebounceCallback((value: Pagination) => {
-    setPagination(state => ({ ...state, ...value }))
-  }, 50)
-
-  const advancedFiltersSubmit = (filters) => {
-    const filterValues = Object.fromEntries(filters.map(({ column, value }) => [column, value]))
-    setFilters(state => ({
-      ...state,
-      ...filterValues,
-    }))
-  }
-
-  const advancedFiltersCancel = () => {
-    setFilters(filtersInitialState)
-  }
-
   return (
     <div>
       <div className="w-full flex justify-between items-start max-md:flex-col gap-2 py-2">
         <div className="sm:flex-row flex-col flex gap-2 items-center w-full">
           <DataTableFilters filters={filters} setFilters={setFilters} />
-          <AdvancedFilters
-            columns={columns}
-            onSubmit={advancedFiltersSubmit}
-            onCancel={advancedFiltersCancel}
-            className="min-w-[100%] sm:min-w-[100px]"
-            align="end"
-          />
           <ColumnVisibilityMenu
             table={table}
             tableId="products-component"
-            className="min-w-[100%] sm:min-w-[100px]"
+            className="min-w-full sm:min-w-[100px]"
           />
         </div>
       </div>
-      <div className="border rounded-sm max-w-[100%] overflow-auto h-[300px] scrollbar-hide">
+      <div className="border rounded-sm max-w-full overflow-auto h-[300px] scrollbar-hide">
         <Table>
           <TableHeader>{renderTableHeader()}</TableHeader>
           <TableBody>
@@ -177,7 +150,7 @@ export function ProductTable({ addProduct }: { addProduct: (product: any) => voi
       <TablePagination
         pagination={pagination}
         totalPages={Math.ceil(productsCount / pagination.pageSize)}
-        changePagination={changePagination}
+        changePagination={setPagination}
         selectedCount={0}
         totalCount={productsCount}
       />

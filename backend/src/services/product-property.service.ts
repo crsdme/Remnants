@@ -10,7 +10,7 @@ import type {
   GetProductPropertiesPayload,
   RemoveProductPropertiesPayload,
 } from '@/types/'
-import { ProductPropertyModel } from '@/models/'
+import { mapProductPropertyToDTO } from '@/mappers/'
 import * as ProductPropertyRepo from '@/repositories/product-property.repo'
 import { HttpError } from '@/utils/'
 
@@ -48,7 +48,7 @@ export async function edit({ payload }: { payload: EditProductPropertyPayload })
 
   const productProperty = await ProductPropertyRepo.updateById(id, payload)
 
-  if (!productProperty) {
+  if (productProperty === null) {
     throw new HttpError(400, 'Product property not edited', 'PRODUCT_PROPERTY_NOT_EDITED')
   }
 

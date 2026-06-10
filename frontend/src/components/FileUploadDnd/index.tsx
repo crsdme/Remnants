@@ -1,5 +1,6 @@
 import type { DragEndEvent } from '@dnd-kit/core'
-import type React from 'react'
+
+import type { ChangeEvent, Dispatch, SetStateAction } from 'react'
 
 import {
   closestCenter,
@@ -14,14 +15,14 @@ import { CSS } from '@dnd-kit/utilities'
 
 import { GripVertical, Upload, X } from 'lucide-react'
 import { useCallback, useRef } from 'react'
-import { useTranslation } from 'react-i18next'
 
 import { Button } from '@/components/ui'
+import { useLocale } from '@/utils/hooks'
 import { cn } from '@/utils/lib'
 
 interface UploadedFile {
   id: string
-  file: File
+  file: File | string
   preview: string
   name: string
   type: string
@@ -50,7 +51,7 @@ function SortableFileItem({ file, onDelete, isLoading }: SortableFileItemProps) 
         <GripVertical className="h-4 w-4 text-muted-foreground" />
       </div>
 
-      <div className="flex-shrink-0">
+      <div className="shrink-0">
         <img
           src={file.preview || '/placeholder.svg'}
           alt={file.name}
@@ -67,7 +68,7 @@ function SortableFileItem({ file, onDelete, isLoading }: SortableFileItemProps) 
         size="sm"
         onClick={() => onDelete(file.id)}
         disabled={isLoading}
-        className="flex-shrink-0 h-8 w-8 p-0 hover:bg-destructive/10 hover:text-destructive"
+        className="shrink-0 h-8 w-8 p-0 hover:bg-destructive/10 hover:text-destructive"
       >
         <X className="h-4 w-4" />
       </Button>
@@ -75,13 +76,15 @@ function SortableFileItem({ file, onDelete, isLoading }: SortableFileItemProps) 
   )
 }
 
-export function FileUploadDnd({ files, setFiles, isLoading = false }: {
-  files
-  setFiles
-  isLoading
-}) {
-  const { t } = useTranslation()
-  const inputRef = useRef(null)
+interface FileUploadDndProps {
+  files: UploadedFile[]
+  setFiles: Dispatch<SetStateAction<UploadedFile[]>>
+  isLoading?: boolean
+}
+
+export function FileUploadDnd({ files, setFiles, isLoading = false }: FileUploadDndProps) {
+  const { t } = useLocale()
+  const inputRef = useRef<HTMLInputElement>(null)
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -90,7 +93,7 @@ export function FileUploadDnd({ files, setFiles, isLoading = false }: {
     }),
   )
 
-  const handleFileUpload = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = useCallback((event: ChangeEvent<HTMLInputElement>) => {
     const selectedFiles = event.target.files
     if (!selectedFiles || isLoading)
       return
@@ -115,24 +118,28 @@ export function FileUploadDnd({ files, setFiles, isLoading = false }: {
     })
 
     event.target.value = ''
-  }, [])
+  }, [isLoading, setFiles])
 
   const handleDeleteFile = useCallback((id: string) => {
     setFiles(prev => prev.filter(file => file.id !== id))
-  }, [])
+  }, [setFiles])
 
   const handleDragEnd = useCallback((event: DragEndEvent) => {
     const { active, over } = event
 
-    if (active.id !== over?.id) {
-      setFiles((items) => {
-        const oldIndex = items.findIndex(item => item.id === active.id)
-        const newIndex = items.findIndex(item => item.id === over?.id)
+    if (!over || active.id === over.id)
+      return
 
-        return arrayMove(items, oldIndex, newIndex)
-      })
-    }
-  }, [])
+    setFiles((items) => {
+      const oldIndex = items.findIndex(item => item.id === active.id)
+      const newIndex = items.findIndex(item => item.id === over.id)
+
+      if (oldIndex === -1 || newIndex === -1)
+        return items
+
+      return arrayMove(items, oldIndex, newIndex)
+    })
+  }, [setFiles])
 
   const handleOpenFileDialog = useCallback(() => {
     if (isLoading)

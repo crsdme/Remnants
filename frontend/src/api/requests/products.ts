@@ -1,57 +1,57 @@
 import type {
-  batchProductParams,
-  createProductsParams,
-  duplicateProductParams,
-  editProductParams,
-  exportProductsParams,
-  getProductsParams,
-  importProductsParams,
-  ProductsResponse,
-  removeProductParams,
-} from '@/api/types'
+  BatchProductRequest,
+  BatchProductResponse,
+  CreateProductRequest,
+  CreateProductResponse,
+  EditProductRequest,
+  EditProductResponse,
+  ExportProductsRequest,
+  GetProductRequest,
+  GetProductsResponse,
+  ImportProductsRequest,
+  ImportProductsResponse,
+  RemoveProductRequest,
+  RemoveProductResponse,
+} from '@remnant/shared'
 import { api } from '@/api/instance'
 
-export async function getProducts(params: getProductsParams) {
-  return api.get<ProductsResponse>('products/get', { params })
+export async function getProducts(params: GetProductRequest) {
+  return api.get<GetProductsResponse>('products/get', { params })
 }
 
-export async function createProduct(params: createProductsParams) {
-  return api.post<ProductsResponse>('products/create', params, {
+export async function createProduct(params: CreateProductRequest) {
+  return api.post<CreateProductResponse>('products/create', params, {
     headers: {
       'Content-Type': 'multipart/form-data',
     },
   })
 }
 
-export async function editProduct(params: editProductParams) {
-  return api.post<ProductsResponse>('products/edit', params, {
+export async function editProduct(params: EditProductRequest) {
+  return api.post<EditProductResponse>('products/edit', params, {
     headers: {
       'Content-Type': 'multipart/form-data',
     },
   })
 }
 
-export async function removeProduct(params: removeProductParams) {
-  return api.post<ProductsResponse>('products/remove', params)
+export async function removeProduct(params: RemoveProductRequest) {
+  return api.post<RemoveProductResponse>('products/remove', params)
 }
 
-export async function batchProduct(params: batchProductParams) {
-  return api.post<ProductsResponse>('products/batch', params)
+export async function batchProduct(params: BatchProductRequest) {
+  return api.post<BatchProductResponse>('products/batch', params)
 }
 
-export async function importProducts(params: importProductsParams) {
-  return api.post<ProductsResponse>('products/import', params, {
+export async function importProducts(params: ImportProductsRequest) {
+  return api.post<ImportProductsResponse>('products/import', params, {
     headers: {
       'Content-Type': 'multipart/form-data',
     },
   })
 }
 
-export async function duplicateProduct(params: duplicateProductParams) {
-  return api.post<ProductsResponse>('products/duplicate', params)
-}
-
-export async function exportProducts(params: exportProductsParams) {
+export async function exportProducts(params: ExportProductsRequest) {
   return api.post<Blob>('products/export', params, {
     responseType: 'blob',
   })

@@ -1,5 +1,35 @@
 import { z } from 'zod'
-import { booleanArraySchema, dateRangeSchema, idSchema, languageStringSchema, numberFromStringSchema, paginationSchema, sorterParamsSchema } from './common'
+import { booleanArraySchema, dateRangeSchema, idSchema, languageStringSchema, numberFromStringSchema, paginationSchema, responseItemSchema, responseListSchema, responseSchema, sorterParamsSchema } from './common'
+
+export const cashregisterAccountSchemaPopulatedDTO = z.object({
+  id: idSchema,
+  seq: z.number(),
+  names: languageStringSchema,
+  currencies: z.array(z.object({
+    id: idSchema,
+    names: languageStringSchema,
+    symbols: languageStringSchema,
+  })),
+  priority: z.number(),
+  active: z.boolean(),
+  createdAt: z.coerce.date(),
+  updatedAt: z.coerce.date(),
+})
+
+export const cashregisterAccountSchema = z.object({
+  id: idSchema,
+  seq: z.number(),
+  names: languageStringSchema,
+  currencies: z.array(idSchema),
+  priority: z.number(),
+  active: z.boolean(),
+  createdAt: z.coerce.date(),
+  updatedAt: z.coerce.date(),
+})
+
+export type CashregisterAccountDTO = z.output<typeof cashregisterAccountSchema>
+
+export type CashregisterAccountPopulatedDTO = z.output<typeof cashregisterAccountSchemaPopulatedDTO>
 
 export const getCashregisterAccountsSchema = z.object({
   filters: z.object({
@@ -48,3 +78,15 @@ export const removeCashregisterAccountsSchema = z.object({
 })
 
 export type RemoveCashregisterAccountsRequest = z.input<typeof removeCashregisterAccountsSchema>
+
+export const getCashregisterAccountsResponseSchema = responseListSchema(cashregisterAccountSchemaPopulatedDTO)
+export type GetCashregisterAccountsResponse = z.output<typeof getCashregisterAccountsResponseSchema>
+
+export const createCashregisterAccountResponseSchema = responseItemSchema(cashregisterAccountSchema)
+export type CreateCashregisterAccountResponse = z.output<typeof createCashregisterAccountResponseSchema>
+
+export const editCashregisterAccountResponseSchema = responseItemSchema(cashregisterAccountSchema)
+export type EditCashregisterAccountResponse = z.output<typeof editCashregisterAccountResponseSchema>
+
+export const removeCashregisterAccountsResponseSchema = responseSchema
+export type RemoveCashregisterAccountsResponse = z.output<typeof removeCashregisterAccountsResponseSchema>

@@ -1,11 +1,11 @@
+import type { DeliveryServiceDTO } from '@remnant/shared'
 import type { ReactNode } from 'react'
-import type { UseFormReturn } from 'react-hook-form'
+import type { Resolver, UseFormReturn } from 'react-hook-form'
 
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useQueryClient } from '@tanstack/react-query'
 import { createContext, useContext, useMemo, useState } from 'react'
 import { useForm } from 'react-hook-form'
-import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { z } from 'zod'
 
@@ -14,84 +14,54 @@ import {
   useDeliveryServiceEdit,
   useDeliveryServiceRemove,
 } from '@/api/hooks'
-import { SUPPORTED_LANGUAGES } from '@/utils/constants'
+import { useLocale } from '@/utils/hooks'
 
 interface DeliveryServiceContextType {
-  selectedDeliveryService: DeliveryService
+  selectedDeliveryService: DeliveryServiceDTO | undefined
   isModalOpen: boolean
   isLoading: boolean
   isEdit: boolean
-  form: UseFormReturn
-  openModal: (deliveryService?: DeliveryService) => void
+  form: UseFormReturn<DeliveryServiceFormValues>
+  openModal: (deliveryService?: DeliveryServiceDTO) => void
   closeModal: () => void
-  submitDeliveryServiceForm: (params) => void
+  submitDeliveryServiceForm: (params: DeliveryServiceFormValues) => void
   removeDeliveryService: (params: { ids: string[] }) => void
 }
 
 const DeliveryServiceContext = createContext<DeliveryServiceContextType | undefined>(undefined)
 
-interface DeliveryServiceProviderProps {
-  children: ReactNode
+interface DeliveryServiceFormValues {
+  names: Record<string, string>
+  color: string
+  priority: number
+  type: 'novaposhta' | 'selfpickup'
 }
 
-export function DeliveryServiceProvider({ children }: DeliveryServiceProviderProps) {
+export function DeliveryServiceProvider({ children }: { children: ReactNode }) {
   const [isModalOpen, setIsModalOpen] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
   const [isEdit, setIsEdit] = useState(false)
-  const [selectedDeliveryService, setSelectedDeliveryService] = useState(null)
+  const [selectedDeliveryService, setSelectedDeliveryService] = useState<DeliveryServiceDTO | undefined>(undefined)
+  const { t } = useLocale()
 
-  const { t } = useTranslation()
+  const formSchema = useMemo(() => createDeliveryServiceFormSchema(t), [t])
 
-  const defaultLanguageValues = SUPPORTED_LANGUAGES.reduce((acc, lang) => ({ ...acc, [lang]: '' }), {})
-
-  const formSchema = useMemo(() =>
-    z.object({
-      names: z.record(z.string({ required_error: t('form.errors.required') }).min(3, { message: t('form.errors.min_length', { count: 3 }) }).trim()),
-      color: z.string().optional(),
-      priority: z.number().default(0),
-      type: z.enum(['novaposhta', 'selfpickup']),
-    }), [t])
-
-  const form = useForm({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      names: defaultLanguageValues,
-      color: '',
-      priority: 0,
-      type: 'novaposhta',
-    },
+  const form = useForm<DeliveryServiceFormValues>({
+    resolver: zodResolver(formSchema) as Resolver<DeliveryServiceFormValues>,
+    defaultValues: getDeliveryServiceFormValues(),
   })
 
   const queryClient = useQueryClient()
-
-  function getDeliveryServiceFormValues(deliveryService) {
-    if (!deliveryService) {
-      return {
-        names: defaultLanguageValues,
-        color: '',
-        priority: 0,
-        type: 'novaposhta',
-      }
-    }
-    return {
-      names: { ...deliveryService.names },
-      color: deliveryService.color,
-      priority: deliveryService.priority,
-      type: deliveryService.type,
-    }
-  }
 
   const closeModal = () => {
     if (!isModalOpen)
       return
     setIsModalOpen(false)
-    setIsLoading(false)
     setIsEdit(false)
-    setSelectedDeliveryService(null)
+    setSelectedDeliveryService(undefined)
     form.reset()
   }
 
-  const openModal = (deliveryService) => {
+  const openModal = (deliveryService?: DeliveryServiceDTO) => {
     setIsModalOpen(true)
     setIsEdit(!!deliveryService)
     setSelectedDeliveryService(deliveryService)
@@ -102,7 +72,7 @@ export function DeliveryServiceProvider({ children }: DeliveryServiceProviderPro
     options: {
       onSuccess: ({ data }) => {
         closeModal()
-        queryClient.invalidateQueries({ queryKey: ['delivery-services'] })
+        void queryClient.invalidateQueries({ queryKey: ['delivery-services'] })
         toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description || ''}` })
       },
       onError: ({ response }) => {
@@ -117,7 +87,7 @@ export function DeliveryServiceProvider({ children }: DeliveryServiceProviderPro
     options: {
       onSuccess: ({ data }) => {
         closeModal()
-        queryClient.invalidateQueries({ queryKey: ['delivery-services'] })
+        void queryClient.invalidateQueries({ queryKey: ['delivery-services'] })
         toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description || ''}` })
       },
       onError: ({ response }) => {
@@ -131,7 +101,7 @@ export function DeliveryServiceProvider({ children }: DeliveryServiceProviderPro
   const useMutateRemoveDeliveryService = useDeliveryServiceRemove({
     options: {
       onSuccess: ({ data }) => {
-        queryClient.invalidateQueries({ queryKey: ['delivery-services'] })
+        void queryClient.invalidateQueries({ queryKey: ['delivery-services'] })
         toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description || ''}` })
       },
       onError: ({ response }) => {
@@ -141,17 +111,18 @@ export function DeliveryServiceProvider({ children }: DeliveryServiceProviderPro
     },
   })
 
-  const removeDeliveryService = (params) => {
+  const removeDeliveryService = (params: { ids: string[] }) => {
     useMutateRemoveDeliveryService.mutate(params)
   }
 
-  const submitDeliveryServiceForm = (params) => {
-    setIsLoading(true)
-    if (!selectedDeliveryService)
+  const submitDeliveryServiceForm = (params: DeliveryServiceFormValues) => {
+    if (!selectedDeliveryService || !isEdit)
       return useMutateCreateDeliveryService.mutate(params)
 
     return useMutateEditDeliveryService.mutate({ ...params, id: selectedDeliveryService.id })
   }
+
+  const isLoading = useMutateCreateDeliveryService.isPending || useMutateEditDeliveryService.isPending || useMutateRemoveDeliveryService.isPending
 
   const value: DeliveryServiceContextType = useMemo(
     () => ({
@@ -178,4 +149,30 @@ export function useDeliveryServiceContext(): DeliveryServiceContextType {
     throw new Error('useDeliveryServiceContext - DeliveryServiceContext')
   }
   return context
+}
+
+function createDeliveryServiceFormSchema(t: (key: string, options?: Record<string, unknown>) => string) {
+  return z.object({
+    names: z.record(z.string({ required_error: t('form.errors.required') }).min(3, { message: t('form.errors.min_length', { count: 3 }) }).trim()),
+    color: z.string().optional(),
+    priority: z.number().default(0),
+    type: z.enum(['novaposhta', 'selfpickup']),
+  })
+}
+
+function getDeliveryServiceFormValues(deliveryService?: DeliveryServiceDTO): DeliveryServiceFormValues {
+  if (!deliveryService) {
+    return {
+      names: {},
+      color: '#ffffff',
+      priority: 0,
+      type: 'novaposhta',
+    }
+  }
+  return {
+    names: { ...deliveryService.names },
+    color: deliveryService.color ?? '#ffffff',
+    priority: deliveryService.priority,
+    type: deliveryService.type,
+  }
 }

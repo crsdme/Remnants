@@ -1,4 +1,4 @@
-import type { AuditLogDTO } from '@remnant/shared'
+import type { AuditLogPopulatedDTO } from '@remnant/shared'
 import type { z } from 'zod'
 import {
   createAuditLogsSchema,
@@ -40,7 +40,7 @@ export function parseRemoveAuditLogs(x: unknown): RemoveAuditLogsPayload {
 }
 
 export type GetAuditLogsRepoPayload = GetAuditLogsPayload
-export interface GetAuditLogsRepoResult { items: AuditLogDTO[], total: number, page: number, pageSize: number }
+export interface GetAuditLogsRepoResult { items: AuditLogPopulatedDTO[], total: number, page: number, pageSize: number }
 
 export type CreateAuditLogsRepoPayload = CreateAuditLogsPayload
 

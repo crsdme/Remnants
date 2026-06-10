@@ -1,7 +1,5 @@
-import { TrashIcon } from 'lucide-react'
+import { TrashIcon, XIcon } from 'lucide-react'
 import { useFieldArray } from 'react-hook-form'
-
-import { useTranslation } from 'react-i18next'
 import { CountrySelect } from '@/components/CountrySelect'
 import {
   Button,
@@ -12,6 +10,10 @@ import {
   FormLabel,
   FormMessage,
   Input,
+  InputGroup,
+  InputGroupAddon,
+  InputGroupButton,
+  InputGroupInput,
   Select,
   SelectContent,
   SelectItem,
@@ -20,15 +22,12 @@ import {
   Textarea,
 } from '@/components/ui'
 import { SOCIAL_TYPES } from '@/utils/constants'
+import { useLocale } from '@/utils/hooks'
 import { useClientContext } from '../context'
 
 export function ClientForm() {
-  const { t, i18n } = useTranslation()
+  const { t, language } = useLocale()
   const { isLoading, form, closeModal, submitClientForm } = useClientContext()
-
-  const onSubmit = (values) => {
-    submitClientForm(values)
-  }
 
   const { fields: phoneFields, append: appendPhone, remove: removePhone } = useFieldArray({
     control: form.control,
@@ -47,7 +46,10 @@ export function ClientForm() {
 
   return (
     <Form {...form}>
-      <form className="w-full space-y-1" onSubmit={form.handleSubmit(onSubmit)}>
+      <form
+        className="w-full space-y-1"
+        onSubmit={(e) => { void form.handleSubmit(v => submitClientForm(v))(e) }}
+      >
         <FormField
           control={form.control}
           name="name"
@@ -97,7 +99,11 @@ export function ClientForm() {
             <FormItem>
               <FormLabel>{t('page.clients.form.country')}</FormLabel>
               <FormControl>
-                <CountrySelect locale={i18n.language} {...field} />
+                <CountrySelect
+                  locale={language}
+                  value={field.value as any}
+                  onChange={field.onChange}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -106,27 +112,28 @@ export function ClientForm() {
 
         <FormItem>
           <FormLabel>{t('page.clients.form.phones')}</FormLabel>
-
           {phoneFields.map((field, index) => (
-            <div key={field.id} className="flex items-center gap-2 mb-2">
-              <Input
-                {...form.register(`phones.${index}`)}
-                placeholder={t('page.clients.form.phones')}
-                disabled={isLoading}
+            <InputGroup key={field.id}>
+              <InputGroupInput
+                {...form.register(`phones.${index}.value`)}
+                id={`phone-${index}`}
+                type="tel"
+                autoComplete="tel"
               />
-              <Button
-                type="button"
-                variant="destructive"
-                size="icon"
-                onClick={() => removePhone(index)}
-                disabled={isLoading}
-              >
-                <TrashIcon />
-              </Button>
-            </div>
+              <InputGroupAddon align="inline-end">
+                <InputGroupButton
+                  type="button"
+                  variant="ghost"
+                  size="icon-xs"
+                  onClick={() => removePhone(index)}
+                >
+                  <XIcon />
+                </InputGroupButton>
+              </InputGroupAddon>
+            </InputGroup>
           ))}
 
-          <Button type="button" onClick={() => appendPhone('')} disabled={isLoading}>
+          <Button type="button" variant="outline" onClick={() => appendPhone({ value: '' })} disabled={isLoading}>
             {t('button.add')}
           </Button>
 
@@ -137,25 +144,27 @@ export function ClientForm() {
           <FormLabel>{t('page.clients.form.emails')}</FormLabel>
 
           {emailFields.map((field, index) => (
-            <div key={field.id} className="flex items-center gap-2 mb-2">
-              <Input
-                {...form.register(`emails.${index}`)}
-                placeholder={t('page.clients.form.emails')}
-                disabled={isLoading}
+            <InputGroup key={field.id}>
+              <InputGroupInput
+                {...form.register(`emails.${index}.value`)}
+                id={`email-${index}`}
+                type="email"
+                autoComplete="email"
               />
-              <Button
-                type="button"
-                variant="destructive"
-                size="icon"
-                onClick={() => removeEmail(index)}
-                disabled={isLoading}
-              >
-                <TrashIcon />
-              </Button>
-            </div>
+              <InputGroupAddon align="inline-end">
+                <InputGroupButton
+                  type="button"
+                  variant="ghost"
+                  size="icon-xs"
+                  onClick={() => removeEmail(index)}
+                >
+                  <XIcon />
+                </InputGroupButton>
+              </InputGroupAddon>
+            </InputGroup>
           ))}
 
-          <Button type="button" onClick={() => appendEmail('')} disabled={isLoading}>
+          <Button type="button" variant="outline" onClick={() => appendEmail({ value: '' })} disabled={isLoading}>
             {t('button.add')}
           </Button>
 

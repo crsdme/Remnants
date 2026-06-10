@@ -1,7 +1,6 @@
 import { useCallback } from 'react'
 
 import { useWatch } from 'react-hook-form'
-import { useTranslation } from 'react-i18next'
 import { useCashregisterAccountOptions, useCashregisterOptions, useCurrencyOptions, useExpenseCategoryOptions } from '@/api/hooks'
 import { AsyncSelectNew } from '@/components/AsyncSelectNew'
 import {
@@ -15,15 +14,12 @@ import {
   Input,
   Textarea,
 } from '@/components/ui'
+import { useLocale } from '@/utils/hooks'
 import { useExpenseContext } from '../context'
 
 export function ExpenseForm() {
-  const { t, i18n } = useTranslation()
+  const { t, language } = useLocale()
   const { isLoading, form, closeModal, submitExpenseForm } = useExpenseContext()
-
-  const onSubmit = (values) => {
-    submitExpenseForm(values)
-  }
 
   const selectedCashregister = useWatch({ control: form.control, name: 'cashregister' })
   const selectedAccount = useWatch({ control: form.control, name: 'cashregisterAccount' })
@@ -50,7 +46,10 @@ export function ExpenseForm() {
 
   return (
     <Form {...form}>
-      <form className="w-full space-y-1" onSubmit={form.handleSubmit(onSubmit)}>
+      <form
+        className="w-full space-y-1"
+        onSubmit={(e) => { void form.handleSubmit(submitExpenseForm)(e) }}
+      >
         <div className="flex gap-2 w-full">
           <FormField
             control={form.control}
@@ -62,8 +61,8 @@ export function ExpenseForm() {
                   <AsyncSelectNew
                     {...field}
                     loadOptions={loadCashregisterOptions}
-                    renderOption={e => e.names[i18n.language]}
-                    getDisplayValue={e => e.names[i18n.language]}
+                    renderOption={e => e.names[language]}
+                    getDisplayValue={e => e.names[language]}
                     getOptionValue={e => e.id}
                     disabled={isLoading}
                     onChange={(e) => {
@@ -91,8 +90,8 @@ export function ExpenseForm() {
                   <AsyncSelectNew
                     {...field}
                     loadOptions={loadCashregisterAccountOptions}
-                    renderOption={e => e.names[i18n.language]}
-                    getDisplayValue={e => e.names[i18n.language]}
+                    renderOption={e => e.names[language]}
+                    getDisplayValue={e => e.names[language]}
                     getOptionValue={e => e.id}
                     disabled={isLoading || !selectedCashregister}
                     onChange={(e) => {
@@ -134,8 +133,8 @@ export function ExpenseForm() {
                     <AsyncSelectNew
                       {...currencyField}
                       loadOptions={loadCurrencyOptions}
-                      renderOption={e => e.symbols[i18n.language]}
-                      getDisplayValue={e => e.symbols[i18n.language]}
+                      renderOption={e => e.symbols[language]}
+                      getDisplayValue={e => e.symbols[language]}
                       getOptionValue={e => e.id}
                       disabled={isLoading || !selectedAccount}
                       clearable
@@ -162,8 +161,8 @@ export function ExpenseForm() {
                   <AsyncSelectNew
                     {...field}
                     loadOptions={loadExpenseCategoryOptions}
-                    renderOption={e => e.names[i18n.language]}
-                    getDisplayValue={e => e.names[i18n.language]}
+                    renderOption={e => e.names[language]}
+                    getDisplayValue={e => e.names[language]}
                     getOptionValue={e => e.id}
                     disabled={isLoading}
                     searchable

@@ -1,5 +1,45 @@
 import { z } from 'zod'
-import { dateRangeSchema, idSchema, paginationSchema, sorterParamsSchema } from './common'
+import { dateRangeSchema, idSchema, paginationSchema, responseItemSchema, responseListSchema, sorterParamsSchema } from './common'
+
+export const auditLogChangeSchema = z.object({
+  path: z.string(),
+  before: z.unknown(),
+  after: z.unknown(),
+})
+
+export type AuditLogChange = z.output<typeof auditLogChangeSchema>
+
+export const auditLogSchema = z.object({
+  id: idSchema,
+  resourceType: z.string(),
+  resourceId: z.string(),
+  resource: z.unknown(),
+  action: z.string(),
+  changes: z.array(auditLogChangeSchema),
+  comment: z.string(),
+  createdAt: z.coerce.date(),
+  updatedAt: z.coerce.date(),
+})
+
+export type AuditLogDTO = z.output<typeof auditLogSchema>
+
+export const auditLogPopulatedSchema = z.object({
+  id: idSchema,
+  resourceType: z.string(),
+  resourceId: z.string(),
+  resource: z.unknown(),
+  action: z.string(),
+  changes: z.array(auditLogChangeSchema),
+  comment: z.string(),
+  createdBy: z.object({
+    id: idSchema,
+    name: z.string().trim(),
+  }),
+  createdAt: z.coerce.date(),
+  updatedAt: z.coerce.date(),
+})
+
+export type AuditLogPopulatedDTO = z.output<typeof auditLogPopulatedSchema>
 
 export const getAuditLogsSchema = z.object({
   filters: z.object({
@@ -56,3 +96,12 @@ export const removeAuditLogsSchema = z.object({
 })
 
 export type RemoveAuditLogsRequest = z.input<typeof removeAuditLogsSchema>
+
+export const getAuditLogsResponseSchema = responseListSchema(auditLogPopulatedSchema)
+export type GetAuditLogsResponse = z.output<typeof getAuditLogsResponseSchema>
+
+export const createAuditLogsResponseSchema = responseItemSchema(auditLogSchema)
+export type CreateAuditLogsResponse = z.output<typeof createAuditLogsResponseSchema>
+
+export const editAuditLogsResponseSchema = responseItemSchema(auditLogSchema)
+export type EditAuditLogsResponse = z.output<typeof editAuditLogsResponseSchema>

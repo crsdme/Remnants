@@ -1,15 +1,15 @@
-import type { AggregateResult, ProductPropertyGroupDTO } from '@remnant/shared'
+import type { AggregateResult, ProductPropertyDTO } from '@remnant/shared'
 import type { PipelineStage } from 'mongoose'
 import type {
-  CreateProductPropertyGroupRepoPayload,
-  EditProductPropertyGroupRepoPayload,
-  GetProductPropertyGroupsRepoPayload,
-  ProductPropertyGroupDB,
+  CreateProductPropertyRepoPayload,
+  EditProductPropertyRepoPayload,
+  GetProductPropertiesRepoPayload,
+  ProductPropertyDB,
 } from '@/types/'
-import { ProductPropertyGroupModel } from '@/models'
+import { ProductPropertyModel } from '@/models'
 import { buildQuery, buildSortQuery, unwrapAggregate } from '@/utils'
 
-export async function list(payload: GetProductPropertyGroupsRepoPayload): Promise<{ items: ProductPropertyGroupDTO[], total: number, page: number, pageSize: number }> {
+export async function list(payload: GetProductPropertiesRepoPayload): Promise<{ items: ProductPropertyDTO[], total: number, page: number, pageSize: number }> {
   const {
     current,
     pageSize,
@@ -30,7 +30,7 @@ export async function list(payload: GetProductPropertyGroupsRepoPayload): Promis
   } = payload.filters
 
   const query = buildQuery({
-    filters: { _id: ids, names, symbols, options, type, priority, active, showInTable, showInStatistics, createdAt, updatedAt },
+    filters: { _id: ids, names, symbols, options, type, priority, active, showInTable, showInStatistics, createdAt },
     rules: {
       _id: { type: 'array' },
       names: { type: 'string', langAware: true },
@@ -56,21 +56,21 @@ export async function list(payload: GetProductPropertyGroupsRepoPayload): Promis
       $sort: sorters,
     },
     {
-      $lookup: {
-        from: 'product-properties',
-        localField: 'productProperties',
-        foreignField: '_id',
-        as: 'productProperties',
-      },
-    },
-    {
-      $set: {
-        productProperties: {
-          $sortArray: {
-            input: '$productProperties',
-            sortBy: { priority: 1 },
-          },
-        },
+      $project: {
+        _id: 0,
+        id: '$_id',
+        seq: 1,
+        names: 1,
+        symbols: 1,
+        options: 1,
+        type: 1,
+        isRequired: 1,
+        showInTable: 1,
+        showInStatistics: 1,
+        priority: 1,
+        active: 1,
+        createdAt: 1,
+        updatedAt: 1,
       },
     },
     {
@@ -86,18 +86,18 @@ export async function list(payload: GetProductPropertyGroupsRepoPayload): Promis
     },
   ]
 
-  const raw = await ProductPropertyGroupModel.aggregate<AggregateResult<ProductPropertyGroupDTO>>(pipeline).exec()
+  const raw = await ProductPropertyModel.aggregate<AggregateResult<ProductPropertyDTO>>(pipeline).exec()
   const { items, total } = unwrapAggregate(raw)
 
   return { items, total, page: current, pageSize }
 }
 
-export async function createOne(payload: CreateProductPropertyGroupRepoPayload) {
-  return ProductPropertyGroupModel.create(payload)
+export async function createOne(payload: CreateProductPropertyRepoPayload) {
+  return ProductPropertyModel.create(payload)
 }
 
-export async function updateById(id: string, payload: EditProductPropertyGroupRepoPayload) {
-  return ProductPropertyGroupModel.findOneAndUpdate(
+export async function updateById(id: string, payload: EditProductPropertyRepoPayload) {
+  return ProductPropertyModel.findOneAndUpdate(
     { _id: id },
     { $set: payload as unknown as Record<string, unknown> },
     { new: true, runValidators: true },
@@ -105,13 +105,21 @@ export async function updateById(id: string, payload: EditProductPropertyGroupRe
 }
 
 export async function findById(id: string) {
-  return ProductPropertyGroupModel.findById(id).lean<ProductPropertyGroupDB>().exec()
+  return ProductPropertyModel.findById(id).lean<ProductPropertyDB>().exec()
 }
 
 export async function removeById(id: string) {
-  return ProductPropertyGroupModel.findOneAndUpdate(
+  return ProductPropertyModel.findOneAndUpdate(
     { _id: id },
     { $set: { removed: true } },
     { new: true, runValidators: true },
-  ).lean<ProductPropertyGroupDB>().exec()
+  ).lean<ProductPropertyDB>().exec()
+}
+
+export async function updateOptions(id: string, payload: unknown) {
+  return ProductPropertyModel.findOneAndUpdate(
+    { _id: id },
+    { $set: payload as Record<string, unknown> },
+    { new: true, runValidators: true },
+  ).exec()
 }

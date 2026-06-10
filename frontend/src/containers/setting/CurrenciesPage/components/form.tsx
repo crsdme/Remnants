@@ -1,4 +1,3 @@
-import { useTranslation } from 'react-i18next'
 import { useLanguageQuery } from '@/api/hooks'
 import {
   Button,
@@ -13,28 +12,24 @@ import {
   Input,
   Textarea,
 } from '@/components/ui'
+import { useLocale } from '@/utils/hooks'
 import { useCurrencyContext } from '../context'
 
 export function CurrencyForm() {
-  const { t } = useTranslation()
+  const { t } = useLocale()
   const { isLoading, form, closeModal, submitCurrencyForm } = useCurrencyContext()
 
-  const { data: { languages = [] } = {} } = useLanguageQuery(
+  const { languages = [] } = useLanguageQuery(
     { pagination: { full: true } },
-    { options: {
-      select: response => ({
-        languages: response.data.languages,
-      }),
-    } },
+    { options: { placeholderData: prevData => prevData } },
   )
-
-  const onSubmit = (values) => {
-    submitCurrencyForm(values)
-  }
 
   return (
     <Form {...form}>
-      <form className="w-full space-y-1" onSubmit={form.handleSubmit(onSubmit)}>
+      <form
+        className="w-full space-y-1"
+        onSubmit={e => void form.handleSubmit(submitCurrencyForm)(e)}
+      >
         {languages.map(language => (
           <FormField
             control={form.control}
@@ -177,16 +172,12 @@ export function CurrencyForm() {
 }
 
 export function ExchangeRateForm() {
-  const { t } = useTranslation()
+  const { t } = useLocale()
   const { isLoading, exchangeRateForm, closeExchangeRateModal, submitExchangeRateForm } = useCurrencyContext()
-
-  const onSubmit = (values) => {
-    submitExchangeRateForm(values)
-  }
 
   return (
     <Form {...exchangeRateForm}>
-      <form className="w-full space-y-1" onSubmit={exchangeRateForm.handleSubmit(onSubmit)}>
+      <form className="w-full space-y-1" onSubmit={e => void exchangeRateForm.handleSubmit(submitExchangeRateForm)(e)}>
         <FormField
           control={exchangeRateForm.control}
           name="rate"

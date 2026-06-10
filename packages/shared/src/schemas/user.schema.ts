@@ -1,5 +1,31 @@
 import { z } from 'zod'
-import { booleanArraySchema, dateRangeSchema, idSchema, paginationSchema, sorterParamsSchema } from './common'
+import { booleanArraySchema, dateRangeSchema, idSchema, paginationSchema, responseItemSchema, responseListSchema, responseSchema, sorterParamsSchema } from './common'
+import { userRoleSchema } from './user-role.schema'
+
+export const userSchema = z.object({
+  id: idSchema,
+  seq: z.number(),
+  name: z.string(),
+  login: z.string(),
+  password: z.string(),
+  role: z.string(),
+  active: z.boolean(),
+  createdAt: z.coerce.date(),
+  updatedAt: z.coerce.date(),
+})
+export type UserDTO = z.output<typeof userSchema>
+
+export const userPopulatedSchema = z.object({
+  id: idSchema,
+  seq: z.number(),
+  name: z.string(),
+  login: z.string(),
+  role: userRoleSchema,
+  active: z.boolean(),
+  createdAt: z.coerce.date(),
+  updatedAt: z.coerce.date(),
+})
+export type UserPopulatedDTO = z.output<typeof userPopulatedSchema>
 
 export const getUserSchema = z.object({
   filters: z.object({
@@ -49,3 +75,15 @@ export const removeUserSchema = z.object({
 })
 
 export type RemoveUserRequest = z.input<typeof removeUserSchema>
+
+export const getUsersResponseSchema = responseListSchema(userPopulatedSchema)
+export type GetUsersResponse = z.output<typeof getUsersResponseSchema>
+
+export const createUserResponseSchema = responseItemSchema(userSchema)
+export type CreateUserResponse = z.output<typeof createUserResponseSchema>
+
+export const editUserResponseSchema = responseItemSchema(userSchema)
+export type EditUserResponse = z.output<typeof editUserResponseSchema>
+
+export const removeUserResponseSchema = responseSchema
+export type RemoveUserResponse = z.output<typeof removeUserResponseSchema>

@@ -10,7 +10,7 @@ import { useTranslation } from 'react-i18next'
 import { Button, Calendar, Popover, PopoverContent, PopoverTrigger } from '@/components/ui'
 import { cn } from '@/utils/lib/utils'
 
-type DateRangePickerProps = Omit<HTMLAttributes<HTMLDivElement>, 'onChange'> & {
+type DateRangePickerProps = Omit<HTMLAttributes<HTMLDivElement>, 'onChange' | 'onSelect'> & {
   onSelect?: (date: DateRange | undefined) => void
   value?: DateRange | undefined
   disabled?: boolean

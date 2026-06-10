@@ -1,5 +1,6 @@
+import type { OrderStatusDTO } from '@remnant/shared'
 import type { ReactNode } from 'react'
-import type { UseFormReturn } from 'react-hook-form'
+import type { Resolver, UseFormReturn } from 'react-hook-form'
 
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useQueryClient } from '@tanstack/react-query'
@@ -14,87 +15,55 @@ import {
   useOrderStatusEdit,
   useOrderStatusRemove,
 } from '@/api/hooks'
-import { SUPPORTED_LANGUAGES } from '@/utils/constants'
 
 interface OrderStatusContextType {
-  selectedOrderStatus: OrderStatus
+  selectedOrderStatus: OrderStatusDTO | undefined
   isModalOpen: boolean
   isLoading: boolean
   isEdit: boolean
-  form: UseFormReturn
-  openModal: (orderStatus?: OrderStatus) => void
+  form: UseFormReturn<OrderStatusFormValues>
+  openModal: (orderStatus?: OrderStatusDTO) => void
   closeModal: () => void
-  submitOrderStatusForm: (params) => void
+  submitOrderStatusForm: (params: OrderStatusFormValues) => void
   removeOrderStatus: (params: { ids: string[] }) => void
 }
 
 const OrderStatusContext = createContext<OrderStatusContextType | undefined>(undefined)
 
-interface OrderStatusProviderProps {
-  children: ReactNode
+interface OrderStatusFormValues {
+  names: Record<string, string>
+  color: string
+  priority: number
+  isLocked: boolean
+  isSelectable: boolean
 }
 
-export function OrderStatusProvider({ children }: OrderStatusProviderProps) {
+export function OrderStatusProvider({ children }: { children: ReactNode }) {
   const [isModalOpen, setIsModalOpen] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
   const [isEdit, setIsEdit] = useState(false)
-  const [selectedOrderStatus, setSelectedOrderStatus] = useState(null)
+  const [selectedOrderStatus, setSelectedOrderStatus] = useState<OrderStatusDTO | undefined>(undefined)
 
   const { t } = useTranslation()
 
-  const defaultLanguageValues = SUPPORTED_LANGUAGES.reduce((acc, lang) => ({ ...acc, [lang]: '' }), {})
+  const formSchema = useMemo(() => createOrderStatusFormSchema(t), [t])
 
-  const formSchema = useMemo(() =>
-    z.object({
-      names: z.record(z.string({ required_error: t('form.errors.required') }).min(3, { message: t('form.errors.min_length', { count: 3 }) }).trim()),
-      color: z.string().optional(),
-      priority: z.number().default(0),
-      isLocked: z.boolean().default(false),
-      isSelectable: z.boolean().default(false),
-    }), [t])
-
-  const form = useForm({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      names: defaultLanguageValues,
-      color: '',
-      priority: 0,
-      isLocked: false,
-    },
+  const form = useForm<OrderStatusFormValues>({
+    resolver: zodResolver(formSchema) as Resolver<OrderStatusFormValues>,
+    defaultValues: getOrderStatusFormValues(),
   })
 
   const queryClient = useQueryClient()
-
-  function getOrderStatusFormValues(orderStatus) {
-    if (!orderStatus) {
-      return {
-        names: defaultLanguageValues,
-        color: '',
-        priority: 0,
-        isLocked: false,
-        isSelectable: false,
-      }
-    }
-    return {
-      names: { ...orderStatus.names },
-      color: orderStatus.color,
-      priority: orderStatus.priority,
-      isLocked: orderStatus.isLocked,
-      isSelectable: orderStatus.isSelectable,
-    }
-  }
 
   const closeModal = () => {
     if (!isModalOpen)
       return
     setIsModalOpen(false)
-    setIsLoading(false)
     setIsEdit(false)
-    setSelectedOrderStatus(null)
+    setSelectedOrderStatus(undefined)
     form.reset()
   }
 
-  const openModal = (orderStatus) => {
+  const openModal = (orderStatus?: OrderStatusDTO) => {
     setIsModalOpen(true)
     setIsEdit(!!orderStatus)
     setSelectedOrderStatus(orderStatus)
@@ -105,7 +74,7 @@ export function OrderStatusProvider({ children }: OrderStatusProviderProps) {
     options: {
       onSuccess: ({ data }) => {
         closeModal()
-        queryClient.invalidateQueries({ queryKey: ['order-statuses'] })
+        void queryClient.invalidateQueries({ queryKey: ['order-statuses'] })
         toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description || ''}` })
       },
       onError: ({ response }) => {
@@ -120,7 +89,7 @@ export function OrderStatusProvider({ children }: OrderStatusProviderProps) {
     options: {
       onSuccess: ({ data }) => {
         closeModal()
-        queryClient.invalidateQueries({ queryKey: ['order-statuses'] })
+        void queryClient.invalidateQueries({ queryKey: ['order-statuses'] })
         toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description || ''}` })
       },
       onError: ({ response }) => {
@@ -134,7 +103,7 @@ export function OrderStatusProvider({ children }: OrderStatusProviderProps) {
   const useMutateRemoveOrderStatus = useOrderStatusRemove({
     options: {
       onSuccess: ({ data }) => {
-        queryClient.invalidateQueries({ queryKey: ['order-statuses'] })
+        void queryClient.invalidateQueries({ queryKey: ['order-statuses'] })
         toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description || ''}` })
       },
       onError: ({ response }) => {
@@ -144,17 +113,18 @@ export function OrderStatusProvider({ children }: OrderStatusProviderProps) {
     },
   })
 
-  const removeOrderStatus = (params) => {
+  const removeOrderStatus = (params: { ids: string[] }) => {
     useMutateRemoveOrderStatus.mutate(params)
   }
 
-  const submitOrderStatusForm = (params) => {
-    setIsLoading(true)
-    if (!selectedOrderStatus)
+  const submitOrderStatusForm = (params: OrderStatusFormValues) => {
+    if (!selectedOrderStatus || !isEdit)
       return useMutateCreateOrderStatus.mutate(params)
 
     return useMutateEditOrderStatus.mutate({ ...params, id: selectedOrderStatus.id })
   }
+
+  const isLoading = useMutateCreateOrderStatus.isPending || useMutateEditOrderStatus.isPending || useMutateRemoveOrderStatus.isPending
 
   const value: OrderStatusContextType = useMemo(
     () => ({
@@ -181,4 +151,33 @@ export function useOrderStatusContext(): OrderStatusContextType {
     throw new Error('useOrderStatusContext - OrderStatusContext')
   }
   return context
+}
+
+function createOrderStatusFormSchema(t: (key: string, options?: Record<string, unknown>) => string) {
+  return z.object({
+    names: z.record(z.string({ required_error: t('form.errors.required') }).min(3, { message: t('form.errors.min_length', { count: 3 }) }).trim()),
+    color: z.string().optional(),
+    priority: z.number().default(0),
+    isLocked: z.boolean().default(false),
+    isSelectable: z.boolean().default(false),
+  })
+}
+
+function getOrderStatusFormValues(orderStatus?: OrderStatusDTO): OrderStatusFormValues {
+  if (!orderStatus) {
+    return {
+      names: {},
+      color: '#ffffff',
+      priority: 0,
+      isLocked: false,
+      isSelectable: false,
+    }
+  }
+  return {
+    names: { ...orderStatus.names },
+    color: orderStatus.color ?? '#ffffff',
+    priority: orderStatus.priority,
+    isLocked: orderStatus.isLocked,
+    isSelectable: orderStatus.isSelectable,
+  }
 }

@@ -1,11 +1,11 @@
+import type { OrderSourceDTO } from '@remnant/shared'
 import type { ReactNode } from 'react'
-import type { UseFormReturn } from 'react-hook-form'
+import type { Resolver, UseFormReturn } from 'react-hook-form'
 
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useQueryClient } from '@tanstack/react-query'
 import { createContext, useContext, useMemo, useState } from 'react'
 import { useForm } from 'react-hook-form'
-import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { z } from 'zod'
 
@@ -14,80 +14,53 @@ import {
   useOrderSourceEdit,
   useOrderSourceRemove,
 } from '@/api/hooks'
-import { SUPPORTED_LANGUAGES } from '@/utils/constants'
+import { useLocale } from '@/utils/hooks'
 
 interface OrderSourceContextType {
-  selectedOrderSource: OrderSource
+  selectedOrderSource: OrderSourceDTO | undefined
   isModalOpen: boolean
   isLoading: boolean
   isEdit: boolean
-  form: UseFormReturn
-  openModal: (orderSource?: OrderSource) => void
+  form: UseFormReturn<OrderSourceFormValues>
+  openModal: (orderSource?: OrderSourceDTO) => void
   closeModal: () => void
-  submitOrderSourceForm: (params) => void
+  submitOrderSourceForm: (params: OrderSourceFormValues) => void
   removeOrderSource: (params: { ids: string[] }) => void
+}
+
+interface OrderSourceFormValues {
+  names: Record<string, string>
+  color: string
+  priority: number
 }
 
 const OrderSourceContext = createContext<OrderSourceContextType | undefined>(undefined)
 
-interface OrderSourceProviderProps {
-  children: ReactNode
-}
-
-export function OrderSourceProvider({ children }: OrderSourceProviderProps) {
+export function OrderSourceProvider({ children }: { children: ReactNode }) {
   const [isModalOpen, setIsModalOpen] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
   const [isEdit, setIsEdit] = useState(false)
-  const [selectedOrderSource, setSelectedOrderSource] = useState(null)
+  const [selectedOrderSource, setSelectedOrderSource] = useState<OrderSourceDTO | undefined>(undefined)
 
-  const { t } = useTranslation()
+  const { t } = useLocale()
+  const formSchema = useMemo(() => createOrderSourceFormSchema(t), [t])
 
-  const defaultLanguageValues = SUPPORTED_LANGUAGES.reduce((acc, lang) => ({ ...acc, [lang]: '' }), {})
-
-  const formSchema = useMemo(() =>
-    z.object({
-      names: z.record(z.string({ required_error: t('form.errors.required') }).min(3, { message: t('form.errors.min_length', { count: 3 }) }).trim()),
-      color: z.string().optional(),
-      priority: z.number().default(0),
-    }), [t])
-
-  const form = useForm({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      names: defaultLanguageValues,
-      color: '',
-      priority: 0,
-    },
+  const form = useForm<OrderSourceFormValues>({
+    resolver: zodResolver(formSchema) as Resolver<OrderSourceFormValues>,
+    defaultValues: getOrderSourceFormValues(),
   })
 
   const queryClient = useQueryClient()
-
-  function getOrderSourceFormValues(orderSource) {
-    if (!orderSource) {
-      return {
-        names: defaultLanguageValues,
-        color: '',
-        priority: 0,
-      }
-    }
-    return {
-      names: { ...orderSource.names },
-      color: orderSource.color,
-      priority: orderSource.priority,
-    }
-  }
 
   const closeModal = () => {
     if (!isModalOpen)
       return
     setIsModalOpen(false)
-    setIsLoading(false)
     setIsEdit(false)
-    setSelectedOrderSource(null)
+    setSelectedOrderSource(undefined)
     form.reset()
   }
 
-  const openModal = (orderSource) => {
+  const openModal = (orderSource?: OrderSourceDTO) => {
     setIsModalOpen(true)
     setIsEdit(!!orderSource)
     setSelectedOrderSource(orderSource)
@@ -98,7 +71,7 @@ export function OrderSourceProvider({ children }: OrderSourceProviderProps) {
     options: {
       onSuccess: ({ data }) => {
         closeModal()
-        queryClient.invalidateQueries({ queryKey: ['order-sources'] })
+        void queryClient.invalidateQueries({ queryKey: ['order-sources'] })
         toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description || ''}` })
       },
       onError: ({ response }) => {
@@ -113,7 +86,7 @@ export function OrderSourceProvider({ children }: OrderSourceProviderProps) {
     options: {
       onSuccess: ({ data }) => {
         closeModal()
-        queryClient.invalidateQueries({ queryKey: ['order-sources'] })
+        void queryClient.invalidateQueries({ queryKey: ['order-sources'] })
         toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description || ''}` })
       },
       onError: ({ response }) => {
@@ -127,7 +100,7 @@ export function OrderSourceProvider({ children }: OrderSourceProviderProps) {
   const useMutateRemoveOrderSource = useOrderSourceRemove({
     options: {
       onSuccess: ({ data }) => {
-        queryClient.invalidateQueries({ queryKey: ['order-sources'] })
+        void queryClient.invalidateQueries({ queryKey: ['order-sources'] })
         toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description || ''}` })
       },
       onError: ({ response }) => {
@@ -137,17 +110,18 @@ export function OrderSourceProvider({ children }: OrderSourceProviderProps) {
     },
   })
 
-  const removeOrderSource = (params) => {
+  const removeOrderSource = (params: { ids: string[] }) => {
     useMutateRemoveOrderSource.mutate(params)
   }
 
-  const submitOrderSourceForm = (params) => {
-    setIsLoading(true)
-    if (!selectedOrderSource)
+  const submitOrderSourceForm = (params: OrderSourceFormValues) => {
+    if (!selectedOrderSource || !isEdit)
       return useMutateCreateOrderSource.mutate(params)
 
     return useMutateEditOrderSource.mutate({ ...params, id: selectedOrderSource.id })
   }
+
+  const isLoading = useMutateCreateOrderSource.isPending || useMutateEditOrderSource.isPending || useMutateRemoveOrderSource.isPending
 
   const value: OrderSourceContextType = useMemo(
     () => ({
@@ -174,4 +148,27 @@ export function useOrderSourceContext(): OrderSourceContextType {
     throw new Error('useOrderSourceContext - OrderSourceContext')
   }
   return context
+}
+
+function createOrderSourceFormSchema(t: (key: string, options?: Record<string, unknown>) => string) {
+  return z.object({
+    names: z.record(z.string({ required_error: t('form.errors.required') }).min(3, { message: t('form.errors.min_length', { count: 3 }) }).trim()),
+    color: z.string().optional(),
+    priority: z.number().default(0),
+  })
+}
+
+function getOrderSourceFormValues(orderSource?: OrderSourceDTO): OrderSourceFormValues {
+  if (!orderSource) {
+    return {
+      names: {},
+      color: '#ffffff',
+      priority: 0,
+    }
+  }
+  return {
+    names: { ...orderSource.names },
+    color: orderSource.color ?? '#ffffff',
+    priority: orderSource.priority,
+  }
 }

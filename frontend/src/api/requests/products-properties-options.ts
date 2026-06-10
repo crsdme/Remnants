@@ -1,24 +1,27 @@
 import type {
-  createProductPropertiesOptionParams,
-  editProductPropertyOptionParams,
-  getProductPropertiesOptionsParams,
-  ProductPropertiesOptionsResponse,
-  removeProductPropertyOptionParams,
-} from '@/api/types'
+  CreateProductPropertyOptionRequest,
+  CreateProductPropertyOptionResponse,
+  EditProductPropertyOptionRequest,
+  EditProductPropertyOptionResponse,
+  GetProductPropertyOptionRequest,
+  GetProductPropertyOptionsResponse,
+  RemoveProductPropertyOptionRequest,
+  RemoveProductPropertyOptionsResponse,
+} from '@remnant/shared'
 import { api } from '@/api/instance'
 
-export async function getProductPropertiesOptions(params: getProductPropertiesOptionsParams) {
-  return api.get<ProductPropertiesOptionsResponse>('product-properties-options/get', { params })
+export async function getProductPropertiesOptions(params: GetProductPropertyOptionRequest) {
+  return api.get<GetProductPropertyOptionsResponse>('product-properties-options/get', { params })
 }
 
-export async function createProductPropertyOption(params: createProductPropertiesOptionParams) {
-  return api.post<ProductPropertiesOptionsResponse>('product-properties-options/create', { ...params })
+export async function createProductPropertyOption(params: CreateProductPropertyOptionRequest) {
+  return api.post<CreateProductPropertyOptionResponse>('product-properties-options/create', { ...params })
 }
 
-export async function editProductPropertyOption(params: editProductPropertyOptionParams) {
-  return api.post<ProductPropertiesOptionsResponse>('product-properties-options/edit', params)
+export async function editProductPropertyOption(params: EditProductPropertyOptionRequest) {
+  return api.post<EditProductPropertyOptionResponse>('product-properties-options/edit', params)
 }
 
-export async function removeProductPropertyOption(params: removeProductPropertyOptionParams) {
-  return api.post<ProductPropertiesOptionsResponse>('product-properties-options/remove', params)
+export async function removeProductPropertyOption(params: RemoveProductPropertyOptionRequest) {
+  return api.post<RemoveProductPropertyOptionsResponse>('product-properties-options/remove', params)
 }

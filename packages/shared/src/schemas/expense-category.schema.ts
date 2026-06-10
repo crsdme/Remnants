@@ -1,5 +1,17 @@
 import { z } from 'zod'
-import { dateRangeSchema, idSchema, numberFromStringSchema, paginationSchema, sorterParamsSchema } from './common'
+import { dateRangeSchema, idSchema, languageStringSchema, numberFromStringSchema, paginationSchema, responseItemSchema, responseListSchema, responseSchema, sorterParamsSchema } from './common'
+
+export const expenseCategorySchema = z.object({
+  id: idSchema,
+  names: languageStringSchema,
+  color: z.string().trim(),
+  priority: numberFromStringSchema,
+  comment: z.string().optional(),
+  createdAt: z.coerce.date(),
+  updatedAt: z.coerce.date(),
+})
+
+export type ExpenseCategoryDTO = z.output<typeof expenseCategorySchema>
 
 export const getExpenseCategoriesSchema = z.object({
   filters: z.object({
@@ -43,3 +55,15 @@ export const removeExpenseCategoriesSchema = z.object({
 })
 
 export type RemoveExpenseCategoriesRequest = z.input<typeof removeExpenseCategoriesSchema>
+
+export const getExpenseCategoriesResponseSchema = responseListSchema(expenseCategorySchema)
+export type GetExpenseCategoriesResponse = z.output<typeof getExpenseCategoriesResponseSchema>
+
+export const createExpenseCategoryResponseSchema = responseItemSchema(expenseCategorySchema)
+export type CreateExpenseCategoryResponse = z.output<typeof createExpenseCategoryResponseSchema>
+
+export const editExpenseCategoryResponseSchema = responseItemSchema(expenseCategorySchema)
+export type EditExpenseCategoryResponse = z.output<typeof editExpenseCategoryResponseSchema>
+
+export const removeExpenseCategoriesResponseSchema = responseSchema
+export type RemoveExpenseCategoriesResponse = z.output<typeof removeExpenseCategoriesResponseSchema>

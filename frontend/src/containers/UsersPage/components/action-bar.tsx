@@ -1,8 +1,6 @@
 import { Plus } from 'lucide-react'
-import { useState } from 'react'
-import { useTranslation } from 'react-i18next'
 
-import { ImportButton, PermissionGate } from '@/components'
+import { PermissionGate } from '@/components'
 import {
   Button,
   Sheet,
@@ -12,48 +10,14 @@ import {
   SheetTitle,
   SheetTrigger,
 } from '@/components/ui'
-import { downloadCsv } from '@/utils/helpers/download'
+import { useLocale } from '@/utils/hooks'
 import { useUserContext } from '../context'
 
 import { UserForm } from './form'
 
 export function ActionBar() {
-  const { t } = useTranslation()
-  const { isModalOpen, isLoading, openModal, isEdit, closeModal, importUsers } = useUserContext()
-  const [file, setFile] = useState<File | null>(null)
-
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0]
-    if (file) {
-      setFile(file)
-    }
-  }
-
-  const handleDownloadTemplate = () => {
-    const headers = [
-      'name',
-      'login',
-      'password',
-      'active',
-    ]
-
-    const row = [
-      'name',
-      'login',
-      'password',
-      'active',
-    ]
-
-    const csv = [headers, row].map(r => r.join(',')).join('\n')
-    downloadCsv(csv, 'users-template.csv', false)
-  }
-
-  const onImport = async () => {
-    const formData = new FormData()
-    formData.append('file', file)
-    importUsers(formData)
-    setFile(null)
-  }
+  const { t } = useLocale()
+  const { isModalOpen, isLoading, openModal, isEdit, closeModal } = useUserContext()
 
   return (
     <div className="flex items-center justify-between flex-wrap gap-2">
@@ -62,15 +26,6 @@ export function ActionBar() {
         <p className="text-muted-foreground">{t('page.users.description')}</p>
       </div>
       <div className="flex items-center flex-wrap gap-2">
-        <PermissionGate permission="user.import">
-          <ImportButton
-            handleFileChange={handleFileChange}
-            handleDownloadTemplate={handleDownloadTemplate}
-            isFileSelected={!!file}
-            isLoading={isLoading}
-            onSubmit={onImport}
-          />
-        </PermissionGate>
         <PermissionGate permission={['user.create']}>
           <Sheet open={isModalOpen} onOpenChange={() => closeModal()}>
             <SheetTrigger asChild>

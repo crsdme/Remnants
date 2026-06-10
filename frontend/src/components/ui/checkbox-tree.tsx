@@ -1,10 +1,10 @@
 import type React from 'react'
 import { useCallback, useMemo, useState } from 'react'
 
-function useCheckboxTree(initialTree) {
+function useCheckboxTree(initialTree: any) {
   const initialCheckedNodes = useMemo(() => {
     const checkedSet = new Set<string>()
-    const initializeCheckedNodes = (node) => {
+    const initializeCheckedNodes = (node: any) => {
       if (node.defaultChecked) {
         checkedSet.add(node.id)
       }
@@ -17,16 +17,16 @@ function useCheckboxTree(initialTree) {
   const [checkedNodes, setCheckedNodes] = useState<Set<string>>(initialCheckedNodes)
 
   const isChecked = useCallback(
-    (node) => {
+    (node: any) => {
       if (!node.children) {
         return checkedNodes.has(node.id)
       }
 
-      const childrenChecked = node.children.map(child => isChecked(child))
-      if (childrenChecked.every(status => status === true)) {
+      const childrenChecked = node.children.map((child: any) => isChecked(child))
+      if (childrenChecked.every((status: any) => status === true)) {
         return true
       }
-      if (childrenChecked.some(status => status === true || status === 'indeterminate')) {
+      if (childrenChecked.some((status: any) => status === true || status === 'indeterminate')) {
         return 'indeterminate'
       }
       return false
@@ -35,17 +35,17 @@ function useCheckboxTree(initialTree) {
   )
 
   const handleCheck = useCallback(
-    (node) => {
+    (node: any) => {
       const newCheckedNodes = new Set(checkedNodes)
 
-      const toggleNode = (n, check) => {
+      const toggleNode = (n: any, check: boolean) => {
         if (check) {
           newCheckedNodes.add(n.id)
         }
         else {
           newCheckedNodes.delete(n.id)
         }
-        n.children?.forEach(child => toggleNode(child, check))
+        n.children?.forEach((child: any) => toggleNode(child, check))
       }
 
       const currentStatus = isChecked(node)
@@ -61,21 +61,21 @@ function useCheckboxTree(initialTree) {
 }
 
 interface CheckboxTreeProps {
-  tree
+  tree: any
   renderNode: (props: {
-    node
+    node: any
     isChecked: boolean | 'indeterminate'
     onCheckedChange: () => void
-    children: React.ReactNode
+    children: Awaited<React.ReactNode>
     isExpanded: boolean
     onToggleExpand: () => void
-  }) => React.ReactNode
+  }) => Awaited<React.ReactNode>
 }
 
-export function CheckboxTree({ tree, renderNode }: CheckboxTreeProps) {
+export function CheckboxTree({ tree, renderNode }: CheckboxTreeProps): Awaited<React.ReactNode> {
   const { isChecked, handleCheck } = useCheckboxTree(tree)
-  // eslint-disable-next-line react-hooks-extra/prefer-use-state-lazy-initialization
-  const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set())
+
+  const [expandedIds, setExpandedIds] = useState<Set<string>>(() => new Set())
 
   const toggleExpand = useCallback((id: string) => {
     setExpandedIds((prev) => {
@@ -90,7 +90,7 @@ export function CheckboxTree({ tree, renderNode }: CheckboxTreeProps) {
     })
   }, [])
 
-  const renderTreeNode = (node): React.ReactNode => {
+  const renderTreeNode = (node: any): Awaited<React.ReactNode> => {
     const isExpanded = expandedIds.has(node.id)
     const hasChildren = !!node.children?.length
     const children = hasChildren && isExpanded

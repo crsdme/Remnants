@@ -1,3 +1,6 @@
+import type { DeliveryServiceDTO } from '@remnant/shared'
+import type { Column } from '@tanstack/react-table'
+import { createColumnHelper } from '@tanstack/react-table'
 import {
   ArrowDown,
   ArrowUp,
@@ -7,22 +10,24 @@ import {
   Trash,
 } from 'lucide-react'
 import { useMemo } from 'react'
-import { useTranslation } from 'react-i18next'
 
 import { TableActionDropdown } from '@/components'
-import { Badge, Button, Checkbox } from '@/components/ui'
+import { Badge, Button } from '@/components/ui'
 import { formatDate } from '@/utils/helpers'
+import { useLocale } from '@/utils/hooks'
 import { useDeliveryServiceContext } from '../context'
 
 const sortIcons = { asc: ArrowUp, desc: ArrowDown }
+const columnHelper = createColumnHelper<DeliveryServiceDTO>()
 
 export function useColumns() {
-  const { t, i18n } = useTranslation()
+  const { t, language } = useLocale()
   const { isLoading, openModal, removeDeliveryService } = useDeliveryServiceContext()
 
   const columns = useMemo(() => {
-    function sortHeader(column, label) {
-      const Icon = sortIcons[column.getIsSorted() || undefined] || ChevronsUpDown
+    function sortHeader(column: Column<DeliveryServiceDTO, unknown>, label: string) {
+      const sorted = column.getIsSorted()
+      const Icon = sorted ? sortIcons[sorted] : ChevronsUpDown
 
       return (
         <Button
@@ -37,40 +42,8 @@ export function useColumns() {
       )
     }
 
-    function selectColumn() {
-      return ({
-        id: 'select',
-        size: 35,
-        meta: { title: t('component.columnMenu.columns.select') },
-        header: ({ table }) => {
-          const isChecked = table.getIsAllPageRowsSelected()
-            ? true
-            : table.getIsSomePageRowsSelected()
-              ? 'indeterminate'
-              : false
-
-          return (
-            <Checkbox
-              checked={isChecked}
-              onCheckedChange={value => table.toggleAllPageRowsSelected(!!value)}
-              aria-label="Select all"
-            />
-          )
-        },
-        cell: ({ row }) => (
-          <Checkbox
-            checked={row.getIsSelected()}
-            onCheckedChange={value => row.toggleSelected(!!value)}
-            aria-label="Select row"
-          />
-        ),
-        enableSorting: false,
-        enableHiding: false,
-      })
-    }
-
     function actionColumn() {
-      return ({
+      return columnHelper.display({
         id: 'action',
         size: 85,
         meta: {
@@ -83,7 +56,7 @@ export function useColumns() {
           const actions = [
             {
               permission: 'delivery-service.copy',
-              onClick: () => navigator.clipboard.writeText(item.id),
+              onClick: async () => navigator.clipboard.writeText(item.id),
               label: t('table.copy'),
               icon: <Copy className="h-4 w-4" />,
             },
@@ -109,8 +82,7 @@ export function useColumns() {
     }
 
     return [
-      selectColumn(),
-      {
+      columnHelper.accessor(row => row.names?.[language] || row.names?.en, {
         id: 'names',
         size: 150,
         meta: {
@@ -123,11 +95,9 @@ export function useColumns() {
           defaultVisible: true,
         },
         header: ({ column }) => sortHeader(column, t('page.delivery-services.table.names')),
-        accessorFn: row => row.names?.[i18n.language] || row.names?.en,
-      },
-      {
+      }),
+      columnHelper.accessor('priority', {
         id: 'priority',
-        accessorKey: 'priority',
         meta: {
           title: t('page.delivery-services.table.priority'),
           batchEdit: true,
@@ -138,10 +108,9 @@ export function useColumns() {
         },
         header: ({ column }) => sortHeader(column, t('page.delivery-services.table.priority')),
         cell: ({ row }) => <Badge variant="outline">{row.original.priority}</Badge>,
-      },
-      {
+      }),
+      columnHelper.accessor('type', {
         id: 'type',
-        accessorKey: 'type',
         meta: {
           title: t('page.delivery-services.table.type'),
           batchEdit: true,
@@ -152,10 +121,9 @@ export function useColumns() {
         },
         header: ({ column }) => sortHeader(column, t('page.delivery-services.table.type')),
         cell: ({ row }) => <Badge variant="outline">{row.original.type}</Badge>,
-      },
-      {
+      }),
+      columnHelper.accessor('color', {
         id: 'color',
-        accessorKey: 'color',
         meta: {
           title: t('page.delivery-services.table.color'),
           batchEdit: true,
@@ -169,10 +137,9 @@ export function useColumns() {
           const color = row.original.color || '#ffffff'
           return <div className="w-6 h-6 rounded-full border border-gray-300" style={{ backgroundColor: color }} />
         },
-      },
-      {
+      }),
+      columnHelper.accessor('createdAt', {
         id: 'createdAt',
-        accessorKey: 'createdAt',
         meta: {
           title: t('table.createdAt'),
           filterable: true,
@@ -180,11 +147,10 @@ export function useColumns() {
           sortable: true,
         },
         header: ({ column }) => sortHeader(column, t('table.createdAt')),
-        cell: ({ row }) => formatDate(row.getValue('createdAt'), 'dd.MM.yyyy HH:mm', i18n.language),
-      },
-      {
+        cell: ({ row }) => formatDate(row.getValue('createdAt'), 'dd.MM.yyyy HH:mm', language),
+      }),
+      columnHelper.accessor('updatedAt', {
         id: 'updatedAt',
-        accessorKey: 'updatedAt',
         meta: {
           title: t('table.updatedAt'),
           filterable: true,
@@ -192,10 +158,10 @@ export function useColumns() {
           sortable: true,
         },
         header: ({ column }) => sortHeader(column, t('table.updatedAt')),
-        cell: ({ row }) => formatDate(row.getValue('updatedAt'), 'dd.MM.yyyy HH:mm', i18n.language),
-      },
+        cell: ({ row }) => formatDate(row.getValue('updatedAt'), 'dd.MM.yyyy HH:mm', language),
+      }),
       actionColumn(),
     ]
-  }, [i18n.language])
+  }, [language, isLoading, openModal, removeDeliveryService, t])
   return columns
 }

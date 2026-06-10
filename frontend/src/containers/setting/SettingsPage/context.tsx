@@ -1,3 +1,4 @@
+import type { SettingDTO } from '@remnant/shared'
 import type { ReactNode } from 'react'
 
 import { useQueryClient } from '@tanstack/react-query'
@@ -11,17 +12,13 @@ import {
 
 interface SettingContextType {
   isLoading: boolean
-  editSetting: (params) => void
-  getSetting: (key: string) => Setting | undefined
+  editSetting: (params: { key: string, value: unknown }) => void
+  getSetting: (key: string) => SettingDTO | undefined
 }
 
 const SettingContext = createContext<SettingContextType | undefined>(undefined)
 
-interface SettingProviderProps {
-  children: ReactNode
-}
-
-export function SettingProvider({ children }: SettingProviderProps) {
+export function SettingProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(false)
 
   const { t } = useTranslation()
@@ -32,7 +29,7 @@ export function SettingProvider({ children }: SettingProviderProps) {
     options: {
       onSuccess: ({ data }) => {
         setIsLoading(false)
-        queryClient.invalidateQueries({ queryKey: ['settings'] })
+        void queryClient.invalidateQueries({ queryKey: ['settings'] })
         toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description || ''}` })
       },
       onError: ({ response }) => {
@@ -43,16 +40,12 @@ export function SettingProvider({ children }: SettingProviderProps) {
     },
   })
 
-  const editSetting = (params) => {
+  const editSetting = (params: { key: string, value: unknown }) => {
     setIsLoading(true)
-    return useMutateEditSetting.mutate(params)
+    return useMutateEditSetting.mutate({ id: '', key: params.key, value: params.value })
   }
 
-  const { data: { settings = [] } = {} } = useSettingQuery({}, { options: {
-    select: response => ({
-      settings: response.data.settings,
-    }),
-  } })
+  const { settings } = useSettingQuery({}, { options: { placeholderData: prevData => prevData } })
 
   const getSetting = (key: string) => {
     return settings.find(setting => setting.key === key)

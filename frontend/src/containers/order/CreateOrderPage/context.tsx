@@ -1,15 +1,16 @@
+import type { CreateOrderRequest, ProductPopulatedDTO } from '@remnant/shared'
+
 import type { ReactNode } from 'react'
-import type { UseFormReturn } from 'react-hook-form'
+import type { Resolver, UseFormReturn } from 'react-hook-form'
 
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useQueryClient } from '@tanstack/react-query'
 import { createContext, useContext, useMemo, useState } from 'react'
 import { useForm } from 'react-hook-form'
-import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
-
 import { z } from 'zod'
+
 import {
   useBarcodeOptions,
   useCashregisterAccountQuery,
@@ -20,75 +21,141 @@ import {
   usePrintDraftInvoice,
 } from '@/api/hooks'
 import { PAYMENT_STATUSES } from '@/utils/constants'
+import { useLocale } from '@/utils/hooks'
+
+interface DraftOrderPayment {
+  id: string
+  amount: number
+  paymentDate?: Date
+  paymentStatus: string
+  comment?: string
+  cashregister: { id: string, names: { [key: string]: string } }
+  cashregisterAccount: { id: string, names: { [key: string]: string } }
+  currency: { id: string, symbols: { [key: string]: string } }
+}
+
+function createPaymentFormSchema(t: (key: string) => string) {
+  return z.object({
+    cashregister: z.string({ required_error: t('form.errors.required') }).min(1, { message: t('form.errors.required') }),
+    cashregisterAccount: z.string({ required_error: t('form.errors.required') }).min(1, { message: t('form.errors.required') }),
+    amount: z.number().default(0),
+    currency: z.string({ required_error: t('form.errors.required') }).min(1, { message: t('form.errors.required') }),
+    paymentDate: z.date().optional(),
+    paymentStatus: z.string({ required_error: t('form.errors.required') }).min(1, { message: t('form.errors.required') }),
+    comment: z.string().optional(),
+  })
+}
+
+type PaymentFormValues = z.infer<ReturnType<typeof createPaymentFormSchema>>
+
+function createOrderLineItemSchema() {
+  return z.object({
+    product: z.string(),
+    lineQuantity: z.number(),
+    selectedCurrencyId: z.string(),
+    basePrice: z.number(),
+    price: z.number(),
+    manualPrice: z.number().optional(),
+    discountAmount: z.number().optional(),
+    discountPercent: z.number().optional(),
+  }).merge(z.object({
+    id: z.string().optional(),
+    names: z.record(z.string(), z.string()).optional(),
+    receivedQuantity: z.number().optional(),
+    selectedPrice: z.number().optional(),
+    productProperties: z.any().optional(),
+    seq: z.number().optional(),
+    barcodes: z.any().optional(),
+    categories: z.any().optional(),
+    unit: z.any().optional(),
+    currency: z.any().optional(),
+    purchaseCurrency: z.any().optional(),
+    warehouseStock: z.any().optional(),
+    images: z.any().optional(),
+    productPropertiesGroup: z.any().optional(),
+    purchasePrice: z.number().optional(),
+    createdAt: z.coerce.date().optional(),
+    updatedAt: z.coerce.date().optional(),
+  }))
+}
+
+export type OrderLineItemFormValues = z.infer<ReturnType<typeof createOrderLineItemSchema>>
+
+function createInformationFormSchema(t: (key: string) => string) {
+  return z.object({
+    warehouse: z.string({ required_error: t('form.errors.required') }).min(1, { message: t('form.errors.required') }),
+    orderSource: z.string({ required_error: t('form.errors.required') }).min(1, { message: t('form.errors.required') }),
+    orderStatus: z.string({ required_error: t('form.errors.required') }).min(1, { message: t('form.errors.required') }),
+    deliveryService: z.string({ required_error: t('form.errors.required') }).min(1, { message: t('form.errors.required') }),
+    client: z.string().optional(),
+    items: z.array(createOrderLineItemSchema()).min(1, { message: t('form.errors.required') }),
+    comment: z.string().optional(),
+  }).superRefine((data) => {
+    if (data.items.length === 0)
+      toast.error(t('form.errors.required.products'))
+  })
+}
+
+type InformationFormValues = z.infer<ReturnType<typeof createInformationFormSchema>>
+
+function createClientFormSchema(t: (key: string) => string) {
+  return z.object({
+    name: z.string({ required_error: t('form.errors.required') }).min(1, { message: t('form.errors.required') }),
+    middleName: z.string().optional(),
+    lastName: z.string().optional(),
+    country: z.string().optional(),
+    phones: z.array(z.string().min(7)).optional(),
+    emails: z.array(z.string().email()).optional(),
+    socials: z.array(z.object({
+      type: z.string(),
+      value: z.string(),
+    })).optional(),
+    comment: z.string().optional(),
+  })
+}
+
+type ClientFormValues = z.infer<ReturnType<typeof createClientFormSchema>>
 
 interface CreateOrderContextType {
   isClientModalOpen: boolean
   isPaymentModalOpen: boolean
   isLoading: boolean
-  paymentForm: UseFormReturn
-  informationForm: UseFormReturn
-  clientForm: UseFormReturn
+  paymentForm: UseFormReturn<PaymentFormValues>
+  informationForm: UseFormReturn<InformationFormValues>
+  clientForm: UseFormReturn<ClientFormValues>
   openClientModal: () => void
   closeClientModal: () => void
   openPaymentModal: () => void
   closePaymentModal: () => void
-  payments: any[]
+  payments: DraftOrderPayment[]
   removePayment: (id: string) => void
-  createClient: (params) => void
-  createOrder: (params) => void
-  createPayment: (params) => void
-  getBarcode: (code: string) => Promise<any>
+  createClient: (params: ClientFormValues) => void
+  createOrder: (params: InformationFormValues) => void
+  createPayment: (params: PaymentFormValues) => void
+  getBarcode: (code: string) => Promise<ProductPopulatedDTO[] & { unitsPerScan: number }[]>
   printDraftInvoice: () => void
 }
 
 const CreateOrderContext = createContext<CreateOrderContextType | undefined>(undefined)
 
-interface CreateOrderProviderProps {
-  children: ReactNode
-}
-
-export function CreateOrderProvider({ children }: CreateOrderProviderProps) {
+export function CreateOrderProvider({ children }: { children: ReactNode }) {
   const [isClientModalOpen, setIsClientModalOpen] = useState(false)
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
-  const [payments, setPayments] = useState([])
+  const [payments, setPayments] = useState<DraftOrderPayment[]>([])
   const navigate = useNavigate()
-  const { t } = useTranslation()
+  const { t } = useLocale()
 
-  const { data: { currencies = [] } = {} } = useCurrencyQuery(
-    {},
-    { options: { select: response => ({
-      currencies: response.data.currencies,
-    }) } },
-  )
+  const { currencies } = useCurrencyQuery({})
 
-  const { data: { cashregisters = [] } = {} } = useCashregisterQuery(
-    {},
-    { options: { select: response => ({
-      cashregisters: response.data.cashregisters,
-    }) } },
-  )
+  const { cashregisters } = useCashregisterQuery({})
 
-  const { data: { cashregisterAccounts = [] } = {} } = useCashregisterAccountQuery(
-    {},
-    { options: { select: response => ({
-      cashregisterAccounts: response.data.cashregisterAccounts,
-    }) } },
-  )
+  const { cashregisterAccounts } = useCashregisterAccountQuery({})
 
-  const paymentFormSchema = useMemo(() =>
-    z.object({
-      cashregister: z.string({ required_error: t('form.errors.required') }).min(1, { message: t('form.errors.required') }),
-      cashregisterAccount: z.string({ required_error: t('form.errors.required') }).min(1, { message: t('form.errors.required') }),
-      amount: z.number().default(0),
-      currency: z.string({ required_error: t('form.errors.required') }).min(1, { message: t('form.errors.required') }),
-      paymentDate: z.date().optional(),
-      paymentStatus: z.string({ required_error: t('form.errors.required') }).min(1, { message: t('form.errors.required') }),
-      comment: z.string().optional(),
-    }), [t])
+  const paymentFormSchema = useMemo(() => createPaymentFormSchema(t), [t])
 
-  const paymentForm = useForm({
-    resolver: zodResolver(paymentFormSchema),
+  const paymentForm = useForm<PaymentFormValues>({
+    resolver: zodResolver(paymentFormSchema) as Resolver<PaymentFormValues>,
     defaultValues: {
       cashregister: '',
       cashregisterAccount: '',
@@ -100,32 +167,10 @@ export function CreateOrderProvider({ children }: CreateOrderProviderProps) {
     },
   })
 
-  const informationFormSchema = z.object({
-    warehouse: z.string({ required_error: t('form.errors.required') }).min(1, { message: t('form.errors.required') }),
-    orderSource: z.string({ required_error: t('form.errors.required') }).min(1, { message: t('form.errors.required') }),
-    orderStatus: z.string({ required_error: t('form.errors.required') }).min(1, { message: t('form.errors.required') }),
-    deliveryService: z.string({ required_error: t('form.errors.required') }).min(1, { message: t('form.errors.required') }),
-    client: z.string().optional(),
-    items: z.array(z.object({
-      product: z.string(),
-      quantity: z.number(),
-      selectedCurrency: z.object({
-        id: z.string(),
-      }),
-      basePrice: z.number(),
-      price: z.number(),
-      manualPrice: z.number().optional(),
-      discountAmount: z.number().optional(),
-      discountPercent: z.number().optional(),
-    })).min(1, { message: t('form.errors.required') }),
-    comment: z.string().optional(),
-  }).superRefine((data) => {
-    if (data.items.length === 0)
-      toast.error(t('form.errors.required.products'))
-  })
+  const informationFormSchema = useMemo(() => createInformationFormSchema(t), [t])
 
-  const informationForm = useForm({
-    resolver: zodResolver(informationFormSchema),
+  const informationForm = useForm<InformationFormValues>({
+    resolver: zodResolver(informationFormSchema) as Resolver<InformationFormValues>,
     defaultValues: {
       warehouse: '',
       orderSource: '',
@@ -137,23 +182,10 @@ export function CreateOrderProvider({ children }: CreateOrderProviderProps) {
     },
   })
 
-  const clientFormSchema = useMemo(() =>
-    z.object({
-      name: z.string({ required_error: t('form.errors.required') }).min(1, { message: t('form.errors.required') }),
-      middleName: z.string().optional(),
-      lastName: z.string().optional(),
-      country: z.string().optional(),
-      phones: z.array(z.string().min(7)).optional(),
-      emails: z.array(z.string().email()).optional(),
-      socials: z.array(z.object({
-        type: z.string(),
-        value: z.string(),
-      })).optional(),
-      comment: z.string().optional(),
-    }), [t])
+  const clientFormSchema = useMemo(() => createClientFormSchema(t), [t])
 
-  const clientForm = useForm({
-    resolver: zodResolver(clientFormSchema),
+  const clientForm = useForm<ClientFormValues>({
+    resolver: zodResolver(clientFormSchema) as Resolver<ClientFormValues>,
     defaultValues: {
       name: '',
       middleName: '',
@@ -185,13 +217,18 @@ export function CreateOrderProvider({ children }: CreateOrderProviderProps) {
     setIsPaymentModalOpen(true)
   }
 
-  const createPayment = (params) => {
+  const createPayment = (params: PaymentFormValues) => {
     const cashregister = (cashregisters || []).find(cashregister => cashregister.id === params.cashregister)
     const cashregisterAccount = (cashregisterAccounts || []).find(account => account.id === params.cashregisterAccount)
     const currency = (currencies || []).find(currency => currency.id === params.currency)
 
-    const payment = {
-      id: Date.now(),
+    if (!cashregister || !cashregisterAccount || !currency) {
+      toast.error(t('form.errors.required'))
+      return
+    }
+
+    const payment: DraftOrderPayment = {
+      id: crypto.randomUUID(),
       cashregister,
       cashregisterAccount,
       currency,
@@ -201,29 +238,29 @@ export function CreateOrderProvider({ children }: CreateOrderProviderProps) {
       comment: params.comment,
     }
 
-    setPayments([...payments, payment])
+    setPayments(prev => [...prev, payment])
     closePaymentModal()
   }
 
-  const removePayment = (id) => {
-    setPayments(payments.filter(payment => payment.id !== id))
+  const removePayment = (id: string) => {
+    setPayments(payments.filter(payment => String(payment.id) !== id))
   }
 
   const useMutateCreateOrder = useOrderCreate({
     options: {
       onSuccess: ({ data }) => {
-        queryClient.invalidateQueries({ queryKey: ['orders'] })
-        queryClient.invalidateQueries({ queryKey: ['products'] })
-        queryClient.invalidateQueries({ queryKey: ['statistics'] })
-        queryClient.invalidateQueries({ queryKey: ['money-transactions'] })
-        queryClient.invalidateQueries({ queryKey: ['order-statuses', 'get', { filters: { includeAll: true, includeCount: true } }] })
+        void queryClient.invalidateQueries({ queryKey: ['orders'] })
+        void queryClient.invalidateQueries({ queryKey: ['products'] })
+        void queryClient.invalidateQueries({ queryKey: ['statistics'] })
+        void queryClient.invalidateQueries({ queryKey: ['money-transactions'] })
+        void queryClient.invalidateQueries({ queryKey: ['order-statuses', 'get', { filters: { includeAll: true, includeCount: true } }] })
         toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description || ''}` })
-        navigate('/orders')
+        void navigate('/orders')
       },
       onError: ({ response }) => {
         const error = response.data.error
         toast.error(t(`error.title.${error.code}`), { description: `${t(`error.description.${error.code}`)} ${error.description || ''}` })
-        navigate('/orders')
+        void navigate('/orders')
       },
     },
   })
@@ -234,7 +271,7 @@ export function CreateOrderProvider({ children }: CreateOrderProviderProps) {
         closeClientModal()
         setIsLoading(false)
         informationForm.setValue('client', data?.client?.id || '')
-        queryClient.invalidateQueries({ queryKey: ['clients'] })
+        void queryClient.invalidateQueries({ queryKey: ['clients'] })
         toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description || ''}` })
       },
       onError: ({ response }) => {
@@ -259,33 +296,47 @@ export function CreateOrderProvider({ children }: CreateOrderProviderProps) {
     },
   })
 
-  const createClient = (params) => {
+  const createClient = (params: ClientFormValues) => {
     setIsLoading(true)
     useMutateCreateClient.mutate(params)
   }
 
-  const createOrder = (params) => {
+  const createOrder = (params: InformationFormValues) => {
     setIsLoading(true)
 
-    const mappedItems = params.items.map(item => ({
-      ...item,
-      currency: item.selectedCurrency.id,
-      price: item.price,
-      manualPrice: item.manualPrice || undefined,
-      basePrice: item.basePrice,
-      discountAmount: item.discountAmount || 0,
-      discountPercent: item.discountPercent || 0,
-    }))
-    params.items = mappedItems
-
-    params.orderPayments = payments.map(payment => ({
-      ...payment,
-      cashregister: payment.cashregister.id,
-      cashregisterAccount: payment.cashregisterAccount.id,
-      currency: payment.currency.id,
+    const items: CreateOrderRequest['items'] = params.items.map(row => ({
+      product: row.product,
+      quantity: row.lineQuantity,
+      currency: row.selectedCurrencyId,
+      price: row.price,
+      manualPrice: row.manualPrice ?? undefined,
+      basePrice: row.basePrice,
+      discountAmount: row.discountAmount ?? 0,
+      discountPercent: row.discountPercent ?? 0,
     }))
 
-    useMutateCreateOrder.mutate(params)
+    const orderPayments = payments.map(p => ({
+      amount: p.amount,
+      currency: p.currency.id,
+      cashregister: p.cashregister.id,
+      cashregisterAccount: p.cashregisterAccount.id,
+      paymentStatus: p.paymentStatus,
+      paymentDate: p.paymentDate?.toISOString(),
+      comment: p.comment,
+    }))
+
+    const payload: CreateOrderRequest = {
+      warehouse: params.warehouse,
+      orderSource: params.orderSource,
+      orderStatus: params.orderStatus,
+      deliveryService: params.deliveryService,
+      client: params.client,
+      comment: params.comment,
+      items,
+      orderPayments,
+    }
+
+    useMutateCreateOrder.mutate(payload)
   }
 
   const loadBarcodeOptions = useBarcodeOptions()
@@ -296,13 +347,13 @@ export function CreateOrderProvider({ children }: CreateOrderProviderProps) {
   }
 
   const printDraftInvoice = async () => {
-    const products = informationForm.getValues('items').map((item: any) => {
+    const products = informationForm.getValues('items').map((item) => {
       return {
         id: item.product,
-        names: item.names,
-        quantity: item.quantity,
-        productProperties: item.productProperties,
-        currency: item.selectedCurrency,
+        names: item.names ?? {},
+        quantity: item.lineQuantity,
+        productProperties: item.productProperties ?? [],
+        currency: item.selectedCurrencyId,
         price: item.price,
         manualPrice: item.manualPrice || undefined,
         basePrice: item.basePrice,
@@ -312,8 +363,7 @@ export function CreateOrderProvider({ children }: CreateOrderProviderProps) {
     })
 
     useMutatePrintDraftInvoice.mutate({
-      products,
-      client: informationForm.getValues('client'),
+      items: products,
       language: 'en',
     })
   }

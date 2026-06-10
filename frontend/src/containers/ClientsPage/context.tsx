@@ -1,11 +1,11 @@
+import type { ClientDTO } from '@remnant/shared'
 import type { ReactNode } from 'react'
-import type { UseFormReturn } from 'react-hook-form'
+import type { Resolver, UseFormReturn } from 'react-hook-form'
 
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useQueryClient } from '@tanstack/react-query'
 import { createContext, useContext, useMemo, useState } from 'react'
 import { useForm } from 'react-hook-form'
-import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { z } from 'zod'
 
@@ -14,51 +14,34 @@ import {
   useClientEdit,
   useClientRemove,
 } from '@/api/hooks'
+import { useLocale } from '@/utils/hooks'
 
 interface ClientContextType {
-  selectedClient: Client
+  selectedClient: ClientDTO | undefined
   isModalOpen: boolean
   isLoading: boolean
   isEdit: boolean
-  form: UseFormReturn
-  openModal: (client?: Client) => void
+  form: UseFormReturn<ClientFormValues>
+  openModal: (client?: ClientDTO) => void
   closeModal: () => void
-  submitClientForm: (params) => void
+  submitClientForm: (params: ClientFormValues) => void
   removeClient: (params: { ids: string[] }) => void
 }
 
-const ClientContext = createContext<ClientContextType | undefined>(undefined)
-
-interface ClientProviderProps {
-  children: ReactNode
+export interface ClientFormValues {
+  name: string
+  middleName: string
+  lastName: string
+  country: string
+  phones: { value: string }[]
+  emails: { value: string }[]
+  socials: { type: string, value: string }[]
+  comment: string
 }
 
-export function ClientProvider({ children }: ClientProviderProps) {
-  const [isModalOpen, setIsModalOpen] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
-  const [isEdit, setIsEdit] = useState(false)
-  const [selectedClient, setSelectedClient] = useState(null)
-
-  const { t } = useTranslation()
-
-  const formSchema = useMemo(() =>
-    z.object({
-      name: z.string({ required_error: t('form.errors.required') }).min(3, { message: t('form.errors.min_length', { count: 3 }) }).trim(),
-      middleName: z.string().optional(),
-      lastName: z.string().optional(),
-      country: z.string().optional(),
-      phones: z.array(z.string().min(10, { message: t('form.errors.min_length', { count: 10 }) })).optional(),
-      emails: z.array(z.string().email()).optional(),
-      socials: z.array(z.object({
-        type: z.string(),
-        value: z.string(),
-      })).optional(),
-      comment: z.string().optional(),
-    }), [t])
-
-  const form = useForm({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
+function getClientFormValues(client?: ClientDTO): ClientFormValues {
+  if (!client) {
+    return {
       name: '',
       middleName: '',
       lastName: '',
@@ -67,47 +50,61 @@ export function ClientProvider({ children }: ClientProviderProps) {
       emails: [],
       socials: [],
       comment: '',
-    },
+    }
+  }
+  return {
+    name: client.name,
+    middleName: client.middleName ?? '',
+    lastName: client.lastName ?? '',
+    country: client.country ?? '',
+    phones: client.phones?.map(phone => ({ value: phone })) ?? [],
+    emails: client.emails?.map(email => ({ value: email })) ?? [],
+    socials: client.socials ?? [],
+    comment: client.comment ?? '',
+  }
+}
+
+const ClientContext = createContext<ClientContextType | undefined>(undefined)
+
+export function ClientProvider({ children }: { children: ReactNode }) {
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [isEdit, setIsEdit] = useState(false)
+  const [selectedClient, setSelectedClient] = useState<ClientDTO | undefined>(undefined)
+
+  const { t } = useLocale()
+
+  const formSchema = useMemo(() =>
+    z.object({
+      name: z.string({ required_error: t('form.errors.required') }).min(3, { message: t('form.errors.min_length', { count: 3 }) }).trim(),
+      middleName: z.string().optional(),
+      lastName: z.string().optional(),
+      country: z.string().optional(),
+      phones: z.array(z.object({ value: z.string().min(10, { message: t('form.errors.min_length', { count: 10 }) }) })).optional(),
+      emails: z.array(z.object({ value: z.string().email() })).optional(),
+      socials: z.array(z.object({
+        type: z.string(),
+        value: z.string(),
+      })).optional(),
+      comment: z.string().optional(),
+    }), [t])
+
+  const form = useForm<ClientFormValues>({
+    resolver: zodResolver(formSchema) as Resolver<ClientFormValues>,
+    defaultValues: getClientFormValues(),
   })
 
   const queryClient = useQueryClient()
-
-  function getClientFormValues(client) {
-    if (!client) {
-      return {
-        name: '',
-        middleName: '',
-        lastName: '',
-        country: '',
-        phones: [],
-        emails: [],
-        socials: [],
-        comment: '',
-      }
-    }
-    return {
-      name: client.name,
-      middleName: client.middleName,
-      lastName: client.lastName,
-      country: client.country,
-      phones: client.phones,
-      emails: client.emails,
-      socials: client.socials,
-      comment: client.comment,
-    }
-  }
 
   const closeModal = () => {
     if (!isModalOpen)
       return
     setIsModalOpen(false)
-    setIsLoading(false)
     setIsEdit(false)
-    setSelectedClient(null)
+    setSelectedClient(undefined)
     form.reset()
   }
 
-  const openModal = (client) => {
+  const openModal = (client?: ClientDTO) => {
     setIsModalOpen(true)
     setIsEdit(!!client)
     setSelectedClient(client)
@@ -118,7 +115,7 @@ export function ClientProvider({ children }: ClientProviderProps) {
     options: {
       onSuccess: ({ data }) => {
         closeModal()
-        queryClient.invalidateQueries({ queryKey: ['clients'] })
+        void queryClient.invalidateQueries({ queryKey: ['clients'] })
         toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description || ''}` })
       },
       onError: ({ response }) => {
@@ -133,7 +130,7 @@ export function ClientProvider({ children }: ClientProviderProps) {
     options: {
       onSuccess: ({ data }) => {
         closeModal()
-        queryClient.invalidateQueries({ queryKey: ['clients'] })
+        void queryClient.invalidateQueries({ queryKey: ['clients'] })
         toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description || ''}` })
       },
       onError: ({ response }) => {
@@ -147,7 +144,7 @@ export function ClientProvider({ children }: ClientProviderProps) {
   const useMutateRemoveClient = useClientRemove({
     options: {
       onSuccess: ({ data }) => {
-        queryClient.invalidateQueries({ queryKey: ['clients'] })
+        void queryClient.invalidateQueries({ queryKey: ['clients'] })
         toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description || ''}` })
       },
       onError: ({ response }) => {
@@ -157,17 +154,41 @@ export function ClientProvider({ children }: ClientProviderProps) {
     },
   })
 
-  const removeClient = (params) => {
+  const removeClient = (params: { ids: string[] }) => {
     useMutateRemoveClient.mutate(params)
   }
 
-  const submitClientForm = (params) => {
-    setIsLoading(true)
-    if (!selectedClient)
-      return useMutateCreateClient.mutate(params)
+  const submitClientForm = (params: ClientFormValues) => {
+    params.phones = params.phones?.map(phone => ({ value: phone.value }))
+    params.emails = params.emails?.map(email => ({ value: email.value }))
 
-    return useMutateEditClient.mutate({ ...params, id: selectedClient.id })
+    if (!selectedClient) {
+      return useMutateCreateClient.mutate({
+        name: params.name,
+        middleName: params.middleName,
+        lastName: params.lastName,
+        country: params.country,
+        phones: params.phones?.map(phone => phone.value),
+        emails: params.emails?.map(email => email.value),
+        socials: params.socials,
+        comment: params.comment,
+      })
+    }
+
+    return useMutateEditClient.mutate({
+      id: selectedClient.id,
+      name: params.name,
+      middleName: params.middleName,
+      lastName: params.lastName,
+      country: params.country,
+      phones: params.phones?.map(phone => phone.value),
+      emails: params.emails?.map(email => email.value),
+      socials: params.socials,
+      comment: params.comment,
+    })
   }
+
+  const isLoading = useMutateCreateClient.isPending || useMutateEditClient.isPending || useMutateRemoveClient.isPending
 
   const value: ClientContextType = useMemo(
     () => ({

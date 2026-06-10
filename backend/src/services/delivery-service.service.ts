@@ -9,7 +9,7 @@ import type {
   EditDeliveryServicesPayload,
   GetDeliveryServicesPayload,
   RemoveDeliveryServicesPayload,
-} from '@/types/delivery-services.type'
+} from '@/types/delivery-service.type'
 import { mapDeliveryServiceToDTO } from '@/mappers/'
 import { DeliveryServiceModel } from '@/models/'
 import * as DeliveryServicesRepo from '@/repositories/delivery-services.repo'

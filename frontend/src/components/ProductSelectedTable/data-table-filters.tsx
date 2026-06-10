@@ -5,16 +5,16 @@ import { useTranslation } from 'react-i18next'
 import { Input } from '@/components/ui'
 import { useDebounceCallback } from '@/utils/hooks'
 
-export function DataTableFilters({ filters, setFilters }) {
+export function DataTableFilters({ filters, setFilters }: { filters: any, setFilters: (filters: any) => void }) {
   const { t } = useTranslation()
   const [localFilters, setLocalFilters] = useState(filters)
 
   const debouncedSetFilters = useDebounceCallback((value: object) => {
-    setFilters(prev => ({ ...prev, ...value }))
+    setFilters((prev: any) => ({ ...prev, ...value }))
   }, 300)
 
-  const handleFilter = (field, value) => {
-    setLocalFilters(prev => ({ ...prev, [field]: value }))
+  const handleFilter = (field: string, value: string) => {
+    setLocalFilters((prev: any) => ({ ...prev, [field]: value }))
     debouncedSetFilters({ [field]: value })
   }
 

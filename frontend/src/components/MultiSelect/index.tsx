@@ -35,6 +35,8 @@ interface MultiSelectProps {
   value?: string[]
 }
 
+const EMPTY_SELECTED_VALUES: string[] = []
+
 export function MultiSelect({
   options,
   activeFiltersLabel,
@@ -45,10 +47,12 @@ export function MultiSelect({
   const { t } = useTranslation()
   const [open, setOpen] = React.useState(false)
 
+  const selectedValues = value ?? EMPTY_SELECTED_VALUES
+
   const handleSelect = (currentValue: string) => {
-    const newSelectedValues = value.includes(currentValue)
-      ? value.filter(v => v !== currentValue)
-      : [...value, currentValue]
+    const newSelectedValues = selectedValues.includes(currentValue)
+      ? selectedValues.filter(v => v !== currentValue)
+      : [...selectedValues, currentValue]
 
     if (onChange) {
       onChange(newSelectedValues)
@@ -74,18 +78,24 @@ export function MultiSelect({
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className={cn('justify-between w-full min-h-9', value.length > 0 && 'h-auto p-1 has-[>svg]:pl-1')}
+          className={cn('justify-between w-full min-h-9', selectedValues.length > 0 && 'h-auto p-1 has-[>svg]:pl-1')}
           disabled={isLoading}
         >
-          {value.length > 0
+          {selectedValues.length > 0
             ? (
                 <div className="flex gap-1 flex-wrap">
-                  {value.map((val) => {
+                  {selectedValues.map((val) => {
                     const option = options.find(o => o.value === val)
                     return (
                       <Badge key={val} variant="secondary" className="px-1 py-0.5 text-xs">
                         {option?.label}
-                        <X className="size-4 opacity-50" onClick={() => handleSelect(option?.value)} />
+                        <X
+                          className="size-4 opacity-50"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            handleSelect(val)
+                          }}
+                        />
                       </Badge>
                     )
                   })}
@@ -111,7 +121,7 @@ export function MultiSelect({
                   <Check
                     className={cn(
                       'ml-auto',
-                      value.includes(option.value) ? 'opacity-100' : 'opacity-0',
+                      selectedValues.includes(option.value) ? 'opacity-100' : 'opacity-0',
                     )}
                   />
                 </CommandItem>

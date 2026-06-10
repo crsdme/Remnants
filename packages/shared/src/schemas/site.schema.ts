@@ -1,5 +1,19 @@
 import { z } from 'zod'
-import { dateRangeSchema, idSchema, languageStringSchema, numberFromStringSchema, paginationSchema, sorterParamsSchema } from './common'
+import { dateRangeSchema, idSchema, languageStringSchema, numberFromStringSchema, paginationSchema, responseItemSchema, responseListSchema, responseSchema, sorterParamsSchema } from './common'
+
+export const siteSchema = z.object({
+  id: idSchema,
+  names: languageStringSchema,
+  url: z.string().trim(),
+  key: z.string().trim(),
+  priority: z.number(),
+  active: z.boolean(),
+  warehouses: z.array(idSchema),
+  createdAt: z.coerce.date(),
+  updatedAt: z.coerce.date(),
+})
+
+export type SiteDTO = z.output<typeof siteSchema>
 
 export const getSitesSchema = z.object({
   filters: z.object({
@@ -51,3 +65,15 @@ export const removeSitesSchema = z.object({
 })
 
 export type RemoveSitesRequest = z.input<typeof removeSitesSchema>
+
+export const getSitesResponseSchema = responseListSchema(siteSchema)
+export type GetSitesResponse = z.output<typeof getSitesResponseSchema>
+
+export const createSiteResponseSchema = responseItemSchema(siteSchema)
+export type CreateSiteResponse = z.output<typeof createSiteResponseSchema>
+
+export const editSiteResponseSchema = responseItemSchema(siteSchema)
+export type EditSiteResponse = z.output<typeof editSiteResponseSchema>
+
+export const removeSitesResponseSchema = responseSchema
+export type RemoveSitesResponse = z.output<typeof removeSitesResponseSchema>

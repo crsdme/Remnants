@@ -1,10 +1,16 @@
-import type { NextFunction, Request, Response } from 'express'
+import type { NextFunction, Response } from 'express'
+import type { CreateUnitPayload, EditUnitPayload, GetUnitsPayload, RemoveUnitsPayload, ValidatedRequest } from '@/types'
 import * as UnitService from '@/services/unit.service'
-import { HttpError } from '@/utils/httpError'
 
-export async function get(req: Request, res: Response, next: NextFunction) {
+export async function get(
+  req: ValidatedRequest<GetUnitsPayload, never>,
+  res: Response,
+  next: NextFunction,
+) {
   try {
-    const serviceResponse = await UnitService.get(req.body)
+    const serviceResponse = await UnitService.get({
+      payload: req.validated.query,
+    })
 
     res.status(200).json(serviceResponse)
   }
@@ -13,9 +19,15 @@ export async function get(req: Request, res: Response, next: NextFunction) {
   }
 }
 
-export async function create(req: Request, res: Response, next: NextFunction) {
+export async function create(
+  req: ValidatedRequest<CreateUnitPayload, never>,
+  res: Response,
+  next: NextFunction,
+) {
   try {
-    const serviceResponse = await UnitService.create(req.body)
+    const serviceResponse = await UnitService.create({
+      payload: req.validated.body,
+    })
 
     res.status(201).json(serviceResponse)
   }
@@ -24,9 +36,15 @@ export async function create(req: Request, res: Response, next: NextFunction) {
   }
 }
 
-export async function edit(req: Request, res: Response, next: NextFunction) {
+export async function edit(
+  req: ValidatedRequest<EditUnitPayload, never>,
+  res: Response,
+  next: NextFunction,
+) {
   try {
-    const serviceResponse = await UnitService.edit(req.body)
+    const serviceResponse = await UnitService.edit({
+      payload: req.validated.body,
+    })
 
     res.status(200).json(serviceResponse)
   }
@@ -35,46 +53,15 @@ export async function edit(req: Request, res: Response, next: NextFunction) {
   }
 }
 
-export async function remove(req: Request, res: Response, next: NextFunction) {
+export async function remove(
+  req: ValidatedRequest<RemoveUnitsPayload, never>,
+  res: Response,
+  next: NextFunction,
+) {
   try {
-    const serviceResponse = await UnitService.remove(req.body)
-
-    res.status(200).json(serviceResponse)
-  }
-  catch (err) {
-    next(err)
-  }
-}
-
-export async function batch(req: Request, res: Response, next: NextFunction) {
-  try {
-    const serviceResponse = await UnitService.batch(req.body)
-
-    res.status(200).json(serviceResponse)
-  }
-  catch (err) {
-    next(err)
-  }
-}
-
-export async function duplicate(req: Request, res: Response, next: NextFunction) {
-  try {
-    const serviceResponse = await UnitService.duplicate(req.body)
-
-    res.status(200).json(serviceResponse)
-  }
-  catch (err) {
-    next(err)
-  }
-}
-
-export async function importHandler(req: Request, res: Response, next: NextFunction) {
-  try {
-    if (!req.file) {
-      throw new HttpError(400, 'No file uploaded', 'NO_FILE_UPLOADED')
-    }
-
-    const serviceResponse = await UnitService.importHandler({ file: req.file })
+    const serviceResponse = await UnitService.remove({
+      payload: req.validated.body,
+    })
 
     res.status(200).json(serviceResponse)
   }

@@ -1,3 +1,6 @@
+import type { AutomationDTO } from '@remnant/shared'
+import type { Column } from '@tanstack/react-table'
+import { createColumnHelper } from '@tanstack/react-table'
 import {
   ArrowDown,
   ArrowUp,
@@ -7,22 +10,24 @@ import {
   Trash,
 } from 'lucide-react'
 import { useMemo } from 'react'
-import { useTranslation } from 'react-i18next'
 
 import { TableActionDropdown } from '@/components'
-import { Badge, Button, Checkbox } from '@/components/ui'
+import { Badge, Button } from '@/components/ui'
 import { formatDate } from '@/utils/helpers'
+import { useLocale } from '@/utils/hooks'
 import { useAutomationContext } from '../context'
 
 const sortIcons = { asc: ArrowUp, desc: ArrowDown }
+const columnHelper = createColumnHelper<AutomationDTO>()
 
 export function useColumns() {
-  const { t, i18n } = useTranslation()
+  const { t, language } = useLocale()
   const { isLoading, openModal, removeAutomation } = useAutomationContext()
 
   const columns = useMemo(() => {
-    function sortHeader(column, label) {
-      const Icon = sortIcons[column.getIsSorted() || undefined] || ChevronsUpDown
+    function sortHeader(column: Column<AutomationDTO, unknown>, label: string) {
+      const sorted = column.getIsSorted()
+      const Icon = sorted ? sortIcons[sorted] : ChevronsUpDown
 
       return (
         <Button
@@ -37,40 +42,8 @@ export function useColumns() {
       )
     }
 
-    function selectColumn() {
-      return ({
-        id: 'select',
-        size: 35,
-        meta: { title: t('component.columnMenu.columns.select') },
-        header: ({ table }) => {
-          const isChecked = table.getIsAllPageRowsSelected()
-            ? true
-            : table.getIsSomePageRowsSelected()
-              ? 'indeterminate'
-              : false
-
-          return (
-            <Checkbox
-              checked={isChecked}
-              onCheckedChange={value => table.toggleAllPageRowsSelected(!!value)}
-              aria-label="Select all"
-            />
-          )
-        },
-        cell: ({ row }) => (
-          <Checkbox
-            checked={row.getIsSelected()}
-            onCheckedChange={value => row.toggleSelected(!!value)}
-            aria-label="Select row"
-          />
-        ),
-        enableSorting: false,
-        enableHiding: false,
-      })
-    }
-
     function actionColumn() {
-      return ({
+      return columnHelper.display({
         id: 'action',
         size: 85,
         meta: {
@@ -83,7 +56,7 @@ export function useColumns() {
           const actions = [
             {
               permission: 'automation.copy',
-              onClick: () => navigator.clipboard.writeText(item.id),
+              onClick: () => void navigator.clipboard.writeText(item.id),
               label: t('table.copy'),
               icon: <Copy className="h-4 w-4" />,
             },
@@ -109,8 +82,7 @@ export function useColumns() {
     }
 
     return [
-      selectColumn(),
-      {
+      columnHelper.accessor('name', {
         id: 'name',
         size: 150,
         meta: {
@@ -123,9 +95,8 @@ export function useColumns() {
           defaultVisible: true,
         },
         header: ({ column }) => sortHeader(column, t('page.automations.table.name')),
-        accessorFn: row => row.name,
-      },
-      {
+      }),
+      columnHelper.display({
         id: 'trigger',
         size: 150,
         meta: {
@@ -133,8 +104,8 @@ export function useColumns() {
         },
         header: ({ column }) => sortHeader(column, t('page.automations.table.trigger')),
         cell: ({ row }) => <Badge>{t(`page.automations.trigger.${row.original.trigger.type}`)}</Badge>,
-      },
-      {
+      }),
+      columnHelper.display({
         id: 'conditions',
         size: 150,
         meta: {
@@ -146,14 +117,14 @@ export function useColumns() {
 
           return (
             <div className="flex flex-col gap-2">
-              {conditions.map(condition => (
-                <Badge key={condition.id}>{t(`page.automations.condition.${condition.field}`)}</Badge>
+              {conditions.map((condition, index) => (
+                <Badge key={`${condition.field}-${index}`}>{t(`page.automations.condition.${condition.field}`)}</Badge>
               ))}
             </div>
           )
         },
-      },
-      {
+      }),
+      columnHelper.display({
         id: 'actions',
         size: 150,
         meta: {
@@ -165,16 +136,15 @@ export function useColumns() {
 
           return (
             <div className="flex flex-col gap-2">
-              {actions.map(action => (
-                <Badge key={action.id}>{t(`page.automations.action.${action.field}`)}</Badge>
+              {actions.map((action, index) => (
+                <Badge key={`${action.field}-${index}`}>{t(`page.automations.action.${action.field}`)}</Badge>
               ))}
             </div>
           )
         },
-      },
-      {
+      }),
+      columnHelper.accessor('createdAt', {
         id: 'createdAt',
-        accessorKey: 'createdAt',
         meta: {
           title: t('table.createdAt'),
           filterable: true,
@@ -182,11 +152,10 @@ export function useColumns() {
           sortable: true,
         },
         header: ({ column }) => sortHeader(column, t('table.createdAt')),
-        cell: ({ row }) => formatDate(row.getValue('createdAt'), 'dd.MM.yyyy HH:mm', i18n.language),
-      },
-      {
+        cell: ({ row }) => formatDate(row.getValue('createdAt'), 'dd.MM.yyyy HH:mm', language),
+      }),
+      columnHelper.accessor('updatedAt', {
         id: 'updatedAt',
-        accessorKey: 'updatedAt',
         meta: {
           title: t('table.updatedAt'),
           filterable: true,
@@ -194,10 +163,10 @@ export function useColumns() {
           sortable: true,
         },
         header: ({ column }) => sortHeader(column, t('table.updatedAt')),
-        cell: ({ row }) => formatDate(row.getValue('updatedAt'), 'dd.MM.yyyy HH:mm', i18n.language),
-      },
+        cell: ({ row }) => formatDate(row.getValue('updatedAt'), 'dd.MM.yyyy HH:mm', language),
+      }),
       actionColumn(),
     ]
-  }, [i18n.language])
+  }, [language, isLoading, openModal, removeAutomation, t])
   return columns
 }

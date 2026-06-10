@@ -1,5 +1,17 @@
 import { z } from 'zod'
-import { dateRangeSchema, idSchema, languageStringSchema, numberFromStringSchema, paginationSchema, sorterParamsSchema } from './common'
+import { dateRangeSchema, idSchema, languageStringSchema, numberFromStringSchema, paginationSchema, responseItemSchema, responseListSchema, responseSchema, sorterParamsSchema } from './common'
+
+export const orderSourceSchema = z.object({
+  id: idSchema,
+  names: languageStringSchema,
+  priority: z.number().optional().default(0),
+  color: z.string().optional(),
+  removed: z.boolean().optional().default(false),
+  createdAt: z.coerce.date(),
+  updatedAt: z.coerce.date(),
+})
+
+export type OrderSourceDTO = z.output<typeof orderSourceSchema>
 
 export const getOrderSourcesSchema = z.object({
   filters: z.object({
@@ -44,3 +56,15 @@ export const removeOrderSourcesSchema = z.object({
 })
 
 export type RemoveOrderSourcesRequest = z.input<typeof removeOrderSourcesSchema>
+
+export const getOrderSourcesResponseSchema = responseListSchema(orderSourceSchema)
+export type GetOrderSourcesResponse = z.output<typeof getOrderSourcesResponseSchema>
+
+export const createOrderSourceResponseSchema = responseItemSchema(orderSourceSchema)
+export type CreateOrderSourceResponse = z.output<typeof createOrderSourceResponseSchema>
+
+export const editOrderSourceResponseSchema = responseItemSchema(orderSourceSchema)
+export type EditOrderSourceResponse = z.output<typeof editOrderSourceResponseSchema>
+
+export const removeOrderSourcesResponseSchema = responseSchema
+export type RemoveOrderSourcesResponse = z.output<typeof removeOrderSourcesResponseSchema>

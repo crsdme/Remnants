@@ -1,7 +1,6 @@
 import { useWatch } from 'react-hook-form'
-import { useTranslation } from 'react-i18next'
 import { useCashregisterAccountOptions, useCashregisterAccountQuery, useCashregisterOptions, useCashregisterQuery, useCurrencyOptions, useCurrencyQuery } from '@/api/hooks'
-import { AsyncSelect } from '@/components/AsyncSelect'
+import { AsyncSelectNew } from '@/components/AsyncSelectNew'
 import {
   Button,
   Form,
@@ -22,13 +21,14 @@ import {
   TabsTrigger,
   Textarea,
 } from '@/components/ui'
+import { useLocale } from '@/utils/hooks'
 import { useMoneyTransactionContext } from '../context'
 
 export function MoneyTransactionForm() {
-  const { t } = useTranslation()
+  const { t } = useLocale()
   const { selectedTab, setSelectedTab, addForm, accountForm } = useMoneyTransactionContext()
 
-  const onTabChange = (value) => {
+  const onTabChange = (value: string) => {
     setSelectedTab(value)
     addForm.reset()
     accountForm.reset()
@@ -55,7 +55,7 @@ export function MoneyTransactionForm() {
 }
 
 function AddForm() {
-  const { t, i18n } = useTranslation()
+  const { t, language } = useLocale()
   const { isLoading, addForm, closeModal, submitMoneyTransactionForm } = useMoneyTransactionContext()
 
   const selectedCashregister = useWatch({
@@ -67,40 +67,26 @@ function AddForm() {
     name: 'account',
   })
 
-  const { data: { cashregisters = [] } = {} } = useCashregisterQuery(
+  const { cashregisters } = useCashregisterQuery(
     { pagination: { full: true }, filters: { active: [true] } },
-    { options: {
-      select: response => ({
-        cashregisters: response.data.cashregisters,
-      }),
-    } },
   )
 
-  const { data: { cashregisterAccounts = [] } = {} } = useCashregisterAccountQuery(
-    { pagination: { full: true }, filters: { ids: cashregisters.find(cashregister => cashregister.id === selectedCashregister)?.accounts.map(account => account.id) } },
-    { options: {
-      select: response => ({
-        cashregisterAccounts: response.data.cashregisterAccounts,
-      }),
-    } },
-  )
+  const { cashregisterAccounts } = useCashregisterAccountQuery({
+    pagination: { full: true },
+    filters: { ids: cashregisters.find(cashregister => cashregister.id === selectedCashregister)?.accounts.map(account => account.id) },
+  })
 
-  const { data: { currencies = [] } = {} } = useCurrencyQuery(
-    { pagination: { full: true }, filters: { ids: cashregisterAccounts.find(account => account.id === selectedCashregisterAccount)?.currencies.map(currency => currency.id) } },
-    { options: {
-      select: response => ({
-        currencies: response.data.currencies,
-      }),
-    } },
-  )
-
-  const onSubmit = (values) => {
-    submitMoneyTransactionForm(values)
-  }
+  const { currencies } = useCurrencyQuery({
+    pagination: { full: true },
+    filters: { ids: cashregisterAccounts.find(account => account.id === selectedCashregisterAccount)?.currencies.map(currency => currency.id) },
+  })
 
   return (
     <Form {...addForm}>
-      <form className="w-full space-y-1" onSubmit={addForm.handleSubmit(onSubmit)}>
+      <form
+        className="w-full space-y-1"
+        onSubmit={(e) => { void addForm.handleSubmit(v => submitMoneyTransactionForm(v))(e) }}
+      >
 
         <FormField
           control={addForm.control}
@@ -115,9 +101,8 @@ function AddForm() {
               </FormLabel>
               <FormControl>
                 <Select
-                  value={field.value}
-                  onValueChange={(e) => {
-                    field.onChange(e)
+                  onValueChange={(value) => {
+                    field.onChange(value)
                     addForm.setValue('account', '')
                     addForm.setValue('currency', '')
                   }}
@@ -132,7 +117,7 @@ function AddForm() {
                   <SelectContent>
                     {cashregisters.map(cashregister => (
                       <SelectItem key={cashregister.id} value={cashregister.id}>
-                        {cashregister.names[i18n.language]}
+                        {cashregister.names[language]}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -156,9 +141,8 @@ function AddForm() {
               </FormLabel>
               <FormControl>
                 <Select
-                  value={field.value}
-                  onValueChange={(e) => {
-                    field.onChange(e)
+                  onValueChange={(value) => {
+                    field.onChange(value)
                     addForm.setValue('currency', '')
                   }}
                   disabled={isLoading || !selectedCashregister}
@@ -172,7 +156,7 @@ function AddForm() {
                   <SelectContent>
                     {cashregisterAccounts.map(account => (
                       <SelectItem key={account.id} value={account.id}>
-                        {account.names[i18n.language]}
+                        {account.names[language]}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -210,7 +194,6 @@ function AddForm() {
                   name="currency"
                   render={({ field: currencyField }) => (
                     <Select
-                      value={currencyField.value}
                       onValueChange={currencyField.onChange}
                       disabled={isLoading || !selectedCashregisterAccount}
                       {...currencyField}
@@ -223,7 +206,7 @@ function AddForm() {
                       <SelectContent>
                         {currencies.map(currency => (
                           <SelectItem key={currency.id} value={currency.id}>
-                            {currency.symbols[i18n.language]}
+                            {currency.symbols[language]}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -248,7 +231,6 @@ function AddForm() {
                 </p>
               </FormLabel>
               <Select
-                value={field.value}
                 onValueChange={field.onChange}
                 disabled={isLoading}
                 {...field}
@@ -284,29 +266,6 @@ function AddForm() {
           )}
         />
 
-        {/* <div className="flex gap-2 flex-wrap pb-2">
-          <FormField
-            control={form.control}
-            name="active"
-            render={({ field }) => (
-              <FormItem className="flex items-center justify-between rounded-md border p-4 grow">
-                <div className="space-y-1">
-                  <FormLabel className="text-sm">{t('page.cashregisters.form.active')}</FormLabel>
-                  <FormDescription className="text-xs text-muted-foreground">
-                    {t('page.cashregisters.form.active.description')}
-                  </FormDescription>
-                </div>
-                <FormControl>
-                  <Checkbox
-                    checked={field.value}
-                    onCheckedChange={field.onChange}
-                    disabled={isLoading}
-                  />
-                </FormControl>
-              </FormItem>
-            )}
-          />
-        </div> */}
         <div className="flex gap-2">
           <Button
             type="button"
@@ -326,7 +285,7 @@ function AddForm() {
 }
 
 function AccountForm() {
-  const { t, i18n } = useTranslation()
+  const { t, language } = useLocale()
   const { isLoading, accountForm, closeModal, submitMoneyTransactionForm } = useMoneyTransactionContext()
   const selectedCashregister = useWatch({
     control: accountForm.control,
@@ -341,42 +300,33 @@ function AccountForm() {
     name: 'accountTo',
   })
 
-  const { data: { cashregisters = [] } = {} } = useCashregisterQuery(
+  const { cashregisters } = useCashregisterQuery(
     { pagination: { full: true }, filters: { active: [true] } },
-    { options: {
-      select: response => ({
-        cashregisters: response.data.cashregisters,
-      }),
-    } },
   )
 
-  const { data: { cashregisterAccounts = [] } = {} } = useCashregisterAccountQuery(
-    { pagination: { full: true }, filters: { ids: cashregisters.find(cashregister => cashregister.id === cashregister)?.accounts.map(account => account.id) } },
-    { options: {
-      select: response => ({
-        cashregisterAccounts: response.data.cashregisterAccounts,
-      }),
-    } },
+  const { cashregisterAccounts } = useCashregisterAccountQuery(
+    { pagination: { full: true }, filters: { ids: cashregisters.find(cashregister => cashregister.id === selectedCashregister)?.accounts.map(account => account.id) } },
   )
 
   const loadCashregisterAccountOptions = useCashregisterAccountOptions(
-    { defaultFilters: {
-      ids: cashregisters
-        .find(cashregister => cashregister.id === selectedCashregister)
-        ?.accounts
-        .map(account => account.id),
-    } },
+    {
+      defaultFilters: {
+        ids: cashregisters
+          .find(cashregister => cashregister.id === selectedCashregister)
+          ?.accounts
+          .map(account => account.id),
+      },
+    },
   )
 
   const loadCurrencyOptions = useCurrencyOptions()
 
-  const onSubmit = (values) => {
-    submitMoneyTransactionForm(values)
-  }
-
   return (
     <Form {...accountForm}>
-      <form className="w-full space-y-1" onSubmit={accountForm.handleSubmit(onSubmit)}>
+      <form
+        className="w-full space-y-1"
+        onSubmit={(e) => { void accountForm.handleSubmit(v => submitMoneyTransactionForm(v))(e) }}
+      >
 
         <FormField
           control={accountForm.control}
@@ -391,9 +341,8 @@ function AccountForm() {
               </FormLabel>
 
               <Select
-                value={field.value}
-                onValueChange={(e) => {
-                  field.onChange(e)
+                onValueChange={(value) => {
+                  field.onChange(value)
                   accountForm.setValue('accountFrom', '')
                   accountForm.setValue('accountTo', '')
                   accountForm.setValue('currency', '')
@@ -409,7 +358,7 @@ function AccountForm() {
                 <SelectContent>
                   {cashregisters.map(cashregister => (
                     <SelectItem key={cashregister.id} value={cashregister.id}>
-                      {cashregister.names[i18n.language]}
+                      {cashregister.names[language]}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -432,12 +381,11 @@ function AccountForm() {
                   </p>
                 </FormLabel>
                 <FormControl>
-                  <AsyncSelect
-                    fetcher={loadCashregisterAccountOptions}
-                    renderOption={e => `${e.seq} ${e.names[i18n.language]}`}
-                    getDisplayValue={e => e.names[i18n.language]}
+                  <AsyncSelectNew
+                    loadOptions={loadCashregisterAccountOptions}
+                    renderOption={e => `${e.seq} ${e.names[language]}`}
+                    getDisplayValue={e => e.names[language]}
                     getOptionValue={e => e.id}
-                    width="100%"
                     className="w-full"
                     name="accountFrom"
                     value={field.value}
@@ -461,16 +409,15 @@ function AccountForm() {
                   </p>
                 </FormLabel>
                 <FormControl>
-                  <AsyncSelect
-                    fetcher={async (params) => {
-                      const data = await loadCashregisterAccountOptions({ query: params.query, selectedValue: accountForm.watch('accountFrom') })
+                  <AsyncSelectNew
+                    loadOptions={async (params) => {
+                      const data = await loadCashregisterAccountOptions({ query: params?.query ?? '', selectedValue: accountForm.watch('accountFrom') })
                       const excludeIds = accountForm.watch('accountFrom') || []
                       return data.filter(d => !excludeIds.includes(d.id))
                     }}
-                    renderOption={e => `${e.seq} ${e.names[i18n.language]}`}
-                    getDisplayValue={e => e.names[i18n.language]}
+                    renderOption={e => `${e.seq} ${e.names[language]}`}
+                    getDisplayValue={e => e.names[language]}
                     getOptionValue={e => e.id}
-                    width="100%"
                     className="w-full"
                     name="accountTo"
                     value={field.value}
@@ -510,18 +457,18 @@ function AccountForm() {
                   control={accountForm.control}
                   name="currency"
                   render={({ field }) => (
-                    <AsyncSelect
-                      fetcher={async (params) => {
+                    <AsyncSelectNew
+                      loadOptions={async (params) => {
                         const accountsFrom = cashregisterAccounts.find(account => account.id === accountForm.watch('accountFrom')?.[0])?.currencies.map(currency => currency.id) || []
                         const accountsTo = cashregisterAccounts.find(account => account.id === accountForm.watch('accountTo')?.[0])?.currencies.map(currency => currency.id) || []
 
                         const ids = accountsFrom.filter(value => accountsTo.includes(value))
 
-                        const data = await loadCurrencyOptions({ query: params.query })
+                        const data = await loadCurrencyOptions({ query: params?.query ?? '' })
                         return data.filter(d => ids.includes(d.id))
                       }}
-                      renderOption={e => `${e.symbols[i18n.language]}`}
-                      getDisplayValue={e => e.symbols[i18n.language]}
+                      renderOption={e => `${e.symbols[language]}`}
+                      getDisplayValue={e => e.symbols[language]}
                       getOptionValue={e => e.id}
                       name="currency"
                       value={field.value}
@@ -571,7 +518,7 @@ function AccountForm() {
 }
 
 function CashregisterForm() {
-  const { t, i18n } = useTranslation()
+  const { t, language } = useLocale()
   const { isLoading, cashregisterForm, closeModal, submitMoneyTransactionForm } = useMoneyTransactionContext()
   const cashregisterFrom = useWatch({
     control: cashregisterForm.control,
@@ -590,44 +537,36 @@ function CashregisterForm() {
     name: 'accountTo',
   })
 
-  const { data: { cashregisters = [] } = {} } = useCashregisterQuery(
+  const { cashregisters } = useCashregisterQuery(
     { pagination: { full: true }, filters: { active: [true] } },
-    { options: {
-      select: response => ({
-        cashregisters: response.data.cashregisters,
-      }),
-    } },
   )
 
-  const { data: { cashregisterAccounts = [] } = {} } = useCashregisterAccountQuery(
-    { pagination: { full: true }, filters: { ids: cashregisters.find(cashregister => cashregister.id === cashregister)?.accounts.map(account => account.id) } },
-    { options: {
-      select: response => ({
-        cashregisterAccounts: response.data.cashregisterAccounts,
-      }),
-    } },
-  )
+  const { cashregisterAccounts } = useCashregisterAccountQuery({
+    pagination: { full: true },
+    filters: { ids: cashregisters.find(cashregister => cashregister.id === cashregisterFrom)?.accounts.map(account => account.id) },
+  })
 
   const loadCashregisterAccountOptions = useCashregisterAccountOptions(
-    { defaultFilters: {
-      ids: cashregisters
-        .find(cashregister => cashregister.id === cashregisterFrom)
-        ?.accounts
-        .map(account => account.id),
-    } },
+    {
+      defaultFilters: {
+        ids: cashregisters
+          .find(cashregister => cashregister.id === cashregisterFrom)
+          ?.accounts
+          .map(account => account.id),
+      },
+    },
   )
 
   const loadCurrencyOptions = useCurrencyOptions()
 
   const loadCashregisterOptions = useCashregisterOptions()
 
-  const onSubmit = (values) => {
-    submitMoneyTransactionForm(values)
-  }
-
   return (
     <Form {...cashregisterForm}>
-      <form className="w-full space-y-1" onSubmit={cashregisterForm.handleSubmit(onSubmit)}>
+      <form
+        className="w-full space-y-1"
+        onSubmit={(e) => { void cashregisterForm.handleSubmit(v => submitMoneyTransactionForm(v))(e) }}
+      >
 
         <div className="flex gap-2 w-full">
           <FormField
@@ -642,12 +581,11 @@ function CashregisterForm() {
                   </p>
                 </FormLabel>
                 <FormControl>
-                  <AsyncSelect
-                    fetcher={loadCashregisterOptions}
-                    renderOption={e => `${e.names[i18n.language]}`}
-                    getDisplayValue={e => e.names[i18n.language]}
+                  <AsyncSelectNew
+                    loadOptions={loadCashregisterOptions}
+                    renderOption={e => `${e.names[language]}`}
+                    getDisplayValue={e => e.names[language]}
                     getOptionValue={e => e.id}
-                    width="100%"
                     className="w-full"
                     name="cashregisterFrom"
                     value={field.value}
@@ -677,16 +615,15 @@ function CashregisterForm() {
                   </p>
                 </FormLabel>
                 <FormControl>
-                  <AsyncSelect
-                    fetcher={async (params) => {
-                      const data = await loadCashregisterOptions({ query: params.query, selectedValue: cashregisterForm.watch('cashregisterFrom') })
+                  <AsyncSelectNew
+                    loadOptions={async (params) => {
+                      const data = await loadCashregisterOptions({ query: params?.query ?? '', selectedValue: cashregisterForm.watch('cashregisterFrom') })
                       const excludeIds = cashregisterForm.watch('cashregisterFrom') || []
                       return data.filter(d => !excludeIds.includes(d.id))
                     }}
-                    renderOption={e => `${e.names[i18n.language]}`}
-                    getDisplayValue={e => e.names[i18n.language]}
+                    renderOption={e => `${e.names[language]}`}
+                    getDisplayValue={e => e.names[language]}
                     getOptionValue={e => e.id}
-                    width="100%"
                     className="w-full"
                     name="cashregisterTo"
                     value={field.value}
@@ -713,16 +650,15 @@ function CashregisterForm() {
                   </p>
                 </FormLabel>
                 <FormControl>
-                  <AsyncSelect
-                    fetcher={async (params) => {
-                      const data = await loadCashregisterAccountOptions({ query: params.query })
+                  <AsyncSelectNew
+                    loadOptions={async (params) => {
+                      const data = await loadCashregisterAccountOptions({ query: params?.query ?? '' })
                       const ids = cashregisters.find(cashregister => cashregister.id === cashregisterFrom[0])?.accounts.map(account => account.id) || []
                       return data.filter(d => ids.includes(d.id))
                     }}
-                    renderOption={e => `${e.seq} ${e.names[i18n.language]}`}
-                    getDisplayValue={e => e.names[i18n.language]}
+                    renderOption={e => `${e.seq} ${e.names[language]}`}
+                    getDisplayValue={e => e.names[language]}
                     getOptionValue={e => e.id}
-                    width="100%"
                     className="w-full"
                     name="accountFrom"
                     value={field.value}
@@ -746,16 +682,15 @@ function CashregisterForm() {
                   </p>
                 </FormLabel>
                 <FormControl>
-                  <AsyncSelect
-                    fetcher={async (params) => {
-                      const data = await loadCashregisterAccountOptions({ query: params.query })
+                  <AsyncSelectNew
+                    loadOptions={async (params) => {
+                      const data = await loadCashregisterAccountOptions({ query: params?.query ?? '' })
                       const ids = cashregisters.find(cashregister => cashregister.id === cashregisterTo[0])?.accounts.map(account => account.id) || []
                       return data.filter(d => ids.includes(d.id))
                     }}
-                    renderOption={e => `${e.seq} ${e.names[i18n.language]}`}
-                    getDisplayValue={e => e.names[i18n.language]}
+                    renderOption={e => `${e.seq} ${e.names[language]}`}
+                    getDisplayValue={e => e.names[language]}
                     getOptionValue={e => e.id}
-                    width="100%"
                     className="w-full"
                     name="accountTo"
                     value={field.value}
@@ -795,18 +730,18 @@ function CashregisterForm() {
                   control={cashregisterForm.control}
                   name="currency"
                   render={({ field }) => (
-                    <AsyncSelect
-                      fetcher={async (params) => {
+                    <AsyncSelectNew
+                      loadOptions={async (params) => {
                         const accountsFrom = cashregisterAccounts.find(account => account.id === accountFrom[0])?.currencies.map(currency => currency.id) || []
                         const accountsTo = cashregisterAccounts.find(account => account.id === accountTo[0])?.currencies.map(currency => currency.id) || []
 
                         const ids = accountsFrom.filter(value => accountsTo.includes(value))
 
-                        const data = await loadCurrencyOptions({ query: params.query })
+                        const data = await loadCurrencyOptions({ query: params?.query ?? '' })
                         return data.filter(d => ids.includes(d.id))
                       }}
-                      renderOption={e => `${e.symbols[i18n.language]}`}
-                      getDisplayValue={e => e.symbols[i18n.language]}
+                      renderOption={e => `${e.symbols[language]}`}
+                      getDisplayValue={e => e.symbols[language]}
                       getOptionValue={e => e.id}
                       name="currency"
                       value={field.value}

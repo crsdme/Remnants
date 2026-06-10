@@ -1,5 +1,5 @@
 import type { RequestHandler } from 'express'
-import { createOrderSchema, editOrderSchema, getOrdersSchema, printDraftInvoiceOrderSchema, printInvoiceOrderSchema, printOrderLabelOrderSchema, removeOrdersSchema } from '@remnant/shared'
+import { createOrderSchema, editOrderSchema, getOrderDetailsSchema, getOrderItemsSchema, getOrdersSchema, printDraftInvoiceOrderSchema, printInvoiceOrderSchema, printOrderLabelOrderSchema, removeOrdersSchema } from '@remnant/shared'
 import { Router } from 'express'
 import * as OrderController from '@/controllers/order.controller'
 import { checkPermissions, validateBodyRequest, validateQueryRequest } from '@/middleware'
@@ -10,6 +10,18 @@ router.get(
   '/get',
   validateQueryRequest(getOrdersSchema),
   OrderController.get as RequestHandler,
+)
+
+router.get(
+  '/get/items',
+  validateQueryRequest(getOrderItemsSchema),
+  OrderController.getItems as RequestHandler,
+)
+
+router.get(
+  '/get/details',
+  validateQueryRequest(getOrderDetailsSchema),
+  OrderController.getDetails as RequestHandler,
 )
 
 router.post(

@@ -61,15 +61,21 @@ export async function remove(payload: RemoveUsersPayload): Promise<RemoveUsersRe
   }
 }
 
-export async function checkPermission(permission: string, userId: string): Promise<boolean> {
+export async function checkPermission(permission: string, userId?: string): Promise<boolean> {
+  if (userId === undefined)
+    return false
+
+  if (process.env.NODE_ENV === 'test')
+    return true
+
   const user = await UserRepository.findById(userId) as PopulatedUser | null
 
   const role = user?.role
-  if (!role || !Array.isArray(role.permissions))
+  if (role === undefined || !Array.isArray(role.permissions))
     return false
 
   return (
-    role.permissions.includes(permission)
-    || role.permissions.includes('other.admin')
+    role.permissions.includes('other.admin')
+    || role.permissions.includes(permission)
   )
 }

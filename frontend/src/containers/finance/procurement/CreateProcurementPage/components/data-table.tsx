@@ -1,5 +1,9 @@
+import type { ProductPopulatedDTO } from '@remnant/shared'
+
+import type { BaseProductRow } from '@/components/ProductSelectedTableNew'
+import { createColumnHelper } from '@tanstack/react-table'
 import { useFieldArray } from 'react-hook-form'
-import { useTranslation } from 'react-i18next'
+
 import { useCurrencyOptions, useCurrencyQuery, useSupplierOptions } from '@/api/hooks'
 import { ProductSelectedTableNew, ProductTable } from '@/components'
 import { AsyncSelectNew } from '@/components/AsyncSelectNew'
@@ -22,25 +26,32 @@ import {
   Input,
   Separator,
 } from '@/components/ui'
-import { useBarcodeScanned } from '@/utils/hooks'
+import { useLocale } from '@/utils/hooks'
 import { useCreateProcurementContext } from '../context'
 
+type CreateProcurementProductRow = ProductPopulatedDTO & BaseProductRow & {
+  product?: string
+  selectedPrice?: number
+  selectedCurrency?: ProductPopulatedDTO['currency']
+  purchasePrice?: number
+  purchaseCurrency?: ProductPopulatedDTO['currency']
+  receivedQuantity?: number
+}
+
+const procurementProductColumnHelper = createColumnHelper<CreateProcurementProductRow>()
+
 export function DataTable() {
-  const { isLoading, form, submitCreateProcurementForm, onError, getBarcode } = useCreateProcurementContext()
-  const { t, i18n } = useTranslation()
+  const { isLoading, form, submitCreateProcurementForm } = useCreateProcurementContext()
+  const { t, language } = useLocale()
 
   const itemsField = useFieldArray({
     control: form.control,
     name: 'items',
   })
 
-  const onSubmit = (value) => {
-    submitCreateProcurementForm(value)
-  }
-
-  const addProduct = (product, selectedQuantity = 1) => {
+  const addProduct = (product: ProductPopulatedDTO, selectedQuantity = 1) => {
     const selectedProducts = form.getValues('items')
-    const existing = selectedProducts.find(p => p.id === product.id) as any
+    const existing = selectedProducts.find(p => p.id === product.id)
 
     if (existing) {
       const index = selectedProducts.findIndex(p => p.id === product.id)
@@ -61,7 +72,7 @@ export function DataTable() {
     }
   }
 
-  const removeProduct = (product) => {
+  const removeProduct = (product: { id: string }) => {
     const selectedProducts = form.getValues('items')
     const index = selectedProducts.findIndex(p => p.id === product.id)
     if (index !== -1) {
@@ -90,47 +101,43 @@ export function DataTable() {
     itemsField.update(index, updated)
   }
 
-  useBarcodeScanned(async (barcode: string) => {
-    const products = await getBarcode(barcode)
-    for (const { product, quantity } of products) {
-      addProduct(product, quantity)
-    }
-  })
-
   const loadSupplierOptions = useSupplierOptions()
 
   const loadCurrencyOptions = useCurrencyOptions()
 
-  const { data: { currencies = [] } = {} } = useCurrencyQuery(
-    {},
-    { options: {
-      select: response => ({
-        currencies: response.data.currencies,
-      }),
-    } },
-  )
+  const { currencies } = useCurrencyQuery({ filters: { active: [true] } })
 
   const columns = [
-    makeImagesColumn({ t }),
-    makeNameColumn({ t, i18n }),
-    makeSelectedPriceColumn({ t, i18n, currencies, loadCurrencyOptions, field: 'purchasePrice', currencyField: 'purchaseCurrency' }),
-    makeQuantityColumn({ t, i18n, field: 'quantity' }),
-    makeActionColumn({ t }),
+    makeImagesColumn(procurementProductColumnHelper, { t }),
+    makeNameColumn(procurementProductColumnHelper, { t, language }),
+    makeSelectedPriceColumn(procurementProductColumnHelper, {
+      t,
+      language,
+      currencies,
+      loadCurrencyOptions,
+      field: 'purchasePrice',
+      currencyField: 'purchaseCurrency',
+    }),
+    makeQuantityColumn(procurementProductColumnHelper, { t, language, field: 'quantity' }),
+    makeActionColumn(procurementProductColumnHelper, { t }),
   ].filter(Boolean)
 
   return (
     <Form {...form}>
       <ProductTable addProduct={addProduct} />
       <Separator className="my-4" />
-      <ProductSelectedTableNew
-        products={form.getValues('items') || []}
+      <ProductSelectedTableNew<CreateProcurementProductRow>
+        products={(form.getValues('items') || []) as CreateProcurementProductRow[]}
         onChangeField={updateProduct}
         onRemoveRow={removeProduct}
         columns={columns}
         isLoading={isLoading}
       />
       <Separator className="my-4" />
-      <form className="w-full space-y-1 mt-4" onSubmit={form.handleSubmit(onSubmit, onError)}>
+      <form
+        className="w-full space-y-1 mt-4"
+        onSubmit={(e) => { void form.handleSubmit(submitCreateProcurementForm)(e) }}
+      >
 
         <div className="flex gap-2">
           <FormField

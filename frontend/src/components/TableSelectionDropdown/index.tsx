@@ -1,6 +1,6 @@
 import { ClipboardList, Copy, Download, MoreVertical, Printer, Trash } from 'lucide-react'
-import { useTranslation } from 'react-i18next'
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import {
   Button,
@@ -129,7 +129,7 @@ export function TableSelectionDropdown({
                 {t('component.tableSelection.cancel')}
               </AlertDialogCancel>
               <AlertDialogAction
-                onClick={handleConfirmRemove}
+                onClick={() => void handleConfirmRemove()}
                 className={cn(
                   'bg-destructive text-white hover:bg-destructive/70',
                   'focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40',

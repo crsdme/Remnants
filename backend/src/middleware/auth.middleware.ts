@@ -17,6 +17,7 @@ export function authenticateJWT(req: Request, res: Response, next: NextFunction)
       return res.sendStatus(401)
 
     const parsed = authUserSchema.safeParse(decoded)
+
     if (!parsed.success)
       return res.sendStatus(401)
 
@@ -41,9 +42,9 @@ export function fakeAuthenticateJWT(req: Request, _res: Response, next: NextFunc
   req.user = {
     id: 'test-user-id',
     login: 'test-user-login',
-    name: 'test-user-name',
-    role: 'test-user-role',
-    permissions: ['test-permission'],
+    // name: 'test-user-name',
+    // role: 'test-user-role',
+    permissions: ['test-permission', 'other.admin'],
   }
   next()
 }

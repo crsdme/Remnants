@@ -1,15 +1,15 @@
 import type {
   CreateLanguageResponse,
   EditLanguageResponse,
-  GetLanguagesResponse,
-  RemoveLanguagesResponse,
+  GetLanguageResponse,
+  RemoveLanguageResponse,
 } from '@remnant/shared'
 import type { CreateLanguagePayload, EditLanguagePayload, GetLanguagesPayload, RemoveLanguagesPayload } from '@/types'
 import { mapLanguageToDTO } from '@/mappers/'
 import * as LanguageRepo from '@/repositories/language.repo'
 import { HttpError } from '@/utils/'
 
-export async function get({ payload }: { payload: GetLanguagesPayload }): Promise<GetLanguagesResponse> {
+export async function get({ payload }: { payload: GetLanguagesPayload }): Promise<GetLanguageResponse> {
   const { items, total, page, pageSize } = await LanguageRepo.list(payload)
 
   return {
@@ -55,7 +55,7 @@ export async function edit({ payload }: { payload: EditLanguagePayload }): Promi
   }
 }
 
-export async function remove({ payload }: { payload: RemoveLanguagesPayload }): Promise<RemoveLanguagesResponse> {
+export async function remove({ payload }: { payload: RemoveLanguagesPayload }): Promise<RemoveLanguageResponse> {
   for (const id of payload.ids) {
     await LanguageRepo.removeById(id)
   }

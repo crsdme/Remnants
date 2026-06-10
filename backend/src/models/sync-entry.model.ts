@@ -1,8 +1,10 @@
-import type { SyncEntry } from '@remnant/shared'
+import type { HydratedDocument } from 'mongoose'
+import type { SyncEntryDB } from '@/types/'
 import mongoose, { Schema } from 'mongoose'
 import { v4 as uuidv4 } from 'uuid'
-
 import { uuidValidator } from '@/utils/'
+
+type SyncEntryDoc = HydratedDocument<SyncEntryDB>
 
 const SyncEntrySchema: Schema = new Schema(
   {
@@ -54,4 +56,4 @@ SyncEntrySchema.set('toJSON', {
   },
 })
 
-export const SyncEntryModel = mongoose.model<SyncEntry>('sync-entry', SyncEntrySchema)
+export const SyncEntryModel = mongoose.model<SyncEntryDoc>('sync-entry', SyncEntrySchema)

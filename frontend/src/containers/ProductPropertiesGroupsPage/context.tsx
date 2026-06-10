@@ -1,11 +1,12 @@
+import type { ProductPropertyGroupPopulatedDTO } from '@remnant/shared'
 import type { ReactNode } from 'react'
-import type { UseFormReturn } from 'react-hook-form'
+
+import type { Resolver, UseFormReturn } from 'react-hook-form'
 
 import { zodResolver } from '@hookform/resolvers/zod'
-
 import { useQueryClient } from '@tanstack/react-query'
-import { createContext, useContext, useMemo, useState } from 'react'
 
+import { createContext, useContext, useMemo, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
@@ -16,84 +17,75 @@ import {
   useProductPropertyGroupRemove,
 } from '@/api/hooks/'
 
+function createGroupFormSchema(t: (key: string, options?: Record<string, unknown>) => string) {
+  return z.object({
+    names: z.record(z.string({ required_error: t('form.errors.required') }).min(3, { message: t('form.errors.min_length', { count: 3 }) }).trim()),
+    priority: z.number().optional(),
+    productProperties: z.array(z.string()).optional(),
+    active: z.boolean().optional(),
+  })
+}
+
+type ProductPropertyGroupFormValues = z.infer<ReturnType<typeof createGroupFormSchema>>
+
+function getGroupFormDefaults(productPropertyGroup?: any): ProductPropertyGroupFormValues {
+  if (!productPropertyGroup) {
+    return {
+      names: {},
+      priority: 0,
+      productProperties: [],
+      active: true,
+    }
+  }
+  return {
+    names: { ...productPropertyGroup.names },
+    priority: productPropertyGroup.priority,
+    productProperties: productPropertyGroup.productProperties.map((productProperty: { id: string }) => productProperty.id),
+    active: productPropertyGroup.active,
+  }
+}
+
 interface ProductPropertiesGroupsContextType {
-  selectedGroup: ProductPropertyGroup
+  selectedGroup: ProductPropertyGroupPopulatedDTO | null
   isModalOpen: boolean
   isLoading: boolean
-  form: UseFormReturn
+  form: UseFormReturn<ProductPropertyGroupFormValues>
   isEdit: boolean
-  openModal: (productPropertyGroup?: ProductPropertyGroup) => void
+  openModal: (productPropertyGroup?: ProductPropertyGroupPopulatedDTO) => void
   closeModal: () => void
-  submitGroupForm: (params) => void
+  submitGroupForm: (params: ProductPropertyGroupFormValues) => void
   removeGroup: (params: { ids: string[] }) => void
 }
 
 const ProductPropertiesGroupsContext = createContext<ProductPropertiesGroupsContextType | undefined>(undefined)
 
-interface ProductPropertiesGroupsProviderProps {
-  children: ReactNode
-}
-
-export function ProductPropertiesGroupsProvider({ children }: ProductPropertiesGroupsProviderProps) {
+export function ProductPropertiesGroupsProvider({ children }: { children: ReactNode }) {
   const [isModalOpen, setIsModalOpen] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
   const [isEdit, setIsEdit] = useState(false)
-  const [selectedGroup, setSelectedGroup] = useState(null)
+  const [selectedGroup, setSelectedGroup] = useState<ProductPropertyGroupPopulatedDTO | null>(null)
 
   const { t } = useTranslation()
 
-  const formSchema = useMemo(() =>
-    z.object({
-      names: z.record(z.string({ required_error: t('form.errors.required') }).min(3, { message: t('form.errors.min_length', { count: 3 }) }).trim()),
-      priority: z.number().optional(),
-      productProperties: z.array(z.string()).optional(),
-      active: z.boolean().optional(),
-    }), [t])
+  const formSchema = useMemo(() => createGroupFormSchema(t), [t])
 
-  const form = useForm({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      names: {
-        en: '',
-        ru: '',
-      },
-      priority: 0,
-      productProperties: [],
-      active: true,
-    },
+  const form = useForm<ProductPropertyGroupFormValues>({
+    resolver: zodResolver(formSchema) as Resolver<ProductPropertyGroupFormValues>,
+    defaultValues: getGroupFormDefaults(),
   })
-
-  const getGroupValues = (productPropertyGroup) => {
-    if (!productPropertyGroup) {
-      return {
-        names: {},
-        priority: 0,
-        productProperties: [],
-        active: true,
-      }
-    }
-    return {
-      names: { ...productPropertyGroup.names },
-      priority: productPropertyGroup.priority,
-      productProperties: productPropertyGroup.productProperties.map(productProperty => productProperty.id),
-      active: productPropertyGroup.active,
-    }
-  }
 
   const closeModal = () => {
     if (!isModalOpen)
       return
     setIsModalOpen(false)
-    setIsLoading(false)
     setSelectedGroup(null)
     form.reset()
   }
 
-  const openModal = (group) => {
+  const openModal = (group?: ProductPropertyGroupPopulatedDTO) => {
     setIsModalOpen(true)
     setIsEdit(!!group)
-    setSelectedGroup(group)
-    form.reset(getGroupValues(group))
+    setSelectedGroup(group ?? null)
+    form.reset(getGroupFormDefaults(group))
   }
 
   const queryClient = useQueryClient()
@@ -102,7 +94,7 @@ export function ProductPropertiesGroupsProvider({ children }: ProductPropertiesG
     options: {
       onSuccess: ({ data }) => {
         closeModal()
-        queryClient.invalidateQueries({ queryKey: ['product-properties-groups'] })
+        void queryClient.invalidateQueries({ queryKey: ['product-properties-groups'] })
         toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description || ''}` })
       },
       onError: ({ response }) => {
@@ -117,7 +109,7 @@ export function ProductPropertiesGroupsProvider({ children }: ProductPropertiesG
     options: {
       onSuccess: ({ data }) => {
         closeModal()
-        queryClient.invalidateQueries({ queryKey: ['product-properties-groups'] })
+        void queryClient.invalidateQueries({ queryKey: ['product-properties-groups'] })
         toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description || ''}` })
       },
       onError: ({ response }) => {
@@ -131,7 +123,7 @@ export function ProductPropertiesGroupsProvider({ children }: ProductPropertiesG
   const useMutateRemoveProductPropertyGroup = useProductPropertyGroupRemove({
     options: {
       onSuccess: ({ data }) => {
-        queryClient.invalidateQueries({ queryKey: ['product-properties-groups'] })
+        void queryClient.invalidateQueries({ queryKey: ['product-properties-groups'] })
         toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description || ''}` })
       },
       onError: ({ response }) => {
@@ -141,16 +133,17 @@ export function ProductPropertiesGroupsProvider({ children }: ProductPropertiesG
     },
   })
 
-  const submitGroupForm = (params) => {
-    setIsLoading(true)
+  const submitGroupForm = (params: ProductPropertyGroupFormValues) => {
     if (!selectedGroup)
       return useMutateCreateProductPropertyGroup.mutate(params)
     return useMutateEditProductPropertyGroup.mutate({ ...params, id: selectedGroup.id })
   }
 
-  const removeGroup = (params) => {
+  const removeGroup = (params: { ids: string[] }) => {
     useMutateRemoveProductPropertyGroup.mutate(params)
   }
+
+  const isLoading = useMutateCreateProductPropertyGroup.isPending || useMutateEditProductPropertyGroup.isPending || useMutateRemoveProductPropertyGroup.isPending
 
   const value: ProductPropertiesGroupsContextType = useMemo(
     () => ({

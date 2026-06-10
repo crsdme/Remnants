@@ -1,6 +1,5 @@
 import { useWatch } from 'react-hook-form'
-
-import { useTranslation } from 'react-i18next'
+import { useLanguageQuery } from '@/api/hooks'
 import { ColorPicker } from '@/components'
 import {
   Button,
@@ -19,16 +18,24 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui'
+import { useLocale } from '@/utils/hooks'
+import { useProductPropertiesContext } from '../context'
 
-export function ProductOptionForm({ form, languages, isLoading, onSubmit, closeModal, selectedProperty }) {
-  const { t } = useTranslation()
+export function ProductOptionForm() {
+  const { t } = useLocale()
+  const { optionForm, isLoading, submitOptionsForm, closeOptionsModal, selectedProperty } = useProductPropertiesContext()
+
+  const { languages = [] } = useLanguageQuery(
+    { pagination: { full: true } },
+    { options: { placeholderData: prevData => prevData } },
+  )
 
   return (
-    <Form {...form}>
-      <form className="w-full space-y-1" onSubmit={form.handleSubmit(onSubmit)}>
+    <Form {...optionForm}>
+      <form className="w-full space-y-1" onSubmit={e => void optionForm.handleSubmit(submitOptionsForm)(e)}>
         {languages.map(language => (
           <FormField
-            control={form.control}
+            control={optionForm.control}
             key={language.code}
             name={`names.${language.code}`}
             render={({ field }) => (
@@ -58,7 +65,7 @@ export function ProductOptionForm({ form, languages, isLoading, onSubmit, closeM
         ))}
 
         <FormField
-          control={form.control}
+          control={optionForm.control}
           name="priority"
           render={({ field }) => (
             <FormItem>
@@ -80,7 +87,7 @@ export function ProductOptionForm({ form, languages, isLoading, onSubmit, closeM
 
         <div className="flex gap-2 flex-wrap pb-2">
           <FormField
-            control={form.control}
+            control={optionForm.control}
             name="active"
             render={({ field }) => (
               <FormItem className="flex items-center justify-between rounded-md border p-4 grow">
@@ -105,13 +112,14 @@ export function ProductOptionForm({ form, languages, isLoading, onSubmit, closeM
         {selectedProperty?.type === 'color'
           && (
             <FormField
-              control={form.control}
+              control={optionForm.control}
               name="color"
               render={({ field }) => (
                 <FormItem className="flex flex-row items-center space-x-3 space-y-0 rounded-md border p-4">
                   <FormControl>
                     <ColorPicker
-                      value={field.value}
+                      ref={field.ref}
+                      value={field.value || ''}
                       onChange={field.onChange}
                       disabled={isLoading}
                     />
@@ -126,7 +134,7 @@ export function ProductOptionForm({ form, languages, isLoading, onSubmit, closeM
           <Button
             type="button"
             variant="secondary"
-            onClick={closeModal}
+            onClick={closeOptionsModal}
             disabled={isLoading}
           >
             {t('button.cancel')}
@@ -140,17 +148,26 @@ export function ProductOptionForm({ form, languages, isLoading, onSubmit, closeM
   )
 }
 
-export function ProductPropertyForm({ form, languages, isLoading, onSubmit, closeModal }) {
-  const { t } = useTranslation()
+export function ProductPropertyForm() {
+  const { t } = useLocale()
+  const { propertyForm, isLoading, submitProductPropertyForm, closePropertyModal } = useProductPropertiesContext()
 
-  const isTextOrNumber = ['text', 'number'].includes(useWatch({ control: form.control, name: 'type' }))
+  const isTextOrNumber = ['text', 'number'].includes(useWatch({ control: propertyForm.control, name: 'type' }))
+
+  const { languages = [] } = useLanguageQuery(
+    { pagination: { full: true } },
+    { options: { placeholderData: prevData => prevData } },
+  )
 
   return (
-    <Form {...form}>
-      <form className="w-full space-y-1" onSubmit={form.handleSubmit(onSubmit)}>
+    <Form {...propertyForm}>
+      <form
+        className="w-full space-y-1"
+        onSubmit={e => void propertyForm.handleSubmit(submitProductPropertyForm)(e)}
+      >
         {languages.map(language => (
           <FormField
-            control={form.control}
+            control={propertyForm.control}
             key={language.code}
             name={`names.${language.code}`}
             render={({ field }) => (
@@ -181,7 +198,7 @@ export function ProductPropertyForm({ form, languages, isLoading, onSubmit, clos
         { isTextOrNumber && (
           languages.map(language => (
             <FormField
-              control={form.control}
+              control={propertyForm.control}
               key={language.code}
               name={`symbols.${language.code}`}
               render={({ field }) => (
@@ -210,7 +227,7 @@ export function ProductPropertyForm({ form, languages, isLoading, onSubmit, clos
           ))
         ) }
         <FormField
-          control={form.control}
+          control={propertyForm.control}
           name="type"
           render={({ field }) => (
             <FormItem>
@@ -244,7 +261,7 @@ export function ProductPropertyForm({ form, languages, isLoading, onSubmit, clos
           )}
         />
         <FormField
-          control={form.control}
+          control={propertyForm.control}
           name="priority"
           render={({ field }) => (
             <FormItem>
@@ -266,7 +283,7 @@ export function ProductPropertyForm({ form, languages, isLoading, onSubmit, clos
 
         <div className="flex gap-2 flex-wrap pb-2">
           <FormField
-            control={form.control}
+            control={propertyForm.control}
             name="active"
             render={({ field }) => (
               <FormItem className="flex items-center justify-between rounded-md border p-4 grow">
@@ -287,7 +304,7 @@ export function ProductPropertyForm({ form, languages, isLoading, onSubmit, clos
             )}
           />
           <FormField
-            control={form.control}
+            control={propertyForm.control}
             name="showInTable"
             render={({ field }) => (
               <FormItem className="flex items-center justify-between rounded-md border p-4 grow">
@@ -308,7 +325,7 @@ export function ProductPropertyForm({ form, languages, isLoading, onSubmit, clos
             )}
           />
           <FormField
-            control={form.control}
+            control={propertyForm.control}
             name="showInStatistics"
             render={({ field }) => (
               <FormItem className="flex items-center justify-between rounded-md border p-4 grow">
@@ -329,7 +346,7 @@ export function ProductPropertyForm({ form, languages, isLoading, onSubmit, clos
             )}
           />
           <FormField
-            control={form.control}
+            control={propertyForm.control}
             name="isRequired"
             render={({ field }) => (
               <FormItem className="flex items-center justify-between rounded-md border p-4 grow">
@@ -354,7 +371,7 @@ export function ProductPropertyForm({ form, languages, isLoading, onSubmit, clos
           <Button
             type="button"
             variant="secondary"
-            onClick={closeModal}
+            onClick={closePropertyModal}
             disabled={isLoading}
           >
             {t('button.cancel')}

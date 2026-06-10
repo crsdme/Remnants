@@ -1,9 +1,9 @@
 import { Download, Upload } from 'lucide-react'
 import { useState } from 'react'
-import { useTranslation } from 'react-i18next'
 
 import { Button, Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger, Label } from '@/components/ui'
 
+import { useLocale } from '@/utils/hooks'
 import { FileUpload } from '../FileUpload'
 
 interface ImportButtonProps {
@@ -11,7 +11,7 @@ interface ImportButtonProps {
   handleDownloadTemplate: () => void
   handleFileChange: (event: React.ChangeEvent<HTMLInputElement>) => void
   isFileSelected: boolean
-  onSubmit: (values) => void
+  onSubmit: (values: any) => void
 }
 
 export function ImportButton({
@@ -21,11 +21,11 @@ export function ImportButton({
   isFileSelected,
   onSubmit,
 }: ImportButtonProps) {
-  const { t } = useTranslation()
+  const { t } = useLocale()
   const [isOpen, setIsOpen] = useState(false)
 
-  const handleSubmit = async (values) => {
-    await onSubmit(values)
+  const handleSubmit = async (values: any) => {
+    await Promise.resolve(onSubmit(values))
     setIsOpen(false)
   }
 
@@ -76,7 +76,9 @@ export function ImportButton({
             type="button"
             disabled={!isFileSelected}
             loading={isLoading}
-            onClick={handleSubmit}
+            onClick={(e) => {
+              void handleSubmit(e)
+            }}
           >
             {t('component.import.dialog.import')}
           </Button>

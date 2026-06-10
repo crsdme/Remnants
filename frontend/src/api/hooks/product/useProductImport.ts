@@ -1,9 +1,9 @@
-import type { importProductsParams } from '@/api/types'
+import type { ImportProductsRequest } from '@remnant/shared'
 
 import { useMutation } from '@tanstack/react-query'
 import { importProducts } from '@/api/requests'
 
-export function useProductImport(settings?: MutationSettings<importProductsParams, typeof importProducts>) {
+export function useProductImport(settings?: MutationSettings<ImportProductsRequest>) {
   return useMutation({
     mutationFn: importProducts,
     ...settings?.options,

@@ -1,28 +1,38 @@
 import type {
-  BarcodesResponse,
-  createBarcodesParams,
-  editBarcodeParams,
-  getBarcodesParams,
-  removeBarcodesParams,
-} from '@/api/types'
+  CreateBarcodeRequest,
+  CreateBarcodeResponse,
+  EditBarcodeRequest,
+  EditBarcodeResponse,
+  GenerateCodeResponse,
+  GetBarcodeByCodeRequest,
+  GetBarcodeByCodeResponse,
+  GetBarcodesRequest,
+  GetBarcodesResponse,
+  RemoveBarcodesRequest,
+  RemoveBarcodesResponse,
+} from '@remnant/shared'
 import { api } from '@/api/instance'
 
-export async function getBarcodes(params: getBarcodesParams) {
-  return api.get<BarcodesResponse>('barcodes/get', { params })
+export async function getBarcodes(params: GetBarcodesRequest) {
+  return api.get<GetBarcodesResponse>('barcodes/get', { params })
 }
 
-export async function createBarcode(params: createBarcodesParams) {
-  return api.post<BarcodesResponse>('barcodes/create', { ...params })
+export async function createBarcode(params: CreateBarcodeRequest) {
+  return api.post<CreateBarcodeResponse>('barcodes/create', { ...params })
 }
 
-export async function editBarcode(params: editBarcodeParams) {
-  return api.post<BarcodesResponse>('barcodes/edit', params)
+export async function editBarcode(params: EditBarcodeRequest) {
+  return api.post<EditBarcodeResponse>('barcodes/edit', params)
 }
 
-export async function removeBarcodes(params: removeBarcodesParams) {
-  return api.post<BarcodesResponse>('barcodes/remove', params)
+export async function removeBarcodes(params: RemoveBarcodesRequest) {
+  return api.post<RemoveBarcodesResponse>('barcodes/remove', params)
 }
 
 export async function generateCode() {
-  return api.get<BarcodesResponse>('barcodes/generate-code')
+  return api.get<GenerateCodeResponse>('barcodes/generate-code')
+}
+
+export async function getBarcodeByCode(params: GetBarcodeByCodeRequest) {
+  return api.get<GetBarcodeByCodeResponse>('barcodes/get-by-code', { params })
 }

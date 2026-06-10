@@ -1,11 +1,11 @@
+import type { CashregisterPopulatedDTO } from '@remnant/shared'
 import type { ReactNode } from 'react'
-import type { UseFormReturn } from 'react-hook-form'
+import type { Resolver, UseFormReturn } from 'react-hook-form'
 
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useQueryClient } from '@tanstack/react-query'
 import { createContext, useContext, useMemo, useState } from 'react'
 import { useForm } from 'react-hook-form'
-import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { z } from 'zod'
 
@@ -14,35 +14,52 @@ import {
   useCashregisterEdit,
   useCashregisterRemove,
 } from '@/api/hooks'
-import { SUPPORTED_LANGUAGES } from '@/utils/constants'
+import { useLocale } from '@/utils/hooks'
 
 interface CashregisterContextType {
-  selectedCashregister: Cashregister
+  selectedCashregister: CashregisterPopulatedDTO | undefined
   isModalOpen: boolean
   isLoading: boolean
   isEdit: boolean
-  form: UseFormReturn
-  openModal: (cashregister?: Cashregister) => void
+  form: UseFormReturn<CashregisterFormValues>
+  openModal: (cashregister?: CashregisterPopulatedDTO) => void
   closeModal: () => void
-  submitCashregisterForm: (params) => void
+  submitCashregisterForm: (params: CashregisterFormValues) => void
   removeCashregister: (params: { ids: string[] }) => void
+}
+
+interface CashregisterFormValues {
+  names: Record<string, string>
+  accounts: string[]
+  priority: number
+  active: boolean
+}
+
+function getCashregisterFormValues(cashregister?: CashregisterPopulatedDTO): CashregisterFormValues {
+  if (!cashregister) {
+    return {
+      names: {},
+      accounts: [],
+      priority: 0,
+      active: true,
+    }
+  }
+  return {
+    names: { ...cashregister.names },
+    accounts: cashregister.accounts.map(account => account.id),
+    priority: cashregister.priority,
+    active: cashregister.active,
+  }
 }
 
 const CashregisterContext = createContext<CashregisterContextType | undefined>(undefined)
 
-interface CashregisterProviderProps {
-  children: ReactNode
-}
-
-export function CashregisterProvider({ children }: CashregisterProviderProps) {
+export function CashregisterProvider({ children }: { children: ReactNode }) {
   const [isModalOpen, setIsModalOpen] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
   const [isEdit, setIsEdit] = useState(false)
-  const [selectedCashregister, setSelectedCashregister] = useState(null)
+  const [selectedCashregister, setSelectedCashregister] = useState<CashregisterPopulatedDTO | undefined>(undefined)
 
-  const { t } = useTranslation()
-
-  const defaultLanguageValues = SUPPORTED_LANGUAGES.reduce((acc, lang) => ({ ...acc, [lang]: '' }), {})
+  const { t } = useLocale()
 
   const formSchema = useMemo(() =>
     z.object({
@@ -52,49 +69,26 @@ export function CashregisterProvider({ children }: CashregisterProviderProps) {
       active: z.boolean().default(true),
     }), [t])
 
-  const form = useForm({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      names: defaultLanguageValues,
-      accounts: [],
-      priority: 0,
-      active: true,
-    },
+  const form = useForm<CashregisterFormValues>({
+    resolver: zodResolver(formSchema) as Resolver<CashregisterFormValues>,
+    defaultValues: getCashregisterFormValues(),
   })
 
   const queryClient = useQueryClient()
-
-  function getCashregisterFormValues(cashregister) {
-    if (!cashregister) {
-      return {
-        names: defaultLanguageValues,
-        accounts: [],
-        priority: 0,
-        active: true,
-      }
-    }
-    return {
-      names: { ...cashregister.names },
-      accounts: cashregister.accounts.map(account => account.id),
-      priority: cashregister.priority,
-      active: cashregister.active,
-    }
-  }
 
   const closeModal = () => {
     if (!isModalOpen)
       return
     setIsModalOpen(false)
-    setIsLoading(false)
     setIsEdit(false)
-    setSelectedCashregister(null)
+    setSelectedCashregister(undefined)
     form.reset()
   }
 
-  const openModal = (cashregister) => {
+  const openModal = (cashregister?: CashregisterPopulatedDTO) => {
     setIsModalOpen(true)
     setIsEdit(!!cashregister)
-    setSelectedCashregister(cashregister)
+    setSelectedCashregister(cashregister ?? undefined)
     form.reset(getCashregisterFormValues(cashregister))
   }
 
@@ -102,7 +96,7 @@ export function CashregisterProvider({ children }: CashregisterProviderProps) {
     options: {
       onSuccess: ({ data }) => {
         closeModal()
-        queryClient.invalidateQueries({ queryKey: ['cashregisters'] })
+        void queryClient.invalidateQueries({ queryKey: ['cashregisters'] })
         toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description || ''}` })
       },
       onError: ({ response }) => {
@@ -117,7 +111,7 @@ export function CashregisterProvider({ children }: CashregisterProviderProps) {
     options: {
       onSuccess: ({ data }) => {
         closeModal()
-        queryClient.invalidateQueries({ queryKey: ['cashregisters'] })
+        void queryClient.invalidateQueries({ queryKey: ['cashregisters'] })
         toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description || ''}` })
       },
       onError: ({ response }) => {
@@ -131,7 +125,7 @@ export function CashregisterProvider({ children }: CashregisterProviderProps) {
   const useMutateRemoveCashregister = useCashregisterRemove({
     options: {
       onSuccess: ({ data }) => {
-        queryClient.invalidateQueries({ queryKey: ['cashregisters'] })
+        void queryClient.invalidateQueries({ queryKey: ['cashregisters'] })
         toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description || ''}` })
       },
       onError: ({ response }) => {
@@ -141,17 +135,24 @@ export function CashregisterProvider({ children }: CashregisterProviderProps) {
     },
   })
 
-  const removeCashregister = (params) => {
+  const removeCashregister = (params: { ids: string[] }) => {
     useMutateRemoveCashregister.mutate(params)
   }
 
-  const submitCashregisterForm = (params) => {
-    setIsLoading(true)
-    if (!selectedCashregister)
+  const submitCashregisterForm = (params: CashregisterFormValues) => {
+    if (selectedCashregister === undefined)
       return useMutateCreateCashregister.mutate(params)
 
-    return useMutateEditCashregister.mutate({ ...params, id: selectedCashregister.id })
+    return useMutateEditCashregister.mutate({
+      id: selectedCashregister.id,
+      names: params.names,
+      accounts: params.accounts,
+      priority: params.priority,
+      active: params.active,
+    })
   }
+
+  const isLoading = useMutateCreateCashregister.isPending || useMutateEditCashregister.isPending || useMutateRemoveCashregister.isPending
 
   const value: CashregisterContextType = useMemo(
     () => ({

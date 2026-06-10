@@ -1,7 +1,7 @@
 {
   "scripts": {
     "dev": "concurrently -n shared,backend,frontend -c auto \"npm -w @remnant/shared run dev\" \"npm -w backend run dev\" \"npm -w frontend run dev\"",
-    "prepare": "husky install"
+    "check": "npm run check -w @remnant/shared && npm run check -w frontend && npm run check -w backend"
   },
   "workspaces": [
     "frontend",

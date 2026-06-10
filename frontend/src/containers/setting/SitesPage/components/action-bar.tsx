@@ -1,6 +1,5 @@
 import { Plus } from 'lucide-react'
 
-import { useTranslation } from 'react-i18next'
 import { PermissionGate } from '@/components'
 import {
   Button,
@@ -11,12 +10,13 @@ import {
   SheetTitle,
   SheetTrigger,
 } from '@/components/ui'
+import { useLocale } from '@/utils/hooks'
 import { useSiteContext } from '../context'
 
 import { SiteForm } from './form'
 
 export function ActionBar() {
-  const { t } = useTranslation()
+  const { t } = useLocale()
   const { isModalOpen, isLoading, isEdit, openModal, closeModal } = useSiteContext()
 
   return (

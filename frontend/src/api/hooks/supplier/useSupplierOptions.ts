@@ -1,49 +1,31 @@
-import type { getSuppliersParams } from '@/api/types'
+import type { GetSuppliersRequest, SupplierDTO } from '@remnant/shared'
 import { useQueryClient } from '@tanstack/react-query'
+import { useCallback } from 'react'
 import { getSuppliers } from '@/api/requests'
 
-interface LoadOptionsParams {
-  query: string
-  selectedValue?: string[]
-}
+const EMPTY_ITEMS: never[] = []
 
-interface UseSupplierOptionsParams {
-  defaultFilters?: { ids?: string[] }
-  mapFn?: (supplier: Supplier) => { value: string, label: string }
-}
-
-export function useSupplierOptions({ defaultFilters, mapFn }: UseSupplierOptionsParams = {}) {
+export function useSupplierOptions({ defaultFilters }: { defaultFilters?: GetSuppliersRequest['filters'] } = {}) {
   const queryClient = useQueryClient()
 
-  return async function loadSupplierOptions({ query, selectedValue }: LoadOptionsParams): Promise<Supplier[]> {
-    const params: getSuppliersParams = {}
-    let filters = {}
-
-    if (query || selectedValue) {
-      filters = {
-        ...(selectedValue ? { ids: selectedValue } : { search: query }),
+  return useCallback(
+    async ({ query = '', selectedValue }: { query?: string, selectedValue?: string[] } = {}): Promise<SupplierDTO[]> => {
+      const params: GetSuppliersRequest = {
+        pagination: { full: true },
+        filters: {
+          ...(selectedValue ? { ids: selectedValue } : { names: query }),
+          ...defaultFilters,
+        },
       }
-    }
 
-    if (defaultFilters) {
-      filters = {
-        ...filters,
-        ...defaultFilters,
-      }
-    }
+      const { data } = await queryClient.fetchQuery({
+        queryKey: ['suppliers', 'get', params],
+        queryFn: async () => getSuppliers(params),
+        staleTime: 60000,
+      })
 
-    if (Object.keys(filters).length > 0) {
-      params.filters = filters
-    }
-
-    const data = await queryClient.fetchQuery({
-      queryKey: ['suppliers', 'get', params],
-      queryFn: () => getSuppliers(params),
-      staleTime: 60000,
-    })
-
-    const suppliers = data?.data?.suppliers || []
-
-    return mapFn ? suppliers.map(mapFn) as unknown as Supplier[] : suppliers
-  }
+      return data?.data?.items ?? EMPTY_ITEMS
+    },
+    [queryClient],
+  )
 }

@@ -1,20 +1,19 @@
+import type { ProductPopulatedDTO } from '@remnant/shared'
+import type { Column } from '@tanstack/react-table'
+import { createColumnHelper } from '@tanstack/react-table'
 import {
   ArrowDown,
   ArrowUp,
-  ChevronDown,
-  ChevronRight,
   ChevronsUpDown,
   Copy,
-  CopyPlus,
   History,
   PackageIcon,
   Pencil,
   Trash,
 } from 'lucide-react'
 import { useMemo } from 'react'
-import { useTranslation } from 'react-i18next'
-import { Link } from 'react-router-dom'
 
+import { Link } from 'react-router-dom'
 import { useProductPropertyQuery } from '@/api/hooks/product-property/useProductPropertyQuery'
 import { ImageGallery, TableActionDropdown } from '@/components'
 import { Badge, Button, Checkbox } from '@/components/ui'
@@ -22,78 +21,31 @@ import { useAuthContext } from '@/contexts'
 import { backendUrl } from '@/utils/constants'
 import { formatDate } from '@/utils/helpers'
 import { hasPermission } from '@/utils/helpers/permission'
+import { useLocale } from '@/utils/hooks'
 import { useProductContext } from '../context'
 
 const sortIcons = { asc: ArrowUp, desc: ArrowDown }
 
-export function useColumns() {
-  const { t, i18n } = useTranslation()
+const columnHelper = createColumnHelper<ProductPopulatedDTO>()
+
+export function useColumns({ filters }: { filters: { selectedWarehouse: string } }) {
+  const { t, language } = useLocale()
   const {
     isLoading,
-    selectedWarehouse,
     openModal,
     openLogsModal,
-    duplicateProducts,
     removeProduct,
-    loadCategoryOptions,
-    loadUnitsOptions,
-    loadCurrencyOptions,
-    loadProductPropertyGroupOptions,
   } = useProductContext()
   const { permissions } = useAuthContext()
 
-  const { data: { productProperties = [] } = {} } = useProductPropertyQuery(
-    { filters: { active: [true], language: i18n.language, showInTable: true }, pagination: { full: true } },
-    { options: {
-      select: response => ({
-        productProperties: response.data.productProperties,
-      }),
-    } },
+  const { productProperties } = useProductPropertyQuery(
+    { filters: { active: [true], language, showInTable: true }, pagination: { full: true } },
   )
 
-  const loadCategoryOptionsMapped = async (value) => {
-    const res = await loadCategoryOptions(value)
-
-    return res.map((item: any) => ({
-      id: item.id,
-      value: item.id,
-      label: item.names[i18n.language],
-    }))
-  }
-
-  const loadUnitOptionsMapped = async (value) => {
-    const res = await loadUnitsOptions(value)
-
-    return res.map((item: any) => ({
-      id: item.id,
-      value: item.id,
-      label: item.names[i18n.language],
-    }))
-  }
-
-  const loadCurrencyOptionsMapped = async (value) => {
-    const res = await loadCurrencyOptions(value)
-
-    return res.map((item: any) => ({
-      id: item.id,
-      value: item.id,
-      label: item.names[i18n.language],
-    }))
-  }
-
-  const loadProductPropertyGroupOptionsMapped = async (value) => {
-    const res = await loadProductPropertyGroupOptions(value)
-
-    return res.map((item: any) => ({
-      id: item.id,
-      value: item.id,
-      label: item.names[i18n.language],
-    }))
-  }
-
   const columns = useMemo(() => {
-    function sortHeader(column, label) {
-      const Icon = sortIcons[column.getIsSorted() || undefined] || ChevronsUpDown
+    function sortHeader(column: Column<ProductPopulatedDTO, unknown>, label: string) {
+      const sorted = column.getIsSorted()
+      const Icon = sorted ? sortIcons[sorted] : ChevronsUpDown
 
       return (
         <Button
@@ -110,7 +62,7 @@ export function useColumns() {
     }
 
     function selectColumn() {
-      return ({
+      return columnHelper.display({
         id: 'select',
         size: 35,
         meta: { title: t('component.columnMenu.columns.select') },
@@ -141,35 +93,8 @@ export function useColumns() {
       })
     }
 
-    function expanderColumn() {
-      return ({
-        id: 'expander',
-        header: '',
-        cell: ({ row }) => {
-          if (row.getCanExpand()) {
-            return (
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={row.getToggleExpandedHandler()}
-                style={{ width: 24, height: 24, padding: 0 }}
-              >
-                {row.getIsExpanded()
-                  ? <ChevronDown size={16} />
-                  : <ChevronRight size={16} />}
-              </Button>
-            )
-          }
-          return null
-        },
-        size: 24,
-        enableSorting: false,
-        enableHiding: false,
-      })
-    }
-
     function actionColumn() {
-      return ({
+      return columnHelper.display({
         id: 'action',
         size: 85,
         meta: {
@@ -182,13 +107,13 @@ export function useColumns() {
           const actions = [
             {
               permission: 'product.edit',
-              onClick: () => openModal(item),
+              onClick: () => openModal(item as any),
               label: t('table.edit'),
               icon: <Pencil className="h-4 w-4" />,
             },
             {
               permission: 'product.copy',
-              onClick: () => navigator.clipboard.writeText(item.id),
+              onClick: async () => navigator.clipboard.writeText(item.id),
               label: t('table.copy'),
               icon: <Copy className="h-4 w-4" />,
             },
@@ -205,12 +130,6 @@ export function useColumns() {
               icon: <History className="h-4 w-4" />,
             },
             {
-              permission: 'product.duplicate',
-              onClick: () => duplicateProducts({ ids: [item.id] }),
-              label: t('table.duplicate'),
-              icon: <CopyPlus className="h-4 w-4" />,
-            },
-            {
               permission: 'product.delete',
               onClick: () => removeProduct({ ids: [item.id] }),
               label: t('table.delete'),
@@ -225,103 +144,90 @@ export function useColumns() {
       })
     }
 
-    function productPropertyColumn() {
-      return productProperties.map(property => ({
-        id: ['productProperties', property.id],
-        size: 150,
-        meta: {
-          title: property.names[i18n.language],
-          batchEdit: false,
-          batchEditType: 'textMultiLanguage',
-          filterable: false,
-          filterType: 'text',
-          sortable: true,
-        },
-        header: ({ column }) => sortHeader(column, property.names[i18n.language]),
-        cell: ({ row }) => {
-          const productProperty = row.original.productProperties.find(p => p.id === property.id)
+    function productPropertyColumns() {
+      return productProperties.map(property =>
+        columnHelper.display({
+          id: `productProperties.${property.id}`,
+          size: 150,
+          meta: {
+            title: property.names[language],
+            filterable: false,
+            filterType: 'text',
+            sortable: true,
+          },
+          header: ({ column }) => sortHeader(column, property.names[language] ?? ''),
+          cell: ({ row }) => {
+            const productProperty = row.original.productProperties.find(p => p.id === property.id)
 
-          if (!productProperty)
-            return null
+            if (!productProperty)
+              return null
 
-          switch (productProperty.data.type) {
-            case 'text':
-              return `${productProperty.value} ${productProperty?.data?.symbols?.[i18n.language] || ''}`
-            case 'number':
-              return `${productProperty.value} ${productProperty?.data?.symbols?.[i18n.language] || ''}`
-            case 'boolean':
-              return <Badge variant={productProperty.value ? 'success' : 'destructive'}>{t(`table.yesno.${productProperty.value}`)}</Badge>
-            case 'select':
-              return (
-                <div className="flex flex-wrap gap-2">
-                  {productProperty.optionData.map(option =>
-                    <Badge key={option.id}>{option.names[i18n.language]}</Badge>)}
-                </div>
-              )
-            case 'multiSelect':
-              return (
-                <div className="flex flex-wrap gap-2">
-                  {productProperty.optionData.map(option =>
-                    <Badge key={option.id}>{option.names[i18n.language]}</Badge>)}
-                </div>
-              )
-            case 'color':
-              return (
-                <div className="flex flex-wrap gap-2">
-                  {productProperty.optionData.map(option => (
-                    <Badge key={option.id}>
-                      <div className="w-2 h-2 rounded-full border-gray-200" style={{ backgroundColor: option.color }} />
-                      {option.names[i18n.language]}
-                    </Badge>
-                  ))}
-                </div>
-              )
-          }
-        },
-      }))
+            switch (productProperty.data.type) {
+              case 'text':
+              case 'number':
+                return `${String(productProperty.value)} ${productProperty?.data?.symbols?.[language] || ''}`
+              case 'boolean':
+                return <Badge variant={productProperty.value ? 'success' : 'destructive'}>{t(`table.yesno.${String(productProperty.value)}`)}</Badge>
+              case 'select':
+              case 'multiSelect':
+                return (
+                  <div className="flex flex-wrap gap-2">
+                    {productProperty.options.map(option =>
+                      <Badge key={option.id}>{option.names[language]}</Badge>)}
+                  </div>
+                )
+              case 'color':
+                return (
+                  <div className="flex flex-wrap gap-2">
+                    {productProperty.options.map(option => (
+                      <Badge key={option.id}>
+                        <div className="w-2 h-2 rounded-full border-gray-200" style={{ backgroundColor: option.color }} />
+                        {option.names[language]}
+                      </Badge>
+                    ))}
+                  </div>
+                )
+              default:
+                return null
+            }
+          },
+        }),
+      )
     }
 
     function permissionColumns() {
       if (!hasPermission(permissions, 'product.purchasePrice'))
         return []
       return [
-        {
+        columnHelper.accessor(row => `${row.purchasePrice} ${row.purchaseCurrency.symbols[language] ?? ''}`, {
           id: 'purchasePrice',
           size: 150,
           meta: {
             title: t('page.products.table.purchasePrice'),
-            batchEdit: true,
-            batchEditType: 'number',
             filterable: true,
             filterType: 'number',
             sortable: true,
           },
           header: ({ column }) => sortHeader(column, t('page.products.table.purchasePrice')),
-          accessorFn: row => `${row.purchasePrice} ${row.purchaseCurrency.symbols[i18n.language]}`,
-        },
-        {
+        }),
+        columnHelper.accessor(row => row.purchaseCurrency.symbols[language] ?? '', {
           id: 'purchaseCurrency',
           size: 150,
           meta: {
             title: t('page.products.table.purchaseCurrency'),
-            batchEdit: true,
-            batchEditType: 'asyncValue',
-            loadOptions: loadCurrencyOptionsMapped,
             filterable: true,
             filterType: 'asyncValue',
             filterMultiple: true,
             sortable: true,
           },
           header: ({ column }) => sortHeader(column, t('page.products.table.purchaseCurrency')),
-          accessorFn: row => row.purchaseCurrency.symbols[i18n.language],
-        },
+        }),
       ]
     }
 
     return [
       selectColumn(),
-      expanderColumn(),
-      {
+      columnHelper.accessor('seq', {
         id: 'seq',
         meta: {
           title: t('page.products.table.seq'),
@@ -329,10 +235,9 @@ export function useColumns() {
           filterType: 'number',
           sortable: true,
         },
-        // header: ({ column }) => sortHeader(column, t('page.products.table.seq')),
-        cell: ({ row }) => row.original.seq,
-      },
-      {
+        header: ({ column }) => sortHeader(column, t('page.products.table.seq')),
+      }),
+      columnHelper.display({
         id: 'images',
         size: 100,
         meta: {
@@ -341,101 +246,82 @@ export function useColumns() {
         },
         cell: ({ row }) => {
           const images = row.original.images.map((image, index) => ({
-            id: index,
+            id: String(index),
             src: image.path,
-            alt: image.originalname,
+            alt: image.name,
           }))
           return (<ImageGallery images={images} />)
         },
-      },
-      {
+      }),
+      columnHelper.accessor(row => row.names?.[language] || row.names?.en, {
         id: 'names',
         size: 150,
         meta: {
           title: t('page.products.table.names'),
-          batchEdit: true,
-          batchEditType: 'textMultiLanguage',
           filterable: true,
           filterType: 'text',
           sortable: true,
           defaultVisible: true,
         },
         header: ({ column }) => sortHeader(column, t('page.products.table.names')),
-        accessorFn: row => row.names?.[i18n.language] || row.names?.en,
-      },
-      {
+      }),
+      columnHelper.accessor(row => `${row.price} ${row.currency.symbols[language] ?? ''}`, {
         id: 'price',
         size: 150,
         meta: {
           title: t('page.products.table.price'),
-          batchEdit: true,
-          batchEditType: 'number',
           filterable: true,
           filterType: 'number',
           sortable: true,
           defaultVisible: true,
         },
         header: ({ column }) => sortHeader(column, t('page.products.table.price')),
-        accessorFn: row => `${row.price} ${row.currency.symbols[i18n.language]}`,
-      },
-      {
+      }),
+      columnHelper.accessor(row => row.currency.symbols[language] ?? '', {
         id: 'currency',
         size: 150,
         meta: {
           title: t('page.products.table.currency'),
-          batchEdit: true,
-          batchEditType: 'asyncValue',
-          loadOptions: loadCurrencyOptionsMapped,
           filterable: true,
           filterType: 'asyncValue',
           sortable: true,
           filterMultiple: true,
         },
         header: ({ column }) => sortHeader(column, t('page.products.table.currency')),
-        accessorFn: row => row.currency.symbols[i18n.language],
-      },
+      }),
       ...permissionColumns(),
-      {
+      columnHelper.display({
         id: 'quantity',
         size: 150,
         meta: {
           title: t('page.products.table.quantity'),
-          // filterable: true,
-          // filterType: 'number',
           sortable: true,
           defaultVisible: true,
         },
         header: ({ column }) => sortHeader(column, t('page.products.table.quantity')),
         cell: ({ row }) => {
-          const quantity = row.original.quantity.find(q => q.warehouse === selectedWarehouse)
-          const unit = row.original.unit.symbols[i18n.language]
+          const quantity = row.original.warehouseStock.find(q => q.warehouse === filters.selectedWarehouse)
+          const unit = row.original.unit.symbols[language] ?? ''
           return quantity ? `${quantity.count} ${unit}` : `0 ${unit}`
         },
-      },
-      {
+      }),
+      columnHelper.accessor(row => `${row.unit.names[language] ?? ''}`, {
         id: 'unit',
         size: 150,
         meta: {
           title: t('page.products.table.unit'),
-          batchEdit: true,
-          batchEditType: 'asyncValue',
-          loadOptions: loadUnitOptionsMapped,
           filterable: true,
           filterType: 'asyncValue',
           multiFilterable: true,
           sortable: true,
         },
         header: ({ column }) => sortHeader(column, t('page.products.table.unit')),
-        accessorFn: row => `${row.unit.names[i18n.language]}`,
-      },
-      {
+      }),
+      columnHelper.display({
         id: 'categories',
         size: 150,
         meta: {
           title: t('page.products.table.categories'),
-          batchEdit: true,
-          batchEditType: 'asyncValue',
-          loadOptions: loadCategoryOptionsMapped,
           filterable: true,
           filterType: 'asyncValue',
           multiFilterable: true,
@@ -445,25 +331,23 @@ export function useColumns() {
         header: ({ column }) => sortHeader(column, t('page.products.table.categories')),
         cell: ({ row }) => (
           <div className="flex flex-wrap gap-2">
-            {row.original.categories.map(category => <Badge key={category.id}>{category.names[i18n.language]}</Badge>)}
+            {row.original.categories.map(category => <Badge key={category.id}>{category.names[language]}</Badge>)}
           </div>
         ),
-      },
-      {
+      }),
+      columnHelper.accessor(row => `${row.productPropertiesGroup.names[language] ?? ''}`, {
         id: 'productPropertiesGroup',
         size: 150,
         meta: {
           title: t('page.products.table.productPropertyGroup'),
           sortable: true,
-          loadOptions: loadProductPropertyGroupOptionsMapped,
           filterable: true,
           filterType: 'asyncValue',
           multiFilterable: true,
         },
         header: ({ column }) => sortHeader(column, t('page.products.table.productPropertyGroup')),
-        accessorFn: row => `${row.productPropertiesGroup.names[i18n.language]}`,
-      },
-      {
+      }),
+      columnHelper.display({
         id: 'barcodes',
         size: 150,
         meta: {
@@ -476,7 +360,7 @@ export function useColumns() {
           return (
             <div className="flex flex-wrap gap-2">
               {barcodes.map(barcode => (
-                <Link target="_blank" to={`${backendUrl}api/barcodes/print?codes=${barcode}&size=55x40&language=${i18n.language}`} key={barcode}>
+                <Link target="_blank" to={`${backendUrl}api/barcodes/print?codes=${barcode}&size=55x40&language=${language}`} key={barcode}>
                   <Badge>
                     {barcode}
                   </Badge>
@@ -485,11 +369,10 @@ export function useColumns() {
             </div>
           )
         },
-      },
-      ...productPropertyColumn(),
-      {
+      }),
+      ...productPropertyColumns(),
+      columnHelper.accessor('createdAt', {
         id: 'createdAt',
-        accessorKey: 'createdAt',
         meta: {
           title: t('table.createdAt'),
           filterable: true,
@@ -497,11 +380,10 @@ export function useColumns() {
           sortable: true,
         },
         header: ({ column }) => sortHeader(column, t('table.createdAt')),
-        cell: ({ row }) => formatDate(row.getValue('createdAt'), 'dd.MM.yyyy HH:mm', i18n.language),
-      },
-      {
+        cell: ({ row }) => formatDate(row.getValue('createdAt'), 'dd.MM.yyyy HH:mm', language),
+      }),
+      columnHelper.accessor('updatedAt', {
         id: 'updatedAt',
-        accessorKey: 'updatedAt',
         meta: {
           title: t('table.updatedAt'),
           filterable: true,
@@ -509,10 +391,10 @@ export function useColumns() {
           sortable: true,
         },
         header: ({ column }) => sortHeader(column, t('table.updatedAt')),
-        cell: ({ row }) => formatDate(row.getValue('updatedAt'), 'dd.MM.yyyy HH:mm', i18n.language),
-      },
+        cell: ({ row }) => formatDate(row.getValue('updatedAt'), 'dd.MM.yyyy HH:mm', language),
+      }),
       actionColumn(),
     ]
-  }, [i18n.language, productProperties, selectedWarehouse])
+  }, [language, filters.selectedWarehouse, isLoading, openModal, openLogsModal, removeProduct, productProperties, permissions, t])
   return columns
 }

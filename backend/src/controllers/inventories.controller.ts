@@ -1,10 +1,26 @@
-import type { NextFunction, Request, Response } from 'express'
-import type { CreateInventoriesInput, EditInventoriesInput, GetInventoriesInput, GetItemsInventoriesInput, RemoveInventoriesInput, ScanBarcodeToDraftInventoriesInput } from '@/types'
+import type { NextFunction, Response } from 'express'
+import type {
+  CreateInventoriesPayload,
+  EditInventoriesPayload,
+  GetInventoriesPayload,
+  GetInventoryItemsPayload,
+  RemoveInventoriesPayload,
+  ScanBarcodeToDraftPayload,
+  ValidatedAuthedRequest,
+  ValidatedRequest,
+} from '@/types'
+
 import * as InventoriesService from '@/services/inventories.service'
 
-export async function get(req: Request, res: Response, next: NextFunction) {
+export async function get(
+  req: ValidatedRequest<GetInventoriesPayload, never>,
+  res: Response,
+  next: NextFunction,
+) {
   try {
-    const serviceResponse = await InventoriesService.get(req.validated?.query as GetInventoriesInput)
+    const serviceResponse = await InventoriesService.get({
+      payload: req.validated.query,
+    })
 
     res.status(200).json(serviceResponse)
   }
@@ -13,9 +29,15 @@ export async function get(req: Request, res: Response, next: NextFunction) {
   }
 }
 
-export async function getItems(req: Request, res: Response, next: NextFunction) {
+export async function getItems(
+  req: ValidatedRequest<GetInventoryItemsPayload, never>,
+  res: Response,
+  next: NextFunction,
+) {
   try {
-    const serviceResponse = await InventoriesService.getItems(req.validated?.body as GetItemsInventoriesInput)
+    const serviceResponse = await InventoriesService.getItems({
+      payload: req.validated.body,
+    })
 
     res.status(200).json(serviceResponse)
   }
@@ -24,9 +46,15 @@ export async function getItems(req: Request, res: Response, next: NextFunction) 
   }
 }
 
-export async function scanBarcodeToDraft(req: Request, res: Response, next: NextFunction) {
+export async function scanBarcodeToDraft(
+  req: ValidatedRequest<ScanBarcodeToDraftPayload, never>,
+  res: Response,
+  next: NextFunction,
+) {
   try {
-    const serviceResponse = await InventoriesService.scanBarcodeToDraft(req.validated?.body as ScanBarcodeToDraftInventoriesInput)
+    const serviceResponse = await InventoriesService.scanBarcodeToDraft({
+      payload: req.validated.body,
+    })
 
     res.status(200).json(serviceResponse)
   }
@@ -35,9 +63,16 @@ export async function scanBarcodeToDraft(req: Request, res: Response, next: Next
   }
 }
 
-export async function create(req: Request, res: Response, next: NextFunction) {
+export async function create(
+  req: ValidatedAuthedRequest<CreateInventoriesPayload, never>,
+  res: Response,
+  next: NextFunction,
+) {
   try {
-    const serviceResponse = await InventoriesService.create(req.validated?.body as CreateInventoriesInput, req.user)
+    const serviceResponse = await InventoriesService.create({
+      payload: req.validated.body,
+      user: req.user,
+    })
 
     res.status(201).json(serviceResponse)
   }
@@ -46,9 +81,15 @@ export async function create(req: Request, res: Response, next: NextFunction) {
   }
 }
 
-export async function edit(req: Request, res: Response, next: NextFunction) {
+export async function edit(
+  req: ValidatedRequest<EditInventoriesPayload, never>,
+  res: Response,
+  next: NextFunction,
+) {
   try {
-    const serviceResponse = await InventoriesService.edit(req.validated?.body as EditInventoriesInput)
+    const serviceResponse = await InventoriesService.edit({
+      payload: req.validated.body,
+    })
 
     res.status(200).json(serviceResponse)
   }
@@ -57,9 +98,16 @@ export async function edit(req: Request, res: Response, next: NextFunction) {
   }
 }
 
-export async function remove(req: Request, res: Response, next: NextFunction) {
+export async function remove(
+  req: ValidatedAuthedRequest<RemoveInventoriesPayload, never>,
+  res: Response,
+  next: NextFunction,
+) {
   try {
-    const serviceResponse = await InventoriesService.remove(req.validated?.body as RemoveInventoriesInput, req.user)
+    const serviceResponse = await InventoriesService.remove({
+      payload: req.validated.body,
+      user: req.user,
+    })
 
     res.status(200).json(serviceResponse)
   }

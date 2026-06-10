@@ -1,14 +1,14 @@
-import { useTranslation } from 'react-i18next'
 import { Badge } from '@/components/ui/badge'
+import { useLocale } from '@/utils/hooks'
 
 export function ProductSelectedTotal({ products }: { products: any[] }) {
-  const { t, i18n } = useTranslation()
+  const { t, language } = useLocale()
 
   const totalsByCategory = products.reduce((acc, item) => {
-    const quantity = item.quantity || 0
+    const quantity = item.lineQuantity || 0
 
-    item.categories?.forEach((category) => {
-      const name = category?.names?.[i18n.language] || t('common.unknown-category')
+    item.categories?.forEach((category: any) => {
+      const name = category?.names?.[language] || t('common.unknown-category')
       acc[name] = (acc[name] || 0) + quantity
     })
 
@@ -20,7 +20,7 @@ export function ProductSelectedTotal({ products }: { products: any[] }) {
       <div className="flex items-center flex-wrap gap-2">
         {Object.entries(totalsByCategory).map(([category, quantity]) => (
           <Badge key={category}>
-            {`${category}: ${quantity}`}
+            {`${category}: ${quantity?.toString() ?? '0'}`}
           </Badge>
         ))}
       </div>

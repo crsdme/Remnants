@@ -3,7 +3,6 @@ import type {
 } from '@/components/ui/chart'
 import * as React from 'react'
 
-import { useTranslation } from 'react-i18next'
 import { Area, AreaChart, CartesianGrid, XAxis } from 'recharts'
 import {
   Card,
@@ -17,12 +16,13 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from '@/components/ui'
+import { useLocale } from '@/utils/hooks'
 import { useBalanceContext } from '../context'
 
 export const description = 'An interactive area chart'
 
 export function ChartAreaInteractive() {
-  const { t, i18n } = useTranslation()
+  const { t, language } = useLocale()
   const { balances, currencies } = useBalanceContext()
 
   const dataForChart = React.useMemo(() => {
@@ -45,7 +45,7 @@ export function ChartAreaInteractive() {
     currencies.forEach((c, idx) => {
       const colorVarIndex = (idx % 10) + 1
       cfg[c.id] = {
-        label: c.names?.[i18n.language],
+        label: c.names?.[language],
         color: `var(--chart-${colorVarIndex})`,
       }
     })
@@ -122,7 +122,7 @@ export function ChartAreaInteractive() {
               minTickGap={32}
               tickFormatter={(value) => {
                 const date = new Date(value)
-                return date.toLocaleDateString(i18n.language, {
+                return date.toLocaleDateString(language, {
                   month: 'short',
                   day: 'numeric',
                   year: 'numeric',
@@ -134,7 +134,7 @@ export function ChartAreaInteractive() {
               content={(
                 <ChartTooltipContent
                   labelFormatter={(value) => {
-                    return new Date(value).toLocaleDateString(i18n.language, {
+                    return new Date(value).toLocaleDateString(language, {
                       month: 'short',
                       day: 'numeric',
                       year: 'numeric',

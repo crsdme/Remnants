@@ -1,13 +1,13 @@
 import { Helmet } from 'react-helmet'
-import { useTranslation } from 'react-i18next'
 
 import { LanguageButton, ThemeButton } from '@/components'
 import { LogoIcon } from '@/components/ui'
 
+import { useLocale } from '@/utils/hooks'
 import { LoginForm } from './components/login-form'
 
 export function LoginPage() {
-  const { t } = useTranslation()
+  const { t } = useLocale()
 
   return (
     <>

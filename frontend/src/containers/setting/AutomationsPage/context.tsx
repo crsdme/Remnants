@@ -1,11 +1,10 @@
+import type { AutomationDTO } from '@remnant/shared'
 import type { ReactNode } from 'react'
-import type { UseFormReturn } from 'react-hook-form'
 
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useQueryClient } from '@tanstack/react-query'
 import { createContext, useContext, useMemo, useState } from 'react'
 import { useForm } from 'react-hook-form'
-import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { z } from 'zod'
 
@@ -14,28 +13,29 @@ import {
   useAutomationEdit,
   useAutomationRemove,
 } from '@/api/hooks'
+import { useLocale } from '@/utils/hooks'
 
 interface AutomationContextType {
-  selectedAutomation: Automation
+  selectedAutomation: AutomationDTO | undefined
   isModalOpen: boolean
   isConditionSheetOpen: boolean
   isActionSheetOpen: boolean
   isLoading: boolean
   isEdit: boolean
-  form: UseFormReturn
-  conditionForm: UseFormReturn
-  actionForm: UseFormReturn
+  form: any
+  conditionForm: any
+  actionForm: any
   selectedConditions: any[]
   selectedActions: any[]
-  openModal: (automation?: Automation) => void
+  openModal: (automation?: AutomationDTO) => void
   closeModal: () => void
   openConditionSheet: () => void
   closeConditionSheet: () => void
   openActionSheet: () => void
   closeActionSheet: () => void
-  submitAutomationForm: (params) => void
-  submitConditionForm: (params) => void
-  submitActionForm: (params) => void
+  submitAutomationForm: (params: any) => void
+  submitConditionForm: (params: any) => void
+  submitActionForm: (params: any) => void
   removeAutomation: (params: { ids: string[] }) => void
   removeCondition: (params: { id: string }) => void
   removeAction: (params: { id: string }) => void
@@ -43,92 +43,109 @@ interface AutomationContextType {
 
 const AutomationContext = createContext<AutomationContextType | undefined>(undefined)
 
-interface AutomationProviderProps {
-  children: ReactNode
+function createAutomationFormSchema(t: (key: string, options?: Record<string, unknown>) => string) {
+  return z.object({
+    name: z.string({ required_error: t('form.errors.required') }),
+    trigger: z.string({ required_error: t('form.errors.required') }),
+    params: z.array(z.string({ required_error: t('form.errors.required') })),
+    active: z.boolean().optional().default(true),
+  })
 }
 
-export function AutomationProvider({ children }: AutomationProviderProps) {
+function getAutomationFormDefaults() {
+  return {
+    name: '',
+    trigger: '',
+    params: [],
+    active: true,
+  }
+}
+
+function createConditionFormSchema(t: (key: string, options?: Record<string, unknown>) => string) {
+  return z.object({
+    field: z.string({ required_error: t('form.errors.required') }).optional(),
+    operator: z.string({ required_error: t('form.errors.required') }).optional(),
+    params: z.array(z.string({ required_error: t('form.errors.required') })).optional(),
+  })
+}
+
+function getConditionFormDefaults() {
+  return {
+    field: '',
+    operator: '',
+    params: [],
+  }
+}
+
+function createActionFormSchema(t: (key: string, options?: Record<string, unknown>) => string) {
+  return z.object({
+    field: z.string({ required_error: t('form.errors.required') }).optional(),
+    params: z.array(z.string({ required_error: t('form.errors.required') })).optional(),
+  })
+}
+
+function getActionFormDefaults() {
+  return {
+    field: '',
+    params: [],
+  }
+}
+
+function getAutomationFormValues(automation?: AutomationDTO) {
+  if (!automation) {
+    return {
+      name: '',
+      trigger: '',
+      params: [],
+      conditions: [],
+      actions: [],
+      active: true,
+    }
+  }
+  return {
+    name: automation.name,
+    trigger: automation.trigger.type,
+    params: automation.trigger.params,
+    conditions: automation.conditions,
+    actions: automation.actions,
+    active: automation.active,
+  }
+}
+
+export function AutomationProvider({ children }: { children: ReactNode }) {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [isConditionSheetOpen, setIsConditionSheetOpen] = useState(false)
   const [isActionSheetOpen, setIsActionSheetOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [isEdit, setIsEdit] = useState(false)
-  const [selectedAutomation, setSelectedAutomation] = useState(null)
-  const [selectedConditions, setSelectedConditions] = useState([])
-  const [selectedActions, setSelectedActions] = useState([])
+  const [selectedAutomation, setSelectedAutomation] = useState<AutomationDTO | undefined>(undefined)
+  const [selectedConditions, setSelectedConditions] = useState<any[]>([])
+  const [selectedActions, setSelectedActions] = useState<any[]>([])
 
-  const { t } = useTranslation()
+  const { t } = useLocale()
 
-  const formSchema = useMemo(() =>
-    z.object({
-      name: z.string({ required_error: t('form.errors.required') }),
-      trigger: z.string({ required_error: t('form.errors.required') }),
-      params: z.array(z.string({ required_error: t('form.errors.required') })),
-      active: z.boolean().optional().default(true),
-    }), [t])
+  const formSchema = useMemo(() => createAutomationFormSchema(t), [t])
 
   const form = useForm({
     resolver: zodResolver(formSchema),
-    defaultValues: {
-      name: '',
-      trigger: '',
-      params: [],
-      active: true,
-    },
+    defaultValues: getAutomationFormDefaults(),
   })
 
-  const conditionFormSchema = useMemo(() =>
-    z.object({
-      field: z.string({ required_error: t('form.errors.required') }).optional(),
-      operator: z.string({ required_error: t('form.errors.required') }).optional(),
-      params: z.array(z.string({ required_error: t('form.errors.required') })).optional(),
-    }), [t])
+  const conditionFormSchema = useMemo(() => createConditionFormSchema(t), [t])
 
   const conditionForm = useForm({
     resolver: zodResolver(conditionFormSchema),
-    defaultValues: {
-      field: '',
-      operator: '',
-      params: [],
-    },
+    defaultValues: getConditionFormDefaults(),
   })
 
-  const actionFormSchema = useMemo(() =>
-    z.object({
-      field: z.string({ required_error: t('form.errors.required') }).optional(),
-      params: z.array(z.string({ required_error: t('form.errors.required') })).optional(),
-    }), [t])
+  const actionFormSchema = useMemo(() => createActionFormSchema(t), [t])
 
   const actionForm = useForm({
     resolver: zodResolver(actionFormSchema),
-    defaultValues: {
-      field: '',
-      params: [],
-    },
+    defaultValues: getActionFormDefaults(),
   })
 
   const queryClient = useQueryClient()
-
-  function getAutomationFormValues(automation) {
-    if (!automation) {
-      return {
-        name: '',
-        trigger: '',
-        params: [],
-        conditions: [],
-        actions: [],
-        active: true,
-      }
-    }
-    return {
-      name: automation.name,
-      trigger: automation.trigger.type,
-      params: automation.trigger.params,
-      conditions: automation.conditions,
-      actions: automation.actions,
-      active: automation.active,
-    }
-  }
 
   const closeModal = () => {
     if (!isModalOpen)
@@ -136,13 +153,13 @@ export function AutomationProvider({ children }: AutomationProviderProps) {
     setIsModalOpen(false)
     setIsLoading(false)
     setIsEdit(false)
-    setSelectedAutomation(null)
+    setSelectedAutomation(undefined)
     setSelectedConditions([])
     setSelectedActions([])
     form.reset()
   }
 
-  const openModal = (automation) => {
+  const openModal = (automation?: AutomationDTO) => {
     setIsModalOpen(true)
     setIsEdit(!!automation)
     setSelectedAutomation(automation)
@@ -175,21 +192,21 @@ export function AutomationProvider({ children }: AutomationProviderProps) {
     actionForm.reset()
   }
 
-  const submitConditionForm = (params) => {
+  const submitConditionForm = (params: any) => {
     setSelectedConditions(state => [...state, params])
     setIsConditionSheetOpen(false)
   }
 
-  const submitActionForm = (params) => {
+  const submitActionForm = (params: any) => {
     setSelectedActions(state => [...state, params])
     setIsActionSheetOpen(false)
   }
 
-  const removeCondition = (params) => {
+  const removeCondition = (params: { id: string }) => {
     setSelectedConditions(state => state.filter(item => item.id !== params.id))
   }
 
-  const removeAction = (params) => {
+  const removeAction = (params: { id: string }) => {
     setSelectedActions(state => state.filter(item => item.id !== params.id))
   }
 
@@ -197,7 +214,7 @@ export function AutomationProvider({ children }: AutomationProviderProps) {
     options: {
       onSuccess: ({ data }) => {
         closeModal()
-        queryClient.invalidateQueries({ queryKey: ['automations'] })
+        void queryClient.invalidateQueries({ queryKey: ['automations'] })
         toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description || ''}` })
       },
       onError: ({ response }) => {
@@ -212,7 +229,7 @@ export function AutomationProvider({ children }: AutomationProviderProps) {
     options: {
       onSuccess: ({ data }) => {
         closeModal()
-        queryClient.invalidateQueries({ queryKey: ['automations'] })
+        void queryClient.invalidateQueries({ queryKey: ['automations'] })
         toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description || ''}` })
       },
       onError: ({ response }) => {
@@ -226,7 +243,7 @@ export function AutomationProvider({ children }: AutomationProviderProps) {
   const useMutateRemoveAutomation = useAutomationRemove({
     options: {
       onSuccess: ({ data }) => {
-        queryClient.invalidateQueries({ queryKey: ['automations'] })
+        void queryClient.invalidateQueries({ queryKey: ['automations'] })
         toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description || ''}` })
       },
       onError: ({ response }) => {
@@ -236,11 +253,11 @@ export function AutomationProvider({ children }: AutomationProviderProps) {
     },
   })
 
-  const removeAutomation = (params) => {
+  const removeAutomation = (params: { ids: string[] }) => {
     useMutateRemoveAutomation.mutate(params)
   }
 
-  const submitAutomationForm = (params) => {
+  const submitAutomationForm = (params: any) => {
     setIsLoading(true)
 
     params.conditions = selectedConditions
@@ -253,6 +270,9 @@ export function AutomationProvider({ children }: AutomationProviderProps) {
 
     if (!isEdit)
       return useMutateCreateAutomation.mutate(params)
+
+    if (!selectedAutomation)
+      return
 
     return useMutateEditAutomation.mutate({ ...params, id: selectedAutomation.id })
   }

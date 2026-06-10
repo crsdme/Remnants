@@ -1,41 +1,31 @@
 import { flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table'
-import { Fragment, useMemo, useState } from 'react'
+import { Fragment, useState } from 'react'
 
-import { useTranslation } from 'react-i18next'
 import { useAutomationQuery } from '@/api/hooks'
-import { ColumnVisibilityMenu, TablePagination, TableSelectionDropdown } from '@/components'
+import { ColumnVisibilityMenu, TablePagination } from '@/components'
 import { Skeleton, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui'
-import { useDebounceCallback } from '@/utils/hooks'
-import { useAutomationContext } from '../context'
+import { useListQueryState, useLocale } from '@/utils/hooks'
 
 import { useColumns } from './columns'
 
 export function DataTable() {
-  const { t } = useTranslation()
-  const { removeAutomation } = useAutomationContext()
-
+  const { t } = useLocale()
   const [columnVisibility, setColumnVisibility] = useState({})
-  const [rowSelection, setRowSelection] = useState({})
-  const [sorting, setSorting] = useState([])
-  const [pagination, setPagination] = useState({
-    current: 1,
-    pageSize: 10,
-  })
+
+  const {
+    pagination,
+    setPagination,
+    sorting,
+    setSorting,
+    filters,
+    sorters,
+  } = useListQueryState()
+
   const columns = useColumns()
 
-  const sorters = useMemo(() => (
-    Object.fromEntries(sorting.map(({ id, desc }) => [id, desc ? 'desc' : 'asc']))
-  ), [sorting])
-
-  const { data: { automations = [], automationsCount = 0 } = {}, isLoading, isFetching } = useAutomationQuery(
-    { pagination, sorters },
-    { options: {
-      select: response => ({
-        automations: response.data.automations,
-        automationsCount: response.data.automationsCount,
-      }),
-      placeholderData: prevData => prevData,
-    } },
+  const { automations, automationsCount, isLoading, isFetching } = useAutomationQuery(
+    { pagination, filters, sorters },
+    { options: { placeholderData: prevData => prevData } },
   )
 
   const table = useReactTable({
@@ -43,14 +33,12 @@ export function DataTable() {
     columns,
     getCoreRowModel: getCoreRowModel(),
     onColumnVisibilityChange: setColumnVisibility,
-    onRowSelectionChange: setRowSelection,
     onSortingChange: setSorting,
     manualSorting: true,
     enableSortingRemoval: true,
     state: {
       sorting,
       columnVisibility,
-      rowSelection,
       pagination: {
         pageIndex: pagination.current - 1,
         pageSize: pagination.pageSize,
@@ -120,24 +108,10 @@ export function DataTable() {
     )
   }
 
-  const handleBulkRemove = () => {
-    const ids = automations.filter((_, index) => rowSelection[index]).map(item => item.id)
-    removeAutomation({ ids })
-    setRowSelection({})
-  }
-
-  const changePagination = useDebounceCallback((value: Pagination) => {
-    setPagination(state => ({ ...state, ...value }))
-  }, 50)
-
   return (
     <>
       <div className="w-full flex justify-between items-start max-md:flex-col gap-2 py-2">
         <div className="flex gap-2">
-          <TableSelectionDropdown
-            selectedCount={Object.keys(rowSelection).length}
-            onRemove={handleBulkRemove}
-          />
           <ColumnVisibilityMenu table={table} tableId="automation" />
         </div>
       </div>
@@ -150,8 +124,7 @@ export function DataTable() {
       <TablePagination
         pagination={pagination}
         totalPages={Math.ceil(automationsCount / pagination.pageSize)}
-        changePagination={changePagination}
-        selectedCount={Object.keys(rowSelection).length}
+        changePagination={setPagination}
         totalCount={automationsCount}
       />
     </>

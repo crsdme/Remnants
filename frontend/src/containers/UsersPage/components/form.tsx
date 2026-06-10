@@ -1,6 +1,5 @@
-import { useTranslation } from 'react-i18next'
 import { useUserRoleOptions } from '@/api/hooks'
-import { AsyncSelect } from '@/components'
+import { AsyncSelectNew } from '@/components/AsyncSelectNew'
 import {
   Button,
   Checkbox,
@@ -13,21 +12,21 @@ import {
   FormMessage,
   Input,
 } from '@/components/ui'
+import { useLocale } from '@/utils/hooks'
 import { useUserContext } from '../context'
 
 export function UserForm() {
-  const { t, i18n } = useTranslation()
+  const { t, language } = useLocale()
   const { isLoading, form, closeModal, submitUserForm } = useUserContext()
 
   const loadUserRolesOptions = useUserRoleOptions()
 
-  const onSubmit = (values) => {
-    submitUserForm(values)
-  }
-
   return (
     <Form {...form}>
-      <form className="w-full space-y-1" onSubmit={form.handleSubmit(onSubmit)}>
+      <form
+        className="w-full space-y-1"
+        onSubmit={(e) => { void form.handleSubmit(submitUserForm)(e) }}
+      >
         <FormField
           control={form.control}
           name="name"
@@ -110,16 +109,13 @@ export function UserForm() {
                 </p>
               </FormLabel>
               <FormControl>
-                <AsyncSelect
-                  fetcher={loadUserRolesOptions}
-                  renderOption={e => e.names[i18n.language]}
-                  getDisplayValue={e => e.names[i18n.language]}
+                <AsyncSelectNew
+                  loadOptions={loadUserRolesOptions}
+                  renderOption={e => e.names[language]}
+                  getDisplayValue={e => e.names[language]}
                   getOptionValue={e => e.id}
-                  width="100%"
-                  className="w-full"
                   name="role"
-                  value={field.value}
-                  onChange={field.onChange}
+                  field={field}
                   disabled={isLoading}
                 />
               </FormControl>

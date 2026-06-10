@@ -1,5 +1,6 @@
+import type { Buffer } from 'node:buffer'
 import { z } from 'zod'
-import { dateRangeSchema, idSchema, languageStringSchema, numberFromStringSchema, paginationSchema, sorterParamsSchema } from './common'
+import { dateRangeSchema, idSchema, languageStringSchema, numberFromStringSchema, paginationSchema, responseItemSchema, responseListSchema, responseSchema, sorterParamsSchema } from './common'
 
 function hasIdsOrFilters(data: {
   ids?: unknown
@@ -7,6 +8,99 @@ function hasIdsOrFilters(data: {
 }) {
   return !!data.ids || !!data.filters
 }
+
+export const productSchemaPopulated = z.object({
+  id: idSchema,
+  seq: z.number(),
+  names: languageStringSchema,
+  price: numberFromStringSchema,
+  purchasePrice: numberFromStringSchema,
+  currency: z.object({
+    id: idSchema,
+    names: languageStringSchema,
+    symbols: languageStringSchema,
+  }),
+  purchaseCurrency: z.object({
+    id: idSchema,
+    names: languageStringSchema,
+    symbols: languageStringSchema,
+  }),
+  barcodes: z.array(z.object({
+    code: z.string(),
+    id: idSchema,
+  })),
+  categories: z.array(z.object({
+    id: idSchema,
+    names: languageStringSchema,
+  })),
+  unit: z.object({
+    id: idSchema,
+    names: languageStringSchema,
+    symbols: languageStringSchema,
+  }),
+  productPropertiesGroup: z.object({
+    id: idSchema,
+    names: languageStringSchema,
+  }),
+  productProperties: z.array(z.object({
+    id: idSchema,
+    options: z.array(z.object({
+      id: idSchema,
+      names: languageStringSchema,
+      color: z.string().optional(),
+    })),
+    value: z.unknown(),
+    data: z.object({
+      type: z.string(),
+      names: languageStringSchema,
+      showInTable: z.boolean(),
+      isRequired: z.boolean(),
+      symbols: languageStringSchema,
+    }),
+  })),
+  warehouseStock: z.array(z.object({
+    warehouse: idSchema,
+    count: z.number(),
+  })),
+  images: z.array(z.object({
+    id: idSchema,
+    filename: z.string(),
+    name: z.string(),
+    type: z.string(),
+    path: z.string(),
+  })),
+  createdAt: z.coerce.date(),
+  updatedAt: z.coerce.date(),
+})
+
+export const productSchema = z.object({
+  id: idSchema,
+  seq: z.number(),
+  names: languageStringSchema,
+  price: numberFromStringSchema,
+  purchasePrice: numberFromStringSchema,
+  currency: idSchema,
+  purchaseCurrency: idSchema,
+  barcodes: z.array(idSchema),
+  categories: z.array(idSchema),
+  unit: idSchema,
+  productPropertiesGroup: idSchema,
+  productProperties: z.array(idSchema),
+  quantityIds: z.array(idSchema),
+  images: z.array(z.object({
+    id: idSchema,
+    filename: z.string(),
+    name: z.string(),
+    type: z.string(),
+    path: z.string(),
+  })),
+  createdAt: z.coerce.date(),
+  updatedAt: z.coerce.date(),
+})
+
+export type ProductDTO = z.output<typeof productSchema>
+
+export type ProductPopulatedDTO = z.output<typeof productSchemaPopulated>
 
 export const getProductSchema = z.object({
   filters: z.object({
@@ -36,8 +130,8 @@ export const getProductSchema = z.object({
     currency: sorterParamsSchema.optional(),
     purchaseCurrency: sorterParamsSchema.optional(),
     productPropertiesGroup: sorterParamsSchema.optional(),
-    productProperties: z.any().optional(),
-    quantity: sorterParamsSchema.optional(),
+    productProperties: sorterParamsSchema.optional(),
+    warehouseStock: sorterParamsSchema.optional(),
     updatedAt: sorterParamsSchema.optional(),
     createdAt: sorterParamsSchema.optional(),
   }).optional().default({}),
@@ -45,6 +139,26 @@ export const getProductSchema = z.object({
 })
 
 export type GetProductRequest = z.input<typeof getProductSchema>
+
+export const getProductIndexSchema = z.object({
+  productId: idSchema,
+  filters: z.object({
+    search: z.string().optional().transform(val => val?.trim() === '' ? undefined : val),
+    ids: z.array(idSchema).optional(),
+    seq: numberFromStringSchema.optional(),
+    names: z.string().trim().optional(),
+    language: z.string().optional().default('en'),
+    price: numberFromStringSchema.optional(),
+    purchasePrice: numberFromStringSchema.optional(),
+    barcodes: z.string().optional(),
+    categories: z.array(idSchema).optional(),
+    unit: z.array(idSchema).optional(),
+    productPropertiesGroup: z.array(idSchema).optional(),
+    productProperties: z.array(idSchema).optional(),
+  }).optional().default({}),
+})
+
+export type GetProductIndexRequest = z.input<typeof getProductIndexSchema>
 
 export const createProductSchema = z.object({
   names: languageStringSchema,
@@ -55,13 +169,23 @@ export const createProductSchema = z.object({
   productPropertiesGroup: z.string(),
   productProperties: z.array(z.object({
     id: idSchema,
-    value: z.any(),
+    value: z.unknown(),
   })),
   unit: idSchema,
   categories: z.array(idSchema).min(1),
-  images: z.any().optional(),
-  uploadedImages: z.any().optional(),
-  uploadedImagesIds: z.any().optional(),
+  images: z.array(z.object({
+    filename: z.string(),
+    originalname: z.string(),
+    mimetype: z.string(),
+    path: z.string(),
+  })).optional().default([]),
+  uploadedImages: z.array(z.object({
+    filename: z.string(),
+    originalname: z.string(),
+    mimetype: z.string(),
+    path: z.string(),
+  })).optional().default([]),
+  uploadedImagesIds: z.array(idSchema).optional(),
   generateBarcode: z.boolean().optional().default(false),
   isAutoSyncEnabled: z.boolean().optional().default(false),
   syncSites: z.array(idSchema).optional().default([]),
@@ -79,13 +203,25 @@ export const editProductSchema = z.object({
   productPropertiesGroup: z.string(),
   productProperties: z.array(z.object({
     id: idSchema,
-    value: z.any(),
+    value: z.unknown(),
   })),
   unit: idSchema,
   categories: z.array(idSchema).min(1),
-  images: z.any().optional(),
-  uploadedImages: z.any().optional(),
-  uploadedImagesIds: z.any().optional(),
+  images: z.array(z.object({
+    id: idSchema,
+    filename: z.string(),
+    originalname: z.string(),
+    mimetype: z.string(),
+    path: z.string(),
+    isNew: z.boolean().optional().default(false),
+  })).optional().default([]),
+  uploadedImages: z.array(z.object({
+    filename: z.string(),
+    originalname: z.string(),
+    mimetype: z.string(),
+    path: z.string(),
+  })).optional().default([]),
+  uploadedImagesIds: z.array(idSchema).optional(),
   isAutoSyncEnabled: z.boolean().optional().default(false),
   syncSites: z.array(idSchema).optional().default([]),
 })
@@ -114,7 +250,10 @@ export const batchProductSchema = z.object({
     currency: z.string().optional(),
     purchaseCurrency: z.string().optional(),
     productPropertiesGroup: z.string().optional(),
-    productProperties: z.any().optional(),
+    productProperties: z.array(z.object({
+      id: idSchema,
+      value: z.unknown(),
+    })).optional(),
     unit: z.string().optional(),
     categories: z.array(idSchema).min(1).optional(),
     createdAt: dateRangeSchema.optional(),
@@ -123,7 +262,7 @@ export const batchProductSchema = z.object({
   params: z.array(
     z.object({
       column: z.string(),
-      value: z.any(),
+      value: z.unknown(),
     }),
   ),
 }).refine(hasIdsOrFilters, {
@@ -143,3 +282,30 @@ export const exportProductsSchema = z.object({
 })
 
 export type ExportProductsRequest = z.input<typeof exportProductsSchema>
+
+export const getProductsResponseSchema = responseListSchema(productSchemaPopulated)
+export type GetProductsResponse = z.output<typeof getProductsResponseSchema>
+
+export const getProductIndexResponseSchema = responseSchema
+export type GetProductIndexResponse = z.output<typeof getProductIndexResponseSchema> & { productIndex: number }
+
+export const createProductResponseSchema = responseItemSchema(productSchema)
+export type CreateProductResponse = z.output<typeof createProductResponseSchema>
+
+export const editProductResponseSchema = responseItemSchema(productSchema)
+export type EditProductResponse = z.output<typeof editProductResponseSchema>
+
+export const removeProductResponseSchema = responseSchema
+export type RemoveProductResponse = z.output<typeof removeProductResponseSchema>
+
+export const batchProductResponseSchema = responseSchema
+export type BatchProductResponse = z.output<typeof batchProductResponseSchema>
+
+export const importProductsResponseSchema = responseSchema
+export type ImportProductsResponse = z.output<typeof importProductsResponseSchema>
+
+export const exportProductsResponseSchema = responseSchema
+export type ExportProductsResponse = z.output<typeof exportProductsResponseSchema> & { buffer: Buffer }
+
+export const downloadTemplateResponseSchema = responseSchema
+export type DownloadTemplateResponse = z.output<typeof downloadTemplateResponseSchema> & { buffer: Buffer }

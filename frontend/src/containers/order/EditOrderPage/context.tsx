@@ -1,5 +1,7 @@
+import type { EditOrderRequest, OrderPaymentDTOPopulated, ProductPopulatedDTO } from '@remnant/shared'
+
 import type { ReactNode } from 'react'
-import type { UseFormReturn } from 'react-hook-form'
+import type { Resolver, UseFormReturn } from 'react-hook-form'
 
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useQueryClient } from '@tanstack/react-query'
@@ -8,104 +10,53 @@ import { useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { useNavigate, useParams } from 'react-router-dom'
 import { toast } from 'sonner'
-
 import { z } from 'zod'
+
 import {
   useBarcodeOptions,
   useCashregisterAccountQuery,
   useCashregisterQuery,
   useClientCreate,
   useCurrencyQuery,
+  useOrderDetailQuery,
   useOrderEdit,
-  useOrderQuery,
 } from '@/api/hooks'
 import { useAuthContext } from '@/contexts/AuthContext'
 import { PAYMENT_STATUSES } from '@/utils/constants'
 import { hasPermission } from '@/utils/helpers'
 
-interface EditOrderContextType {
-  isClientModalOpen: boolean
-  isPaymentModalOpen: boolean
-  isLoading: boolean
-  paymentForm: UseFormReturn
-  informationForm: UseFormReturn
-  clientForm: UseFormReturn
-  permissions: string[]
-  openClientModal: () => void
-  closeClientModal: () => void
-  openPaymentModal: () => void
-  closePaymentModal: () => void
-  payments: any[]
-  removePayment: (id: string) => void
-  createClient: (params) => void
-  editOrder: (params) => void
-  createPayment: (params) => void
-  getBarcode: (code: string) => Promise<any>
-}
-
 const EditOrderContext = createContext<EditOrderContextType | undefined>(undefined)
 
-interface EditOrderProviderProps {
-  children: ReactNode
-}
-
-export function EditOrderProvider({ children }: EditOrderProviderProps) {
+export function EditOrderProvider({ children }: { children: ReactNode }) {
   const [isClientModalOpen, setIsClientModalOpen] = useState(false)
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
-  const [payments, setPayments] = useState([])
+  const [payments, setPayments] = useState<DraftOrderPayment[]>([])
   const navigate = useNavigate()
   const { t } = useTranslation()
-  const { id } = useParams()
+  const { seq } = useParams()
   const { permissions } = useAuthContext()
 
-  const { data: { currencies = [] } = {} } = useCurrencyQuery(
-    {},
-    { options: { select: response => ({
-      currencies: response.data.currencies,
-    }) } },
+  const { currencies = [] } = useCurrencyQuery(
+    { pagination: { full: true } },
   )
 
-  const { data: { cashregisters = [] } = {} } = useCashregisterQuery(
-    {},
-    { options: { select: response => ({
-      cashregisters: response.data.cashregisters,
-    }) } },
+  const { cashregisters = [] } = useCashregisterQuery(
+    { pagination: { full: true } },
   )
 
-  const { data: { cashregisterAccounts = [] } = {} } = useCashregisterAccountQuery(
-    {},
-    { options: { select: response => ({
-      cashregisterAccounts: response.data.cashregisterAccounts,
-    }) } },
+  const { cashregisterAccounts = [] } = useCashregisterAccountQuery(
+    { pagination: { full: true } },
   )
 
-  const { data: { order = {} } = {} } = useOrderQuery(
-    { filters: { seq: id } },
-    { options: {
-      select: response => ({ order: response.data.orders[0] }),
-      refetchOnMount: false,
-      refetchOnReconnect: false,
-      refetchOnWindowFocus: false,
-      staleTime: 5 * 60 * 1000,
-      gcTime: 30 * 60 * 1000,
-    } },
+  const { order, items, payments: defaultPayments } = useOrderDetailQuery(
+    { seq },
+    { options: { enabled: Boolean(seq) } },
   )
 
-  const paymentFormSchema = useMemo(() =>
-    z.object({
-      id: z.string().optional(),
-      cashregister: z.string({ required_error: t('form.errors.required') }).min(1, { message: t('form.errors.required') }),
-      cashregisterAccount: z.string({ required_error: t('form.errors.required') }).min(1, { message: t('form.errors.required') }),
-      amount: z.number().default(0),
-      currency: z.string({ required_error: t('form.errors.required') }).min(1, { message: t('form.errors.required') }),
-      paymentDate: z.date().optional(),
-      paymentStatus: z.string({ required_error: t('form.errors.required') }).min(1, { message: t('form.errors.required') }),
-      comment: z.string().optional(),
-    }), [t])
+  const paymentFormSchema = useMemo(() => createPaymentFormSchema(t), [t])
 
-  const paymentForm = useForm({
-    resolver: zodResolver(paymentFormSchema),
+  const paymentForm = useForm<PaymentFormValues>({
+    resolver: zodResolver(paymentFormSchema) as Resolver<PaymentFormValues>,
     defaultValues: {
       id: '',
       cashregister: '',
@@ -118,34 +69,10 @@ export function EditOrderProvider({ children }: EditOrderProviderProps) {
     },
   })
 
-  const informationFormSchema = z.object({
-    warehouse: z.string({ required_error: t('form.errors.required') }).min(1, { message: t('form.errors.required') }),
-    orderSource: z.string({ required_error: t('form.errors.required') }).min(1, { message: t('form.errors.required') }),
-    orderStatus: z.string({ required_error: t('form.errors.required') }).min(1, { message: t('form.errors.required') }),
-    deliveryService: z.string({ required_error: t('form.errors.required') }).min(1, { message: t('form.errors.required') }),
-    client: z.string().optional(),
-    items: z.array(z.object({
-      id: z.string().optional(),
-      product: z.string(),
-      quantity: z.number(),
-      selectedCurrency: z.object({
-        id: z.string(),
-      }),
-      price: z.number(),
-      manualPrice: z.number().optional(),
-      basePrice: z.number(),
-      selectedPrice: z.number(),
-      discountAmount: z.number().optional(),
-      discountPercent: z.number().optional(),
-    })).min(1, { message: t('form.errors.required') }),
-    comment: z.string().optional(),
-  }).superRefine((data) => {
-    if (data.items.length === 0)
-      toast.error(t('form.errors.required.products'))
-  })
+  const informationFormSchema = useMemo(() => createInformationFormSchema(t), [t])
 
-  const informationForm = useForm({
-    resolver: zodResolver(informationFormSchema),
+  const informationForm = useForm<InformationFormValues>({
+    resolver: zodResolver(informationFormSchema) as Resolver<InformationFormValues>,
     defaultValues: {
       warehouse: '',
       orderSource: '',
@@ -157,23 +84,10 @@ export function EditOrderProvider({ children }: EditOrderProviderProps) {
     },
   })
 
-  const clientFormSchema = useMemo(() =>
-    z.object({
-      name: z.string({ required_error: t('form.errors.required') }).min(1, { message: t('form.errors.required') }),
-      middleName: z.string().optional(),
-      lastName: z.string().optional(),
-      country: z.string().optional(),
-      phones: z.array(z.string().min(7)).optional(),
-      emails: z.array(z.string().email()).optional(),
-      socials: z.array(z.object({
-        type: z.string(),
-        value: z.string(),
-      })).optional(),
-      comment: z.string().optional(),
-    }), [t])
+  const clientFormSchema = useMemo(() => createClientFormSchema(t), [t])
 
-  const clientForm = useForm({
-    resolver: zodResolver(clientFormSchema),
+  const clientForm = useForm<ClientFormValues>({
+    resolver: zodResolver(clientFormSchema) as Resolver<ClientFormValues>,
     defaultValues: {
       name: '',
       middleName: '',
@@ -184,46 +98,6 @@ export function EditOrderProvider({ children }: EditOrderProviderProps) {
       comment: '',
     },
   })
-
-  // CAN BE REWORKED
-  useEffect(() => {
-    setIsLoading(true)
-
-    if (order.id) {
-      if (order.orderStatus.isLocked && !hasPermission(permissions, 'order.editLocked')) {
-        navigate('/orders')
-        return
-      }
-
-      informationForm.reset({
-        warehouse: order.warehouse.id,
-        orderSource: order.orderSource.id,
-        orderStatus: order.orderStatus.id,
-        deliveryService: order.deliveryService.id,
-        client: order.client.id,
-        items: order.items.map((item) => {
-          return {
-            ...item.product,
-            id: item.id,
-            product: item.product.id,
-            quantity: item.quantity,
-            price: item.price,
-            profit: item.profit || 0,
-            manualPrice: item.manualPrice || undefined,
-            basePrice: item.basePrice,
-            selectedPrice: item.price,
-            discountAmount: item.discountAmount || 0,
-            discountPercent: item.discountPercent || 0,
-            selectedCurrency: item.currency,
-            currency: item.product.currency,
-          }
-        }),
-        comment: order.comment,
-      })
-      setPayments(order.payments)
-    }
-    setIsLoading(false)
-  }, [order.id])
 
   const queryClient = useQueryClient()
 
@@ -245,94 +119,170 @@ export function EditOrderProvider({ children }: EditOrderProviderProps) {
     setIsPaymentModalOpen(true)
   }
 
-  const createPayment = (params) => {
-    const cashregister = (cashregisters || []).find(cashregister => cashregister.id === params.cashregister)
-    const cashregisterAccount = (cashregisterAccounts || []).find(account => account.id === params.cashregisterAccount)
-    const currency = (currencies || []).find(currency => currency.id === params.currency)
+  const mutateEditOrder = useOrderEdit({
+    options: {
+      onSuccess: ({ data }) => {
+        void queryClient.invalidateQueries({ queryKey: ['orders'] })
+        void queryClient.invalidateQueries({ queryKey: ['products'] })
+        void queryClient.invalidateQueries({ queryKey: ['statistics'] })
+        void queryClient.invalidateQueries({ queryKey: ['money-transactions'] })
+        void queryClient.invalidateQueries({ queryKey: ['order-statuses', 'get', { filters: { includeAll: true, includeCount: true } }] })
+        toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description || ''}` })
+        void navigate('/orders')
+      },
+      onError: ({ response }) => {
+        const error = response.data.error
+        toast.error(t(`error.title.${error.code}`), { description: `${t(`error.description.${error.code}`)} ${error.description || ''}` })
+        void navigate('/orders')
+      },
+    },
+  })
 
-    const payment = {
-      id: '',
-      cashregister,
-      cashregisterAccount,
-      currency,
+  const mutateCreateClient = useClientCreate({
+    options: {
+      onSuccess: ({ data }: { data: any }) => {
+        closeClientModal()
+        informationForm.setValue('client', data?.client?.id || '')
+        void queryClient.invalidateQueries({ queryKey: ['clients'] })
+        toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description || ''}` })
+      },
+      onError: ({ response }) => {
+        closeClientModal()
+        const error = response.data.error
+        toast.error(t(`error.title.${error.code}`), { description: `${t(`error.description.${error.code}`)} ${error.description || ''}` })
+      },
+    },
+  })
+
+  const isLoading = mutateEditOrder.isPending || mutateCreateClient.isPending
+
+  useEffect(() => {
+    if (!order)
+      return
+
+    if (order.orderStatus.isLocked && !hasPermission(permissions, 'order.editLocked')) {
+      void navigate('/orders')
+      return
+    }
+
+    informationForm.reset({
+      warehouse: order.warehouse.id,
+      orderSource: order.orderSource.id,
+      orderStatus: order.orderStatus.id,
+      deliveryService: order.deliveryService.id,
+      client: order.client.id,
+      items: items.map(item => ({
+        ...item.product,
+        id: item.id,
+        product: item.product.id,
+        lineQuantity: item.quantity,
+        selectedCurrencyId: item.currency.id,
+        price: item.price,
+        profit: item.profit || 0,
+        manualPrice: item.manualPrice || undefined,
+        basePrice: item.basePrice,
+        selectedPrice: item.price,
+        discountAmount: item.discountAmount || 0,
+        discountPercent: item.discountPercent || 0,
+        currency: item.currency,
+      })),
+      comment: order.comment,
+    })
+
+    const normalizedPayments: DraftOrderPayment[] = (defaultPayments as unknown as OrderPaymentDTOPopulated[]).map((p: any) => ({
+      id: p.id,
+      amount: Number(p.amount),
+      paymentDate: p.paymentDate,
+      paymentStatus: p.paymentStatus,
+      comment: p.comment,
+      cashregister: { id: p.cashregister.id, names: p.cashregister.names },
+      cashregisterAccount: { id: p.cashregisterAccount.id, names: p.cashregisterAccount.names },
+      currency: { id: p.currency.id, symbols: p.currency.symbols },
+    }))
+    // eslint-disable-next-line react-hooks-extra/no-direct-set-state-in-use-effect -- синхронизация платежей при загрузке заказа
+    setPayments(normalizedPayments)
+  }, [order, items, informationForm, navigate, permissions, defaultPayments])
+
+  const createPayment = (params: PaymentFormValues) => {
+    const cashregister = cashregisters.find(c => c.id === params.cashregister)
+    const cashregisterAccount = cashregisterAccounts.find(account => account.id === params.cashregisterAccount)
+    const currency = currencies.find(c => c.id === params.currency)
+
+    if (!cashregister || !cashregisterAccount || !currency) {
+      toast.error(t('form.errors.required'))
+      return
+    }
+
+    const paymentId = params.id?.trim() || `${Date.now()}`
+
+    const payment: DraftOrderPayment = {
+      id: paymentId,
+      cashregister: { id: cashregister.id, names: cashregister.names },
+      cashregisterAccount: { id: cashregisterAccount.id, names: cashregisterAccount.names },
+      currency: { id: currency.id, symbols: currency.symbols },
       amount: params.amount,
       paymentDate: params.paymentDate,
       paymentStatus: params.paymentStatus,
       comment: params.comment,
     }
 
-    setPayments([...payments, payment])
+    setPayments(prev => [...prev, payment])
     closePaymentModal()
   }
 
-  const removePayment = (id) => {
-    setPayments(payments.filter(payment => payment.id !== id))
+  const removePayment = (paymentId: string) => {
+    setPayments(prev => prev.filter(p => String(p.id) !== paymentId))
   }
 
-  const useMutateEditOrder = useOrderEdit({
-    options: {
-      onSuccess: ({ data }) => {
-        queryClient.invalidateQueries({ queryKey: ['orders'] })
-        queryClient.invalidateQueries({ queryKey: ['products'] })
-        queryClient.invalidateQueries({ queryKey: ['statistics'] })
-        queryClient.invalidateQueries({ queryKey: ['money-transactions'] })
-        queryClient.invalidateQueries({ queryKey: ['order-statuses', 'get', { filters: { includeAll: true, includeCount: true } }] })
-        toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description || ''}` })
-        navigate('/orders')
-      },
-      onError: ({ response }) => {
-        const error = response.data.error
-        toast.error(t(`error.title.${error.code}`), { description: `${t(`error.description.${error.code}`)} ${error.description || ''}` })
-        navigate('/orders')
-      },
-    },
-  })
-
-  const useMutateCreateClient = useClientCreate({
-    options: {
-      onSuccess: ({ data }: { data: any }) => {
-        closeClientModal()
-        setIsLoading(false)
-        informationForm.setValue('client', data?.client?.id || '')
-        queryClient.invalidateQueries({ queryKey: ['clients'] })
-        toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description || ''}` })
-      },
-      onError: ({ response }) => {
-        closeClientModal()
-        const error = response.data.error
-        toast.error(t(`error.title.${error.code}`), { description: `${t(`error.description.${error.code}`)} ${error.description || ''}` })
-      },
-    },
-  })
-
-  const createClient = (params) => {
-    setIsLoading(true)
-    useMutateCreateClient.mutate(params)
+  const createClient = (params: ClientFormValues) => {
+    mutateCreateClient.mutate(params)
   }
 
-  const editOrder = (params) => {
-    setIsLoading(true)
-    params.id = order.id
+  const editOrder = (params: InformationFormValues) => {
+    if (!order?.id)
+      return
 
-    const mappedItems = params.items.map(item => ({
-      ...item,
-      currency: item.selectedCurrency.id,
+    const mappedItems = params.items.map(({ lineQuantity, selectedCurrencyId, ...item }) => ({
+      id: item.id,
+      product: item.product,
+      quantity: lineQuantity,
+      currency: selectedCurrencyId,
       price: item.price,
       manualPrice: item.manualPrice || undefined,
       basePrice: item.basePrice,
       discountAmount: item.discountAmount || 0,
       discountPercent: item.discountPercent || 0,
     }))
-    params.items = mappedItems
 
-    params.orderPayments = payments.map(payment => ({
-      ...payment,
-      cashregister: payment.cashregister.id,
-      cashregisterAccount: payment.cashregisterAccount.id,
-      currency: payment.currency.id,
-    }))
+    const orderPayments = payments.map((p) => {
+      const row = {
+        amount: p.amount,
+        currency: p.currency.id,
+        cashregister: p.cashregister.id,
+        cashregisterAccount: p.cashregisterAccount.id,
+        paymentStatus: p.paymentStatus,
+        paymentDate: p.paymentDate?.toISOString(),
+        comment: p.comment,
+      }
+      const clientGeneratedId = /^\d{10,15}$/.test(p.id)
+      if (p.id && !clientGeneratedId)
+        return { ...row, id: p.id }
+      return row
+    })
 
-    useMutateEditOrder.mutate(params)
+    const payload: EditOrderRequest = {
+      id: order.id,
+      warehouse: params.warehouse,
+      orderSource: params.orderSource,
+      orderStatus: params.orderStatus,
+      deliveryService: params.deliveryService,
+      client: params.client,
+      comment: params.comment,
+      items: mappedItems,
+      orderPayments,
+    }
+
+    mutateEditOrder.mutate(payload)
   }
 
   const loadBarcodeOptions = useBarcodeOptions()
@@ -375,4 +325,118 @@ export function useEditOrderContext(): EditOrderContextType {
     throw new Error('useEditOrderContext - EditOrderContext')
   }
   return context
+}
+
+interface DraftOrderPayment {
+  id: string
+  amount: number
+  paymentDate?: Date
+  paymentStatus: string
+  comment?: string
+  cashregister: { id: string, names: { [key: string]: string } }
+  cashregisterAccount: { id: string, names: { [key: string]: string } }
+  currency: { id: string, symbols: { [key: string]: string } }
+}
+
+function createPaymentFormSchema(t: (key: string) => string) {
+  return z.object({
+    id: z.string().optional(),
+    cashregister: z.string({ required_error: t('form.errors.required') }).min(1, { message: t('form.errors.required') }),
+    cashregisterAccount: z.string({ required_error: t('form.errors.required') }).min(1, { message: t('form.errors.required') }),
+    amount: z.number().default(0),
+    currency: z.string({ required_error: t('form.errors.required') }).min(1, { message: t('form.errors.required') }),
+    paymentDate: z.date().optional(),
+    paymentStatus: z.string({ required_error: t('form.errors.required') }).min(1, { message: t('form.errors.required') }),
+    comment: z.string().optional(),
+  })
+}
+
+type PaymentFormValues = z.infer<ReturnType<typeof createPaymentFormSchema>>
+
+function createOrderLineItemSchema() {
+  return z.object({
+    product: z.string(),
+    lineQuantity: z.number(),
+    selectedCurrencyId: z.string(),
+    basePrice: z.number(),
+    price: z.number(),
+    manualPrice: z.number().optional(),
+    discountAmount: z.number().optional(),
+    discountPercent: z.number().optional(),
+  }).merge(z.object({
+    id: z.string().optional(),
+    names: z.record(z.string(), z.string()).optional(),
+    receivedQuantity: z.number().optional(),
+    selectedPrice: z.number().optional(),
+    productProperties: z.any().optional(),
+    seq: z.number().optional(),
+    barcodes: z.any().optional(),
+    categories: z.any().optional(),
+    unit: z.any().optional(),
+    currency: z.any().optional(),
+    purchaseCurrency: z.any().optional(),
+    warehouseStock: z.any().optional(),
+    images: z.any().optional(),
+    productPropertiesGroup: z.any().optional(),
+    purchasePrice: z.number().optional(),
+    createdAt: z.coerce.date().optional(),
+    updatedAt: z.coerce.date().optional(),
+  }))
+}
+
+export type OrderLineItemFormValues = z.infer<ReturnType<typeof createOrderLineItemSchema>>
+
+function createInformationFormSchema(t: (key: string) => string) {
+  return z.object({
+    warehouse: z.string({ required_error: t('form.errors.required') }).min(1, { message: t('form.errors.required') }),
+    orderSource: z.string({ required_error: t('form.errors.required') }).min(1, { message: t('form.errors.required') }),
+    orderStatus: z.string({ required_error: t('form.errors.required') }).min(1, { message: t('form.errors.required') }),
+    deliveryService: z.string({ required_error: t('form.errors.required') }).min(1, { message: t('form.errors.required') }),
+    client: z.string().optional(),
+    items: z.array(createOrderLineItemSchema()).min(1, { message: t('form.errors.required') }),
+    comment: z.string().optional(),
+  }).superRefine((data) => {
+    if (data.items.length === 0)
+      toast.error(t('form.errors.required.products'))
+  })
+}
+
+type InformationFormValues = z.infer<ReturnType<typeof createInformationFormSchema>>
+
+function createClientFormSchema(t: (key: string) => string) {
+  return z.object({
+    name: z.string({ required_error: t('form.errors.required') }).min(1, { message: t('form.errors.required') }),
+    middleName: z.string().optional(),
+    lastName: z.string().optional(),
+    country: z.string().optional(),
+    phones: z.array(z.string().min(7)).optional(),
+    emails: z.array(z.string().email()).optional(),
+    socials: z.array(z.object({
+      type: z.string(),
+      value: z.string(),
+    })).optional(),
+    comment: z.string().optional(),
+  })
+}
+
+type ClientFormValues = z.infer<ReturnType<typeof createClientFormSchema>>
+
+interface EditOrderContextType {
+  isClientModalOpen: boolean
+  isPaymentModalOpen: boolean
+  isLoading: boolean
+  paymentForm: UseFormReturn<PaymentFormValues>
+  informationForm: UseFormReturn<InformationFormValues>
+  clientForm: UseFormReturn<ClientFormValues>
+  permissions: string[]
+  openClientModal: () => void
+  closeClientModal: () => void
+  openPaymentModal: () => void
+  closePaymentModal: () => void
+  payments: DraftOrderPayment[]
+  removePayment: (id: string) => void
+  createClient: (params: ClientFormValues) => void
+  editOrder: (params: InformationFormValues) => void
+  createPayment: (params: PaymentFormValues) => void
+  getBarcode: (code: string) => Promise<ProductPopulatedDTO[] & { unitsPerScan: number }[]>
 }

@@ -26,8 +26,8 @@ export async function clearDB() {
       await db.dropCollection(name)
       console.log(`🗑️ Dropped: ${name}`)
     }
-    catch (error: any) {
-      if (error.codeName !== 'NamespaceNotFound') {
+    catch (error) {
+      if (error instanceof Error && 'codeName' in error && error.codeName !== 'NamespaceNotFound') {
         console.error(`❌ Failed to drop collection ${name}:`, error)
       }
     }

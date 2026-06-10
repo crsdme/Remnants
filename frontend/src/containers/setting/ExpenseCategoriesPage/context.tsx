@@ -1,11 +1,11 @@
+import type { ExpenseCategoryDTO } from '@remnant/shared'
 import type { ReactNode } from 'react'
-import type { UseFormReturn } from 'react-hook-form'
+import type { Resolver, UseFormReturn } from 'react-hook-form'
 
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useQueryClient } from '@tanstack/react-query'
 import { createContext, useContext, useMemo, useState } from 'react'
 import { useForm } from 'react-hook-form'
-import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { z } from 'zod'
 
@@ -14,81 +14,55 @@ import {
   useExpenseCategoryEdit,
   useExpenseCategoryRemove,
 } from '@/api/hooks'
+import { useLocale } from '@/utils/hooks'
 
 interface ExpenseCategoryContextType {
-  selectedExpenseCategory: ExpenseCategory
+  selectedExpenseCategory: ExpenseCategoryDTO | undefined
   isModalOpen: boolean
   isLoading: boolean
   isEdit: boolean
-  form: UseFormReturn
-  openModal: (expenseCategory?: ExpenseCategory) => void
+  form: UseFormReturn<ExpenseCategoryFormValues>
+  openModal: (expenseCategory?: ExpenseCategoryDTO) => void
   closeModal: () => void
-  submitExpenseCategoryForm: (params) => void
+  submitExpenseCategoryForm: (params: ExpenseCategoryFormValues) => void
   removeExpenseCategory: (params: { ids: string[] }) => void
 }
 
 const ExpenseCategoryContext = createContext<ExpenseCategoryContextType | undefined>(undefined)
 
-interface ExpenseCategoryProviderProps {
-  children: ReactNode
+interface ExpenseCategoryFormValues {
+  names: Record<string, string>
+  color: string
+  priority: number
+  comment: string
 }
 
-export function ExpenseCategoryProvider({ children }: ExpenseCategoryProviderProps) {
+export function ExpenseCategoryProvider({ children }: { children: ReactNode }) {
   const [isModalOpen, setIsModalOpen] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
   const [isEdit, setIsEdit] = useState(false)
-  const [selectedExpenseCategory, setSelectedExpenseCategory] = useState(null)
+  const [selectedExpenseCategory, setSelectedExpenseCategory] = useState<ExpenseCategoryDTO | undefined>(undefined)
 
-  const { t } = useTranslation()
+  const { t } = useLocale()
 
-  const formSchema = useMemo(() =>
-    z.object({
-      names: z.record(z.string({ required_error: t('form.errors.required') }).min(3, { message: t('form.errors.min_length', { count: 3 }) }).trim()),
-      color: z.string({ required_error: t('form.errors.required') }),
-      priority: z.number({ required_error: t('form.errors.required') }),
-      comment: z.string().optional(),
-    }), [t])
+  const formSchema = useMemo(() => createExpenseCategoryFormSchema(t), [t])
 
-  const form = useForm({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      names: {},
-      color: '',
-      priority: 0,
-      comment: '',
-    },
+  const form = useForm<ExpenseCategoryFormValues>({
+    resolver: zodResolver(formSchema) as Resolver<ExpenseCategoryFormValues>,
+    defaultValues: getExpenseCategoryFormValues(),
   })
 
   const queryClient = useQueryClient()
-
-  function getExpenseCategoryFormValues(expenseCategory) {
-    if (!expenseCategory) {
-      return {
-        names: {},
-        color: '',
-        priority: 0,
-        comment: '',
-      }
-    }
-    return {
-      names: expenseCategory.names,
-      color: expenseCategory.color,
-      priority: expenseCategory.priority,
-      comment: expenseCategory.comment,
-    }
-  }
 
   const closeModal = () => {
     if (!isModalOpen)
       return
     setIsModalOpen(false)
-    setIsLoading(false)
     setIsEdit(false)
-    setSelectedExpenseCategory(null)
+    setSelectedExpenseCategory(undefined)
     form.reset()
   }
 
-  const openModal = (expenseCategory) => {
+  const openModal = (expenseCategory?: ExpenseCategoryDTO) => {
     setIsModalOpen(true)
     setIsEdit(!!expenseCategory)
     setSelectedExpenseCategory(expenseCategory)
@@ -99,7 +73,7 @@ export function ExpenseCategoryProvider({ children }: ExpenseCategoryProviderPro
     options: {
       onSuccess: ({ data }) => {
         closeModal()
-        queryClient.invalidateQueries({ queryKey: ['expense-categories'] })
+        void queryClient.invalidateQueries({ queryKey: ['expense-categories'] })
         toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description || ''}` })
       },
       onError: ({ response }) => {
@@ -114,7 +88,7 @@ export function ExpenseCategoryProvider({ children }: ExpenseCategoryProviderPro
     options: {
       onSuccess: ({ data }) => {
         closeModal()
-        queryClient.invalidateQueries({ queryKey: ['expense-categories'] })
+        void queryClient.invalidateQueries({ queryKey: ['expense-categories'] })
         toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description || ''}` })
       },
       onError: ({ response }) => {
@@ -128,7 +102,7 @@ export function ExpenseCategoryProvider({ children }: ExpenseCategoryProviderPro
   const useMutateRemoveExpenseCategory = useExpenseCategoryRemove({
     options: {
       onSuccess: ({ data }) => {
-        queryClient.invalidateQueries({ queryKey: ['expense-categories'] })
+        void queryClient.invalidateQueries({ queryKey: ['expense-categories'] })
         toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description || ''}` })
       },
       onError: ({ response }) => {
@@ -138,17 +112,18 @@ export function ExpenseCategoryProvider({ children }: ExpenseCategoryProviderPro
     },
   })
 
-  const removeExpenseCategory = (params) => {
+  const removeExpenseCategory = (params: { ids: string[] }) => {
     useMutateRemoveExpenseCategory.mutate(params)
   }
 
-  const submitExpenseCategoryForm = (params) => {
-    setIsLoading(true)
-    if (!selectedExpenseCategory)
+  const submitExpenseCategoryForm = (params: ExpenseCategoryFormValues) => {
+    if (!selectedExpenseCategory || !isEdit)
       return useMutateCreateExpenseCategory.mutate(params)
 
     return useMutateEditExpenseCategory.mutate({ ...params, id: selectedExpenseCategory.id })
   }
+
+  const isLoading = useMutateCreateExpenseCategory.isPending || useMutateEditExpenseCategory.isPending || useMutateRemoveExpenseCategory.isPending
 
   const value: ExpenseCategoryContextType = useMemo(
     () => ({
@@ -175,4 +150,30 @@ export function useExpenseCategoryContext(): ExpenseCategoryContextType {
     throw new Error('useExpenseCategoryContext - ExpenseCategoryContext')
   }
   return context
+}
+
+function createExpenseCategoryFormSchema(t: (key: string, options?: Record<string, unknown>) => string) {
+  return z.object({
+    names: z.record(z.string({ required_error: t('form.errors.required') }).min(3, { message: t('form.errors.min_length', { count: 3 }) }).trim()),
+    color: z.string({ required_error: t('form.errors.required') }),
+    priority: z.number({ required_error: t('form.errors.required') }),
+    comment: z.string().optional(),
+  })
+}
+
+function getExpenseCategoryFormValues(expenseCategory?: ExpenseCategoryDTO): ExpenseCategoryFormValues {
+  if (!expenseCategory) {
+    return {
+      names: {},
+      color: '#ffffff',
+      priority: 0,
+      comment: '',
+    }
+  }
+  return {
+    names: { ...expenseCategory.names },
+    color: expenseCategory.color ?? '#ffffff',
+    priority: expenseCategory.priority,
+    comment: expenseCategory.comment ?? '',
+  }
 }

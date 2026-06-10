@@ -2,7 +2,6 @@ import { TrashIcon } from 'lucide-react'
 
 import { useMemo } from 'react'
 import { useWatch } from 'react-hook-form'
-import { useTranslation } from 'react-i18next'
 import { useDeliveryServiceOptions, useOrderSourceOptions, useOrderStatusOptions } from '@/api/hooks'
 import { AsyncSelectNew } from '@/components/AsyncSelectNew'
 import {
@@ -27,21 +26,18 @@ import {
   Separator,
 } from '@/components/ui'
 import { AUTOMATION_ACTIONS, AUTOMATION_CONDITIONS, AUTOMATION_TRIGGERS } from '@/utils/constants'
+import { useLocale } from '@/utils/hooks'
 import { useAutomationContext } from '../context'
 
 export function AutomationForm() {
-  const { t, i18n } = useTranslation()
+  const { t, language } = useLocale()
   const { isLoading, form, closeModal, submitAutomationForm, openConditionSheet, openActionSheet, selectedConditions, selectedActions, removeCondition, removeAction } = useAutomationContext()
 
   const selectedTrigger = useWatch({ control: form.control, name: 'trigger' })
 
   const loadOrderStatusOptions = useOrderStatusOptions()
 
-  const onSubmit = (values) => {
-    submitAutomationForm(values)
-  }
-
-  const paramsField = (trigger) => {
+  const paramsField = (trigger: string) => {
     switch (trigger) {
       case 'order-status-updated':
         return (
@@ -55,8 +51,8 @@ export function AutomationForm() {
                   <AsyncSelectNew
                     {...field}
                     loadOptions={loadOrderStatusOptions}
-                    renderOption={e => e.names[i18n.language]}
-                    getDisplayValue={e => e.names[i18n.language]}
+                    renderOption={e => e.names[language]}
+                    getDisplayValue={e => e.names[language]}
                     getOptionValue={e => e.id}
                     disabled={isLoading || !selectedTrigger}
                     name="params"
@@ -74,7 +70,10 @@ export function AutomationForm() {
 
   return (
     <Form {...form}>
-      <form className="w-full space-y-1" onSubmit={form.handleSubmit(onSubmit)}>
+      <form
+        className="w-full space-y-1"
+        onSubmit={(e) => { void form.handleSubmit(submitAutomationForm)(e) }}
+      >
         <FormField
           name="name"
           control={form.control}
@@ -167,7 +166,7 @@ export function AutomationForm() {
                 <div key={item.id} className="flex flex-wrap gap-2 items-center">
                   <Badge>{t(`page.automations.condition.${item.field}`)}</Badge>
                   <Badge>{t(`page.automations.operator.${item.operator}`)}</Badge>
-                  {item.params.map(param => (
+                  {item.params.map((param: string) => (
                     <Badge key={param}>{param}</Badge>
                   ))}
                   <Button type="button" size="icon" variant="destructive" onClick={() => removeCondition({ id: item.id })}>
@@ -206,7 +205,7 @@ export function AutomationForm() {
               return (
                 <div key={item.id} className="flex flex-wrap gap-2 items-center">
                   <Badge>{t(`page.automations.action.${item.field}`)}</Badge>
-                  {item.params.map(param => (
+                  {item.params.map((param: string) => (
                     <Badge key={param}>{param}</Badge>
                   ))}
                   <Button type="button" size="icon" variant="destructive" onClick={() => removeAction({ id: item.id })}>
@@ -261,12 +260,8 @@ export function AutomationForm() {
 }
 
 export function AutomationConditionsForm() {
-  const { t, i18n } = useTranslation()
+  const { t, language } = useLocale()
   const { isLoading, conditionForm, closeConditionSheet, submitConditionForm } = useAutomationContext()
-
-  const onSubmit = (values) => {
-    submitConditionForm(values)
-  }
 
   const loadOrderStatusOptions = useOrderStatusOptions()
   const loadDeliveryServiceOptions = useDeliveryServiceOptions()
@@ -276,7 +271,7 @@ export function AutomationConditionsForm() {
 
   const conditionType = useMemo(() => AUTOMATION_CONDITIONS.find(group => group.items.find(item => item.id === condition))?.items[0].type, [condition])
 
-  const conditionTypeForm = (conditionType) => {
+  const conditionTypeForm = (conditionType: string) => {
     switch (conditionType) {
       case 'contains':
         return (
@@ -318,7 +313,7 @@ export function AutomationConditionsForm() {
     }
   }
 
-  const conditionField = (condition) => {
+  const conditionField = (condition: string) => {
     switch (condition) {
       case 'orderStatus':
         return (
@@ -332,8 +327,8 @@ export function AutomationConditionsForm() {
                   <AsyncSelectNew
                     {...field}
                     loadOptions={loadOrderStatusOptions}
-                    renderOption={e => e.names[i18n.language]}
-                    getDisplayValue={e => e.names[i18n.language]}
+                    renderOption={e => e.names[language]}
+                    getDisplayValue={e => e.names[language]}
                     getOptionValue={e => e.id}
                     disabled={isLoading}
                     clearable
@@ -357,8 +352,8 @@ export function AutomationConditionsForm() {
                   <AsyncSelectNew
                     {...field}
                     loadOptions={loadDeliveryServiceOptions}
-                    renderOption={e => e.names[i18n.language]}
-                    getDisplayValue={e => e.names[i18n.language]}
+                    renderOption={e => e.names[language]}
+                    getDisplayValue={e => e.names[language]}
                     getOptionValue={e => e.id}
                     disabled={isLoading}
                     clearable
@@ -382,8 +377,8 @@ export function AutomationConditionsForm() {
                   <AsyncSelectNew
                     {...field}
                     loadOptions={loadOrderSourceOptions}
-                    renderOption={e => e.names[i18n.language]}
-                    getDisplayValue={e => e.names[i18n.language]}
+                    renderOption={e => e.names[language]}
+                    getDisplayValue={e => e.names[language]}
                     getOptionValue={e => e.id}
                     disabled={isLoading}
                     clearable
@@ -400,7 +395,7 @@ export function AutomationConditionsForm() {
 
   return (
     <Form {...conditionForm}>
-      <form className="w-full space-y-1" onSubmit={conditionForm.handleSubmit(onSubmit)}>
+      <form className="w-full space-y-1" onSubmit={void conditionForm.handleSubmit(submitConditionForm)}>
         <FormField
           control={conditionForm.control}
           name="field"
@@ -439,9 +434,9 @@ export function AutomationConditionsForm() {
           )}
         />
 
-        {conditionTypeForm(conditionType)}
+        {conditionType && conditionTypeForm(conditionType)}
 
-        {conditionField(condition)}
+        {condition && conditionField(condition)}
 
         <div className="flex gap-2">
           <Button
@@ -462,12 +457,8 @@ export function AutomationConditionsForm() {
 }
 
 export function AutomationActionsForm() {
-  const { t, i18n } = useTranslation()
+  const { t, language } = useLocale()
   const { isLoading, actionForm, closeActionSheet, submitActionForm } = useAutomationContext()
-
-  const onSubmit = (values) => {
-    submitActionForm(values)
-  }
 
   const loadOrderStatusOptions = useOrderStatusOptions()
   const loadOrderSourceOptions = useOrderSourceOptions()
@@ -475,7 +466,7 @@ export function AutomationActionsForm() {
 
   const action = useWatch({ control: actionForm.control, name: 'field' })
 
-  const actionField = (action) => {
+  const actionField = (action: string) => {
     switch (action) {
       case 'order-status-update':
         return (
@@ -489,8 +480,8 @@ export function AutomationActionsForm() {
                   <AsyncSelectNew
                     {...field}
                     loadOptions={loadOrderStatusOptions}
-                    renderOption={e => e.names[i18n.language]}
-                    getDisplayValue={e => e.names[i18n.language]}
+                    renderOption={e => e.names[language]}
+                    getDisplayValue={e => e.names[language]}
                     getOptionValue={e => e.id}
                     disabled={isLoading}
                     clearable
@@ -514,8 +505,8 @@ export function AutomationActionsForm() {
                   <AsyncSelectNew
                     {...field}
                     loadOptions={loadOrderSourceOptions}
-                    renderOption={e => e.names[i18n.language]}
-                    getDisplayValue={e => e.names[i18n.language]}
+                    renderOption={e => e.names[language]}
+                    getDisplayValue={e => e.names[language]}
                     getOptionValue={e => e.id}
                     disabled={isLoading}
                     clearable
@@ -538,8 +529,8 @@ export function AutomationActionsForm() {
                   <AsyncSelectNew
                     {...field}
                     loadOptions={loadDeliveryServiceOptions}
-                    renderOption={e => e.names[i18n.language]}
-                    getDisplayValue={e => e.names[i18n.language]}
+                    renderOption={e => e.names[language]}
+                    getDisplayValue={e => e.names[language]}
                     getOptionValue={e => e.id}
                     disabled={isLoading}
                     clearable
@@ -556,7 +547,7 @@ export function AutomationActionsForm() {
 
   return (
     <Form {...actionForm}>
-      <form className="w-full space-y-1" onSubmit={actionForm.handleSubmit(onSubmit)}>
+      <form className="w-full space-y-1" onSubmit={void actionForm.handleSubmit(submitActionForm)}>
         <FormField
           name="field"
           control={actionForm.control}

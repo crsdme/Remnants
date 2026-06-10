@@ -1,93 +1,79 @@
+import type { InventoryDTO } from '@remnant/shared'
 import type { ReactNode } from 'react'
-import type { UseFormReturn } from 'react-hook-form'
+import type { Resolver, UseFormReturn } from 'react-hook-form'
 
 import { zodResolver } from '@hookform/resolvers/zod'
-import { createContext, useContext, useEffect, useMemo, useState } from 'react'
+import { createContext, useContext, useEffect, useMemo } from 'react'
 import { useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { useParams } from 'react-router-dom'
 
 import { z } from 'zod'
-import {
-  useInventoryItemsQuery,
-  useInventoryQuery,
-} from '@/api/hooks'
+
+import { useInventoryQuery } from '@/api/hooks'
+
+export interface ViewInventoryFormValues {
+  warehouse: string
+  category: string
+  comment?: string
+  items: {
+    id: string
+    lineQuantity: number
+    receivedQuantity?: number
+  }[]
+}
+
+/** List / table row when API returns populated warehouse or category names */
+export type ViewInventoryTableRow = Omit<InventoryDTO, 'warehouse'> & {
+  warehouse?: string | { id?: string, names?: Partial<Record<'ru' | 'en', string>> } | null
+  category?: { names?: Partial<Record<'ru' | 'en', string>> } | null
+}
 
 interface ViewInventoryContextType {
   isLoading: boolean
-  form: UseFormReturn
-  inventory: any
+  form: UseFormReturn<ViewInventoryFormValues>
+  inventory: InventoryDTO | undefined
 }
 
 const ViewInventoryContext = createContext<ViewInventoryContextType | undefined>(undefined)
 
-interface ViewInventoryProviderProps {
-  children: ReactNode
-}
-
-export function ViewInventoryProvider({ children }: ViewInventoryProviderProps) {
+export function ViewInventoryProvider({ children }: { children: ReactNode }) {
   const { t } = useTranslation()
   const { seq } = useParams()
-  const [isLoading, setIsLoading] = useState(false)
 
-  const formSchema = z.object({
-    warehouse: z.string({ required_error: t('form.errors.required') }),
-    category: z.string({ required_error: t('form.errors.required') }),
-    comment: z.string().optional(),
-    items: z.array(z.object({
-      id: z.string({ required_error: t('form.errors.required') }),
-      quantity: z.number({ required_error: t('form.errors.required') }),
-      receivedQuantity: z.number().optional(),
-    })).min(1, { message: t('form.errors.required.products') }),
+  const formSchema = useMemo(() => createViewInventoryFormSchema(t), [t])
+
+  const form = useForm<ViewInventoryFormValues>({
+    resolver: zodResolver(formSchema) as Resolver<ViewInventoryFormValues>,
+    defaultValues: getViewInventoryFormValues(),
   })
 
-  const form = useForm({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      warehouse: '',
-      category: '',
-      comment: '',
-      items: [],
+  const {
+    inventories,
+    isPending,
+    isFetching,
+  } = useInventoryQuery(
+    { filters: { seq } },
+    {
+      options: {
+        refetchOnMount: false,
+        refetchOnReconnect: false,
+        refetchOnWindowFocus: false,
+        staleTime: 5 * 60 * 1000,
+        gcTime: 30 * 60 * 1000,
+      },
     },
-  })
-
-  const { data: { inventory = {} } = {} } = useInventoryQuery(
-    { filters: { seq: Number(seq) } },
-    { options: {
-      select: response => ({ inventory: response.data.inventories[0] }),
-      refetchOnMount: false,
-      refetchOnReconnect: false,
-      refetchOnWindowFocus: false,
-      staleTime: 5 * 60 * 1000,
-      gcTime: 30 * 60 * 1000,
-    } },
   )
 
-  // CAN BE REWORKED
+  const inventory = inventories[0]
+
   useEffect(() => {
-    setIsLoading(true)
+    if (!inventory?.id)
+      return
+    form.reset(getViewInventoryFormValues(inventory))
+  }, [inventory?.id, form, inventory])
 
-    if (inventory.id) {
-      // if (order.orderStatus.isLocked && !hasPermission(permissions, 'order.editLocked')) {
-      //   navigate('/orders')
-      //   return
-      // }
-
-      form.reset({
-        warehouse: inventory.warehouse.id,
-        category: inventory.category.id,
-        items: inventory.items.map((item) => {
-          return {
-            id: item.id,
-            quantity: item.quantity,
-            receivedQuantity: item.receivedQuantity,
-          }
-        }),
-        comment: inventory.comment,
-      })
-    }
-    setIsLoading(false)
-  }, [inventory.id])
+  const isLoading = isPending || isFetching
 
   const value: ViewInventoryContextType = useMemo(
     () => ({
@@ -108,4 +94,38 @@ export function useViewInventoryContext(): ViewInventoryContextType {
     throw new Error('useViewInventoryContext - ViewInventoryContext')
   }
   return context
+}
+
+function createViewInventoryFormSchema(t: (key: string, options?: Record<string, unknown>) => string) {
+  return z.object({
+    warehouse: z.string({ required_error: t('form.errors.required') }),
+    category: z.string({ required_error: t('form.errors.required') }),
+    comment: z.string().optional(),
+    items: z.array(z.object({
+      id: z.string({ required_error: t('form.errors.required') }),
+      lineQuantity: z.number({ required_error: t('form.errors.required') }),
+      receivedQuantity: z.number().optional(),
+    })).min(1, { message: t('form.errors.required.products') }),
+  })
+}
+
+function getViewInventoryFormValues(inventory?: InventoryDTO): ViewInventoryFormValues {
+  if (inventory === undefined) {
+    return {
+      warehouse: '',
+      category: '',
+      comment: '',
+      items: [],
+    }
+  }
+  return {
+    warehouse: inventory.warehouse,
+    category: inventory.categories[0] ?? '',
+    comment: inventory.comment ?? '',
+    items: inventory.items.map(item => ({
+      id: item.id,
+      lineQuantity: item.quantity,
+      receivedQuantity: item.receivedQuantity,
+    })),
+  }
 }

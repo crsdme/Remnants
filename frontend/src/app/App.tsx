@@ -45,11 +45,11 @@ export default function App() {
             element={<ProtectedRoute children={<Pages.CreateOrderPage />} permissions={['order.page']} />}
           />
           <Route
-            path="/orders/edit/:id"
+            path="/orders/edit/:seq"
             element={<ProtectedRoute children={<Pages.EditOrderPage />} permissions={['order.page']} />}
           />
           <Route
-            path="/orders/view/:id"
+            path="/orders/view/:seq"
             element={<ProtectedRoute children={<Pages.ViewOrderPage />} permissions={['order.page']} />}
           />
 
@@ -182,6 +182,10 @@ export default function App() {
             element={<ProtectedRoute children={<Pages.WarehouseTransactionsPage />} permissions={['warehouseTransaction.page']} />}
           />
           <Route
+            path="/warehouse-transactions/create"
+            element={<ProtectedRoute children={<Pages.WarehouseTransactionCreatePage />} permissions={['warehouseTransaction.create']} />}
+          />
+          <Route
             path="/barcodes"
             element={<ProtectedRoute children={<Pages.BarcodesPage />} permissions={['barcode.page']} />}
           />
@@ -213,7 +217,7 @@ export default function App() {
   )
 }
 
-export function ProtectedRoute({ children, permissions }) {
+export function ProtectedRoute({ children, permissions }: { children: any, permissions: string[] }) {
   const hasAccess = usePermission(permissions)
 
   if (!hasAccess)

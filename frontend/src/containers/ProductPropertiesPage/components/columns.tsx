@@ -1,3 +1,6 @@
+import type { ProductPropertyDTO } from '@remnant/shared'
+import type { Column } from '@tanstack/react-table'
+import { createColumnHelper } from '@tanstack/react-table'
 import {
   ArrowDown,
   ArrowUp,
@@ -10,22 +13,24 @@ import {
   Trash,
 } from 'lucide-react'
 import { useMemo } from 'react'
-import { useTranslation } from 'react-i18next'
 
 import { TableActionDropdown } from '@/components'
-import { Badge, Button, Checkbox } from '@/components/ui'
+import { Badge, Button } from '@/components/ui'
 import { formatDate } from '@/utils/helpers'
+import { useLocale } from '@/utils/hooks'
 import { useProductPropertiesContext } from '../context'
 
 const sortIcons = { asc: ArrowUp, desc: ArrowDown }
+const columnHelper = createColumnHelper<ProductPropertyDTO>()
 
 export function useColumns() {
-  const { t, i18n } = useTranslation()
+  const { t, language } = useLocale()
   const { isLoading, openPropertyModal, openOptionsModal, removeProperty } = useProductPropertiesContext()
 
   const columns = useMemo(() => {
-    function sortHeader(column, label) {
-      const Icon = sortIcons[column.getIsSorted() || undefined] || ChevronsUpDown
+    function sortHeader(column: Column<ProductPropertyDTO>, label: string) {
+      const sorted = column.getIsSorted()
+      const Icon = sorted ? sortIcons[sorted] : ChevronsUpDown
 
       return (
         <Button
@@ -40,44 +45,12 @@ export function useColumns() {
       )
     }
 
-    function selectColumn() {
-      return ({
-        id: 'select',
-        size: 35,
-        meta: { title: t('component.columnMenu.columns.select') },
-        header: ({ table }) => {
-          const isChecked = table.getIsAllPageRowsSelected()
-            ? true
-            : table.getIsSomePageRowsSelected()
-              ? 'indeterminate'
-              : false
-
-          return (
-            <Checkbox
-              checked={isChecked}
-              onCheckedChange={value => table.toggleAllPageRowsSelected(!!value)}
-              aria-label="Select all"
-            />
-          )
-        },
-        cell: ({ row }) => (
-          <Checkbox
-            checked={row.getIsSelected()}
-            onCheckedChange={value => row.toggleSelected(!!value)}
-            aria-label="Select row"
-          />
-        ),
-        enableSorting: false,
-        enableHiding: false,
-      })
-    }
-
     function expanderColumn() {
-      return ({
+      return columnHelper.display({
         id: 'expander',
         header: '',
         cell: ({ row }) => {
-          if (row.original.options?.length > 0) {
+          if ((row.original.options?.length ?? 0) > 0) {
             return (
               <Button
                 variant="ghost"
@@ -100,7 +73,7 @@ export function useColumns() {
     }
 
     function actionColumn() {
-      return ({
+      return columnHelper.display({
         id: 'action',
         size: 85,
         meta: {
@@ -112,7 +85,7 @@ export function useColumns() {
           const actions = [
             {
               permission: 'product-properties.copy',
-              onClick: () => navigator.clipboard.writeText(item.id),
+              onClick: async () => navigator.clipboard.writeText(item.id),
               label: t('table.copy'),
               icon: <Copy className="h-4 w-4" />,
             },
@@ -123,12 +96,14 @@ export function useColumns() {
               icon: <Pencil className="h-4 w-4" />,
             },
             ...((item.type === 'select' || item.type === 'multiSelect' || item.type === 'color')
-              ? [{
-                  permission: 'product-properties-options.create',
-                  onClick: () => openOptionsModal(undefined, item),
-                  label: t('table.addOption'),
-                  icon: <SquarePlus className="h-4 w-4" />,
-                }]
+              ? [
+                  {
+                    permission: 'product-properties-options.create',
+                    onClick: () => openOptionsModal(undefined, item),
+                    label: t('table.addOption'),
+                    icon: <SquarePlus className="h-4 w-4" />,
+                  },
+                ]
               : []),
             {
               permission: 'product-properties.delete',
@@ -146,9 +121,8 @@ export function useColumns() {
     }
 
     return [
-      selectColumn(),
       expanderColumn(),
-      {
+      columnHelper.accessor(row => row.names?.[language], {
         id: 'names',
         size: 150,
         meta: {
@@ -161,9 +135,9 @@ export function useColumns() {
           defaultVisible: true,
         },
         header: ({ column }) => sortHeader(column, t('page.product-properties.table.names')),
-        cell: ({ row }) => row.original.names?.[i18n.language],
-      },
-      {
+        cell: ({ row }) => row.original.names?.[language],
+      }),
+      columnHelper.accessor(row => row.symbols?.[language], {
         id: 'symbols',
         size: 150,
         meta: {
@@ -176,11 +150,10 @@ export function useColumns() {
           defaultVisible: true,
         },
         header: ({ column }) => sortHeader(column, t('page.product-properties.table.symbols')),
-        cell: ({ row }) => row.original.symbols?.[i18n.language],
-      },
-      {
+        cell: ({ row }) => row.original.symbols?.[language],
+      }),
+      columnHelper.accessor('type', {
         id: 'type',
-        accessorKey: 'type',
         meta: {
           title: t('page.product-properties.table.type'),
           batchEdit: true,
@@ -192,10 +165,9 @@ export function useColumns() {
         },
         header: ({ column }) => sortHeader(column, t('page.product-properties.table.type')),
         cell: ({ row }) => <Badge variant="outline">{t(`page.product-properties.type.${row.original.type}`)}</Badge>,
-      },
-      {
+      }),
+      columnHelper.accessor('priority', {
         id: 'priority',
-        accessorKey: 'priority',
         meta: {
           title: t('page.product-properties.table.priority'),
           batchEdit: true,
@@ -207,10 +179,9 @@ export function useColumns() {
         },
         header: ({ column }) => sortHeader(column, t('page.product-properties.table.priority')),
         cell: ({ row }) => <Badge variant="outline">{row.original.priority}</Badge>,
-      },
-      {
+      }),
+      columnHelper.accessor('isRequired', {
         id: 'isRequired',
-        accessorKey: 'isRequired',
         meta: {
           title: t('page.product-properties.table.isRequired'),
           batchEdit: true,
@@ -222,10 +193,9 @@ export function useColumns() {
         },
         header: t('page.product-properties.table.isRequired'),
         cell: ({ row }) => <Badge variant={row.original.isRequired ? 'success' : 'destructive'}>{t(`table.active.${row.original.isRequired}`)}</Badge>,
-      },
-      {
+      }),
+      columnHelper.accessor('showInTable', {
         id: 'showInTable',
-        accessorKey: 'showInTable',
         meta: {
           title: t('page.product-properties.table.showInTable'),
           batchEdit: true,
@@ -237,10 +207,9 @@ export function useColumns() {
         },
         header: t('page.product-properties.table.showInTable'),
         cell: ({ row }) => <Badge variant={row.original.showInTable ? 'success' : 'destructive'}>{t(`table.active.${row.original.showInTable}`)}</Badge>,
-      },
-      {
+      }),
+      columnHelper.accessor('showInStatistics', {
         id: 'showInStatistics',
-        accessorKey: 'showInStatistics',
         meta: {
           title: t('page.product-properties.table.showInStatistics'),
           batchEdit: true,
@@ -252,10 +221,9 @@ export function useColumns() {
         },
         header: t('page.product-properties.table.showInStatistics'),
         cell: ({ row }) => <Badge variant={row.original.showInStatistics ? 'success' : 'destructive'}>{t(`table.active.${row.original.showInStatistics}`)}</Badge>,
-      },
-      {
+      }),
+      columnHelper.accessor('active', {
         id: 'active',
-        accessorKey: 'active',
         meta: {
           title: t('page.product-properties.table.active'),
           batchEdit: true,
@@ -267,10 +235,9 @@ export function useColumns() {
         },
         header: t('page.product-properties.table.active'),
         cell: ({ row }) => <Badge variant={row.original.active ? 'success' : 'destructive'}>{t(`table.active.${row.original.active}`)}</Badge>,
-      },
-      {
+      }),
+      columnHelper.accessor('createdAt', {
         id: 'createdAt',
-        accessorKey: 'createdAt',
         meta: {
           title: t('table.createdAt'),
           filterable: true,
@@ -278,11 +245,10 @@ export function useColumns() {
           sortable: true,
         },
         header: ({ column }) => sortHeader(column, t('table.createdAt')),
-        cell: ({ row }) => formatDate(row.getValue('createdAt'), 'dd.MM.yyyy HH:mm', i18n.language),
-      },
-      {
+        cell: ({ row }) => formatDate(row.getValue('createdAt'), 'dd.MM.yyyy HH:mm', language),
+      }),
+      columnHelper.accessor('updatedAt', {
         id: 'updatedAt',
-        accessorKey: 'updatedAt',
         meta: {
           title: t('table.updatedAt'),
           filterable: true,
@@ -290,10 +256,10 @@ export function useColumns() {
           sortable: true,
         },
         header: ({ column }) => sortHeader(column, t('table.updatedAt')),
-        cell: ({ row }) => formatDate(row.getValue('updatedAt'), 'dd.MM.yyyy HH:mm', i18n.language),
-      },
+        cell: ({ row }) => formatDate(row.getValue('updatedAt'), 'dd.MM.yyyy HH:mm', language),
+      }),
       actionColumn(),
     ]
-  }, [i18n.language])
+  }, [language, isLoading, openPropertyModal, openOptionsModal, removeProperty, t])
   return columns
 }

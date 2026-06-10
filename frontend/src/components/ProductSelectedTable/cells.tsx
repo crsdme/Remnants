@@ -1,7 +1,7 @@
 import { Minus, Plus, Trash2 } from 'lucide-react'
 import { useEffect, useState } from 'react'
-import { useTranslation } from 'react-i18next'
 import { Badge, Button, Input, Separator } from '@/components/ui'
+import { useLocale } from '@/utils/hooks'
 
 export function EditableCell({ product, field, onChange, className, disabled }: {
   product: any
@@ -34,9 +34,17 @@ export function EditableCell({ product, field, onChange, className, disabled }: 
   )
 }
 
-export function EditableQuantityCell({ isReceiving, changeQuantity, item, isLoading, disabled, handleChange, removeProduct }) {
-  const { i18n, t } = useTranslation()
-  const hasMismatch = item.receivedQuantity !== item.quantity
+export function EditableQuantityCell({ isReceiving, changeQuantity, item, isLoading, disabled, handleChange, removeProduct }: {
+  isReceiving: boolean
+  changeQuantity: (item: any, data: any) => void
+  item: any
+  isLoading: boolean
+  disabled: boolean
+  handleChange: (id: string, field: string, value: number) => void
+  removeProduct: (item: any) => void
+}): React.ReactNode {
+  const { language, t } = useLocale()
+  const hasMismatch = item.receivedQuantity !== item.lineQuantity
 
   return (
     <div className="flex gap-2 justify-end">
@@ -50,7 +58,7 @@ export function EditableQuantityCell({ isReceiving, changeQuantity, item, isLoad
           <Button
             variant="outline"
             size="icon"
-            onClick={() => changeQuantity(item, { quantity: item.quantity - 1 })}
+            onClick={() => changeQuantity(item, { lineQuantity: item.lineQuantity - 1 })}
             disabled={isLoading || isReceiving || disabled}
           >
             <Minus className="h-4 w-4" />
@@ -59,18 +67,18 @@ export function EditableQuantityCell({ isReceiving, changeQuantity, item, isLoad
         <div className="relative min-w-5">
           <EditableCell
             product={item}
-            onChange={val => handleChange(item.id, 'quantity', val)}
-            field="selectedQuantity"
+            onChange={val => handleChange(item.id, 'lineQuantity', val)}
+            field="lineQuantity"
           />
           <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-            <p>{item.unit.symbols[i18n.language]}</p>
+            <p>{item.unit.symbols[language]}</p>
           </div>
         </div>
         {!isReceiving && (
           <Button
             variant="outline"
             size="icon"
-            onClick={() => changeQuantity(item, { quantity: item.quantity + 1 })}
+            onClick={() => changeQuantity(item, { lineQuantity: item.lineQuantity + 1 })}
             disabled={isLoading || isReceiving || disabled}
           >
             <Plus className="h-4 w-4" />
@@ -98,7 +106,7 @@ export function EditableQuantityCell({ isReceiving, changeQuantity, item, isLoad
                 onChange={event => handleChange(item.id, 'receivedQuantity', Number.parseInt(event.target.value))}
               />
               <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                <p>{item.unit.symbols[i18n.language]}</p>
+                <p>{item.unit.symbols[language]}</p>
               </div>
             </div>
             <Button

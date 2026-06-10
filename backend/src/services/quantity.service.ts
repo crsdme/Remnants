@@ -1,112 +1,76 @@
 import type {
-  CountQuantitiesParams,
   CountQuantitiesResponse,
-  CreateQuantitiesParams,
   CreateQuantitiesResponse,
-  EditQuantitiesParams,
   EditQuantitiesResponse,
-  GetQuantitiesParams,
   GetQuantitiesResponse,
-  RemoveQuantitiesParams,
   RemoveQuantitiesResponse,
 } from '@remnant/shared'
 import type { ClientSession } from 'mongoose'
-import { ProductModel, QuantityModel } from '@/models/'
+import type {
+  CountQuantitiesPayload,
+  CreateQuantityPayload,
+  EditQuantityPayload,
+  GetQuantitiesPayload,
+  RemoveQuantityPayload,
+} from '@/types'
+import { mapQuantityToDTO } from '@/mappers/'
+import * as ProductRepository from '@/repositories/products.repo'
+import * as QuantityRepository from '@/repositories/quantity.repo'
 import * as WarehouseTransactionLogService from '@/services/warehouse-transaction-log.service'
 import { HttpError } from '@/utils/'
-import { buildQuery, buildSortQuery } from '@/utils/queryBuilder'
 
-export async function get(payload: GetQuantitiesParams): Promise<GetQuantitiesResponse> {
-  const { current = 1, pageSize = 10 } = payload.pagination || {}
-
-  const {
-    product = '',
-    warehouse = '',
-    status = '',
-    count = 0,
-  } = payload.filters || {}
-
-  const sorters = buildSortQuery(payload.sorters || {}, { count: 1 })
-
-  const filterRules = {
-    product: { type: 'exact' },
-    warehouse: { type: 'exact' },
-    status: { type: 'exact' },
-    count: { type: 'exact' },
-  } as const
-
-  const query = buildQuery({
-    filters: { product, warehouse, status, count },
-    rules: filterRules,
-  })
-
-  const pipeline = [
-    {
-      $match: query,
-    },
-    {
-      $sort: sorters,
-    },
-    {
-      $facet: {
-        quantities: [
-          { $skip: (current - 1) * pageSize },
-          { $limit: pageSize },
-        ],
-        totalCount: [
-          { $count: 'count' },
-        ],
-      },
-    },
-  ]
-
-  const quantitiesRaw = await QuantityModel.aggregate(pipeline).exec()
-
-  const quantities = quantitiesRaw[0].quantities
-  const quantitiesCount = quantitiesRaw[0].totalCount[0]?.count || 0
+export async function get({ payload }: { payload: GetQuantitiesPayload }): Promise<GetQuantitiesResponse> {
+  const { items, total, page, pageSize } = await QuantityRepository.list(payload)
 
   return {
     status: 'success',
     code: 'QUANTITIES_FETCHED',
     message: 'Quantities fetched',
     data: {
-      items: quantities,
+      items,
       pagination: {
-        page: current,
+        page,
         pageSize,
-        total: quantitiesCount,
+        total,
       },
     },
   }
 }
 
-export async function create(payload: CreateQuantitiesParams, session?: ClientSession): Promise<CreateQuantitiesResponse> {
+export async function create({ payload, session }: { payload: CreateQuantityPayload, session?: ClientSession }): Promise<CreateQuantitiesResponse> {
   const {
     count,
-    product,
+    productId,
     warehouse,
   } = payload
 
-  const quantity = await QuantityModel.create([{
-    count,
-    product,
-    warehouse,
-  }], { session })
+  const quantity = await QuantityRepository.createOne({
+    payload: {
+      count,
+      productId,
+      warehouse,
+    },
+    session,
+  })
 
-  await ProductModel.updateOne({ _id: product }, { $push: { quantity: quantity[0]._id } }, { session })
+  await ProductRepository.addQuantityToProducts({
+    productIds: [productId],
+    quantityId: quantity[0]._id,
+    session,
+  })
 
   return {
     status: 'success',
     code: 'QUANTITY_CREATED',
     message: 'Quantity created',
-    data: quantity[0],
+    data: mapQuantityToDTO(quantity[0]),
   }
 }
 
-export async function count(payload: CountQuantitiesParams, session?: ClientSession): Promise<CountQuantitiesResponse> {
+export async function count({ payload, session }: { payload: CountQuantitiesPayload, session?: ClientSession }): Promise<CountQuantitiesResponse> {
   const {
     count,
-    product,
+    productId,
     warehouse,
     mode = 'inc',
     userId,
@@ -114,25 +78,37 @@ export async function count(payload: CountQuantitiesParams, session?: ClientSess
     refId,
   } = payload
 
-  const update = {
+  const updateVariants = {
     set: { $set: { count } },
     inc: { $inc: { count } },
-  }
+    dec: { $inc: { count: count * -1 } },
+  }[mode]
 
-  const quantity = await QuantityModel.findOneAndUpdate({ product, warehouse }, update[mode], { new: true, session })
+  const createVariants = {
+    set: count,
+    inc: count,
+    dec: count * -1,
+  }[mode]
+
+  const quantity = await QuantityRepository.findAndUpdate({
+    query: { productId, warehouse },
+    payload: updateVariants,
+    session,
+  })
+
+  console.log(quantity)
 
   await WarehouseTransactionLogService.create({
-    productId: product,
+    productId,
     warehouseId: warehouse,
-    deltaCount: count,
+    deltaCount: createVariants,
     refType,
     refId,
     userId,
   }, session)
 
-  if (!quantity) {
-    await create({ count, product, warehouse }, session)
-  }
+  if (!quantity)
+    await create({ payload: { count: createVariants, productId, warehouse }, session })
 
   return {
     status: 'success',
@@ -141,42 +117,35 @@ export async function count(payload: CountQuantitiesParams, session?: ClientSess
   }
 }
 
-export async function edit(payload: EditQuantitiesParams): Promise<EditQuantitiesResponse> {
-  const {
-    id,
-    count,
-    product,
-    warehouse,
-  } = payload
-
-  const quantity = await QuantityModel.findOneAndUpdate({ _id: id }, {
-    count,
-    product,
-    warehouse,
+export async function edit({ payload, session }: { payload: EditQuantityPayload, session?: ClientSession }): Promise<EditQuantitiesResponse> {
+  const quantity = await QuantityRepository.updateById({
+    id: payload.id,
+    payload: {
+      id: payload.id,
+      count: payload.count,
+      productId: payload.productId,
+      warehouse: payload.warehouse,
+    },
+    session,
   })
 
-  if (!quantity) {
+  if (!quantity)
     throw new HttpError(400, 'Quantity not edited', 'QUANTITY_NOT_EDITED')
-  }
 
   return {
     status: 'success',
     code: 'QUANTITY_EDITED',
     message: 'Quantity edited',
-    data: quantity,
+    data: mapQuantityToDTO(quantity),
   }
 }
 
-export async function remove(payload: RemoveQuantitiesParams): Promise<RemoveQuantitiesResponse> {
-  const { ids } = payload
+export async function remove({ payload }: { payload: RemoveQuantityPayload }): Promise<RemoveQuantitiesResponse> {
+  for (const id of payload.ids) {
+    const quantity = await QuantityRepository.removeById(id)
 
-  const quantities = await QuantityModel.updateMany(
-    { _id: { $in: ids } },
-    { $set: { removed: true } },
-  )
-
-  if (!quantities) {
-    throw new HttpError(400, 'Quantities not removed', 'QUANTITIES_NOT_REMOVED')
+    if (!quantity)
+      throw new HttpError(400, 'Quantity not removed', 'QUANTITY_NOT_REMOVED')
   }
 
   return {

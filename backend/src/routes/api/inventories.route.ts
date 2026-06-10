@@ -1,3 +1,4 @@
+import type { RequestHandler } from 'express'
 import { createInventorySchema, editInventorySchema, getInventoriesSchema, getInventoryItemsSchema, removeInventoriesSchema, scanBarcodeToDraftSchema } from '@remnant/shared'
 import { Router } from 'express'
 import * as InventoriesController from '@/controllers/inventories.controller'
@@ -8,40 +9,40 @@ const router = Router()
 router.get(
   '/get',
   validateQueryRequest(getInventoriesSchema),
-  InventoriesController.get,
+  InventoriesController.get as RequestHandler,
 )
 
 router.get(
   '/get/items',
   validateQueryRequest(getInventoryItemsSchema),
-  InventoriesController.getItems,
+  InventoriesController.getItems as RequestHandler,
 )
 
 router.get(
   '/scan/barcode',
   validateQueryRequest(scanBarcodeToDraftSchema),
-  InventoriesController.scanBarcodeToDraft,
+  InventoriesController.scanBarcodeToDraft as RequestHandler,
 )
 
 router.post(
   '/create',
   validateBodyRequest(createInventorySchema),
   checkPermissions('inventories.create'),
-  InventoriesController.create,
+  InventoriesController.create as RequestHandler,
 )
 
 router.post(
   '/edit',
   validateBodyRequest(editInventorySchema),
   checkPermissions('inventories.edit'),
-  InventoriesController.edit,
+  InventoriesController.edit as RequestHandler,
 )
 
 router.post(
   '/remove',
   validateBodyRequest(removeInventoriesSchema),
   checkPermissions('inventories.remove'),
-  InventoriesController.remove,
+  InventoriesController.remove as RequestHandler,
 )
 
 export default router

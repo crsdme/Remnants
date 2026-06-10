@@ -1,4 +1,4 @@
-import { batchUnitSchema, createUnitSchema, editUnitSchema, getUnitSchema, removeUnitSchema } from '@remnant/shared'
+import { createUnitSchema, editUnitSchema, getUnitSchema, removeUnitSchema } from '@remnant/shared'
 import { registry } from '@/docs/registry'
 
 registry.registerPath({
@@ -89,28 +89,6 @@ registry.registerPath({
   responses: {
     200: {
       description: 'Еденица успешно удалена',
-    },
-  },
-})
-
-registry.registerPath({
-  method: 'post',
-  path: '/units/batch',
-  summary: 'Массовое обновление едениц',
-  operationId: 'batchUnits',
-  tags: ['Units'],
-  request: {
-    body: {
-      content: {
-        'application/json': {
-          schema: batchUnitSchema,
-        },
-      },
-    },
-  },
-  responses: {
-    200: {
-      description: 'Массовое обновление успешно выполнено',
     },
   },
 })

@@ -1,24 +1,27 @@
 import type {
-  createWarehousesParams,
-  editWarehouseParams,
-  getWarehousesParams,
-  removeWarehouseParams,
-  WarehousesResponse,
-} from '@/api/types'
+  CreateWarehouseRequest,
+  CreateWarehousesResponse,
+  EditWarehouseRequest,
+  EditWarehousesResponse,
+  GetWarehousesRequest,
+  GetWarehousesResponse,
+  RemoveWarehousesRequest,
+  RemoveWarehousesResponse,
+} from '@remnant/shared'
 import { api } from '@/api/instance'
 
-export async function getWarehouses(params: getWarehousesParams) {
-  return api.get<WarehousesResponse>('warehouses/get', { params })
+export async function getWarehouses(params: GetWarehousesRequest) {
+  return api.get<GetWarehousesResponse>('warehouses/get', { params })
 }
 
-export async function createWarehouse(params: createWarehousesParams) {
-  return api.post<WarehousesResponse>('warehouses/create', { ...params })
+export async function createWarehouse(params: CreateWarehouseRequest) {
+  return api.post<CreateWarehousesResponse>('warehouses/create', { ...params })
 }
 
-export async function editWarehouse(params: editWarehouseParams) {
-  return api.post<WarehousesResponse>('warehouses/edit', params)
+export async function editWarehouse(params: EditWarehouseRequest) {
+  return api.post<EditWarehousesResponse>('warehouses/edit', params)
 }
 
-export async function removeWarehouse(params: removeWarehouseParams) {
-  return api.post<WarehousesResponse>('warehouses/remove', params)
+export async function removeWarehouse(params: RemoveWarehousesRequest) {
+  return api.post<RemoveWarehousesResponse>('warehouses/remove', params)
 }

@@ -1,3 +1,7 @@
+import type { ProductPopulatedDTO } from '@remnant/shared'
+
+import type { OrderLineItemFormValues } from '../context'
+
 import { useFieldArray } from 'react-hook-form'
 
 import { ProductSelectedTable, ProductTable } from '@/components'
@@ -6,80 +10,69 @@ import { roundNumber } from '@/utils/helpers/'
 import { useBarcodeScanned } from '@/utils/hooks'
 
 import { useCreateOrderContext } from '../context'
+
 import { ClientForm } from './client-form'
 import { InformationForm } from './information-form'
 import { PaymentForm } from './payment-form'
 
 export function DataTable() {
-  const { paymentForm, informationForm, isLoading, clientForm, createClient, createOrder, createPayment, getBarcode } = useCreateOrderContext()
+  const { informationForm, isLoading, getBarcode } = useCreateOrderContext()
 
   const itemsField = useFieldArray({
     control: informationForm.control,
     name: 'items',
   })
 
-  const onSubmitInformation = (value) => {
-    createOrder(value)
-  }
-
-  const onSubmitClient = (value) => {
-    createClient(value)
-  }
-
-  const onSubmitPayment = (value) => {
-    createPayment(value)
-  }
-
-  const addProduct = (product, selectedQuantity = 1) => {
+  const addProduct = (product: ProductPopulatedDTO, selectedQuantity = 1) => {
     const selectedProducts = informationForm.getValues('items')
-    const existing = selectedProducts.find(p => p.id === product.id) as any
+    const existingProduct = selectedProducts.find(item => item.product === product.id)
 
-    if (existing) {
-      const index = selectedProducts.findIndex(p => p.id === product.id)
-      itemsField.update(index, {
-        ...existing,
-        quantity: existing.quantity + selectedQuantity,
+    if (existingProduct) {
+      const existingProductIndex = selectedProducts.findIndex(item => item.product === product.id)
+      itemsField.update(existingProductIndex, {
+        ...existingProduct,
+        lineQuantity: existingProduct.lineQuantity + selectedQuantity,
       })
     }
     else {
       itemsField.append({
         ...product,
         product: product.id,
-        quantity: selectedQuantity,
+        lineQuantity: selectedQuantity,
         receivedQuantity: 0,
         selectedPrice: product.price,
         price: product.price,
         manualPrice: undefined,
         basePrice: product.price,
-        selectedCurrency: product.currency,
+        selectedCurrencyId: product.currency.id,
         discountAmount: 0,
         discountPercent: 0,
       })
     }
   }
 
-  const removeProduct = (product) => {
+  const removeProduct = (productId: string) => {
     const selectedProducts = informationForm.getValues('items')
-    const index = selectedProducts.findIndex(p => p.id === product.id)
+    const index = selectedProducts.findIndex(item => item.product === productId)
     if (index !== -1) {
       itemsField.remove(index)
     }
   }
 
-  const updateProduct = ({ productId, field, value }: { productId: string, field: string, value: any }) => {
+  const updateProduct = <Key extends keyof OrderLineItemFormValues>({ productId, field, value }: { productId: string, field: Key, value: OrderLineItemFormValues[Key] }) => {
     const selectedProducts = informationForm.getValues('items')
-    const index = selectedProducts.findIndex(p => p.id === productId)
+    const index = selectedProducts.findIndex(item => item.product === productId)
 
     if (index === -1)
       return
 
     const current = selectedProducts[index]
-    const updated = { ...current }
+    const updated: OrderLineItemFormValues = { ...current }
 
     updated[field] = value
 
-    if (field === 'quantity' || field === 'receivedQuantity') {
-      updated.quantity = value ?? current.quantity
+    if (field === 'lineQuantity' || field === 'receivedQuantity') {
+      updated.lineQuantity = value ?? current.lineQuantity ?? 0
       updated.receivedQuantity = value ?? current.receivedQuantity ?? 0
     }
 
@@ -122,7 +115,7 @@ export function DataTable() {
   useBarcodeScanned(async (barcode: string) => {
     const products = await getBarcode(barcode)
     for (const product of products) {
-      addProduct(product, product.quantity)
+      addProduct(product, product.unitsPerScan)
     }
   })
 
@@ -138,11 +131,12 @@ export function DataTable() {
         isReceiving={false}
         isSelectedPrice={true}
         isDiscount={true}
+        isQuantity={true}
         includeTotal={true}
       />
-      <InformationForm form={informationForm} onSubmit={informationForm.handleSubmit(onSubmitInformation)} />
-      <PaymentForm form={paymentForm} onSubmit={paymentForm.handleSubmit(onSubmitPayment)} />
-      <ClientForm form={clientForm} onSubmit={clientForm.handleSubmit(onSubmitClient)} />
+      <InformationForm />
+      <PaymentForm />
+      <ClientForm />
     </>
   )
 }

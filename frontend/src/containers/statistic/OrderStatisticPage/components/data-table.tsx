@@ -1,5 +1,3 @@
-import { TrendingDown, TrendingUp } from 'lucide-react'
-import { useTranslation } from 'react-i18next'
 import { useCashregisterAccountOptions, useCashregisterOptions } from '@/api/hooks'
 
 import { DateRangePicker } from '@/components/'
@@ -9,9 +7,7 @@ import {
   Button,
   Card,
   CardAction,
-  CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
   Form,
@@ -20,12 +16,12 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-  Separator,
 } from '@/components/ui'
+import { useLocale } from '@/utils/hooks'
 import { useOrderStatisticContext } from '../context'
 
 export function DataTable() {
-  const { i18n, t } = useTranslation()
+  const { language, t } = useLocale()
   const { isLoading, isFetching, form, onSubmit, statistics } = useOrderStatisticContext()
 
   const loadCashregisterOptions = useCashregisterOptions({})
@@ -35,7 +31,10 @@ export function DataTable() {
   return (
     <>
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="mt-4">
+        <form
+          onSubmit={(e) => { void form.handleSubmit(onSubmit)(e) }}
+          className="mt-4"
+        >
           <div className="flex items-end gap-2 w-full">
             <FormField
               name="cashregister"
@@ -47,8 +46,8 @@ export function DataTable() {
                     <AsyncSelectNew
                       {...field}
                       loadOptions={loadCashregisterOptions}
-                      renderOption={e => e.names[i18n.language]}
-                      getDisplayValue={e => e.names[i18n.language]}
+                      renderOption={e => e.names[language]}
+                      getDisplayValue={e => e.names[language]}
                       getOptionValue={e => e.id}
                       disabled={isLoading || isFetching}
                       onChange={(e) => {
@@ -77,8 +76,8 @@ export function DataTable() {
                     <AsyncSelectNew
                       {...field}
                       loadOptions={loadCashregisterAccountOptions}
-                      renderOption={e => e.names[i18n.language]}
-                      getDisplayValue={e => e.names[i18n.language]}
+                      renderOption={e => e.names[language]}
+                      getDisplayValue={e => e.names[language]}
                       getOptionValue={e => e.id}
                       disabled={isLoading || isFetching}
                       onChange={(e) => {
@@ -125,29 +124,29 @@ export function DataTable() {
           </div>
         </form>
       </Form>
-      <OrderStatisticCard statistics={statistics} t={t} i18n={i18n} />
-      <ExpensesStatisticCard statistics={statistics} t={t} i18n={i18n} />
-      <IncomeStatisticCard statistics={statistics} t={t} i18n={i18n} />
+      <OrderStatisticCard statistics={statistics} t={t} language={language} />
+      <ExpensesStatisticCard statistics={statistics} t={t} language={language} />
+      <IncomeStatisticCard statistics={statistics} t={t} language={language} />
       {/* <AttributesStatisticCard statistics={statistics} t={t} i18n={i18n} />
       <CategoriesStatisticCard statistics={statistics} t={t} i18n={i18n} /> */}
     </>
   )
 }
 
-function OrderStatisticCard({ statistics, t, i18n }: { statistics: any, t: any, i18n: any }) {
+function OrderStatisticCard({ statistics, t, language }: { statistics: any, t: any, language: any }) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
       <Card className="@container/card">
         <CardHeader>
           <CardDescription>{t('page.order-statistic.total-amount')}</CardDescription>
           <CardTitle className="text-2xl font-semibold tabular-nums flex flex-wrap gap-4 @[250px]/card:text-3xl">
-            {statistics.orders.amount.map((item) => {
+            {statistics.orders.amount.map((item: any) => {
               if (item.total === 0)
                 return null
 
               return (
                 <span key={item.currency}>
-                  {`${item.total} ${item.currency.symbols[i18n.language]}`}
+                  {`${item.total} ${item.currency.symbols[language]}`}
                 </span>
               )
             })}
@@ -164,13 +163,13 @@ function OrderStatisticCard({ statistics, t, i18n }: { statistics: any, t: any, 
         <CardHeader>
           <CardDescription>{t('page.order-statistic.paid')}</CardDescription>
           <CardTitle className="text-2xl font-semibold tabular-nums flex flex-wrap gap-4 @[250px]/card:text-3xl">
-            {statistics.orders.paid.amount.map((item) => {
+            {statistics.orders.paid.amount.map((item: any) => {
               if (item.total === 0)
                 return ''
 
               return (
                 <span key={item.currency}>
-                  {`${item.total} ${item.currency.symbols[i18n.language]}`}
+                  {`${item.total} ${item.currency.symbols[language]}`}
                 </span>
               )
             })}
@@ -187,13 +186,13 @@ function OrderStatisticCard({ statistics, t, i18n }: { statistics: any, t: any, 
         <CardHeader>
           <CardDescription>{t('page.order-statistic.unpaid')}</CardDescription>
           <CardTitle className="text-2xl font-semibold tabular-nums flex flex-wrap gap-4 @[250px]/card:text-3xl">
-            {statistics.orders.unpaid.amount.map((item) => {
+            {statistics.orders.unpaid.amount.map((item: any) => {
               if (item.total === 0)
                 return ''
 
               return (
                 <span key={item.currency}>
-                  {`${item.total} ${item.currency.symbols[i18n.language]}`}
+                  {`${item.total} ${item.currency.symbols[language]}`}
                 </span>
               )
             })}
@@ -209,20 +208,20 @@ function OrderStatisticCard({ statistics, t, i18n }: { statistics: any, t: any, 
   )
 }
 
-function ExpensesStatisticCard({ statistics, t, i18n }: { statistics: any, t: any, i18n: any }) {
+function ExpensesStatisticCard({ statistics, t, language }: { statistics: any, t: any, language: any }) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 mt-4">
       <Card className="@container/card">
         <CardHeader>
           <CardDescription>{t('page.order-statistic.expenses')}</CardDescription>
           <CardTitle className="text-2xl font-semibold tabular-nums flex flex-wrap gap-4 @[250px]/card:text-3xl">
-            {statistics.payments.expense.categories.map((item) => {
+            {statistics.payments.expense.categories.map((item: any) => {
               if (item.total === 0)
                 return ''
 
               return (
                 <span key={item.currency}>
-                  {`${item.total} ${item.currency.symbols[i18n.language]}`}
+                  {`${item.total} ${item.currency.symbols[language]}`}
                 </span>
               )
             })}
@@ -235,19 +234,19 @@ function ExpensesStatisticCard({ statistics, t, i18n }: { statistics: any, t: an
         </CardHeader>
       </Card>
 
-      { statistics.payments.expense.categories.map(({ category, count, currencies }) => {
+      {statistics.payments.expense.categories.map(({ category, count, currencies }: any) => {
         return (
           <Card className="@container/card" key={category.id}>
             <CardHeader>
-              <CardDescription>{category.names[i18n.language]}</CardDescription>
+              <CardDescription>{category.names[language]}</CardDescription>
               <CardTitle className="text-2xl font-semibold tabular-nums flex flex-wrap gap-4 @[250px]/card:text-3xl">
-                {currencies.map((item) => {
+                {currencies.map((item: any) => {
                   if (item.total === 0)
                     return ''
 
                   return (
                     <span key={item.currency}>
-                      {`${item.total} ${item.currency.symbols[i18n.language]}`}
+                      {`${item.total} ${item.currency.symbols[language]}`}
                     </span>
                   )
                 })}
@@ -260,25 +259,25 @@ function ExpensesStatisticCard({ statistics, t, i18n }: { statistics: any, t: an
             </CardHeader>
           </Card>
         )
-      }) }
+      })}
     </div>
   )
 }
 
-function IncomeStatisticCard({ statistics, t, i18n }: { statistics: any, t: any, i18n: any }) {
+function IncomeStatisticCard({ statistics, t, language }: { statistics: any, t: any, language: any }) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 mt-4">
       <Card className="@container/card">
         <CardHeader>
           <CardDescription>{t('page.order-statistic.income')}</CardDescription>
           <CardTitle className="text-2xl font-semibold tabular-nums flex flex-wrap gap-4 @[250px]/card:text-3xl">
-            {statistics.payments.income.amount.map((item) => {
+            {statistics.payments.income.amount.map((item: any) => {
               if (item.total === 0)
                 return null
 
               return (
                 <span key={item.currency}>
-                  {`${item.total} ${item.currency.symbols[i18n.language]}`}
+                  {`${item.total} ${item.currency.symbols[language]}`}
                 </span>
               )
             })}
@@ -295,13 +294,13 @@ function IncomeStatisticCard({ statistics, t, i18n }: { statistics: any, t: any,
         <CardHeader>
           <CardDescription>{t('page.order-statistic.profit')}</CardDescription>
           <CardTitle className="text-2xl font-semibold tabular-nums flex flex-wrap gap-4 @[250px]/card:text-3xl">
-            {statistics.payments.profit.amount.map((item) => {
+            {statistics.payments.profit.amount.map((item: any) => {
               if (item.total === 0)
                 return null
 
               return (
                 <span key={item.currency}>
-                  {`${item.total} ${item.currency.symbols[i18n.language]}`}
+                  {`${item.total} ${item.currency.symbols[language]}`}
                 </span>
               )
             })}

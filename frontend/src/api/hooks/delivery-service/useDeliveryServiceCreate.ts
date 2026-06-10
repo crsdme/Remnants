@@ -1,9 +1,9 @@
-import type { createDeliveryServicesParams } from '@/api/types'
+import type { CreateDeliveryServiceRequest } from '@remnant/shared'
 
 import { useMutation } from '@tanstack/react-query'
 import { createDeliveryService } from '@/api/requests'
 
-export function useDeliveryServiceCreate(settings?: MutationSettings<createDeliveryServicesParams, typeof createDeliveryService>) {
+export function useDeliveryServiceCreate(settings?: MutationSettings<CreateDeliveryServiceRequest>) {
   return useMutation({
     mutationFn: createDeliveryService,
     ...settings?.options,

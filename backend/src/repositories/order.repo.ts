@@ -1,4 +1,4 @@
-import type { AggregateResult, OrderDTO, OrderItemDTO, OrderPaymentDTO } from '@remnant/shared'
+import type { AggregateResult, OrderDTOPopulated, OrderItemDTOPopulated, OrderPaymentDTOPopulated } from '@remnant/shared'
 import type { ClientSession, PipelineStage } from 'mongoose'
 import type {
   CreateOrderItemRepoPayload,
@@ -17,7 +17,7 @@ import type {
 import { OrderItemModel, OrderModel, OrderPaymentModel } from '@/models'
 import { buildQuery, buildSortQuery, unwrapAggregate } from '@/utils'
 
-export async function list({ payload, session }: { payload: GetOrdersRepoPayload, session?: ClientSession }): Promise<GetOrdersRepoResult> {
+export async function list({ payload }: { payload: GetOrdersRepoPayload }): Promise<GetOrdersRepoResult> {
   const {
     current,
     pageSize,
@@ -38,7 +38,6 @@ export async function list({ payload, session }: { payload: GetOrdersRepoPayload
     removedBy,
     createdAt,
     updatedAt,
-    hasProfitPermission,
     removed,
   } = payload.filters
 
@@ -71,7 +70,7 @@ export async function list({ payload, session }: { payload: GetOrdersRepoPayload
       deliveryService: { type: 'string' },
       orderSource: { type: 'string' },
       orderStatus: { type: 'array' },
-      orderPayments: { type: 'string' },
+      orderPayments: { type: 'array' },
       client: { type: 'string' },
       comment: { type: 'string' },
       createdBy: { type: 'string' },
@@ -81,12 +80,11 @@ export async function list({ payload, session }: { payload: GetOrdersRepoPayload
       removed: { type: 'exact' },
     },
   })
-
   const sorters = buildSortQuery(payload.sorters, { seq: -1 })
 
   const profitStages: PipelineStage[] = []
 
-  if (hasProfitPermission === true) {
+  if (payload.hasProfitPermission === true) {
     profitStages.push(
       {
         $lookup: {
@@ -268,13 +266,13 @@ export async function list({ payload, session }: { payload: GetOrdersRepoPayload
     },
   ]
 
-  const raw = await OrderModel.aggregate<AggregateResult<OrderDTO>>(pipeline).exec()
+  const raw = await OrderModel.aggregate<AggregateResult<OrderDTOPopulated>>(pipeline).exec()
   const { items, total } = unwrapAggregate(raw)
 
   return { items, total, page: current, pageSize }
 }
 
-export async function listItems({ payload, session }: { payload: GetOrderItemsRepoPayload, session?: ClientSession }): Promise<GetOrderItemsRepoResult> {
+export async function listItems({ payload }: { payload: GetOrderItemsRepoPayload }): Promise<GetOrderItemsRepoResult> {
   const {
     current,
     pageSize,
@@ -291,10 +289,9 @@ export async function listItems({ payload, session }: { payload: GetOrderItemsRe
     },
     rules: {
       order: { type: 'array' },
+      seq: { type: 'array' },
     },
   })
-
-  const sorters = buildSortQuery(payload.sorters, { seq: -1 })
 
   const projection: Record<string, unknown> = {
     _id: 0,
@@ -322,9 +319,6 @@ export async function listItems({ payload, session }: { payload: GetOrderItemsRe
   const pipeline: PipelineStage[] = [
     {
       $match: query,
-    },
-    {
-      $sort: sorters,
     },
     {
       $lookup: {
@@ -434,9 +428,9 @@ export async function listItems({ payload, session }: { payload: GetOrderItemsRe
           {
             $lookup: {
               from: 'quantities',
-              localField: 'quantity',
+              localField: 'quantityIds',
               foreignField: '_id',
-              as: 'quantity',
+              as: 'warehouseStock',
             },
           },
           {
@@ -528,7 +522,7 @@ export async function listItems({ payload, session }: { payload: GetOrderItemsRe
               barcodes: { id: 1, code: 1 },
               categories: { id: 1, names: 1 },
               unit: { id: '$unit._id', names: 1, symbols: 1 },
-              quantity: { count: 1, warehouse: 1, status: 1 },
+              warehouseStock: { count: 1, warehouse: 1, status: 1 },
               images: 1,
               productProperties: { id: 1, value: 1, data: { names: 1, symbols: 1, type: 1, isRequired: 1, showInTable: 1, showInStatistics: 1 }, optionData: { id: 1, names: 1, color: 1 } },
               productPropertiesGroup: { id: '$productPropertiesGroup._id', names: 1 },
@@ -553,28 +547,6 @@ export async function listItems({ payload, session }: { payload: GetOrderItemsRe
       $project: projection,
     },
     {
-      $project: {
-        _id: 0,
-        id: '$_id',
-        seq: 1,
-        client: { id: '$client._id', name: 1, lastName: 1, middleName: 1, phones: 1, emails: 1 },
-        deliveryService: { id: '$deliveryService._id', names: 1, type: 1, color: 1 },
-        orderSource: { id: '$orderSource._id', names: 1, type: 1, color: 1 },
-        orderStatus: { id: '$orderStatus._id', names: 1, type: 1, color: 1, isLocked: 1 },
-        warehouse: { id: '$warehouse._id', names: 1 },
-        totals: 1,
-        orderPayments: 1,
-        profit: 1,
-        orderPaymentStatus: 1,
-        comment: 1,
-        createdAt: 1,
-        updatedAt: 1,
-        createdBy: 1,
-        confirmedBy: 1,
-        removedBy: 1,
-      },
-    },
-    {
       $facet: {
         items: [
           { $skip: (current - 1) * pageSize },
@@ -587,13 +559,13 @@ export async function listItems({ payload, session }: { payload: GetOrderItemsRe
     },
   ]
 
-  const raw = await OrderItemModel.aggregate<AggregateResult<OrderItemDTO>>(pipeline).exec()
+  const raw = await OrderItemModel.aggregate<AggregateResult<OrderItemDTOPopulated>>(pipeline).exec()
   const { items, total } = unwrapAggregate(raw)
 
   return { items, total, page: current, pageSize }
 }
 
-export async function listPayments({ payload, session }: { payload: GetOrderPaymentsRepoPayload, session?: ClientSession }): Promise<GetOrderPaymentsRepoResult> {
+export async function listPayments({ payload }: { payload: GetOrderPaymentsRepoPayload }): Promise<GetOrderPaymentsRepoResult> {
   const {
     current,
     pageSize,
@@ -679,28 +651,6 @@ export async function listPayments({ payload, session }: { payload: GetOrderPaym
       },
     },
     {
-      $project: {
-        _id: 0,
-        id: '$_id',
-        seq: 1,
-        client: { id: '$client._id', name: 1, lastName: 1, middleName: 1, phones: 1, emails: 1 },
-        deliveryService: { id: '$deliveryService._id', names: 1, type: 1, color: 1 },
-        orderSource: { id: '$orderSource._id', names: 1, type: 1, color: 1 },
-        orderStatus: { id: '$orderStatus._id', names: 1, type: 1, color: 1, isLocked: 1 },
-        warehouse: { id: '$warehouse._id', names: 1 },
-        totals: 1,
-        orderPayments: 1,
-        profit: 1,
-        orderPaymentStatus: 1,
-        comment: 1,
-        createdAt: 1,
-        updatedAt: 1,
-        createdBy: 1,
-        confirmedBy: 1,
-        removedBy: 1,
-      },
-    },
-    {
       $facet: {
         items: [
           { $skip: (current - 1) * pageSize },
@@ -713,18 +663,18 @@ export async function listPayments({ payload, session }: { payload: GetOrderPaym
     },
   ]
 
-  const raw = await OrderPaymentModel.aggregate<AggregateResult<OrderPaymentDTO>>(pipeline).exec()
+  const raw = await OrderPaymentModel.aggregate<AggregateResult<OrderPaymentDTOPopulated>>(pipeline).exec()
   const { items, total } = unwrapAggregate(raw)
 
   return { items, total, page: current, pageSize }
 }
 
-export async function createOne({ payload }: { payload: CreateOrderRepoPayload }) {
-  return OrderModel.create(payload)
+export async function createOne({ payload, session }: { payload: CreateOrderRepoPayload, session?: ClientSession }) {
+  return OrderModel.create([payload], { session })
 }
 
 export async function createOneItem({ payload, session }: { payload: CreateOrderItemRepoPayload, session?: ClientSession }) {
-  return OrderItemModel.create(payload, { session }).exec()
+  return OrderItemModel.create([payload], { session })
 }
 
 export async function updateById({ id, payload, session }: { id: string, payload: EditOrderRepoPayload, session?: ClientSession }) {
@@ -745,7 +695,14 @@ export async function updateOneItem({ payload, session }: { payload: EditOrderIt
 
 export async function findOne({ payload, session }: { payload: FindOneOrderRepoPayload, session?: ClientSession }) {
   const { id, seq } = payload
-  return OrderModel.findOne({ _id: id, seq }, { session }).populate('client', 'name lastName middleName phones emails').lean<OrderDBPopulated>().exec()
+  return OrderModel.findOne(
+    { $or: [{ _id: id }, { seq }] },
+    undefined,
+    { session },
+  )
+    .populate('client', 'name lastName middleName phones emails')
+    .lean<OrderDBPopulated>()
+    .exec()
 }
 
 export async function findById(id: string) {

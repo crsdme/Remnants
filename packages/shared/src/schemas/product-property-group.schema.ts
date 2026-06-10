@@ -1,5 +1,30 @@
 import { z } from 'zod'
-import { booleanArraySchema, dateRangeSchema, idSchema, languageStringSchema, numberFromStringSchema, paginationSchema, sorterParamsSchema } from './common'
+import { booleanArraySchema, dateRangeSchema, idSchema, languageStringSchema, numberFromStringSchema, paginationSchema, responseItemSchema, responseListSchema, responseSchema, sorterParamsSchema } from './common'
+import { productPropertySchema } from './product-property.schema'
+
+export const productPropertyGroupSchema = z.object({
+  id: idSchema,
+  names: languageStringSchema,
+  productProperties: z.array(idSchema),
+  priority: z.number(),
+  active: z.boolean(),
+  createdAt: z.coerce.date(),
+  updatedAt: z.coerce.date(),
+})
+
+export type ProductPropertyGroupDTO = z.output<typeof productPropertyGroupSchema>
+
+export const productPropertyGroupPopulatedSchema = z.object({
+  id: idSchema,
+  names: languageStringSchema,
+  productProperties: z.array(productPropertySchema),
+  priority: z.number(),
+  active: z.boolean(),
+  createdAt: z.coerce.date(),
+  updatedAt: z.coerce.date(),
+})
+
+export type ProductPropertyGroupPopulatedDTO = z.output<typeof productPropertyGroupPopulatedSchema>
 
 export const getProductPropertyGroupSchema = z.object({
   filters: z.object({
@@ -47,3 +72,15 @@ export const removeProductPropertyGroupSchema = z.object({
 })
 
 export type RemoveProductPropertyGroupRequest = z.input<typeof removeProductPropertyGroupSchema>
+
+export const getProductPropertyGroupsResponseSchema = responseListSchema(productPropertyGroupPopulatedSchema)
+export type GetProductPropertyGroupsResponse = z.output<typeof getProductPropertyGroupsResponseSchema>
+
+export const createProductPropertyGroupResponseSchema = responseItemSchema(productPropertyGroupSchema)
+export type CreateProductPropertyGroupResponse = z.output<typeof createProductPropertyGroupResponseSchema>
+
+export const editProductPropertyGroupResponseSchema = responseItemSchema(productPropertyGroupSchema)
+export type EditProductPropertyGroupResponse = z.output<typeof editProductPropertyGroupResponseSchema>
+
+export const removeProductPropertyGroupsResponseSchema = responseSchema
+export type RemoveProductPropertyGroupsResponse = z.output<typeof removeProductPropertyGroupsResponseSchema>

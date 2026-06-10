@@ -1,47 +1,61 @@
 import type {
-  CreateBalanceParams,
+  AuthUser,
+  CashregisterDTO,
   CreateBalanceResponse,
-  GetBalancesParams,
   GetBalancesResponse,
   GetCurrentBalanceResponse,
-  OrderItem,
+  OrderItemDTO,
+  OrderItemDTOPopulated,
+  ProductDTO,
   RemoveBalancesResponse,
-  User,
 } from '@remnant/shared'
+import type {
+  CreateBalancesPayload,
+  GetBalancesPayload,
+  GetCurrentBalancePayload,
+  RemoveBalancesPayload,
+} from '@/types'
 import { BalanceModel } from '@/models/'
+import * as BalanceRepo from '@/repositories/balance.repo'
 import * as CashregisterService from '@/services/cashregister.service'
 import * as OrderStatusService from '@/services/order-status.service'
 import * as OrderService from '@/services/order.service'
 import * as ProductService from '@/services/product.service'
+import {
+  parseGetCashregisters,
+  parseGetOrderItems,
+  parseGetOrders,
+  parseGetOrderStatuses,
+  parseGetProductsRepo,
+} from '@/types/'
 import { HttpError } from '@/utils/'
 
-export async function get(payload: GetBalancesParams): Promise<GetBalancesResponse> {
-  const { current = 1, pageSize = 10 } = payload.pagination || {}
-
-  const balances = await BalanceModel.find(payload.filters ?? {})
-    .sort({ createdAt: 1 })
-    .limit(pageSize)
-    .skip((current - 1) * pageSize)
+export async function get({ payload }: { payload: GetBalancesPayload }): Promise<GetBalancesResponse> {
+  const { items, total, page, pageSize } = await BalanceRepo.list(payload)
 
   return {
     status: 'success',
     code: 'BALANCE_FETCHED',
     message: 'Balance fetched',
     data: {
-      items: balances,
+      items,
       pagination: {
-        page: current,
+        page,
         pageSize,
-        total: balances.length,
+        total,
       },
     },
   }
 }
 
-export async function getCurrent(_payload: any, user?: User): Promise<GetCurrentBalanceResponse> {
-  const { data: { items: products } } = await ProductService.get({ pagination: { full: true } }, user)
+export async function getCurrent({ payload, user }: { payload: GetCurrentBalancePayload, user: AuthUser }): Promise<GetCurrentBalanceResponse> {
+  console.log(payload)
+  const { data: { items: products } } = await ProductService.get({
+    payload: parseGetProductsRepo({ pagination: { full: true } }),
+    user,
+  })
 
-  function getWarehouseBalance(products: any) {
+  function getWarehouseBalance(products: ProductDTO[]) {
     const outer = new Map<
       string,
       Map<
@@ -51,12 +65,12 @@ export async function getCurrent(_payload: any, user?: User): Promise<GetCurrent
     >()
 
     for (const p of products ?? []) {
-      const price = Number(p.purchasePrice) || 0
+      const price = Number(p.purchasePrice ?? 0)
       const currencyId = p.purchaseCurrency?.id ?? 'UNKNOWN'
       const currencySymbol = p.purchaseCurrency?.symbols?.ru ?? p.purchaseCurrency?.symbols?.en
       const currencyName = p.purchaseCurrency?.names?.ru ?? p.purchaseCurrency?.names?.en
 
-      for (const q of p.quantity ?? []) {
+      for (const q of p.warehouseStock ?? []) {
         const warehouse = q.warehouse
         const cnt = Number(q.count) || 0
 
@@ -88,35 +102,35 @@ export async function getCurrent(_payload: any, user?: User): Promise<GetCurrent
   const warehouseBalances = getWarehouseBalance(products)
 
   const { data: { items: cashregisters } } = await CashregisterService.get({
-    pagination: { full: true },
+    payload: parseGetCashregisters({ pagination: { full: true } }),
   })
 
-  function getCashregisterBalance(cashregisters: any) {
+  function getCashregisterBalance(cashregisters: CashregisterDTO[]) {
     const result: {
       cashregisterId: string
       totals: { currencyId: string, currencySymbol?: string, currencyName?: string, amount: number }[]
     }[] = []
 
-    for (const reg of cashregisters ?? []) {
+    for (const cashregister of cashregisters ?? []) {
       const currencyMap = new Map<string, { currencyId: string, currencySymbol?: string, currencyName?: string, amount: number }>()
 
-      for (const acc of reg.accounts ?? []) {
-        for (const c of acc.currencies ?? []) {
-          const id = c.id ?? 'UNKNOWN'
+      for (const account of cashregister.accounts) {
+        for (const currency of account.currencies) {
+          const id = currency.id
           const row
             = currencyMap.get(id) ?? {
               currencyId: id,
-              currencySymbol: c.symbols?.ru ?? c.symbols?.en,
-              currencyName: c.names?.ru ?? c.names?.en,
+              currencySymbol: currency.symbols?.ru ?? currency.symbols?.en,
+              currencyName: currency.names?.ru ?? currency.names?.en,
               amount: 0,
             }
-          row.amount += Number(c.balance) || 0
+          row.amount += Number(currency.balance) || 0
           currencyMap.set(id, row)
         }
       }
 
       result.push({
-        cashregisterId: reg.id,
+        cashregisterId: cashregister.id,
         totals: Array.from(currencyMap.values()),
       })
     }
@@ -127,22 +141,20 @@ export async function getCurrent(_payload: any, user?: User): Promise<GetCurrent
   const cashregisterBalances = getCashregisterBalance(cashregisters)
 
   const { data: { items: orderStatuses } } = await OrderStatusService.get({
-    pagination: { full: true },
-    filters: {
-      isLocked: false,
-    },
+    payload: parseGetOrderStatuses({ pagination: { full: true }, filters: { isLocked: false } }),
   })
 
   const { data: { items: orders } } = await OrderService.get({
-    pagination: { full: true },
-    filters: {
-      orderStatus: orderStatuses.map(status => status.id),
-    },
+    payload: parseGetOrders({ pagination: { full: true }, filters: { orderStatus: orderStatuses.map(status => status.id) } }),
+    user,
   })
 
-  const ordersProducts = orders.reduce((acc, order) => acc.concat(order.items), [])
+  const { data: { items: orderItems } } = await OrderService.getItems({
+    payload: parseGetOrderItems({ filters: { order: orders.map(order => order.id), showFullData: true }, pagination: { full: true } }),
+    user,
+  })
 
-  function getOrdersBalance(ordersProducts: OrderItem[]) {
+  function getOrdersBalance(orderItems: OrderItemDTOPopulated[]) {
     const outer = new Map<
       string,
       Map<
@@ -151,14 +163,14 @@ export async function getCurrent(_payload: any, user?: User): Promise<GetCurrent
       >
     >()
 
-    for (const p of ordersProducts ?? []) {
-      const price = Number(p.product.purchasePrice) || 0
-      const currencyId = p.product.purchaseCurrency?.id ?? 'UNKNOWN'
-      const currencySymbol = p.product.purchaseCurrency?.symbols?.ru ?? p.product.purchaseCurrency?.symbols?.en
-      const currencyName = p.product.purchaseCurrency?.names?.ru ?? p.product.purchaseCurrency?.names?.en
+    for (const item of orderItems) {
+      const price = Number(item.purchasePrice) || 0
+      const currencyId = item.purchaseCurrency?.id ?? 'UNKNOWN'
+      const currencySymbol = item.purchaseCurrency?.symbols?.ru ?? item.purchaseCurrency?.symbols?.en
+      const currencyName = item.purchaseCurrency?.names?.ru ?? item.purchaseCurrency?.names?.en
 
-      const productId = p.product.id
-      const cnt = Number(p.quantity) || 0
+      const productId = item.product.id
+      const cnt = Number(item.quantity) || 0
 
       let inner = outer.get(productId)
       if (!inner) {
@@ -184,13 +196,17 @@ export async function getCurrent(_payload: any, user?: User): Promise<GetCurrent
       }))
   }
 
-  const ordersBalances = getOrdersBalance(ordersProducts)
+  const ordersBalances = getOrdersBalance(orderItems)
 
-  function getTotalBalance(warehouseBalances: any[], cashregisterBalances: any[], ordersBalances: any[]) {
+  function getTotalBalance(
+    warehouseBalances: { warehouseId: string, totals: { currencyId: string, amount: number, currencySymbol?: string, currencyName?: string }[] }[],
+    // cashregisterBalances: any[],
+    // ordersBalances: any[],
+  ) {
     const map = new Map<string, { currencyId: string, currencySymbol?: string, currencyName?: string, amount: number }>()
 
     // склады
-    for (const w of warehouseBalances ?? []) {
+    for (const w of warehouseBalances) {
       for (const t of w.totals ?? []) {
         const key = t.currencyId
         const row = map.get(key) ?? {
@@ -204,40 +220,44 @@ export async function getCurrent(_payload: any, user?: User): Promise<GetCurrent
       }
     }
 
-    // кассы
-    for (const c of cashregisterBalances ?? []) {
-      for (const t of c.totals ?? []) {
-        const key = t.currencyId
-        const row = map.get(key) ?? {
-          currencyId: t.currencyId,
-          currencySymbol: t.currencySymbol,
-          currencyName: t.currencyName,
-          amount: 0,
-        }
-        row.amount += t.amount || 0
-        map.set(key, row)
-      }
-    }
+    // // кассы
+    // for (const c of cashregisterBalances ?? []) {
+    //   for (const t of c.totals ?? []) {
+    //     const key = t.currencyId
+    //     const row = map.get(key) ?? {
+    //       currencyId: t.currencyId,
+    //       currencySymbol: t.currencySymbol,
+    //       currencyName: t.currencyName,
+    //       amount: 0,
+    //     }
+    //     row.amount += t.amount || 0
+    //     map.set(key, row)
+    //   }
+    // }
 
-    // заказы
-    for (const o of ordersBalances ?? []) {
-      for (const t of o.totals ?? []) {
-        const key = t.currencyId
-        const row = map.get(key) ?? {
-          currencyId: t.currencyId,
-          currencySymbol: t.currencySymbol,
-          currencyName: t.currencyName,
-          amount: 0,
-        }
-        row.amount += t.amount || 0
-        map.set(key, row)
-      }
-    }
+    // // заказы
+    // for (const o of ordersBalances ?? []) {
+    //   for (const t of o.totals ?? []) {
+    //     const key = t.currencyId
+    //     const row = map.get(key) ?? {
+    //       currencyId: t.currencyId,
+    //       currencySymbol: t.currencySymbol,
+    //       currencyName: t.currencyName,
+    //       amount: 0,
+    //     }
+    //     row.amount += t.amount || 0
+    //     map.set(key, row)
+    //   }
+    // }
 
     return Array.from(map.values()).sort((a, b) => a.currencyId.localeCompare(b.currencyId))
   }
 
-  const totalBalances = getTotalBalance(warehouseBalances, cashregisterBalances, ordersBalances)
+  const totalBalances = getTotalBalance(
+    warehouseBalances,
+    // cashregisterBalances,
+    // ordersBalances,
+  )
 
   return {
     status: 'success',
@@ -252,8 +272,8 @@ export async function getCurrent(_payload: any, user?: User): Promise<GetCurrent
   }
 }
 
-export async function create(payload: CreateBalanceParams, user: User): Promise<CreateBalanceResponse> {
-  const { data: { warehouseBalances, cashregisterBalances, totalBalances } } = await getCurrent({}, user)
+export async function create({ payload, user }: { payload: CreateBalancesPayload, user: AuthUser }): Promise<CreateBalanceResponse> {
+  const { data: { warehouseBalances, cashregisterBalances, totalBalances } } = await getCurrent({ payload: {}, user })
 
   const newBalance = await BalanceModel.create({
     warehouseBalances,
@@ -271,12 +291,11 @@ export async function create(payload: CreateBalanceParams, user: User): Promise<
   }
 }
 
-export async function remove(id: string, user: User): Promise<RemoveBalancesResponse> {
-  const balance = await BalanceModel.findByIdAndUpdate(id, { removedBy: user.id, removed: true }, { new: true })
+export async function remove({ payload }: { payload: RemoveBalancesPayload }): Promise<RemoveBalancesResponse> {
+  const balance = await BalanceRepo.removeById(payload.id)
 
-  if (!balance) {
+  if (balance === null)
     throw new HttpError(400, 'Balance not removed', 'BALANCE_NOT_REMOVED')
-  }
 
   return {
     status: 'success',

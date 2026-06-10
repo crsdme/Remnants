@@ -1,4 +1,3 @@
-import { useTranslation } from 'react-i18next'
 import { useLanguageQuery, useWarehouseOptions } from '@/api/hooks'
 import { AsyncSelectNew } from '@/components/AsyncSelectNew'
 import {
@@ -13,31 +12,26 @@ import {
   FormMessage,
   Input,
 } from '@/components/ui'
+import { useLocale } from '@/utils/hooks'
 import { useSiteContext } from '../context'
 
 export function SiteForm() {
-  const { t } = useTranslation()
+  const { t, language } = useLocale()
   const { isLoading, form, closeModal, submitSiteForm } = useSiteContext()
-  const { i18n } = useTranslation()
 
-  const { data: { languages = [] } = {} } = useLanguageQuery(
+  const { languages = [] } = useLanguageQuery(
     { pagination: { full: true } },
-    { options: {
-      select: response => ({
-        languages: response.data.languages,
-      }),
-    } },
+    { options: { placeholderData: prevData => prevData } },
   )
 
   const loadWarehouseOptions = useWarehouseOptions()
 
-  const onSubmit = (values) => {
-    submitSiteForm(values)
-  }
-
   return (
     <Form {...form}>
-      <form className="w-full space-y-1" onSubmit={form.handleSubmit(onSubmit)}>
+      <form
+        className="w-full space-y-1"
+        onSubmit={(e) => { void form.handleSubmit(submitSiteForm)(e) }}
+      >
         {languages.map(language => (
           <FormField
             control={form.control}
@@ -47,7 +41,7 @@ export function SiteForm() {
               <FormItem>
                 <FormLabel>
                   <p>
-                    {t('page.products.form.names', {
+                    {t('page.sites.form.names', {
                       language: t(`language.${language.code}`),
                     })}
                     <span className="text-destructive ml-1">*</span>
@@ -55,7 +49,7 @@ export function SiteForm() {
                 </FormLabel>
                 <FormControl>
                   <Input
-                    placeholder={t('page.products.form.names', {
+                    placeholder={t('page.sites.form.names', {
                       language: t(`language.${language.code}`),
                     })}
                     className="w-full"
@@ -108,8 +102,8 @@ export function SiteForm() {
                 <AsyncSelectNew
                   {...field}
                   loadOptions={loadWarehouseOptions}
-                  renderOption={e => e.names[i18n.language]}
-                  getDisplayValue={e => e.names[i18n.language]}
+                  renderOption={e => e.names[language]}
+                  getDisplayValue={e => e.names[language]}
                   getOptionValue={e => e.id}
                   disabled={isLoading}
                   clearable

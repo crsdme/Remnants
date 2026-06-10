@@ -1,54 +1,37 @@
 import { flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table'
-import { Fragment, useMemo, useState } from 'react'
-import { useTranslation } from 'react-i18next'
+import { Fragment, useState } from 'react'
 
 import { useLanguageQuery } from '@/api/hooks'
-import { AdvancedFilters, AdvancedSorters, BatchEdit, ColumnVisibilityMenu, PermissionGate, TablePagination, TableSelectionDropdown } from '@/components'
-import { Separator, Skeleton, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui'
-import { downloadCsv } from '@/utils/helpers/download'
-import { useDebounceCallback } from '@/utils/hooks'
-import { useLanguageContext } from '../context'
+import { ColumnVisibilityMenu, TablePagination } from '@/components'
+import { Skeleton, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui'
+import { useListQueryState, useLocale } from '@/utils/hooks'
 
 import { useColumns } from './columns'
 import { DataTableFilters } from './data-table-filters'
 
 export function DataTable() {
-  const { t } = useTranslation()
-  const { batchLanguage, removeLanguages, duplicateLanguages } = useLanguageContext()
-
-  const filtersInitialState = {
-    name: '',
-    code: '',
-    priority: undefined,
-    active: [],
-    main: [],
-    createdAt: { from: undefined, to: undefined },
-    updatedAt: { from: undefined, to: undefined },
-  }
-
+  const { t } = useLocale()
   const [columnVisibility, setColumnVisibility] = useState({})
-  const [rowSelection, setRowSelection] = useState({})
-  const [sorting, setSorting] = useState([])
-  const [batchEditMode, setBatchEditMode] = useState<'filter' | 'select'>('select')
-  const [pagination, setPagination] = useState({
-    current: 1,
-    pageSize: 10,
+  const {
+    pagination,
+    setPagination,
+    sorting,
+    setSorting,
+    filters,
+    setFilters,
+    sorters,
+  } = useListQueryState({
+    readFilters: params => ({
+      name: params.get('name'),
+    }),
+    writeFilters: (params, filters) => {
+      params.set('name', filters.name ?? '')
+    },
   })
-  const [filters, setFilters] = useState(filtersInitialState)
 
-  const sorters = useMemo(() => (
-    Object.fromEntries(sorting.map(({ id, desc }) => [id, desc ? 'desc' : 'asc']))
-  ), [sorting])
-
-  const { data: { languages = [], languagesCount = 0 } = {}, isLoading, isFetching } = useLanguageQuery(
+  const { languages, languagesCount, isLoading, isFetching, isPending } = useLanguageQuery(
     { pagination, filters, sorters },
-    { options: {
-      select: response => ({
-        languages: response.data.languages,
-        languagesCount: response.data.languagesCount,
-      }),
-      placeholderData: prevData => prevData,
-    } },
+    { options: { placeholderData: prevData => prevData } },
   )
 
   const columns = useColumns()
@@ -58,14 +41,12 @@ export function DataTable() {
     columns,
     getCoreRowModel: getCoreRowModel(),
     onColumnVisibilityChange: setColumnVisibility,
-    onRowSelectionChange: setRowSelection,
     onSortingChange: setSorting,
     manualSorting: true,
     enableSortingRemoval: true,
     state: {
       sorting,
       columnVisibility,
-      rowSelection,
       pagination: {
         pageIndex: pagination.current - 1,
         pageSize: pagination.pageSize,
@@ -106,7 +87,7 @@ export function DataTable() {
   }
 
   const renderTableBody = () => {
-    if (isLoading || isFetching)
+    if (isLoading || isFetching || isPending)
       return renderSkeletonRows()
 
     if (table.getRowModel().rows?.length) {
@@ -135,117 +116,13 @@ export function DataTable() {
     )
   }
 
-  const handleBulkExport = () => {
-    const filteredData = languages.filter((_, index) => rowSelection[index])
-    const formatedItems = filteredData.map(item => ({
-      name: item.name,
-      code: item.code,
-      priority: item.priority,
-      active: item.active,
-      main: item.main,
-      updatedAt: item.updatedAt,
-      createdAt: item.createdAt,
-    }))
-
-    downloadCsv(formatedItems, 'language-selected.csv', true)
-    setRowSelection({})
-  }
-
-  const advancedFiltersSubmit = (filters) => {
-    const filterValues = Object.fromEntries(filters.map(({ column, value }) => [column, value]))
-    setFilters(state => ({
-      ...state,
-      ...filterValues,
-    }))
-  }
-
-  const advancedFiltersCancel = () => {
-    setFilters(filtersInitialState)
-  }
-
-  const handleBatchSubmit = (data) => {
-    const selectedLanguages = languages
-      .filter((_, index) => rowSelection[index])
-      .map(item => item.id)
-
-    const params = data.map(item => ({
-      column: item.column,
-      value: item.value,
-    }))
-
-    batchLanguage({
-      ...(batchEditMode === 'filter' ? { filters } : { ids: selectedLanguages }),
-      params,
-    })
-
-    setRowSelection({})
-  }
-
-  const handleBulkRemove = () => {
-    const ids = languages.filter((_, index) => rowSelection[index]).map(item => item.id)
-    removeLanguages(ids)
-    setRowSelection({})
-  }
-
-  const handleBatchToggle = (status: 'filter' | 'select') => {
-    setBatchEditMode(status)
-  }
-
-  const changePagination = useDebounceCallback((value: Pagination) => {
-    setPagination(state => ({ ...state, ...value }))
-  }, 50)
-
-  const handleBulkDuplicate = () => {
-    const ids = languages.filter((_, index) => rowSelection[index]).map(item => item.id)
-    duplicateLanguages({ ids })
-    setRowSelection({})
-  }
-
-  const advancedSortersSubmit = (sorters) => {
-    const mapedSorters = sorters.map(({ column, value }) => ({
-      id: column,
-      desc: value === 'desc',
-    }))
-
-    setSorting(mapedSorters)
-  }
-
-  const advancedSortersCancel = () => {
-    setSorting([])
-  }
-
   return (
     <>
       <div className="w-full flex justify-between items-start max-md:flex-col gap-2 py-2">
         <div className="flex flex-wrap gap-2 items-center">
-          <AdvancedFilters
-            columns={columns}
-            onSubmit={advancedFiltersSubmit}
-            onCancel={advancedFiltersCancel}
-          />
-          <AdvancedSorters
-            columns={columns}
-            onSubmit={advancedSortersSubmit}
-            onCancel={advancedSortersCancel}
-          />
-          <PermissionGate permission="other.admin">
-            <BatchEdit
-              columns={columns}
-              languages={languages}
-              onSubmit={handleBatchSubmit}
-              onToggle={handleBatchToggle}
-            />
-          </PermissionGate>
-          <Separator orientation="vertical" className="min-h-6 max-md:hidden" />
           <DataTableFilters filters={filters} setFilters={setFilters} />
         </div>
         <div className="flex gap-2">
-          <TableSelectionDropdown
-            selectedCount={Object.keys(rowSelection).length}
-            onExport={handleBulkExport}
-            onRemove={handleBulkRemove}
-            onDuplicate={handleBulkDuplicate}
-          />
           <ColumnVisibilityMenu table={table} tableId="language" />
         </div>
       </div>
@@ -258,8 +135,7 @@ export function DataTable() {
       <TablePagination
         pagination={pagination}
         totalPages={Math.ceil(languagesCount / pagination.pageSize)}
-        changePagination={changePagination}
-        selectedCount={Object.keys(rowSelection).length}
+        changePagination={setPagination}
         totalCount={languagesCount}
       />
     </>

@@ -1,6 +1,7 @@
+import type { ProductPopulatedDTO } from '@remnant/shared'
 import { ScanBarcode } from 'lucide-react'
 import { useFieldArray } from 'react-hook-form'
-import { useTranslation } from 'react-i18next'
+import { toast } from 'sonner'
 import { ProductSelectedTable, ProductTable } from '@/components'
 import {
   Button,
@@ -14,46 +15,41 @@ import {
   Input,
   Separator,
 } from '@/components/ui'
-import { useBarcodeScanned } from '@/utils/hooks'
+import { useBarcodeScanned, useLocale } from '@/utils/hooks'
 import { useBarcodeContext } from '../context'
 
 export function BarcodeForm() {
   const { isLoading, form, submitBarcodeForm, generateBarcode, closeModal, getBarcode } = useBarcodeContext()
-  const { t } = useTranslation()
+  const { t } = useLocale()
 
   const productsField = useFieldArray({
     control: form.control,
     name: 'products',
   })
 
-  const onSubmit = (values) => {
-    submitBarcodeForm(values)
-  }
-
-  const addProduct = (product, selectedQuantity = 1) => {
+  const addProduct = (product: ProductPopulatedDTO, selectedQuantity = 1) => {
     const selectedProducts = form.getValues('products')
-    const existing = selectedProducts.find(p => p.id === product.id) as any
+    const existing = selectedProducts.find(p => p.id === product.id)
 
     if (existing) {
       const index = selectedProducts.findIndex(p => p.id === product.id)
       productsField.update(index, {
         ...existing,
-        quantity: existing.quantity + selectedQuantity,
+        lineQuantity: existing.lineQuantity + selectedQuantity,
       })
     }
     else {
       productsField.append({
         ...product,
-        product: product.id,
-        quantity: selectedQuantity,
-        receivedQuantity: 0,
+        id: product.id,
+        lineQuantity: selectedQuantity,
       })
     }
   }
 
-  const removeProduct = (product) => {
+  const removeProduct = (productId: string) => {
     const selectedProducts = form.getValues('products')
-    const index = selectedProducts.findIndex(p => p.id === product.id)
+    const index = selectedProducts.findIndex(p => p.id === productId)
     if (index !== -1) {
       productsField.remove(index)
     }
@@ -69,16 +65,21 @@ export function BarcodeForm() {
     const current = selectedProducts[index]
     const updated = { ...current, [field]: value }
 
-    if (field === 'quantity') {
-      updated.quantity = value ?? current.quantity
+    if (field === 'lineQuantity') {
+      updated.lineQuantity = value ?? current.lineQuantity ?? 1
     }
 
     productsField.update(index, updated)
   }
 
-  useBarcodeScanned(async (barcode: string) => {
-    const data = await getBarcode(barcode)
-    addProduct(data?.[0]?.products || [])
+  useBarcodeScanned(async (barcode: string): Promise<void> => {
+    const { data } = await getBarcode(barcode)
+    if (data.products.length < 1)
+      toast.error(t('error.barcode_not_found'))
+
+    for (const product of data.products) {
+      addProduct(product, product.unitsPerScan)
+    }
   })
 
   return (
@@ -93,7 +94,10 @@ export function BarcodeForm() {
         includeFooterTotal={true}
       />
       <Separator className="my-4" />
-      <form className="w-full space-y-1 mt-4" onSubmit={form.handleSubmit(onSubmit)}>
+      <form
+        className="w-full space-y-1 mt-4"
+        onSubmit={(e) => { void form.handleSubmit(v => submitBarcodeForm(v))(e) }}
+      >
         <FormField
           control={form.control}
           name="code"
@@ -114,7 +118,7 @@ export function BarcodeForm() {
                 <Button
                   type="button"
                   variant="outline"
-                  onClick={() => generateBarcode()}
+                  onClick={() => void generateBarcode()}
                 >
                   <ScanBarcode />
                   {t('button.generate')}

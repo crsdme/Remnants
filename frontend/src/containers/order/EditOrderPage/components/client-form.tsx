@@ -28,7 +28,7 @@ import {
 import { SOCIAL_TYPES } from '@/utils/constants'
 import { useEditOrderContext } from '../context'
 
-export function ClientForm({ form, onSubmit }: { form: UseFormReturn, onSubmit: (payments: any) => void }) {
+export function ClientForm({ form, onSubmit }: { form: any, onSubmit: (payments: any) => void }) {
   const { t } = useTranslation()
   const { isClientModalOpen, closeClientModal } = useEditOrderContext()
 
@@ -72,7 +72,9 @@ function FullForm({ form, onSubmit }: { form: UseFormReturn, onSubmit: (payments
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)}>
+      <form
+        onSubmit={(e) => { void form.handleSubmit(onSubmit)(e) }}
+      >
 
         <FormField
           control={form.control}

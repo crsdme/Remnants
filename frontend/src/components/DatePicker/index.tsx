@@ -1,7 +1,6 @@
 import { format } from 'date-fns'
 import { Calendar as CalendarIcon } from 'lucide-react'
 
-import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import { Calendar } from '@/components/ui/calendar'
 import {
@@ -11,6 +10,7 @@ import {
 } from '@/components/ui/popover'
 
 import { DATE_LOCALE_MAP } from '@/utils/constants'
+import { useLocale } from '@/utils/hooks'
 
 export function DatePicker({
   value,
@@ -21,8 +21,8 @@ export function DatePicker({
   onChange: (date: Date | undefined) => void
   disabled?: boolean
 }) {
-  const { t, i18n } = useTranslation()
-  const currentLocale = DATE_LOCALE_MAP[i18n.language]
+  const { t, language } = useLocale()
+  const currentLocale = DATE_LOCALE_MAP[language]
 
   return (
     <Popover>

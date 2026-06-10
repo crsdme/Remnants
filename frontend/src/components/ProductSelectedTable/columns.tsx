@@ -1,5 +1,5 @@
-import type { CurrencyDTO, ProductPopulatedDTO } from '@remnant/shared'
-import type { ColumnDef, Row } from '@tanstack/react-table'
+import type { ProductPopulatedDTO } from '@remnant/shared'
+import type { Row } from '@tanstack/react-table'
 import { createColumnHelper } from '@tanstack/react-table'
 import {
   Check,
@@ -10,14 +10,14 @@ import {
 } from 'lucide-react'
 
 import { useMemo } from 'react'
-import { useTranslation } from 'react-i18next'
-import { useCurrencyOptions, useCurrencyQuery, useProductPropertyQuery } from '@/api/hooks'
+import { useCurrencyQuery, useCurrencySelectOptions, useProductPropertyQuery } from '@/api/hooks'
 import { ImageGallery } from '@/components'
 import { Badge, Button, Popover, PopoverContent, PopoverTrigger, Separator } from '@/components/ui'
 import { useAuthContext } from '@/contexts'
 import { formatDate } from '@/utils/helpers'
 import { hasPermission } from '@/utils/helpers/permission'
-import { AsyncSelectNew } from '../AsyncSelectNew'
+import { useLocale } from '@/utils/hooks'
+import { AsyncSelectMenu } from '../AsyncSelectMenu'
 import { EditableCell } from './cells'
 
 interface ProductSelectedTableProps {
@@ -29,11 +29,14 @@ interface ProductSelectedTableProps {
   handleChange: (options: { productId: string, field: string, value: string | number | string[], isDebounced?: boolean }) => void
   includeTotal: boolean
   isProfit: boolean
+  isQuantity: boolean
 }
 const columnHelper = createColumnHelper<ProductPopulatedDTO & {
+  lineQuantity?: number
   profit?: number
-  selectedCurrency?: CurrencyDTO
+  selectedCurrencyId?: string
   manualPrice?: number
+  selectedPrice?: number
   basePrice?: number
   discountPercent?: number
   discountAmount?: number
@@ -45,24 +48,24 @@ export function useColumns(
     isReceiving,
     isSelectedPrice,
     isDiscount,
+    isQuantity,
     disabled,
     handleChange,
     includeTotal,
     isProfit,
   }: ProductSelectedTableProps,
 ) {
-  const { t, i18n } = useTranslation()
-  const language = i18n.language as 'ru' | 'en'
+  const { t, language } = useLocale()
   const { permissions } = useAuthContext()
 
   const { productProperties } = useProductPropertyQuery({
-    filters: { active: [true], language: i18n.language, showInTable: true },
+    filters: { active: [true], language, showInTable: true },
     pagination: { full: true },
   })
 
   const isLoading = false
 
-  const loadCurrencyOptions = useCurrencyOptions()
+  const { loadSearchOptions, loadSelectedOptions } = useCurrencySelectOptions()
 
   const { currencies = [] } = useCurrencyQuery({ pagination: { full: true } })
 
@@ -165,7 +168,6 @@ export function useColumns(
               if (!Number.isNaN(num))
                 sum += num
 
-              // возьмём символ единицы измерения из любого вхождения
               if (!unitSymbol) {
                 unitSymbol = v?.data?.symbols?.[language]
               }
@@ -257,7 +259,7 @@ export function useColumns(
       }))
     }
 
-    function permissionColumns() {
+    function purchasePriceColumn() {
       if (!hasPermission(permissions, 'product.purchasePrice'))
         return []
       return [
@@ -284,7 +286,7 @@ export function useColumns(
 
       return [
         columnHelper.accessor(
-          row => `${row.profit} ${row.selectedCurrency?.symbols[language] || ''}`,
+          row => `${row.profit} ${row.selectedCurrencyId || ''}`,
           {
             id: 'profit',
             size: 150,
@@ -300,12 +302,12 @@ export function useColumns(
 
               const totalsByCurrency = rows.reduce((acc: Record<string, number>, r: Row<any>) => {
                 const p = r.original
-                const symbol = p?.selectedCurrency?.symbols?.[language] || p?.currency?.symbols?.[language]
+                const symbol = p?.selectedCurrencyId || p?.currency?.symbols?.[language]
 
                 if (!symbol)
                   return acc
 
-                const rowTotal = (p.quantity ?? 0) * (p.profit ?? 0)
+                const rowTotal = (p.lineQuantity ?? 0) * (p.profit ?? 0)
 
                 acc[symbol] = (acc[symbol] ?? 0) + rowTotal
                 return acc
@@ -324,6 +326,364 @@ export function useColumns(
           },
         ),
       ]
+    }
+
+    function includeTotalColumn() {
+      if (!includeTotal)
+        return []
+
+      return [columnHelper.display({
+        id: 'total',
+        meta: {
+          title: t('component.productTable.table.total'),
+        },
+        cell: ({ row }) => {
+          const item = row.original
+          const lineQuantity = item.lineQuantity ?? 0
+          const selectedPrice = item.selectedPrice ?? 0
+
+          return (
+            <div className="flex items-center gap-2">
+              <p className="font-bold">
+                {`${(lineQuantity * selectedPrice).toFixed(2)} ${currencies.find(c => c.id === item.selectedCurrencyId)?.symbols[language]}`}
+              </p>
+            </div>
+          )
+        },
+      })]
+    }
+
+    function receiveQuantityColumn() {
+      if (!isReceiving)
+        return []
+
+      return [columnHelper.display({
+        id: 'selectedPrice',
+        meta: {
+          title: t('component.productTable.table.receivedQuantity'),
+          filterable: true,
+          filterType: 'number',
+          sortable: true,
+        },
+        header: () => t('component.productTable.table.receivedQuantity'),
+        cell: ({ row }: { row: Row<any> }) => {
+          const product = row.original
+          const hasMismatch = product.receivedQuantity !== product.lineQuantity
+
+          return (
+            <div className="flex items-center gap-2">
+              <Badge variant={hasMismatch ? 'destructive' : 'success'}>
+                {hasMismatch ? <X /> : <Check />}
+              </Badge>
+              <Separator orientation="vertical" className="h-8" />
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => handleChange({ productId: product.product, field: 'receivedQuantity', value: product.receivedQuantity - 1 })}
+                  disabled={isLoading || disabled}
+                >
+                  <Minus className="h-4 w-4" />
+                </Button>
+                <div className="relative min-w-5">
+                  {/* <Input
+                    placeholder={t('component.product-select-table.quantity.placeholder')}
+                    value={product.receivedQuantity}
+                    className="pr-10 w-20"
+                    disabled={isLoading || disabled}
+                    onChange={event => handleChange({
+                      productId: product.id,
+                      field: 'receivedQuantity',
+                      value: Number.parseInt(event.target.value),
+                      isDebounced: true,
+                    })}
+                  /> */}
+                  <EditableCell
+                    product={product}
+                    onChange={value => handleChange({
+                      productId: product.product,
+                      field: 'receivedQuantity',
+                      value,
+                      isDebounced: true,
+                    })}
+                    field="receivedQuantity"
+                    className="w-20"
+                    disabled={isLoading || disabled}
+                  />
+                  <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                    <p>{product.unit.symbols[language]}</p>
+                  </div>
+                </div>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => handleChange({ productId: product.product, field: 'receivedQuantity', value: product.receivedQuantity + 1 })}
+                  disabled={isLoading || disabled}
+                >
+                  <Plus className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          )
+        },
+      })]
+    }
+
+    function selectedPriceColumn() {
+      if (!isSelectedPrice)
+        return []
+
+      return [columnHelper.display({
+        id: 'selectedPrice',
+        meta: {
+          title: t('component.productTable.table.selectedPrice'),
+          filterable: true,
+          filterType: 'number',
+          sortable: true,
+        },
+        header: () => t('component.productTable.table.selectedPrice'),
+        footer: ({ table }) => {
+          const { rows } = table.getRowModel()
+          const currencySymbolsById = currencies.reduce((acc: Record<string, string>, currency) => {
+            acc[currency.id] = currency.symbols?.[language] || currency.id
+            return acc
+          }, {})
+
+          const totalsByCurrencyId = rows.reduce((acc: Record<string, number>, r: Row<any>) => {
+            const p = r.original
+            const currencyId = p?.selectedCurrencyId
+
+            if (!currencyId)
+              return acc
+
+            const rowTotal = (p.lineQuantity ?? 0) * (p.selectedPrice ?? 0)
+            const key = String(currencyId)
+
+            acc[key] = (acc[key] ?? 0) + rowTotal
+            return acc
+          }, {} as Record<string, number>)
+
+          const badges = Object.entries(totalsByCurrencyId).map(([currencyId, sum]) => (
+            <Badge key={currencyId}>
+              {`${Number(sum).toString()} ${currencySymbolsById[currencyId] || currencyId}`}
+            </Badge>
+          ))
+
+          return badges.length
+            ? <div className="flex flex-wrap gap-2">{badges}</div>
+            : null
+        },
+        cell: ({ row }) => {
+          const product = row.original
+          return (
+            <div className="flex gap-2">
+              <EditableCell
+                product={product}
+                onChange={value => handleChange({
+                  productId: product.id,
+                  field: 'selectedPrice',
+                  value,
+                  isDebounced: true,
+                })}
+                field="selectedPrice"
+                className="w-20 pr-2"
+                disabled={isLoading || disabled}
+              />
+              <AsyncSelectMenu
+                loadSearchOptions={loadSearchOptions}
+                loadSelectedOptions={loadSelectedOptions}
+                value={product.selectedCurrencyId}
+                renderOption={e => `${e.symbols[language]}`}
+                getDisplayValue={e => `${e.symbols[language]}`}
+                getOptionValue={e => e.id}
+                disabled={isLoading || disabled}
+                onChange={val => handleChange({
+                  productId: product.id,
+                  field: 'selectedCurrencyId',
+                  value: val,
+                })}
+                triggerClassName="w-15"
+                placeholder="..."
+                isForm={false}
+              />
+            </div>
+          )
+        },
+      })]
+    }
+
+    function discountColumns() {
+      if (!isDiscount)
+        return []
+
+      return [
+        columnHelper.display({
+          id: 'discount',
+          meta: {
+            title: t('component.productTable.table.discount'),
+            filterable: true,
+            filterType: 'number',
+            sortable: true,
+          },
+          header: () => t('component.productTable.table.discount'),
+          cell: ({ row }) => {
+            const product = row.original
+            const currency = currencies.find(c => c.id === product.selectedCurrencyId)?.symbols[language]
+            const currentPrice = (product.manualPrice ?? product.basePrice) || 0
+            const discountPercent = product.discountPercent || 0
+            const discountAmount = product.discountAmount || 0
+
+            let discountPrice = 0
+            if (discountPercent > 0) {
+              discountPrice = currentPrice - (currentPrice * discountPercent) / 100 - currentPrice
+            }
+            else if (discountAmount > 0) {
+              discountPrice = (currentPrice - discountAmount - currentPrice)
+            }
+
+            return (
+              <Popover>
+                <PopoverTrigger asChild>
+                  <div className="flex gap-2 relative">
+                    <Button variant="outline" className="w-full justify-start">
+                      {discountPrice.toFixed(2)}
+                    </Button>
+                    <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                      <p>{currency}</p>
+                    </div>
+                  </div>
+                </PopoverTrigger>
+
+                <PopoverContent className="w-30 space-y-3 p-2" onOpenAutoFocus={e => e.preventDefault()}>
+                  <div className="flex gap-2 relative min-w-5">
+                    <EditableCell
+                      product={product}
+                      onChange={val => handleChange({
+                        productId: product.id,
+                        field: 'discountAmount',
+                        value: val,
+                        isDebounced: true,
+                      })}
+                      field="discountAmount"
+                      className="w-full"
+                      disabled={isLoading || disabled}
+                    />
+                    <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                      <p>{currency}</p>
+                    </div>
+                  </div>
+                  <div className="flex gap-2 relative min-w-5">
+                    <EditableCell
+                      product={product}
+                      onChange={val => handleChange({
+                        productId: product.id,
+                        field: 'discountPercent',
+                        value: val,
+                        isDebounced: true,
+                      })}
+                      field="discountPercent"
+                      className="w-full"
+                      disabled={isLoading || disabled}
+                    />
+                    <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                      <p>%</p>
+                    </div>
+                  </div>
+                </PopoverContent>
+              </Popover>
+            )
+          },
+        }),
+      ]
+    }
+
+    function quantityColumn() {
+      if (!isQuantity)
+        return []
+
+      return [columnHelper.display({
+        id: 'lineQuantity',
+        size: 150,
+        meta: {
+          title: t('component.productTable.table.selectedQuantity'),
+          filterable: true,
+          filterType: 'number',
+          sortable: true,
+          defaultVisible: true,
+        },
+        header: () => t('component.productTable.table.selectedQuantity'),
+        footer: ({ table }) => {
+          const { rows } = table.getRowModel()
+
+          const totalsByUnit = rows.reduce((acc: Record<string, number>, r: Row<any>) => {
+            const p = r.original
+            const unit = p?.unit?.symbols?.[language]
+
+            if (!unit)
+              return acc
+
+            const rowTotal = (p.lineQuantity ?? 0)
+
+            acc[unit] = (acc[unit] ?? 0) + rowTotal
+            return acc
+          }, {})
+
+          const badges = Object.entries(totalsByUnit).map(([unit, sum]) => (
+            <Badge key={unit}>
+              {`${Number(sum).toString()} ${unit}`}
+            </Badge>
+          ))
+
+          return badges.length
+            ? <div className="flex flex-wrap gap-2">{badges}</div>
+            : null
+        },
+        cell: ({ row }) => {
+          const item = row.original
+
+          return (
+            <div className="flex gap-2">
+              {!isReceiving && (
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => handleChange({ productId: item.id, field: 'lineQuantity', value: (item.lineQuantity ?? 0) - 1 })}
+                  disabled={isLoading || isReceiving || disabled}
+                >
+                  <Minus className="h-4 w-4" />
+                </Button>
+              )}
+              <div className="relative min-w-5">
+                <EditableCell
+                  product={item}
+                  onChange={val => handleChange({
+                    productId: item.id,
+                    field: 'lineQuantity',
+                    value: val,
+                    isDebounced: true,
+                  })}
+                  field="lineQuantity"
+                  className="w-20"
+                  disabled={isLoading || isReceiving || disabled}
+                />
+                <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                  <p>{item.unit.symbols[language]}</p>
+                </div>
+              </div>
+              {!isReceiving && (
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => handleChange({ productId: item.id, field: 'lineQuantity', value: (item.lineQuantity ?? 0) + 1 })}
+                  disabled={isLoading || isReceiving || disabled}
+                >
+                  <Plus className="h-4 w-4" />
+                </Button>
+              )}
+            </div>
+          )
+        },
+      })]
     }
 
     return [
@@ -367,7 +727,7 @@ export function useColumns(
         },
         header: () => t('component.productTable.table.price'),
       }),
-      ...permissionColumns(),
+      ...purchasePriceColumn(),
       ...profitColumns(),
       columnHelper.accessor(row => `${row.unit.names[language]}`, {
         id: 'unit',
@@ -418,7 +778,7 @@ export function useColumns(
           sortable: true,
         },
         header: () => t('table.createdAt'),
-        cell: ({ row }) => formatDate(row.getValue('createdAt'), 'dd.MM.yyyy HH:mm', i18n.language),
+        cell: ({ row }) => formatDate(row.getValue('createdAt'), 'dd.MM.yyyy HH:mm', language),
       }),
       columnHelper.accessor('updatedAt', {
         id: 'updatedAt',
@@ -429,340 +789,15 @@ export function useColumns(
           sortable: true,
         },
         header: () => t('table.updatedAt'),
-        cell: ({ row }) => formatDate(row.getValue('updatedAt'), 'dd.MM.yyyy HH:mm', i18n.language),
+        cell: ({ row }) => formatDate(row.getValue('updatedAt'), 'dd.MM.yyyy HH:mm', language),
       }),
-      ...(isDiscount
-        ? [
-            columnHelper.display({
-              id: 'discount',
-              meta: {
-                title: t('component.productTable.table.discount'),
-                filterable: true,
-                filterType: 'number',
-                sortable: true,
-              },
-              header: () => t('component.productTable.table.discount'),
-              cell: ({ row }) => {
-                const product = row.original
-                const currency = currencies.find(c => c.id === product.selectedCurrency?.id)?.symbols[language]
-                const currentPrice = (product.manualPrice ?? product.basePrice) || 0
-                const discountPercent = product.discountPercent || 0
-                const discountAmount = product.discountAmount || 0
-
-                let discountPrice = 0
-                if (discountPercent > 0) {
-                  discountPrice = currentPrice - (currentPrice * discountPercent) / 100 - currentPrice
-                }
-                else if (discountAmount > 0) {
-                  discountPrice = (currentPrice - discountAmount - currentPrice)
-                }
-
-                return (
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <div className="flex gap-2 relative">
-                        <Button variant="outline" className="w-full justify-start">
-                          {discountPrice.toFixed(2)}
-                        </Button>
-                        <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                          <p>{currency}</p>
-                        </div>
-                      </div>
-                    </PopoverTrigger>
-
-                    <PopoverContent className="w-30 space-y-3 p-2" onOpenAutoFocus={e => e.preventDefault()}>
-                      <div className="flex gap-2 relative min-w-5">
-                        <EditableCell
-                          product={product}
-                          onChange={val => handleChange({
-                            productId: product.id,
-                            field: 'discountAmount',
-                            value: val,
-                            isDebounced: true,
-                          })}
-                          field="discountAmount"
-                          className="w-full"
-                          disabled={isLoading || disabled}
-                        />
-                        <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                          <p>{currency}</p>
-                        </div>
-                      </div>
-                      <div className="flex gap-2 relative min-w-5">
-                        <EditableCell
-                          product={product}
-                          onChange={val => handleChange({
-                            productId: product.id,
-                            field: 'discountPercent',
-                            value: val,
-                            isDebounced: true,
-                          })}
-                          field="discountPercent"
-                          className="w-full"
-                          disabled={isLoading || disabled}
-                        />
-                        <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                          <p>%</p>
-                        </div>
-                      </div>
-                    </PopoverContent>
-                  </Popover>
-                )
-              },
-            }),
-          ]
-        : []),
-      ...(isSelectedPrice
-        ? [columnHelper.display({
-            id: 'selectedPrice',
-            meta: {
-              title: t('component.productTable.table.selectedPrice'),
-              filterable: true,
-              filterType: 'number',
-              sortable: true,
-            },
-            header: () => t('component.productTable.table.selectedPrice'),
-            footer: ({ table }) => {
-              const { rows } = table.getRowModel()
-
-              const totalsByCurrency = rows.reduce((acc: Record<string, number>, r: Row<any>) => {
-                const p = r.original
-                const symbol = p?.selectedCurrency?.symbols?.[language] || p?.currency?.symbols?.[language]
-
-                if (!symbol)
-                  return acc
-
-                const rowTotal = (p.quantity ?? 0) * (p.selectedPrice ?? 0)
-
-                acc[symbol] = (acc[symbol] ?? 0) + rowTotal
-                return acc
-              }, {} as Record<string, number>)
-
-              const badges = Object.entries(totalsByCurrency).map(([symbol, sum]) => (
-                <Badge key={symbol}>
-                  {`${Number(sum).toString()} ${symbol}`}
-                </Badge>
-              ))
-
-              return badges.length
-                ? <div className="flex flex-wrap gap-2">{badges}</div>
-                : null
-            },
-            cell: ({ row }: { row: Row<any> }) => {
-              const product = row.original
-              return (
-                <div className="flex gap-2">
-                  <EditableCell
-                    product={product}
-                    onChange={value => handleChange({
-                      productId: product.product,
-                      field: 'selectedPrice',
-                      value,
-                      isDebounced: true,
-                    })}
-                    field="selectedPrice"
-                    className="w-20 pr-2"
-                    disabled={isLoading || disabled}
-                  />
-                  <AsyncSelectNew
-                    loadOptions={async ({ query = '', selectedValue } = {}) => loadCurrencyOptions({ query, selectedValue })}
-                    value={[product.selectedCurrency.id]}
-                    renderOption={e => `${e.symbols[language]}`}
-                    getDisplayValue={e => `${e.symbols[language]}`}
-                    getOptionValue={e => e.id}
-                    disabled={isLoading || disabled}
-                    onChange={val => handleChange({
-                      productId: product.product,
-                      field: 'selectedCurrency',
-                      value: currencies.find(c => c.id === val)?.id ?? product.selectedCurrency.id,
-                    })}
-                    triggerClassName="w-15"
-                    placeholder="..."
-                    isForm={false}
-                  />
-                </div>
-              )
-            },
-          })]
-        : []),
-      columnHelper.display({
-        id: 'selectedQuantity',
-        size: 150,
-        meta: {
-          title: t('component.productTable.table.selectedQuantity'),
-          filterable: true,
-          filterType: 'number',
-          sortable: true,
-          defaultVisible: true,
-        },
-        header: () => t('component.productTable.table.selectedQuantity'),
-        footer: ({ table }: { table: any }) => {
-          const { rows } = table.getRowModel()
-
-          const totalsByUnit = rows.reduce((acc: Record<string, number>, r: Row<any>) => {
-            const p = r.original
-            const unit = p?.unit?.symbols?.[language]
-
-            if (!unit)
-              return acc
-
-            const rowTotal = (p.quantity ?? 0)
-
-            acc[unit] = (acc[unit] ?? 0) + rowTotal
-            return acc
-          }, {})
-
-          const badges = Object.entries(totalsByUnit).map(([unit, sum]) => (
-            <Badge key={unit}>
-              {`${Number(sum).toString()} ${unit}`}
-            </Badge>
-          ))
-
-          return badges.length
-            ? <div className="flex flex-wrap gap-2">{badges}</div>
-            : null
-        },
-        cell: ({ row }: { row: Row<any> }) => {
-          const item = row.original
-
-          return (
-            <div className="flex gap-2">
-              {!isReceiving && (
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={() => handleChange({ productId: item.product, field: 'quantity', value: item.quantity - 1 })}
-                  disabled={isLoading || isReceiving || disabled}
-                >
-                  <Minus className="h-4 w-4" />
-                </Button>
-              )}
-              <div className="relative min-w-5">
-                <EditableCell
-                  product={item}
-                  onChange={val => handleChange({
-                    productId: item.product,
-                    field: 'quantity',
-                    value: val,
-                    isDebounced: true,
-                  })}
-                  field="quantity"
-                  className="w-20"
-                  disabled={isLoading || isReceiving || disabled}
-                />
-                <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                  <p>{item.unit.symbols[language]}</p>
-                </div>
-              </div>
-              {!isReceiving && (
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={() => handleChange({ productId: item.product, field: 'quantity', value: item.quantity + 1 })}
-                  disabled={isLoading || isReceiving || disabled}
-                >
-                  <Plus className="h-4 w-4" />
-                </Button>
-              )}
-            </div>
-          )
-        },
-      }),
-      ...(isReceiving
-        ? [columnHelper.display({
-            id: 'selectedPrice',
-            meta: {
-              title: t('component.productTable.table.receivedQuantity'),
-              filterable: true,
-              filterType: 'number',
-              sortable: true,
-            },
-            header: () => t('component.productTable.table.receivedQuantity'),
-            cell: ({ row }: { row: Row<any> }) => {
-              const product = row.original
-              const hasMismatch = product.receivedQuantity !== product.quantity
-
-              return (
-                <div className="flex items-center gap-2">
-                  <Badge variant={hasMismatch ? 'destructive' : 'success'}>
-                    {hasMismatch ? <X /> : <Check />}
-                  </Badge>
-                  <Separator orientation="vertical" className="h-8" />
-                  <div className="flex gap-2">
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      onClick={() => handleChange({ productId: product.product, field: 'receivedQuantity', value: product.receivedQuantity - 1 })}
-                      disabled={isLoading || disabled}
-                    >
-                      <Minus className="h-4 w-4" />
-                    </Button>
-                    <div className="relative min-w-5">
-                      {/* <Input
-                        placeholder={t('component.product-select-table.quantity.placeholder')}
-                        value={product.receivedQuantity}
-                        className="pr-10 w-20"
-                        disabled={isLoading || disabled}
-                        onChange={event => handleChange({
-                          productId: product.id,
-                          field: 'receivedQuantity',
-                          value: Number.parseInt(event.target.value),
-                          isDebounced: true,
-                        })}
-                      /> */}
-                      <EditableCell
-                        product={product}
-                        onChange={value => handleChange({
-                          productId: product.product,
-                          field: 'receivedQuantity',
-                          value,
-                          isDebounced: true,
-                        })}
-                        field="receivedQuantity"
-                        className="w-20"
-                        disabled={isLoading || disabled}
-                      />
-                      <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                        <p>{product.unit.symbols[language]}</p>
-                      </div>
-                    </div>
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      onClick={() => handleChange({ productId: product.product, field: 'receivedQuantity', value: product.receivedQuantity + 1 })}
-                      disabled={isLoading || disabled}
-                    >
-                      <Plus className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-              )
-            },
-          })]
-        : []),
-      ...(includeTotal
-        ? [
-            columnHelper.display({
-              id: 'total',
-              meta: {
-                title: t('component.productTable.table.total'),
-              },
-              cell: ({ row }: { row: Row<any> }) => {
-                const item = row.original
-
-                return (
-                  <div className="flex items-center gap-2">
-                    <p className="font-bold">
-                      {`${(item.quantity * item.selectedPrice).toFixed(2)} ${currencies.find(c => c.id === item.selectedCurrency.id)?.symbols[language]}`}
-                    </p>
-                  </div>
-                )
-              },
-            }),
-          ]
-        : []),
+      ...discountColumns(),
+      ...selectedPriceColumn(),
+      ...quantityColumn(),
+      ...receiveQuantityColumn(),
+      ...includeTotalColumn(),
       actionColumn(),
     ]
-  }, [language, productProperties, currencies, t, permissions, isProfit, isDiscount, isSelectedPrice, isReceiving, includeTotal, isLoading, disabled, handleChange, loadCurrencyOptions, removeProduct])
+  }, [language, productProperties, currencies, t, permissions, isProfit, isDiscount, isSelectedPrice, isReceiving, includeTotal, isLoading, disabled, handleChange, loadSearchOptions, loadSelectedOptions, removeProduct])
   return columns
 }

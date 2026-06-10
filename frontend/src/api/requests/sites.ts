@@ -1,24 +1,27 @@
 import type {
-  createSitesParams,
-  editSitesParams,
-  getSitesParams,
-  removeSitesParams,
-  SitesResponse,
-} from '@/api/types'
+  CreateSiteRequest,
+  CreateSiteResponse,
+  EditSiteRequest,
+  EditSiteResponse,
+  GetSitesRequest,
+  GetSitesResponse,
+  RemoveSitesRequest,
+  RemoveSitesResponse,
+} from '@remnant/shared'
 import { api } from '@/api/instance'
 
-export async function getSites(params: getSitesParams) {
-  return api.get<SitesResponse>('sites/get', { params })
+export async function getSites(params: GetSitesRequest) {
+  return api.get<GetSitesResponse>('sites/get', { params })
 }
 
-export async function createSite(params: createSitesParams) {
-  return api.post<SitesResponse>('sites/create', { ...params })
+export async function createSite(params: CreateSiteRequest) {
+  return api.post<CreateSiteResponse>('sites/create', { ...params })
 }
 
-export async function editSite(params: editSitesParams) {
-  return api.post<SitesResponse>('sites/edit', params)
+export async function editSite(params: EditSiteRequest) {
+  return api.post<EditSiteResponse>('sites/edit', params)
 }
 
-export async function removeSite(params: removeSitesParams) {
-  return api.post<SitesResponse>('sites/remove', params)
+export async function removeSite(params: RemoveSitesRequest) {
+  return api.post<RemoveSitesResponse>('sites/remove', params)
 }

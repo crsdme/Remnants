@@ -47,6 +47,18 @@ export async function list(payload: GetOrderSourcesRepoPayload): Promise<GetOrde
       $sort: sorters,
     },
     {
+      $project: {
+        _id: 0,
+        id: '$_id',
+        seq: 1,
+        names: 1,
+        color: 1,
+        priority: 1,
+        createdAt: 1,
+        updatedAt: 1,
+      },
+    },
+    {
       $facet: {
         items: [
           { $skip: (current - 1) * pageSize },

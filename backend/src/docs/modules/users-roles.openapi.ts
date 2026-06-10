@@ -1,4 +1,4 @@
-import { createUserRoleSchema, duplicateUserRoleSchema, editUserRoleSchema, getUserRoleSchema, removeUserRoleSchema } from '@remnant/shared'
+import { createUserRoleSchema, editUserRoleSchema, getUserRoleSchema, removeUserRoleSchema } from '@remnant/shared'
 import { registry } from '@/docs/registry'
 
 registry.registerPath({
@@ -120,28 +120,6 @@ registry.registerPath({
   responses: {
     200: {
       description: 'Роли пользователей успешно импортированы',
-    },
-  },
-})
-
-registry.registerPath({
-  method: 'post',
-  path: '/user-roles/duplicate',
-  summary: 'Дублировать роль пользователя',
-  operationId: 'duplicateUserRole',
-  tags: ['User Roles'],
-  request: {
-    body: {
-      content: {
-        'application/json': {
-          schema: duplicateUserRoleSchema,
-        },
-      },
-    },
-  },
-  responses: {
-    200: {
-      description: 'Роли пользователей успешно дублированы',
     },
   },
 })

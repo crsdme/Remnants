@@ -1,27 +1,24 @@
+import type { AuditLogPopulatedDTO } from '@remnant/shared'
 import type { ReactNode } from 'react'
 
 import { createContext, useContext, useMemo, useState } from 'react'
 
 interface AuditLogsContextType {
-  selectedAuditLog: AuditLog
+  selectedAuditLog: AuditLogPopulatedDTO | undefined
   isModalOpen: boolean
   isLoading: boolean
   isEdit: boolean
-  openModal: (auditLog?: AuditLog) => void
+  openModal: (auditLog?: AuditLogPopulatedDTO) => void
   closeModal: () => void
 }
 
 const AuditLogsContext = createContext<AuditLogsContextType | undefined>(undefined)
 
-interface AuditLogsProviderProps {
-  children: ReactNode
-}
-
-export function AuditLogsProvider({ children }: AuditLogsProviderProps) {
+export function AuditLogsProvider({ children }: { children: ReactNode }) {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [isEdit, setIsEdit] = useState(false)
-  const [selectedAuditLog, setSelectedAuditLog] = useState(null)
+  const [selectedAuditLog, setSelectedAuditLog] = useState<AuditLogPopulatedDTO | undefined>(undefined)
 
   const closeModal = () => {
     if (!isModalOpen)
@@ -29,10 +26,10 @@ export function AuditLogsProvider({ children }: AuditLogsProviderProps) {
     setIsModalOpen(false)
     setIsLoading(false)
     setIsEdit(false)
-    setSelectedAuditLog(null)
+    setSelectedAuditLog(undefined)
   }
 
-  const openModal = (auditLog) => {
+  const openModal = (auditLog?: AuditLogPopulatedDTO) => {
     setIsModalOpen(true)
     setIsEdit(!!auditLog)
     setSelectedAuditLog(auditLog)

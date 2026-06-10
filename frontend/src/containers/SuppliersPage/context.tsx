@@ -1,5 +1,6 @@
+import type { SupplierDTO } from '@remnant/shared'
 import type { ReactNode } from 'react'
-import type { UseFormReturn } from 'react-hook-form'
+import type { Resolver, UseFormReturn } from 'react-hook-form'
 
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useQueryClient } from '@tanstack/react-query'
@@ -15,84 +16,54 @@ import {
   useSupplierRemove,
 } from '@/api/hooks'
 
+export interface SupplierFormValues {
+  name: string
+  emails: { value: string }[]
+  phones: { value: string }[]
+  socials: { type: string, value: string }[]
+  comment?: string
+}
+
 interface SupplierContextType {
-  selectedSupplier: Supplier
+  selectedSupplier: SupplierDTO | undefined
   isModalOpen: boolean
   isLoading: boolean
   isEdit: boolean
-  form: UseFormReturn
-  openModal: (supplier?: Supplier) => void
+  form: UseFormReturn<SupplierFormValues>
+  openModal: (supplier?: SupplierDTO) => void
   closeModal: () => void
-  submitForm: (params) => void
+  submitForm: (params: SupplierFormValues) => void
   removeSupplier: (params: { ids: string[] }) => void
 }
 
 const SupplierContext = createContext<SupplierContextType | undefined>(undefined)
 
-interface SupplierProviderProps {
-  children: ReactNode
-}
-
-export function SupplierProvider({ children }: SupplierProviderProps) {
+export function SupplierProvider({ children }: { children: ReactNode }) {
   const [isModalOpen, setIsModalOpen] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
   const [isEdit, setIsEdit] = useState(false)
-  const [selectedSupplier, setSelectedSupplier] = useState(null)
+  const [selectedSupplier, setSelectedSupplier] = useState<SupplierDTO | undefined>(undefined)
 
   const { t } = useTranslation()
 
-  const formSchema = useMemo(() =>
-    z.object({
-      name: z.string({ required_error: t('form.errors.required') }).min(3, { message: t('form.errors.min_length', { count: 3 }) }).trim(),
-      emails: z.array(z.string().email()).optional(),
-      phones: z.array(z.string().min(10, { message: t('form.errors.min_length', { count: 10 }) })).optional(),
-      socials: z.array(z.object({ type: z.string(), value: z.string() })).optional(),
-      comment: z.string().optional(),
-    }), [t])
+  const formSchema = useMemo(() => createSupplierFormSchema(t), [t])
 
-  const form = useForm({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      name: '',
-      phones: [],
-      emails: [],
-      socials: [],
-      comment: '',
-    },
+  const form = useForm<SupplierFormValues>({
+    resolver: zodResolver(formSchema) as Resolver<SupplierFormValues>,
+    defaultValues: getSupplierFormValues(),
   })
 
   const queryClient = useQueryClient()
-
-  function getSupplierFormValues(supplier) {
-    if (!supplier) {
-      return {
-        name: '',
-        phones: [],
-        emails: [],
-        socials: [],
-        comment: '',
-      }
-    }
-    return {
-      name: supplier.name,
-      emails: supplier.emails,
-      phones: supplier.phones,
-      socials: supplier.socials,
-      comment: supplier.comment,
-    }
-  }
 
   const closeModal = () => {
     if (!isModalOpen)
       return
     setIsModalOpen(false)
-    setIsLoading(false)
     setIsEdit(false)
-    setSelectedSupplier(null)
-    form.reset()
+    setSelectedSupplier(undefined)
+    form.reset(getSupplierFormValues())
   }
 
-  const openModal = (supplier) => {
+  const openModal = (supplier?: SupplierDTO) => {
     setIsModalOpen(true)
     setIsEdit(!!supplier)
     setSelectedSupplier(supplier)
@@ -103,7 +74,7 @@ export function SupplierProvider({ children }: SupplierProviderProps) {
     options: {
       onSuccess: ({ data }) => {
         closeModal()
-        queryClient.invalidateQueries({ queryKey: ['suppliers'] })
+        void queryClient.invalidateQueries({ queryKey: ['suppliers'] })
         toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description || ''}` })
       },
       onError: ({ response }) => {
@@ -118,7 +89,7 @@ export function SupplierProvider({ children }: SupplierProviderProps) {
     options: {
       onSuccess: ({ data }) => {
         closeModal()
-        queryClient.invalidateQueries({ queryKey: ['suppliers'] })
+        void queryClient.invalidateQueries({ queryKey: ['suppliers'] })
         toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description || ''}` })
       },
       onError: ({ response }) => {
@@ -132,7 +103,7 @@ export function SupplierProvider({ children }: SupplierProviderProps) {
   const useMutateRemoveSupplier = useSupplierRemove({
     options: {
       onSuccess: ({ data }) => {
-        queryClient.invalidateQueries({ queryKey: ['suppliers'] })
+        void queryClient.invalidateQueries({ queryKey: ['suppliers'] })
         toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description || ''}` })
       },
       onError: ({ response }) => {
@@ -142,17 +113,24 @@ export function SupplierProvider({ children }: SupplierProviderProps) {
     },
   })
 
-  const removeSupplier = (params) => {
+  const removeSupplier = (params: { ids: string[] }) => {
     useMutateRemoveSupplier.mutate(params)
   }
 
-  const submitForm = (params) => {
-    setIsLoading(true)
-    if (!selectedSupplier)
-      return useMutateCreateSupplier.mutate(params)
+  const submitForm = (params: SupplierFormValues) => {
+    const payload = {
+      ...params,
+      phones: params.phones.map(p => p.value).filter(p => p.length >= 10),
+      emails: params.emails.map(e => e.value).filter(e => e.length > 0),
+      socials: params.socials.filter(s => s.value.trim().length > 0),
+    }
+    if (!selectedSupplier || !isEdit)
+      return useMutateCreateSupplier.mutate(payload)
 
-    return useMutateEditSupplier.mutate({ ...params, id: selectedSupplier.id })
+    return useMutateEditSupplier.mutate({ ...payload, id: selectedSupplier.id })
   }
+
+  const isLoading = useMutateCreateSupplier.isPending || useMutateEditSupplier.isPending || useMutateRemoveSupplier.isPending
 
   const value: SupplierContextType = useMemo(
     () => ({
@@ -179,4 +157,48 @@ export function useSupplierContext(): SupplierContextType {
     throw new Error('useSupplierContext - SupplierContext')
   }
   return context
+}
+
+function createSupplierFormSchema(t: (key: string, options?: Record<string, unknown>) => string) {
+  const minPhone = 10
+  const minPhoneMsg = t('form.errors.min_length', { count: minPhone })
+  return z.object({
+    name: z.string({ required_error: t('form.errors.required') }).min(3, { message: t('form.errors.min_length', { count: 3 }) }).trim(),
+    emails: z.array(z.object({
+      value: z.union([z.string().email(), z.literal('')]),
+    })),
+    phones: z.array(z.object({ value: z.string() })),
+    socials: z.array(z.object({ type: z.string(), value: z.string() })),
+    comment: z.string().optional(),
+  }).superRefine((data, ctx) => {
+    data.phones.forEach((row, index) => {
+      const phone = row.value
+      if (phone.length > 0 && phone.length < minPhone) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: minPhoneMsg,
+          path: ['phones', index, 'value'],
+        })
+      }
+    })
+  })
+}
+
+function getSupplierFormValues(supplier?: SupplierDTO): SupplierFormValues {
+  if (supplier === undefined) {
+    return {
+      name: '',
+      phones: [],
+      emails: [],
+      socials: [],
+      comment: '',
+    }
+  }
+  return {
+    name: supplier.name,
+    emails: (supplier.emails ?? []).map(value => ({ value })),
+    phones: (supplier.phones ?? []).map(value => ({ value })),
+    socials: supplier.socials ?? [],
+    comment: supplier.comment ?? '',
+  }
 }

@@ -1,8 +1,5 @@
 import { Plus } from 'lucide-react'
 
-import { useTranslation } from 'react-i18next'
-
-import { useLanguageQuery } from '@/api/hooks'
 import { PermissionGate } from '@/components'
 import {
   Button,
@@ -13,11 +10,12 @@ import {
   SheetTitle,
   SheetTrigger,
 } from '@/components/ui'
+import { useLocale } from '@/utils/hooks'
 import { useProductPropertiesContext } from '../context'
 import { ProductOptionForm, ProductPropertyForm } from './form'
 
 export function ActionBar() {
-  const { t } = useTranslation()
+  const { t } = useLocale()
 
   const {
     isLoading,
@@ -25,24 +23,10 @@ export function ActionBar() {
     isPropertyEdit,
     isOptionModalOpen,
     isOptionsEdit,
-    selectedProperty,
     openPropertyModal,
     closePropertyModal,
     closeOptionsModal,
-    optionForm,
-    propertyForm,
-    submitOptionsForm,
-    submitProductPropertyForm,
   } = useProductPropertiesContext()
-
-  const { data: { languages = [] } = {} } = useLanguageQuery(
-    { pagination: { full: true } },
-    { options: {
-      select: response => ({
-        languages: response.data.languages,
-      }),
-    } },
-  )
 
   return (
     <div className="flex items-center justify-between flex-wrap gap-2">
@@ -62,14 +46,7 @@ export function ActionBar() {
                 </SheetDescription>
               </SheetHeader>
               <div className="w-full pb-4 px-4">
-                <ProductOptionForm
-                  form={optionForm}
-                  languages={languages}
-                  isLoading={isLoading}
-                  onSubmit={submitOptionsForm}
-                  closeModal={closeOptionsModal}
-                  selectedProperty={selectedProperty}
-                />
+                <ProductOptionForm />
               </div>
             </SheetContent>
           </Sheet>
@@ -91,13 +68,7 @@ export function ActionBar() {
                 </SheetDescription>
               </SheetHeader>
               <div className="w-full pb-4 px-4">
-                <ProductPropertyForm
-                  form={propertyForm}
-                  languages={languages}
-                  isLoading={isLoading}
-                  onSubmit={submitProductPropertyForm}
-                  closeModal={closePropertyModal}
-                />
+                <ProductPropertyForm />
               </div>
             </SheetContent>
           </Sheet>

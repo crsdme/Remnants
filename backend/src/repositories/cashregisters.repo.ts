@@ -1,10 +1,10 @@
-import type { AggregateResult, CashregisterDTO } from '@remnant/shared'
+import type { AggregateResult, CashregisterDTO, CashregisterPopulatedDTO } from '@remnant/shared'
 import type { PipelineStage } from 'mongoose'
 import type { CreateCashregistersRepoPayload, EditCashregistersRepoPayload, GetCashregistersRepoPayload } from '@/types'
 import { CashregisterModel } from '@/models'
 import { buildQuery, buildSortQuery, unwrapAggregate } from '@/utils'
 
-export async function list(payload: GetCashregistersRepoPayload): Promise<{ items: CashregisterDTO[], total: number, page: number, pageSize: number }> {
+export async function list(payload: GetCashregistersRepoPayload): Promise<{ items: CashregisterPopulatedDTO[], total: number, page: number, pageSize: number }> {
   const {
     current = 1,
     pageSize = 10,
@@ -170,8 +170,10 @@ export async function list(payload: GetCashregistersRepoPayload): Promise<{ item
               { $ne: ['$currencies', null] },
               {
                 id: '$account._id',
+                seq: '$account.seq',
                 names: '$account.names',
                 priority: '$account.priority',
+                active: '$account.active',
                 currencies: '$currencies',
               },
               '$$REMOVE',
@@ -188,23 +190,23 @@ export async function list(payload: GetCashregistersRepoPayload): Promise<{ item
         names: 1,
         priority: 1,
         active: 1,
+        accounts: 1,
         createdAt: 1,
         updatedAt: 1,
-        accounts: 1,
       },
     },
     {
       $facet: {
-        cashregisters: [
+        items: [
           { $skip: (current - 1) * pageSize },
           { $limit: pageSize },
         ],
-        totalCount: [{ $count: 'count' }],
+        count: [{ $count: 'count' }],
       },
     },
   ]
 
-  const raw = await CashregisterModel.aggregate<AggregateResult<CashregisterDTO>>(pipeline).exec()
+  const raw = await CashregisterModel.aggregate<AggregateResult<CashregisterPopulatedDTO>>(pipeline).exec()
   const { items, total } = unwrapAggregate(raw)
 
   return { items, total, page: current, pageSize }

@@ -1,6 +1,5 @@
 import type {
   LanguageString,
-  ProductPropertyGroupDTO,
 } from '@remnant/shared'
 import type { z } from 'zod'
 import {

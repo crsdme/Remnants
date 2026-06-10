@@ -1,5 +1,4 @@
 import { ChevronsUpDown, LogOut } from 'lucide-react'
-import { useTranslation } from 'react-i18next'
 
 import {
   Avatar,
@@ -17,13 +16,14 @@ import {
   useSidebar,
 } from '@/components/ui'
 import { useAuthContext } from '@/contexts'
+import { useLocale } from '@/utils/hooks'
 
-export function NavUser({ user }) {
+export function NavUser({ user }: { user: any }) {
   const { isMobile } = useSidebar()
 
   const authContext = useAuthContext()
 
-  const { t } = useTranslation()
+  const { t } = useLocale()
 
   return (
     <SidebarMenu>

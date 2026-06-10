@@ -1,10 +1,10 @@
-type QueryValue =
-  | string
-  | number
-  | boolean
-  | null
-  | undefined
-  | Array<string | number | boolean | null | undefined>
+type QueryValue
+  = | string
+    | number
+    | boolean
+    | null
+    | undefined
+    | Array<string | number | boolean | null | undefined>
 
 export function toQueryString(query: Record<string, QueryValue>): string {
   const params = new URLSearchParams()

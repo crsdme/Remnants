@@ -1,5 +1,19 @@
 import { z } from 'zod'
-import { dateRangeSchema, idSchema, languageStringSchema, numberFromStringSchema, paginationSchema, sorterParamsSchema, stringToBooleanSchema } from './common'
+import { dateRangeSchema, idSchema, languageStringSchema, numberFromStringSchema, paginationSchema, responseItemSchema, responseListSchema, responseSchema, sorterParamsSchema, stringToBooleanSchema } from './common'
+
+export const orderStatusSchema = z.object({
+  id: idSchema,
+  names: languageStringSchema,
+  priority: z.number().optional().default(0),
+  color: z.string().optional(),
+  isLocked: z.boolean().optional().default(false),
+  isSelectable: z.boolean().optional().default(false),
+  ordersCount: z.number().optional().default(0),
+  createdAt: z.coerce.date(),
+  updatedAt: z.coerce.date(),
+})
+
+export type OrderStatusDTO = z.output<typeof orderStatusSchema>
 
 export const getOrderStatusesSchema = z.object({
   filters: z.object({
@@ -53,3 +67,15 @@ export const removeOrderStatusesSchema = z.object({
 })
 
 export type RemoveOrderStatusesRequest = z.input<typeof removeOrderStatusesSchema>
+
+export const getOrderStatusesResponseSchema = responseListSchema(orderStatusSchema)
+export type GetOrderStatusesResponse = z.output<typeof getOrderStatusesResponseSchema>
+
+export const createOrderStatusResponseSchema = responseItemSchema(orderStatusSchema)
+export type CreateOrderStatusResponse = z.output<typeof createOrderStatusResponseSchema>
+
+export const editOrderStatusResponseSchema = responseItemSchema(orderStatusSchema)
+export type EditOrderStatusResponse = z.output<typeof editOrderStatusResponseSchema>
+
+export const removeOrderStatusesResponseSchema = responseSchema
+export type RemoveOrderStatusesResponse = z.output<typeof removeOrderStatusesResponseSchema>

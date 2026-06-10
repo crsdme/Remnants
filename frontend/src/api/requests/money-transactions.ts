@@ -1,24 +1,21 @@
 import type {
-  createMoneyTransactionsParams,
-  editMoneyTransactionsParams,
-  getMoneyTransactionsParams,
-  MoneyTransactionsResponse,
-  removeMoneyTransactionsParams,
-} from '@/api/types'
+  CreateMoneyTransactionRequest,
+  CreateMoneyTransactionResponse,
+  CreateMoneyTransactionTransferRequest,
+  CreateMoneyTransactionTransferResponse,
+  GetMoneyTransactionsRequest,
+  GetMoneyTransactionsResponse,
+} from '@remnant/shared'
 import { api } from '@/api/instance'
 
-export async function getMoneyTransactions(params: getMoneyTransactionsParams) {
-  return api.get<MoneyTransactionsResponse>('money-transactions/get', { params })
+export async function getMoneyTransactions(params: GetMoneyTransactionsRequest) {
+  return api.get<GetMoneyTransactionsResponse>('money-transactions/get', { params })
 }
 
-export async function createMoneyTransaction(params: createMoneyTransactionsParams) {
-  return api.post<MoneyTransactionsResponse>('money-transactions/create', { ...params })
+export async function createMoneyTransaction(params: CreateMoneyTransactionRequest) {
+  return api.post<CreateMoneyTransactionResponse>('money-transactions/create-transaction', { ...params })
 }
 
-export async function editMoneyTransaction(params: editMoneyTransactionsParams) {
-  return api.post<MoneyTransactionsResponse>('money-transactions/edit', params)
-}
-
-export async function removeMoneyTransaction(params: removeMoneyTransactionsParams) {
-  return api.post<MoneyTransactionsResponse>('money-transactions/remove', params)
+export async function createMoneyTransfer(params: CreateMoneyTransactionTransferRequest) {
+  return api.post<CreateMoneyTransactionTransferResponse>('money-transactions/create-transfer', { ...params })
 }

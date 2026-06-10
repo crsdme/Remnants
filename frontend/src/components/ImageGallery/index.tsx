@@ -111,9 +111,9 @@ export function ImageGallery({ images, className, size = 80 }: ImageGalleryProps
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [isOpen])
 
-  const getImageSrc = (image: GalleryImage, size?: number) => {
+  const getImageSrc = (image: GalleryImage | null, size?: number) => {
     if (!image)
-      return null
+      return undefined
 
     return imageErrors[image.src] && image.fallback ? image.fallback : `${image.src}${size ? `?width=${size}&height=${size}` : ''}`
   }

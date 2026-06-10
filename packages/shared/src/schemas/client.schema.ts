@@ -1,5 +1,26 @@
 import { z } from 'zod'
-import { dateRangeSchema, idSchema, paginationSchema, sorterParamsSchema } from './common'
+import { dateRangeSchema, idSchema, paginationSchema, responseItemSchema, responseListSchema, responseSchema, sorterParamsSchema } from './common'
+
+export const clientSchema = z.object({
+  id: idSchema,
+  seq: z.number(),
+  name: z.string(),
+  middleName: z.string().optional(),
+  lastName: z.string().optional(),
+  country: z.string().optional(),
+  emails: z.array(z.string().email()).optional(),
+  phones: z.array(z.string().min(7)).optional(),
+  addresses: z.array(z.string()).optional(),
+  socials: z.array(z.object({
+    type: z.string(),
+    value: z.string(),
+  })).optional(),
+  comment: z.string().optional(),
+  createdAt: z.coerce.date(),
+  updatedAt: z.coerce.date(),
+})
+
+export type ClientDTO = z.output<typeof clientSchema>
 
 export const getClientsSchema = z.object({
   filters: z.object({
@@ -61,3 +82,15 @@ export const removeClientsSchema = z.object({
 })
 
 export type RemoveClientsRequest = z.input<typeof removeClientsSchema>
+
+export const getClientsResponseSchema = responseListSchema(clientSchema)
+export type GetClientsResponse = z.output<typeof getClientsResponseSchema>
+
+export const createClientResponseSchema = responseItemSchema(clientSchema)
+export type CreateClientResponse = z.output<typeof createClientResponseSchema>
+
+export const editClientResponseSchema = responseItemSchema(clientSchema)
+export type EditClientResponse = z.output<typeof editClientResponseSchema>
+
+export const removeClientsResponseSchema = responseSchema
+export type RemoveClientsResponse = z.output<typeof removeClientsResponseSchema>

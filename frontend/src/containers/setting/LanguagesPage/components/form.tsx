@@ -1,4 +1,3 @@
-import { useTranslation } from 'react-i18next'
 import {
   Button,
   Checkbox,
@@ -11,19 +10,19 @@ import {
   FormMessage,
   Input,
 } from '@/components/ui'
+import { useLocale } from '@/utils/hooks'
 import { useLanguageContext } from '../context'
 
 export function LanguageForm() {
-  const { t } = useTranslation()
+  const { t } = useLocale()
   const { isLoading, form, closeModal, submitLanguageForm } = useLanguageContext()
-
-  const onSubmit = (values) => {
-    submitLanguageForm(values)
-  }
 
   return (
     <Form {...form}>
-      <form className="w-full space-y-1" onSubmit={form.handleSubmit(onSubmit)}>
+      <form
+        className="w-full space-y-1"
+        onSubmit={(e) => { void form.handleSubmit(submitLanguageForm)(e) }}
+      >
         <FormField
           control={form.control}
           name="name"

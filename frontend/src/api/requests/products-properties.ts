@@ -1,24 +1,27 @@
 import type {
-  createProductPropertiesParams,
-  editProductPropertyParams,
-  getProductPropertiesParams,
-  ProductPropertiesResponse,
-  removeProductPropertiesParams,
-} from '@/api/types'
+  CreateProductPropertyRequest,
+  CreateProductPropertyResponse,
+  EditProductPropertyRequest,
+  EditProductPropertyResponse,
+  GetProductPropertiesResponse,
+  GetProductPropertyRequest,
+  RemoveProductPropertiesResponse,
+  RemoveProductPropertyRequest,
+} from '@remnant/shared'
 import { api } from '@/api/instance'
 
-export async function getProductProperties(params: getProductPropertiesParams) {
-  return api.get<ProductPropertiesResponse>('product-properties/get', { params })
+export async function getProductProperties(params: GetProductPropertyRequest) {
+  return api.get<GetProductPropertiesResponse>('product-properties/get', { params })
 }
 
-export async function createProductProperty(params: createProductPropertiesParams) {
-  return api.post<ProductPropertiesResponse>('product-properties/create', { ...params })
+export async function createProductProperty(params: CreateProductPropertyRequest) {
+  return api.post<CreateProductPropertyResponse>('product-properties/create', { ...params })
 }
 
-export async function editProductProperty(params: editProductPropertyParams) {
-  return api.post<ProductPropertiesResponse>('product-properties/edit', params)
+export async function editProductProperty(params: EditProductPropertyRequest) {
+  return api.post<EditProductPropertyResponse>('product-properties/edit', params)
 }
 
-export async function removeProductProperties(params: removeProductPropertiesParams) {
-  return api.post<ProductPropertiesResponse>('product-properties/remove', params)
+export async function removeProductProperties(params: RemoveProductPropertyRequest) {
+  return api.post<RemoveProductPropertiesResponse>('product-properties/remove', params)
 }

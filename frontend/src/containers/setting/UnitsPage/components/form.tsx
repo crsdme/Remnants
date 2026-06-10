@@ -1,4 +1,3 @@
-import { useTranslation } from 'react-i18next'
 import { useLanguageQuery } from '@/api/hooks'
 import {
   Button,
@@ -12,28 +11,24 @@ import {
   FormMessage,
   Input,
 } from '@/components/ui'
+import { useLocale } from '@/utils/hooks'
 import { useUnitContext } from '../context'
 
 export function UnitForm() {
-  const { t } = useTranslation()
+  const { t } = useLocale()
   const { isLoading, form, closeModal, submitUnitForm } = useUnitContext()
 
-  const { data: { languages = [] } = {} } = useLanguageQuery(
+  const { languages } = useLanguageQuery(
     { pagination: { full: true } },
-    { options: {
-      select: response => ({
-        languages: response.data.languages,
-      }),
-    } },
+    { options: { placeholderData: prevData => prevData } },
   )
-
-  const onSubmit = (values) => {
-    submitUnitForm(values)
-  }
 
   return (
     <Form {...form}>
-      <form className="w-full space-y-1" onSubmit={form.handleSubmit(onSubmit)}>
+      <form
+        className="w-full space-y-1"
+        onSubmit={(e) => { void form.handleSubmit(submitUnitForm)(e) }}
+      >
         {languages.map(language => (
           <FormField
             control={form.control}

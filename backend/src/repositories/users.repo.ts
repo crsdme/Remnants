@@ -49,6 +49,18 @@ export async function list(payload: GetUsersRepoPayload): Promise<GetUsersRepoRe
     { $unwind: '$role' },
     { $sort: sorters },
     {
+      $project: {
+        _id: 0,
+        id: '$_id',
+        name: 1,
+        login: 1,
+        role: 1,
+        active: 1,
+        createdAt: 1,
+        updatedAt: 1,
+      },
+    },
+    {
       $facet: {
         items: [
           { $skip: (current - 1) * pageSize },

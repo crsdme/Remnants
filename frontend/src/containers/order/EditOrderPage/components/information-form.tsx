@@ -1,7 +1,4 @@
-import type { UseFormReturn } from 'react-hook-form'
-
 import { Trash2Icon } from 'lucide-react'
-import { useTranslation } from 'react-i18next'
 import { useClientOptions, useDeliveryServiceOptions, useOrderSourceOptions, useOrderStatusOptions, useWarehouseOptions } from '@/api/hooks'
 import { AsyncSelectNew } from '@/components/AsyncSelectNew'
 import {
@@ -18,10 +15,11 @@ import {
 } from '@/components/ui'
 import { hasPermission } from '@/utils/helpers'
 import { formatDate } from '@/utils/helpers/formatDate'
+import { useLocale } from '@/utils/hooks'
 import { useEditOrderContext } from '../context'
 
-export function InformationForm({ form, onSubmit }: { form: UseFormReturn, onSubmit: (payments: any) => void }) {
-  const { t, i18n } = useTranslation()
+export function InformationForm({ form, onSubmit }: { form: any, onSubmit: (payments: any) => void }) {
+  const { t, language } = useLocale()
   const { isLoading, openClientModal, openPaymentModal, payments, removePayment, permissions } = useEditOrderContext()
 
   const loadWarehouseOptions = useWarehouseOptions()
@@ -37,7 +35,9 @@ export function InformationForm({ form, onSubmit }: { form: UseFormReturn, onSub
         <Separator className="flex-1" />
       </div>
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)}>
+        <form
+          onSubmit={(e) => { void form.handleSubmit(onSubmit)(e) }}
+        >
           <div className="grid gap-2 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
             <FormField
               control={form.control}
@@ -54,8 +54,8 @@ export function InformationForm({ form, onSubmit }: { form: UseFormReturn, onSub
                     <AsyncSelectNew
                       {...field}
                       loadOptions={loadWarehouseOptions}
-                      renderOption={e => e.names[i18n.language]}
-                      getDisplayValue={e => e.names[i18n.language]}
+                      renderOption={e => e.names[language]}
+                      getDisplayValue={e => e.names[language]}
                       getOptionValue={e => e.id}
                       disabled={isLoading}
                     />
@@ -80,8 +80,8 @@ export function InformationForm({ form, onSubmit }: { form: UseFormReturn, onSub
                     <AsyncSelectNew
                       {...field}
                       loadOptions={loadOrderSourceOptions}
-                      renderOption={e => e.names[i18n.language]}
-                      getDisplayValue={e => e.names[i18n.language]}
+                      renderOption={e => e.names[language]}
+                      getDisplayValue={e => e.names[language]}
                       getOptionValue={e => e.id}
                       disabled={isLoading}
                     />
@@ -106,8 +106,8 @@ export function InformationForm({ form, onSubmit }: { form: UseFormReturn, onSub
                     <AsyncSelectNew
                       {...field}
                       loadOptions={loadOrderStatusOptions}
-                      renderOption={e => e.names[i18n.language]}
-                      getDisplayValue={e => e.names[i18n.language]}
+                      renderOption={e => e.names[language]}
+                      getDisplayValue={e => e.names[language]}
                       getOptionValue={e => e.id}
                       disabled={isLoading}
                     />
@@ -132,8 +132,8 @@ export function InformationForm({ form, onSubmit }: { form: UseFormReturn, onSub
                     <AsyncSelectNew
                       {...field}
                       loadOptions={loadDeliveryServiceOptions}
-                      renderOption={e => e.names[i18n.language]}
-                      getDisplayValue={e => e.names[i18n.language]}
+                      renderOption={e => e.names[language]}
+                      getDisplayValue={e => e.names[language]}
                       getOptionValue={e => e.id}
                       disabled={isLoading}
                     />
@@ -158,12 +158,12 @@ export function InformationForm({ form, onSubmit }: { form: UseFormReturn, onSub
                         <div className="flex flex-col gap-1">
                           <p>{`${e.name} ${e.middleName} ${e.lastName}`}</p>
                           <hr />
-                          <p>{`${e.emails.join(', ')}`}</p>
+                          <p>{`${e.emails?.join(', ')}`}</p>
                           <hr />
-                          <p>{`${e.phones.join(', ')}`}</p>
+                          <p>{`${e.phones?.join(', ')}`}</p>
                         </div>
                       )}
-                      getDisplayValue={e => `${e.name} ${e.middleName} ${e.lastName} (${e.emails.join(', ')}) (${e.phones.join(', ')})`}
+                      getDisplayValue={e => `${e.name} ${e.middleName} ${e.lastName} (${e.emails?.join(', ')}) (${e.phones?.join(', ')})`}
                       getOptionValue={e => e.id}
                       disabled={isLoading}
                       searchable
@@ -205,9 +205,9 @@ export function InformationForm({ form, onSubmit }: { form: UseFormReturn, onSub
               return (
                 <div key={payment.id} className="border border-gray-300 dark:border-gray-700 rounded-md p-2">
                   <div className="flex items-center flex-wrap gap-2">
-                    <Badge variant="outline">{`${payment.amount} ${payment.currency.symbols[i18n.language]}`}</Badge>
-                    <Badge variant="outline">{`${payment.cashregister.names[i18n.language]} | ${payment.cashregisterAccount.names[i18n.language]}`}</Badge>
-                    <Badge variant="outline">{`${formatDate(payment.paymentDate, 'PPP')}`}</Badge>
+                    <Badge variant="outline">{`${payment.amount} ${payment.currency.symbols[language]}`}</Badge>
+                    <Badge variant="outline">{`${payment.cashregister.names[language]} | ${payment.cashregisterAccount.names[language]}`}</Badge>
+                    <Badge variant="outline">{`${formatDate(payment.paymentDate ?? new Date(), 'PPP')}`}</Badge>
                     <Badge variant="outline">{t(`payment-status.${payment.paymentStatus}`)}</Badge>
                     {payment.comment && <Badge variant="outline">{payment.comment}</Badge>}
                   </div>

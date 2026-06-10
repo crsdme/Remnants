@@ -1,51 +1,38 @@
 import { flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table'
-import { Fragment, useMemo, useState } from 'react'
-import { useTranslation } from 'react-i18next'
+import { Fragment, useState } from 'react'
 
 import { useDeliveryServiceQuery } from '@/api/hooks'
-import { AdvancedFilters, AdvancedSorters, ColumnVisibilityMenu, TablePagination, TableSelectionDropdown } from '@/components'
-import { Separator, Skeleton, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui'
-import { useDebounceCallback } from '@/utils/hooks'
-import { useDeliveryServiceContext } from '../context'
+import { ColumnVisibilityMenu, TablePagination } from '@/components'
+import { Skeleton, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui'
+import { useListQueryState, useLocale } from '@/utils/hooks'
 
 import { useColumns } from './columns'
 import { DataTableFilters } from './data-table-filters'
 
 export function DataTable() {
-  const { t, i18n } = useTranslation()
-  const { removeDeliveryService } = useDeliveryServiceContext()
-
-  const filtersInitialState = {
-    names: '',
-    color: '',
-    priority: undefined,
-    createdAt: { from: undefined, to: undefined },
-    language: i18n.language,
-  }
-
+  const { t } = useLocale()
   const [columnVisibility, setColumnVisibility] = useState({})
-  const [rowSelection, setRowSelection] = useState({})
-  const [sorting, setSorting] = useState([])
-  const [pagination, setPagination] = useState({
-    current: 1,
-    pageSize: 10,
+  const {
+    pagination,
+    setPagination,
+    sorting,
+    setSorting,
+    filters,
+    setFilters,
+    sorters,
+  } = useListQueryState({
+    readFilters: params => ({
+      names: params.get('names'),
+    }),
+    writeFilters: (params, filters) => {
+      params.set('names', filters.names ?? '')
+    },
   })
-  const [filters, setFilters] = useState(filtersInitialState)
   const columns = useColumns()
 
-  const sorters = useMemo(() => (
-    Object.fromEntries(sorting.map(({ id, desc }) => [id, desc ? 'desc' : 'asc']))
-  ), [sorting])
-
-  const { data: { deliveryServices = [], deliveryServicesCount = 0 } = {}, isLoading, isFetching } = useDeliveryServiceQuery(
+  const { deliveryServices = [], deliveryServicesCount = 0, isLoading, isFetching } = useDeliveryServiceQuery(
     { pagination, filters, sorters },
-    { options: {
-      select: response => ({
-        deliveryServices: response.data.deliveryServices,
-        deliveryServicesCount: response.data.deliveryServicesCount,
-      }),
-      placeholderData: prevData => prevData,
-    } },
+    { options: { placeholderData: prevData => prevData } },
   )
 
   const table = useReactTable({
@@ -53,14 +40,12 @@ export function DataTable() {
     columns,
     getCoreRowModel: getCoreRowModel(),
     onColumnVisibilityChange: setColumnVisibility,
-    onRowSelectionChange: setRowSelection,
     onSortingChange: setSorting,
     manualSorting: true,
     enableSortingRemoval: true,
     state: {
       sorting,
       columnVisibility,
-      rowSelection,
       pagination: {
         pageIndex: pagination.current - 1,
         pageSize: pagination.pageSize,
@@ -130,64 +115,14 @@ export function DataTable() {
     )
   }
 
-  const advancedFiltersSubmit = (filters) => {
-    const filterValues = Object.fromEntries(filters.map(({ column, value }) => [column, value]))
-    setFilters(state => ({
-      ...state,
-      ...filterValues,
-    }))
-  }
-
-  const advancedFiltersCancel = () => {
-    setFilters(filtersInitialState)
-  }
-
-  const handleBulkRemove = () => {
-    const ids = deliveryServices.filter((_, index) => rowSelection[index]).map(item => item.id)
-    removeDeliveryService({ ids })
-    setRowSelection({})
-  }
-
-  const changePagination = useDebounceCallback((value: Pagination) => {
-    setPagination(state => ({ ...state, ...value }))
-  }, 50)
-
-  const advancedSortersSubmit = (sorters) => {
-    const mapedSorters = sorters.map(({ column, value }) => ({
-      id: column,
-      desc: value === 'desc',
-    }))
-
-    setSorting(mapedSorters)
-  }
-
-  const advancedSortersCancel = () => {
-    setSorting([])
-  }
-
   return (
     <>
       <div className="w-full flex justify-between items-start max-md:flex-col gap-2 py-2">
         <div className="flex flex-wrap gap-2 items-center">
-          <AdvancedFilters
-            columns={columns}
-            onSubmit={advancedFiltersSubmit}
-            onCancel={advancedFiltersCancel}
-          />
-          <AdvancedSorters
-            columns={columns}
-            onSubmit={advancedSortersSubmit}
-            onCancel={advancedSortersCancel}
-          />
-          <Separator orientation="vertical" className="min-h-6 max-md:hidden" />
           <DataTableFilters filters={filters} setFilters={setFilters} />
         </div>
         <div className="flex gap-2">
-          <TableSelectionDropdown
-            selectedCount={Object.keys(rowSelection).length}
-            onRemove={handleBulkRemove}
-          />
-          <ColumnVisibilityMenu table={table} tableId="order-source" />
+          <ColumnVisibilityMenu table={table} tableId="delivery-service" />
         </div>
       </div>
       <div className="border rounded-sm">
@@ -199,8 +134,7 @@ export function DataTable() {
       <TablePagination
         pagination={pagination}
         totalPages={Math.ceil(deliveryServicesCount / pagination.pageSize)}
-        changePagination={changePagination}
-        selectedCount={Object.keys(rowSelection).length}
+        changePagination={setPagination}
         totalCount={deliveryServicesCount}
       />
     </>

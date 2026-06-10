@@ -1,3 +1,4 @@
+import type { MoneyTransactionDTO } from '@remnant/shared'
 import type { ReactNode } from 'react'
 import type { UseFormReturn } from 'react-hook-form'
 
@@ -11,37 +12,32 @@ import { toast } from 'sonner'
 import { z } from 'zod'
 import {
   useMoneyTransactionCreate,
-  useMoneyTransactionRemove,
+  useMoneyTransferCreate,
 } from '@/api/hooks'
 
 interface MoneyTransactionContextType {
-  selectedMoneyTransaction: MoneyTransaction
+  selectedMoneyTransaction: MoneyTransactionDTO | undefined
   isModalOpen: boolean
   isLoading: boolean
   isEdit: boolean
-  addForm: UseFormReturn
-  accountForm: UseFormReturn
-  cashregisterForm: UseFormReturn
-  selectedTab: string
-  openModal: (moneyTransaction?: MoneyTransaction) => void
+  addForm: UseFormReturn<any>
+  accountForm: UseFormReturn<any>
+  cashregisterForm: UseFormReturn<any>
+  selectedTab: string | undefined
+  openModal: (moneyTransaction?: MoneyTransactionDTO) => void
   closeModal: () => void
-  submitMoneyTransactionForm: (params) => void
-  removeMoneyTransaction: (params: { ids: string[] }) => void
+  submitMoneyTransactionForm: (params: any) => void
   setSelectedTab: (tab: string) => void
 }
 
 const MoneyTransactionContext = createContext<MoneyTransactionContextType | undefined>(undefined)
 
-interface MoneyTransactionProviderProps {
-  children: ReactNode
-}
-
-export function MoneyTransactionProvider({ children }: MoneyTransactionProviderProps) {
+export function MoneyTransactionProvider({ children }: { children: ReactNode }) {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [isEdit, setIsEdit] = useState(false)
-  const [selectedTab, setSelectedTab] = useState('add')
-  const [selectedMoneyTransaction, setSelectedMoneyTransaction] = useState(null)
+  const [selectedTab, setSelectedTab] = useState<string | undefined>(undefined)
+  const [selectedMoneyTransaction, setSelectedMoneyTransaction] = useState<MoneyTransactionDTO | undefined>(undefined)
 
   const { t } = useTranslation()
 
@@ -121,24 +117,24 @@ export function MoneyTransactionProvider({ children }: MoneyTransactionProviderP
     setIsModalOpen(false)
     setIsLoading(false)
     setIsEdit(false)
-    setSelectedMoneyTransaction(null)
+    setSelectedMoneyTransaction(undefined)
     addForm.reset()
     accountForm.reset()
     cashregisterForm.reset()
   }
 
-  const openModal = (moneyTransaction) => {
+  const openModal = (moneyTransaction: MoneyTransactionDTO | undefined) => {
     setIsModalOpen(true)
     setIsEdit(!!moneyTransaction)
-    setSelectedMoneyTransaction(moneyTransaction)
+    setSelectedMoneyTransaction(moneyTransaction ?? undefined)
   }
 
   const useMutateCreateMoneyTransaction = useMoneyTransactionCreate({
     options: {
       onSuccess: ({ data }) => {
         closeModal()
-        queryClient.invalidateQueries({ queryKey: ['money-transactions'] })
-        queryClient.invalidateQueries({ queryKey: ['cashregisters'] })
+        void queryClient.invalidateQueries({ queryKey: ['money-transactions'] })
+        void queryClient.invalidateQueries({ queryKey: ['cashregisters'] })
         toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description || ''}` })
       },
       onError: ({ response }) => {
@@ -149,25 +145,23 @@ export function MoneyTransactionProvider({ children }: MoneyTransactionProviderP
     },
   })
 
-  const useMutateRemoveMoneyTransaction = useMoneyTransactionRemove({
+  const useMutateCreateMoneyTransfer = useMoneyTransferCreate({
     options: {
       onSuccess: ({ data }) => {
-        queryClient.invalidateQueries({ queryKey: ['money-transactions'] })
-        queryClient.invalidateQueries({ queryKey: ['cashregisters'] })
+        closeModal()
+        void queryClient.invalidateQueries({ queryKey: ['money-transactions'] })
+        void queryClient.invalidateQueries({ queryKey: ['cashregisters'] })
         toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description || ''}` })
       },
       onError: ({ response }) => {
         const error = response.data.error
+        closeModal()
         toast.error(t(`error.title.${error.code}`), { description: `${t(`error.description.${error.code}`)} ${error.description || ''}` })
       },
     },
   })
 
-  const removeMoneyTransaction = (params) => {
-    useMutateRemoveMoneyTransaction.mutate(params)
-  }
-
-  const submitMoneyTransactionForm = (params) => {
+  const submitMoneyTransactionForm = (params: any) => {
     setIsLoading(true)
 
     if (selectedTab === 'add') {
@@ -184,11 +178,12 @@ export function MoneyTransactionProvider({ children }: MoneyTransactionProviderP
     }
 
     if (selectedTab === 'account') {
-      return useMutateCreateMoneyTransaction.mutate({
+      return useMutateCreateMoneyTransfer.mutate({
         type: 'transfer-account',
         accountFrom: params.accountFrom[0],
         accountTo: params.accountTo[0],
-        cashregister: params.cashregister,
+        cashregisterFrom: params.cashregister,
+        cashregisterTo: params.cashregister,
         currency: params.currency[0],
         amount: params.amount,
         sourceModel: 'manual',
@@ -197,7 +192,7 @@ export function MoneyTransactionProvider({ children }: MoneyTransactionProviderP
     }
 
     if (selectedTab === 'cashregister') {
-      return useMutateCreateMoneyTransaction.mutate({
+      return useMutateCreateMoneyTransfer.mutate({
         type: 'transfer-cashregister',
         accountFrom: params.accountFrom[0],
         accountTo: params.accountTo[0],
@@ -224,7 +219,6 @@ export function MoneyTransactionProvider({ children }: MoneyTransactionProviderP
       openModal,
       closeModal,
       submitMoneyTransactionForm,
-      removeMoneyTransaction,
       setSelectedTab,
     }),
     [selectedMoneyTransaction, isModalOpen, isLoading, isEdit, addForm, accountForm, selectedTab, setSelectedTab],

@@ -1,8 +1,26 @@
 import { z } from 'zod'
-import { booleanArraySchema, dateRangeSchema, idSchema, languageStringSchema, numberFromStringSchema, paginationSchema, sorterParamsSchema, stringToBooleanSchema } from './common'
+import { booleanArraySchema, dateRangeSchema, idSchema, languageStringSchema, numberFromStringSchema, paginationSchema, responseItemSchema, responseListSchema, responseSchema, sorterParamsSchema, stringToBooleanSchema } from './common'
+
+export const productPropertySchema = z.object({
+  id: idSchema,
+  names: languageStringSchema,
+  symbols: languageStringSchema,
+  options: z.array(idSchema),
+  priority: z.number(),
+  isRequired: z.boolean(),
+  showInTable: z.boolean(),
+  showInStatistics: z.boolean(),
+  type: z.string(),
+  active: z.boolean(),
+  createdAt: z.coerce.date(),
+  updatedAt: z.coerce.date(),
+})
+
+export type ProductPropertyDTO = z.output<typeof productPropertySchema>
 
 export const getProductPropertySchema = z.object({
   filters: z.object({
+    ids: z.array(idSchema).default([]),
     names: z.string().trim().optional(),
     symbols: z.string().trim().optional(),
     language: z.string().optional().default('en'),
@@ -65,3 +83,15 @@ export const removeProductPropertySchema = z.object({
 })
 
 export type RemoveProductPropertyRequest = z.input<typeof removeProductPropertySchema>
+
+export const getProductPropertiesResponseSchema = responseListSchema(productPropertySchema)
+export type GetProductPropertiesResponse = z.output<typeof getProductPropertiesResponseSchema>
+
+export const createProductPropertyResponseSchema = responseItemSchema(productPropertySchema)
+export type CreateProductPropertyResponse = z.output<typeof createProductPropertyResponseSchema>
+
+export const editProductPropertyResponseSchema = responseItemSchema(productPropertySchema)
+export type EditProductPropertyResponse = z.output<typeof editProductPropertyResponseSchema>
+
+export const removeProductPropertiesResponseSchema = responseSchema
+export type RemoveProductPropertiesResponse = z.output<typeof removeProductPropertiesResponseSchema>

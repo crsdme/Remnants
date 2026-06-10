@@ -1,80 +1,54 @@
 import { flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table'
 
-import { Fragment, useMemo, useState } from 'react'
+import { Fragment, useState } from 'react'
 
 import { useTranslation } from 'react-i18next'
-import { useLanguageQuery, useUnitQuery } from '@/api/hooks'
-import { AdvancedFilters, AdvancedSorters, BatchEdit, ColumnVisibilityMenu, PermissionGate, TablePagination, TableSelectionDropdown } from '@/components'
-import { Separator, Skeleton, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui'
-import { downloadCsv } from '@/utils/helpers/download'
-import { useDebounceCallback } from '@/utils/hooks'
-import { useUnitContext } from '../context'
+import { useUnitQuery } from '@/api/hooks'
+import { ColumnVisibilityMenu, TablePagination } from '@/components'
+import { Skeleton, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui'
+import { useListQueryState } from '@/utils/hooks'
 
 import { useColumns } from './columns'
 import { DataTableFilters } from './data-table-filters'
 
 export function DataTable() {
-  const { t, i18n } = useTranslation()
-  const { batchUnit, removeUnit, duplicateUnits } = useUnitContext()
-
-  const filtersInitialState = {
-    names: '',
-    symbols: '',
-    priority: undefined,
-    active: [],
-    createdAt: { from: undefined, to: undefined },
-    language: i18n.language,
-  }
-
+  const { t } = useTranslation()
   const [columnVisibility, setColumnVisibility] = useState({})
-  const [rowSelection, setRowSelection] = useState({})
-  const [sorting, setSorting] = useState([])
-  const [batchEditMode, setBatchEditMode] = useState<'filter' | 'select'>('select')
-  const [pagination, setPagination] = useState({
-    current: 1,
-    pageSize: 10,
+  const {
+    pagination,
+    filters,
+    sorters,
+    sorting,
+    setSorting,
+    setPagination,
+    setFilters,
+  } = useListQueryState({
+    readFilters: params => ({
+      names: params.get('names'),
+    }),
+    writeFilters: (params, filters) => {
+      params.set('names', filters.names ?? '')
+    },
   })
-  const [filters, setFilters] = useState(filtersInitialState)
 
-  const sorters = useMemo(() => (
-    Object.fromEntries(sorting.map(({ id, desc }) => [id, desc ? 'desc' : 'asc']))
-  ), [sorting])
-
-  const { data: { units = [], unitsCount = 0 } = {}, isLoading, isFetching } = useUnitQuery(
+  const { units = [], unitsCount = 0, isLoading, isFetching } = useUnitQuery(
     { pagination, filters, sorters },
-    { options: {
-      select: response => ({
-        units: response.data.units,
-        unitsCount: response.data.unitsCount,
-      }),
-      placeholderData: prevData => prevData,
-    } },
+    { options: { placeholderData: prevData => prevData } },
   )
 
   const columns = useColumns()
-
-  const { data: { languages = [] } = {} } = useLanguageQuery(
-    { pagination: { full: true } },
-    { options: {
-      select: response => ({
-        languages: response.data.languages,
-      }),
-    } },
-  )
 
   const table = useReactTable({
     data: units,
     columns,
     getCoreRowModel: getCoreRowModel(),
     onColumnVisibilityChange: setColumnVisibility,
-    onRowSelectionChange: setRowSelection,
     onSortingChange: setSorting,
     manualSorting: true,
     enableSortingRemoval: true,
     state: {
       sorting,
       columnVisibility,
-      rowSelection,
       pagination: {
         pageIndex: pagination.current - 1,
         pageSize: pagination.pageSize,
@@ -144,116 +118,13 @@ export function DataTable() {
     )
   }
 
-  const handleBulkExport = () => {
-    const filteredData = units.filter((_, index) => rowSelection[index])
-    const formatedUnits = filteredData.map(item => ({
-      names: item.names[i18n.language],
-      symbols: item.symbols[i18n.language],
-      priority: item.priority,
-      active: item.active,
-      updatedAt: item.updatedAt,
-      createdAt: item.createdAt,
-    }))
-
-    downloadCsv(formatedUnits, 'units-selected.csv', true)
-    setRowSelection({})
-  }
-
-  const advancedFiltersSubmit = (filters) => {
-    const filterValues = Object.fromEntries(filters.map(({ column, value }) => [column, value]))
-    setFilters(state => ({
-      ...state,
-      ...filterValues,
-    }))
-  }
-
-  const advancedFiltersCancel = () => {
-    setFilters(filtersInitialState)
-  }
-
-  const handleBatchSubmit = (data) => {
-    const selectedUnits = units
-      .filter((_, index) => rowSelection[index])
-      .map(item => item.id)
-
-    const params = data.map(item => ({
-      column: item.column,
-      value: item.value,
-    }))
-
-    batchUnit({
-      ...(batchEditMode === 'filter' ? { filters } : { ids: selectedUnits }),
-      params,
-    })
-
-    setRowSelection({})
-  }
-
-  const handleBulkRemove = () => {
-    const ids = units.filter((_, index) => rowSelection[index]).map(item => item.id)
-    removeUnit({ ids })
-    setRowSelection({})
-  }
-
-  const handleBatchToggle = (status: 'filter' | 'select') => {
-    setBatchEditMode(status)
-  }
-
-  const changePagination = useDebounceCallback((value: Pagination) => {
-    setPagination(state => ({ ...state, ...value }))
-  }, 50)
-
-  const handleBulkDuplicate = () => {
-    const ids = units.filter((_, index) => rowSelection[index]).map(item => item.id)
-    duplicateUnits({ ids })
-    setRowSelection({})
-  }
-
-  const advancedSortersSubmit = (sorters) => {
-    const mapedSorters = sorters.map(({ column, value }) => ({
-      id: column,
-      desc: value === 'desc',
-    }))
-
-    setSorting(mapedSorters)
-  }
-
-  const advancedSortersCancel = () => {
-    setSorting([])
-  }
-
   return (
     <>
       <div className="w-full flex justify-between items-start max-md:flex-col gap-2 py-2">
         <div className="flex flex-wrap gap-2 items-center">
-          <AdvancedFilters
-            columns={columns}
-            onSubmit={advancedFiltersSubmit}
-            onCancel={advancedFiltersCancel}
-          />
-          <AdvancedSorters
-            columns={columns}
-            onSubmit={advancedSortersSubmit}
-            onCancel={advancedSortersCancel}
-          />
-          <PermissionGate permission="other.admin">
-            <BatchEdit
-              columns={columns}
-              languages={languages}
-              onSubmit={handleBatchSubmit}
-              onToggle={handleBatchToggle}
-            />
-          </PermissionGate>
-          <Separator orientation="vertical" className="min-h-6 max-md:hidden" />
           <DataTableFilters filters={filters} setFilters={setFilters} />
         </div>
         <div className="flex gap-2">
-          <TableSelectionDropdown
-            selectedCount={Object.keys(rowSelection).length}
-            onExport={handleBulkExport}
-            onRemove={handleBulkRemove}
-            onDuplicate={handleBulkDuplicate}
-          />
           <ColumnVisibilityMenu table={table} tableId="unit" />
         </div>
       </div>
@@ -266,8 +137,7 @@ export function DataTable() {
       <TablePagination
         pagination={pagination}
         totalPages={Math.ceil(unitsCount / pagination.pageSize)}
-        changePagination={changePagination}
-        selectedCount={Object.keys(rowSelection).length}
+        changePagination={setPagination}
         totalCount={unitsCount}
       />
     </>

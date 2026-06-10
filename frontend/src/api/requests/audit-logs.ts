@@ -1,9 +1,9 @@
 import type {
-  AuditLogsResponse,
-  getAuditLogsParams,
+  GetAuditLogsRequest,
+  GetAuditLogsResponse,
 } from '@remnant/shared'
 import { api } from '@/api/instance'
 
-export async function getAuditLogs(params: getAuditLogsParams) {
-  return api.get<AuditLogsResponse>('audit-logs/get', { params })
+export async function getAuditLogs(params: GetAuditLogsRequest) {
+  return api.get<GetAuditLogsResponse>('audit-logs/get', { params })
 }

@@ -1,101 +1,68 @@
-import type { ReactNode } from 'react'
-import type { UseFormReturn } from 'react-hook-form'
+import type { UserPopulatedDTO } from '@remnant/shared'
 
+import type { ReactNode } from 'react'
+
+import type { Resolver, UseFormReturn } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 
 import { useQueryClient } from '@tanstack/react-query'
 import { createContext, useContext, useMemo, useState } from 'react'
-
 import { useForm } from 'react-hook-form'
-import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { z } from 'zod'
 import {
   useUserCreate,
-  useUserDuplicate,
   useUserEdit,
-  useUserImport,
   useUserRemove,
 } from '@/api/hooks/'
+import { useLocale } from '@/utils/hooks'
 
 interface UserContextType {
-  selectedUser: User
+  selectedUser: UserPopulatedDTO | undefined
   isModalOpen: boolean
   isLoading: boolean
   isEdit: boolean
-  form: UseFormReturn
-  openModal: (user?: User) => void
+  form: UseFormReturn<UserFormValues>
+  openModal: (user?: UserPopulatedDTO) => void
   closeModal: () => void
-  submitUserForm: (params) => void
+  submitUserForm: (params: UserFormValues) => void
   removeUsers: (params: { ids: string[] }) => void
-  importUsers: (params) => void
-  duplicateUsers: (params: { ids: string[] }) => void
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined)
 
-interface UserProviderProps {
-  children: ReactNode
+interface UserFormValues {
+  name: string
+  login: string
+  password: string
+  active: boolean
+  role: string
 }
 
-export function UserProvider({ children }: UserProviderProps) {
+export function UserProvider({ children }: { children: ReactNode }) {
   const [isModalOpen, setIsModalOpen] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
   const [isEdit, setIsEdit] = useState(false)
-  const [selectedUser, setSelectedUser] = useState(null)
+  const [selectedUser, setSelectedUser] = useState<UserPopulatedDTO | undefined>(undefined)
 
-  const { t } = useTranslation()
+  const { t } = useLocale()
 
-  const formSchema = useMemo(() =>
-    z.object({
-      name: z.string({ required_error: t('form.errors.required') }).min(5, { message: t('form.errors.min_length', { count: 5 }) }).trim(),
-      login: z.string({ required_error: t('form.errors.required') }).min(5, { message: t('form.errors.min_length', { count: 5 }) }).trim(),
-      password: z.string().optional(),
-      role: z.string({ required_error: t('form.errors.required') }).trim(),
-      active: z.boolean().default(true),
-    }), [t])
+  const formSchema = useMemo(() => createUserFormSchema(t), [t])
 
-  const form = useForm({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      name: '',
-      login: '',
-      password: '',
-      active: true,
-      role: '',
-    },
+  const form = useForm<UserFormValues>({
+    resolver: zodResolver(formSchema) as Resolver<UserFormValues>,
+    defaultValues: getUserFormValues(),
   })
-
-  const getUserFormValues = (user) => {
-    if (!user) {
-      return {
-        name: '',
-        login: '',
-        password: '',
-        active: true,
-        role: '',
-      }
-    }
-    return {
-      name: user.name,
-      login: user.login,
-      password: user.password,
-      active: user.active,
-      role: user.role.id,
-    }
-  }
 
   const closeModal = () => {
     if (!isModalOpen)
       return
     setIsModalOpen(false)
-    setIsLoading(false)
     setIsEdit(false)
-    setSelectedUser(null)
+    setSelectedUser(undefined)
     form.reset()
   }
 
-  const openModal = (user) => {
+  const openModal = (user?: UserPopulatedDTO) => {
     setIsModalOpen(true)
     setIsEdit(!!user)
     setSelectedUser(user)
@@ -108,25 +75,12 @@ export function UserProvider({ children }: UserProviderProps) {
     options: {
       onSuccess: ({ data }) => {
         closeModal()
-        queryClient.invalidateQueries({ queryKey: ['users'] })
+        void queryClient.invalidateQueries({ queryKey: ['users'] })
         toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description || ''}` })
       },
       onError: ({ response }) => {
         const error = response.data.error
         closeModal()
-        toast.error(t(`error.title.${error.code}`), { description: `${t(`error.description.${error.code}`)} ${error.description || ''}` })
-      },
-    },
-  })
-
-  const useMutateDuplicateUsers = useUserDuplicate({
-    options: {
-      onSuccess: ({ data }) => {
-        queryClient.invalidateQueries({ queryKey: ['users'] })
-        toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description || ''}` })
-      },
-      onError: ({ response }) => {
-        const error = response.data.error
         toast.error(t(`error.title.${error.code}`), { description: `${t(`error.description.${error.code}`)} ${error.description || ''}` })
       },
     },
@@ -136,7 +90,7 @@ export function UserProvider({ children }: UserProviderProps) {
     options: {
       onSuccess: ({ data }) => {
         closeModal()
-        queryClient.invalidateQueries({ queryKey: ['users'] })
+        void queryClient.invalidateQueries({ queryKey: ['users'] })
         toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description || ''}` })
       },
       onError: ({ response }) => {
@@ -150,7 +104,7 @@ export function UserProvider({ children }: UserProviderProps) {
   const useMutateRemoveUsers = useUserRemove({
     options: {
       onSuccess: ({ data }) => {
-        queryClient.invalidateQueries({ queryKey: ['users'] })
+        void queryClient.invalidateQueries({ queryKey: ['users'] })
         toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description || ''}` })
       },
       onError: ({ response }) => {
@@ -160,38 +114,21 @@ export function UserProvider({ children }: UserProviderProps) {
     },
   })
 
-  const useMutateImportUsers = useUserImport({
-    options: {
-      onSuccess: ({ data }) => {
-        queryClient.invalidateQueries({ queryKey: ['users'] })
-        toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description || ''}` })
-      },
-      onError: ({ response }) => {
-        const error = response.data.error
-        toast.error(t(`error.title.${error.code}`), { description: `${t(`error.description.${error.code}`)} ${error.description || ''}` })
-      },
-    },
-  })
-
-  const submitUserForm = (params) => {
-    setIsLoading(true)
+  const submitUserForm = (params: UserFormValues) => {
     if (!isEdit)
       return useMutateCreateUser.mutate(params)
+
+    if (!selectedUser)
+      return
 
     return useMutateEditUser.mutate({ ...params, id: selectedUser.id })
   }
 
-  const removeUsers = (params) => {
+  const removeUsers = (params: { ids: string[] }) => {
     useMutateRemoveUsers.mutate(params)
   }
 
-  const importUsers = (params) => {
-    useMutateImportUsers.mutate(params)
-  }
-
-  const duplicateUsers = (params) => {
-    useMutateDuplicateUsers.mutate(params)
-  }
+  const isLoading = useMutateCreateUser.isPending || useMutateEditUser.isPending || useMutateRemoveUsers.isPending
 
   const value: UserContextType = useMemo(
     () => ({
@@ -204,8 +141,6 @@ export function UserProvider({ children }: UserProviderProps) {
       closeModal,
       submitUserForm,
       removeUsers,
-      importUsers,
-      duplicateUsers,
     }),
     [selectedUser, isModalOpen, isLoading, isEdit, form],
   )
@@ -220,4 +155,33 @@ export function useUserContext(): UserContextType {
     throw new Error('useUserContext - UserContext')
   }
   return context
+}
+
+function createUserFormSchema(t: (key: string, options?: Record<string, unknown>) => string) {
+  return z.object({
+    name: z.string({ required_error: t('form.errors.required') }).min(5, { message: t('form.errors.min_length', { count: 5 }) }).trim(),
+    login: z.string({ required_error: t('form.errors.required') }).min(5, { message: t('form.errors.min_length', { count: 5 }) }).trim(),
+    password: z.string().optional(),
+    role: z.string({ required_error: t('form.errors.required') }).trim(),
+    active: z.boolean().default(true),
+  })
+}
+
+function getUserFormValues(user?: UserPopulatedDTO): UserFormValues {
+  if (!user) {
+    return {
+      name: '',
+      login: '',
+      password: '',
+      active: true,
+      role: '',
+    }
+  }
+  return {
+    name: user.name,
+    login: user.login,
+    password: '',
+    active: user.active,
+    role: user.role.id,
+  }
 }

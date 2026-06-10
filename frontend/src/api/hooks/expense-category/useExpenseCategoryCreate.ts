@@ -1,9 +1,9 @@
-import type { createExpenseCategoryParams } from '@/api/types'
+import type { CreateExpenseCategoryRequest } from '@remnant/shared'
 
 import { useMutation } from '@tanstack/react-query'
-import { createExpenseCategory } from '@/api/requests/expense-categories'
+import { createExpenseCategory } from '@/api/requests/'
 
-export function useExpenseCategoryCreate(settings?: MutationSettings<createExpenseCategoryParams, typeof createExpenseCategory>) {
+export function useExpenseCategoryCreate(settings?: MutationSettings<CreateExpenseCategoryRequest>) {
   return useMutation({
     mutationFn: createExpenseCategory,
     ...settings?.options,

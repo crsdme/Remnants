@@ -1,9 +1,14 @@
 import type { NextFunction, Request, Response } from 'express'
+import type { ValidatedRequest } from '@/types'
 import * as TestService from '@/services/test.service'
 
-export async function start(req: Request, res: Response, next: NextFunction) {
+export async function start(
+  req: ValidatedRequest<never, { key: string }>,
+  res: Response,
+  next: NextFunction,
+) {
   try {
-    const serviceResponse = await TestService.start(req.body)
+    const serviceResponse = await TestService.start({ key: req.validated.body.key })
 
     res.status(200).json(serviceResponse)
   }

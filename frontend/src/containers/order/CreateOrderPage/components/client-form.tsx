@@ -1,8 +1,6 @@
-import type { UseFormReturn } from 'react-hook-form'
 import { TrashIcon } from 'lucide-react'
 
 import { useFieldArray } from 'react-hook-form'
-import { useTranslation } from 'react-i18next'
 import { CountrySelect } from '@/components/'
 import {
   Button,
@@ -26,11 +24,12 @@ import {
   Textarea,
 } from '@/components/ui'
 import { SOCIAL_TYPES } from '@/utils/constants'
+import { useLocale } from '@/utils/hooks'
 import { useCreateOrderContext } from '../context'
 
-export function ClientForm({ form, onSubmit }: { form: UseFormReturn, onSubmit: (payments: any) => void }) {
-  const { t } = useTranslation()
-  const { isClientModalOpen, closeClientModal } = useCreateOrderContext()
+export function ClientForm() {
+  const { t } = useLocale()
+  const { isClientModalOpen, closeClientModal, clientForm, createClient } = useCreateOrderContext()
 
   return (
     <Sheet open={isClientModalOpen} onOpenChange={closeClientModal}>
@@ -44,15 +43,15 @@ export function ClientForm({ form, onSubmit }: { form: UseFormReturn, onSubmit: 
           </SheetDescription>
         </SheetHeader>
         <div className="w-full px-4">
-          <FullForm form={form} onSubmit={onSubmit} />
+          <FullForm form={clientForm} onSubmit={(e) => { void clientForm.handleSubmit(v => createClient(v))(e) }} />
         </div>
       </SheetContent>
     </Sheet>
   )
 }
 
-function FullForm({ form, onSubmit }: { form: UseFormReturn, onSubmit: (payments: any) => void }) {
-  const { t, i18n } = useTranslation()
+function FullForm({ form, onSubmit }: { form: any, onSubmit: (payments: any) => void }) {
+  const { t, language } = useLocale()
   const { isLoading } = useCreateOrderContext()
 
   const { fields: phoneFields, append: appendPhone, remove: removePhone } = useFieldArray({
@@ -123,7 +122,7 @@ function FullForm({ form, onSubmit }: { form: UseFormReturn, onSubmit: (payments
             <FormItem>
               <FormLabel>{t('page.create-order.form.country')}</FormLabel>
               <FormControl>
-                <CountrySelect locale={i18n.language} {...field} />
+                <CountrySelect locale={language} {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>

@@ -23,7 +23,7 @@ const BarcodeSchema: Schema = new Schema(
         type: String,
         ref: 'products',
       },
-      quantity: {
+      lineQuantity: {
         type: Number,
         default: 1,
       },

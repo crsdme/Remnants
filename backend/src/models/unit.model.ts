@@ -1,9 +1,13 @@
-import type { Unit } from '@remnant/shared'
+import type { HydratedDocument } from 'mongoose'
+import type { SUPPORTED_LANGUAGES_TYPE } from '@/config/constants'
+import type { UnitDB } from '@/types/'
 import mongoose, { Schema } from 'mongoose'
 import { v4 as uuidv4 } from 'uuid'
 import { SUPPORTED_LANGUAGES } from '@/config/constants'
 import { CounterModel } from '@/models/'
 import { uuidValidator } from '@/utils/'
+
+type UnitDoc = HydratedDocument<UnitDB>
 
 const UnitSchema: Schema = new Schema(
   {
@@ -23,7 +27,7 @@ const UnitSchema: Schema = new Schema(
       validate: {
         validator(value: Map<string, string>) {
           return Array.from(value.keys()).every(key =>
-            SUPPORTED_LANGUAGES.includes(key as any),
+            SUPPORTED_LANGUAGES.includes(key as SUPPORTED_LANGUAGES_TYPE),
           )
         },
         message: 'Supported languages only',
@@ -36,7 +40,7 @@ const UnitSchema: Schema = new Schema(
       validate: {
         validator(value: Map<string, string>) {
           return Array.from(value.keys()).every(key =>
-            SUPPORTED_LANGUAGES.includes(key as any),
+            SUPPORTED_LANGUAGES.includes(key as SUPPORTED_LANGUAGES_TYPE),
           )
         },
         message: 'Supported languages only',
@@ -77,19 +81,15 @@ UnitSchema.set('toJSON', {
   },
 })
 
-UnitSchema.pre('save', async function (next) {
-  const doc = this as any
-
-  if (doc.isNew && !doc.seq) {
-    const counter = await CounterModel.findByIdAndUpdate(
+UnitSchema.pre('save', async function (this: UnitDoc, next) {
+  if (this.isNew) {
+    await CounterModel.findByIdAndUpdate(
       'units',
       { $inc: { seq: 1 } },
       { new: true, upsert: true },
     )
-    doc.seq = counter.seq
   }
-
   next()
 })
 
-export const UnitModel = mongoose.model<Unit>('Unit', UnitSchema)
+export const UnitModel = mongoose.model<UnitDoc>('unit', UnitSchema)

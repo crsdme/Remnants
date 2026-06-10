@@ -12,10 +12,11 @@ interface ColorPickerProps {
   disabled?: boolean
   name?: string
   className?: string
+  ref: React.ForwardedRef<HTMLInputElement>
 }
 
-function ColorPicker({ ref: forwardedRef, disabled, value, onChange, onBlur, name, className, ...props }: ColorPickerProps & { ref?: React.RefObject<HTMLInputElement | null> }) {
-  const ref = useForwardedRef(forwardedRef)
+function ColorPicker({ ref: forwardedRef, disabled, value, onChange, onBlur, name, className, ...props }: ColorPickerProps) {
+  const ref = useForwardedRef<HTMLInputElement>(forwardedRef)
   const [open, setOpen] = useState(false)
 
   const parsedValue = useMemo(() => {

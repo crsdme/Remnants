@@ -1,3 +1,6 @@
+import type { SupplierDTO } from '@remnant/shared'
+import type { Column } from '@tanstack/react-table'
+import { createColumnHelper } from '@tanstack/react-table'
 import {
   ArrowDown,
   ArrowUp,
@@ -7,22 +10,26 @@ import {
   Trash,
 } from 'lucide-react'
 import { useMemo } from 'react'
-import { useTranslation } from 'react-i18next'
 
 import { TableActionDropdown } from '@/components'
 import { Badge, Button, Checkbox } from '@/components/ui'
 import { formatDate } from '@/utils/helpers'
+import { useLocale } from '@/utils/hooks'
+
 import { useSupplierContext } from '../context'
 
 const sortIcons = { asc: ArrowUp, desc: ArrowDown }
 
+const columnHelper = createColumnHelper<SupplierDTO>()
+
 export function useColumns() {
-  const { t, i18n } = useTranslation()
+  const { t, language } = useLocale()
   const { isLoading, openModal, removeSupplier } = useSupplierContext()
 
   const columns = useMemo(() => {
-    function sortHeader(column, label) {
-      const Icon = sortIcons[column.getIsSorted() || undefined] || ChevronsUpDown
+    function sortHeader(column: Column<SupplierDTO, unknown>, label: string) {
+      const sorted = column.getIsSorted()
+      const Icon = sorted ? sortIcons[sorted] : ChevronsUpDown
 
       return (
         <Button
@@ -38,7 +45,7 @@ export function useColumns() {
     }
 
     function selectColumn() {
-      return ({
+      return columnHelper.display({
         id: 'select',
         size: 35,
         meta: { title: t('component.columnMenu.columns.select') },
@@ -70,7 +77,7 @@ export function useColumns() {
     }
 
     function actionColumn() {
-      return ({
+      return columnHelper.display({
         id: 'action',
         size: 85,
         meta: {
@@ -83,7 +90,7 @@ export function useColumns() {
           const actions = [
             {
               permission: 'supplier.copy',
-              onClick: () => navigator.clipboard.writeText(item.id),
+              onClick: async () => navigator.clipboard.writeText(item.id),
               label: t('table.copy'),
               icon: <Copy className="h-4 w-4" />,
             },
@@ -110,7 +117,7 @@ export function useColumns() {
 
     return [
       selectColumn(),
-      {
+      columnHelper.accessor('name', {
         id: 'name',
         size: 150,
         meta: {
@@ -123,11 +130,9 @@ export function useColumns() {
           defaultVisible: true,
         },
         header: ({ column }) => sortHeader(column, t('page.suppliers.table.name')),
-        accessorFn: row => `${row.name} ${row.middleName || ''} ${row.lastName || ''}`.trim(),
-      },
-      {
+      }),
+      columnHelper.accessor('phones', {
         id: 'phones',
-        accessorKey: 'phones',
         meta: {
           title: t('page.suppliers.table.phones'),
           batchEdit: true,
@@ -136,19 +141,20 @@ export function useColumns() {
           filterType: 'number',
           sortable: true,
         },
-        header: t('page.suppliers.table.phones'),
+        header: ({ column }) => sortHeader(column, t('page.suppliers.table.phones')),
         cell: ({ row }) => {
           const phones = row.original.phones || []
           return (
             <div className="flex flex-wrap gap-2">
-              {phones.map(phone => <Badge key={`${row.original.id}-${phone}-${Math.random()}`} variant="outline">{phone}</Badge>)}
+              {phones.map((phone, index) => (
+                <Badge key={`${row.original.id}-phone-${index}-${phone}`} variant="outline">{phone}</Badge>
+              ))}
             </div>
           )
         },
-      },
-      {
+      }),
+      columnHelper.accessor('emails', {
         id: 'emails',
-        accessorKey: 'emails',
         meta: {
           title: t('page.suppliers.table.emails'),
           batchEdit: true,
@@ -157,19 +163,20 @@ export function useColumns() {
           filterType: 'text',
           sortable: true,
         },
-        header: t('page.suppliers.table.emails'),
+        header: ({ column }) => sortHeader(column, t('page.suppliers.table.emails')),
         cell: ({ row }) => {
           const emails = row.original.emails || []
           return (
             <div className="flex flex-wrap gap-2">
-              {emails.map(email => <Badge key={`${row.original.id}-${email}-${Math.random()}`} variant="outline">{email}</Badge>)}
+              {emails.map((email, index) => (
+                <Badge key={`${row.original.id}-email-${index}-${email}`} variant="outline">{email}</Badge>
+              ))}
             </div>
           )
         },
-      },
-      {
+      }),
+      columnHelper.accessor('socials', {
         id: 'socials',
-        accessorKey: 'socials',
         meta: {
           title: t('page.suppliers.table.socials'),
           batchEdit: true,
@@ -178,23 +185,22 @@ export function useColumns() {
           filterType: 'text',
           sortable: true,
         },
-        header: t('page.suppliers.table.socials'),
+        header: ({ column }) => sortHeader(column, t('page.suppliers.table.socials')),
         cell: ({ row }) => {
           const socials = row.original.socials || []
           return (
             <div className="flex flex-wrap gap-2">
               {socials.map(social => (
-                <Badge key={`${row.original.id}-${social.value}}`} variant="outline">
+                <Badge key={`${row.original.id}-${social.type}-${social.value}`} variant="outline">
                   {`${t(`socials.type.${social.type}`)}: ${social.value}`}
                 </Badge>
               ))}
             </div>
           )
         },
-      },
-      {
+      }),
+      columnHelper.accessor('createdAt', {
         id: 'createdAt',
-        accessorKey: 'createdAt',
         meta: {
           title: t('table.createdAt'),
           filterable: true,
@@ -202,11 +208,10 @@ export function useColumns() {
           sortable: true,
         },
         header: ({ column }) => sortHeader(column, t('table.createdAt')),
-        cell: ({ row }) => formatDate(row.getValue('createdAt'), 'dd.MM.yyyy HH:mm', i18n.language),
-      },
-      {
+        cell: ({ row }) => formatDate(row.getValue('createdAt'), 'dd.MM.yyyy HH:mm', language),
+      }),
+      columnHelper.accessor('updatedAt', {
         id: 'updatedAt',
-        accessorKey: 'updatedAt',
         meta: {
           title: t('table.updatedAt'),
           filterable: true,
@@ -214,10 +219,11 @@ export function useColumns() {
           sortable: true,
         },
         header: ({ column }) => sortHeader(column, t('table.updatedAt')),
-        cell: ({ row }) => formatDate(row.getValue('updatedAt'), 'dd.MM.yyyy HH:mm', i18n.language),
-      },
+        cell: ({ row }) => formatDate(row.getValue('updatedAt'), 'dd.MM.yyyy HH:mm', language),
+      }),
       actionColumn(),
     ]
-  }, [i18n.language])
+  }, [isLoading, language, openModal, removeSupplier, t])
+
   return columns
 }

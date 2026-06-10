@@ -1,24 +1,27 @@
 import type {
-  createDeliveryServicesParams,
-  DeliveryServicesResponse,
-  editDeliveryServicesParams,
-  getDeliveryServicesParams,
-  removeDeliveryServicesParams,
-} from '@/api/types'
+  CreateDeliveryServiceRequest,
+  CreateDeliveryServiceResponse,
+  EditDeliveryServiceRequest,
+  EditDeliveryServiceResponse,
+  GetDeliveryServicesRequest,
+  GetDeliveryServicesResponse,
+  RemoveDeliveryServicesRequest,
+  RemoveDeliveryServicesResponse,
+} from '@remnant/shared'
 import { api } from '@/api/instance'
 
-export async function getDeliveryServices(params: getDeliveryServicesParams) {
-  return api.get<DeliveryServicesResponse>('delivery-services/get', { params })
+export async function getDeliveryServices(params: GetDeliveryServicesRequest) {
+  return api.get<GetDeliveryServicesResponse>('delivery-services/get', { params })
 }
 
-export async function createDeliveryService(params: createDeliveryServicesParams) {
-  return api.post<DeliveryServicesResponse>('delivery-services/create', { ...params })
+export async function createDeliveryService(params: CreateDeliveryServiceRequest) {
+  return api.post<CreateDeliveryServiceResponse>('delivery-services/create', { ...params })
 }
 
-export async function editDeliveryService(params: editDeliveryServicesParams) {
-  return api.post<DeliveryServicesResponse>('delivery-services/edit', params)
+export async function editDeliveryService(params: EditDeliveryServiceRequest) {
+  return api.post<EditDeliveryServiceResponse>('delivery-services/edit', params)
 }
 
-export async function removeDeliveryService(params: removeDeliveryServicesParams) {
-  return api.post<DeliveryServicesResponse>('delivery-services/remove', params)
+export async function removeDeliveryService(params: RemoveDeliveryServicesRequest) {
+  return api.post<RemoveDeliveryServicesResponse>('delivery-services/remove', params)
 }

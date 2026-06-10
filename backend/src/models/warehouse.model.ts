@@ -1,8 +1,12 @@
-import type { Warehouse } from '@remnant/shared'
+import type { HydratedDocument } from 'mongoose'
+import type { SUPPORTED_LANGUAGES_TYPE } from '@/config/constants'
+import type { WarehouseDB } from '@/types'
 import mongoose, { Schema } from 'mongoose'
 import { v4 as uuidv4 } from 'uuid'
 import { SUPPORTED_LANGUAGES } from '@/config/constants'
 import { uuidValidator } from '@/utils/'
+
+export type WarehouseDoc = HydratedDocument<WarehouseDB>
 
 const WarehouseSchema: Schema = new Schema(
   {
@@ -18,7 +22,7 @@ const WarehouseSchema: Schema = new Schema(
       validate: {
         validator(value: Map<string, string>) {
           return Array.from(value.keys()).every(key =>
-            SUPPORTED_LANGUAGES.includes(key as any),
+            SUPPORTED_LANGUAGES.includes(key as SUPPORTED_LANGUAGES_TYPE),
           )
         },
         message: 'Supported languages only',
@@ -50,4 +54,4 @@ WarehouseSchema.set('toJSON', {
   },
 })
 
-export const WarehouseModel = mongoose.model<Warehouse>('Warehouse', WarehouseSchema)
+export const WarehouseModel = mongoose.model<WarehouseDoc>('Warehouse', WarehouseSchema)

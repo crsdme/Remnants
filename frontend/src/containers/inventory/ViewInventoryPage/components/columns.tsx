@@ -1,3 +1,6 @@
+import type { Column } from '@tanstack/react-table'
+import type { ViewInventoryTableRow } from '../context'
+import { createColumnHelper } from '@tanstack/react-table'
 import {
   ArrowDown,
   ArrowUp,
@@ -6,26 +9,33 @@ import {
   ChevronRight,
   ChevronsUpDown,
   Copy,
+  Eye,
   Pencil,
   Trash,
 } from 'lucide-react'
-import { useMemo } from 'react'
-import { useTranslation } from 'react-i18next'
 
+import { useMemo } from 'react'
+
+import { useNavigate } from 'react-router-dom'
 import { TableActionDropdown } from '@/components'
 import { Badge, Button } from '@/components/ui'
 import { formatDate } from '@/utils/helpers'
+import { useLocale } from '@/utils/hooks'
 import { useViewInventoryContext } from '../context'
 
 const sortIcons = { asc: ArrowUp, desc: ArrowDown }
 
+const columnHelper = createColumnHelper<ViewInventoryTableRow>()
+
 export function useColumns() {
-  const { t, i18n } = useTranslation()
+  const { t, language } = useLocale()
   const { isLoading } = useViewInventoryContext()
+  const navigate = useNavigate()
 
   const columns = useMemo(() => {
-    function sortHeader(column, label) {
-      const Icon = sortIcons[column.getIsSorted() || undefined] || ChevronsUpDown
+    function sortHeader(column: Column<ViewInventoryTableRow, unknown>, label: string) {
+      const sorted = column.getIsSorted()
+      const Icon = sorted ? sortIcons[sorted] : ChevronsUpDown
 
       return (
         <Button
@@ -41,7 +51,7 @@ export function useColumns() {
     }
 
     function actionColumn() {
-      return ({
+      return columnHelper.display({
         id: 'action',
         size: 85,
         meta: {
@@ -53,27 +63,33 @@ export function useColumns() {
 
           const actions = [
             {
-              permission: 'warehouse-transaction.copy',
-              onClick: () => navigator.clipboard.writeText(item.id),
+              permission: 'inventory.copy',
+              onClick: async () => navigator.clipboard.writeText(item.id),
               label: t('table.copy'),
               icon: <Copy className="h-4 w-4" />,
             },
             {
-              permission: 'warehouse-transaction.edit',
+              permission: 'inventory.edit',
               onClick: async () => {},
               label: t('table.edit'),
               icon: <Pencil className="h-4 w-4" />,
             },
+            {
+              permission: 'inventory.view',
+              onClick: async () => navigate(`/inventories/view/${item.seq}`),
+              label: t('table.view'),
+              icon: <Eye className="h-4 w-4" />,
+            },
             ...(item.status === 'awaiting'
               ? [{
-                  permission: 'warehouse-transaction.receive',
+                  permission: 'inventory.receive',
                   onClick: async () => {},
                   label: t('table.receive'),
                   icon: <Check className="h-4 w-4" />,
                 }]
               : []),
             {
-              permission: 'warehouse-transaction.delete',
+              permission: 'inventory.delete',
               onClick: () => {},
               label: t('table.delete'),
               icon: <Trash className="h-4 w-4" />,
@@ -88,7 +104,7 @@ export function useColumns() {
     }
 
     function expanderColumn() {
-      return ({
+      return columnHelper.display({
         id: 'expander',
         header: '',
         cell: ({ row }) => {
@@ -111,9 +127,18 @@ export function useColumns() {
       })
     }
 
+    function warehouseLabel(row: ViewInventoryTableRow) {
+      const w = row.warehouse
+      if (w === undefined || w === null)
+        return t('page.warehouse-transactions.table.empty')
+      if (typeof w === 'string')
+        return w
+      return w.names?.[language] ?? t('page.warehouse-transactions.table.empty')
+    }
+
     return [
       expanderColumn(),
-      {
+      columnHelper.display({
         id: 'seq',
         meta: {
           title: t('page.products.table.seq'),
@@ -122,79 +147,66 @@ export function useColumns() {
           sortable: true,
         },
         cell: ({ row }) => row.original.seq,
-      },
-      {
-        id: 'type',
+      }),
+      columnHelper.display({
+        id: 'category',
         size: 150,
         meta: {
-          title: t('page.warehouse-transactions.table.type'),
+          title: t('page.inventories.table.category'),
           filterable: true,
           filterType: 'select',
           sortable: true,
           defaultVisible: true,
         },
-        header: ({ column }) => sortHeader(column, t('page.warehouse-transactions.table.type')),
-        cell: ({ row }) => {
-          const badgeType = {
-            in: 'success',
-            out: 'destructive',
-            transfer: 'default',
-          }
-          return <Badge variant={badgeType[row.original.type]}>{t(`page.warehouse-transactions.table.type.${row.original.type.toLowerCase()}`)}</Badge>
-        },
-      },
-      {
-        id: 'fromWarehouse',
-        accessorKey: 'fromWarehouse',
+        header: ({ column }) => sortHeader(column, t('page.inventories.table.category')),
+        cell: ({ row }) => (
+          <Badge>
+            {row.original.category?.names?.[language] ?? t('page.warehouse-transactions.table.empty')}
+          </Badge>
+        ),
+      }),
+      columnHelper.display({
+        id: 'warehouse',
         meta: {
-          title: t('page.warehouse-transactions.table.fromWarehouse'),
+          title: t('page.inventories.table.warehouse'),
           filterable: true,
           filterType: 'select',
         },
-        header: () => t('page.warehouse-transactions.table.fromWarehouse'),
-        cell: ({ row }) => <Badge variant="outline">{row.original?.fromWarehouse?.names[i18n.language] || t('page.warehouse-transactions.table.empty')}</Badge>,
-      },
-      {
-        id: 'toWarehouse',
-        accessorKey: 'toWarehouse',
-        meta: {
-          title: t('page.warehouse-transactions.table.toWarehouse'),
-          filterable: true,
-          filterType: 'select',
-        },
-        header: () => t('page.warehouse-transactions.table.toWarehouse'),
-        cell: ({ row }) => <Badge variant="outline">{row.original?.toWarehouse?.names[i18n.language] || t('page.warehouse-transactions.table.empty')}</Badge>,
-      },
-      {
+        header: () => t('page.inventories.table.warehouse'),
+        cell: ({ row }) => <Badge variant="outline">{warehouseLabel(row.original)}</Badge>,
+      }),
+      columnHelper.accessor('status', {
         id: 'status',
-        accessorKey: 'status',
         meta: {
-          title: t('page.warehouse-transactions.table.status'),
+          title: t('page.inventories.table.status'),
           filterable: true,
           filterType: 'select',
         },
-        header: () => t('page.warehouse-transactions.table.status'),
+        header: () => t('page.inventories.table.status'),
         cell: ({ row }) => {
           const badgeType = {
             draft: 'default',
             confirmed: 'success',
             cancelled: 'destructive',
             received: 'success',
-          }
-          return <Badge variant={badgeType[row.original.status]}>{t(`page.warehouse-transactions.table.status.${row.original.status.toLowerCase()}`)}</Badge>
+          } as const
+          const status = row.original.status
+          return (
+            <Badge variant={badgeType[status as keyof typeof badgeType] ?? 'default'}>
+              {t(`page.inventories.table.status.${status.toLowerCase()}`)}
+            </Badge>
+          )
         },
-      },
-      {
+      }),
+      columnHelper.accessor('comment', {
         id: 'comment',
-        accessorKey: 'comment',
         meta: {
-          title: t('page.warehouse-transactions.table.comment'),
+          title: t('page.inventories.table.comment'),
         },
-        header: () => t('page.warehouse-transactions.table.comment'),
-      },
-      {
+        header: () => t('page.inventories.table.comment'),
+      }),
+      columnHelper.accessor('createdAt', {
         id: 'createdAt',
-        accessorKey: 'createdAt',
         meta: {
           title: t('table.createdAt'),
           filterable: true,
@@ -202,11 +214,10 @@ export function useColumns() {
           sortable: true,
         },
         header: ({ column }) => sortHeader(column, t('table.createdAt')),
-        cell: ({ row }) => formatDate(row.getValue('createdAt'), 'dd.MM.yyyy HH:mm', i18n.language),
-      },
-      {
+        cell: ({ row }) => formatDate(row.getValue('createdAt'), 'dd.MM.yyyy HH:mm', language),
+      }),
+      columnHelper.accessor('updatedAt', {
         id: 'updatedAt',
-        accessorKey: 'updatedAt',
         meta: {
           title: t('table.updatedAt'),
           filterable: true,
@@ -214,10 +225,11 @@ export function useColumns() {
           sortable: true,
         },
         header: ({ column }) => sortHeader(column, t('table.updatedAt')),
-        cell: ({ row }) => formatDate(row.getValue('updatedAt'), 'dd.MM.yyyy HH:mm', i18n.language),
-      },
+        cell: ({ row }) => formatDate(row.getValue('updatedAt'), 'dd.MM.yyyy HH:mm', language),
+      }),
       actionColumn(),
     ]
-  }, [i18n.language])
+  }, [isLoading, language, navigate, t])
+
   return columns
 }

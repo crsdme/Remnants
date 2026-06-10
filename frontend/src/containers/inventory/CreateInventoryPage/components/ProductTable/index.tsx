@@ -1,13 +1,13 @@
-import type { ColumnSort } from '@tanstack/react-table'
+import type { ProductPopulatedDTO } from '@remnant/shared'
+import type { ColumnSort, Row } from '@tanstack/react-table'
 import { flexRender, getCoreRowModel, getExpandedRowModel, useReactTable } from '@tanstack/react-table'
 import { Package } from 'lucide-react'
 import { Fragment, useState } from 'react'
-import { useTranslation } from 'react-i18next'
 
 import { ColumnVisibilityMenu, TablePagination } from '@/components'
 import { Skeleton, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui'
 
-import { useDebounceCallback } from '@/utils/hooks'
+import { useDebounceCallback, useLocale } from '@/utils/hooks'
 import { cn } from '@/utils/lib/utils'
 import { useColumns } from './columns'
 
@@ -37,7 +37,7 @@ export function ProductSelectedTable(
     lastAddedProductId,
   }: ProductSelectedTableProps,
 ) {
-  const { t } = useTranslation()
+  const { t } = useLocale()
 
   const [columnVisibility, setColumnVisibility] = useState({})
   const [sorting, setSorting] = useState<ColumnSort[]>([])
@@ -46,7 +46,13 @@ export function ProductSelectedTable(
     changeProduct?.({ productId, field, value })
   }, 500)
 
-  function handleChange({ productId, field, value, isDebounced = false }: { productId: string, field: string, value: number, isDebounced?: boolean }) {
+  function handleChange({ productId, field, value, isDebounced = false }:
+  {
+    productId: string
+    field: string
+    value: string | number | string[]
+    isDebounced?: boolean
+  }) {
     if (isDebounced) {
       debouncedUpdate({ productId, field, value })
     }
@@ -106,7 +112,7 @@ export function ProductSelectedTable(
     ))
   }
 
-  const renderRow = row => (
+  const renderRow = (row: Row<ProductPopulatedDTO>) => (
     <Fragment key={row.id}>
       <TableRow
         data-state={row.getIsSelected() && 'selected'}
@@ -148,7 +154,7 @@ export function ProductSelectedTable(
       <div className="flex justify-between items-center max-md:flex-col gap-2 py-2">
         <h3 className="text-lg font-medium flex items-center gap-2">
           <Package className="size-5" />
-          <p className="text-lg font-medium">{t('component.productTable.table.selectedProducts', { count: products.reduce((acc, product) => acc + product.quantity, 0) })}</p>
+          <p className="text-lg font-medium">{t('component.productTable.table.selectedProducts', { count: products.reduce((acc, product) => acc + product.lineQuantity, 0) })}</p>
         </h3>
         <ColumnVisibilityMenu
           table={table}

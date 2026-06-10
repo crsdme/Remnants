@@ -1,4 +1,4 @@
-import { batchLanguageSchema, createLanguageSchema, editLanguageSchema, getLanguageSchema, removeLanguageSchema } from '@remnant/shared'
+import { createLanguageSchema, editLanguageSchema, getLanguageSchema, removeLanguageSchema } from '@remnant/shared'
 import { registry } from '@/docs/registry'
 
 registry.registerPath({
@@ -89,59 +89,6 @@ registry.registerPath({
   responses: {
     200: {
       description: 'Язык успешно удален',
-    },
-  },
-})
-
-registry.registerPath({
-  method: 'post',
-  path: '/languages/batch',
-  summary: 'Массовое обновление языков',
-  operationId: 'batchLanguages',
-  tags: ['Languages'],
-  request: {
-    body: {
-      content: {
-        'application/json': {
-          schema: batchLanguageSchema,
-        },
-      },
-    },
-  },
-  responses: {
-    200: {
-      description: 'Массовое обновление успешно выполнено',
-    },
-  },
-})
-
-registry.registerPath({
-  method: 'post',
-  path: '/languages/import',
-  summary: 'Импорт языков из файла',
-  operationId: 'importLanguages',
-  tags: ['Languages'],
-  request: {
-    body: {
-      content: {
-        'multipart/form-data': {
-          schema: {
-            type: 'object',
-            properties: {
-              file: {
-                type: 'string',
-                format: 'binary',
-              },
-            },
-            required: ['file'],
-          },
-        },
-      },
-    },
-  },
-  responses: {
-    200: {
-      description: 'Файл успешно загружен',
     },
   },
 })

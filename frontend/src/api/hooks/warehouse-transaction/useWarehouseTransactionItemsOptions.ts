@@ -1,24 +1,18 @@
-import { useQueryClient } from '@tanstack/react-query'
-import { getWarehouseTransactionsItems } from '@/api/requests'
+export function useWarehouseTransactionItemsOptions(value: any) {
+  return value
+  // const queryClient = useQueryClient()
 
-interface LoadOptionsParams {
-  selectedValue?: string[]
-}
+  // return async function loadWarehouseTransactionItemsOptions({ selectedValue }: LoadOptionsParams): Promise<GetWarehouseTransactionsItemsResponse[]> {
+  //   const filters = selectedValue ? { transactionId: selectedValue?.[0] } : {}
 
-export function useWarehouseTransactionItemsOptions({ mapFn }: { mapFn?: (warehouseTransactionItem: WarehouseTransactionItem) => { value: string, label: string } } = {}) {
-  const queryClient = useQueryClient()
+  //   const data = await queryClient.fetchQuery({
+  //     queryKey: ['warehouse-transactions', 'get', 'items', filters],
+  //     queryFn: () => getWarehouseTransactionsItems({ filters, pagination: { full: true } }),
+  //     staleTime: 60000,
+  //   })
 
-  return async function loadWarehouseTransactionItemsOptions({ selectedValue }: LoadOptionsParams): Promise<WarehouseTransactionItem[]> {
-    const filters = selectedValue ? { transactionId: selectedValue?.[0] } : {}
+  //   const warehouseTransactionsItems = data?.data?.warehouseTransactionsItems || []
 
-    const data = await queryClient.fetchQuery({
-      queryKey: ['warehouse-transactions', 'get', 'items', filters],
-      queryFn: () => getWarehouseTransactionsItems({ filters, pagination: { full: true } }),
-      staleTime: 60000,
-    })
-
-    const warehouseTransactionsItems = data?.data?.warehouseTransactionsItems || []
-
-    return mapFn ? warehouseTransactionsItems.map(mapFn) as unknown as WarehouseTransactionItem[] : warehouseTransactionsItems
-  }
+  //   return mapFn ? warehouseTransactionsItems.map(mapFn) as unknown as WarehouseTransactionItem[] : warehouseTransactionsItems
+  // }
 }

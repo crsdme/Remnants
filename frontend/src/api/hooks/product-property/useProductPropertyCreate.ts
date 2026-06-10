@@ -1,9 +1,9 @@
-import type { createProductPropertiesParams } from '@/api/types'
+import type { CreateProductPropertyRequest } from '@remnant/shared'
 
 import { useMutation } from '@tanstack/react-query'
 import { createProductProperty } from '@/api/requests'
 
-export function useProductPropertyCreate(settings?: MutationSettings<createProductPropertiesParams, typeof createProductProperty>) {
+export function useProductPropertyCreate(settings?: MutationSettings<CreateProductPropertyRequest>) {
   return useMutation({
     mutationFn: createProductProperty,
     ...settings?.options,

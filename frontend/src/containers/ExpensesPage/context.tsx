@@ -1,11 +1,11 @@
+import type { ExpensePopulatedDTO } from '@remnant/shared'
 import type { ReactNode } from 'react'
-import type { UseFormReturn } from 'react-hook-form'
+import type { Resolver, UseFormReturn } from 'react-hook-form'
 
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useQueryClient } from '@tanstack/react-query'
 import { createContext, useContext, useMemo, useState } from 'react'
 import { useForm } from 'react-hook-form'
-import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { z } from 'zod'
 
@@ -14,32 +14,58 @@ import {
   useExpenseEdit,
   useExpenseRemove,
 } from '@/api/hooks'
+import { useLocale } from '@/utils/hooks'
 
 interface ExpenseContextType {
-  selectedExpense: Expense
+  selectedExpense: ExpensePopulatedDTO | null
   isModalOpen: boolean
   isLoading: boolean
   isEdit: boolean
-  form: UseFormReturn
-  openModal: (expense?: Expense) => void
+  form: UseFormReturn<ExpenseFormValues>
+  openModal: (expense?: ExpensePopulatedDTO) => void
   closeModal: () => void
-  submitExpenseForm: (params) => void
+  submitExpenseForm: (params: ExpenseFormValues) => void
   removeExpense: (params: { ids: string[] }) => void
 }
 
 const ExpenseContext = createContext<ExpenseContextType | undefined>(undefined)
 
-interface ExpenseProviderProps {
-  children: ReactNode
+export interface ExpenseFormValues {
+  amount: number
+  currency: string
+  cashregister: string
+  cashregisterAccount: string
+  categories: string[]
+  comment: string
 }
 
-export function ExpenseProvider({ children }: ExpenseProviderProps) {
-  const [isModalOpen, setIsModalOpen] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
-  const [isEdit, setIsEdit] = useState(false)
-  const [selectedExpense, setSelectedExpense] = useState(null)
+function getExpenseFormValues(expense?: ExpensePopulatedDTO): ExpenseFormValues {
+  if (!expense) {
+    return {
+      amount: 0,
+      currency: '',
+      cashregister: '',
+      cashregisterAccount: '',
+      categories: [],
+      comment: '',
+    }
+  }
+  return {
+    amount: expense.amount,
+    currency: expense.currency.id,
+    cashregister: expense.cashregister.id,
+    cashregisterAccount: expense.cashregisterAccount.id,
+    categories: expense.categories.map(category => category.id),
+    comment: expense.comment ?? '',
+  }
+}
 
-  const { t } = useTranslation()
+export function ExpenseProvider({ children }: { children: ReactNode }) {
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [isEdit, setIsEdit] = useState(false)
+  const [selectedExpense, setSelectedExpense] = useState<ExpensePopulatedDTO | null>(null)
+
+  const { t } = useLocale()
 
   const formSchema = useMemo(() =>
     z.object({
@@ -48,54 +74,29 @@ export function ExpenseProvider({ children }: ExpenseProviderProps) {
       cashregister: z.string({ required_error: t('form.errors.required') }),
       cashregisterAccount: z.string({ required_error: t('form.errors.required') }),
       categories: z.array(z.string({ required_error: t('form.errors.required') })),
+      comment: z.string().optional(),
     }), [t])
 
-  const form = useForm({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      amount: 0,
-      currency: '',
-      cashregister: '',
-      cashregisterAccount: '',
-      categories: [],
-    },
+  const form = useForm<ExpenseFormValues>({
+    resolver: zodResolver(formSchema) as Resolver<ExpenseFormValues>,
+    defaultValues: getExpenseFormValues(),
   })
 
   const queryClient = useQueryClient()
-
-  function getExpenseFormValues(expense) {
-    if (!expense) {
-      return {
-        amount: 0,
-        currency: '',
-        cashregister: '',
-        cashregisterAccount: '',
-        categories: [],
-      }
-    }
-    return {
-      amount: expense.amount,
-      currency: expense.currency.id,
-      cashregister: expense.cashregister.id,
-      cashregisterAccount: expense.cashregisterAccount.id,
-      categories: expense.categories.map(category => category.id),
-    }
-  }
 
   const closeModal = () => {
     if (!isModalOpen)
       return
     setIsModalOpen(false)
-    setIsLoading(false)
     setIsEdit(false)
     setSelectedExpense(null)
     form.reset()
   }
 
-  const openModal = (expense) => {
+  const openModal = (expense?: ExpensePopulatedDTO) => {
     setIsModalOpen(true)
     setIsEdit(!!expense)
-    setSelectedExpense(expense)
+    setSelectedExpense(expense ?? null)
     form.reset(getExpenseFormValues(expense))
   }
 
@@ -103,9 +104,9 @@ export function ExpenseProvider({ children }: ExpenseProviderProps) {
     options: {
       onSuccess: ({ data }) => {
         closeModal()
-        queryClient.invalidateQueries({ queryKey: ['expenses'] })
-        queryClient.invalidateQueries({ queryKey: ['money-transactions'] })
-        queryClient.invalidateQueries({ queryKey: ['statistics'] })
+        void queryClient.invalidateQueries({ queryKey: ['expenses'] })
+        void queryClient.invalidateQueries({ queryKey: ['money-transactions'] })
+        void queryClient.invalidateQueries({ queryKey: ['statistics'] })
         toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description || ''}` })
       },
       onError: ({ response }) => {
@@ -120,7 +121,7 @@ export function ExpenseProvider({ children }: ExpenseProviderProps) {
     options: {
       onSuccess: ({ data }) => {
         closeModal()
-        queryClient.invalidateQueries({ queryKey: ['expenses'] })
+        void queryClient.invalidateQueries({ queryKey: ['expenses'] })
         toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description || ''}` })
       },
       onError: ({ response }) => {
@@ -134,7 +135,7 @@ export function ExpenseProvider({ children }: ExpenseProviderProps) {
   const useMutateRemoveExpense = useExpenseRemove({
     options: {
       onSuccess: ({ data }) => {
-        queryClient.invalidateQueries({ queryKey: ['expenses'] })
+        void queryClient.invalidateQueries({ queryKey: ['expenses'] })
         toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description || ''}` })
       },
       onError: ({ response }) => {
@@ -144,18 +145,18 @@ export function ExpenseProvider({ children }: ExpenseProviderProps) {
     },
   })
 
-  const removeExpense = (params) => {
+  const removeExpense = (params: { ids: string[] }) => {
     useMutateRemoveExpense.mutate(params)
   }
 
-  const submitExpenseForm = (params) => {
-    setIsLoading(true)
-    params.type = 'manual'
+  const submitExpenseForm = (params: ExpenseFormValues) => {
     if (!selectedExpense)
-      return useMutateCreateExpense.mutate(params)
+      return useMutateCreateExpense.mutate({ ...params, type: 'manual' })
 
-    return useMutateEditExpense.mutate({ ...params, id: selectedExpense.id })
+    return useMutateEditExpense.mutate({ ...params, id: selectedExpense.id, type: 'manual' })
   }
+
+  const isLoading = useMutateCreateExpense.isPending || useMutateEditExpense.isPending || useMutateRemoveExpense.isPending
 
   const value: ExpenseContextType = useMemo(
     () => ({

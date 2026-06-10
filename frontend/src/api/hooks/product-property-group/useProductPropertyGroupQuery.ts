@@ -1,13 +1,25 @@
-import type { getProductPropertiesGroupsParams } from '@/api/types'
+import type { GetProductPropertyGroupRequest } from '@remnant/shared'
 
 import { useQuery } from '@tanstack/react-query'
-import { getProductPropertiesGroups } from '@/api/requests'
+import { getProductPropertyGroups } from '@/api/requests'
 
-export function useProductPropertyGroupQuery(params: getProductPropertiesGroupsParams, settings?: QuerySettings) {
-  return useQuery({
+const EMPTY_ITEMS: never[] = []
+
+export function useProductPropertyGroupQuery(params: GetProductPropertyGroupRequest, settings?: QuerySettings<typeof getProductPropertyGroups>) {
+  const query = useQuery({
     queryKey: ['product-properties-groups', 'get', params],
-    queryFn: () => getProductPropertiesGroups(params),
+    queryFn: async () => getProductPropertyGroups(params),
     staleTime: 60000,
     ...settings?.options,
   })
+
+  const listData = query.data?.data?.data
+  const productPropertyGroups = listData?.items ?? EMPTY_ITEMS
+  const productPropertyGroupsCount = listData?.pagination?.total ?? 0
+
+  return {
+    ...query,
+    productPropertyGroups,
+    productPropertyGroupsCount,
+  }
 }

@@ -1,41 +1,29 @@
 import { flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table'
-import { Fragment, useMemo, useState } from 'react'
-import { useTranslation } from 'react-i18next'
+import { Fragment, useState } from 'react'
 
 import { useExpenseCategoryQuery } from '@/api/hooks'
-import { ColumnVisibilityMenu, TablePagination, TableSelectionDropdown } from '@/components'
+import { ColumnVisibilityMenu, TablePagination } from '@/components'
 import { Skeleton, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui'
-import { useDebounceCallback } from '@/utils/hooks'
-import { useExpenseCategoryContext } from '../context'
+import { useListQueryState, useLocale } from '@/utils/hooks'
 
 import { useColumns } from './columns'
 
 export function DataTable() {
-  const { t } = useTranslation()
-  const { removeExpenseCategory } = useExpenseCategoryContext()
-
+  const { t } = useLocale()
   const [columnVisibility, setColumnVisibility] = useState({})
-  const [rowSelection, setRowSelection] = useState({})
-  const [sorting, setSorting] = useState([])
-  const [pagination, setPagination] = useState({
-    current: 1,
-    pageSize: 10,
-  })
   const columns = useColumns()
+  const {
+    pagination,
+    setPagination,
+    sorting,
+    setSorting,
+    sorters,
+    filters,
+  } = useListQueryState()
 
-  const sorters = useMemo(() => (
-    Object.fromEntries(sorting.map(({ id, desc }) => [id, desc ? 'desc' : 'asc']))
-  ), [sorting])
-
-  const { data: { expenseCategories = [], expenseCategoriesCount = 0 } = {}, isLoading, isFetching } = useExpenseCategoryQuery(
-    { pagination, sorters },
-    { options: {
-      select: response => ({
-        expenseCategories: response.data.expenseCategories,
-        expenseCategoriesCount: response.data.expenseCategoriesCount,
-      }),
-      placeholderData: prevData => prevData,
-    } },
+  const { expenseCategories = [], expenseCategoriesCount = 0, isLoading, isFetching } = useExpenseCategoryQuery(
+    { pagination, filters, sorters },
+    { options: { placeholderData: prevData => prevData } },
   )
 
   const table = useReactTable({
@@ -43,14 +31,12 @@ export function DataTable() {
     columns,
     getCoreRowModel: getCoreRowModel(),
     onColumnVisibilityChange: setColumnVisibility,
-    onRowSelectionChange: setRowSelection,
     onSortingChange: setSorting,
     manualSorting: true,
     enableSortingRemoval: true,
     state: {
       sorting,
       columnVisibility,
-      rowSelection,
       pagination: {
         pageIndex: pagination.current - 1,
         pageSize: pagination.pageSize,
@@ -120,25 +106,11 @@ export function DataTable() {
     )
   }
 
-  const handleBulkRemove = () => {
-    const ids = expenseCategories.filter((_, index) => rowSelection[index]).map(item => item.id)
-    removeExpenseCategory({ ids })
-    setRowSelection({})
-  }
-
-  const changePagination = useDebounceCallback((value: Pagination) => {
-    setPagination(state => ({ ...state, ...value }))
-  }, 50)
-
   return (
     <>
       <div className="w-full flex justify-end items-start max-md:flex-col gap-2 py-2">
         <div className="flex gap-2">
-          <TableSelectionDropdown
-            selectedCount={Object.keys(rowSelection).length}
-            onRemove={handleBulkRemove}
-          />
-          <ColumnVisibilityMenu table={table} tableId="order-status" />
+          <ColumnVisibilityMenu table={table} tableId="expense-category" />
         </div>
       </div>
       <div className="border rounded-sm">
@@ -150,8 +122,7 @@ export function DataTable() {
       <TablePagination
         pagination={pagination}
         totalPages={Math.ceil(expenseCategoriesCount / pagination.pageSize)}
-        changePagination={changePagination}
-        selectedCount={Object.keys(rowSelection).length}
+        changePagination={setPagination}
         totalCount={expenseCategoriesCount}
       />
     </>

@@ -1,7 +1,10 @@
-import type { WarehouseTransaction, WarehouseTransactionItem } from '@remnant/shared'
+import type { HydratedDocument } from 'mongoose'
+import type { WarehouseTransactionDB, WarehouseTransactionItemDB } from '@/types/'
 import mongoose, { Schema } from 'mongoose'
 import { v4 as uuidv4 } from 'uuid'
 import { CounterModel } from '@/models/'
+
+type WarehouseTransactionDoc = HydratedDocument<WarehouseTransactionDB>
 
 const WarehouseTransactionSchema: Schema = new Schema(
   {
@@ -68,6 +71,8 @@ const WarehouseTransactionSchema: Schema = new Schema(
   { timestamps: true },
 )
 
+type WarehouseTransactionItemDoc = HydratedDocument<WarehouseTransactionItemDB>
+
 const WarehouseTransactionItemSchema: Schema = new Schema({
   transactionId: {
     type: String,
@@ -99,20 +104,18 @@ WarehouseTransactionSchema.set('toJSON', {
   },
 })
 
-WarehouseTransactionSchema.pre('save', async function (next) {
-  const doc = this as any
-
-  if (doc.isNew && !doc.seq) {
+WarehouseTransactionSchema.pre('save', async function (this: WarehouseTransactionDoc, next) {
+  if (this.isNew && !this.seq) {
     const counter = await CounterModel.findByIdAndUpdate(
       'warehouse-transactions',
       { $inc: { seq: 1 } },
       { new: true, upsert: true },
     )
-    doc.seq = counter.seq
+    this.seq = counter.seq
   }
 
   next()
 })
 
-export const WarehouseTransactionModel = mongoose.model<WarehouseTransaction>('warehouse-transaction', WarehouseTransactionSchema)
-export const WarehouseTransactionItemModel = mongoose.model<WarehouseTransactionItem>('warehouse-transaction-item', WarehouseTransactionItemSchema)
+export const WarehouseTransactionModel = mongoose.model<WarehouseTransactionDoc>('warehouse-transaction', WarehouseTransactionSchema)
+export const WarehouseTransactionItemModel = mongoose.model<WarehouseTransactionItemDoc>('warehouse-transaction-item', WarehouseTransactionItemSchema)

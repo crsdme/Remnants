@@ -70,12 +70,30 @@ export async function list(payload: GetClientsRepoPayload): Promise<GetClientsRe
       $match: queryLast,
     },
     {
+      $project: {
+        _id: 0,
+        id: '$_id',
+        seq: 1,
+        name: 1,
+        middleName: 1,
+        lastName: 1,
+        country: 1,
+        emails: 1,
+        phones: 1,
+        addresses: 1,
+        socials: 1,
+        comment: 1,
+        createdAt: 1,
+        updatedAt: 1,
+      },
+    },
+    {
       $facet: {
-        clients: [
+        items: [
           { $skip: (current - 1) * pageSize },
           { $limit: pageSize },
         ],
-        totalCount: [
+        count: [
           { $count: 'count' },
         ],
       },

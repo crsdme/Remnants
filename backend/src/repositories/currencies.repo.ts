@@ -1,4 +1,4 @@
-import type { AggregateResult, CurrencyDTO, ExchangeRateDTO } from '@remnant/shared'
+import type { AggregateResult, CurrencyDTO, ExchangeRateDTOPopulated } from '@remnant/shared'
 import type { PipelineStage } from 'mongoose'
 import type {
   CreateCurrenciesRepoPayload,
@@ -90,11 +90,11 @@ export async function list(payload: GetCurrenciesRepoPayload): Promise<GetCurren
     },
     {
       $facet: {
-        currencies: [
+        items: [
           { $skip: (current - 1) * pageSize },
           { $limit: pageSize },
         ],
-        totalCount: [{ $count: 'count' }],
+        count: [{ $count: 'count' }],
       },
     },
   ]
@@ -203,7 +203,7 @@ export async function listExchangeRates(payload: GetExchangeRatesRepoPayload): P
     },
   ]
 
-  const raw = await ExchangeRateModel.aggregate<AggregateResult<ExchangeRateDTO>>(pipeline).exec()
+  const raw = await ExchangeRateModel.aggregate<AggregateResult<ExchangeRateDTOPopulated>>(pipeline).exec()
   const { items, total } = unwrapAggregate(raw)
 
   return { items, total, page: current, pageSize }

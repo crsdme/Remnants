@@ -1,12 +1,21 @@
 import { useEffect, useRef } from 'react'
 
-export function useBarcodeScanned(onBarcodeScanned, { minLength = 5, resetDelay = 100, charTimeout = 50 } = {}) {
+interface UseBarcodeScannedOptions {
+  minLength?: number
+  resetDelay?: number
+  charTimeout?: number
+}
+
+export function useBarcodeScanned(
+  onBarcodeScanned: (barcode: string) => Promise<void>,
+  { minLength = 5, resetDelay = 100, charTimeout = 50 }: UseBarcodeScannedOptions = {},
+) {
   const barcodeRef = useRef('')
   const lastKeyTimeRef = useRef(0)
-  const timerRef = useRef(null)
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
-    const handleKeydown = (event) => {
+    const handleKeydown = (event: KeyboardEvent) => {
       const currentTime = Date.now()
 
       if (!/^\d$/.test(event.key))
@@ -24,7 +33,7 @@ export function useBarcodeScanned(onBarcodeScanned, { minLength = 5, resetDelay 
 
       timerRef.current = setTimeout(() => {
         if (barcodeRef.current.length >= minLength) {
-          onBarcodeScanned(barcodeRef.current)
+          void onBarcodeScanned(barcodeRef.current)
         }
         barcodeRef.current = ''
       }, resetDelay)

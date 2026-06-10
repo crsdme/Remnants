@@ -1,5 +1,41 @@
 import { z } from 'zod'
-import { booleanArraySchema, dateRangeSchema, idSchema, paginationSchema, sorterParamsSchema } from './common'
+import { booleanArraySchema, dateRangeSchema, idSchema, paginationSchema, responseItemSchema, responseListSchema, responseSchema, sorterParamsSchema } from './common'
+
+export const automationTriggerSchema = z.object({
+  type: z.string().trim(),
+  params: z.array(z.string().trim()),
+})
+
+export type AutomationTrigger = z.output<typeof automationTriggerSchema>
+
+export const automationConditionSchema = z.object({
+  field: z.string().trim(),
+  operator: z.string().trim(),
+  params: z.array(z.string().trim()),
+})
+
+export type AutomationCondition = z.output<typeof automationConditionSchema>
+
+export const automationActionSchema = z.object({
+  field: z.string().trim(),
+  params: z.array(z.string().trim()),
+})
+
+export type AutomationAction = z.output<typeof automationActionSchema>
+
+export const automationSchema = z.object({
+  id: idSchema,
+  name: z.string().trim(),
+  trigger: automationTriggerSchema,
+  conditions: z.array(automationConditionSchema),
+  actions: z.array(automationActionSchema),
+  active: z.boolean().optional().default(true),
+  removed: z.boolean().optional().default(false),
+  createdAt: z.coerce.date(),
+  updatedAt: z.coerce.date(),
+})
+
+export type AutomationDTO = z.output<typeof automationSchema>
 
 export const getAutomationsSchema = z.object({
   filters: z.object({
@@ -20,7 +56,7 @@ export const getAutomationsSchema = z.object({
   pagination: paginationSchema.optional().default({}),
 })
 
-export type GetAutomationsParams = z.infer<typeof getAutomationsSchema>
+export type GetAutomationsRequest = z.input<typeof getAutomationsSchema>
 
 export const createAutomationSchema = z.object({
   name: z.string().trim(),
@@ -40,7 +76,7 @@ export const createAutomationSchema = z.object({
   active: z.boolean().optional().default(true),
 })
 
-export type CreateAutomationParams = z.infer<typeof createAutomationSchema>
+export type CreateAutomationRequest = z.input<typeof createAutomationSchema>
 
 export const editAutomationSchema = z.object({
   id: idSchema,
@@ -61,13 +97,13 @@ export const editAutomationSchema = z.object({
   active: z.boolean().optional().default(true),
 })
 
-export type EditAutomationParams = z.infer<typeof editAutomationSchema>
+export type EditAutomationRequest = z.input<typeof editAutomationSchema>
 
 export const removeAutomationsSchema = z.object({
   ids: z.array(idSchema).min(1),
 })
 
-export type RemoveAutomationsParams = z.infer<typeof removeAutomationsSchema>
+export type RemoveAutomationsRequest = z.input<typeof removeAutomationsSchema>
 
 export const runAutomationsSchema = z.object({
   type: z.enum(['order-created', 'order-updated', 'order-removed']),
@@ -75,4 +111,19 @@ export const runAutomationsSchema = z.object({
   user: idSchema,
 })
 
-export type RunAutomationsParams = z.infer<typeof runAutomationsSchema>
+export type RunAutomationsRequest = z.input<typeof runAutomationsSchema>
+
+export const getAutomationsResponseSchema = responseListSchema(automationSchema)
+export type GetAutomationsResponse = z.output<typeof getAutomationsResponseSchema>
+
+export const createAutomationResponseSchema = responseItemSchema(automationSchema)
+export type CreateAutomationResponse = z.output<typeof createAutomationResponseSchema>
+
+export const editAutomationResponseSchema = responseItemSchema(automationSchema)
+export type EditAutomationResponse = z.output<typeof editAutomationResponseSchema>
+
+export const removeAutomationsResponseSchema = responseSchema
+export type RemoveAutomationsResponse = z.output<typeof removeAutomationsResponseSchema>
+
+export const runAutomationsResponseSchema = responseSchema
+export type RunAutomationsResponse = z.output<typeof runAutomationsResponseSchema>

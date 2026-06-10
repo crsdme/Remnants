@@ -42,10 +42,17 @@ export async function list(payload: GetAutomationsRepoPayload): Promise<GetAutom
     { $match: query },
     { $sort: sorters },
     {
-      $match: query,
-    },
-    {
-      $sort: sorters,
+      $project: {
+        _id: 0,
+        id: '$_id',
+        name: 1,
+        trigger: 1,
+        conditions: 1,
+        actions: 1,
+        active: 1,
+        createdAt: 1,
+        updatedAt: 1,
+      },
     },
     {
       $facet: {
@@ -59,6 +66,7 @@ export async function list(payload: GetAutomationsRepoPayload): Promise<GetAutom
   ]
 
   const raw = await AutomationModel.aggregate<AggregateResult<AutomationDTO>>(pipeline).exec()
+
   const { items, total } = unwrapAggregate(raw)
 
   return { items, total, page: current, pageSize }

@@ -1,12 +1,18 @@
 import { z } from 'zod'
-import { booleanArraySchema, dateRangeSchema, idSchema, languageStringSchema, numberFromStringSchema, paginationSchema, sorterParamsSchema, stringToBooleanSchema } from './common'
+import { booleanArraySchema, dateRangeSchema, idSchema, languageStringSchema, numberFromStringSchema, paginationSchema, responseItemSchema, responseListSchema, responseSchema, sorterParamsSchema, stringToBooleanSchema } from './common'
 
-function hasIdsOrFilters(data: {
-  ids?: unknown
-  filters?: unknown
-}) {
-  return !!data.ids || !!data.filters
-}
+export const categorySchema = z.object({
+  id: idSchema,
+  seq: z.number(),
+  names: languageStringSchema,
+  priority: numberFromStringSchema,
+  parent: idSchema.optional(),
+  active: z.boolean().optional().default(true),
+  createdAt: z.coerce.date(),
+  updatedAt: z.coerce.date(),
+})
+
+export type CategoryDTO = z.output<typeof categorySchema>
 
 export const getCategoriesSchema = z.object({
   filters: z.object({
@@ -58,42 +64,14 @@ export const removeCategoriesSchema = z.object({
 
 export type RemoveCategoriesRequest = z.input<typeof removeCategoriesSchema>
 
-export const duplicateCategorySchema = z.object({
-  ids: z.array(idSchema).min(1),
-})
+export const getCategoriesResponseSchema = responseListSchema(categorySchema)
+export type GetCategoriesResponse = z.output<typeof getCategoriesResponseSchema>
 
-export type DuplicateCategoryRequest = z.input<typeof duplicateCategorySchema>
+export const createCategoryResponseSchema = responseItemSchema(categorySchema)
+export type CreateCategoryResponse = z.output<typeof createCategoryResponseSchema>
 
-export const batchCategorySchema = z.object({
-  ids: z.array(idSchema).min(1).optional(),
-  filters: z.object({
-    names: z.string().trim().optional(),
-    language: z.string().optional().default('en'),
-    active: booleanArraySchema.optional(),
-    priority: numberFromStringSchema.optional(),
-    createdAt: dateRangeSchema.optional(),
-    updatedAt: dateRangeSchema.optional(),
-  }).optional().default({}),
-  params: z.array(
-    z.object({
-      column: z.string(),
-      value: z.any(),
-    }),
-  ).min(1),
-}).refine(hasIdsOrFilters, {
-  message: 'Either ids or filters are required.',
-})
+export const editCategoryResponseSchema = responseItemSchema(categorySchema)
+export type EditCategoryResponse = z.output<typeof editCategoryResponseSchema>
 
-export type BatchCategoryRequest = z.input<typeof batchCategorySchema>
-
-export const importCategoriesSchema = z.object({
-  file: z.instanceof(File),
-})
-
-export type ImportCategoriesRequest = z.input<typeof importCategoriesSchema>
-
-export const exportCategoriesSchema = z.object({
-  ids: z.array(idSchema).optional(),
-})
-
-export type ExportCategoriesRequest = z.input<typeof exportCategoriesSchema>
+export const removeCategoriesResponseSchema = responseSchema
+export type RemoveCategoriesResponse = z.output<typeof removeCategoriesResponseSchema>

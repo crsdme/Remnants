@@ -37,14 +37,14 @@ export function ActionBar() {
     }
   }
 
-  const handleDownloadTemplate = async () => {
+  const handleDownloadTemplate = () => {
     downloadTemplate()
   }
 
-  const onImport = async () => {
+  const onImport = () => {
     const formData = new FormData()
-    formData.append('file', file)
-    importProducts(formData)
+    formData.append('file', file as File)
+    importProducts({ file: file as File })
     setFile(null)
   }
 

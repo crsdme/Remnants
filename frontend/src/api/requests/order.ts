@@ -1,29 +1,45 @@
 import type {
-  createOrderParams,
-  editOrderParams,
-  getOrdersParams,
-  OrderResponse,
-  printDraftInvoiceParams,
-  removeOrdersParams,
-} from '@/api/types'
+  CreateOrderRequest,
+  CreateOrderResponse,
+  EditOrderRequest,
+  EditOrderResponse,
+  GetOrderDetailsRequest,
+  GetOrderDetailsResponse,
+  GetOrderItemsRequest,
+  GetOrderItemsResponse,
+  GetOrdersRequest,
+  GetOrdersResponse,
+  PrintDraftInvoiceOrderRequest,
+  PrintDraftInvoiceOrderResponse,
+  RemoveOrdersRequest,
+  RemoveOrdersResponse,
+} from '@remnant/shared'
 import { api } from '@/api/instance'
 
-export async function getOrders(params: getOrdersParams) {
-  return api.get<OrderResponse>('orders/get', { params })
+export async function getOrders(params: GetOrdersRequest) {
+  return api.get<GetOrdersResponse>('orders/get', { params })
 }
 
-export async function createOrder(params: createOrderParams) {
-  return api.post<OrderResponse>('orders/create', { ...params })
+export async function getOrderDetails(params: GetOrderDetailsRequest) {
+  return api.get<GetOrderDetailsResponse>('orders/get/details', { params })
 }
 
-export async function editOrder(params: editOrderParams) {
-  return api.post<OrderResponse>('orders/edit', params)
+export async function getOrderItems(params: GetOrderItemsRequest) {
+  return api.get<GetOrderItemsResponse>('orders/get/items', { params })
 }
 
-export async function removeOrder(params: removeOrdersParams) {
-  return api.post<OrderResponse>('orders/remove', params)
+export async function createOrder(params: CreateOrderRequest) {
+  return api.post<CreateOrderResponse>('orders/create', { ...params })
 }
 
-export async function printDraftInvoice(params: printDraftInvoiceParams) {
-  return api.post<Blob>('orders/print/draft-invoice', { ...params }, { responseType: 'blob' })
+export async function editOrder(params: EditOrderRequest) {
+  return api.post<EditOrderResponse>('orders/edit', params)
+}
+
+export async function removeOrder(params: RemoveOrdersRequest) {
+  return api.post<RemoveOrdersResponse>('orders/remove', params)
+}
+
+export async function printDraftInvoice(params: PrintDraftInvoiceOrderRequest) {
+  return api.post<PrintDraftInvoiceOrderResponse>('orders/print/draft-invoice', { ...params }, { responseType: 'blob' })
 }

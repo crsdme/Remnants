@@ -66,6 +66,14 @@ export async function list(payload: GetAuditLogsRepoPayload): Promise<GetAuditLo
             },
           },
           {
+            $lookup: {
+              from: 'users',
+              localField: 'createdBy',
+              foreignField: '_id',
+              as: 'createdBy',
+            },
+          },
+          {
             $addFields: {
               resource: {
                 $switch: {
@@ -89,6 +97,7 @@ export async function list(payload: GetAuditLogsRepoPayload): Promise<GetAuditLo
               action: 1,
               changes: 1,
               comment: 1,
+              createdBy: 1,
               createdAt: 1,
               updatedAt: 1,
             },

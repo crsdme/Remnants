@@ -67,7 +67,15 @@ export function ConfirmPopover({
             <Button variant="outline" size="sm" type="button" onClick={handleCancel} disabled={pending}>
               {cancelText || t('component.confirmPopover.cancelText')}
             </Button>
-            <Button variant="destructive" size="sm" type="button" onClick={handleConfirm} disabled={pending}>
+            <Button
+              variant="destructive"
+              size="sm"
+              type="button"
+              onClick={(e) => {
+                void handleConfirm(e)
+              }}
+              disabled={pending}
+            >
               {pending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               {confirmText || t('component.confirmPopover.confirmText')}
             </Button>

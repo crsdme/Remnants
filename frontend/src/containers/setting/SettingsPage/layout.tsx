@@ -1,12 +1,12 @@
-import { useTranslation } from 'react-i18next'
 import { Outlet } from 'react-router-dom'
+import { useLocale } from '@/utils/hooks'
 
 import { SettingsNav } from './components/settings-nav'
 
 import { SettingProvider } from './context'
 
 export function SettingsLayout() {
-  const { t } = useTranslation()
+  const { t } = useLocale()
 
   return (
     <>

@@ -1,9 +1,9 @@
-import type { removeCategoryParams } from '@/api/types'
+import type { RemoveCategoriesRequest } from '@remnant/shared'
 
 import { useMutation } from '@tanstack/react-query'
 import { removeCategory } from '@/api/requests'
 
-export function useCategoryRemove(settings?: MutationSettings<removeCategoryParams, typeof removeCategory>) {
+export function useCategoryRemove(settings?: MutationSettings<RemoveCategoriesRequest>) {
   return useMutation({
     mutationFn: removeCategory,
     ...settings?.options,

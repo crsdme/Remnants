@@ -3,24 +3,27 @@ import type { HttpError } from '@/utils/httpError'
 import logger from '@/utils/logger'
 
 export function errorHandler(err: HttpError, req: Request, res: Response, next: NextFunction): void {
-  logger.error(err)
+  // Log a plain object: winston colorize assigns to `info.message`, which throws if `info` is an Error
+  // (or similar) whose `message` is getter-only.
+  logger.error({
+    message: err.message ?? 'Internal Server Error',
+    code: err.code,
+    statusCode: err.statusCode,
+    description: err.description,
+    stack: err.stack,
+  })
 
   if (res.headersSent)
     return next(err)
 
-  const statusCode = err.statusCode ?? 500
-  const code = err.code ?? 'INTERNAL_ERROR'
-  const message = err.message ?? 'Internal Server Error'
-  const description = err.description ?? ''
-
   const errorResponse = {
     error: {
-      code,
-      message,
-      description,
+      code: err.code ?? 'INTERNAL_ERROR',
+      message: err.message ?? 'Internal Server Error',
+      description: err.description ?? '',
+      ...(process.env.NODE_ENV !== 'production' && { stack: err.stack }),
     },
-    ...(process.env.NODE_ENV !== 'production' && { stack: err.stack }),
   }
 
-  res.status(statusCode).json(errorResponse)
+  res.status(err.statusCode ?? 500).json(errorResponse)
 }

@@ -1,9 +1,9 @@
-import type { editAutomationParams } from '@/api/types'
+import type { EditAutomationRequest } from '@remnant/shared'
 
 import { useMutation } from '@tanstack/react-query'
 import { editAutomation } from '@/api/requests'
 
-export function useAutomationEdit(settings?: MutationSettings<editAutomationParams, typeof editAutomation>) {
+export function useAutomationEdit(settings?: MutationSettings<EditAutomationRequest>) {
   return useMutation({
     mutationFn: editAutomation,
     ...settings?.options,
