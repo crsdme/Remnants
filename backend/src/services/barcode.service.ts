@@ -702,7 +702,7 @@ async function print60x30(payload: {
   }
 }
 
-const PROVIDER_E_SUFFIX_CATEGORY_ID = '929dc694-afd4-406c-b766-00a1d483c68f'
+const PROVIDER_E_SUFFIX_CATEGORY_ID = ['929dc694-afd4-406c-b766-00a1d483c68f', 'bb3f3e6b-2aa7-4c32-8b18-df0d020c2e8e']
 
 function getProductCategoryId(cat: any): string | undefined {
   if (cat == null) {
@@ -729,7 +729,7 @@ function getProviderBarcodeSuffix(
   const price = categoryId
     ? providerPrice[categoryId as keyof typeof providerPrice] ?? 1000
     : 1000
-  const suffix = categoryId === PROVIDER_E_SUFFIX_CATEGORY_ID ? '-e' : ''
+  const suffix = PROVIDER_E_SUFFIX_CATEGORY_ID.includes(categoryId?.toString() || '') ? '-e' : ''
   return { price, suffix }
 }
 
@@ -747,6 +747,7 @@ async function print55x40(payload: {
       === propertyGroups.dyed,
   )
   // const isDyed = true
+  //  REPLACED
 
   if (isDyed)
     return await print55x40Dyed(payload)
@@ -971,6 +972,7 @@ async function print55x40Dyed(payload: {
     let segment = 'Standard'
     const type: string[] = []
     let colorCategory: string = ''
+    // REPLACED
 
     for (const property of product.productProperties || []) {
       if (
@@ -1068,12 +1070,6 @@ async function print55x40Dyed(payload: {
       ) {
         type.push('Curly')
       }
-      if (
-        property.id === propertyIds.HAIR_TYPE
-        && (property?.value || []).includes(hairTypes.REMY)
-      ) {
-        type.push('Remy')
-      }
     }
 
     const lenWgt = [length || '000cm', weight || '000g']
@@ -1114,17 +1110,17 @@ async function print55x40Dyed(payload: {
         },
       )
 
-      doc.font('Manrope-Bold').fontSize(65)
+      doc.font('Manrope-Bold').fontSize(72)
 
       doc.text(lenWgt, padding, doc.y, {
         width: contentWidth,
         height: 50,
-        ellipsis: true,
+        ellipsis: false,
         lineBreak: false,
         align: 'center',
       })
 
-      doc.font('Manrope-Bold').fontSize(64)
+      doc.font('Manrope-Bold').fontSize(72)
       // doc.text(
       //   type.join(', '),
       //   padding,
@@ -1132,7 +1128,15 @@ async function print55x40Dyed(payload: {
       //   { width: contentWidth, height: 50, ellipsis: true, lineBreak: false, align: 'center' },
       // )
 
-      doc.text(colorCategory, padding, doc.y + 120, {
+      doc.text(segment, padding, doc.y + 20, {
+        width: contentWidth,
+        height: 50,
+        ellipsis: true,
+        lineBreak: false,
+        align: 'center',
+      })
+
+      doc.text(colorCategory, padding, doc.y + 20, {
         width: contentWidth,
         height: 50,
         ellipsis: true,
@@ -1149,29 +1153,38 @@ async function print55x40Dyed(payload: {
 
       const bigCodeHeight = doc.y
 
-      doc.font('Manrope-Bold').fontSize(68)
+      doc.font('Manrope-Bold').fontSize(82)
 
-      doc.text(segment, padding, doc.y - 70, {
+      doc.text(segment, padding, doc.y - 90, {
         width: contentWidth,
         height: 50,
         lineBreak: false,
         align: 'center',
       })
 
-      doc.font('Manrope-Bold').fontSize(132)
-
-      doc.text(bigCode, padding, bigCodeHeight - 15, {
-        width: contentWidth,
-        height: 50,
-        lineBreak: false,
-        align: 'center',
-      })
-
-      doc.font('Manrope-Bold').fontSize(68)
-      doc.text(lenWgt, padding, doc.y - 40, {
+      doc.font('Manrope-Bold').fontSize(72)
+      doc.text(colorCategory, padding, doc.y - 35, {
         width: contentWidth,
         height: 50,
         ellipsis: true,
+        lineBreak: false,
+        align: 'center',
+      })
+
+      doc.font('Manrope-Bold').fontSize(142)
+
+      doc.text(bigCode, padding, bigCodeHeight + 40, {
+        width: contentWidth,
+        height: 50,
+        lineBreak: false,
+        align: 'center',
+      })
+
+      doc.font('Manrope-Bold').fontSize(72)
+      doc.text(lenWgt, padding, doc.y - 50, {
+        width: contentWidth,
+        height: 50,
+        ellipsis: false,
         lineBreak: false,
         align: 'center',
       })
@@ -1186,8 +1199,9 @@ async function print55x40Dyed(payload: {
         })
       }
 
-      // const info = ['Structure: Porous', 'Combing: 25cm', 'Processing: Lighted', 'Type: Slavic, Curly', 'Color: DB3']
+      // const info = ['Structure: Porous', 'Combing: 25cm', 'Processing: Lighted, Tonneded', 'Color: DB3']
       const info = []
+      // REPLACED
 
       for (const property of product.productProperties || []) {
         if (property.id === propertyIds.STRUCTURE) {
@@ -1212,9 +1226,8 @@ async function print55x40Dyed(payload: {
         }
       }
 
-      // info.push('Structure: Porous', 'Combing: 25cm', 'Processing: Lighted', 'Type: Slavic, Curly', 'Color: DB3')
-      doc.font('Manrope-Bold').fontSize(42)
-      doc.y = doc.y + 25
+      doc.font('Manrope-Bold').fontSize(46)
+      doc.y = doc.y
       for (const item of info) {
         doc.text(item, padding, doc.y, {
           width: contentWidth - 25,
