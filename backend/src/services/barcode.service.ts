@@ -702,7 +702,7 @@ async function print60x30(payload: {
   }
 }
 
-const PROVIDER_E_SUFFIX_CATEGORY_ID = ['929dc694-afd4-406c-b766-00a1d483c68f', 'bb3f3e6b-2aa7-4c32-8b18-df0d020c2e8e']
+const PROVIDER_E_SUFFIX_CATEGORY_ID = ['929dc694-afd4-406c-b766-00a1d483c68f', 'bb3f3e6b-2aa7-4c32-8b18-df0d020c2e8e', '9710cd12-bf66-4ad2-97e2-58546f24812c']
 
 function getProductCategoryId(cat: any): string | undefined {
   if (cat == null) {
