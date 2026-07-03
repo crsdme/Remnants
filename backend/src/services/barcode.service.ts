@@ -806,7 +806,7 @@ async function print55x40(payload: {
     doc.text(
       `${barcode.code}${providerPriceValue ? `-${providerPriceValue + 5000}${providerSuffixMark}` : ''}`,
       padding,
-      contentHeight / 4 + 10,
+      contentHeight / 4 + 7,
       {
         width: contentWidth,
         height: 25,
@@ -907,7 +907,7 @@ async function print55x40(payload: {
     })
 
     doc.fontSize(56)
-    doc.text(type.join(', '), padding, doc.y - 25, {
+    doc.text(type.join(', '), padding, doc.y - 30, {
       width: contentWidth,
       height: 50,
       ellipsis: true,
