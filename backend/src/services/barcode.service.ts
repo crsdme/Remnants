@@ -818,9 +818,9 @@ async function print55x40(payload: {
 
     doc.fontSize(70)
 
-    let length = '00 cm'
-    let weight = '000 g'
-    const type = ['Slavic', 'Curly']
+    let length = ''
+    let weight = ''
+    const type = []
 
     for (const property of product.productProperties || []) {
       if (
