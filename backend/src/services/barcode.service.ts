@@ -750,7 +750,7 @@ async function print55x40(payload: {
 
   const isDyed = payload.barcodes.some(
     (barcode: any) =>
-      barcode.products[0].productPropertiesGroup.id.toString()
+      barcode.products[0]?.productPropertiesGroup?.id?.toString()
       === propertyGroups.dyed,
   )
   // const isDyed = true
@@ -783,7 +783,7 @@ async function print55x40(payload: {
     }
 
     doc.font('Manrope')
-    doc.fontSize(25)
+    doc.fontSize(20)
     doc.addPage({ size: [w * 8.49, h * 8.49] })
 
     const barcodePng = await bwipjs.toBuffer({
@@ -797,7 +797,7 @@ async function print55x40(payload: {
 
     doc.image(barcodePng, padding, padding, {
       width: contentWidth,
-      height: contentHeight / 2,
+      height: contentHeight / 4,
     })
 
     const { price: providerPriceValue, suffix: providerSuffixMark }
@@ -806,7 +806,7 @@ async function print55x40(payload: {
     doc.text(
       `${barcode.code}${providerPriceValue ? `-${providerPriceValue + 5000}${providerSuffixMark}` : ''}`,
       padding,
-      contentHeight / 2 + 10,
+      contentHeight / 4 + 10,
       {
         width: contentWidth,
         height: 25,
@@ -885,8 +885,20 @@ async function print55x40(payload: {
       }
     }
 
+    const bigCode = (product.names?.[language] || '').split('#')[1] || 'ERROR'
+    doc.font('Manrope-Bold').fontSize(169)
+
+    doc.text(bigCode, padding, doc.y - 50, {
+      width: contentWidth,
+      height: 50,
+      lineBreak: false,
+      align: 'center',
+    })
+
+    doc.font('Manrope').fontSize(70)
+
     const lenWgt = [length, weight].filter(Boolean).join(', ')
-    doc.text(lenWgt, padding, doc.y - 10, {
+    doc.text(lenWgt, padding, doc.y - 60, {
       width: contentWidth,
       height: 50,
       ellipsis: true,
@@ -904,9 +916,7 @@ async function print55x40(payload: {
     })
 
     doc.addPage({ size: [w * 8.49, h * 8.49] })
-    doc.font('Manrope-Bold').fontSize(170)
-
-    const bigCode = (product.names?.[language] || '').split('#')[1] || 'ERROR'
+    doc.font('Manrope-Bold').fontSize(168)
 
     const bigCodeHeight = doc.y
 
