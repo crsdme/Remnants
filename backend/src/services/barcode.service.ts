@@ -818,9 +818,9 @@ async function print55x40(payload: {
 
     doc.fontSize(70)
 
-    let length = ''
-    let weight = ''
-    const type = []
+    let length = '00 cm'
+    let weight = '000 g'
+    const type = ['Slavic', 'Curly']
 
     for (const property of product.productProperties || []) {
       if (
@@ -885,10 +885,10 @@ async function print55x40(payload: {
       }
     }
 
-    const bigCode = (product.names?.[language] || '').split('#')[1] || 'ERROR'
-    doc.font('Manrope-Bold').fontSize(169)
+    const bigCode = (product.names?.[language] || '').split('#')[1] || '0000'
+    doc.font('Manrope-Bold').fontSize(130)
 
-    doc.text(bigCode, padding, doc.y - 50, {
+    doc.text(bigCode, padding, doc.y - 40, {
       width: contentWidth,
       height: 50,
       lineBreak: false,
@@ -898,7 +898,7 @@ async function print55x40(payload: {
     doc.font('Manrope').fontSize(70)
 
     const lenWgt = [length, weight].filter(Boolean).join(', ')
-    doc.text(lenWgt, padding, doc.y - 60, {
+    doc.text(lenWgt, padding, doc.y - 55, {
       width: contentWidth,
       height: 50,
       ellipsis: true,
