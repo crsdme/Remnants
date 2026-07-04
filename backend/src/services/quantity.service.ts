@@ -96,8 +96,6 @@ export async function count({ payload, session }: { payload: CountQuantitiesPayl
     session,
   })
 
-  console.log(quantity)
-
   await WarehouseTransactionLogService.create({
     productId,
     warehouseId: warehouse,

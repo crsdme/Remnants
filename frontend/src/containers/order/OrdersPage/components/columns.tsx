@@ -170,7 +170,7 @@ export function useColumns() {
           },
           header: () => t('page.orders.table.profit'),
           cell: ({ row }) => {
-            const profit = row.original.profit
+            const profit = row.original.profit || []
             return (
               <div className="flex flex-col gap-2">
                 {profit.map((item: any) => (

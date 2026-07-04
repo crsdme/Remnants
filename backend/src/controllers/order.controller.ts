@@ -14,7 +14,6 @@ import type {
 } from '@/types'
 
 import * as OrderService from '@/services/order.service'
-import { HttpError } from '@/utils/httpError'
 
 export async function get(
   req: ValidatedAuthedRequest<GetOrdersPayload, never>,

@@ -1,10 +1,12 @@
-import type { AggregateResult, UserDTO } from '@remnant/shared'
-import type { PipelineStage } from 'mongoose'
+import type { AggregateResult, UserPopulatedDTO } from '@remnant/shared'
+import type { FilterQuery, PipelineStage } from 'mongoose'
 import type {
   CreateUsersRepoPayload,
   EditUsersRepoPayload,
   GetUsersRepoPayload,
   GetUsersRepoResult,
+  UserDB,
+  UserPopulatedDB,
 } from '@/types/'
 import bcrypt from 'bcrypt'
 import { UserModel } from '@/models'
@@ -74,14 +76,18 @@ export async function list(payload: GetUsersRepoPayload): Promise<GetUsersRepoRe
     },
   ]
 
-  const raw = await UserModel.aggregate<AggregateResult<UserDTO>>(pipeline).exec()
+  const raw = await UserModel.aggregate<AggregateResult<UserPopulatedDTO>>(pipeline).exec()
   const { items, total } = unwrapAggregate(raw)
 
   return { items, total, page: current, pageSize }
 }
 
 export async function findById(id: string) {
-  return UserModel.findOne({ _id: id, removed: false }).populate('role').exec()
+  return UserModel.findOne({ _id: id, removed: false }).populate('role').exec() as Promise<UserPopulatedDB | null>
+}
+
+export async function findOne(query: FilterQuery<UserDB>) {
+  return UserModel.findOne(query).populate('role').exec() as Promise<UserPopulatedDB & { password: string } | null>
 }
 
 export async function createOne(payload: CreateUsersRepoPayload) {

@@ -2,6 +2,7 @@ import type { NextFunction, Response } from 'express'
 import type {
   CreateWarehouseTransactionPayload,
   EditWarehouseTransactionPayload,
+  GetWarehouseTransactionDetailsPayload,
   GetWarehouseTransactionsItemsPayload,
   GetWarehouseTransactionsPayload,
   ReceiveWarehouseTransactionPayload,
@@ -46,15 +47,30 @@ export async function getItems(
   }
 }
 
+export async function getDetails(
+  req: ValidatedRequest<GetWarehouseTransactionDetailsPayload, never>,
+  res: Response,
+  next: NextFunction,
+) {
+  try {
+    const serviceResponse = await WarehouseTransactionService.getDetails({
+      payload: req.validated.query,
+    })
+
+    res.status(200).json(serviceResponse)
+  }
+  catch (err) {
+    next(err)
+  }
+}
+
 export async function scanBarcodeToDraft(
   req: ValidatedRequest<ScanBarcodeToDraftPayload, never>,
   res: Response,
   next: NextFunction,
 ) {
   try {
-    const serviceResponse = await WarehouseTransactionService.scanBarcodeToDraft({
-      payload: req.validated.body,
-    })
+    const serviceResponse = await WarehouseTransactionService.scanBarcodeToDraft({ payload: req.validated.body })
 
     res.status(200).json(serviceResponse)
   }

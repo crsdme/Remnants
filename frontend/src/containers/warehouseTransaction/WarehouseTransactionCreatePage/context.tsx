@@ -7,8 +7,9 @@ import { useQueryClient } from '@tanstack/react-query'
 import { createContext, useContext, useMemo, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
-import { toast } from 'sonner'
+import { useNavigate } from 'react-router-dom'
 
+import { toast } from 'sonner'
 import { z } from 'zod'
 import { useWarehouseTransactionCreate } from '@/api/hooks'
 import { useAuthContext } from '@/contexts/'
@@ -48,7 +49,7 @@ export function WarehouseTransactionProvider({ children }: { children: ReactNode
   const [selectedTab, setSelectedTab] = useState('add')
   const { user } = useAuthContext()
   const { t } = useTranslation()
-
+  const navigate = useNavigate()
   const formSchema = useMemo(() => createWarehouseTransactionFormSchema(t), [t])
 
   const form = useForm<WarehouseTransactionFormValues>({
@@ -73,7 +74,7 @@ export function WarehouseTransactionProvider({ children }: { children: ReactNode
     },
   })
 
-  const submitWarehouseTransactionForm = (params: WarehouseTransactionFormValues) => {
+  const submitWarehouseTransactionForm = async (params: WarehouseTransactionFormValues) => {
     setIsLoading(true)
 
     const productsForEditOrCreate = params.products.map(p => ({
@@ -87,7 +88,7 @@ export function WarehouseTransactionProvider({ children }: { children: ReactNode
       return
     }
 
-    return useMutateCreateWarehouseTransaction.mutate({
+    void useMutateCreateWarehouseTransaction.mutate({
       type: params.type,
       fromWarehouse: params.fromWarehouse,
       toWarehouse: params.toWarehouse,
@@ -96,6 +97,9 @@ export function WarehouseTransactionProvider({ children }: { children: ReactNode
       products: productsForEditOrCreate,
       createdBy,
     })
+
+    setIsLoading(false)
+    void navigate('/warehouse-transactions')
   }
 
   const onError = (formErrors: FieldErrors<WarehouseTransactionFormValues>) => {

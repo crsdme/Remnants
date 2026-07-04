@@ -21,7 +21,7 @@ export function EditableCell({ product, field, onChange, className, disabled }: 
       value={localValue}
       className={`pr-10 w-30 ${className}`}
       onChange={(e) => {
-        const val = Number.parseFloat(e.target.value)
+        const val = e.target.value
         setLocalValue(Number.isNaN(val) ? 0 : val)
       }}
       onBlur={() => {

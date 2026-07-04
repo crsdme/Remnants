@@ -1,4 +1,4 @@
-import type { AggregateResult, OrderPaymentDTOPopulated } from '@remnant/shared'
+import type { AggregateResult } from '@remnant/shared'
 import type { ClientSession, PipelineStage } from 'mongoose'
 import type {
   CreateOrderPaymentsRepoPayload,
@@ -7,6 +7,7 @@ import type {
   GetOrderPaymentsRepoResult,
   OrderPaymentDB,
   OrderPaymentDBPopulated,
+  OrderPaymentPopulatedRepoItem,
 } from '@/types/'
 import { OrderPaymentModel } from '@/models'
 import { buildQuery, buildSortQuery, unwrapAggregate } from '@/utils'
@@ -33,13 +34,13 @@ export async function list({ payload }: { payload: GetOrderPaymentsRepoPayload }
 
   const query = buildQuery({
     filters: {
-      order,
-      cashregister,
-      cashregisterAccount,
-      currency,
+      orderId: order,
+      cashregisterId: cashregister,
+      cashregisterAccountId: cashregisterAccount,
+      currencyId: currency,
       paymentStatus,
       paymentDate,
-      transaction,
+      transactionId: transaction,
       createdBy,
       removedBy,
       createdAt,
@@ -47,13 +48,13 @@ export async function list({ payload }: { payload: GetOrderPaymentsRepoPayload }
     },
     rules: {
       _id: { type: 'array' },
-      order: { type: 'array' },
-      cashregister: { type: 'string' },
-      cashregisterAccount: { type: 'string' },
-      currency: { type: 'string' },
+      orderId: { type: 'array' },
+      cashregisterId: { type: 'string' },
+      cashregisterAccountId: { type: 'string' },
+      currencyId: { type: 'string' },
       paymentStatus: { type: 'string' },
       paymentDate: { type: 'dateRange' },
-      transaction: { type: 'string' },
+      transactionId: { type: 'string' },
       createdBy: { type: 'string' },
       removedBy: { type: 'string' },
       removed: { type: 'exact' },
@@ -74,28 +75,31 @@ export async function list({ payload }: { payload: GetOrderPaymentsRepoPayload }
     {
       $lookup: {
         from: 'currencies',
-        localField: 'currency',
+        localField: 'currencyId',
         foreignField: '_id',
-        as: 'currency',
+        as: 'currencyData',
       },
     },
     {
       $addFields: {
-        currency: { $arrayElemAt: ['$currency', 0] },
+        currency: { $arrayElemAt: ['$currencyData', 0] },
       },
+    },
+    {
+      $unset: 'currencyData',
     },
     {
       $project: {
         _id: 0,
         id: '$_id',
-        order: 1,
-        cashregister: 1,
-        cashregisterAccount: 1,
-        currency: { id: '$currency._id', names: 1, symbols: 1 },
-        amount: 1,
+        order: '$orderId',
+        cashregister: '$cashregisterId',
+        cashregisterAccount: '$cashregisterAccountId',
+        currency: { id: '$currency._id', names: '$currency.names', symbols: '$currency.symbols', scale: '$currency.scale', paymentEpsilon: '$currency.paymentEpsilon' },
+        minorAmount: 1,
         paymentStatus: 1,
         paymentDate: 1,
-        transaction: 1,
+        transaction: '$transactionId',
         comment: 1,
         createdAt: 1,
         updatedAt: 1,
@@ -117,18 +121,52 @@ export async function list({ payload }: { payload: GetOrderPaymentsRepoPayload }
     },
   ]
 
-  const raw = await OrderPaymentModel.aggregate<AggregateResult<OrderPaymentDTOPopulated>>(pipeline).exec()
+  const raw = await OrderPaymentModel.aggregate<AggregateResult<OrderPaymentPopulatedRepoItem>>(pipeline).exec()
   const { items, total } = unwrapAggregate(raw)
 
   return { items, total, page: current, pageSize }
 }
 
 export async function getById({ id }: { id: string }): Promise<OrderPaymentDBPopulated | null> {
-  return OrderPaymentModel
-    .findById(id)
-    .populate({ path: 'currency', select: 'names symbols' })
-    .lean<OrderPaymentDBPopulated>()
-    .exec()
+  const [doc] = await OrderPaymentModel.aggregate<OrderPaymentDBPopulated>([
+    {
+      $match: {
+        _id: id,
+      },
+    },
+    {
+      $lookup: {
+        from: 'currencies',
+        localField: 'currencyId',
+        foreignField: '_id',
+        pipeline: [
+          {
+            $project: {
+              id: '$_id',
+              names: 1,
+              symbols: 1,
+              scale: 1,
+            },
+          },
+        ],
+        as: 'currency',
+      },
+    },
+    {
+      $unwind: {
+        path: '$currency',
+        preserveNullAndEmptyArrays: true,
+      },
+    },
+    {
+      $unset: 'currencyId',
+    },
+  ]).exec()
+
+  if (doc === null)
+    return null
+
+  return doc
 }
 
 export async function createOne({ payload, session }: { payload: CreateOrderPaymentsRepoPayload, session?: ClientSession }): Promise<OrderPaymentDB[]> {

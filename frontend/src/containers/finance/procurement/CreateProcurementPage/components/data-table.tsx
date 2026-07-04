@@ -31,6 +31,7 @@ import { useCreateProcurementContext } from '../context'
 
 type CreateProcurementProductRow = ProductPopulatedDTO & BaseProductRow & {
   product?: string
+  productId?: string
   selectedPrice?: number
   selectedCurrency?: ProductPopulatedDTO['currency']
   purchasePrice?: number
@@ -63,11 +64,9 @@ export function DataTable() {
     else {
       itemsField.append({
         ...product,
-        product: product.id,
-        selectedPrice: product.price,
-        selectedCurrency: product.currency,
         quantity: selectedQuantity,
-        receivedQuantity: 0,
+        purchasePrice: product.price,
+        purchaseCurrency: product.currency,
       })
     }
   }
@@ -90,9 +89,9 @@ export function DataTable() {
     const current = selectedProducts[index]
     const updated = { ...current, [field]: value }
 
-    if (field === 'receivedQuantity') {
-      updated.receivedQuantity = value ?? current.receivedQuantity ?? 0
-    }
+    // if (field === 'receivedQuantity') {
+    //   updated.receivedQuantity = value ?? current.receivedQuantity ?? 0
+    // }
 
     if (field === 'quantity') {
       updated.quantity = value ?? current.quantity

@@ -26,7 +26,6 @@ describe('cashregister account API', () => {
         currencies: [currencyResponseParsed.data.id],
         active: true,
       })
-      console.log(accountResponse)
       const accountResponseParsed = parseResponse(createCashregisterAccountResponseSchema, accountResponse)
 
       const response = await CashregisterAccountFactory.get()

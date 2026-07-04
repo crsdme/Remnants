@@ -9,7 +9,12 @@ export function mapMoneyTransactionToDTO(moneyTransaction: MoneyTransactionDB): 
     direction: moneyTransaction.direction,
     account: moneyTransaction.account,
     minorAmount: moneyTransaction.minorAmount,
-    currency: moneyTransaction.currency,
+    currency: {
+      id: moneyTransaction.currencyId,
+      names: moneyTransaction.currency.names,
+      symbols: moneyTransaction.currency.symbols,
+      scale: moneyTransaction.currency.scale,
+    },
     cashregister: moneyTransaction.cashregister,
     description: moneyTransaction.description,
     sourceModel: moneyTransaction.sourceModel,

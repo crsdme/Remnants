@@ -31,7 +31,8 @@ import path from 'node:path'
 import mongoose from 'mongoose'
 import PDFDocument from 'pdfkit'
 import { v4 as uuidv4 } from 'uuid'
-import { mapOrderToDTO } from '@/mappers'
+import { mapOrderItemPopulatedToDTO, mapOrderPaymentPopulatedItem, mapOrderPopulatedToDTO } from '@/mappers'
+import * as CurrencyRepo from '@/repositories/currencies.repo'
 import * as OrderPaymentRepository from '@/repositories/order-payment.repo'
 import * as OrderRepository from '@/repositories/order.repo'
 import * as ProductsRepository from '@/repositories/products.repo'
@@ -41,8 +42,16 @@ import * as MoneyTransactionService from '@/services/money-transaction.service'
 import * as OrderPaymentService from '@/services/order-payment.service'
 import * as QuantityService from '@/services/quantity.service'
 import * as UserService from '@/services/user.service'
-import { parseGetOrderItems, parseGetOrderPayments, parseGetOrders } from '@/types/'
+import { parseGetCurrency, parseGetOrderItems, parseGetOrderPayments, parseGetOrders } from '@/types/'
 import { drawHr, getDifferenceDeep, getHardcodeData, HttpError } from '@/utils'
+import { toMinor } from '@/utils/money'
+import {
+  buildCalculationCurrency,
+  buildPaymentsByCurrency,
+  buildPricesByCurrency,
+  getPaymentStatus,
+  resolveCalculationCurrency,
+} from '@/utils/order-payment-status'
 
 type PDFDoc = PDFKit.PDFDocument
 
@@ -63,7 +72,7 @@ export async function get({ payload, user }: { payload: GetOrdersPayload, user: 
     code: 'ORDERS_FETCHED',
     message: 'Orders fetched',
     data: {
-      items,
+      items: items.map(mapOrderPopulatedToDTO),
       pagination: {
         page,
         pageSize,
@@ -84,26 +93,12 @@ export async function getItems({ payload, user }: { payload: GetOrderItemsPayloa
     },
   })
 
-  // orderItems = orderItems.map((item: any) => ({
-  //   ...item,
-  //   product: {
-  //     ...item.product,
-  //     images: item.product.images.map((image: any) => ({
-  //       id: image._id,
-  //       path: `${STORAGE_URLS.productImages}/${image.filename}`,
-  //       filename: image.filename,
-  //       name: image.name,
-  //       type: image.type,
-  //     })),
-  //   },
-  // }))
-
   return {
     status: 'success',
     code: 'ORDER_ITEMS_FETCHED',
     message: 'Order items fetched',
     data: {
-      items,
+      items: items.map(mapOrderItemPopulatedToDTO),
       pagination: {
         page,
         pageSize,
@@ -151,7 +146,7 @@ export async function getOrderPayments({ payload }: { payload: GetOrderPaymentsP
     code: 'ORDER_PAYMENTS_FETCHED',
     message: 'Order payments fetched',
     data: {
-      items,
+      items: items.map(mapOrderPaymentPopulatedItem),
       pagination: {
         page,
         pageSize,
@@ -165,15 +160,23 @@ export async function create({ payload, user }: { payload: CreateOrderPayload, u
   const orderId = uuidv4()
   const createdOrderPayments = []
 
+  const { items: currencies } = await CurrencyRepo.list(parseGetCurrency({ filters: { active: [true] } }))
+
   for (const payment of payload.orderPayments) {
     if (!payment)
       continue
 
     const { data: orderPayment } = await OrderPaymentService.create({
       payload: {
-        ...payment,
+        amount: payment.amount,
+        currencyId: payment.currency,
+        cashregisterId: payment.cashregister,
+        cashregisterAccountId: payment.cashregisterAccount,
+        paymentStatus: payment.paymentStatus,
+        comment: payment.comment,
+        createdBy: user.id.toString(),
         paymentDate: payment.paymentDate !== undefined ? new Date(payment.paymentDate) : new Date(),
-        order: orderId,
+        orderId,
       },
     })
 
@@ -183,11 +186,11 @@ export async function create({ payload, user }: { payload: CreateOrderPayload, u
       payload: {
         type: 'income',
         direction: 'in',
-        account: payment.cashregisterAccount,
-        cashregister: payment.cashregister,
+        accountId: payment.cashregisterAccount,
+        cashregisterId: payment.cashregister,
         sourceModel: 'order',
         sourceId: orderId,
-        currency: payment.currency,
+        currencyId: payment.currency,
         amount: payment.amount,
         description: `Payment for order ${orderId}`,
       },
@@ -200,22 +203,35 @@ export async function create({ payload, user }: { payload: CreateOrderPayload, u
     if (!product)
       throw new HttpError(400, 'Product not found', 'PRODUCT_NOT_FOUND')
 
+    const currency = currencies.find(c => c.id === item.currency)
+    const purchaseCurrency = currencies.find(c => c.id === product.purchaseCurrencyId)
+
+    if (!currency || !purchaseCurrency)
+      throw new HttpError(400, 'Currency not found', 'CURRENCY_NOT_FOUND')
+
     const { profit, exchangeRate } = await calculateProfit({
       item: {
-        price: product.price,
-        currency: product.currency,
+        price: toMinor(item.price, currency.scale),
+        currency: item.currency,
       },
-      purchasePrice: product.purchasePrice,
-      purchaseCurrency: product.purchaseCurrency,
+      purchasePrice: product.minorPurchasePrice,
+      purchaseCurrency: product.purchaseCurrencyId,
     })
 
     await OrderRepository.createOneItem({
       payload: {
-        ...item,
+        product: item.product,
+        quantity: item.quantity,
+        currency: item.currency,
+        minorManualPrice: toMinor(item.price, currency.scale),
+        minorBasePrice: toMinor(item.basePrice, currency.scale),
+        minorPrice: toMinor(item.price, currency.scale),
+        minorPurchasePrice: product.minorPurchasePrice,
+        minorProfit: profit,
+        minorDiscountAmount: item.discountAmount !== undefined ? toMinor(item.discountAmount, currency.scale) : 0,
+        discountPercent: item.discountPercent,
         order: orderId,
-        purchasePrice: product.purchasePrice,
-        purchaseCurrency: product.purchaseCurrency,
-        profit,
+        purchaseCurrency: product.purchaseCurrencyId,
         exchangeRate,
         createdBy: user.id.toString(),
       },
@@ -234,31 +250,23 @@ export async function create({ payload, user }: { payload: CreateOrderPayload, u
     })
   }
 
-  const totalPrice = Object.values(
-    payload.items.reduce<Record<string, { currency: string, total: number }>>((acc, item) => {
-      const { currency, price, quantity } = item
+  const totalPrice = buildPricesByCurrency(payload.items, currencies)
 
-      if (acc[currency] === undefined)
-        acc[currency] = { currency, total: 0 }
-
-      acc[currency].total += price * quantity
-
-      return acc
-    }, {}),
+  const totalPayments = buildPaymentsByCurrency(
+    createdOrderPayments.map(p => ({
+      currency: p.currency.id,
+      amount: p.amount,
+    })),
+    currencies,
   )
 
-  const totalPayments = Object.values(
-    createdOrderPayments.reduce<Record<string, { currency: string, total: number }>>((acc, p) => {
-      if (acc[p.currency.id] !== undefined)
-        acc[p.currency.id] = { currency: p.currency.id, total: 0 }
-      acc[p.currency.id].total += p.amount
-      return acc
-    }, {}),
+  const orderPaymentStatus = await computeOrderPaymentStatus(
+    totalPrice,
+    totalPayments,
+    currencies,
   )
 
-  const orderPaymentStatus = getPaymentStatus(totalPrice, totalPayments)
-
-  const order = await OrderRepository.createOne({
+  const createdOrder = await OrderRepository.createOne({
     payload: {
       ...payload,
       _id: orderId,
@@ -267,10 +275,13 @@ export async function create({ payload, user }: { payload: CreateOrderPayload, u
     },
   })
 
+  if (createdOrder === null)
+    throw new HttpError(400, 'Order not created', 'ORDER_NOT_CREATED')
+
   await AutomationService.run({
     payload: {
       type: 'order-created',
-      entityId: order[0]._id,
+      entityId: createdOrder[0]._id,
       user: user.id,
     },
   })
@@ -279,14 +290,11 @@ export async function create({ payload, user }: { payload: CreateOrderPayload, u
     status: 'success',
     code: 'ORDER_CREATED',
     message: 'Order created',
-    data: mapOrderToDTO(order[0]),
   }
 }
 
 export async function payOrder({ payload, user }: { payload: PayOrderPayload, user: AuthUser }): Promise<PayOrderResponse> {
   const { id } = payload
-
-  console.log(id, user)
 
   // const { data: order } = await OrderRepository.getById({ id })
 
@@ -390,47 +398,22 @@ export async function edit({ payload, user }: { payload: EditOrderPayload, user:
         session,
       })
 
-      const { items: dbItems } = await OrderRepository.listItems({
-        payload: {
-          filters: { order: [id] },
-          pagination: { current: 1, pageSize: 1000, full: true },
-          hasProfitPermission: false,
-        },
-      })
+      const { items: currencies } = await CurrencyRepo.list(parseGetCurrency({
+        filters: { active: [true] },
+        pagination: { full: true },
+      }))
 
-      const { items: dbPayments } = await OrderRepository.listPayments({
-        payload: {
-          filters: { order: [id] },
-          pagination: { current: 1, pageSize: 1000, full: true },
-          sorters: { createdAt: 'desc' },
-        },
-      })
+      const totalPriceByCurrency = buildPricesByCurrency(items, currencies)
 
-      const totalPriceByCurrency = Object.values(
-        dbItems.reduce<Record<string, { currency: string, total: number }>>((acc, item) => {
-          const currency = item.currency.toString()
-          if (acc[currency] === undefined) {
-            acc[currency] = { currency, total: 0 }
-          }
-          acc[currency].total += item.price * item.quantity
-          return acc
-        }, {}),
+      const totalPaymentsByCurrency = buildPaymentsByCurrency(
+        orderPayments.filter((payment): payment is NonNullable<typeof payment> => payment !== undefined),
+        currencies,
       )
 
-      const totalPaymentsByCurrency = Object.values(
-        dbPayments.reduce<Record<string, { currency: string, total: number }>>((acc, payment) => {
-          const currency = payment.currency.toString()
-          if (acc[currency] === undefined) {
-            acc[currency] = { currency, total: 0 }
-          }
-          acc[currency].total += payment.amount
-          return acc
-        }, {}),
-      )
-
-      const orderPaymentStatus = getPaymentStatus(
+      const orderPaymentStatus = await computeOrderPaymentStatus(
         totalPriceByCurrency,
         totalPaymentsByCurrency,
+        currencies,
       )
 
       const order = await OrderRepository.updateById({
@@ -465,7 +448,6 @@ export async function edit({ payload, user }: { payload: EditOrderPayload, user:
       status: 'success',
       code: 'ORDER_EDITED',
       message: 'Order edited',
-      data: mapOrderToDTO(editedOrder),
     }
   }
   finally {
@@ -521,13 +503,13 @@ export async function printInvoice({ payload }: { payload: PrintInvoiceOrderPayl
 
   const { items } = await OrderRepository.listItems({
     payload: {
-      filters: { order: [order._id] },
+      filters: { order: [order.id] },
       pagination: { current: 1, pageSize: 1000, full: true },
       hasProfitPermission: false,
     },
   })
 
-  const hasDiscount = items.some(item => item.discountAmount > 0 || item.discountPercent > 0)
+  const hasDiscount = items.some(item => item.minorManualPrice > 0 || item.discountPercent > 0)
 
   const tableColumns = {
     name: { key: 'name', width: 100, x: config.margins.left, align: 'left', type: 'text' },
@@ -672,16 +654,16 @@ export async function printInvoice({ payload }: { payload: PrintInvoiceOrderPayl
 
     doc.fontSize(10)
     doc.font('Manrope')
-    if (order.client.name || order.client.lastName || order.client.middleName) {
+    if (order.client.name !== undefined || order.client.lastName !== undefined || order.client.middleName !== undefined) {
       doc.text(
-        `${order.client.name || ''} ${order.client.lastName || ''} ${order.client.middleName || ''}`,
+        `${order.client.name ?? ''} ${order.client.lastName ?? ''} ${order.client.middleName ?? ''}`,
         config.margins.left,
         doc.y,
         { width: config.contentWidth, height: 25, align: 'left', ellipsis: true, lineBreak: false },
       )
     }
 
-    if (order.client.phones.length > 0) {
+    if (order.client.phones !== undefined && order.client.phones.length > 0) {
       doc.text(
         `${order.client.phones.join(', ')}`,
         config.margins.left,
@@ -690,7 +672,7 @@ export async function printInvoice({ payload }: { payload: PrintInvoiceOrderPayl
       )
     }
 
-    if (order.client.emails.length > 0) {
+    if (order.client.emails !== undefined && order.client.emails.length > 0) {
       doc.text(
         `${order.client.emails.join(', ')}`,
         config.margins.left,
@@ -837,20 +819,20 @@ export async function printInvoice({ payload }: { payload: PrintInvoiceOrderPayl
     const type = item.product.productProperties.find(property => property.id === propertyIds.HAIR_TYPE)
     const weight = item.product.productProperties.find(property => property.id === propertyIds.WEIGHT)
     const length = item.product.productProperties.find(property => property.id === propertyIds.LENGTH)
-    const discount = item.discountAmount > 0 ? item.discountAmount * item.quantity : item.discountPercent > 0 ? item.discountPercent : 0
-    const discountType = item.discountAmount > 0 ? 'amount' : item.discountPercent > 0 ? 'percent' : 'none'
+    const discount = item.minorManualPrice > 0 ? item.minorManualPrice * item.quantity : item.discountPercent > 0 ? item.discountPercent : 0
+    const discountType = item.minorManualPrice > 0 ? 'amount' : item.discountPercent > 0 ? 'percent' : 'none'
 
     if (!type || !weight || !length)
       return null
 
     return {
-      name: item.product.names[language],
+      name: item.product.names[language] ?? '',
       length: length.value as number,
       weight: weight.value as number,
-      type: type?.options.map(option => option.names[language]).join(', ') || '',
+      type: type?.options.map(option => option.names[language] ?? '').join(', ') || '',
       price: getProductPrice(length.value as number, type.options.map(option => option.id)),
       quantity: item.quantity,
-      total: item.price * item.quantity,
+      total: item.minorPrice * item.quantity,
       currency: item.currency,
       discount,
       discountType,
@@ -884,7 +866,7 @@ export async function printInvoice({ payload }: { payload: PrintInvoiceOrderPayl
       },
       {
         ...tableColumns.price,
-        value: `${item.price} ${item.currency.symbols[language] || ''}`,
+        value: `${item.price} ${item.currency.symbols[language] ?? ''}`,
       },
       {
         ...tableColumns.quantity,
@@ -893,7 +875,7 @@ export async function printInvoice({ payload }: { payload: PrintInvoiceOrderPayl
       ...(hasDiscount ? [{ ...tableColumns.discount, value: `${item.discount} ${item.discountType === 'amount' ? item.currency.symbols[language] : '%'}` }] : []),
       {
         ...tableColumns.total,
-        value: `${item.total.toFixed(0)} ${item.currency.symbols[language] || ''}`,
+        value: `${item.total.toFixed(0)} ${item.currency.symbols[language] ?? ''}`,
       },
     ]
 
@@ -1221,10 +1203,10 @@ export async function printDraftInvoice({ payload }: { payload: PrintDraftInvoic
       return null
 
     return {
-      name: item.names[language],
+      name: item.names[language] ?? '',
       length: length.value as number,
       weight: weight.value as number,
-      type: type?.options.map(option => option.names[language]).join(', ') || '',
+      type: type?.options.map(option => option.names[language] ?? '').join(', ') || '',
       price: getProductPrice(length.value as number, type.options.map(option => option.id)),
       quantity: item.quantity,
       total: item.price * item.quantity,
@@ -1238,7 +1220,7 @@ export async function printDraftInvoice({ payload }: { payload: PrintDraftInvoic
 
   renderTableHeader(doc)
 
-  const totals: { count: number, weight: number, amount: Record<string, { currency: { id: string, symbols: Record<string, string> }, total: number }> } = { count: 0, weight: 0, amount: {} }
+  const totals: { count: number, weight: number, amount: Record<string, { currency: string, total: number }> } = { count: 0, weight: 0, amount: {} }
   for (const item of invoiceItems) {
     doc.font('Manrope')
     doc.fontSize(10)
@@ -1282,10 +1264,10 @@ export async function printDraftInvoice({ payload }: { payload: PrintDraftInvoic
 
     totals.count += item.quantity
     totals.weight += item.weight
-    if (totals.amount[item.currency.id] === undefined) {
-      totals.amount[item.currency.id] = { currency: item.currency, total: 0 }
+    if (totals.amount[item.currency] === undefined) {
+      totals.amount[item.currency] = { currency: item.currency, total: 0 }
     }
-    totals.amount[item.currency.id].total += item.total
+    totals.amount[item.currency].total += item.total
     drawTableRow(doc, row)
     drawHr(doc, 8, 8)
   }
@@ -1318,7 +1300,7 @@ export async function printDraftInvoice({ payload }: { payload: PrintDraftInvoic
     ...(hasDiscount ? [{ ...tableColumns.discount, value: '' }] : []),
     {
       ...tableColumns.total,
-      value: Object.values(totals.amount).map(amount => `${amount.total.toFixed(0)} ${amount.currency.symbols[language] || ''}`).join(', '),
+      value: Object.values(totals.amount).map(amount => `${amount.total.toFixed(0)}`).join(', '),
     },
   ]
 
@@ -1378,19 +1360,19 @@ export async function printOrderLabel({ payload }: { payload: PrintOrderLabelOrd
     doc.font('Manrope-Bold')
     doc.fontSize(28)
     doc.text(
-      `${order.client.name || ''} ${order.client.lastName || ''} ${order.client.middleName || ''}`,
+      `${order.client.name ?? ''} ${order.client.lastName ?? ''} ${order.client.middleName ?? ''}`,
       margins.left,
       doc.y,
       { width: size[0] - margins.left - margins.right, height: 25, align: 'left' },
     )
     doc.text(
-      `${order.client.phones?.join(', ') || ''}`,
+      `${order.client.phones !== undefined && order.client.phones.length > 0 ? order.client.phones.join(', ') : ''}`,
       margins.left,
       doc.y,
       { width: size[0] - margins.left - margins.right, height: 25, align: 'left' },
     )
     doc.text(
-      `${order.client.emails?.join(', ') || ''}`,
+      `${order.client.emails !== undefined && order.client.emails.length > 0 ? order.client.emails.join(', ') : ''}`,
       margins.left,
       doc.y,
       { width: size[0] - margins.left - margins.right, height: 25, align: 'left' },
@@ -1453,14 +1435,6 @@ async function calculateProfit({
   purchaseCurrency: string
 }): Promise<{ profit: number, exchangeRate: number }> {
   const sellingCurrency = item.currency
-  // let sellingPrice = item.price
-
-  // if (item.discountPercent && item.discountPercent > 0) {
-  //   sellingPrice -= (sellingPrice * item.discountPercent) / 100
-  // }
-  // else if (item.discountAmount && item.discountAmount > 0) {
-  //   sellingPrice -= item.discountAmount
-  // }
 
   let convertedPurchasePrice = purchasePrice
   let exchangeRate = 1
@@ -1477,48 +1451,45 @@ async function calculateProfit({
   }
 
   const profit = item.price - convertedPurchasePrice
-  // const profit = unitProfit * item.quantity
 
-  return { profit: Number.parseFloat(profit.toFixed(2)), exchangeRate }
+  return { profit, exchangeRate }
 }
 
-export function getPaymentStatus(
-  prices: { currency: string, total: number }[],
-  payments: { currency: string, total: number }[],
-  epsilon = 0,
-): 'paid' | 'unpaid' | 'partially_paid' | 'overpaid' {
-  const priceByCurrency = new Map(prices.map(p => [p.currency, p.total]))
-  const paymentByCurrency = new Map(payments.map(p => [p.currency, p.total]))
+async function computeOrderPaymentStatus(
+  prices: { currency: string, totalMinor: number, scale: number, exchangeRateToCalculationCurrency?: number }[],
+  payments: { currency: string, totalMinor: number, scale: number, exchangeRateToCalculationCurrency?: number }[],
+  currencies: { id: string, scale: number, paymentEpsilon?: number | null }[],
+) {
+  const calculationCurrencyId = resolveCalculationCurrency(payments, prices)
+  const calculationCurrencyDoc = currencies.find(c => c.id === calculationCurrencyId)
 
-  let hasPayments = false
-  let allMatch = true
-  let hasOver = false
+  if (!calculationCurrencyDoc)
+    throw new HttpError(400, 'Currency not found', 'CURRENCY_NOT_FOUND')
 
-  for (const [currency, priceTotal] of priceByCurrency) {
-    const paymentTotal = paymentByCurrency.get(currency) ?? 0
+  return getPaymentStatus(
+    await withCalculationRates(prices, calculationCurrencyId),
+    await withCalculationRates(payments, calculationCurrencyId),
+    buildCalculationCurrency(calculationCurrencyDoc),
+  )
+}
 
-    if (paymentTotal > 0)
-      hasPayments = true
+async function withCalculationRates(
+  entries: { currency: string, totalMinor: number, scale: number, exchangeRateToCalculationCurrency?: number }[],
+  calculationCurrencyId: string,
+) {
+  return Promise.all(entries.map(async (entry) => {
+    if (entry.currency === calculationCurrencyId || entry.exchangeRateToCalculationCurrency !== undefined)
+      return entry
 
-    if (Math.abs(priceTotal - paymentTotal) <= epsilon) {
-      continue
-    }
-    else if (paymentTotal < priceTotal) {
-      allMatch = false
-    }
-    else if (paymentTotal > priceTotal) {
-      hasOver = true
-      allMatch = false
-    }
-  }
+    const major = entry.totalMinor / (10 ** entry.scale)
+    const { rate } = await convertCurrency({
+      amount: major,
+      fromCurrencyId: entry.currency,
+      toCurrencyId: calculationCurrencyId,
+    })
 
-  if (allMatch && hasPayments)
-    return 'paid'
-  if (!hasPayments)
-    return 'unpaid'
-  if (hasOver)
-    return 'overpaid'
-  return 'partially_paid'
+    return { ...entry, exchangeRateToCalculationCurrency: rate }
+  }))
 }
 
 async function applyItemsDiff(params: {
@@ -1542,6 +1513,8 @@ async function applyItemsDiff(params: {
 
   const order = await OrderRepository.findOne({ payload: { id: orderId } })
 
+  const { items: currencies } = await CurrencyRepo.list(parseGetCurrency({ filters: { active: [true] } }))
+
   if (!order)
     throw new HttpError(400, 'Order not found', 'ORDER_NOT_FOUND')
 
@@ -1556,7 +1529,7 @@ async function applyItemsDiff(params: {
     },
   })
 
-  const oldById = new Map(oldItems.items.map(i => [i.id.toString(), i]))
+  const oldById = new Map(oldItems.items.map(i => [i._id.toString(), i]))
 
   for (const newItem of items) {
     if (newItem.id !== undefined && oldById.has(newItem.id)) {
@@ -1587,7 +1560,7 @@ async function applyItemsDiff(params: {
         await QuantityService.count({
           payload: {
             mode: 'inc',
-            productId: oldItem.product.id,
+            productId: oldItem.product._id,
             count: oldQuantity,
             warehouse: prevWarehouseId,
             userId,
@@ -1616,13 +1589,18 @@ async function applyItemsDiff(params: {
       if (!product)
         throw new HttpError(400, 'Product not found', 'PRODUCT_NOT_FOUND')
 
+      const currency = currencies.find(c => c.id === newItem.currency)
+
+      if (!currency)
+        throw new HttpError(400, 'Currency not found', 'CURRENCY_NOT_FOUND')
+
       const { profit, exchangeRate } = await calculateProfit({
         item: {
-          price: newItem.price,
+          price: toMinor(newItem.price, currency.scale),
           currency: newItem.currency,
         },
-        purchasePrice: product.purchasePrice,
-        purchaseCurrency: product.purchaseCurrency,
+        purchasePrice: product.minorPurchasePrice,
+        purchaseCurrency: product.purchaseCurrencyId,
       })
 
       const oldItemObj = { ...oldItem }
@@ -1630,35 +1608,45 @@ async function applyItemsDiff(params: {
         ...oldItemObj,
         product: newItem.product,
         quantity: newItem.quantity,
-        basePrice: newItem.basePrice,
-        manualPrice: newItem.manualPrice ?? 0,
-        discountAmount: newItem.discountAmount ?? undefined,
+        minorBasePrice: toMinor(newItem.basePrice, currency.scale),
+        minorManualPrice: toMinor(newItem.manualPrice ?? 0, currency.scale) ?? undefined,
+        minorDiscountAmount: toMinor(newItem.discountAmount ?? 0, currency.scale) ?? undefined,
         discountPercent: newItem.discountPercent ?? undefined,
-        price: newItem.price,
+        minorPrice: toMinor(newItem.price, currency.scale),
         currency: newItem.currency,
-        purchasePrice: product.purchasePrice,
-        purchaseCurrency: product.purchaseCurrency,
-        profit,
+        minorPurchasePrice: product.minorPurchasePrice,
+        purchaseCurrency: product.purchaseCurrencyId,
+        minorProfit: profit,
         exchangeRate,
       }
 
-      const diff = getDifferenceDeep(oldItemObj, newItemObj)
+      // TEMPORARY FIX
+      // const diff = getDifferenceDeep(oldItemObj, newItemObj)
+      // console.log(JSON.stringify(diff, null, 2))
 
-      if ('_id' in diff || 'order' in diff || 'createdBy' in diff) {
-        delete diff._id
-        delete diff.order
-        delete diff.createdBy
-      }
+      // if ('_id' in diff || 'order' in diff || 'createdBy' in diff) {
+      //   delete diff._id
+      //   delete diff.order
+      //   delete diff.createdBy
+      // }
 
-      if (Object.keys(diff).length > 0 && oldItem.id !== undefined) {
-        await OrderRepository.updateOneItem({
-          payload: {
-            id: oldItem.id,
-            ...diff,
-          },
-          session,
-        })
-      }
+      // if (Object.keys(diff).length > 0 && oldItem._id !== undefined) {
+      //   await OrderRepository.updateOneItem({
+      //     payload: {
+      //       id: oldItem._id,
+      //       ...diff,
+      //     },
+      //     session,
+      //   })
+      // }
+
+      await OrderRepository.updateOneItem({
+        payload: {
+          id: oldItem._id,
+          ...newItemObj,
+        },
+        session,
+      })
 
       oldById.delete(newItem.id)
     }
@@ -1669,24 +1657,35 @@ async function applyItemsDiff(params: {
       if (!product)
         throw new HttpError(400, 'Product not found', 'PRODUCT_NOT_FOUND')
 
+      const currency = currencies.find(c => c.id === newItem.currency)
+      const purchaseCurrency = currencies.find(c => c.id === product.purchaseCurrencyId)
+
+      if (!currency || !purchaseCurrency)
+        throw new HttpError(400, 'Currency not found', 'CURRENCY_NOT_FOUND')
+
       const { profit, exchangeRate } = await calculateProfit({
         item: {
-          price: newItem.price,
+          price: toMinor(newItem.price, currency.scale),
           currency: newItem.currency,
         },
-        purchasePrice: product.purchasePrice,
-        purchaseCurrency: product.purchaseCurrency,
+        purchasePrice: product.minorPurchasePrice,
+        purchaseCurrency: product.purchaseCurrencyId,
       })
 
       await OrderRepository.createOneItem({
         payload: {
-          ...newItem,
           product: newItem.product,
+          quantity: newItem.quantity,
+          minorManualPrice: toMinor(newItem.price, currency.scale),
+          minorBasePrice: toMinor(newItem.basePrice, currency.scale),
+          minorPrice: toMinor(newItem.price, currency.scale),
+          minorPurchasePrice: toMinor(product.minorPurchasePrice, purchaseCurrency.scale),
+          minorProfit: profit,
+          minorDiscountAmount: newItem.discountAmount !== undefined ? toMinor(newItem.discountAmount, currency.scale) : 0,
+          discountPercent: newItem.discountPercent,
           currency: newItem.currency,
           order: orderId,
-          purchasePrice: product.purchasePrice,
-          purchaseCurrency: product.purchaseCurrency,
-          profit,
+          purchaseCurrency: product.purchaseCurrencyId,
           exchangeRate,
           createdBy: userId,
         },
@@ -1711,7 +1710,7 @@ async function applyItemsDiff(params: {
   for (const [, oldItem] of oldById) {
     await OrderRepository.updateOneItem({
       payload: {
-        id: oldItem.id,
+        id: oldItem._id,
         removed: true,
         removedBy: userId,
       },
@@ -1721,7 +1720,7 @@ async function applyItemsDiff(params: {
     await QuantityService.count({
       payload: {
         mode: 'inc',
-        productId: oldItem.product.id,
+        productId: oldItem.product._id,
         count: oldItem.quantity,
         warehouse: prevWarehouseId,
         userId,
@@ -1754,7 +1753,7 @@ async function applyPaymentsDiff(params: {
     payload: parseGetOrderPayments({ filters: { order: [orderId] }, pagination: { full: true } }),
   })
 
-  const oldById = new Map(oldPayments.items.map(p => [p.id, p]))
+  const oldById = new Map(oldPayments.items.map(p => [p.id, mapOrderPaymentPopulatedItem(p)]))
 
   const activePaymentIds: string[] = []
 
@@ -1780,15 +1779,15 @@ async function applyPaymentsDiff(params: {
           session,
         })
 
-        await MoneyTransactionService.create({
+        await MoneyTransactionService.createTransaction({
           payload: {
             type: 'income',
             direction: 'out',
-            account: oldPayment.cashregisterAccount,
-            cashregister: oldPayment.cashregister,
+            accountId: oldPayment.cashregisterAccount.id,
+            cashregisterId: oldPayment.cashregister.id,
             sourceModel: 'order',
             sourceId: orderId,
-            currency: oldPayment.currency.id,
+            currencyId: oldPayment.currency.id,
             amount: oldPayment.amount,
             description: `Cancelled payment for order ${orderId}`,
           },
@@ -1796,16 +1795,21 @@ async function applyPaymentsDiff(params: {
         })
 
         // 2) создаём новый
+        const currency = await CurrencyRepo.findOne({ _id: payment.currency })
+
+        if (currency === null)
+          throw new HttpError(400, 'Currency not found', 'CURRENCY_NOT_FOUND')
+
         const createdPaymentArr = await OrderPaymentRepository.createOne({
           payload: {
-            order: orderId,
+            orderId,
             createdBy: userId,
             paymentStatus: 'paid',
             paymentDate: new Date(),
-            cashregister: payment.cashregister,
-            cashregisterAccount: payment.cashregisterAccount,
-            amount: payment.amount,
-            currency: payment.currency,
+            cashregisterId: payment.cashregister,
+            cashregisterAccountId: payment.cashregisterAccount,
+            minorAmount: toMinor(payment.amount, currency.scale),
+            currencyId: payment.currency,
           },
           session,
         })
@@ -1813,15 +1817,15 @@ async function applyPaymentsDiff(params: {
         const createdPayment = createdPaymentArr[0]
         activePaymentIds.push(createdPayment._id)
 
-        await MoneyTransactionService.create({
+        await MoneyTransactionService.createTransaction({
           payload: {
             type: 'income',
             direction: 'in',
-            account: payment.cashregisterAccount,
-            cashregister: payment.cashregister,
+            accountId: payment.cashregisterAccount,
+            cashregisterId: payment.cashregister,
             sourceModel: 'order',
             sourceId: orderId,
-            currency: payment.currency,
+            currencyId: payment.currency,
             amount: payment.amount,
             description: `Payment for order ${orderId}`,
           },
@@ -1835,16 +1839,21 @@ async function applyPaymentsDiff(params: {
       oldById.delete(payment.id)
     }
     else {
+      const currency = await CurrencyRepo.findOne({ _id: payment.currency })
+
+      if (currency === null)
+        throw new HttpError(400, 'Currency not found', 'CURRENCY_NOT_FOUND')
+
       const createdPaymentArr = await OrderPaymentRepository.createOne({
         payload: {
-          order: orderId,
+          orderId,
           createdBy: userId,
-          currency: payment.currency,
+          currencyId: payment.currency,
           paymentStatus: 'paid',
           paymentDate: new Date(),
-          cashregister: payment.cashregister,
-          cashregisterAccount: payment.cashregisterAccount,
-          amount: payment.amount,
+          cashregisterId: payment.cashregister,
+          cashregisterAccountId: payment.cashregisterAccount,
+          minorAmount: toMinor(payment.amount, currency.scale),
         },
         session,
       })
@@ -1852,15 +1861,15 @@ async function applyPaymentsDiff(params: {
       const createdPayment = createdPaymentArr[0]
       activePaymentIds.push(createdPayment._id)
 
-      await MoneyTransactionService.create({
+      await MoneyTransactionService.createTransaction({
         payload: {
           type: 'income',
           direction: 'in',
-          account: payment.cashregisterAccount,
-          cashregister: payment.cashregister,
+          accountId: payment.cashregisterAccount,
+          cashregisterId: payment.cashregister,
           sourceModel: 'order',
           sourceId: orderId,
-          currency: payment.currency,
+          currencyId: payment.currency,
           amount: payment.amount,
           description: `Payment for order ${orderId}`,
         },
@@ -1881,15 +1890,15 @@ async function applyPaymentsDiff(params: {
       session,
     })
 
-    await MoneyTransactionService.create({
+    await MoneyTransactionService.createTransaction({
       payload: {
         type: 'income',
         direction: 'out',
-        account: oldPayment.cashregisterAccount,
-        cashregister: oldPayment.cashregister,
+        accountId: oldPayment.cashregisterAccount.id,
+        cashregisterId: oldPayment.cashregister.id,
         sourceModel: 'order',
         sourceId: orderId,
-        currency: oldPayment.currency.id,
+        currencyId: oldPayment.currency.id,
         amount: oldPayment.amount,
         description: `Cancelled payment for order ${orderId}`,
       },

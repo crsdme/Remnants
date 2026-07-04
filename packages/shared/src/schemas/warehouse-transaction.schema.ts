@@ -1,13 +1,20 @@
 import type { BarcodeDTO } from './barcode.schema'
+import type { ProductDTO } from './product.schema'
 import { z } from 'zod'
-import { dateRangeSchema, idSchema, numberFromStringSchema, paginationSchema, responseItemSchema, responseListSchema, responseSchema, sorterParamsSchema } from './common'
+import { dateRangeSchema, idSchema, languageStringSchema, numberFromStringSchema, paginationSchema, responseItemSchema, responseListSchema, responseSchema, sorterParamsSchema } from './common'
 
 export const warehouseTransactionSchema = z.object({
   id: idSchema,
   seq: z.number(),
   type: z.string().trim(),
-  fromWarehouse: idSchema,
-  toWarehouse: idSchema,
+  fromWarehouse: z.object({
+    id: idSchema,
+    names: languageStringSchema,
+  }),
+  toWarehouse: z.object({
+    id: idSchema,
+    names: languageStringSchema,
+  }),
   requiresReceiving: z.boolean(),
   status: z.string().trim(),
   accepted: z.boolean(),
@@ -33,6 +40,8 @@ export type WarehouseTransactionItemDTO = z.output<typeof warehouseTransactionIt
 
 export const getWarehouseTransactionsSchema = z.object({
   filters: z.object({
+    seq: z.number().optional(),
+    id: idSchema.optional(),
     type: z.string().trim().optional(),
     direction: z.string().trim().optional(),
     accountId: z.string().trim().optional(),
@@ -119,6 +128,12 @@ export const getWarehouseTransactionsItemsSchema = z.object({
 
 export type GetWarehouseTransactionsItemsRequest = z.input<typeof getWarehouseTransactionsItemsSchema>
 
+export const getWarehouseTransactionDetailsSchema = z.object({
+  seq: numberFromStringSchema,
+})
+
+export type GetWarehouseTransactionDetailsRequest = z.input<typeof getWarehouseTransactionDetailsSchema>
+
 const baseEditWarehouseTransactionSchema = z.object({
   id: idSchema,
   comment: z.string().trim().optional(),
@@ -186,5 +201,11 @@ export type GetWarehouseTransactionsItemsResponse = z.output<typeof getWarehouse
 export const receiveWarehouseTransactionResponseSchema = responseItemSchema(warehouseTransactionSchema)
 export type ReceiveWarehouseTransactionResponse = z.output<typeof receiveWarehouseTransactionResponseSchema>
 
+export const getWarehouseTransactionDetailsResponseSchema = responseSchema
+export type GetWarehouseTransactionDetailsResponse = z.output<typeof getWarehouseTransactionDetailsResponseSchema> & { data: {
+  warehouseTransaction: WarehouseTransactionDTO
+  warehouseTransactionItems: (WarehouseTransactionItemDTO & { product: ProductDTO })[]
+} }
+
 export const scanBarcodeToDraftResponseSchema = responseSchema
-export type ScanBarcodeToDraftResponse = z.output<typeof scanBarcodeToDraftResponseSchema & { transactionId?: string, item: BarcodeDTO }>
+export type ScanBarcodeToDraftResponse = z.output<typeof scanBarcodeToDraftResponseSchema> & { transactionId?: string } & { item: BarcodeDTO }

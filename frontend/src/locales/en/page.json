@@ -99,6 +99,8 @@
   "page.currencies.form.symbols": "Symbol ({{language}})",
   "page.currencies.form.priority": "Priority",
   "page.currencies.form.scale": "Scale",
+  "page.currencies.form.paymentEpsilon": "Payment tolerance",
+  "page.currencies.form.paymentEpsilon.description": "Maximum allowed difference when comparing order total and payments (in this currency)",
   "page.currencies.form.active": "Active",
   "page.currencies.form.active.description": "Active currency",
 
@@ -1190,12 +1192,15 @@
   "page.expenses.filter.name": "Filter by name",
   "page.expenses.button.create": "Create expense",
 
+  "page.expenses.filter.seq": "Seq",
+
   "page.expenses.table.amount": "Amount",
   "page.expenses.table.cashregister": "Cashregister",
   "page.expenses.table.cashregisterAccount": "Cashregister Account",
   "page.expenses.table.categories": "Categories",
   "page.expenses.table.type": "Type",
   "page.expenses.table.comment": "Comment",
+  "page.expenses.table.type.manual": "Manual",
 
   "page.expenses.form.title.create": "Create new expense",
   "page.expenses.form.description.create": "Add new expense to the system",

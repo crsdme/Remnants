@@ -1,6 +1,9 @@
 import type {
   createWarehouseTransactionItemsSchema,
+  getWarehouseTransactionDetailsSchema,
+  ProductDTO,
   WarehouseTransactionDTO,
+
   WarehouseTransactionItemDTO,
 } from '@remnant/shared'
 import type { z } from 'zod'
@@ -57,6 +60,8 @@ export function parseScanBarcodeToDraft(x: unknown): ScanBarcodeToDraftPayload {
   return scanBarcodeToDraftSchema.parse(x)
 }
 
+export type GetWarehouseTransactionDetailsPayload = z.output<typeof getWarehouseTransactionDetailsSchema>
+
 export type GetWarehouseTransactionsItemsPayload = z.output<typeof getWarehouseTransactionsItemsSchema>
 export function parseGetWarehouseTransactionsItems(x: unknown): GetWarehouseTransactionsItemsPayload {
   return getWarehouseTransactionsItemsSchema.parse(x)
@@ -88,7 +93,7 @@ export type GetWarehouseTransactionsRepoPayload = GetWarehouseTransactionsPayloa
 export interface GetWarehouseTransactionsRepoResult { items: WarehouseTransactionDTO[], total: number, page: number, pageSize: number }
 
 export type GetWarehouseTransactionsItemsRepoPayload = GetWarehouseTransactionsItemsPayload
-export interface GetWarehouseTransactionsItemsRepoResult { items: WarehouseTransactionItemDTO[], total: number, page: number, pageSize: number }
+export interface GetWarehouseTransactionsItemsRepoResult { items: (WarehouseTransactionItemDTO & { product: ProductDTO })[], total: number, page: number, pageSize: number }
 
 export type CreateWarehouseTransactionRepoPayload = CreateWarehouseTransactionPayload
 

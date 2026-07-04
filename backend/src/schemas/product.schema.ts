@@ -1,6 +1,114 @@
 import { dateRangeSchema, idSchema, languageStringSchema, numberFromStringSchema, paginationSchema, sorterParamsSchema } from '@remnant/shared'
 import { z } from 'zod'
 
+export const productDBSchema = z.object({
+  _id: idSchema,
+  seq: z.number(),
+  names: languageStringSchema,
+  minorPrice: numberFromStringSchema,
+  currencyId: idSchema,
+  minorPurchasePrice: numberFromStringSchema,
+  purchaseCurrencyId: idSchema,
+  barcodesIds: z.array(idSchema),
+  categoriesIds: z.array(idSchema),
+  unitId: idSchema,
+  images: z.array(z.object({
+    filename: z.string(),
+    name: z.string(),
+    type: z.string(),
+    path: z.string(),
+  })),
+  productPropertiesGroupId: idSchema,
+  productProperties: z.array(z.object({
+    id: idSchema,
+    value: z.unknown(),
+    data: z.object({
+      id: idSchema,
+      names: languageStringSchema,
+      symbols: languageStringSchema,
+      type: z.string(),
+      isRequired: z.boolean(),
+      showInTable: z.boolean(),
+    }),
+    options: z.array(z.object({
+      id: idSchema,
+      names: languageStringSchema,
+      color: z.string().optional(),
+    })),
+  })),
+  quantityIds: z.array(idSchema),
+  removed: z.boolean().default(false),
+  createdAt: z.coerce.date(),
+  updatedAt: z.coerce.date(),
+})
+
+export const productDBPopulatedSchema = z.object({
+  _id: idSchema,
+  seq: z.number(),
+  names: languageStringSchema,
+  minorPrice: numberFromStringSchema,
+  currency: z.object({
+    id: idSchema,
+    names: languageStringSchema,
+    symbols: languageStringSchema,
+    scale: numberFromStringSchema,
+  }),
+  minorPurchasePrice: numberFromStringSchema,
+  purchaseCurrency: z.object({
+    id: idSchema,
+    names: languageStringSchema,
+    symbols: languageStringSchema,
+    scale: numberFromStringSchema,
+  }),
+  barcodes: z.array(z.object({
+    id: idSchema,
+    code: z.string(),
+  })),
+  categories: z.array(z.object({
+    id: idSchema,
+    names: languageStringSchema,
+  })),
+  unit: z.object({
+    id: idSchema,
+    names: languageStringSchema,
+    symbols: languageStringSchema,
+  }),
+  images: z.array(z.object({
+    filename: z.string(),
+    name: z.string(),
+    type: z.string(),
+    path: z.string(),
+  })),
+  productPropertiesGroup: z.object({
+    id: idSchema,
+    names: languageStringSchema,
+  }),
+  productProperties: z.array(z.object({
+    _id: idSchema,
+    value: z.unknown(),
+    data: z.object({
+      id: idSchema,
+      names: languageStringSchema,
+      symbols: languageStringSchema,
+      type: z.string(),
+      isRequired: z.boolean(),
+      showInTable: z.boolean(),
+    }),
+    options: z.array(z.object({
+      id: idSchema,
+      names: languageStringSchema,
+      color: z.string().optional(),
+    })),
+  })),
+  warehouseStock: z.array(z.object({
+    warehouse: idSchema,
+    count: z.number(),
+  })),
+  removed: z.boolean().default(false),
+  createdAt: z.coerce.date(),
+  updatedAt: z.coerce.date(),
+})
+
 export const getProductRepoSchema = z.object({
   filters: z.object({
     ids: z.array(idSchema).optional(),
@@ -40,17 +148,17 @@ export const getProductRepoSchema = z.object({
 
 export const createProductRepoSchema = z.object({
   names: languageStringSchema,
-  price: numberFromStringSchema,
-  purchasePrice: numberFromStringSchema,
-  currency: z.string(),
-  purchaseCurrency: z.string(),
-  productPropertiesGroup: z.string(),
+  minorPrice: numberFromStringSchema,
+  minorPurchasePrice: numberFromStringSchema,
+  currencyId: z.string(),
+  purchaseCurrencyId: z.string(),
+  productPropertiesGroupId: z.string(),
   productProperties: z.array(z.object({
     _id: idSchema,
     value: z.unknown(),
   })),
-  unit: idSchema,
-  categories: z.array(idSchema).min(1),
+  unitId: idSchema,
+  categoriesIds: z.array(idSchema).min(1),
   images: z.array(z.object({
     filename: z.string(),
     path: z.string(),
@@ -59,17 +167,17 @@ export const createProductRepoSchema = z.object({
 
 export const editProductRepoSchema = z.object({
   names: languageStringSchema,
-  price: numberFromStringSchema,
-  purchasePrice: numberFromStringSchema,
-  currency: z.string(),
-  purchaseCurrency: z.string(),
-  productPropertiesGroup: z.string(),
+  minorPrice: numberFromStringSchema,
+  minorPurchasePrice: numberFromStringSchema,
+  currencyId: z.string(),
+  purchaseCurrencyId: z.string(),
+  productPropertiesGroupId: z.string(),
   productProperties: z.array(z.object({
     _id: idSchema,
     value: z.unknown(),
   })),
-  unit: idSchema,
-  categories: z.array(idSchema).min(1),
+  unitId: idSchema,
+  categoriesIds: z.array(idSchema).min(1),
   images: z.array(z.object({
     filename: z.string(),
     path: z.string(),

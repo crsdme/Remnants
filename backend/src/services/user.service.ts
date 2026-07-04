@@ -2,8 +2,7 @@ import type {
   CreateUserResponse,
   EditUserResponse,
   GetUsersResponse,
-  PopulatedUser,
-  RemoveUsersResponse,
+  RemoveUserResponse,
 } from '@remnant/shared'
 import type { CreateUsersPayload, EditUsersPayload, GetUsersPayload, RemoveUsersPayload } from '@/types/'
 import { mapUserToDTO } from '@/mappers/'
@@ -49,7 +48,7 @@ export async function edit(payload: EditUsersPayload): Promise<EditUserResponse>
   }
 }
 
-export async function remove(payload: RemoveUsersPayload): Promise<RemoveUsersResponse> {
+export async function remove(payload: RemoveUsersPayload): Promise<RemoveUserResponse> {
   for (const id of payload.ids) {
     await UserRepository.removeById(id)
   }
@@ -68,7 +67,7 @@ export async function checkPermission(permission: string, userId?: string): Prom
   if (process.env.NODE_ENV === 'test')
     return true
 
-  const user = await UserRepository.findById(userId) as PopulatedUser | null
+  const user = await UserRepository.findById(userId)
 
   const role = user?.role
   if (role === undefined || !Array.isArray(role.permissions))

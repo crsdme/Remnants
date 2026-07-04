@@ -1,26 +1,38 @@
-import type { OrderPaymentDTO } from '@remnant/shared'
-import type { OrderPaymentDBPopulated } from '@/types'
+import type { OrderPaymentDTO, OrderPaymentDTOPopulated } from '@remnant/shared'
+import type { OrderPaymentDBPopulated, OrderPaymentPopulatedRepoItem } from '@/types'
+import { fromMinor } from '@/utils/money'
+
+export function mapOrderPaymentPopulatedItem(item: OrderPaymentPopulatedRepoItem): OrderPaymentDTOPopulated {
+  const { minorAmount, currency, ...rest } = item
+
+  return {
+    ...rest,
+    amount: Number.parseFloat(fromMinor(minorAmount, currency.scale)),
+    currency: {
+      id: currency.id,
+      names: currency.names,
+      symbols: currency.symbols,
+      scale: currency.scale,
+    },
+  }
+}
 
 export function mapOrderPaymentToDTO(orderPayment: OrderPaymentDBPopulated): OrderPaymentDTO {
   return {
     id: orderPayment._id,
-    order: orderPayment.order,
-    cashregister: orderPayment.cashregister,
-    cashregisterAccount: orderPayment.cashregisterAccount,
-    amount: orderPayment.amount,
+    order: orderPayment.orderId,
+    cashregister: orderPayment.cashregisterId,
+    cashregisterAccount: orderPayment.cashregisterAccountId,
+    amount: Number.parseFloat(fromMinor(orderPayment.minorAmount, orderPayment.currency.scale)),
     currency: {
       id: orderPayment.currency._id,
       names: orderPayment.currency.names,
       symbols: orderPayment.currency.symbols,
-      priority: orderPayment.currency.priority,
-      active: orderPayment.currency.active,
       scale: orderPayment.currency.scale,
-      createdAt: orderPayment.currency.createdAt,
-      updatedAt: orderPayment.currency.updatedAt,
     },
     paymentStatus: orderPayment.paymentStatus,
     paymentDate: orderPayment.paymentDate,
-    transaction: orderPayment.transaction,
+    transaction: orderPayment.transactionId,
     comment: orderPayment.comment,
     createdBy: orderPayment.createdBy,
     removedBy: orderPayment.removedBy,

@@ -203,7 +203,7 @@ export async function print({ payload }: { payload: PrintBarcodePayload }): Prom
   return print20x30({ barcodes, size, language })
 }
 
-async function print20x30(payload: { barcodes: BarcodeDTO[], size: string, language: string }): Promise<PrintBarcodeResponse<PdfKitDoc>> {
+async function print20x30(payload: { barcodes: BarcodeDTO[], size: string, language: LanguageCode }): Promise<PrintBarcodeResponse<PdfKitDoc>> {
   const { barcodes, size, language } = payload
   const [w, h] = size.split('x').map(Number)
   const padding = 10
@@ -310,7 +310,7 @@ async function print60x30(payload: { barcodes: BarcodeDTO[], size: string, langu
     )
 
     doc.text(
-      product.names?.[language] || 'ERROR',
+      product.names?.[language] ?? 'ERROR',
       padding,
       doc.y,
       { width: contentWidth, height: 50, ellipsis: true, lineBreak: false },
@@ -467,7 +467,7 @@ async function print55x40(payload: { barcodes: BarcodeDTO[], size: string, langu
     doc.addPage({ size: [w * 8.49, h * 8.49] })
     doc.font('Manrope-Bold').fontSize(170)
 
-    const bigCode = (product.names?.[language] || '').split('#')[1] || 'ERROR'
+    const bigCode = (product.names?.[language] ?? '').split('#')[1] ?? 'ERROR'
 
     const bigCodeHeight = doc.y
 

@@ -1,5 +1,6 @@
+import type { Response } from '../types/common.type'
 import { z } from 'zod'
-import { booleanArraySchema, dateRangeSchema, idSchema, paginationSchema, responseItemSchema, responseListSchema, responseSchema, sorterParamsSchema } from './common'
+import { booleanArraySchema, dateRangeSchema, idSchema, languageCodeSchema, paginationSchema, responseItemSchema, responseListSchema, responseSchema, sorterParamsSchema } from './common'
 import { productSchemaPopulated } from './product.schema'
 
 export const barcodeProductSchema = z.object({
@@ -73,7 +74,7 @@ export const printBarcodeSchema = z.object({
   ids: arrayFromQuery.optional().default([]),
   codes: arrayFromQuery.optional().default([]),
   size: z.string().default('20x30'),
-  language: z.string().default('en'),
+  language: languageCodeSchema.default('en'),
 })
 
 export type PrintBarcodeRequest = z.input<typeof printBarcodeSchema>

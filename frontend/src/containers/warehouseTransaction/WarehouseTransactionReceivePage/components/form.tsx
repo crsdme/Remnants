@@ -1,5 +1,6 @@
 import type { WarehouseDTO } from '@remnant/shared'
 import { useFieldArray, useWatch } from 'react-hook-form'
+import { useNavigate } from 'react-router-dom'
 import { useWarehouseOptions } from '@/api/hooks'
 import { ProductSelectedTable, ProductTable } from '@/components'
 import { AsyncSelectNew } from '@/components/AsyncSelectNew'
@@ -24,9 +25,9 @@ import { useLocale } from '@/utils/hooks'
 import { useWarehouseTransactionContext } from '../context'
 
 export function WarehouseTransactionForm() {
-  const { isLoading, form, submitWarehouseTransactionForm, closeModal, isReceiving } = useWarehouseTransactionContext()
+  const { isLoading, form, submitWarehouseTransactionForm, onError } = useWarehouseTransactionContext()
   const { t, language } = useLocale()
-
+  const navigate = useNavigate()
   const type = useWatch({
     control: form.control,
     name: 'type',
@@ -55,14 +56,6 @@ export function WarehouseTransactionForm() {
         lineQuantity: selectedQuantity,
         receivedQuantity: 0,
       })
-    }
-  }
-
-  const removeProduct = (product: any) => {
-    const selectedProducts = form.getValues('products')
-    const index = selectedProducts.findIndex(p => p.id === product.id)
-    if (index !== -1) {
-      productsField.remove(index)
     }
   }
 
@@ -102,16 +95,19 @@ export function WarehouseTransactionForm() {
       <Separator className="my-4" />
       <ProductSelectedTable
         products={form.getValues('products') || []}
-        removeProduct={removeProduct}
+        removeProduct={() => {}}
         isLoading={isLoading}
         changeProduct={updateProduct}
-        isReceiving={isReceiving}
         includeFooterTotal={true}
+        isQuantity={true}
+        isReceiving={true}
+        removable={false}
+        tableId="selected-products-component-receive"
       />
       <Separator className="my-4" />
       <form
         className="w-full space-y-1 mt-4"
-        onSubmit={(e) => { void form.handleSubmit(submitWarehouseTransactionForm)(e) }}
+        onSubmit={(e) => { void form.handleSubmit(submitWarehouseTransactionForm, onError)(e) }}
       >
 
         <div className="flex gap-2">
@@ -133,7 +129,7 @@ export function WarehouseTransactionForm() {
                     form.setValue('fromWarehouse', '')
                     form.setValue('toWarehouse', '')
                   }}
-                  disabled={isLoading || isReceiving}
+                  disabled={true}
                   {...field}
                 >
                   <FormControl>
@@ -177,7 +173,7 @@ export function WarehouseTransactionForm() {
                       renderOption={e => e.names[language]}
                       getDisplayValue={e => e.names[language]}
                       getOptionValue={e => e.id}
-                      disabled={isLoading || isReceiving}
+                      disabled={true}
                       onChange={(e) => {
                         field.onChange(e)
                         form.setValue('toWarehouse', '')
@@ -219,7 +215,7 @@ export function WarehouseTransactionForm() {
                       renderOption={e => e.names[language]}
                       getDisplayValue={e => e.names[language]}
                       getOptionValue={e => e.id}
-                      disabled={isLoading || isReceiving}
+                      disabled={true}
                     />
                   </FormControl>
                   <FormMessage />
@@ -245,7 +241,7 @@ export function WarehouseTransactionForm() {
                       defaultChecked={true}
                       checked={field.value}
                       onCheckedChange={field.onChange}
-                      disabled={isLoading || isReceiving}
+                      disabled={true}
                     />
                   </FormControl>
                   <FormMessage />
@@ -269,7 +265,7 @@ export function WarehouseTransactionForm() {
                     {...field}
                     placeholder={t('page.warehouse-transactions.form.comment')}
                     className="resize-none"
-                    disabled={isLoading || isReceiving}
+                    disabled={true}
                   />
                 </FormControl>
                 <FormMessage />
@@ -282,7 +278,7 @@ export function WarehouseTransactionForm() {
           <Button
             type="button"
             variant="secondary"
-            onClick={() => closeModal()}
+            onClick={() => void navigate('/warehouse-transactions')}
             disabled={isLoading}
           >
             {t('button.cancel')}

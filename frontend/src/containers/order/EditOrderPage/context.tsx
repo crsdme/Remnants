@@ -261,7 +261,7 @@ export function EditOrderProvider({ children }: { children: ReactNode }) {
         cashregister: p.cashregister.id,
         cashregisterAccount: p.cashregisterAccount.id,
         paymentStatus: p.paymentStatus,
-        paymentDate: p.paymentDate?.toISOString(),
+        paymentDate: p.paymentDate?.toString(),
         comment: p.comment,
       }
       const clientGeneratedId = /^\d{10,15}$/.test(p.id)

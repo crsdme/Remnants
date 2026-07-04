@@ -9,6 +9,34 @@ function hasIdsOrFilters(data: {
   return !!data.ids || !!data.filters
 }
 
+export const productSchema = z.object({
+  id: idSchema,
+  seq: z.number(),
+  names: languageStringSchema,
+  price: numberFromStringSchema,
+  purchasePrice: numberFromStringSchema,
+  currency: idSchema,
+  purchaseCurrency: idSchema,
+  barcodes: z.array(idSchema),
+  categories: z.array(idSchema),
+  unit: idSchema,
+  productPropertiesGroup: idSchema,
+  productProperties: z.array(idSchema),
+  warehouseStock: z.array(z.object({
+    warehouse: idSchema,
+    count: z.number(),
+  })),
+  images: z.array(z.object({
+    id: idSchema,
+    filename: z.string(),
+    name: z.string(),
+    type: z.string(),
+    path: z.string(),
+  })),
+  createdAt: z.coerce.date(),
+  updatedAt: z.coerce.date(),
+})
+
 export const productSchemaPopulated = z.object({
   id: idSchema,
   seq: z.number(),
@@ -19,11 +47,13 @@ export const productSchemaPopulated = z.object({
     id: idSchema,
     names: languageStringSchema,
     symbols: languageStringSchema,
+    scale: numberFromStringSchema,
   }),
   purchaseCurrency: z.object({
     id: idSchema,
     names: languageStringSchema,
     symbols: languageStringSchema,
+    scale: numberFromStringSchema,
   }),
   barcodes: z.array(z.object({
     code: z.string(),
@@ -62,31 +92,6 @@ export const productSchemaPopulated = z.object({
     warehouse: idSchema,
     count: z.number(),
   })),
-  images: z.array(z.object({
-    id: idSchema,
-    filename: z.string(),
-    name: z.string(),
-    type: z.string(),
-    path: z.string(),
-  })),
-  createdAt: z.coerce.date(),
-  updatedAt: z.coerce.date(),
-})
-
-export const productSchema = z.object({
-  id: idSchema,
-  seq: z.number(),
-  names: languageStringSchema,
-  price: numberFromStringSchema,
-  purchasePrice: numberFromStringSchema,
-  currency: idSchema,
-  purchaseCurrency: idSchema,
-  barcodes: z.array(idSchema),
-  categories: z.array(idSchema),
-  unit: idSchema,
-  productPropertiesGroup: idSchema,
-  productProperties: z.array(idSchema),
-  quantityIds: z.array(idSchema),
   images: z.array(z.object({
     id: idSchema,
     filename: z.string(),
@@ -289,10 +294,10 @@ export type GetProductsResponse = z.output<typeof getProductsResponseSchema>
 export const getProductIndexResponseSchema = responseSchema
 export type GetProductIndexResponse = z.output<typeof getProductIndexResponseSchema> & { productIndex: number }
 
-export const createProductResponseSchema = responseItemSchema(productSchema)
+export const createProductResponseSchema = responseSchema
 export type CreateProductResponse = z.output<typeof createProductResponseSchema>
 
-export const editProductResponseSchema = responseItemSchema(productSchema)
+export const editProductResponseSchema = responseSchema
 export type EditProductResponse = z.output<typeof editProductResponseSchema>
 
 export const removeProductResponseSchema = responseSchema

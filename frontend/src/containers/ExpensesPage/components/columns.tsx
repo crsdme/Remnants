@@ -143,7 +143,7 @@ export function useColumns() {
         cell: ({ row }) => {
           const amount = row.original.amount
           const currency = row.original.currency.symbols[language]
-          return <Badge variant="outline">{`${amount} ${currency}`}</Badge>
+          return <Badge variant="destructive">{`-${amount} ${currency}`}</Badge>
         },
       }),
       columnHelper.accessor('cashregister', {

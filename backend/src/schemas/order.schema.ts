@@ -1,4 +1,159 @@
+import { idSchema, languageStringSchema, numberFromStringSchema } from '@remnant/shared'
+
 import { z } from 'zod'
+import { productDBPopulatedSchema } from './product.schema'
+
+export const orderDBSchema = z.object({
+  _id: idSchema,
+  seq: z.number(),
+  warehouse: idSchema,
+  deliveryService: idSchema,
+  orderSource: idSchema,
+  orderStatus: idSchema,
+  orderPayments: z.array(idSchema),
+  totals: z.array(z.object({
+    currency: idSchema,
+    total: numberFromStringSchema,
+  })),
+  profit: z.array(z.object({
+    currency: idSchema,
+    total: numberFromStringSchema,
+  })),
+  orderPaymentStatus: z.enum(['paid', 'unpaid', 'partially_paid', 'overpaid']),
+  client: idSchema,
+  comment: z.string(),
+  createdBy: idSchema,
+  confirmedBy: idSchema,
+  removedBy: idSchema,
+  removed: z.boolean().default(false),
+  createdAt: z.coerce.date(),
+  updatedAt: z.coerce.date(),
+})
+
+export const orderItemDBSchema = z.object({
+  _id: idSchema,
+  seq: z.number(),
+  order: idSchema,
+  product: idSchema,
+  quantity: z.number(),
+  minorManualPrice: numberFromStringSchema.optional(),
+  minorBasePrice: numberFromStringSchema,
+  minorPrice: numberFromStringSchema,
+  minorPurchasePrice: numberFromStringSchema,
+  minorProfit: numberFromStringSchema,
+  minorDiscountAmount: numberFromStringSchema,
+  discountPercent: numberFromStringSchema,
+  exchangeRate: numberFromStringSchema,
+  currency: idSchema,
+  purchaseCurrency: idSchema,
+  removedBy: idSchema,
+  createdBy: idSchema,
+  removed: z.boolean().default(false),
+  createdAt: z.coerce.date(),
+  updatedAt: z.coerce.date(),
+})
+
+export const orderDBPopulatedSchema = z.object({
+  id: idSchema,
+  seq: z.number(),
+  warehouse: z.object({
+    id: idSchema,
+    names: languageStringSchema,
+    priority: numberFromStringSchema,
+  }),
+  deliveryService: z.object({
+    id: idSchema,
+    names: languageStringSchema,
+    priority: numberFromStringSchema,
+  }),
+  orderSource: z.object({
+    id: idSchema,
+    names: languageStringSchema,
+    priority: numberFromStringSchema,
+  }),
+  orderStatus: z.object({
+    id: idSchema,
+    names: languageStringSchema,
+    priority: numberFromStringSchema,
+    color: z.string().optional(),
+    isLocked: z.boolean(),
+  }),
+  orderPayments: z.array(z.object({
+    id: idSchema,
+    amount: numberFromStringSchema,
+    paymentStatus: z.enum(['paid', 'unpaid', 'partially_paid', 'overpaid']),
+    paymentDate: z.coerce.date(),
+    comment: z.string().optional(),
+  })),
+  totals: z.array(z.object({
+    currency: idSchema,
+    scale: numberFromStringSchema,
+    total: numberFromStringSchema,
+  })),
+  profit: z.array(z.object({
+    currency: idSchema,
+    scale: numberFromStringSchema,
+    total: numberFromStringSchema,
+  })),
+  client: z.object({
+    id: idSchema,
+    seq: z.number(),
+    name: z.string(),
+    middleName: z.string().optional(),
+    lastName: z.string().optional(),
+    country: z.string().optional(),
+    emails: z.array(z.string().email()).optional(),
+    phones: z.array(z.string().min(7)).optional(),
+    addresses: z.array(z.string()).optional(),
+    socials: z.array(z.object({
+      type: z.string(),
+      value: z.string(),
+    })).optional(),
+    comment: z.string().optional(),
+  }),
+  comment: z.string(),
+  createdBy: idSchema,
+  confirmedBy: idSchema,
+  removedBy: idSchema,
+  orderPaymentStatus: z.enum(['paid', 'unpaid', 'partially_paid', 'overpaid']),
+  removed: z.boolean().default(false),
+  createdAt: z.coerce.date(),
+  updatedAt: z.coerce.date(),
+})
+
+export const orderItemDBPopulatedSchema = z.object({
+  _id: idSchema,
+  seq: z.number(),
+  order: idSchema,
+  product: productDBPopulatedSchema,
+  quantity: z.number(),
+  minorManualPrice: numberFromStringSchema,
+  minorBasePrice: numberFromStringSchema,
+  minorPrice: numberFromStringSchema,
+  minorPurchasePrice: numberFromStringSchema,
+  minorProfit: numberFromStringSchema,
+  minorDiscountAmount: numberFromStringSchema,
+  discountPercent: numberFromStringSchema,
+  exchangeRate: numberFromStringSchema,
+  currency: z.object({
+    id: idSchema,
+    names: languageStringSchema,
+    symbols: languageStringSchema,
+    scale: numberFromStringSchema,
+    paymentEpsilon: numberFromStringSchema.optional(),
+  }),
+  purchaseCurrency: z.object({
+    id: idSchema,
+    names: languageStringSchema,
+    symbols: languageStringSchema,
+    scale: numberFromStringSchema,
+  }),
+  removedBy: idSchema,
+  createdBy: idSchema,
+  removed: z.boolean().default(false),
+  createdAt: z.coerce.date(),
+  updatedAt: z.coerce.date(),
+})
 
 export const createOrderRepoSchema = z.object({
   _id: z.string(),
@@ -20,6 +175,23 @@ export const createOrderRepoSchema = z.object({
     discountPercent: z.number().optional(),
   })),
   orderPaymentStatus: z.enum(['paid', 'unpaid', 'partially_paid', 'overpaid']),
+})
+
+export const createOrderItemRepoSchema = z.object({
+  order: idSchema,
+  product: idSchema,
+  quantity: numberFromStringSchema,
+  minorManualPrice: numberFromStringSchema.optional(),
+  minorBasePrice: numberFromStringSchema,
+  minorPrice: numberFromStringSchema,
+  minorPurchasePrice: numberFromStringSchema,
+  purchaseCurrency: idSchema,
+  minorProfit: numberFromStringSchema,
+  currency: idSchema,
+  minorDiscountAmount: numberFromStringSchema.optional(),
+  discountPercent: numberFromStringSchema.optional(),
+  exchangeRate: numberFromStringSchema.optional(),
+  createdBy: idSchema,
 })
 
 export const editOrderRepoSchema = z.object({

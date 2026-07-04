@@ -1,6 +1,12 @@
+import { useCallback, useMemo } from 'react'
 import { useWatch } from 'react-hook-form'
-import { useCashregisterAccountOptions, useCashregisterAccountQuery, useCashregisterOptions, useCashregisterQuery, useCurrencyOptions, useCurrencyQuery } from '@/api/hooks'
-import { AsyncSelectNew } from '@/components/AsyncSelectNew'
+import {
+  useCashregisterAccountSelectOptions,
+  useCashregisterQuery,
+  useCashregisterSelectOptions,
+  useCurrencySelectOptions,
+} from '@/api/hooks'
+import { AsyncSelectMenu } from '@/components/AsyncSelectMenu'
 import {
   Button,
   Form,
@@ -71,15 +77,46 @@ function AddForm() {
     { pagination: { full: true }, filters: { active: [true] } },
   )
 
-  const { cashregisterAccounts } = useCashregisterAccountQuery({
-    pagination: { full: true },
-    filters: { ids: cashregisters.find(cashregister => cashregister.id === selectedCashregister)?.accounts.map(account => account.id) },
+  const { loadSearchOptions: loadCashregisterSearch, loadSelectedOptions: loadCashregisterSelected } = useCashregisterSelectOptions({
+    defaultFilters: { active: [true], language },
   })
 
-  const { currencies } = useCurrencyQuery({
-    pagination: { full: true },
-    filters: { ids: cashregisterAccounts.find(account => account.id === selectedCashregisterAccount)?.currencies.map(currency => currency.id) },
+  const accountIds = useMemo(
+    () => cashregisters.find(cashregister => cashregister.id === selectedCashregister)?.accounts.map(account => account.id),
+    [cashregisters, selectedCashregister],
+  )
+
+  const { loadSearchOptions: loadAccountSearch, loadSelectedOptions: loadAccountSelected } = useCashregisterAccountSelectOptions({
+    defaultFilters: { ids: accountIds },
   })
+
+  const { loadSearchOptions: loadCurrencySearch, loadSelectedOptions: loadCurrencySelected } = useCurrencySelectOptions({
+    defaultFilters: { language },
+  })
+
+  const loadAccountOptions = useCallback(
+    async (query: string) => {
+      if (!selectedCashregister || !accountIds?.length)
+        return []
+
+      return loadAccountSearch(query)
+    },
+    [accountIds, loadAccountSearch, selectedCashregister],
+  )
+
+  const loadCurrencyOptions = useCallback(
+    async (query: string) => {
+      if (!selectedCashregisterAccount)
+        return []
+
+      const [account] = await loadAccountSelected([selectedCashregisterAccount])
+      const currencyIds = account?.currencies.map(currency => currency.id) ?? []
+      const currencies = await loadCurrencySearch(query)
+
+      return currencies.filter(currency => currencyIds.includes(currency.id))
+    },
+    [loadAccountSelected, loadCurrencySearch, selectedCashregisterAccount],
+  )
 
   return (
     <Form {...addForm}>
@@ -99,30 +136,25 @@ function AddForm() {
                   <span className="text-destructive ml-1">*</span>
                 </p>
               </FormLabel>
-              <FormControl>
-                <Select
-                  onValueChange={(value) => {
-                    field.onChange(value)
-                    addForm.setValue('account', '')
-                    addForm.setValue('currency', '')
-                  }}
-                  disabled={isLoading}
-                  {...field}
-                >
-                  <FormControl>
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder={t('page.money-transactions.form.cashregister')} />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {cashregisters.map(cashregister => (
-                      <SelectItem key={cashregister.id} value={cashregister.id}>
-                        {cashregister.names[language]}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </FormControl>
+              <AsyncSelectMenu
+                loadSearchOptions={loadCashregisterSearch}
+                loadSelectedOptions={loadCashregisterSelected}
+                field={field}
+                value={field.value}
+                onChange={(value) => {
+                  const id = typeof value === 'string' ? value : value[0] ?? ''
+                  field.onChange(id)
+                  addForm.setValue('account', '')
+                  addForm.setValue('currency', '')
+                }}
+                renderOption={cashregister => cashregister.names[language]}
+                getDisplayValue={cashregister => cashregister.names[language]}
+                getOptionValue={cashregister => cashregister.id}
+                triggerClassName="w-full"
+                disabled={isLoading}
+                searchable
+                clearable
+              />
               <FormMessage />
             </FormItem>
           )}
@@ -139,29 +171,24 @@ function AddForm() {
                   <span className="text-destructive ml-1">*</span>
                 </p>
               </FormLabel>
-              <FormControl>
-                <Select
-                  onValueChange={(value) => {
-                    field.onChange(value)
-                    addForm.setValue('currency', '')
-                  }}
-                  disabled={isLoading || !selectedCashregister}
-                  {...field}
-                >
-                  <FormControl>
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder={t('page.money-transactions.form.cashregister-account')} />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {cashregisterAccounts.map(account => (
-                      <SelectItem key={account.id} value={account.id}>
-                        {account.names[language]}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </FormControl>
+              <AsyncSelectMenu
+                loadSearchOptions={loadAccountOptions}
+                loadSelectedOptions={loadAccountSelected}
+                field={field}
+                value={field.value}
+                onChange={(value) => {
+                  const id = typeof value === 'string' ? value : value[0] ?? ''
+                  field.onChange(id)
+                  addForm.setValue('currency', '')
+                }}
+                renderOption={account => `${account.seq} ${account.names[language]}`}
+                getDisplayValue={account => account.names[language]}
+                getOptionValue={account => account.id}
+                triggerClassName="w-full"
+                disabled={isLoading || !selectedCashregister}
+                searchable
+                clearable
+              />
               <FormMessage />
             </FormItem>
           )}
@@ -193,24 +220,21 @@ function AddForm() {
                   control={addForm.control}
                   name="currency"
                   render={({ field: currencyField }) => (
-                    <Select
-                      onValueChange={currencyField.onChange}
+                    <AsyncSelectMenu
+                      loadSearchOptions={loadCurrencyOptions}
+                      loadSelectedOptions={loadCurrencySelected}
+                      field={currencyField}
+                      value={currencyField.value}
+                      onChange={currencyField.onChange}
+                      renderOption={currency => currency.symbols[language]}
+                      getDisplayValue={currency => currency.symbols[language]}
+                      getOptionValue={currency => currency.id}
+                      triggerClassName="w-[80px]"
+                      placeholder="..."
                       disabled={isLoading || !selectedCashregisterAccount}
-                      {...currencyField}
-                    >
-                      <FormControl>
-                        <SelectTrigger className="w-[80px]">
-                          <SelectValue placeholder="..." />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {currencies.map(currency => (
-                          <SelectItem key={currency.id} value={currency.id}>
-                            {currency.symbols[language]}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                      searchable
+                      clearable
+                    />
                   )}
                 />
               </div>
@@ -304,22 +328,63 @@ function AccountForm() {
     { pagination: { full: true }, filters: { active: [true] } },
   )
 
-  const { cashregisterAccounts } = useCashregisterAccountQuery(
-    { pagination: { full: true }, filters: { ids: cashregisters.find(cashregister => cashregister.id === selectedCashregister)?.accounts.map(account => account.id) } },
+  const { loadSearchOptions: loadCashregisterSearch, loadSelectedOptions: loadCashregisterSelected } = useCashregisterSelectOptions({
+    defaultFilters: { active: [true], language },
+  })
+
+  const accountIds = useMemo(
+    () => cashregisters.find(cashregister => cashregister.id === selectedCashregister)?.accounts.map(account => account.id),
+    [cashregisters, selectedCashregister],
   )
 
-  const loadCashregisterAccountOptions = useCashregisterAccountOptions(
-    {
-      defaultFilters: {
-        ids: cashregisters
-          .find(cashregister => cashregister.id === selectedCashregister)
-          ?.accounts
-          .map(account => account.id),
-      },
+  const { loadSearchOptions: loadAccountSearch, loadSelectedOptions: loadAccountSelected } = useCashregisterAccountSelectOptions({
+    defaultFilters: { ids: accountIds },
+  })
+
+  const { loadSearchOptions: loadCurrencySearch, loadSelectedOptions: loadCurrencySelected } = useCurrencySelectOptions({
+    defaultFilters: { language },
+  })
+
+  const loadAccountOptions = useCallback(
+    async (query: string) => {
+      if (!selectedCashregister || !accountIds?.length)
+        return []
+
+      return loadAccountSearch(query)
     },
+    [accountIds, loadAccountSearch, selectedCashregister],
   )
 
-  const loadCurrencyOptions = useCurrencyOptions()
+  const loadAccountToOptions = useCallback(
+    async (query: string) => {
+      const excludeId = selectedAccountFrom
+      const accounts = await loadAccountOptions(query)
+
+      return excludeId
+        ? accounts.filter(account => account.id !== excludeId)
+        : accounts
+    },
+    [loadAccountOptions, selectedAccountFrom],
+  )
+
+  const loadCurrencyOptions = useCallback(
+    async (query: string) => {
+      const fromId = selectedAccountFrom
+      const toId = selectedAccountTo
+
+      if (!fromId || !toId)
+        return []
+
+      const [fromAccount, toAccount] = await loadAccountSelected([fromId, toId])
+      const fromCurrencyIds = fromAccount?.currencies.map(currency => currency.id) ?? []
+      const toCurrencyIds = toAccount?.currencies.map(currency => currency.id) ?? []
+      const currencyIds = fromCurrencyIds.filter(id => toCurrencyIds.includes(id))
+      const currencies = await loadCurrencySearch(query)
+
+      return currencies.filter(currency => currencyIds.includes(currency.id))
+    },
+    [loadAccountSelected, loadCurrencySearch, selectedAccountFrom, selectedAccountTo],
+  )
 
   return (
     <Form {...accountForm}>
@@ -339,30 +404,26 @@ function AccountForm() {
                   <span className="text-destructive ml-1">*</span>
                 </p>
               </FormLabel>
-
-              <Select
-                onValueChange={(value) => {
-                  field.onChange(value)
+              <AsyncSelectMenu
+                loadSearchOptions={loadCashregisterSearch}
+                loadSelectedOptions={loadCashregisterSelected}
+                field={field}
+                value={field.value}
+                onChange={(value) => {
+                  const id = typeof value === 'string' ? value : value[0] ?? ''
+                  field.onChange(id)
                   accountForm.setValue('accountFrom', '')
                   accountForm.setValue('accountTo', '')
                   accountForm.setValue('currency', '')
                 }}
+                renderOption={cashregister => cashregister.names[language]}
+                getDisplayValue={cashregister => cashregister.names[language]}
+                getOptionValue={cashregister => cashregister.id}
+                triggerClassName="w-full"
                 disabled={isLoading}
-                {...field}
-              >
-                <FormControl>
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder={t('page.money-transactions.form.cashregister')} />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  {cashregisters.map(cashregister => (
-                    <SelectItem key={cashregister.id} value={cashregister.id}>
-                      {cashregister.names[language]}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                searchable
+                clearable
+              />
               <FormMessage />
             </FormItem>
           )}
@@ -380,19 +441,20 @@ function AccountForm() {
                     <span className="text-destructive ml-1">*</span>
                   </p>
                 </FormLabel>
-                <FormControl>
-                  <AsyncSelectNew
-                    loadOptions={loadCashregisterAccountOptions}
-                    renderOption={e => `${e.seq} ${e.names[language]}`}
-                    getDisplayValue={e => e.names[language]}
-                    getOptionValue={e => e.id}
-                    className="w-full"
-                    name="accountFrom"
-                    value={field.value}
-                    onChange={field.onChange}
-                    disabled={isLoading || !selectedCashregister[0]}
-                  />
-                </FormControl>
+                <AsyncSelectMenu
+                  loadSearchOptions={loadAccountOptions}
+                  loadSelectedOptions={loadAccountSelected}
+                  field={field}
+                  value={field.value}
+                  onChange={field.onChange}
+                  renderOption={account => `${account.seq} ${account.names[language]}`}
+                  getDisplayValue={account => account.names[language]}
+                  getOptionValue={account => account.id}
+                  triggerClassName="w-full"
+                  disabled={isLoading || !selectedCashregister}
+                  searchable
+                  clearable
+                />
                 <FormMessage />
               </FormItem>
             )}
@@ -408,23 +470,20 @@ function AccountForm() {
                     <span className="text-destructive ml-1">*</span>
                   </p>
                 </FormLabel>
-                <FormControl>
-                  <AsyncSelectNew
-                    loadOptions={async (params) => {
-                      const data = await loadCashregisterAccountOptions({ query: params?.query ?? '', selectedValue: accountForm.watch('accountFrom') })
-                      const excludeIds = accountForm.watch('accountFrom') || []
-                      return data.filter(d => !excludeIds.includes(d.id))
-                    }}
-                    renderOption={e => `${e.seq} ${e.names[language]}`}
-                    getDisplayValue={e => e.names[language]}
-                    getOptionValue={e => e.id}
-                    className="w-full"
-                    name="accountTo"
-                    value={field.value}
-                    onChange={field.onChange}
-                    disabled={isLoading || !selectedAccountFrom[0]}
-                  />
-                </FormControl>
+                <AsyncSelectMenu
+                  loadSearchOptions={loadAccountToOptions}
+                  loadSelectedOptions={loadAccountSelected}
+                  field={field}
+                  value={field.value}
+                  onChange={field.onChange}
+                  renderOption={account => `${account.seq} ${account.names[language]}`}
+                  getDisplayValue={account => account.names[language]}
+                  getOptionValue={account => account.id}
+                  triggerClassName="w-full"
+                  disabled={isLoading || !selectedAccountFrom}
+                  searchable
+                  clearable
+                />
                 <FormMessage />
               </FormItem>
             )}
@@ -456,24 +515,21 @@ function AccountForm() {
                 <FormField
                   control={accountForm.control}
                   name="currency"
-                  render={({ field }) => (
-                    <AsyncSelectNew
-                      loadOptions={async (params) => {
-                        const accountsFrom = cashregisterAccounts.find(account => account.id === accountForm.watch('accountFrom')?.[0])?.currencies.map(currency => currency.id) || []
-                        const accountsTo = cashregisterAccounts.find(account => account.id === accountForm.watch('accountTo')?.[0])?.currencies.map(currency => currency.id) || []
-
-                        const ids = accountsFrom.filter(value => accountsTo.includes(value))
-
-                        const data = await loadCurrencyOptions({ query: params?.query ?? '' })
-                        return data.filter(d => ids.includes(d.id))
-                      }}
-                      renderOption={e => `${e.symbols[language]}`}
-                      getDisplayValue={e => e.symbols[language]}
-                      getOptionValue={e => e.id}
-                      name="currency"
-                      value={field.value}
-                      onChange={field.onChange}
-                      disabled={isLoading || !selectedAccountTo[0]}
+                  render={({ field: currencyField }) => (
+                    <AsyncSelectMenu
+                      loadSearchOptions={loadCurrencyOptions}
+                      loadSelectedOptions={loadCurrencySelected}
+                      field={currencyField}
+                      value={currencyField.value}
+                      onChange={currencyField.onChange}
+                      renderOption={currency => currency.symbols[language]}
+                      getDisplayValue={currency => currency.symbols[language]}
+                      getOptionValue={currency => currency.id}
+                      triggerClassName="w-[80px]"
+                      placeholder="..."
+                      disabled={isLoading || !selectedAccountTo}
+                      searchable
+                      clearable
                     />
                   )}
                 />
@@ -541,25 +597,86 @@ function CashregisterForm() {
     { pagination: { full: true }, filters: { active: [true] } },
   )
 
-  const { cashregisterAccounts } = useCashregisterAccountQuery({
-    pagination: { full: true },
-    filters: { ids: cashregisters.find(cashregister => cashregister.id === cashregisterFrom)?.accounts.map(account => account.id) },
+  const { loadSearchOptions: loadCashregisterSearch, loadSelectedOptions: loadCashregisterSelected } = useCashregisterSelectOptions({
+    defaultFilters: { active: [true], language },
   })
 
-  const loadCashregisterAccountOptions = useCashregisterAccountOptions(
-    {
-      defaultFilters: {
-        ids: cashregisters
-          .find(cashregister => cashregister.id === cashregisterFrom)
-          ?.accounts
-          .map(account => account.id),
-      },
-    },
+  const accountIdsFrom = useMemo(
+    () => cashregisters.find(cashregister => cashregister.id === cashregisterFrom)?.accounts.map(account => account.id),
+    [cashregisters, cashregisterFrom],
   )
 
-  const loadCurrencyOptions = useCurrencyOptions()
+  const accountIdsTo = useMemo(
+    () => cashregisters.find(cashregister => cashregister.id === cashregisterTo)?.accounts.map(account => account.id),
+    [cashregisters, cashregisterTo],
+  )
 
-  const loadCashregisterOptions = useCashregisterOptions()
+  const { loadSearchOptions: loadAccountFromSearch, loadSelectedOptions: loadAccountFromSelected } = useCashregisterAccountSelectOptions({
+    defaultFilters: { ids: accountIdsFrom },
+  })
+
+  const { loadSearchOptions: loadAccountToSearch, loadSelectedOptions: loadAccountToSelected } = useCashregisterAccountSelectOptions({
+    defaultFilters: { ids: accountIdsTo },
+  })
+
+  const { loadSearchOptions: loadCurrencySearch, loadSelectedOptions: loadCurrencySelected } = useCurrencySelectOptions({
+    defaultFilters: { language },
+  })
+
+  const loadCashregisterToOptions = useCallback(
+    async (query: string) => {
+      const excludeId = cashregisterFrom
+      const cashregisterList = await loadCashregisterSearch(query)
+
+      return excludeId
+        ? cashregisterList.filter(cashregister => cashregister.id !== excludeId)
+        : cashregisterList
+    },
+    [cashregisterFrom, loadCashregisterSearch],
+  )
+
+  const loadAccountFromOptions = useCallback(
+    async (query: string) => {
+      if (!cashregisterFrom || !accountIdsFrom?.length)
+        return []
+
+      return loadAccountFromSearch(query)
+    },
+    [accountIdsFrom, cashregisterFrom, loadAccountFromSearch],
+  )
+
+  const loadAccountToOptions = useCallback(
+    async (query: string) => {
+      if (!cashregisterTo || !accountIdsTo?.length)
+        return []
+
+      return loadAccountToSearch(query)
+    },
+    [accountIdsTo, cashregisterTo, loadAccountToSearch],
+  )
+
+  const loadCurrencyOptions = useCallback(
+    async (query: string) => {
+      const fromId = accountFrom
+      const toId = accountTo
+
+      if (!fromId || !toId)
+        return []
+
+      const [fromAccount, toAccount] = await Promise.all([
+        loadAccountFromSelected([fromId]).then(items => items[0]),
+        loadAccountToSelected([toId]).then(items => items[0]),
+      ])
+
+      const fromCurrencyIds = fromAccount?.currencies.map(currency => currency.id) ?? []
+      const toCurrencyIds = toAccount?.currencies.map(currency => currency.id) ?? []
+      const currencyIds = fromCurrencyIds.filter(id => toCurrencyIds.includes(id))
+      const currencies = await loadCurrencySearch(query)
+
+      return currencies.filter(currency => currencyIds.includes(currency.id))
+    },
+    [accountFrom, accountTo, loadAccountFromSelected, loadAccountToSelected, loadCurrencySearch],
+  )
 
   return (
     <Form {...cashregisterForm}>
@@ -580,25 +697,27 @@ function CashregisterForm() {
                     <span className="text-destructive ml-1">*</span>
                   </p>
                 </FormLabel>
-                <FormControl>
-                  <AsyncSelectNew
-                    loadOptions={loadCashregisterOptions}
-                    renderOption={e => `${e.names[language]}`}
-                    getDisplayValue={e => e.names[language]}
-                    getOptionValue={e => e.id}
-                    className="w-full"
-                    name="cashregisterFrom"
-                    value={field.value}
-                    onChange={(e) => {
-                      field.onChange(e)
-                      cashregisterForm.setValue('cashregisterTo', '')
-                      cashregisterForm.setValue('accountFrom', '')
-                      cashregisterForm.setValue('accountTo', '')
-                      cashregisterForm.setValue('currency', '')
-                    }}
-                    disabled={isLoading}
-                  />
-                </FormControl>
+                <AsyncSelectMenu
+                  loadSearchOptions={loadCashregisterSearch}
+                  loadSelectedOptions={loadCashregisterSelected}
+                  field={field}
+                  value={field.value}
+                  onChange={(value) => {
+                    const id = typeof value === 'string' ? value : value[0] ?? ''
+                    field.onChange(id)
+                    cashregisterForm.setValue('cashregisterTo', '')
+                    cashregisterForm.setValue('accountFrom', '')
+                    cashregisterForm.setValue('accountTo', '')
+                    cashregisterForm.setValue('currency', '')
+                  }}
+                  renderOption={cashregister => cashregister.names[language]}
+                  getDisplayValue={cashregister => cashregister.names[language]}
+                  getOptionValue={cashregister => cashregister.id}
+                  triggerClassName="w-full"
+                  disabled={isLoading}
+                  searchable
+                  clearable
+                />
                 <FormMessage />
               </FormItem>
             )}
@@ -614,23 +733,20 @@ function CashregisterForm() {
                     <span className="text-destructive ml-1">*</span>
                   </p>
                 </FormLabel>
-                <FormControl>
-                  <AsyncSelectNew
-                    loadOptions={async (params) => {
-                      const data = await loadCashregisterOptions({ query: params?.query ?? '', selectedValue: cashregisterForm.watch('cashregisterFrom') })
-                      const excludeIds = cashregisterForm.watch('cashregisterFrom') || []
-                      return data.filter(d => !excludeIds.includes(d.id))
-                    }}
-                    renderOption={e => `${e.names[language]}`}
-                    getDisplayValue={e => e.names[language]}
-                    getOptionValue={e => e.id}
-                    className="w-full"
-                    name="cashregisterTo"
-                    value={field.value}
-                    onChange={field.onChange}
-                    disabled={isLoading || !cashregisterFrom[0]}
-                  />
-                </FormControl>
+                <AsyncSelectMenu
+                  loadSearchOptions={loadCashregisterToOptions}
+                  loadSelectedOptions={loadCashregisterSelected}
+                  field={field}
+                  value={field.value}
+                  onChange={field.onChange}
+                  renderOption={cashregister => cashregister.names[language]}
+                  getDisplayValue={cashregister => cashregister.names[language]}
+                  getOptionValue={cashregister => cashregister.id}
+                  triggerClassName="w-full"
+                  disabled={isLoading || !cashregisterFrom}
+                  searchable
+                  clearable
+                />
                 <FormMessage />
               </FormItem>
             )}
@@ -649,23 +765,20 @@ function CashregisterForm() {
                     <span className="text-destructive ml-1">*</span>
                   </p>
                 </FormLabel>
-                <FormControl>
-                  <AsyncSelectNew
-                    loadOptions={async (params) => {
-                      const data = await loadCashregisterAccountOptions({ query: params?.query ?? '' })
-                      const ids = cashregisters.find(cashregister => cashregister.id === cashregisterFrom[0])?.accounts.map(account => account.id) || []
-                      return data.filter(d => ids.includes(d.id))
-                    }}
-                    renderOption={e => `${e.seq} ${e.names[language]}`}
-                    getDisplayValue={e => e.names[language]}
-                    getOptionValue={e => e.id}
-                    className="w-full"
-                    name="accountFrom"
-                    value={field.value}
-                    onChange={field.onChange}
-                    disabled={isLoading || !cashregisterTo[0]}
-                  />
-                </FormControl>
+                <AsyncSelectMenu
+                  loadSearchOptions={loadAccountFromOptions}
+                  loadSelectedOptions={loadAccountFromSelected}
+                  field={field}
+                  value={field.value}
+                  onChange={field.onChange}
+                  renderOption={account => `${account.seq} ${account.names[language]}`}
+                  getDisplayValue={account => account.names[language]}
+                  getOptionValue={account => account.id}
+                  triggerClassName="w-full"
+                  disabled={isLoading || !cashregisterTo}
+                  searchable
+                  clearable
+                />
                 <FormMessage />
               </FormItem>
             )}
@@ -681,23 +794,20 @@ function CashregisterForm() {
                     <span className="text-destructive ml-1">*</span>
                   </p>
                 </FormLabel>
-                <FormControl>
-                  <AsyncSelectNew
-                    loadOptions={async (params) => {
-                      const data = await loadCashregisterAccountOptions({ query: params?.query ?? '' })
-                      const ids = cashregisters.find(cashregister => cashregister.id === cashregisterTo[0])?.accounts.map(account => account.id) || []
-                      return data.filter(d => ids.includes(d.id))
-                    }}
-                    renderOption={e => `${e.seq} ${e.names[language]}`}
-                    getDisplayValue={e => e.names[language]}
-                    getOptionValue={e => e.id}
-                    className="w-full"
-                    name="accountTo"
-                    value={field.value}
-                    onChange={field.onChange}
-                    disabled={isLoading || !accountFrom[0]}
-                  />
-                </FormControl>
+                <AsyncSelectMenu
+                  loadSearchOptions={loadAccountToOptions}
+                  loadSelectedOptions={loadAccountToSelected}
+                  field={field}
+                  value={field.value}
+                  onChange={field.onChange}
+                  renderOption={account => `${account.seq} ${account.names[language]}`}
+                  getDisplayValue={account => account.names[language]}
+                  getOptionValue={account => account.id}
+                  triggerClassName="w-full"
+                  disabled={isLoading || !accountFrom}
+                  searchable
+                  clearable
+                />
                 <FormMessage />
               </FormItem>
             )}
@@ -729,24 +839,21 @@ function CashregisterForm() {
                 <FormField
                   control={cashregisterForm.control}
                   name="currency"
-                  render={({ field }) => (
-                    <AsyncSelectNew
-                      loadOptions={async (params) => {
-                        const accountsFrom = cashregisterAccounts.find(account => account.id === accountFrom[0])?.currencies.map(currency => currency.id) || []
-                        const accountsTo = cashregisterAccounts.find(account => account.id === accountTo[0])?.currencies.map(currency => currency.id) || []
-
-                        const ids = accountsFrom.filter(value => accountsTo.includes(value))
-
-                        const data = await loadCurrencyOptions({ query: params?.query ?? '' })
-                        return data.filter(d => ids.includes(d.id))
-                      }}
-                      renderOption={e => `${e.symbols[language]}`}
-                      getDisplayValue={e => e.symbols[language]}
-                      getOptionValue={e => e.id}
-                      name="currency"
-                      value={field.value}
-                      onChange={field.onChange}
-                      disabled={isLoading || !accountTo[0]}
+                  render={({ field: currencyField }) => (
+                    <AsyncSelectMenu
+                      loadSearchOptions={loadCurrencyOptions}
+                      loadSelectedOptions={loadCurrencySelected}
+                      field={currencyField}
+                      value={currencyField.value}
+                      onChange={currencyField.onChange}
+                      renderOption={currency => currency.symbols[language]}
+                      getDisplayValue={currency => currency.symbols[language]}
+                      getOptionValue={currency => currency.id}
+                      triggerClassName="w-[80px]"
+                      placeholder="..."
+                      disabled={isLoading || !accountTo}
+                      searchable
+                      clearable
                     />
                   )}
                 />

@@ -7,7 +7,12 @@ export const orderPaymentSchema = z.object({
   cashregister: idSchema,
   cashregisterAccount: idSchema,
   amount: numberFromStringSchema,
-  currency: idSchema,
+  currency: z.object({
+    id: idSchema,
+    names: languageStringSchema,
+    symbols: languageStringSchema,
+    scale: z.number(),
+  }),
   paymentStatus: z.string().trim(),
   paymentDate: z.date(),
   transaction: idSchema,
@@ -36,6 +41,7 @@ export const orderPaymentDTOPopulatedSchema = z.object({
     id: idSchema,
     names: languageStringSchema,
     symbols: languageStringSchema,
+    scale: z.number(),
   }),
   paymentStatus: z.string().trim(),
   paymentDate: z.date(),
@@ -73,13 +79,13 @@ export const getOrderPaymentsSchema = z.object({
 export type GetOrderPaymentsRequest = z.input<typeof getOrderPaymentsSchema>
 
 export const createOrderPaymentSchema = z.object({
-  order: z.string(),
-  cashregister: z.string(),
-  cashregisterAccount: z.string(),
+  orderId: z.string(),
+  cashregisterId: z.string(),
+  cashregisterAccountId: z.string(),
   amount: numberFromStringSchema,
-  currency: z.string(),
+  currencyId: z.string(),
   paymentStatus: z.string(),
-  createdBy: idSchema.optional(),
+  createdBy: z.string().optional(),
   paymentDate: z.date().optional().default(() => new Date()),
   comment: z.string().optional(),
 })
@@ -88,11 +94,11 @@ export type CreateOrderPaymentRequest = z.input<typeof createOrderPaymentSchema>
 
 export const editOrderPaymentSchema = z.object({
   id: idSchema,
-  order: z.string(),
-  cashregister: z.string(),
-  cashregisterAccount: z.string(),
+  orderId: z.string(),
+  cashregisterId: z.string(),
+  cashregisterAccountId: z.string(),
   amount: numberFromStringSchema,
-  currency: z.string(),
+  currencyId: z.string(),
   paymentStatus: z.string(),
   paymentDate: z.date(),
   comment: z.string().optional(),

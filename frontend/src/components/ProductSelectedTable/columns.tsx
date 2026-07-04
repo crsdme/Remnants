@@ -30,6 +30,7 @@ interface ProductSelectedTableProps {
   includeTotal: boolean
   isProfit: boolean
   isQuantity: boolean
+  removable: boolean
 }
 const columnHelper = createColumnHelper<ProductPopulatedDTO & {
   lineQuantity?: number
@@ -53,6 +54,7 @@ export function useColumns(
     handleChange,
     includeTotal,
     isProfit,
+    removable,
   }: ProductSelectedTableProps,
 ) {
   const { t, language } = useLocale()
@@ -79,6 +81,9 @@ export function useColumns(
         },
         enableHiding: false,
         cell: ({ row }) => {
+          if (!removable)
+            return null
+
           return (
             <div className="flex gap-2 justify-end">
               <Button
@@ -358,12 +363,13 @@ export function useColumns(
         return []
 
       return [columnHelper.display({
-        id: 'selectedPrice',
+        id: 'receivedQuantity',
         meta: {
           title: t('component.productTable.table.receivedQuantity'),
           filterable: true,
           filterType: 'number',
           sortable: true,
+          defaultVisible: true,
         },
         header: () => t('component.productTable.table.receivedQuantity'),
         cell: ({ row }: { row: Row<any> }) => {
@@ -440,6 +446,7 @@ export function useColumns(
           filterable: true,
           filterType: 'number',
           sortable: true,
+          defaultVisible: true,
         },
         header: () => t('component.productTable.table.selectedPrice'),
         footer: ({ table }) => {

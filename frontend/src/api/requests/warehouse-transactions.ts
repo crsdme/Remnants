@@ -3,6 +3,8 @@ import type {
   CreateWarehouseTransactionResponse,
   EditWarehouseTransactionRequest,
   EditWarehouseTransactionResponse,
+  GetWarehouseTransactionDetailsRequest,
+  GetWarehouseTransactionDetailsResponse,
   GetWarehouseTransactionsItemsRequest,
   GetWarehouseTransactionsItemsResponse,
   GetWarehouseTransactionsRequest,
@@ -16,6 +18,10 @@ import { api } from '@/api/instance'
 
 export async function getWarehouseTransactions(params: GetWarehouseTransactionsRequest) {
   return api.get<GetWarehouseTransactionsResponse>('warehouse-transactions/get', { params })
+}
+
+export async function getWarehouseTransactionDetails(params: GetWarehouseTransactionDetailsRequest) {
+  return api.get<GetWarehouseTransactionDetailsResponse>('warehouse-transactions/get/details', { params })
 }
 
 export async function createWarehouseTransaction(params: CreateWarehouseTransactionRequest) {

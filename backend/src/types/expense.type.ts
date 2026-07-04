@@ -1,7 +1,10 @@
-import type {
-  ExpenseDTO,
-} from '@remnant/shared'
 import type { z } from 'zod'
+import type {
+  createExpenseRepoSchema,
+  editExpenseRepoSchema,
+  expenseDBPopulatedSchema,
+  expenseDBSchema,
+} from '../schemas'
 import {
   createExpenseSchema,
   editExpenseSchema,
@@ -9,24 +12,9 @@ import {
   removeExpensesSchema,
 } from '@remnant/shared'
 
-export interface ExpenseDB {
-  _id: string
-  seq: number
-  amount: number
-  currency: string
-  cashregister: string
-  cashregisterAccount: string
-  categories: string[]
-  sourceModel: string
-  sourceId: string
-  type: string
-  comment: string
-  createdBy: string
-  removedBy: string
-  removed: boolean
-  createdAt: Date
-  updatedAt: Date
-}
+export type ExpenseDB = z.infer<typeof expenseDBSchema>
+
+export type ExpenseDBPopulated = z.infer<typeof expenseDBPopulatedSchema>
 
 export type GetExpensesPayload = z.output<typeof getExpensesSchema>
 export function parseGetExpenses(x: unknown): GetExpensesPayload {
@@ -49,8 +37,8 @@ export function parseRemoveExpenses(x: unknown): RemoveExpensesPayload {
 }
 
 export type GetExpensesRepoPayload = GetExpensesPayload
-export interface GetExpensesRepoResult { items: ExpenseDTO[], total: number, page: number, pageSize: number }
+export interface GetExpensesRepoResult { items: ExpenseDBPopulated[], total: number, page: number, pageSize: number }
 
-export type CreateExpensesRepoPayload = CreateExpensePayload
+export type CreateExpensesRepoPayload = z.output<typeof createExpenseRepoSchema>
 
-export type EditExpensesRepoPayload = EditExpensePayload
+export type EditExpensesRepoPayload = z.output<typeof editExpenseRepoSchema>

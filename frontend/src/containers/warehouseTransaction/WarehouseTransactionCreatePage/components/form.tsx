@@ -1,5 +1,6 @@
 import type { WarehouseDTO } from '@remnant/shared'
 import { useFieldArray, useWatch } from 'react-hook-form'
+import { useNavigate } from 'react-router-dom'
 import { useWarehouseOptions } from '@/api/hooks'
 import { ProductSelectedTable, ProductTable } from '@/components'
 import { AsyncSelectNew } from '@/components/AsyncSelectNew'
@@ -24,8 +25,9 @@ import { useLocale } from '@/utils/hooks'
 import { useWarehouseTransactionContext } from '../context'
 
 export function WarehouseTransactionForm() {
-  const { isLoading, form, submitWarehouseTransactionForm, closeModal, isReceiving } = useWarehouseTransactionContext()
+  const { isLoading, form, submitWarehouseTransactionForm } = useWarehouseTransactionContext()
   const { t, language } = useLocale()
+  const navigate = useNavigate()
 
   const type = useWatch({
     control: form.control,
@@ -105,7 +107,6 @@ export function WarehouseTransactionForm() {
         removeProduct={removeProduct}
         isLoading={isLoading}
         changeProduct={updateProduct}
-        isReceiving={isReceiving}
         includeFooterTotal={true}
         isQuantity={true}
       />
@@ -134,7 +135,7 @@ export function WarehouseTransactionForm() {
                     form.setValue('fromWarehouse', '')
                     form.setValue('toWarehouse', '')
                   }}
-                  disabled={isLoading || isReceiving}
+                  disabled={isLoading}
                   {...field}
                 >
                   <FormControl>
@@ -178,7 +179,7 @@ export function WarehouseTransactionForm() {
                       renderOption={e => e.names[language]}
                       getDisplayValue={e => e.names[language]}
                       getOptionValue={e => e.id}
-                      disabled={isLoading || isReceiving}
+                      disabled={isLoading}
                       onChange={(e) => {
                         field.onChange(e)
                         form.setValue('toWarehouse', '')
@@ -220,7 +221,7 @@ export function WarehouseTransactionForm() {
                       renderOption={e => e.names[language]}
                       getDisplayValue={e => e.names[language]}
                       getOptionValue={e => e.id}
-                      disabled={isLoading || isReceiving}
+                      disabled={isLoading}
                     />
                   </FormControl>
                   <FormMessage />
@@ -246,7 +247,7 @@ export function WarehouseTransactionForm() {
                       defaultChecked={true}
                       checked={field.value}
                       onCheckedChange={field.onChange}
-                      disabled={isLoading || isReceiving}
+                      disabled={isLoading}
                     />
                   </FormControl>
                   <FormMessage />
@@ -270,7 +271,7 @@ export function WarehouseTransactionForm() {
                     {...field}
                     placeholder={t('page.warehouse-transactions.form.comment')}
                     className="resize-none"
-                    disabled={isLoading || isReceiving}
+                    disabled={isLoading}
                   />
                 </FormControl>
                 <FormMessage />
@@ -283,7 +284,7 @@ export function WarehouseTransactionForm() {
           <Button
             type="button"
             variant="secondary"
-            onClick={() => closeModal()}
+            onClick={() => { void navigate('/warehouse-transactions') }}
             disabled={isLoading}
           >
             {t('button.cancel')}

@@ -1,21 +1,20 @@
 import type {
-  CreateSyncEntryResponse,
-  EditSyncEntryResponse,
-  GetSyncEntriesResponse,
-  RemoveSyncEntriesResponse,
-  SyncProductCreateResponse,
-  SyncProductEditResponse,
-  SyncProductQuantityResponse,
-} from '@remnant/shared'
-import type {
   CreateSyncEntryPayload,
+  CreateSyncEntryResponse,
   EditSyncEntryPayload,
+  EditSyncEntryResponse,
   GetSyncEntriesPayload,
+  GetSyncEntriesResponse,
   RemoveSyncEntriesPayload,
+  RemoveSyncEntriesResponse,
   SyncProductCreatePayload,
+  SyncProductCreateResponse,
   SyncProductEditPayload,
+  SyncProductEditResponse,
   SyncProductQuantityPayload,
+  SyncProductQuantityResponse,
 } from '@/types/'
+
 import { mapSyncEntryToDTO } from '@/mappers/'
 import * as SyncEntryRepo from '@/repositories/sync-entry.repo'
 import { HttpError } from '@/utils/httpError'

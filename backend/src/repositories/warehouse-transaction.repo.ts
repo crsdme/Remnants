@@ -1,4 +1,4 @@
-import type { AggregateResult, WarehouseTransactionDTO, WarehouseTransactionItemDTO } from '@remnant/shared'
+import type { AggregateResult, ProductDTO, WarehouseTransactionDTO, WarehouseTransactionItemDTO } from '@remnant/shared'
 import type { ClientSession, FilterQuery, PipelineStage } from 'mongoose'
 import type {
   CreateWarehouseTransactionItemsRepoPayload,
@@ -9,6 +9,7 @@ import type {
   GetWarehouseTransactionsItemsRepoResult,
   GetWarehouseTransactionsRepoPayload,
   GetWarehouseTransactionsRepoResult,
+  WarehouseTransactionDB,
   WarehouseTransactionItemDB,
 } from '@/types/'
 import { WarehouseTransactionItemModel, WarehouseTransactionModel } from '@/models'
@@ -21,13 +22,17 @@ export async function list(payload: GetWarehouseTransactionsRepoPayload): Promis
   } = payload.pagination
 
   const {
+    seq,
+    id,
     createdAt,
     updatedAt,
   } = payload.filters
 
   const query = buildQuery({
-    filters: { createdAt, updatedAt },
+    filters: { seq, _id: id, createdAt, updatedAt },
     rules: {
+      seq: { type: 'number' },
+      _id: { type: 'exact' },
       createdAt: { type: 'dateRange' },
       updatedAt: { type: 'dateRange' },
     },
@@ -71,6 +76,7 @@ export async function list(payload: GetWarehouseTransactionsRepoPayload): Promis
     {
       $project: {
         _id: 0,
+        seq: 1,
         id: '$_id',
         type: 1,
         fromWarehouse: {
@@ -131,8 +137,9 @@ export async function listItems(payload: GetWarehouseTransactionsItemsRepoPayloa
   const query = buildQuery({
     filters: { transactionId },
     rules: {
-      transactionId: { type: 'string' },
+      transactionId: { type: 'exact' },
     },
+    removed: false,
   })
 
   const sorters = buildSortQuery({}, { _id: 1 })
@@ -355,6 +362,9 @@ export async function listItems(payload: GetWarehouseTransactionsItemsRepoPayloa
         product: {
           $first: '$product',
         },
+        productId: {
+          $first: '$product.id',
+        },
       },
     },
     {
@@ -362,6 +372,7 @@ export async function listItems(payload: GetWarehouseTransactionsItemsRepoPayloa
         _id: 0,
         id: '$_id',
         product: 1,
+        productId: 1,
         quantity: 1,
         transactionId: 1,
         createdAt: 1,
@@ -380,7 +391,7 @@ export async function listItems(payload: GetWarehouseTransactionsItemsRepoPayloa
     },
   ]
 
-  const raw = await WarehouseTransactionItemModel.aggregate<AggregateResult<WarehouseTransactionItemDTO>>(pipeline).exec()
+  const raw = await WarehouseTransactionItemModel.aggregate<AggregateResult<WarehouseTransactionItemDTO & { product: ProductDTO }>>(pipeline).exec()
   const { items, total } = unwrapAggregate(raw)
 
   return { items, total, page: current, pageSize }
@@ -412,6 +423,10 @@ export async function updateItem({ query, payload }: { query: FilterQuery<Wareho
 
 export async function findById(id: string) {
   return WarehouseTransactionModel.findById(id).exec()
+}
+
+export async function findOne(query: FilterQuery<WarehouseTransactionDB>) {
+  return WarehouseTransactionModel.findOne(query).exec()
 }
 
 export async function removeById(id: string, userId: string) {

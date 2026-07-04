@@ -1,5 +1,6 @@
-import type { CurrencyDTO, ExchangeRateDTO, ExchangeRateDTOPopulated } from '@remnant/shared'
+import type { CurrencyDTO, ExchangeRateDTO } from '@remnant/shared'
 import type { CurrencyDB, ExchangeRateDB } from '@/types/'
+import { resolvePaymentEpsilon } from '@/utils/money'
 
 export function mapCurrencyToDTO(currency: CurrencyDB): CurrencyDTO {
   return {
@@ -7,6 +8,7 @@ export function mapCurrencyToDTO(currency: CurrencyDB): CurrencyDTO {
     names: currency.names,
     symbols: currency.symbols,
     scale: currency.scale,
+    paymentEpsilon: resolvePaymentEpsilon(currency),
     priority: currency.priority,
     active: currency.active,
     createdAt: currency.createdAt,

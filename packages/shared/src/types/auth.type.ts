@@ -1,12 +1,20 @@
-import type { SettingDTO } from '../schemas/setting.schema'
-import type { UserDTO } from '../schemas/user.schema'
-
 export interface LoginResponse {
   accessToken: string
   refreshToken: string
-  user: UserDTO & { settings: SettingDTO[], permissions: string[] }
-  settings: SettingDTO[]
-  permissions: string[]
+  user: {
+    id: string
+    login: string
+    name: string
+    permissions: string[]
+    createdAt: Date
+    updatedAt: Date
+  } & {
+    settings: {
+      value: string
+      key: string
+    }[]
+    permissions: string[]
+  }
 }
 
 export interface RefreshResponse {

@@ -1,4 +1,4 @@
-import type { AggregateResult, ProductPopulatedDTO } from '@remnant/shared'
+import type { AggregateResult } from '@remnant/shared'
 import type { AnyBulkWriteOperation, ClientSession, PipelineStage } from 'mongoose'
 import type {
   CreateProductsRepoPayload,
@@ -7,6 +7,7 @@ import type {
   GetProductsRepoPayload,
   GetProductsRepoResult,
   ProductDB,
+  ProductPopulatedRepo,
 } from '@/types'
 import { ProductModel } from '@/models'
 import { buildQuery, buildSortQuery, unwrapAggregate } from '@/utils'
@@ -35,7 +36,6 @@ export async function list(payload: GetProductsRepoPayload): Promise<GetProducts
     productProperties,
     createdAt,
     updatedAt,
-    selectedWarehouse,
   } = payload.filters
 
   const query = buildQuery({
@@ -59,15 +59,14 @@ export async function list(payload: GetProductsRepoPayload): Promise<GetProducts
       _id: { type: 'array' },
       seq: { type: 'exact' },
       names: { type: 'string', langAware: true },
-      active: { type: 'array' },
-      price: { type: 'exact' },
-      purchasePrice: { type: 'exact' },
-      currency: { type: 'array' },
-      purchaseCurrency: { type: 'array' },
-      barcodes: { type: 'string' },
-      categories: { type: 'array' },
-      unit: { type: 'array' },
-      productPropertiesGroup: { type: 'array' },
+      price: { type: 'exact', field: 'minorPrice' },
+      purchasePrice: { type: 'exact', field: 'minorPurchasePrice' },
+      currency: { type: 'array', field: 'currencyId' },
+      purchaseCurrency: { type: 'array', field: 'purchaseCurrencyId' },
+      barcodes: { type: 'string', field: 'barcodesIds' },
+      categories: { type: 'array', field: 'categoriesIds' },
+      unit: { type: 'array', field: 'unitId' },
+      productPropertiesGroup: { type: 'array', field: 'productPropertiesGroupId' },
       productProperties: { type: 'array' },
       createdAt: { type: 'dateRange' },
       updatedAt: { type: 'dateRange' },
@@ -75,7 +74,9 @@ export async function list(payload: GetProductsRepoPayload): Promise<GetProducts
   })
 
   const querySearch = buildQuery({
-    filters: { barcodes, categories, unit, productPropertiesGroup, productProperties, search },
+    filters: {
+      search,
+    },
     rules: {
       search: {
         type: 'multiFieldSearch',
@@ -118,7 +119,7 @@ export async function list(payload: GetProductsRepoPayload): Promise<GetProducts
           {
             $lookup: {
               from: 'currencies',
-              localField: 'currency',
+              localField: 'currencyId',
               foreignField: '_id',
               as: 'currency',
             },
@@ -127,7 +128,7 @@ export async function list(payload: GetProductsRepoPayload): Promise<GetProducts
           {
             $lookup: {
               from: 'currencies',
-              localField: 'purchaseCurrency',
+              localField: 'purchaseCurrencyId',
               foreignField: '_id',
               as: 'purchaseCurrency',
             },
@@ -136,7 +137,7 @@ export async function list(payload: GetProductsRepoPayload): Promise<GetProducts
           {
             $lookup: {
               from: 'units',
-              localField: 'unit',
+              localField: 'unitId',
               foreignField: '_id',
               as: 'unit',
             },
@@ -145,7 +146,7 @@ export async function list(payload: GetProductsRepoPayload): Promise<GetProducts
           {
             $lookup: {
               from: 'categories',
-              localField: 'categories',
+              localField: 'categoriesIds',
               foreignField: '_id',
               as: 'categories',
             },
@@ -163,7 +164,7 @@ export async function list(payload: GetProductsRepoPayload): Promise<GetProducts
           {
             $lookup: {
               from: 'product-property-groups',
-              localField: 'productPropertiesGroup',
+              localField: 'productPropertiesGroupId',
               foreignField: '_id',
               as: 'productPropertiesGroup',
             },
@@ -172,7 +173,7 @@ export async function list(payload: GetProductsRepoPayload): Promise<GetProducts
           {
             $lookup: {
               from: 'barcodes',
-              localField: 'barcodes',
+              localField: 'barcodesIds',
               foreignField: '_id',
               as: 'barcodes',
             },
@@ -343,28 +344,25 @@ export async function list(payload: GetProductsRepoPayload): Promise<GetProducts
             $project: {
               _id: 0,
               id: '$_id',
-
               seq: 1,
               names: 1,
-              price: 1,
+              minorPrice: 1,
               images: 1,
               createdAt: 1,
               updatedAt: 1,
-
               currency: {
                 id: '$currency._id',
                 names: '$currency.names',
                 symbols: '$currency.symbols',
+                scale: '$currency.scale',
               },
-
-              purchasePrice: {
+              minorPurchasePrice: {
                 $cond: [
                   payload.hasPurchasePricePermission,
-                  '$purchasePrice',
+                  '$minorPurchasePrice',
                   '$$REMOVE',
                 ],
               },
-
               purchaseCurrency: {
                 $cond: [
                   payload.hasPurchasePricePermission,
@@ -372,25 +370,33 @@ export async function list(payload: GetProductsRepoPayload): Promise<GetProducts
                     id: '$purchaseCurrency._id',
                     names: '$purchaseCurrency.names',
                     symbols: '$purchaseCurrency.symbols',
+                    scale: '$purchaseCurrency.scale',
                   },
                   '$$REMOVE',
                 ],
               },
-
               unit: {
                 id: '$unit._id',
                 names: '$unit.names',
                 symbols: '$unit.symbols',
               },
-
               categories: 1,
               barcodes: 1,
-              warehouseStock: 1,
-
+              warehouseStock: {
+                $map: {
+                  input: { $ifNull: ['$warehouseStock', []] },
+                  as: 'stock',
+                  in: {
+                    warehouse: '$$stock.warehouse',
+                    count: '$$stock.count',
+                  },
+                },
+              },
               productProperties: {
                 id: 1,
                 value: 1,
                 data: {
+                  id: 1,
                   names: 1,
                   symbols: 1,
                   type: 1,
@@ -403,7 +409,6 @@ export async function list(payload: GetProductsRepoPayload): Promise<GetProducts
                   color: 1,
                 },
               },
-
               productPropertiesGroup: {
                 id: '$productPropertiesGroup._id',
                 names: '$productPropertiesGroup.names',
@@ -421,7 +426,7 @@ export async function list(payload: GetProductsRepoPayload): Promise<GetProducts
     },
   ]
 
-  const raw = await ProductModel.aggregate<AggregateResult<ProductPopulatedDTO>>(pipeline).exec()
+  const raw = await ProductModel.aggregate<AggregateResult<ProductPopulatedRepo>>(pipeline).exec()
   const { items, total } = unwrapAggregate(raw)
 
   return { items, total, page: current, pageSize }

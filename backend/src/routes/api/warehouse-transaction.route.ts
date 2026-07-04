@@ -2,6 +2,7 @@ import type { RequestHandler } from 'express'
 import {
   createWarehouseTransactionSchema,
   editWarehouseTransactionSchema,
+  getWarehouseTransactionDetailsSchema,
   getWarehouseTransactionsItemsSchema,
   getWarehouseTransactionsSchema,
   receiveWarehouseTransactionSchema,
@@ -24,6 +25,12 @@ router.get(
   '/get/items',
   validateQueryRequest(getWarehouseTransactionsItemsSchema),
   WarehouseTransactionController.getItems as RequestHandler,
+)
+
+router.get(
+  '/get/details',
+  validateQueryRequest(getWarehouseTransactionDetailsSchema),
+  WarehouseTransactionController.getDetails as RequestHandler,
 )
 
 router.get(

@@ -41,6 +41,7 @@ interface CurrencyFormValues {
   names: Record<string, string>
   symbols: Record<string, string>
   scale: number
+  paymentEpsilon: number
   priority: number
   active: boolean
 }
@@ -231,6 +232,7 @@ function createCurrencyFormSchema(t: (key: string, options?: Record<string, unkn
         .trim(),
     ),
     scale: z.number().default(2),
+    paymentEpsilon: z.number().positive().default(0.1),
     priority: z.number().default(0),
     active: z.boolean().default(true),
   })
@@ -242,6 +244,7 @@ function getCurrencyFormValues(currency?: CurrencyFormValues): CurrencyFormValue
       names: {},
       symbols: {},
       scale: 2,
+      paymentEpsilon: 0.1,
       priority: 0,
       active: true,
     }
@@ -250,6 +253,7 @@ function getCurrencyFormValues(currency?: CurrencyFormValues): CurrencyFormValue
     names: { ...currency.names },
     symbols: { ...currency.symbols },
     scale: currency.scale,
+    paymentEpsilon: currency.paymentEpsilon,
     priority: currency.priority,
     active: currency.active,
   }

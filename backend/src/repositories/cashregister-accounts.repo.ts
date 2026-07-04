@@ -1,4 +1,4 @@
-import type { AggregateResult, CashregisterAccountDTO } from '@remnant/shared'
+import type { AggregateResult, CashregisterAccountPopulatedDTO } from '@remnant/shared'
 import type { PipelineStage } from 'mongoose'
 import type {
   CreateCashregisterAccountsRepoPayload,
@@ -8,7 +8,7 @@ import type {
 import { CashregisterAccountModel } from '@/models'
 import { buildQuery, buildSortQuery, unwrapAggregate } from '@/utils'
 
-export async function list(payload: GetCashregisterAccountsRepoPayload): Promise<{ items: CashregisterAccountDTO[], total: number, page: number, pageSize: number }> {
+export async function list(payload: GetCashregisterAccountsRepoPayload): Promise<{ items: CashregisterAccountPopulatedDTO[], total: number, page: number, pageSize: number }> {
   const {
     current = 1,
     pageSize = 10,
@@ -107,7 +107,7 @@ export async function list(payload: GetCashregisterAccountsRepoPayload): Promise
     },
   ]
 
-  const raw = await CashregisterAccountModel.aggregate<AggregateResult<CashregisterAccountDTO>>(pipeline).exec()
+  const raw = await CashregisterAccountModel.aggregate<AggregateResult<CashregisterAccountPopulatedDTO>>(pipeline).exec()
   const { items, total } = unwrapAggregate(raw)
 
   return { items, total, page: current, pageSize }

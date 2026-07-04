@@ -26,6 +26,8 @@ interface ProductSelectedTableProps {
   includeTotal?: boolean
   includeFooterTotal?: boolean
   isProfit?: boolean
+  tableId?: string
+  removable?: boolean
 }
 
 export function ProductSelectedTable(
@@ -43,6 +45,8 @@ export function ProductSelectedTable(
     includeTotal = false,
     includeFooterTotal = false,
     isProfit = false,
+    tableId = 'selected-products-component',
+    removable = true,
   }: ProductSelectedTableProps,
 ) {
   const { t } = useTranslation()
@@ -73,6 +77,7 @@ export function ProductSelectedTable(
     isDiscount,
     includeTotal,
     isProfit,
+    removable,
   })
 
   const table = useReactTable({
@@ -196,7 +201,7 @@ export function ProductSelectedTable(
         </h3>
         <ColumnVisibilityMenu
           table={table}
-          tableId="selected-products-component"
+          tableId={tableId}
           className="min-w-full sm:min-w-[100px]"
         />
       </div>

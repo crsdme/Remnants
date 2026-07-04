@@ -10,9 +10,9 @@ export function toMinor(amountStr: string | number, scale: number): number {
   return Number.parseInt(int) * 10 ** scale + Number.parseInt(padded || '0')
 }
 
-export function fromMinor(m: Money, scale: number): string {
-  const sign = m.minor < 0 ? '-' : ''
-  const abs = Math.abs(m.minor).toString().padStart(scale + 1, '0')
+export function fromMinor(minor: number, scale: number): string {
+  const sign = minor < 0 ? '-' : ''
+  const abs = Math.abs(minor).toString().padStart(scale + 1, '0')
   const head = abs.slice(0, -scale) || '0'
   const tail = abs.slice(-scale)
   return `${sign}${head}.${tail}`
@@ -34,4 +34,12 @@ export function cmp(a: Money, b: Money): number {
   if (a.currencyId !== b.currencyId)
     throw new Error('currency mismatch')
   return Math.sign(a.minor - b.minor)
+}
+
+export function defaultPaymentEpsilon(scale: number): number {
+  return 10 ** (1 - scale)
+}
+
+export function resolvePaymentEpsilon(currency: { scale: number, paymentEpsilon?: number | null }): number {
+  return currency.paymentEpsilon ?? defaultPaymentEpsilon(currency.scale)
 }

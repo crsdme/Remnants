@@ -95,28 +95,6 @@ registry.registerPath({
 
 registry.registerPath({
   method: 'post',
-  path: '/currencies/batch',
-  summary: 'Массовое обновление валют',
-  operationId: 'batchCurrencies',
-  tags: ['Currencies'],
-  request: {
-    body: {
-      content: {
-        'application/json': {
-          schema: batchCurrencySchema,
-        },
-      },
-    },
-  },
-  responses: {
-    200: {
-      description: 'Массовое обновление успешно выполнено',
-    },
-  },
-})
-
-registry.registerPath({
-  method: 'post',
   path: '/currencies/import',
   summary: 'Импорт валют из файла',
   operationId: 'importCurrencies',

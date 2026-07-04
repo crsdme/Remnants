@@ -1,4 +1,4 @@
-import type { AggregateResult, CashregisterDTO, CashregisterPopulatedDTO } from '@remnant/shared'
+import type { AggregateResult, CashregisterPopulatedDTO } from '@remnant/shared'
 import type { PipelineStage } from 'mongoose'
 import type { CreateCashregistersRepoPayload, EditCashregistersRepoPayload, GetCashregistersRepoPayload } from '@/types'
 import { CashregisterModel } from '@/models'
@@ -37,12 +37,6 @@ export async function list(payload: GetCashregistersRepoPayload): Promise<{ item
     { $match: query },
     { $sort: sorters },
     {
-      $unwind: {
-        path: '$account',
-        preserveNullAndEmptyArrays: true,
-      },
-    },
-    {
       $lookup: {
         from: 'cashregister-accounts',
         localField: 'accounts',
@@ -63,24 +57,24 @@ export async function list(payload: GetCashregistersRepoPayload): Promise<{ item
         pipeline: [
           {
             $match: {
-              $expr: { $eq: ['$account', '$$accountId'] },
+              $expr: { $eq: ['$accountId', '$$accountId'] },
             },
           },
           {
             $project: {
-              currency: 1,
+              currencyId: 1,
               amount: {
                 $cond: [
                   { $eq: ['$direction', 'in'] },
-                  '$amount',
-                  { $multiply: ['$amount', -1] },
+                  '$minorAmount',
+                  { $multiply: ['$minorAmount', -1] },
                 ],
               },
             },
           },
           {
             $group: {
-              _id: '$currency',
+              _id: '$currencyId',
               amount: { $sum: '$amount' },
             },
           },
@@ -148,7 +142,12 @@ export async function list(payload: GetCashregistersRepoPayload): Promise<{ item
                   id: '$$curr.currency',
                   names: '$$currencyInfo.names',
                   symbols: '$$currencyInfo.symbols',
-                  balance: '$$curr.amount',
+                  balance: {
+                    $divide: [
+                      '$$curr.amount',
+                      { $pow: [10, { $ifNull: ['$$currencyInfo.scale', 2] }] },
+                    ],
+                  },
                 },
               },
             },

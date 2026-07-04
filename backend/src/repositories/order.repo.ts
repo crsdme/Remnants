@@ -1,4 +1,4 @@
-import type { AggregateResult, OrderDTOPopulated, OrderItemDTOPopulated, OrderPaymentDTOPopulated } from '@remnant/shared'
+import type { AggregateResult } from '@remnant/shared'
 import type { ClientSession, PipelineStage } from 'mongoose'
 import type {
   CreateOrderItemRepoPayload,
@@ -13,6 +13,8 @@ import type {
   GetOrdersRepoPayload,
   GetOrdersRepoResult,
   OrderDBPopulated,
+  OrderItemDBPopulated,
+  OrderPaymentPopulatedRepoItem,
 } from '@/types'
 import { OrderItemModel, OrderModel, OrderPaymentModel } from '@/models'
 import { buildQuery, buildSortQuery, unwrapAggregate } from '@/utils'
@@ -97,20 +99,34 @@ export async function list({ payload }: { payload: GetOrdersRepoPayload }): Prom
                 curKey: { $ifNull: ['$currency.id', { $ifNull: ['$currency._id', '$currency'] }] },
                 lineTotal: {
                   $multiply: [
-                    { $toDouble: { $ifNull: ['$profit', 0] } },
+                    { $toDouble: { $ifNull: ['$minorProfit', 0] } },
                     { $toDouble: { $ifNull: ['$quantity', 0] } },
                   ],
                 },
               },
             },
             {
+              $lookup: {
+                from: 'currencies',
+                localField: 'currency',
+                foreignField: '_id',
+                as: 'currency',
+              },
+            },
+            {
+              $addFields: {
+                currency: { $arrayElemAt: ['$currency', 0] },
+              },
+            },
+            {
               $group: {
                 _id: '$curKey',
-                currency: { $last: '$currency' },
+                currency: { $last: '$currency._id' },
+                scale: { $last: '$currency.scale' },
                 total: { $sum: '$lineTotal' },
               },
             },
-            { $project: { _id: 0, currency: 1, total: 1 } },
+            { $project: { _id: 0, currency: 1, scale: 1, total: 1 } },
           ],
           as: 'profit',
         },
@@ -203,20 +219,34 @@ export async function list({ payload }: { payload: GetOrdersRepoPayload }): Prom
               curKey: { $ifNull: ['$currency.id', { $ifNull: ['$currency._id', '$currency'] }] },
               lineTotal: {
                 $multiply: [
-                  { $toDouble: { $ifNull: ['$price', 0] } },
+                  { $toDouble: { $ifNull: ['$minorPrice', 0] } },
                   { $toDouble: { $ifNull: ['$quantity', 0] } },
                 ],
               },
             },
           },
           {
+            $lookup: {
+              from: 'currencies',
+              localField: 'currency',
+              foreignField: '_id',
+              as: 'currency',
+            },
+          },
+          {
+            $addFields: {
+              currency: { $arrayElemAt: ['$currency', 0] },
+            },
+          },
+          {
             $group: {
               _id: '$curKey',
-              currency: { $last: '$currency' },
+              currency: { $last: '$currency._id' },
+              scale: { $last: '$currency.scale' },
               total: { $sum: '$lineTotal' },
             },
           },
-          { $project: { _id: 0, currency: 1, total: 1 } },
+          { $project: { _id: 0, currency: 1, scale: 1, total: 1 } },
         ],
         as: 'totals',
       },
@@ -266,7 +296,7 @@ export async function list({ payload }: { payload: GetOrdersRepoPayload }): Prom
     },
   ]
 
-  const raw = await OrderModel.aggregate<AggregateResult<OrderDTOPopulated>>(pipeline).exec()
+  const raw = await OrderModel.aggregate<AggregateResult<OrderDBPopulated>>(pipeline).exec()
   const { items, total } = unwrapAggregate(raw)
 
   return { items, total, page: current, pageSize }
@@ -280,7 +310,6 @@ export async function listItems({ payload }: { payload: GetOrderItemsRepoPayload
 
   const {
     order,
-    showFullData,
   } = payload.filters
 
   const query = buildQuery({
@@ -294,26 +323,59 @@ export async function listItems({ payload }: { payload: GetOrderItemsRepoPayload
   })
 
   const projection: Record<string, unknown> = {
-    _id: 0,
-    id: '$_id',
+    _id: 1,
     order: 1,
     product: 1,
     quantity: 1,
-    price: 1,
-    manualPrice: 1,
-    basePrice: 1,
-    currency: { id: '$currency._id', names: 1, symbols: 1 },
-    discountAmount: 1,
+    minorManualPrice: 1,
+    minorBasePrice: 1,
+    currency: { id: '$currency._id', names: '$currency.names', symbols: '$currency.symbols', scale: '$currency.scale', paymentEpsilon: '$currency.paymentEpsilon' },
+    minorPrice: 1,
+    minorDiscountAmount: 1,
     discountPercent: 1,
-    transactionId: 1,
+    exchangeRate: 1,
+    removedBy: 1,
+    createdBy: 1,
+    removed: 1,
     createdAt: 1,
+    updatedAt: 1,
   }
 
-  if (showFullData) {
-    projection.profit = 1
+  const productProjection: Record<string, unknown> = {
+    _id: 1,
+    seq: 1,
+    names: 1,
+    minorPrice: 1,
+    minorManualPrice: 1,
+    minorBasePrice: 1,
+    minorDiscountAmount: 1,
+    discountPercent: 1,
+    exchangeRate: 1,
+    order: 1,
+    currency: { id: '$currency._id', names: '$currency.names', symbols: '$currency.symbols' },
+    barcodes: { id: 1, code: 1 },
+    categories: { id: 1, names: 1 },
+    unit: { id: '$unit._id', names: '$unit.names', symbols: '$unit.symbols' },
+    warehouseStock: { count: 1, warehouse: 1, status: 1 },
+    images: 1,
+    productProperties: { id: 1, value: 1, data: { names: 1, symbols: 1, type: 1, isRequired: 1, showInTable: 1, showInStatistics: 1 }, optionData: { id: 1, names: 1, color: 1 } },
+    productPropertiesGroup: { id: '$productPropertiesGroup._id', names: '$productPropertiesGroup.names' },
+    createdAt: 1,
+    updatedAt: 1,
+    removedBy: 1,
+    createdBy: 1,
+  }
+
+  if (payload.hasProfitPermission === true) {
+    projection.minorProfit = 1
     projection.exchangeRate = 1
-    projection.purchasePrice = 1
-    projection.purchaseCurrency = { id: '$purchaseCurrency._id', names: 1, symbols: 1 }
+    projection.minorPurchasePrice = 1
+    projection.purchaseCurrency = { id: '$purchaseCurrency._id', names: '$purchaseCurrency.names', symbols: '$purchaseCurrency.symbols', scale: '$purchaseCurrency.scale' }
+
+    productProjection.minorProfit = 1
+    productProjection.exchangeRate = 1
+    productProjection.minorPurchasePrice = 1
+    productProjection.purchaseCurrency = { id: '$purchaseCurrency._id', names: '$purchaseCurrency.names', symbols: '$purchaseCurrency.symbols', scale: '$purchaseCurrency.scale' }
   }
 
   const pipeline: PipelineStage[] = [
@@ -396,7 +458,7 @@ export async function listItems({ payload }: { payload: GetOrderItemsRepoPayload
           {
             $lookup: {
               from: 'currencies',
-              localField: 'currency',
+              localField: 'currencyId',
               foreignField: '_id',
               as: 'currency',
             },
@@ -404,7 +466,7 @@ export async function listItems({ payload }: { payload: GetOrderItemsRepoPayload
           {
             $lookup: {
               from: 'currencies',
-              localField: 'purchaseCurrency',
+              localField: 'purchaseCurrencyId',
               foreignField: '_id',
               as: 'purchaseCurrency',
             },
@@ -412,7 +474,7 @@ export async function listItems({ payload }: { payload: GetOrderItemsRepoPayload
           {
             $lookup: {
               from: 'units',
-              localField: 'unit',
+              localField: 'unitId',
               foreignField: '_id',
               as: 'unit',
             },
@@ -420,7 +482,7 @@ export async function listItems({ payload }: { payload: GetOrderItemsRepoPayload
           {
             $lookup: {
               from: 'categories',
-              localField: 'categories',
+              localField: 'categoriesIds',
               foreignField: '_id',
               as: 'categories',
             },
@@ -436,7 +498,7 @@ export async function listItems({ payload }: { payload: GetOrderItemsRepoPayload
           {
             $lookup: {
               from: 'product-property-groups',
-              localField: 'productPropertiesGroup',
+              localField: 'productPropertiesGroupId',
               foreignField: '_id',
               as: 'productPropertiesGroup',
             },
@@ -444,7 +506,7 @@ export async function listItems({ payload }: { payload: GetOrderItemsRepoPayload
           {
             $lookup: {
               from: 'barcodes',
-              localField: 'barcodes',
+              localField: 'barcodesIds',
               foreignField: '_id',
               as: 'barcodes',
             },
@@ -510,26 +572,7 @@ export async function listItems({ payload }: { payload: GetOrderItemsRepoPayload
             },
           },
           {
-            $project: {
-              _id: 0,
-              seq: 1,
-              names: 1,
-              price: 1,
-              order: 1,
-              currency: { id: '$currency._id', names: 1, symbols: 1 },
-              purchasePrice: 1,
-              purchaseCurrency: { id: '$purchaseCurrency._id', names: 1, symbols: 1 },
-              barcodes: { id: 1, code: 1 },
-              categories: { id: 1, names: 1 },
-              unit: { id: '$unit._id', names: 1, symbols: 1 },
-              warehouseStock: { count: 1, warehouse: 1, status: 1 },
-              images: 1,
-              productProperties: { id: 1, value: 1, data: { names: 1, symbols: 1, type: 1, isRequired: 1, showInTable: 1, showInStatistics: 1 }, optionData: { id: 1, names: 1, color: 1 } },
-              productPropertiesGroup: { id: '$productPropertiesGroup._id', names: 1 },
-              createdAt: 1,
-              updatedAt: 1,
-              id: '$_id',
-            },
+            $project: productProjection,
           },
         ],
         as: 'product',
@@ -559,7 +602,7 @@ export async function listItems({ payload }: { payload: GetOrderItemsRepoPayload
     },
   ]
 
-  const raw = await OrderItemModel.aggregate<AggregateResult<OrderItemDTOPopulated>>(pipeline).exec()
+  const raw = await OrderItemModel.aggregate<AggregateResult<OrderItemDBPopulated>>(pipeline).exec()
   const { items, total } = unwrapAggregate(raw)
 
   return { items, total, page: current, pageSize }
@@ -577,10 +620,12 @@ export async function listPayments({ payload }: { payload: GetOrderPaymentsRepoP
 
   const query = buildQuery({
     filters: {
-      order,
+      orderId: order,
+      removed: [false],
     },
     rules: {
-      order: { type: 'array' },
+      orderId: { type: 'array' },
+      removed: { type: 'array' },
     },
   })
 
@@ -596,7 +641,7 @@ export async function listPayments({ payload }: { payload: GetOrderPaymentsRepoP
     {
       $lookup: {
         from: 'cashregisters',
-        localField: 'cashregister',
+        localField: 'cashregisterId',
         foreignField: '_id',
         as: 'cashregister',
       },
@@ -604,7 +649,7 @@ export async function listPayments({ payload }: { payload: GetOrderPaymentsRepoP
     {
       $lookup: {
         from: 'cashregister-accounts',
-        localField: 'cashregisterAccount',
+        localField: 'cashregisterAccountId',
         foreignField: '_id',
         as: 'cashregisterAccount',
       },
@@ -612,7 +657,7 @@ export async function listPayments({ payload }: { payload: GetOrderPaymentsRepoP
     {
       $lookup: {
         from: 'moneytransactions',
-        localField: 'transaction',
+        localField: 'transactionId',
         foreignField: '_id',
         as: 'transaction',
       },
@@ -620,7 +665,7 @@ export async function listPayments({ payload }: { payload: GetOrderPaymentsRepoP
     {
       $lookup: {
         from: 'currencies',
-        localField: 'currency',
+        localField: 'currencyId',
         foreignField: '_id',
         as: 'currency',
       },
@@ -637,12 +682,12 @@ export async function listPayments({ payload }: { payload: GetOrderPaymentsRepoP
       $project: {
         _id: 0,
         id: '$_id',
-        order: 1,
+        order: '$orderId',
         cashregister: { id: '$cashregister._id', names: '$cashregister.names' },
         cashregisterAccount: { id: '$cashregisterAccount._id', names: '$cashregisterAccount.names' },
-        transaction: { id: '$transaction._id', type: '$transaction.type', amount: '$transaction.amount' },
-        currency: { id: '$currency._id', names: 1, symbols: 1 },
-        amount: 1,
+        transaction: { id: '$transaction._id', type: '$transaction.type', minorAmount: '$transaction.minorAmount' },
+        currency: { id: '$currency._id', names: 1, symbols: 1, scale: 1 },
+        minorAmount: 1,
         paymentStatus: 1,
         paymentDate: 1,
         comment: 1,
@@ -663,7 +708,7 @@ export async function listPayments({ payload }: { payload: GetOrderPaymentsRepoP
     },
   ]
 
-  const raw = await OrderPaymentModel.aggregate<AggregateResult<OrderPaymentDTOPopulated>>(pipeline).exec()
+  const raw = await OrderPaymentModel.aggregate<AggregateResult<OrderPaymentPopulatedRepoItem>>(pipeline).exec()
   const { items, total } = unwrapAggregate(raw)
 
   return { items, total, page: current, pageSize }

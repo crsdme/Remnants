@@ -1,9 +1,10 @@
-import type { AggregateResult, MoneyTransactionDTO } from '@remnant/shared'
+import type { AggregateResult } from '@remnant/shared'
 import type { ClientSession, PipelineStage } from 'mongoose'
 import type {
   CreateMoneyTransactionsRepoPayload,
   GetMoneyTransactionsRepoPayload,
   GetMoneyTransactionsRepoResult,
+  MoneyTransactionPopulated,
 } from '@/types/'
 import { MoneyTransactionModel } from '@/models'
 import { buildQuery, buildSortQuery, unwrapAggregate } from '@/utils'
@@ -46,6 +47,7 @@ export async function list({ payload }: { payload: GetMoneyTransactionsRepoPaylo
       createdAt: { type: 'dateRange' },
       updatedAt: { type: 'dateRange' },
     },
+    removed: false,
   })
 
   const sorters = buildSortQuery(payload.sorters, { createdAt: 1 })
@@ -101,13 +103,15 @@ export async function list({ payload }: { payload: GetMoneyTransactionsRepoPaylo
       $project: {
         _id: 0,
         id: '$_id',
+        seq: 1,
         type: 1,
         direction: 1,
-        amount: 1,
+        minorAmount: 1,
         currency: {
           id: '$currency._id',
           names: '$currency.names',
           symbols: '$currency.symbols',
+          scale: '$currency.scale',
         },
         account: {
           id: '$account._id',
@@ -116,9 +120,12 @@ export async function list({ payload }: { payload: GetMoneyTransactionsRepoPaylo
         cashregister: {
           id: '$cashregister._id',
           names: '$cashregister.names',
+          priority: '$cashregister.priority',
         },
         sourceModel: 1,
         sourceId: 1,
+        role: 1,
+        transferId: 1,
         confirmed: 1,
         createdAt: 1,
         updatedAt: 1,
@@ -138,7 +145,7 @@ export async function list({ payload }: { payload: GetMoneyTransactionsRepoPaylo
     },
   ]
 
-  const raw = await MoneyTransactionModel.aggregate<AggregateResult<MoneyTransactionDTO>>(pipeline).exec()
+  const raw = await MoneyTransactionModel.aggregate<AggregateResult<MoneyTransactionPopulated>>(pipeline).exec()
   const { items, total } = unwrapAggregate(raw)
 
   return { items, total, page: current, pageSize }

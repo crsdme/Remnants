@@ -2,26 +2,29 @@ import type {
   AuthUser,
   CreateWarehouseTransactionResponse,
   EditWarehouseTransactionResponse,
+  GetWarehouseTransactionDetailsResponse,
   GetWarehouseTransactionsItemsResponse,
   GetWarehouseTransactionsResponse,
   ReceiveWarehouseTransactionResponse,
   RemoveWarehouseTransactionsResponse,
-  ScanBarcodeToDraftWTResponse,
+  ScanBarcodeToDraftResponse,
 } from '@remnant/shared'
 import type {
   CreateWarehouseTransactionPayload,
   EditWarehouseTransactionPayload,
+  GetWarehouseTransactionDetailsPayload,
   GetWarehouseTransactionsItemsPayload,
   GetWarehouseTransactionsPayload,
   ReceiveWarehouseTransactionPayload,
   RemoveWarehouseTransactionsPayload,
   ScanBarcodeToDraftPayload,
 } from '@/types/'
+import { STORAGE_URLS } from '@/config'
 import { mapWarehouseTransactionToDTO } from '@/mappers/'
 import * as BarcodeRepo from '@/repositories/barcodes.repo'
 import * as WarehouseTransactionRepo from '@/repositories/warehouse-transaction.repo'
 import * as QuantityService from '@/services/quantity.service'
-import { parseGetBarcodes } from '@/types/'
+import { parseGetBarcodes, parseGetWarehouseTransactions, parseGetWarehouseTransactionsItems } from '@/types/'
 import { HttpError } from '@/utils/httpError'
 
 export async function get({ payload }: { payload: GetWarehouseTransactionsPayload }): Promise<GetWarehouseTransactionsResponse> {
@@ -45,26 +48,26 @@ export async function get({ payload }: { payload: GetWarehouseTransactionsPayloa
 export async function getItems({ payload }: { payload: GetWarehouseTransactionsItemsPayload }): Promise<GetWarehouseTransactionsItemsResponse> {
   const { items, total, page, pageSize } = await WarehouseTransactionRepo.listItems(payload)
 
-  // warehouseTransactionsItems = warehouseTransactionsItems.map((item: any) => ({
-  //   ...item,
-  //   product: {
-  //     ...item.product,
-  //     images: item.product.images.map((image: any) => ({
-  //       id: image._id,
-  //       path: `${STORAGE_URLS.productImages}/${image.filename}`,
-  //       filename: image.filename,
-  //       name: image.name,
-  //       type: image.type,
-  //     })),
-  //   },
-  // }))
+  const mappedItems = items.map(item => ({
+    ...item,
+    product: {
+      ...item.product,
+      images: item.product.images.map(image => ({
+        id: image.id,
+        path: `${STORAGE_URLS.productImages}/${image.filename}`,
+        filename: image.filename,
+        name: image.name,
+        type: image.type,
+      })),
+    },
+  }))
 
   return {
     status: 'success',
     code: 'WAREHOUSE_TRANSACTIONS_ITEMS_FETCHED',
     message: 'Warehouse transactions items fetched',
     data: {
-      items,
+      items: mappedItems,
       pagination: {
         total,
         page,
@@ -74,7 +77,30 @@ export async function getItems({ payload }: { payload: GetWarehouseTransactionsI
   }
 }
 
-export async function scanBarcodeToDraft({ payload }: { payload: ScanBarcodeToDraftPayload }): Promise<ScanBarcodeToDraftWTResponse> {
+export async function getDetails({ payload }: { payload: GetWarehouseTransactionDetailsPayload }): Promise<GetWarehouseTransactionDetailsResponse> {
+  const { items: [warehouseTransaction] } = await WarehouseTransactionRepo.list(parseGetWarehouseTransactions(
+    { filters: payload, pagination: { full: true } },
+  ))
+
+  if (warehouseTransaction === undefined)
+    throw new HttpError(404, 'Warehouse transaction not found', 'WAREHOUSE_TRANSACTION_NOT_FOUND')
+
+  const { items: warehouseTransactionItems } = await WarehouseTransactionRepo.listItems(parseGetWarehouseTransactionsItems(
+    { filters: { transactionId: warehouseTransaction.id }, pagination: { full: true } },
+  ))
+
+  return {
+    status: 'success',
+    code: 'WAREHOUSE_TRANSACTION_DETAILS_FETCHED',
+    message: 'Warehouse transaction details fetched',
+    data: {
+      warehouseTransaction,
+      warehouseTransactionItems,
+    },
+  }
+}
+
+export async function scanBarcodeToDraft({ payload }: { payload: ScanBarcodeToDraftPayload }): Promise<ScanBarcodeToDraftResponse> {
   const { barcode, transactionId } = payload
 
   const { items } = await BarcodeRepo.list(parseGetBarcodes({ filters: { codes: [barcode] }, pagination: { full: true } }))
@@ -117,6 +143,76 @@ export async function edit({ payload }: { payload: EditWarehouseTransactionPaylo
 
 export async function remove({ payload, user }: { payload: RemoveWarehouseTransactionsPayload, user: AuthUser }): Promise<RemoveWarehouseTransactionsResponse> {
   for (const id of payload.ids) {
+    const warehouseTransaction = await WarehouseTransactionRepo.findById(id)
+
+    const { items: warehouseTransactionItems } = await WarehouseTransactionRepo.listItems(parseGetWarehouseTransactionsItems(
+      { filters: { transactionId: id }, pagination: { full: true } },
+    ))
+
+    if (warehouseTransaction === null)
+      throw new HttpError(404, 'Warehouse transaction not found', 'WAREHOUSE_TRANSACTION_NOT_FOUND')
+
+    switch (warehouseTransaction.type) {
+      case 'in':
+        for (const item of warehouseTransactionItems) {
+          await QuantityService.count({
+            payload: {
+              mode: 'dec',
+              productId: item.productId,
+              warehouse: warehouseTransaction.toWarehouse,
+              count: item.quantity,
+              userId: user.id,
+              refType: 'warehouse-transaction',
+              refId: id,
+            },
+          })
+        }
+        break
+      case 'out':
+        for (const item of warehouseTransactionItems) {
+          await QuantityService.count({
+            payload: {
+              mode: 'inc',
+              productId: item.productId,
+              warehouse: warehouseTransaction.fromWarehouse,
+              count: item.quantity,
+              userId: user.id,
+              refType: 'warehouse-transaction',
+              refId: id,
+            },
+          })
+        }
+        break
+      case 'transfer':
+        for (const item of warehouseTransactionItems) {
+          await QuantityService.count({
+            payload: {
+              mode: 'inc',
+              productId: item.productId,
+              warehouse: warehouseTransaction.fromWarehouse,
+              count: item.quantity,
+              userId: user.id,
+              refType: 'warehouse-transaction',
+              refId: id,
+            },
+          })
+          if (warehouseTransaction.status === 'received') {
+            await QuantityService.count({
+              payload: {
+                mode: 'dec',
+                productId: item.productId,
+                warehouse: warehouseTransaction.toWarehouse,
+                count: item.quantity,
+                userId: user.id,
+                refType: 'warehouse-transaction',
+                refId: id,
+              },
+            })
+          }
+        }
+        break
+    }
+
     await WarehouseTransactionRepo.removeById(id, user.id)
   }
 
@@ -149,6 +245,7 @@ async function inWarehauseTransaction({ payload, user }: { payload: PayloadByTyp
   }))
 
   for (const product of mappedProducts) {
+    await WarehouseTransactionRepo.createItems(mappedProducts)
     await QuantityService.count({
       payload: {
         mode: 'inc',

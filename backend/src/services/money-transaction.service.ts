@@ -4,20 +4,31 @@ import type {
   GetMoneyTransactionsResponse,
 } from '@remnant/shared'
 import type { ClientSession } from 'mongoose'
-import type { CreateMoneyTransactionsPayload, CreateMoneyTransactionTransferPayload, GetMoneyTransactionsPayload } from '@/types'
+import type {
+  CreateMoneyTransactionsPayload,
+  CreateMoneyTransactionTransferPayload,
+  GetMoneyTransactionsPayload,
+} from '@/types'
 import { v4 as uuidv4 } from 'uuid'
-import { mapMoneyTransactionToDTO } from '@/mappers'
+import * as CurrencyRepo from '@/repositories/currencies.repo'
 import * as MoneyTransactionRepo from '@/repositories/money-transaction.repo'
+import { HttpError } from '@/utils/httpError'
+import { fromMinor, toMinor } from '@/utils/money'
 
 export async function get({ payload }: { payload: GetMoneyTransactionsPayload }): Promise<GetMoneyTransactionsResponse> {
   const { items, total, page, pageSize } = await MoneyTransactionRepo.list({ payload })
+
+  const mappedItems = items.map(item => ({
+    ...item,
+    amount: Number.parseFloat(fromMinor(item.minorAmount, item.currency.scale)),
+  }))
 
   return {
     status: 'success',
     code: 'MONEY_TRANSACTIONS_FETCHED',
     message: 'Money transactions fetched',
     data: {
-      items,
+      items: mappedItems,
       pagination: {
         page,
         pageSize,
@@ -28,16 +39,21 @@ export async function get({ payload }: { payload: GetMoneyTransactionsPayload })
 }
 
 export async function createTransaction({ payload, session }: { payload: CreateMoneyTransactionsPayload, session?: ClientSession }): Promise<CreateMoneyTransactionResponse> {
+  const currency = await CurrencyRepo.findOne({ _id: payload.currencyId })
+
+  if (currency === null)
+    throw new HttpError(400, 'Currency not found', 'CURRENCY_NOT_FOUND')
+
   const moneyTransaction = await MoneyTransactionRepo.createOne({
     payload: {
       type: payload.type,
       direction: payload.direction,
-      accountId: payload.account,
-      cashregisterId: payload.cashregister,
+      accountId: payload.accountId,
+      cashregisterId: payload.cashregisterId,
       sourceModel: payload.sourceModel,
       sourceId: payload.sourceId,
-      currencyId: payload.currency,
-      amount: payload.amount,
+      currencyId: payload.currencyId,
+      minorAmount: toMinor(payload.amount, currency.scale),
       description: payload.description,
       transferId: payload.transferId,
     },
@@ -48,12 +64,17 @@ export async function createTransaction({ payload, session }: { payload: CreateM
     status: 'success',
     code: 'MONEY_TRANSACTION_CREATED',
     message: 'Money transaction created',
-    data: mapMoneyTransactionToDTO(moneyTransaction[0]),
+    data: moneyTransaction[0],
   }
 }
 
 export async function createTransfer({ payload, session }: { payload: CreateMoneyTransactionTransferPayload, session?: ClientSession }): Promise<CreateMoneyTransactionTransferResponse> {
   const transferId = uuidv4()
+
+  const currency = await CurrencyRepo.findOne({ _id: payload.currencyId })
+
+  if (currency === null)
+    throw new HttpError(400, 'Currency not found', 'CURRENCY_NOT_FOUND')
 
   const transferOut = await MoneyTransactionRepo.createOne({
     payload: {
@@ -64,8 +85,8 @@ export async function createTransfer({ payload, session }: { payload: CreateMone
       cashregisterId: payload.cashregisterFrom,
       sourceModel: payload.sourceModel,
       sourceId: payload.accountFrom,
-      currencyId: payload.currency,
-      amount: payload.amount,
+      currencyId: payload.currencyId,
+      minorAmount: toMinor(payload.amount, currency.scale),
       description: payload.description,
       transferId,
     },
@@ -81,8 +102,8 @@ export async function createTransfer({ payload, session }: { payload: CreateMone
       cashregisterId: payload.cashregisterTo,
       sourceModel: payload.sourceModel,
       sourceId: payload.accountTo,
-      currencyId: payload.currency,
-      amount: payload.amount,
+      currencyId: payload.currencyId,
+      minorAmount: toMinor(payload.amount, currency.scale),
       description: payload.description,
       transferId,
     },
@@ -94,104 +115,8 @@ export async function createTransfer({ payload, session }: { payload: CreateMone
     code: 'MONEY_TRANSACTION_CREATED',
     message: 'Money transaction created',
     data: {
-      transferOut: mapMoneyTransactionToDTO(transferOut[0]),
-      transferIn: mapMoneyTransactionToDTO(transferIn[0]),
+      transferOut: transferOut[0],
+      transferIn: transferIn[0],
     },
   }
 }
-
-// async function createTransferAccount({ payload, session }: { payload: PayloadByType<'transfer-account'>, session?: ClientSession }): Promise<CreateMoneyTransactionTransferResponse> {
-//   const transferId = uuidv4()
-
-//   const transferOut = await MoneyTransactionRepo.createOne({
-//     payload: {
-//       type: 'transfer',
-//       direction: 'out',
-//       role: 'from',
-//       accountId: payload.accountFrom,
-//       cashregisterId: payload.cashregister,
-//       sourceModel: payload.sourceModel,
-//       sourceId: payload.accountFrom,
-//       currency: payload.currency,
-//       amount: payload.amount,
-//       description: payload.description,
-//       transferId,
-//     },
-//     session,
-//   })
-
-//   const transferIn = await MoneyTransactionRepo.createOne({
-//     payload: {
-//       type: 'transfer',
-//       direction: 'in',
-//       role: 'to',
-//       accountId: payload.accountTo,
-//       cashregisterId: payload.cashregister,
-//       sourceModel: payload.sourceModel,
-//       sourceId: payload.accountTo,
-//       currency: payload.currency,
-//       amount: payload.amount,
-//       description: payload.description,
-//       transferId,
-//     },
-//     session,
-//   })
-
-//   return {
-//     status: 'success',
-//     code: 'MONEY_TRANSACTION_CREATED',
-//     message: 'Money transaction created',
-//     data: {
-//       transferOut: mapMoneyTransactionToDTO(transferOut[0]),
-//       transferIn: mapMoneyTransactionToDTO(transferIn[0]),
-//     },
-//   }
-// }
-
-// async function createTransferCashregister({ payload, session }: { payload: PayloadByType<'transfer-cashregister'>, session?: ClientSession }): Promise<CreateMoneyTransactionTransferResponse> {
-//   const transferId = uuidv4()
-
-//   const transferOut = await MoneyTransactionRepo.createOne({
-//     payload: {
-//       type: 'transfer',
-//       direction: 'out',
-//       role: 'from',
-//       accountId: payload.accountFrom,
-//       cashregisterId: payload.cashregisterFrom,
-//       sourceModel: payload.sourceModel,
-//       sourceId: payload.accountFrom,
-//       currency: payload.currency,
-//       amount: payload.amount,
-//       description: payload.description,
-//       transferId,
-//     },
-//     session,
-//   })
-
-//   const transferIn = await MoneyTransactionRepo.createOne({
-//     payload: {
-//       type: 'transfer',
-//       direction: 'in',
-//       role: 'to',
-//       accountId: payload.accountTo,
-//       cashregisterId: payload.cashregisterTo,
-//       sourceModel: payload.sourceModel,
-//       sourceId: payload.accountTo,
-//       currency: payload.currency,
-//       amount: payload.amount,
-//       description: payload.description,
-//       transferId,
-//     },
-//     session,
-//   })
-
-//   return {
-//     status: 'success',
-//     code: 'MONEY_TRANSACTION_CREATED',
-//     message: 'Money transaction created',
-//     data: {
-//       transferOut: mapMoneyTransactionToDTO(transferOut[0]),
-//       transferIn: mapMoneyTransactionToDTO(transferIn[0]),
-//     },
-//   }
-// }

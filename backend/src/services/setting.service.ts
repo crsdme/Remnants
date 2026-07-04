@@ -2,7 +2,7 @@ import type {
   CreateSettingResponse,
   EditSettingResponse,
   GetSettingsResponse,
-  RemoveSettingsResponse,
+  RemoveSettingResponse,
 } from '@remnant/shared'
 import type {
   CreateSettingRepoPayload,
@@ -56,7 +56,7 @@ export async function edit({ payload }: { payload: EditSettingRepoPayload }): Pr
   }
 }
 
-export async function remove({ id }: { id: string }): Promise<RemoveSettingsResponse> {
+export async function remove({ id }: { id: string }): Promise<RemoveSettingResponse> {
   await SettingRepo.removeById(id)
 
   return {

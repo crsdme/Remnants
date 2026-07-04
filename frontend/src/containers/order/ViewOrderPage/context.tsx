@@ -195,8 +195,8 @@ export function ViewOrderProvider({ children }: { children: ReactNode }) {
       comment: order.comment,
     })
 
-    // eslint-disable-next-line react-hooks-extra/no-direct-set-state-in-use-effect -- синхронизация платежей при загрузке заказа
-    setPayments(defaultPayments)
+    // eslint-disable-next-line react-hooks-extra/no-direct-set-state-in-use-effect -- TEMPORARY FIX
+    setPayments(defaultPayments as unknown as OrderPaymentDTOPopulated[])
   }, [order, items, defaultPayments, informationForm])
 
   const value: ViewOrderContextType = useMemo(

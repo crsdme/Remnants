@@ -1,5 +1,4 @@
-import type { SyncEntryDTO } from '@remnant/shared'
-import type { SyncEntryDB } from '@/types/'
+import type { SyncEntryDB, SyncEntryDTO } from '@/types'
 
 export function mapSyncEntryToDTO(syncEntry: SyncEntryDB): SyncEntryDTO {
   return {

@@ -11,20 +11,21 @@ import type {
   RemoveExpensesPayload,
 } from '@/types'
 import { mapExpenseToDTO } from '@/mappers'
-import { ExpenseModel } from '@/models/'
+import * as CurrencyRepo from '@/repositories/currencies.repo'
 import * as ExpenseRepo from '@/repositories/expense.repo'
 import * as MoneyTransactionService from '@/services/money-transaction.service'
 import { HttpError } from '@/utils/'
+import { fromMinor, toMinor } from '@/utils/money'
 
 export async function get({ payload }: { payload: GetExpensesPayload }): Promise<GetExpensesResponse> {
   const { items, total, page, pageSize } = await ExpenseRepo.list(payload)
-
+  console.log(JSON.stringify(items, null, 2))
   return {
     status: 'success',
     code: 'EXPENSES_FETCHED',
     message: 'Expenses fetched',
     data: {
-      items,
+      items: items.map(mapExpenseToDTO),
       pagination: {
         page,
         pageSize,
@@ -35,19 +36,35 @@ export async function get({ payload }: { payload: GetExpensesPayload }): Promise
 }
 
 export async function create({ payload }: { payload: CreateExpensePayload }): Promise<CreateExpenseResponse> {
-  const expense = await ExpenseRepo.createOne(payload)
+  const currency = await CurrencyRepo.findOne({ _id: payload.currency })
+
+  if (currency === null)
+    throw new HttpError(400, 'Currency not found', 'CURRENCY_NOT_FOUND')
+
+  const expense = await ExpenseRepo.createOne({
+    minorAmount: toMinor(payload.amount, currency.scale),
+    currencyId: payload.currency,
+    cashregisterId: payload.cashregister,
+    cashregisterAccountId: payload.cashregisterAccount,
+    categoryIds: payload.categories,
+    sourceModel: 'expense',
+    sourceId: '123',
+    type: payload.type,
+    comment: payload.comment,
+    // createdBy: payload.createdBy,
+  })
 
   await MoneyTransactionService.createTransaction({
     payload: {
       type: 'expense',
       direction: 'out',
-      account: payload.cashregisterAccount,
-      cashregister: payload.cashregister,
+      accountId: payload.cashregisterAccount,
+      cashregisterId: payload.cashregister,
       sourceModel: 'expense',
       sourceId: expense._id.toString(),
-      currency: payload.currency,
+      currencyId: payload.currency,
       amount: payload.amount,
-      description: `Expense ${expense.id}`,
+      description: `Expense ${expense._id.toString()}`,
     },
   })
 
@@ -55,7 +72,6 @@ export async function create({ payload }: { payload: CreateExpensePayload }): Pr
     status: 'success',
     code: 'EXPENSE_CREATED',
     message: 'Expense created',
-    data: mapExpenseToDTO(expense),
   }
 }
 
@@ -64,22 +80,26 @@ export async function edit({ payload }: { payload: EditExpensePayload }): Promis
 
   const oldExpense = await ExpenseRepo.findById(id)
 
-  const expense = await ExpenseRepo.updateById(id, payload)
-
-  if (!expense || !oldExpense) {
+  if (oldExpense === null)
     throw new HttpError(400, 'Expense not edited', 'EXPENSE_NOT_EDITED')
-  }
+
+  const currency = await CurrencyRepo.findOne({ _id: payload.currency })
+
+  const oldCurrency = await CurrencyRepo.findOne({ _id: oldExpense.currencyId })
+
+  if (currency === null || oldCurrency === null)
+    throw new HttpError(400, 'Currency not found', 'CURRENCY_NOT_FOUND')
 
   await MoneyTransactionService.createTransaction({
     payload: {
       type: 'expense',
       direction: 'in',
-      account: oldExpense.cashregisterAccount,
-      cashregister: oldExpense.cashregister,
+      accountId: oldExpense.cashregisterAccountId,
+      cashregisterId: oldExpense.cashregisterId,
       sourceModel: 'expense',
       sourceId: id,
-      currency: oldExpense.currency,
-      amount: oldExpense.amount,
+      currencyId: oldExpense.currencyId,
+      amount: Number.parseFloat(fromMinor(oldExpense.minorAmount, oldCurrency.scale)),
       description: `Expense edited ${id}`,
     },
   })
@@ -88,11 +108,11 @@ export async function edit({ payload }: { payload: EditExpensePayload }): Promis
     payload: {
       type: 'expense',
       direction: 'out',
-      account: payload.cashregisterAccount,
-      cashregister: payload.cashregister,
+      accountId: payload.cashregisterAccount,
+      cashregisterId: payload.cashregister,
       sourceModel: 'expense',
       sourceId: id,
-      currency: payload.currency,
+      currencyId: payload.currency,
       amount: payload.amount,
       description: `Expense ${id}`,
     },
@@ -102,36 +122,35 @@ export async function edit({ payload }: { payload: EditExpensePayload }): Promis
     status: 'success',
     code: 'EXPENSE_EDITED',
     message: 'Expense edited',
-    data: mapExpenseToDTO(expense),
   }
 }
 
 export async function remove({ payload }: { payload: RemoveExpensesPayload }): Promise<RemoveExpensesResponse> {
   const { ids } = payload
 
-  await ExpenseModel.updateMany(
-    { _id: { $in: ids } },
-    { $set: { removed: true } },
-  )
-
   for (const id of ids) {
-    const expense = await ExpenseModel.findById(id)
+    const expense = await ExpenseRepo.findById(id)
+    await ExpenseRepo.removeById(id)
 
-    if (!expense) {
+    if (expense === null)
       throw new HttpError(400, 'Expense not removed', 'EXPENSE_NOT_REMOVED')
-    }
+
+    const currency = await CurrencyRepo.findOne({ _id: expense.currencyId })
+
+    if (currency === null)
+      throw new HttpError(400, 'Currency not found', 'CURRENCY_NOT_FOUND')
 
     await MoneyTransactionService.createTransaction({
       payload: {
         type: 'expense',
         direction: 'in',
-        account: expense.cashregisterAccount,
-        cashregister: expense.cashregister,
+        accountId: expense.cashregisterAccountId,
+        cashregisterId: expense.cashregisterId,
         sourceModel: 'expense',
         sourceId: expense._id.toString(),
-        currency: expense.currency,
-        amount: expense.amount,
-        description: `Expense removed ${expense.id}`,
+        currencyId: expense.currencyId,
+        amount: Number.parseFloat(fromMinor(expense.minorAmount, currency.scale)),
+        description: `Expense removed ${expense._id.toString()}`,
       },
     })
   }

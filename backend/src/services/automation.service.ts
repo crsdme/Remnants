@@ -73,7 +73,7 @@ export async function remove({ payload }: { payload: RemoveAutomationsPayload })
 }
 
 export async function run({ payload, session }: { payload: RunAutomationsPayload, session?: ClientSession }): Promise<RunAutomationsResponse> {
-  console.log(payload, session)
+  console.log('automation run', payload.toString().slice(0, 100), session?.toString().slice(0, 100))
   return {
     status: 'success',
     code: 'AUTOMATIONS_RAN',

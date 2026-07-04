@@ -1,7 +1,8 @@
 import type { AggregateResult, CurrencyDTO, ExchangeRateDTOPopulated } from '@remnant/shared'
-import type { PipelineStage } from 'mongoose'
+import type { FilterQuery, PipelineStage } from 'mongoose'
 import type {
   CreateCurrenciesRepoPayload,
+  CurrencyDB,
   EditCurrenciesRepoPayload,
   EditExchangeRatesRepoPayload,
   GetCurrenciesRepoPayload,
@@ -82,6 +83,12 @@ export async function list(payload: GetCurrenciesRepoPayload): Promise<GetCurren
         names: 1,
         symbols: 1,
         scale: 1,
+        paymentEpsilon: {
+          $ifNull: [
+            '$paymentEpsilon',
+            { $pow: [10, { $subtract: [1, { $ifNull: ['$scale', 2] }] }] },
+          ],
+        },
         active: 1,
         priority: 1,
         createdAt: 1,
@@ -115,6 +122,10 @@ export async function updateById(id: string, payload: EditCurrenciesRepoPayload)
     { $set: payload as unknown as Record<string, unknown> },
     { new: true, runValidators: true },
   ).exec()
+}
+
+export async function findOne(payload: FilterQuery<CurrencyDB>) {
+  return CurrencyModel.findOne(payload).exec()
 }
 
 export async function removeById(id: string) {
@@ -181,11 +192,29 @@ export async function listExchangeRates(payload: GetExchangeRatesRepoPayload): P
           id: '$fromCurrency._id',
           names: '$fromCurrency.names',
           symbols: '$fromCurrency.symbols',
+          scale: { $ifNull: ['$fromCurrency.scale', 2] },
+          paymentEpsilon: {
+            $ifNull: [
+              '$fromCurrency.paymentEpsilon',
+              { $pow: [10, { $subtract: [1, { $ifNull: ['$fromCurrency.scale', 2] }] }] },
+            ],
+          },
+          priority: { $ifNull: ['$fromCurrency.priority', 0] },
+          active: { $ifNull: ['$fromCurrency.active', true] },
         },
         toCurrency: {
           id: '$toCurrency._id',
           names: '$toCurrency.names',
           symbols: '$toCurrency.symbols',
+          scale: { $ifNull: ['$toCurrency.scale', 2] },
+          paymentEpsilon: {
+            $ifNull: [
+              '$toCurrency.paymentEpsilon',
+              { $pow: [10, { $subtract: [1, { $ifNull: ['$toCurrency.scale', 2] }] }] },
+            ],
+          },
+          priority: { $ifNull: ['$toCurrency.priority', 0] },
+          active: { $ifNull: ['$toCurrency.active', true] },
         },
         rate: 1,
         comment: 1,

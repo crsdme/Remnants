@@ -14,6 +14,7 @@ describe('currency API', () => {
         names: { en: 'Dollar', ru: 'Доллар' },
         symbols: { en: 'USD', ru: 'USD' },
         scale: 2,
+        paymentEpsilon: 0.1,
         priority: 1,
         active: true,
       })
@@ -33,6 +34,7 @@ describe('currency API', () => {
         names: { en: 'Dollar', ru: 'Доллар' },
         symbols: { en: 'USD', ru: 'USD' },
         scale: 2,
+        paymentEpsilon: 0.1,
         priority: 1,
         active: true,
       })

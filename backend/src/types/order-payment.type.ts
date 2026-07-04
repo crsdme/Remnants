@@ -12,14 +12,14 @@ import {
 
 export interface OrderPaymentDB {
   _id: string
-  order: string
-  cashregister: string
-  cashregisterAccount: string
-  amount: number
-  currency: string
+  orderId: string
+  cashregisterId: string
+  cashregisterAccountId: string
+  minorAmount: number
+  currencyId: string
   paymentStatus: string
   paymentDate: Date
-  transaction: string
+  transactionId: string
   comment: string
   createdBy: string
   removedBy: string
@@ -28,9 +28,10 @@ export interface OrderPaymentDB {
   updatedAt: Date
 }
 
-export interface OrderPaymentDBPopulated extends Omit<OrderPaymentDB, 'currency'> {
-  currency: CurrencyDB
-}
+export type OrderPaymentDBPopulated
+  = Omit<OrderPaymentDB, 'currencyId'> & {
+    currency: CurrencyDB
+  }
 
 export type GetOrderPaymentsPayload = z.output<typeof getOrderPaymentsSchema>
 export function parseGetOrderPayments(x: unknown): GetOrderPaymentsPayload {
@@ -52,17 +53,30 @@ export function parseRemoveOrderPayments(x: unknown): RemoveOrderPaymentsPayload
   return removeOrderPaymentsSchema.parse(x)
 }
 
-export type GetOrderPaymentsRepoPayload = GetOrderPaymentsPayload
-export interface GetOrderPaymentsRepoResult { items: OrderPaymentDTOPopulated[], total: number, page: number, pageSize: number }
+export interface OrderPaymentPopulatedRepoItem extends Omit<OrderPaymentDTOPopulated, 'amount' | 'currency'> {
+  minorAmount: number
+  currency: {
+    id: string
+    names: OrderPaymentDTOPopulated['currency']['names']
+    symbols: OrderPaymentDTOPopulated['currency']['symbols']
+    scale: number
+    paymentEpsilon?: number
+  }
+}
 
-export type CreateOrderPaymentsRepoPayload = CreateOrderPaymentsPayload
+export type GetOrderPaymentsRepoPayload = GetOrderPaymentsPayload
+export interface GetOrderPaymentsRepoResult { items: OrderPaymentPopulatedRepoItem[], total: number, page: number, pageSize: number }
+
+export interface CreateOrderPaymentsRepoPayload extends Omit<CreateOrderPaymentsPayload, 'amount'> {
+  minorAmount: number
+}
 
 export interface EditOrderPaymentsRepoPayload {
-  order?: string
-  cashregister?: string
-  cashregisterAccount?: string
-  amount?: number
-  currency?: string
+  orderId?: string
+  cashregisterId?: string
+  cashregisterAccountId?: string
+  minorAmount?: number
+  currencyId?: string
   paymentStatus?: string
   paymentDate?: Date
   comment?: string

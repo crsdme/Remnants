@@ -186,6 +186,10 @@ export default function App() {
             element={<ProtectedRoute children={<Pages.WarehouseTransactionCreatePage />} permissions={['warehouseTransaction.create']} />}
           />
           <Route
+            path="/warehouse-transactions/receive/:seq"
+            element={<ProtectedRoute children={<Pages.WarehouseTransactionReceivePage />} permissions={['warehouseTransaction.receive']} />}
+          />
+          <Route
             path="/barcodes"
             element={<ProtectedRoute children={<Pages.BarcodesPage />} permissions={['barcode.page']} />}
           />

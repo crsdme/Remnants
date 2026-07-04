@@ -19,6 +19,7 @@ export interface CurrencyDB {
   names: LanguageString
   symbols: LanguageString
   scale: number
+  paymentEpsilon?: number
   priority: number
   active: boolean
   removed: boolean

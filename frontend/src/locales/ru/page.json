@@ -99,6 +99,8 @@
   "page.currencies.form.symbols": "Символ ({{language}})",
   "page.currencies.form.priority": "Приоритет",
   "page.currencies.form.scale": "Цифр после запятой",
+  "page.currencies.form.paymentEpsilon": "Допуск оплаты",
+  "page.currencies.form.paymentEpsilon.description": "Максимально допустимая разница при сравнении суммы заказа и оплат (в этой валюте)",
   "page.currencies.form.active": "Активная",
   "page.currencies.form.active.description": "Активная валюта",
 
@@ -1196,12 +1198,15 @@
   "page.expenses.filter.name": "Фильтр по названию",
   "page.expenses.button.create": "Создать расход",
 
+  "page.expenses.filter.seq": "Номер",
+
   "page.expenses.table.amount": "Сумма",
   "page.expenses.table.cashregister": "Касса",
   "page.expenses.table.cashregisterAccount": "Счет",
   "page.expenses.table.categories": "Категории",
   "page.expenses.table.type": "Тип",
   "page.expenses.table.comment": "Комментарий",
+  "page.expenses.table.type.manual": "Ручной",
 
   "page.expenses.form.title.create": "Создание нового расхода",
   "page.expenses.form.description.create": "Добавить новый расход в систему",

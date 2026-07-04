@@ -1,10 +1,11 @@
-import type { AggregateResult, SyncEntryDTO } from '@remnant/shared'
+import type { AggregateResult } from '@remnant/shared'
 import type { PipelineStage } from 'mongoose'
 import type {
   CreateSyncEntryRepoPayload,
   EditSyncEntryRepoPayload,
   GetSyncEntriesRepoPayload,
   GetSyncEntriesRepoResult,
+  SyncEntryDTO,
 } from '@/types/'
 import { SyncEntryModel } from '@/models'
 import { buildQuery, buildSortQuery, unwrapAggregate } from '@/utils'

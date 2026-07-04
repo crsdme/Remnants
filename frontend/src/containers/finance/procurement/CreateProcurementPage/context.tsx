@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 import type { ProcurementItemDTO } from '@remnant/shared'
 import type { ReactNode } from 'react'
 import type { Resolver, UseFormReturn } from 'react-hook-form'

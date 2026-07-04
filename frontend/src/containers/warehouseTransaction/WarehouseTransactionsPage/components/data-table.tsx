@@ -1,5 +1,5 @@
 import { flexRender, getCoreRowModel, getExpandedRowModel, useReactTable } from '@tanstack/react-table'
-import { useState } from 'react'
+import { Fragment, useState } from 'react'
 
 import { useWarehouseTransactionQuery } from '@/api/hooks'
 import { ColumnVisibilityMenu, TablePagination } from '@/components'
@@ -89,29 +89,22 @@ export function DataTable() {
     if (isLoading || isFetching)
       return renderSkeletonRows()
 
-    // if (table.getRowModel().rows?.length) {
-    //   return table.getRowModel().rows.map(row => (
-    //     <Fragment key={row.id}>
-    //       <TableRow data-state={row.getIsSelected() && 'selected'}>
-    //         {row.getVisibleCells().map(cell => (
-    //           <TableCell
-    //             key={cell.id}
-    //             className={`max-w-[${cell.column.columnDef.size}px]`}
-    //           >
-    //             {flexRender(cell.column.columnDef.cell, cell.getContext())}
-    //           </TableCell>
-    //         ))}
-    //       </TableRow>
-    //       {row.getIsExpanded() && (
-    //         <SubRowItems
-    //           transactionId={row.original.id}
-    //           columnsLength={columns.length}
-    //           language={i18n.language}
-    //         />
-    //       )}
-    //     </Fragment>
-    //   ))
-    // }
+    if (table.getRowModel().rows?.length) {
+      return table.getRowModel().rows.map(row => (
+        <Fragment key={row.id}>
+          <TableRow data-state={row.getIsSelected() && 'selected'}>
+            {row.getVisibleCells().map(cell => (
+              <TableCell
+                key={cell.id}
+                className={`max-w-[${cell.column.columnDef.size}px]`}
+              >
+                {flexRender(cell.column.columnDef.cell, cell.getContext())}
+              </TableCell>
+            ))}
+          </TableRow>
+        </Fragment>
+      ))
+    }
 
     return (
       <TableRow>

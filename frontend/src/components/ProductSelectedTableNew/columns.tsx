@@ -274,8 +274,8 @@ export function makeSelectedPriceColumn<TData extends BaseProductRow>(
           <AsyncSelectNew
             loadOptions={loadCurrencyOptions}
             value={[currency.id]}
-            renderOption={(e: CurrencySelectOption) => `${e.symbols[i18n.language] ?? ''}`}
-            getDisplayValue={(e: CurrencySelectOption) => `${e.symbols[i18n.language] ?? ''}`}
+            renderOption={(e: CurrencySelectOption) => `${e.symbols[language] ?? ''}`}
+            getDisplayValue={(e: CurrencySelectOption) => `${e.symbols[language] ?? ''}`}
             getOptionValue={(e: CurrencySelectOption) => e.id}
             disabled={tableDisabled}
             onChange={val => handleChange?.({
@@ -295,9 +295,9 @@ export function makeSelectedPriceColumn<TData extends BaseProductRow>(
 
 export function makeQuantityColumn<TData extends BaseProductRow>(
   columnHelper: ColumnHelper<TData>,
-  { t, i18n, field = 'quantity', received = false }: {
+  { t, language, field = 'quantity', received = false }: {
     t: (key: string) => string
-    i18n: { language: string }
+    language: string
     field?: string
     received?: boolean
   },
@@ -356,7 +356,7 @@ export function makeQuantityColumn<TData extends BaseProductRow>(
                   disabled={tableDisabled}
                 />
                 <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                  <p>{product.unit.symbols[i18n.language]}</p>
+                  <p>{product.unit.symbols[language]}</p>
                 </div>
               </div>
 
@@ -395,7 +395,7 @@ export function makeQuantityColumn<TData extends BaseProductRow>(
       const { rows } = table.getRowModel()
       const totalsByUnit = rows.reduce((acc, r) => {
         const p = r.original as BaseProductRow & { unit?: { symbols?: Partial<Record<string, string>> } }
-        const unit = p?.unit?.symbols?.[i18n.language]
+        const unit = p?.unit?.symbols?.[language]
         if (!unit)
           return acc
         const rowTotal = (p.quantity ?? 0)
@@ -446,7 +446,7 @@ export function makeQuantityColumn<TData extends BaseProductRow>(
               disabled={tableDisabled}
             />
             <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-              <p>{item.unit.symbols[i18n.language]}</p>
+              <p>{item.unit.symbols[language]}</p>
             </div>
           </div>
 

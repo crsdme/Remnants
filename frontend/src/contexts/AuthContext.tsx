@@ -74,7 +74,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const useMutateAuthLogin = useAuthLogin({
     options: {
       onSuccess: ({ data }) => {
-        setUser({ ...data.user, settings: [], permissions: [] })
+        setUser({ ...data.user, settings: [], permissions: [] } as unknown as AuthUser)
+        // TEMPORARY FIX
         setPermissions(data.user.permissions)
         localStorage.setItem('settings', JSON.stringify(data.user.settings))
         dispatch({ type: 'LOGIN' })
@@ -98,10 +99,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     useMutateAuthLogin.mutate(value)
   }
 
-  const refresh = (): Promise<void> => {
+  const refresh = async (): Promise<void> => {
     return useQueryRefreshToken
       .refetch()
-      .then(({ status, data }) => {
+      .then(async ({ status, data }) => {
         if (status === 'success') {
           setPermissions(data.data.permissions)
           dispatch({ type: 'REFRESH' })
@@ -121,7 +122,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   useEffect(() => {
-    refresh()
+    void refresh()
     setupAxiosInterceptors({
       logout,
       refresh,

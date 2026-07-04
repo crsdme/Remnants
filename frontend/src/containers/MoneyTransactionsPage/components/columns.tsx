@@ -1,4 +1,4 @@
-import type { MoneyTransactionPopulatedDTO } from '@remnant/shared'
+import type { MoneyTransactionDTO } from '@remnant/shared'
 import type { Column } from '@tanstack/react-table'
 import { createColumnHelper } from '@tanstack/react-table'
 import {
@@ -20,14 +20,14 @@ import { useMoneyTransactionContext } from '../context'
 
 const sortIcons = { asc: ArrowUp, desc: ArrowDown }
 
-const columnHelper = createColumnHelper<MoneyTransactionPopulatedDTO>()
+const columnHelper = createColumnHelper<MoneyTransactionDTO>()
 
 export function useColumns() {
   const { t, language } = useLocale()
   const { isLoading, openModal } = useMoneyTransactionContext()
 
   const columns = useMemo(() => {
-    function sortHeader(column: Column<MoneyTransactionPopulatedDTO>, label: string) {
+    function sortHeader(column: Column<MoneyTransactionDTO>, label: string) {
       const sorted = column.getIsSorted()
       const Icon = sorted ? sortIcons[sorted] : ChevronsUpDown
 

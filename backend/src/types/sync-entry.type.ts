@@ -1,4 +1,5 @@
 import type { z } from 'zod'
+
 import type {
   createSyncEntryResponseSchema,
   editSyncEntryResponseSchema,
@@ -32,6 +33,7 @@ export interface SyncEntryDB {
   createdAt: Date
   updatedAt: Date
 }
+
 export type CreateSyncEntryPayload = z.output<typeof createSyncEntrySchema>
 export function parseCreateSyncEntry(x: unknown): CreateSyncEntryPayload {
   return createSyncEntrySchema.parse(x)

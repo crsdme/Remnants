@@ -50,6 +50,9 @@ const CurrencySchema: Schema = new Schema(
       type: Number,
       default: 2,
     },
+    paymentEpsilon: {
+      type: Number,
+    },
     priority: {
       type: Number,
       default: 0,
@@ -119,6 +122,9 @@ CurrencySchema.set('toJSON', {
 })
 
 CurrencySchema.pre('save', async function (this: CurrencyDoc, next) {
+  if (this.paymentEpsilon == null)
+    this.paymentEpsilon = 10 ** (1 - (this.scale ?? 2))
+
   if (this.isNew && !this.seq) {
     const counter = await CounterModel.findByIdAndUpdate(
       'currencies',

@@ -1,8 +1,9 @@
-import type { AggregateResult, ExpenseDTO } from '@remnant/shared'
+import type { AggregateResult } from '@remnant/shared'
 import type { PipelineStage } from 'mongoose'
 import type {
   CreateExpensesRepoPayload,
   EditExpensesRepoPayload,
+  ExpenseDBPopulated,
   GetExpensesRepoPayload,
   GetExpensesRepoResult,
 } from '@/types/'
@@ -58,7 +59,7 @@ export async function list(payload: GetExpensesRepoPayload): Promise<GetExpenses
     {
       $lookup: {
         from: 'currencies',
-        localField: 'currency',
+        localField: 'currencyId',
         foreignField: '_id',
         as: 'currency',
       },
@@ -66,7 +67,7 @@ export async function list(payload: GetExpensesRepoPayload): Promise<GetExpenses
     {
       $lookup: {
         from: 'cashregister-accounts',
-        localField: 'cashregisterAccount',
+        localField: 'cashregisterAccountId',
         foreignField: '_id',
         as: 'cashregisterAccount',
       },
@@ -74,7 +75,7 @@ export async function list(payload: GetExpensesRepoPayload): Promise<GetExpenses
     {
       $lookup: {
         from: 'cashregisters',
-        localField: 'cashregister',
+        localField: 'cashregisterId',
         foreignField: '_id',
         as: 'cashregister',
       },
@@ -82,7 +83,7 @@ export async function list(payload: GetExpensesRepoPayload): Promise<GetExpenses
     {
       $lookup: {
         from: 'expense-categories',
-        localField: 'categories',
+        localField: 'categoryIds',
         foreignField: '_id',
         as: 'categories',
       },
@@ -115,11 +116,12 @@ export async function list(payload: GetExpensesRepoPayload): Promise<GetExpenses
         _id: 0,
         id: '$_id',
         seq: 1,
-        amount: 1,
+        minorAmount: 1,
         currency: {
           id: '$currency._id',
           names: 1,
           symbols: 1,
+          scale: 1,
         },
         cashregister: {
           id: '$cashregister._id',
@@ -155,7 +157,7 @@ export async function list(payload: GetExpensesRepoPayload): Promise<GetExpenses
     },
   ]
 
-  const raw = await ExpenseModel.aggregate<AggregateResult<ExpenseDTO>>(pipeline).exec()
+  const raw = await ExpenseModel.aggregate<AggregateResult<ExpenseDBPopulated>>(pipeline).exec()
   const { items, total } = unwrapAggregate(raw)
 
   return { items, total, page: current, pageSize }

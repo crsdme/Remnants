@@ -4,7 +4,7 @@ import { idSchema, paginationSchema, responseItemSchema, responseListSchema, res
 export const settingSchema = z.object({
   id: idSchema,
   key: z.string().trim(),
-  value: z.any().optional().default(null),
+  value: z.string().default(''),
   scope: z.string().trim().optional(),
   description: z.string().trim().optional(),
   createdAt: z.coerce.date(),

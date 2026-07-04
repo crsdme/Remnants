@@ -7,11 +7,11 @@ import {
   Check,
   ChevronsUpDown,
   Copy,
-  Pencil,
   Trash,
 } from 'lucide-react'
 import { useMemo } from 'react'
 
+import { useNavigate } from 'react-router-dom'
 import { TableActionDropdown } from '@/components'
 import { Badge, Button } from '@/components/ui'
 import { formatDate } from '@/utils/helpers'
@@ -24,7 +24,8 @@ const columnHelper = createColumnHelper<WarehouseTransactionTableRow>()
 
 export function useColumns() {
   const { t, language } = useLocale()
-  const { isLoading, receiveModal, editModal, removeWarehouseTransaction } = useWarehouseTransactionContext()
+  const navigate = useNavigate()
+  const { isLoading, removeWarehouseTransaction } = useWarehouseTransactionContext()
 
   const columns = useMemo(() => {
     function sortHeader(column: Column<WarehouseTransactionTableRow, unknown>, label: string) {
@@ -62,16 +63,10 @@ export function useColumns() {
               label: t('table.copy'),
               icon: <Copy className="h-4 w-4" />,
             },
-            {
-              permission: 'warehouse-transaction.edit',
-              onClick: () => void editModal(item as never),
-              label: t('table.edit'),
-              icon: <Pencil className="h-4 w-4" />,
-            },
             ...(item.status === 'awaiting'
               ? [{
                   permission: 'warehouse-transaction.receive',
-                  onClick: () => void receiveModal(item),
+                  onClick: () => void navigate(`/warehouse-transactions/receive/${item.seq}`),
                   label: t('table.receive'),
                   icon: <Check className="h-4 w-4" />,
                 }]
@@ -202,6 +197,6 @@ export function useColumns() {
       }),
       actionColumn(),
     ]
-  }, [editModal, language, isLoading, language, receiveModal, removeWarehouseTransaction, t])
+  }, [language, isLoading, language, removeWarehouseTransaction, t])
   return columns
 }

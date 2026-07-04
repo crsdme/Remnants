@@ -13,26 +13,28 @@ const OrderPaymentSchema: Schema = new Schema(
       default: uuidv4,
       validate: uuidValidator,
     },
-    order: {
+    orderId: {
       type: String,
       ref: 'Order',
       required: true,
     },
-    cashregister: {
+    cashregisterId: {
       type: String,
       ref: 'Cashregister',
       required: true,
     },
-    cashregisterAccount: {
+    cashregisterAccountId: {
       type: String,
       ref: 'CashregisterAccount',
     },
-    amount: {
+    minorAmount: {
       type: Number,
       required: true,
     },
-    currency: {
+    currencyId: {
       type: String,
+      ref: 'Currency',
+      required: true,
     },
     paymentStatus: {
       type: String,
@@ -51,7 +53,7 @@ const OrderPaymentSchema: Schema = new Schema(
       type: Date,
       default: new Date(),
     },
-    transaction: {
+    transactionId: {
       type: String,
       ref: 'MoneyTransaction',
     },
@@ -61,9 +63,11 @@ const OrderPaymentSchema: Schema = new Schema(
     },
     createdBy: {
       type: String,
+      ref: 'User',
     },
     removedBy: {
       type: String,
+      ref: 'User',
     },
     removed: {
       type: Boolean,

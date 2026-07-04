@@ -1,7 +1,8 @@
 import type {
-  UserDTO,
+  UserPopulatedDTO,
 } from '@remnant/shared'
 import type { z } from 'zod'
+import type { userPopulatedDBSchema } from '@/schemas/user.schema'
 import {
   createUserSchema,
   editUserSchema,
@@ -21,6 +22,8 @@ export interface UserDB {
   createdAt: Date
   updatedAt: Date
 }
+
+export type UserPopulatedDB = z.output<typeof userPopulatedDBSchema>
 
 export type GetUsersPayload = z.output<typeof getUserSchema>
 export function parseGetUsers(x: unknown): GetUsersPayload {
@@ -43,7 +46,7 @@ export function parseRemoveUsers(x: unknown): RemoveUsersPayload {
 }
 
 export type GetUsersRepoPayload = GetUsersPayload
-export interface GetUsersRepoResult { items: UserDTO[], total: number, page: number, pageSize: number }
+export interface GetUsersRepoResult { items: UserPopulatedDTO[], total: number, page: number, pageSize: number }
 
 export type CreateUsersRepoPayload = CreateUsersPayload
 

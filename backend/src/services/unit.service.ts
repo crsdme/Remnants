@@ -1,6 +1,6 @@
 import type {
-  CreateUnitsResponse,
-  EditUnitsResponse,
+  CreateUnitResponse,
+  EditUnitResponse,
   GetUnitsResponse,
   RemoveUnitsResponse,
 } from '@remnant/shared'
@@ -27,7 +27,7 @@ export async function get({ payload }: { payload: GetUnitsPayload }): Promise<Ge
   }
 }
 
-export async function create({ payload }: { payload: CreateUnitPayload }): Promise<CreateUnitsResponse> {
+export async function create({ payload }: { payload: CreateUnitPayload }): Promise<CreateUnitResponse> {
   const unit = await UnitRepo.createOne(payload)
 
   return {
@@ -38,7 +38,7 @@ export async function create({ payload }: { payload: CreateUnitPayload }): Promi
   }
 }
 
-export async function edit({ payload }: { payload: EditUnitPayload }): Promise<EditUnitsResponse> {
+export async function edit({ payload }: { payload: EditUnitPayload }): Promise<EditUnitResponse> {
   const unit = await UnitRepo.updateById(payload.id, payload)
 
   if (unit === null)

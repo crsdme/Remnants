@@ -33,30 +33,30 @@ const ProductSchema: Schema = new Schema(
         message: 'Supported languages only',
       },
     },
-    price: {
+    minorPrice: {
       type: Number,
       required: true,
     },
-    currency: {
+    currencyId: {
       type: String,
       ref: 'Currency',
       required: true,
     },
-    purchasePrice: {
+    minorPurchasePrice: {
       type: Number,
       required: true,
       default: 0,
     },
-    purchaseCurrency: {
+    purchaseCurrencyId: {
       type: String,
       ref: 'Currency',
       required: true,
     },
-    categories: [{
+    categoriesIds: [{
       type: String,
       ref: 'Category',
     }],
-    unit: {
+    unitId: {
       type: String,
       ref: 'Unit',
       required: true,
@@ -80,7 +80,7 @@ const ProductSchema: Schema = new Schema(
         required: true,
       },
     }],
-    productPropertiesGroup: {
+    productPropertiesGroupId: {
       type: String,
       ref: 'ProductPropertiesGroup',
     },
@@ -98,7 +98,7 @@ const ProductSchema: Schema = new Schema(
       type: String,
       ref: 'Quantity',
     }],
-    barcodes: [{
+    barcodesIds: [{
       type: String,
       ref: 'Barcode',
     }],
@@ -149,7 +149,8 @@ ProductSchema.pre('save', async function (this: ProductDoc, next) {
 })
 
 ProductSchema.index({ names: 1 })
-ProductSchema.index({ price: 1 })
+ProductSchema.index({ minorPrice: 1 })
+ProductSchema.index({ minorPurchasePrice: 1 })
 ProductSchema.index({ removed: 1 })
 
 export const ProductModel = mongoose.model<ProductDoc>('Product', ProductSchema)

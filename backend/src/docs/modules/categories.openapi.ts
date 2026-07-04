@@ -95,28 +95,6 @@ registry.registerPath({
 
 registry.registerPath({
   method: 'post',
-  path: '/categories/batch',
-  summary: 'Массовое обновление категорий',
-  operationId: 'batchCategories',
-  tags: ['Categories'],
-  request: {
-    body: {
-      content: {
-        'application/json': {
-          schema: batchCategorySchema,
-        },
-      },
-    },
-  },
-  responses: {
-    200: {
-      description: 'Массовое обновление успешно выполнено',
-    },
-  },
-})
-
-registry.registerPath({
-  method: 'post',
   path: '/categories/import',
   summary: 'Импорт категорий из файла',
   operationId: 'importCategories',

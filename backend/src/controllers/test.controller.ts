@@ -1,4 +1,4 @@
-import type { NextFunction, Request, Response } from 'express'
+import type { NextFunction, Response } from 'express'
 import type { ValidatedRequest } from '@/types'
 import * as TestService from '@/services/test.service'
 

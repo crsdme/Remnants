@@ -9,7 +9,6 @@ import type {
   GetProductsResponse,
   ImportProductsResponse,
   LanguageString,
-  ProductDTO,
   ProductPopulatedDTO,
   RemoveProductResponse,
 } from '@remnant/shared'
@@ -27,7 +26,7 @@ import path from 'node:path'
 import ExcelJS from 'exceljs'
 import { v4 as uuidv4 } from 'uuid'
 import { STORAGE_PATHS, STORAGE_URLS } from '@/config/constants'
-import { mapProductPopulatedToDTO, mapProductToDTO } from '@/mappers'
+import { mapProductPopulatedRepoToDTO } from '@/mappers'
 import * as CategoryRepository from '@/repositories/categories.repo'
 import * as CurrencyRepository from '@/repositories/currencies.repo'
 import * as LanguageRepository from '@/repositories/language.repo'
@@ -37,7 +36,6 @@ import * as ProductPropertyRepository from '@/repositories/product-property.repo
 import * as ProductRepository from '@/repositories/products.repo'
 import * as SiteRepository from '@/repositories/site.repo'
 import * as UnitRepository from '@/repositories/unit.repo'
-import * as AuditLogsService from '@/services/audit-logs.service'
 import * as BarcodeService from '@/services/barcode.service'
 import * as SyncEntryService from '@/services/sync-entry.service'
 import * as UserService from '@/services/user.service'
@@ -53,6 +51,7 @@ import {
   parseGetUnits,
 } from '@/types/'
 import { HttpError } from '@/utils'
+import { toMinor } from '@/utils/money'
 import {
   extractLangMap,
   parseFile,
@@ -72,7 +71,7 @@ export async function get({ payload, user }: { payload: GetProductsPayload, user
     code: 'PRODUCTS_FETCHED',
     message: 'Products fetched',
     data: {
-      items,
+      items: items.map(mapProductPopulatedRepoToDTO),
       pagination: {
         page,
         pageSize,
@@ -124,17 +123,31 @@ export async function create({ payload, uploadedImages }: { payload: CreateProdu
     path: image.path,
   }))
 
+  const [currencyDoc, purchaseCurrencyDoc] = await Promise.all([
+    CurrencyRepository.findOne({ _id: currency }),
+    CurrencyRepository.findOne({ _id: purchaseCurrency }),
+  ])
+
+  if (currencyDoc === null)
+    throw new HttpError(400, 'Currency not found', 'CURRENCY_NOT_FOUND')
+
+  if (purchaseCurrencyDoc === null)
+    throw new HttpError(400, 'Purchase currency not found', 'PURCHASE_CURRENCY_NOT_FOUND')
+
   const createdProduct = await ProductRepository.createOne({
     names,
-    price,
-    purchasePrice,
-    currency,
-    categories,
-    purchaseCurrency,
-    productPropertiesGroup,
+    minorPrice: toMinor(price, currencyDoc.scale),
+    minorPurchasePrice: toMinor(purchasePrice, purchaseCurrencyDoc.scale),
+    currencyId: currency,
+    categoriesIds: categories,
+    purchaseCurrencyId: purchaseCurrency,
+    productPropertiesGroupId: productPropertiesGroup,
     productProperties: parsedProductProperties,
-    unit,
-    images: parsedUploadedImages,
+    unitId: unit,
+    images: parsedUploadedImages.map(image => ({
+      path: image.path,
+      filename: image.filename,
+    })),
   })
 
   let syncSitesId = syncSites
@@ -185,7 +198,6 @@ export async function create({ payload, uploadedImages }: { payload: CreateProdu
     status: 'success',
     code: 'PRODUCT_CREATED',
     message: 'Product created',
-    data: mapProductToDTO(createdProduct),
   }
 }
 
@@ -256,17 +268,31 @@ export async function edit({ payload, uploadedImages }: { payload: EditProductsP
     })
   }).filter(item => item !== undefined)
 
+  const [currencyDoc, purchaseCurrencyDoc] = await Promise.all([
+    CurrencyRepository.findOne({ _id: currency }),
+    CurrencyRepository.findOne({ _id: purchaseCurrency }),
+  ])
+
+  if (currencyDoc === null)
+    throw new HttpError(400, 'Currency not found', 'CURRENCY_NOT_FOUND')
+
+  if (purchaseCurrencyDoc === null)
+    throw new HttpError(400, 'Purchase currency not found', 'PURCHASE_CURRENCY_NOT_FOUND')
+
   const newProduct = {
     names,
-    price,
-    purchasePrice,
-    currency,
-    categories,
-    purchaseCurrency,
-    productPropertiesGroup,
+    minorPrice: toMinor(price, currencyDoc.scale),
+    minorPurchasePrice: toMinor(purchasePrice, purchaseCurrencyDoc.scale),
+    currencyId: currency,
+    categoriesIds: categories,
+    purchaseCurrencyId: purchaseCurrency,
+    productPropertiesGroupId: productPropertiesGroup,
     productProperties: parsedProductProperties,
-    unit,
-    images: parsedImages,
+    unitId: unit,
+    images: parsedImages.map(image => ({
+      path: image.path,
+      filename: image.filename,
+    })),
   }
 
   const updatedProduct = await ProductRepository.updateById(id, newProduct)
@@ -308,7 +334,6 @@ export async function edit({ payload, uploadedImages }: { payload: EditProductsP
     status: 'success',
     code: 'PRODUCT_EDITED',
     message: 'Product edited',
-    data: mapProductToDTO(updatedProduct),
   }
 }
 
@@ -574,7 +599,7 @@ export async function exportHandler({ payload, user }: { payload: ExportProducts
   hiddenSheet.state = 'veryHidden'
 
   const groupedProducts: Record<string, ProductPopulatedDTO[]> = {}
-  for (const product of selectedProducts.items) {
+  for (const product of selectedProducts.items.map(mapProductPopulatedRepoToDTO)) {
     const groupId = product.productPropertiesGroup.id.toString()
 
     if (groupedProducts[groupId] === undefined) {
@@ -652,7 +677,7 @@ export async function exportHandler({ payload, user }: { payload: ExportProducts
       row.images = product.images.map(image => `${STORAGE_URLS.productImages}/${image.filename}`).join(', ')
 
       for (const lang of languages.items) {
-        row[`name_${lang.code}`] = product.names?.[lang.code] as string ?? ''
+        row[`name_${lang.code}`] = product.names?.[lang.code] ?? ''
       }
 
       row.price = product.price
@@ -736,7 +761,7 @@ export async function exportHandler({ payload, user }: { payload: ExportProducts
 
 export async function downloadTemplate({ user }: { user: AuthUser }): Promise<DownloadTemplateResponse> {
   const { items } = await ProductRepository.list(parseGetProductsRepo({ pagination: { current: 1, pageSize: 1 } }))
-  const exportHandlerResponse = await exportHandler({ payload: { ids: items.map(product => product.id) }, user })
+  const exportHandlerResponse = await exportHandler({ payload: { ids: items.map(product => product._id) }, user })
 
   return {
     status: 'success',
@@ -745,280 +770,3 @@ export async function downloadTemplate({ user }: { user: AuthUser }): Promise<Do
     buffer: Buffer.from(exportHandlerResponse.buffer),
   }
 }
-
-// export async function downloadTemplate(user?: User): Promise<DownloadTemplateResponse> {
-//   const language = 'en'
-
-//   const languages = await LanguageModel.find({ active: true, removed: false })
-//   const currencies = await CurrencyModel.find({ active: true, removed: false })
-//   const units = await UnitModel.find({ active: true, removed: false })
-//   const categories = await CategoryModel.find({ active: true, removed: false })
-//   const productPropertiesGroups = await ProductPropertyGroupModel.find({ active: true, removed: false })
-//   const productProperties = await ProductPropertyModel.find({ active: true, removed: false })
-
-//   const hasPurchasePricePermission = await UserService.checkUserPermissions('product.purchasePrice', user)
-
-//   const workbook = new ExcelJS.Workbook()
-//   const hiddenSheet = workbook.addWorksheet('hidden')
-//   hiddenSheet.state = 'veryHidden'
-
-//   const { data: { items: selectedProducts } } = await get({ pagination: { current: 1, pageSize: 1 }, sorters: {} }, user)
-
-//   const groupedProducts: Record<string, any[]> = {}
-//   for (const product of selectedProducts) {
-//     const groupId = product.productPropertiesGroup.id.toString()
-//     if (!groupedProducts[groupId]) {
-//       groupedProducts[groupId] = []
-//     }
-//     groupedProducts[groupId].push(product)
-//   }
-
-//   for (const [groupId, products] of Object.entries(groupedProducts)) {
-//     const groupName = products[0].productPropertiesGroup.names[language] || groupId
-//     const sheet = workbook.addWorksheet(groupName)
-
-//     const productPropertiesIds = productPropertiesGroups.find(item => item.id === groupId)?.productProperties || []
-//     const productPropertiesData = productProperties.filter(item => productPropertiesIds.includes(item.id))
-
-//     const dynamicKeys: { key: string, header: string, id: string, type: string }[] = []
-//     const dynamicColumns: { key: string, header: string }[] = []
-//     productPropertiesData.forEach(({ type, id, names }: any) => {
-//       if (type === 'multiSelect') {
-//         for (let i = 1; i <= 5; i++) {
-//           const key = `${id}_${i}`
-//           dynamicColumns.push({
-//             header: `${names.get(language) || 'NO_NAME'}_${i} (${key})`,
-//             key,
-//           })
-//           dynamicKeys.push({
-//             key,
-//             id,
-//             header: `${names.get(language) || 'NO_NAME'}_${i} (${key})`,
-//             type,
-//           })
-//         }
-//       }
-//       else {
-//         dynamicColumns.push({
-//           header: `${names.get(language) || 'NO_NAME'} (${id})`,
-//           key: id,
-//         })
-//         dynamicKeys.push({
-//           key: id,
-//           header: `${names.get(language) || 'NO_NAME'} (${id})`,
-//           id,
-//           type,
-//         })
-//       }
-//     })
-
-//     sheet.columns = [
-//       { header: 'id', key: 'id' },
-//       { header: 'seq', key: 'seq' },
-//       { header: 'images', key: 'images' },
-//       ...languages.map(lang => ({
-//         header: `name_${lang.code}`,
-//         key: `name_${lang.code}`,
-//       })),
-//       { header: 'price', key: 'price' },
-//       { header: 'purchasePrice', key: 'purchasePrice' },
-//       { header: 'currency', key: 'currency' },
-//       { header: 'purchaseCurrency', key: 'purchaseCurrency' },
-//       { header: 'unit', key: 'unit' },
-//       { header: 'productPropertiesGroup', key: 'productPropertiesGroup' },
-//       { header: 'categories_1', key: 'categories_1' },
-//       { header: 'categories_2', key: 'categories_2' },
-//       { header: 'categories_3', key: 'categories_3' },
-//       { header: 'categories_4', key: 'categories_4' },
-//       { header: 'categories_5', key: 'categories_5' },
-//       { header: 'barcodes_1', key: 'barcodes_1' },
-//       { header: 'barcodes_2', key: 'barcodes_2' },
-//       { header: 'barcodes_3', key: 'barcodes_3' },
-//       { header: 'barcodes_4', key: 'barcodes_4' },
-//       { header: 'barcodes_5', key: 'barcodes_5' },
-//       { header: 'generateBarcode', key: 'generateBarcode' },
-//       ...dynamicColumns,
-//     ]
-
-//     products.forEach((product: any) => {
-//       const row: Record<string, any> = {}
-
-//       row.id = product.id
-//       row.seq = product.seq
-//       row.generateBarcode = 'NO'
-//       row.images = product.images.map((image: any) => `${STORAGE_URLS.productImages}/${image.filename}`).join(', ')
-//       for (const lang of languages) {
-//         row[`name_${lang.code}`] = product.names[lang.code] || ''
-//       }
-//       row.price = product.price
-//       row.purchasePrice = product.purchasePrice
-//       row.currency = `${product.currency.names[language] || 'NO_NAME'} (${product.currency.id})`
-//       if (hasPurchasePricePermission) {
-//         row.purchaseCurrency = `${product.purchaseCurrency.names[language] || 'NO_NAME'} (${product.purchaseCurrency.id})`
-//       }
-//       else {
-//         row.purchaseCurrency = ''
-//       }
-//       row.unit = `${product.unit.names[language] || 'NO_NAME'} (${product.unit.id})`
-//       row.productPropertiesGroup = `${product.productPropertiesGroup.names[language] || 'NO_NAME'} (${product.productPropertiesGroup.id})`
-//       for (let i = 1; i <= 5; i++) {
-//         row[`categories_${i}`] = product?.categories[i - 1] ? `${product?.categories[i - 1]?.names[language] || 'NO_NAME'} (${product?.categories[i - 1]?.id})` : ''
-//         row[`barcodes_${i}`] = product?.barcodes[i - 1] ? `${product?.barcodes[i - 1]?.code}` : ''
-//       }
-//       dynamicKeys.forEach(({ id, type, key }) => {
-//         const property = product.productProperties.find(
-//           (item: any) => (item.id || item._id)?.toString() === id.toString(),
-//         )
-//         if (type === 'multiSelect') {
-//           const options = property?.optionData || []
-//           const index = Number.parseInt(key.split('_')[1], 10) - 1
-//           const option = options[index]
-//           row[key] = option ? `${option.names?.[language]} (${option.id})` : ''
-//         }
-//         else if (type === 'select' || type === 'color') {
-//           row[key] = property?.optionData?.[0]
-//             ? `${property?.optionData[0].names?.[language]} (${property?.optionData[0].id})`
-//             : ''
-//         }
-//         else {
-//           row[key] = property?.value || ''
-//         }
-//       })
-//       sheet.addRow(row)
-//     })
-
-//     createHiddenList({ data: currencies, columnKey: 'A', columnName: 'currency' })
-//     createHiddenList({ data: currencies, columnKey: 'A', columnName: 'purchaseCurrency' })
-//     createHiddenList({ data: units, columnKey: 'B', columnName: 'unit' })
-//     createHiddenList({ data: productPropertiesGroups, columnKey: 'C', columnName: 'productPropertiesGroup' })
-//     createHiddenList({ data: categories, columnKey: 'D', columnName: 'categories_1' })
-//     createHiddenList({ data: categories, columnKey: 'D', columnName: 'categories_2' })
-//     createHiddenList({ data: categories, columnKey: 'D', columnName: 'categories_3' })
-//     createHiddenList({ data: categories, columnKey: 'D', columnName: 'categories_4' })
-//     createHiddenList({ data: categories, columnKey: 'D', columnName: 'categories_5' })
-//     createHiddenListTrueFalse({ columnKey: 'E', columnName: 'generateBarcode' })
-//     const propertiesLetters: Record<string, string> = {}
-//     for (const [index, property] of dynamicKeys.entries()) {
-//       if (['select', 'multiSelect', 'color'].includes(property.type)) {
-//         const { data: { items: productPropertiesOptions } } = await ProductPropertyOptionService.get({
-//           filters: { productProperty: property.id },
-//           pagination: { full: true },
-//         })
-//         if (!propertiesLetters[property.id])
-//           propertiesLetters[property.id] = getExcelColumnLetter(5 + index)
-
-//         createHiddenList({
-//           data: productPropertiesOptions,
-//           columnKey: propertiesLetters[property.id],
-//           columnName: property.key,
-//         })
-//       }
-//     }
-
-//     function createHiddenList({ data, columnKey, columnName }: { data: any[], columnKey: string, columnName: string }) {
-//       const options = data.map((item: any) => {
-//         const name = item.names.get(language) || 'NO_NAME'
-//         return `${name} (${item._id})`
-//       })
-
-//       options.forEach((value, index) => {
-//         hiddenSheet.getCell(`${columnKey}${index + 1}`).value = value
-//       })
-
-//       const formulaRange = `hidden!$${columnKey}$1:$${columnKey}$${options.length}`
-//       const column = sheet.columns.findIndex(col => col.key === columnName) + 1
-
-//       for (let i = 2; i <= sheet.rowCount; i++) {
-//         sheet.getCell(i, column).dataValidation = {
-//           type: 'list',
-//           allowBlank: true,
-//           formulae: [formulaRange],
-//         }
-//       }
-//     }
-
-//     function createHiddenListTrueFalse({ columnKey, columnName }: { columnKey: string, columnName: string }) {
-//       const data = [{ id: 'YES' }, { id: 'NO' }]
-//       const options = data.map((item: any) => item.id)
-
-//       options.forEach((value, index) => {
-//         hiddenSheet.getCell(`${columnKey}${index + 1}`).value = value
-//       })
-
-//       const formulaRange = `hidden!$${columnKey}$1:$${columnKey}$${options.length}`
-//       const column = sheet.columns.findIndex(col => col.key === columnName) + 1
-
-//       for (let i = 2; i <= sheet.rowCount; i++) {
-//         sheet.getCell(i, column).dataValidation = {
-//           type: 'list',
-//           allowBlank: true,
-//           formulae: [formulaRange],
-//         }
-//       }
-//     }
-
-//     function getExcelColumnLetter(colIndex: number): string {
-//       let letter = ''
-//       while (colIndex > 0) {
-//         letter = String.fromCharCode(65 + (colIndex - 1) % 26) + letter
-//         colIndex = Math.floor((colIndex - 1) / 26)
-//       }
-//       return letter
-//     }
-//   }
-
-//   await workbook.xlsx.writeFile(path.join(STORAGE_PATHS.exportProducts, `${uuidv4()}.xlsx`))
-
-//   const buffer = await workbook.xlsx.writeBuffer()
-
-//   return {
-//     status: 'success',
-//     code: 'PRODUCTS_TEMPLATE_DOWNLOADED',
-//     message: 'Products template downloaded',
-//     buffer: Buffer.from(buffer),
-//   }
-// }
-
-// function normalizeProduct(product: any) {
-//   if (!product)
-//     return null
-
-//   // оставляем только нужные для синка поля
-//   const {
-//     names,
-//     price,
-//     purchasePrice,
-//     currency,
-//     categories,
-//     purchaseCurrency,
-//     productPropertiesGroup,
-//     productProperties,
-//     unit,
-//     images,
-//   } = product
-
-//   return {
-//     names: names instanceof Map ? Object.fromEntries(names) : names,
-//     price,
-//     purchasePrice,
-//     currency,
-//     categories: Array.isArray(categories) ? [...categories].sort() : [],
-//     purchaseCurrency,
-//     productPropertiesGroup,
-//     productProperties: Array.isArray(productProperties)
-//       ? productProperties
-//         .map((p: any) => ({ _id: p._id, value: p.value }))
-//         .sort((a, b) => a._id.localeCompare(b._id))
-//       : [],
-//     unit,
-//     images: Array.isArray(images)
-//       ? images.map((img: any) => ({
-//         id: img.id,
-//         path: img.path,
-//         filename: img.filename,
-//         name: img.name,
-//         type: img.type,
-//       }))
-//       : [],
-//   }
-// }

@@ -33,7 +33,6 @@ export async function get({ payload }: { payload: GetWarehousesPayload }): Promi
 }
 
 export async function create({ payload }: { payload: CreateWarehousePayload }): Promise<CreateWarehousesResponse> {
-  console.log('payload', payload)
   const data = await WarehouseRepo.createOne(payload)
 
   return {

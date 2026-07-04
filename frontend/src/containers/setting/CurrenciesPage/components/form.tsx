@@ -112,6 +112,30 @@ export function CurrencyForm() {
         />
         <FormField
           control={form.control}
+          name="paymentEpsilon"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>{t('page.currencies.form.paymentEpsilon')}</FormLabel>
+              <FormControl>
+                <Input
+                  type="number"
+                  step="0.01"
+                  placeholder={t('page.currencies.form.paymentEpsilon')}
+                  className="w-full"
+                  {...field}
+                  disabled={isLoading}
+                  onChange={e => field.onChange(Number(e.target.value))}
+                />
+              </FormControl>
+              <FormDescription className="text-xs text-muted-foreground">
+                {t('page.currencies.form.paymentEpsilon.description')}
+              </FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
           name="priority"
           render={({ field }) => (
             <FormItem>

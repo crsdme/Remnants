@@ -1,9 +1,9 @@
-import type { LoginResponse, PopulatedUser, RefreshResponse } from '@remnant/shared'
+import type { LoginResponse, RefreshResponse } from '@remnant/shared'
 import type { LoginPayload, RefreshPayload, TokenPayload } from '@/types'
 import bcrypt from 'bcrypt'
 import dotenv from 'dotenv'
 import jwt from 'jsonwebtoken'
-import { UserModel } from '@/models/'
+import * as UserRepository from '@/repositories/users.repo'
 import * as SettingsService from '@/services/setting.service'
 import { HttpError } from '@/utils/'
 
@@ -24,13 +24,13 @@ function generateAccessToken(data: TokenPayload) {
 export async function login(payload: LoginPayload): Promise<LoginResponse> {
   const { login, password } = payload
 
-  const user = await UserModel.findOne({ login }).populate('role') as PopulatedUser | null
+  const user = await UserRepository.findOne({ login })
 
   if (!user) {
     throw new HttpError(400, 'User not found', 'INVALID_CREDENTIALS')
   }
 
-  const isMatch = await bcrypt.compare(password, user.password ?? '')
+  const isMatch = await bcrypt.compare(password, user.password)
 
   if (!isMatch) {
     throw new HttpError(400, 'Invalid password', 'INVALID_CREDENTIALS')
@@ -53,17 +53,19 @@ export async function login(payload: LoginPayload): Promise<LoginResponse> {
     value: setting.value,
   }))
 
-  const userData = {
-    id: user._id,
-    login: user.login,
-    name: user.name,
-    permissions: user.role.permissions,
-    settings: mappedSettings,
-    createdAt: user.createdAt,
-    updatedAt: user.updatedAt,
+  return {
+    accessToken,
+    refreshToken,
+    user: {
+      id: user._id,
+      login: user.login,
+      name: user.name,
+      permissions: user.role.permissions,
+      settings: mappedSettings,
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt,
+    },
   }
-
-  return { accessToken, refreshToken, user: userData }
 }
 
 export async function refresh(payload: RefreshPayload): Promise<RefreshResponse> {

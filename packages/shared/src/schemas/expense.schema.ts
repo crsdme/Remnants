@@ -1,11 +1,16 @@
 import { z } from 'zod'
-import { cashregisterAccountSchemaPopulatedDTO } from './cashregister-account.schema'
-import { cashregisterSchema } from './cashregister.schema'
-import { dateRangeSchema, idSchema, numberFromStringSchema, paginationSchema, responseItemSchema, responseListSchema, responseSchema, sorterParamsSchema } from './common'
-import { currencySchema } from './currency.schema'
-import { expenseCategorySchema } from './expense-category.schema'
+import {
+  dateRangeSchema,
+  idSchema,
+  languageStringSchema,
+  numberFromStringSchema,
+  paginationSchema,
+  responseListSchema,
+  responseSchema,
+  sorterParamsSchema,
+} from './common'
 
-export const expenseSchema = z.object({
+export const expenseDTOSchema = z.object({
   id: idSchema,
   seq: numberFromStringSchema,
   amount: numberFromStringSchema,
@@ -23,14 +28,27 @@ export const expenseSchema = z.object({
   updatedAt: z.coerce.date(),
 })
 
-export type ExpenseDTO = z.output<typeof expenseSchema>
+export type ExpenseDTO = z.output<typeof expenseDTOSchema>
 
-export const expensePopulatedSchema = z.object({
-  ...expenseSchema.shape,
-  currency: currencySchema,
-  cashregister: cashregisterSchema,
-  cashregisterAccount: cashregisterAccountSchemaPopulatedDTO,
-  categories: z.array(expenseCategorySchema),
+export const expensePopulatedSchema = expenseDTOSchema.extend({
+  currency: z.object({
+    id: idSchema,
+    names: languageStringSchema,
+    symbols: languageStringSchema,
+    scale: numberFromStringSchema,
+  }),
+  cashregister: z.object({
+    id: idSchema,
+    names: languageStringSchema,
+  }),
+  cashregisterAccount: z.object({
+    id: idSchema,
+    names: languageStringSchema,
+  }),
+  categories: z.array(z.object({
+    id: idSchema,
+    names: languageStringSchema,
+  })),
 })
 
 export type ExpensePopulatedDTO = z.output<typeof expensePopulatedSchema>
@@ -101,10 +119,10 @@ export type RemoveExpensesRequest = z.input<typeof removeExpensesSchema>
 export const getExpensesResponseSchema = responseListSchema(expensePopulatedSchema)
 export type GetExpensesResponse = z.output<typeof getExpensesResponseSchema>
 
-export const createExpenseResponseSchema = responseItemSchema(expenseSchema)
+export const createExpenseResponseSchema = responseSchema
 export type CreateExpenseResponse = z.output<typeof createExpenseResponseSchema>
 
-export const editExpenseResponseSchema = responseItemSchema(expenseSchema)
+export const editExpenseResponseSchema = responseSchema
 export type EditExpenseResponse = z.output<typeof editExpenseResponseSchema>
 
 export const removeExpensesResponseSchema = responseSchema

@@ -1,17 +1,17 @@
 import type {
   AuthUser,
-  CurrencyDTO,
-  ExpenseCategoryDTO,
-  ExpenseDTO,
-  GetStatisticParams,
+  // CurrencyDTO,
+  // ExpenseCategoryDTO,
+  // ExpenseDTO,
+  GetOrderStatisticRequest,
   GetStatisticResponse,
-  OrderItemDTO,
-  OrderPaymentDTO,
+  // OrderItemDTO,
+  // OrderPaymentDTO,
 } from '@remnant/shared'
 import * as ExpenseService from '@/services/expense.service'
 import * as OrderPaymentService from '@/services/order-payment.service'
 import * as OrderService from '@/services/order.service'
-import * as UserService from '@/services/user.service'
+// import * as UserService from '@/services/user.service'
 import {
   parseGetExpenses,
   parseGetOrderItems,
@@ -19,7 +19,7 @@ import {
   parseGetOrders,
 } from '@/types'
 
-export async function get({ payload, user }: { payload: GetStatisticParams, user: AuthUser }): Promise<GetStatisticResponse> {
+export async function get({ payload, user }: { payload: GetOrderStatisticRequest, user: AuthUser }): Promise<GetStatisticResponse> {
   const { date } = payload.filters || {}
 
   // const hasProfitPermission = await UserService.checkPermission('order.profit', user.id)
@@ -128,11 +128,13 @@ export async function get({ payload, user }: { payload: GetStatisticParams, user
     },
   }
 
+  console.log(statistics)
+
   return {
     status: 'success',
     code: 'STATISTICS_FETCHED',
     message: 'Statistics fetched',
-    statistics,
+    // statistics,
   }
 }
 

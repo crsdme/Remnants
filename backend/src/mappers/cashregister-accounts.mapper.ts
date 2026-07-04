@@ -13,20 +13,3 @@ export function mapCashregisterAccountToDTO(cashregisterAccount: CashregisterAcc
     updatedAt: cashregisterAccount.updatedAt,
   }
 }
-
-export function mapCashregisterAccountToPopulatedDTO(cashregisterAccount: CashregisterAccountDB): CashregisterAccountPopulatedDTO {
-  return {
-    id: cashregisterAccount._id,
-    names: cashregisterAccount.names,
-    seq: cashregisterAccount.seq,
-    currencies: cashregisterAccount.currencies.map(currency => ({
-      id: currency._id,
-      names: currency.names,
-      symbols: currency.symbols,
-    })),
-    priority: cashregisterAccount.priority,
-    active: cashregisterAccount.active,
-    createdAt: cashregisterAccount.createdAt,
-    updatedAt: cashregisterAccount.updatedAt,
-  }
-}

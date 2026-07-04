@@ -31,6 +31,7 @@ const QuantitySchema: Schema = new Schema(
   { timestamps: true },
 )
 
+// eslint-disable-next-line no-unused-vars
 QuantitySchema.virtual('status').get(function (this: QuantityDoc) {
   if (this.count > 0)
     return 'available'

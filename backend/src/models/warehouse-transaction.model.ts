@@ -59,6 +59,10 @@ const WarehouseTransactionSchema: Schema = new Schema(
       ref: 'User',
       default: null,
     },
+    removed: {
+      type: Boolean,
+      default: false,
+    },
     comment: {
       type: String,
       default: '',

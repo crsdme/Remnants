@@ -20,33 +20,33 @@ const ExpenseSchema: Schema = new Schema(
       type: Number,
       default: 0,
     },
-    amount: {
+    minorAmount: {
       type: Number,
       required: true,
     },
-    currency: {
+    currencyId: {
       type: String,
       ref: 'Currency',
       required: true,
     },
-    cashregister: {
+    cashregisterId: {
       type: String,
       ref: 'cashregister',
       required: true,
     },
-    cashregisterAccount: {
+    cashregisterAccountId: {
       type: String,
       ref: 'cashregister-account',
       required: true,
     },
-    categories: [{
+    categoryIds: [{
       type: String,
       ref: 'expense-category',
       required: true,
     }],
     sourceModel: {
       type: String,
-      enum: ['order', 'cashregister', 'cashregister-account', 'expense-category'],
+      enum: ['manual', 'cashregister', 'cashregister-account', 'order', 'expense', 'procurement'],
     },
     sourceId: {
       type: String,
