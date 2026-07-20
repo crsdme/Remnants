@@ -709,6 +709,7 @@ const PROVIDER_E_SUFFIX_CATEGORY_ID = [
   'bb3f3e6b-2aa7-4c32-8b18-df0d020c2e8e',
   '6cce41d5-3269-4683-9403-6ccd35e3b5ce',
   '9710cd12-bf66-4ad2-97e2-58546f24812c',
+  '389f3c3e-517d-44b6-b182-5d1f3a788b58',
 ]
 
 function getProductCategoryId(cat: any): string | undefined {
@@ -782,9 +783,8 @@ async function print55x40(payload: {
       continue
     }
 
-    doc.font('Manrope')
-    doc.fontSize(20)
-    doc.addPage({ size: [w * 8.49, h * 8.49] })
+    const { price: providerPriceValue, suffix: providerSuffixMark }
+    = getProviderBarcodeSuffix(product?.categories, providerPrice)
 
     const barcodePng = await bwipjs.toBuffer({
       bcid: 'code128',
@@ -794,29 +794,6 @@ async function print55x40(payload: {
       includetext: false,
       textxalign: 'center',
     })
-
-    doc.image(barcodePng, padding, padding, {
-      width: contentWidth,
-      height: contentHeight / 4,
-    })
-
-    const { price: providerPriceValue, suffix: providerSuffixMark }
-      = getProviderBarcodeSuffix(product?.categories, providerPrice)
-
-    doc.text(
-      `${barcode.code}${providerPriceValue ? `-${providerPriceValue + 5000}${providerSuffixMark}` : ''}`,
-      padding,
-      contentHeight / 4 + 7,
-      {
-        width: contentWidth,
-        height: 25,
-        align: 'center',
-        ellipsis: true,
-        lineBreak: false,
-      },
-    )
-
-    doc.fontSize(70)
 
     let length = ''
     let weight = ''
@@ -885,57 +862,285 @@ async function print55x40(payload: {
       }
     }
 
-    const bigCode = (product.names?.[language] || '').split('#')[1] || '0000'
-    doc.font('Manrope-Bold').fontSize(130)
-
-    doc.text(bigCode, padding, doc.y - 40, {
-      width: contentWidth,
-      height: 50,
-      lineBreak: false,
-      align: 'center',
-    })
-
-    doc.font('Manrope').fontSize(70)
+    const bigCode
+  = ((product.names?.[language] || '').split('#')[1] || '0000').trim()
 
     const lenWgt = [length, weight].filter(Boolean).join(', ')
-    doc.text(lenWgt, padding, doc.y - 55, {
-      width: contentWidth,
-      height: 50,
-      ellipsis: true,
-      lineBreak: false,
-      align: 'center',
-    })
 
-    doc.fontSize(56)
-    doc.text(type.join(', '), padding, doc.y - 30, {
-      width: contentWidth,
-      height: 50,
-      ellipsis: true,
-      lineBreak: false,
-      align: 'center',
-    })
+    function frontPage() {
+      doc.addPage({
+        size: [w * 8.49, h * 8.49],
+        margins: {
+          top: 0,
+          bottom: 0,
+          left: 0,
+          right: 0,
+        },
+      })
 
-    doc.addPage({ size: [w * 8.49, h * 8.49] })
-    doc.font('Manrope-Bold').fontSize(168)
+      doc.font('Manrope-Bold')
 
-    const bigCodeHeight = doc.y
+      const pageWidth = doc.page.width
+      const pageHeight = doc.page.height
+      const inset = 4
+      const characterSpacing = -15
+      const maxWidth = pageWidth - inset * 2
+      const maxHeight = pageHeight - inset * 2
 
-    doc.text(bigCode, padding, bigCodeHeight - 30, {
-      width: contentWidth,
-      height: 50,
-      lineBreak: false,
-      align: 'center',
-    })
+      let fontSize = Math.floor(maxHeight)
 
-    if (symbol) {
-      doc.font('Manrope-Bold').fontSize(50)
-      doc.text(symbol, padding + 20, doc.y - 20, {
+      while (fontSize > 10) {
+        doc.fontSize(fontSize)
+
+        const textWidth = doc.widthOfString(bigCode, {
+          characterSpacing,
+        })
+        const textHeight = doc.currentLineHeight()
+
+        if (textWidth <= maxWidth && textHeight <= maxHeight)
+          break
+
+        fontSize -= 1
+      }
+
+      const textWidth = doc.widthOfString(bigCode, {
+        characterSpacing,
+      })
+      const x = (pageWidth - textWidth) / 2
+      const y = doc.y + 100
+
+      doc.text(bigCode, x, y, {
+        lineBreak: false,
+        height: 20,
+        characterSpacing,
+        baseline: 'middle',
+      })
+
+      doc.font('Manrope-Bold').fontSize(70)
+
+      doc.text(lenWgt, padding, doc.y + 80, {
         width: contentWidth,
         height: 50,
+        ellipsis: true,
         lineBreak: false,
-        align: 'left',
+        align: 'center',
+      })
+
+      doc.fontSize(56)
+      doc.text(type.join(', '), padding, doc.y - 30, {
+        width: contentWidth,
+        height: 50,
+        ellipsis: true,
+        lineBreak: false,
+        align: 'center',
       })
     }
+
+    function backPage() {
+      doc.addPage({
+        size: [w * 8.49, h * 8.49],
+        margins: {
+          top: 0,
+          bottom: 0,
+          left: 0,
+          right: 0,
+        },
+      })
+
+      doc.image(barcodePng, padding, padding, {
+        width: contentWidth,
+        height: contentHeight / 5,
+      })
+
+      doc.fontSize(16).text(
+        `${barcode.code}${providerPriceValue ? `-${providerPriceValue + 5000}${providerSuffixMark}` : ''}`,
+        padding,
+        contentHeight / 5 + 13,
+        {
+          width: contentWidth,
+          height: 25,
+          align: 'center',
+          ellipsis: true,
+          lineBreak: false,
+        },
+      )
+
+      doc.font('Manrope-Bold')
+
+      const pageWidth = doc.page.width
+      const pageHeight = doc.page.height
+      const inset = 4
+      const characterSpacing = -15
+      const maxWidth = pageWidth - inset * 2
+      const maxHeight = pageHeight - inset * 2
+
+      let fontSize = Math.floor(maxHeight)
+
+      while (fontSize > 10) {
+        doc.fontSize(fontSize)
+
+        const textWidth = doc.widthOfString(bigCode, {
+          characterSpacing,
+        })
+        const textHeight = doc.currentLineHeight()
+
+        if (textWidth <= maxWidth && textHeight <= maxHeight)
+          break
+
+        fontSize -= 1
+      }
+
+      const textWidth = doc.widthOfString(bigCode, {
+        characterSpacing,
+      })
+      const x = (pageWidth - textWidth) / 2
+      const y = doc.y + 70
+
+      doc.text(bigCode, x, y, {
+        lineBreak: false,
+        height: 20,
+        characterSpacing,
+        baseline: 'middle',
+      })
+
+      doc.font('Manrope-Bold').fontSize(50)
+
+      doc.text(lenWgt, padding, doc.y + 70, {
+        width: contentWidth,
+        height: 50,
+        ellipsis: true,
+        lineBreak: false,
+        align: 'center',
+      })
+
+      doc.text(type.join(', '), padding, doc.y - 25, {
+        width: contentWidth,
+        height: 50,
+        ellipsis: true,
+        lineBreak: false,
+        align: 'center',
+      })
+    }
+
+    backPage()
+    frontPage()
+
+    // doc.image(barcodePng, padding, padding, {
+    //   width: contentWidth,
+    //   height: contentHeight / 4,
+    // })
+
+    // doc.text(
+    //   `${barcode.code}${providerPriceValue ? `-${providerPriceValue + 5000}${providerSuffixMark}` : ''}`,
+    //   padding,
+    //   contentHeight / 4 + 7,
+    //   {
+    //     width: contentWidth,
+    //     height: 25,
+    //     align: 'center',
+    //     ellipsis: true,
+    //     lineBreak: false,
+    //   },
+    // )
+
+    // doc.fontSize(70)
+    // doc.font('Manrope-Bold').fontSize(130)
+
+    // doc.text(bigCode, padding, doc.y - 40, {
+    //   width: contentWidth,
+    //   height: 50,
+    //   lineBreak: false,
+    //   align: 'center',
+    // })
+
+    // doc.font('Manrope').fontSize(70)
+
+    // doc.text(lenWgt, padding, doc.y - 55, {
+    //   width: contentWidth,
+    //   height: 50,
+    //   ellipsis: true,
+    //   lineBreak: false,
+    //   align: 'center',
+    // })
+
+    // doc.fontSize(56)
+    // doc.text(type.join(', '), padding, doc.y - 30, {
+    //   width: contentWidth,
+    //   height: 50,
+    //   ellipsis: true,
+    //   lineBreak: false,
+    //   align: 'center',
+    // })
+
+    // doc.addPage({ size: [w * 8.49, h * 8.49] })
+
+    // doc.image(barcodePng, padding, padding, {
+    //   width: contentWidth,
+    //   height: contentHeight / 4,
+    // })
+
+    // doc.fontSize(20)
+
+    // doc.text(
+    //   `${barcode.code}${providerPriceValue ? `-${providerPriceValue + 5000}${providerSuffixMark}` : ''}`,
+    //   padding,
+    //   contentHeight / 4 + 7,
+    //   {
+    //     width: contentWidth,
+    //     height: 25,
+    //     align: 'center',
+    //     ellipsis: true,
+    //     lineBreak: false,
+    //   },
+    // )
+
+    // doc.font('Manrope-Bold').fontSize(130)
+
+    // doc.text(bigCode, padding, doc.y - 40, {
+    //   width: contentWidth,
+    //   height: 50,
+    //   lineBreak: false,
+    //   align: 'center',
+    // })
+
+    // doc.font('Manrope').fontSize(70)
+
+    // doc.text(lenWgt, padding, doc.y - 55, {
+    //   width: contentWidth,
+    //   height: 50,
+    //   ellipsis: true,
+    //   lineBreak: false,
+    //   align: 'center',
+    // })
+
+    // doc.fontSize(56)
+    // doc.text(type.join(', '), padding, doc.y - 30, {
+    //   width: contentWidth,
+    //   height: 50,
+    //   ellipsis: true,
+    //   lineBreak: false,
+    //   align: 'center',
+    // })
+    // doc.font('Manrope-Bold').fontSize(168)
+
+    // const bigCodeHeight = doc.y
+
+    // doc.text(bigCode, padding, bigCodeHeight - 30, {
+    //   width: contentWidth,
+    //   height: 50,
+    //   lineBreak: false,
+    //   align: 'center',
+    // })
+
+    // if (symbol) {
+    //   doc.font('Manrope-Bold').fontSize(50)
+    //   doc.text(symbol, padding + 20, doc.y - 20, {
+    //     width: contentWidth,
+    //     height: 50,
+    //     lineBreak: false,
+    //     align: 'left',
+    //   })
+    // }
   }
 
   return {
