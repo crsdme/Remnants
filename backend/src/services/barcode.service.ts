@@ -709,6 +709,7 @@ const PROVIDER_E_SUFFIX_CATEGORY_ID = [
   '6cce41d5-3269-4683-9403-6ccd35e3b5ce',
   '9710cd12-bf66-4ad2-97e2-58546f24812c',
   '389f3c3e-517d-44b6-b182-5d1f3a788b58',
+  'ad066db8-bfa8-428f-8e26-4e7069dce606',
 ]
 
 function getProductCategoryId(cat: any): string | undefined {
