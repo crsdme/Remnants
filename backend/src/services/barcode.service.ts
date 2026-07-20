@@ -4,7 +4,6 @@ import path from 'node:path'
 import bwipjs from 'bwip-js'
 import PDFDocument from 'pdfkit'
 import { STORAGE_URLS } from '../config/constants'
-import { dropDB } from '../config/db'
 import { BarcodeModel, CounterModel } from '../models/'
 import { ProductModel } from '../models/product.model'
 import { HttpError } from '../utils/httpError'
@@ -907,7 +906,7 @@ async function print55x40(payload: {
         characterSpacing,
       })
       const x = (pageWidth - textWidth) / 2
-      const y = doc.y + 100
+      const y = doc.y + 105
 
       doc.text(bigCode, x, y, {
         lineBreak: false,
@@ -994,7 +993,7 @@ async function print55x40(payload: {
         characterSpacing,
       })
       const x = (pageWidth - textWidth) / 2
-      const y = doc.y + 70
+      const y = doc.y + 75
 
       doc.text(bigCode, x, y, {
         lineBreak: false,
@@ -1003,9 +1002,9 @@ async function print55x40(payload: {
         baseline: 'middle',
       })
 
-      doc.font('Manrope-Bold').fontSize(50)
+      doc.font('Manrope-Bold').fontSize(45)
 
-      doc.text(lenWgt, padding, doc.y + 70, {
+      doc.text(lenWgt, padding, doc.y + 80, {
         width: contentWidth,
         height: 50,
         ellipsis: true,
