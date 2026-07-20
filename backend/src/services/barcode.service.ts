@@ -746,7 +746,7 @@ async function print55x40(payload: {
   size: string
   language: string
 }): Promise<BarcodeTypes.printBarcodeResult> {
-  const { propertyIds, hairTypes, providerPrice, symbol, propertyGroups }
+  const { propertyIds, hairTypes, providerPrice, propertyGroups }
     = getHardcodeData()
 
   const isDyed = payload.barcodes.some(
@@ -797,7 +797,7 @@ async function print55x40(payload: {
 
     let length = ''
     let weight = ''
-    const type = []
+    const type = [] as string[]
 
     for (const property of product.productProperties || []) {
       if (
@@ -1449,7 +1449,6 @@ async function print55x40Dyed(payload: {
       }
 
       doc.font('Manrope-Bold').fontSize(46)
-      doc.y = doc.y
       for (const item of info) {
         doc.text(item, padding, doc.y, {
           width: contentWidth - 25,
