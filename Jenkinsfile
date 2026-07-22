@@ -8,6 +8,13 @@ pipeline {
         }
       }
     }
+    stage('Stop') {
+      steps {
+        dir('/home/remnants/dev.remnant') {
+          sh 'docker compose stop || true'
+        }
+      }
+    }
     stage('Build backend') {
       steps {
         dir('/home/remnants/dev.remnant') {
