@@ -1,3 +1,4 @@
+import type { RequestHandler } from 'express'
 import { createSiteSchema, editSiteSchema, getSitesSchema, removeSitesSchema } from '@remnant/shared'
 import { Router } from 'express'
 import * as SiteController from '@/controllers/site.controller'
@@ -8,28 +9,28 @@ const router = Router()
 router.get(
   '/get',
   validateQueryRequest(getSitesSchema),
-  SiteController.get,
+  SiteController.get as RequestHandler,
 )
 
 router.post(
   '/create',
   validateBodyRequest(createSiteSchema),
   checkPermissions('site.create'),
-  SiteController.create,
+  SiteController.create as RequestHandler,
 )
 
 router.post(
   '/edit',
   validateBodyRequest(editSiteSchema),
   checkPermissions('site.edit'),
-  SiteController.edit,
+  SiteController.edit as RequestHandler,
 )
 
 router.post(
   '/remove',
   validateBodyRequest(removeSitesSchema),
   checkPermissions('site.remove'),
-  SiteController.remove,
+  SiteController.remove as RequestHandler,
 )
 
 export default router

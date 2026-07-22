@@ -3,14 +3,15 @@ import type { MoneyTransactionDB } from '@/types'
 
 export function mapMoneyTransactionToDTO(moneyTransaction: MoneyTransactionDB): MoneyTransactionDTO {
   return {
-    id: moneyTransaction._id,
+    id: moneyTransaction.id,
     seq: moneyTransaction.seq,
     type: moneyTransaction.type,
     direction: moneyTransaction.direction,
     account: moneyTransaction.account,
-    minorAmount: moneyTransaction.minorAmount,
+    amount: moneyTransaction.amount,
+    confirmed: moneyTransaction.confirmed,
     currency: {
-      id: moneyTransaction.currencyId,
+      id: moneyTransaction.currency.id,
       names: moneyTransaction.currency.names,
       symbols: moneyTransaction.currency.symbols,
       scale: moneyTransaction.currency.scale,

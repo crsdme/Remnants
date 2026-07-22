@@ -1,4 +1,4 @@
-import type { AggregateResult, BalanceDTO } from '@remnant/shared'
+import type { AggregateResult } from '@remnant/shared'
 import type { PipelineStage } from 'mongoose'
 import type {
   CreateBalancesPayload,
@@ -46,7 +46,7 @@ export async function list(payload: GetBalancesPayload): Promise<GetBalancesRepo
     },
   ]
 
-  const raw = await BalanceModel.aggregate<AggregateResult<BalanceDTO>>(pipeline).exec()
+  const raw = await BalanceModel.aggregate<AggregateResult<any>>(pipeline).exec()
   const { items, total } = unwrapAggregate(raw)
 
   return { items, total, page: current, pageSize }

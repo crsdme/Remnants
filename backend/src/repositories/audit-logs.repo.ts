@@ -1,4 +1,4 @@
-import type { AggregateResult, AuditLogDTO } from '@remnant/shared'
+import type { AggregateResult, AuditLogPopulatedDTO } from '@remnant/shared'
 import type { PipelineStage } from 'mongoose'
 import type { CreateAuditLogsRepoPayload, EditAuditLogsRepoPayload, GetAuditLogsRepoPayload, GetAuditLogsRepoResult } from '@/types'
 import { AuditLogsModel } from '@/models'
@@ -108,7 +108,7 @@ export async function list(payload: GetAuditLogsRepoPayload): Promise<GetAuditLo
     },
   ]
 
-  const raw = await AuditLogsModel.aggregate<AggregateResult<AuditLogDTO>>(pipeline).exec()
+  const raw = await AuditLogsModel.aggregate<AggregateResult<AuditLogPopulatedDTO>>(pipeline).exec()
   const { items, total } = unwrapAggregate(raw)
 
   return { items, total, page: current, pageSize }

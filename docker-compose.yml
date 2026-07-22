@@ -2,7 +2,7 @@ services:
   frontend:
     build:
       context: .
-      dockerfile: ./frontendDockerfile
+      dockerfile: ./frontend/Dockerfile
     container_name: raw-frontend
     restart: always
     expose:

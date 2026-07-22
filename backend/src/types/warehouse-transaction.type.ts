@@ -1,17 +1,16 @@
 import type {
   createWarehouseTransactionItemsSchema,
   getWarehouseTransactionDetailsSchema,
-  ProductDTO,
   WarehouseTransactionDTO,
-
-  WarehouseTransactionItemDTO,
 } from '@remnant/shared'
 import type { z } from 'zod'
 import type {
   createWarehouseTransactionItemsRepoSchema,
   editWarehouseTransactionItemRepoSchema,
   editWarehouseTransactionRepoSchema,
+  WarehouseTransactionDBPopulatedSchema,
   warehouseTransactionDBSchema,
+  warehouseTransactionItemDBPopulatedSchema,
   warehouseTransactionItemDBSchema,
 } from '@/schemas'
 import {
@@ -26,7 +25,11 @@ import {
 
 export type WarehouseTransactionDB = z.infer<typeof warehouseTransactionDBSchema>
 
+export type WarehouseTransactionDBPopulated = z.infer<typeof WarehouseTransactionDBPopulatedSchema>
+
 export type WarehouseTransactionItemDB = z.infer<typeof warehouseTransactionItemDBSchema>
+
+export type WarehouseTransactionItemDBPopulated = z.infer<typeof warehouseTransactionItemDBPopulatedSchema>
 
 export type GetWarehouseTransactionsPayload = z.output<typeof getWarehouseTransactionsSchema>
 export function parseGetWarehouseTransactions(x: unknown): GetWarehouseTransactionsPayload {
@@ -71,7 +74,7 @@ export type GetWarehouseTransactionsRepoPayload = GetWarehouseTransactionsPayloa
 export interface GetWarehouseTransactionsRepoResult { items: WarehouseTransactionDTO[], total: number, page: number, pageSize: number }
 
 export type GetWarehouseTransactionsItemsRepoPayload = GetWarehouseTransactionsItemsPayload
-export interface GetWarehouseTransactionsItemsRepoResult { items: (WarehouseTransactionItemDTO & { product: ProductDTO })[], total: number, page: number, pageSize: number }
+export interface GetWarehouseTransactionsItemsRepoResult { items: WarehouseTransactionItemDBPopulated[], total: number, page: number, pageSize: number }
 
 export type CreateWarehouseTransactionRepoPayload = CreateWarehouseTransactionPayload
 

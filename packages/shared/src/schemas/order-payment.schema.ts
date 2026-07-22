@@ -4,8 +4,14 @@ import { dateRangeSchema, idSchema, idSchemaOptional, languageStringSchema, numb
 export const orderPaymentSchema = z.object({
   id: idSchema,
   order: idSchema,
-  cashregister: idSchema,
-  cashregisterAccount: idSchema,
+  cashregister: z.object({
+    id: idSchema,
+    names: languageStringSchema,
+  }),
+  cashregisterAccount: z.object({
+    id: idSchema,
+    names: languageStringSchema,
+  }),
   amount: numberFromStringSchema,
   currency: z.object({
     id: idSchema,

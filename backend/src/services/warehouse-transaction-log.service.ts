@@ -7,7 +7,6 @@ import type {
   CreateWarehouseTransactionLogsPayload,
   GetWarehouseTransactionLogsPayload,
 } from '@/types/'
-import { mapWarehouseTransactionLogToDTO } from '@/mappers/'
 import * as WarehouseTransactionLogRepo from '@/repositories/warehouse-transaction-log.repo'
 
 export async function get({ payload }: { payload: GetWarehouseTransactionLogsPayload }): Promise<GetWarehouseTransactionLogsResponse> {
@@ -29,12 +28,11 @@ export async function get({ payload }: { payload: GetWarehouseTransactionLogsPay
 }
 
 export async function create(payload: CreateWarehouseTransactionLogsPayload, session?: ClientSession): Promise<CreateWarehouseTransactionLogsResponse> {
-  const warehouseTransactionLog = await WarehouseTransactionLogRepo.createOne({ payload, session })
+  await WarehouseTransactionLogRepo.createOne({ payload, session })
 
   return {
     status: 'success',
     code: 'WAREHOUSE_TRANSACTION_LOG_CREATED',
     message: 'Warehouse transaction log created',
-    data: mapWarehouseTransactionLogToDTO(warehouseTransactionLog[0]),
   }
 }

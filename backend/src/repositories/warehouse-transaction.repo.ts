@@ -1,4 +1,4 @@
-import type { AggregateResult, ProductDTO, WarehouseTransactionDTO, WarehouseTransactionItemDTO } from '@remnant/shared'
+import type { AggregateResult, WarehouseTransactionDTO } from '@remnant/shared'
 import type { ClientSession, FilterQuery, PipelineStage } from 'mongoose'
 import type {
   CreateWarehouseTransactionItemsRepoPayload,
@@ -11,6 +11,7 @@ import type {
   GetWarehouseTransactionsRepoResult,
   WarehouseTransactionDB,
   WarehouseTransactionItemDB,
+  WarehouseTransactionItemDBPopulated,
 } from '@/types/'
 import { WarehouseTransactionItemModel, WarehouseTransactionModel } from '@/models'
 import { applyScopeIdsToAnyOfFields, buildQuery, buildSortQuery, unwrapAggregate } from '@/utils'
@@ -396,7 +397,7 @@ export async function listItems(payload: GetWarehouseTransactionsItemsRepoPayloa
     },
   ]
 
-  const raw = await WarehouseTransactionItemModel.aggregate<AggregateResult<WarehouseTransactionItemDTO & { product: ProductDTO }>>(pipeline).exec()
+  const raw = await WarehouseTransactionItemModel.aggregate<AggregateResult<WarehouseTransactionItemDBPopulated>>(pipeline).exec()
   const { items, total } = unwrapAggregate(raw)
 
   return { items, total, page: current, pageSize }

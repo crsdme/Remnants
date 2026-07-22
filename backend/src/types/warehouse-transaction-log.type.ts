@@ -1,6 +1,6 @@
 import type {
   createWarehouseTransactionLogsSchema,
-  WarehouseTransactionLogDTO,
+  WarehouseTransactionLogPopulatedDTO,
 } from '@remnant/shared'
 import type { z } from 'zod'
 import type { warehouseTransactionLogDBSchema } from '../schemas'
@@ -17,4 +17,4 @@ export function parseGetWarehouseTransactionLogs(x: unknown): GetWarehouseTransa
 
 export type CreateWarehouseTransactionLogsPayload = z.output<typeof createWarehouseTransactionLogsSchema>
 
-export interface GetWarehouseTransactionLogsRepoResult { items: WarehouseTransactionLogDTO[], total: number, page: number, pageSize: number }
+export interface GetWarehouseTransactionLogsRepoResult { items: WarehouseTransactionLogPopulatedDTO[], total: number, page: number, pageSize: number }

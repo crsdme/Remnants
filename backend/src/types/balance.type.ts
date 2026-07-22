@@ -1,6 +1,6 @@
-import type {
-  BalanceDTO,
-} from '@remnant/shared'
+// import type {
+//   BalanceDTO,
+// } from '@remnant/shared'
 import type { z } from 'zod'
 import {
   createBalanceSchema,
@@ -49,4 +49,4 @@ export function parseRemoveBalances(x: unknown): RemoveBalancesPayload {
   return removeBalanceSchema.parse(x)
 }
 
-export interface GetBalancesRepoResult { items: BalanceDTO[], total: number, page: number, pageSize: number }
+export interface GetBalancesRepoResult { items: any[], total: number, page: number, pageSize: number }

@@ -21,6 +21,8 @@ export const orderPaymentDBSchema = z.object({
 
 export const orderPaymentDBPopulatedSchema = orderPaymentDBSchema.omit({
   currencyId: true,
+  cashregisterId: true,
+  cashregisterAccountId: true,
 }).extend({
   currency: z.object({
     id: idSchema,
@@ -28,30 +30,14 @@ export const orderPaymentDBPopulatedSchema = orderPaymentDBSchema.omit({
     symbols: languageStringSchema,
     scale: numberFromStringSchema,
   }),
-})
-
-export const orderPaymentPopulatedRepoItemSchema = z.object({
-  id: idSchema,
-  order: idSchema,
-  cashregister: idSchema,
-  cashregisterAccount: idSchema,
-  minorAmount: minorSchema,
-  currency: z.object({
+  cashregister: z.object({
     id: idSchema,
     names: languageStringSchema,
-    symbols: languageStringSchema,
-    scale: numberFromStringSchema,
-    paymentEpsilon: numberFromStringSchema.optional(),
   }),
-  paymentStatus: z.string(),
-  paymentDate: z.coerce.date(),
-  transaction: idSchema,
-  comment: z.string().optional(),
-  createdBy: idSchema,
-  removedBy: idSchemaOptional,
-  removed: z.boolean(),
-  createdAt: z.coerce.date(),
-  updatedAt: z.coerce.date(),
+  cashregisterAccount: z.object({
+    id: idSchema,
+    names: languageStringSchema,
+  }),
 })
 
 export const createOrderPaymentRepoSchema = z.object({

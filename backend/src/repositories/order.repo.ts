@@ -14,7 +14,7 @@ import type {
   GetOrdersRepoResult,
   OrderDBPopulated,
   OrderItemDBPopulated,
-  OrderPaymentPopulatedRepoItem,
+  OrderPaymentDBPopulated,
 } from '@/types'
 import { OrderItemModel, OrderModel, OrderPaymentModel } from '@/models'
 import { applyScopeIdsToQuery, buildQuery, buildSortQuery, unwrapAggregate } from '@/utils'
@@ -724,7 +724,7 @@ export async function listPayments({ payload }: { payload: GetOrderPaymentsRepoP
     },
   ]
 
-  const raw = await OrderPaymentModel.aggregate<AggregateResult<OrderPaymentPopulatedRepoItem>>(pipeline).exec()
+  const raw = await OrderPaymentModel.aggregate<AggregateResult<OrderPaymentDBPopulated>>(pipeline).exec()
   const { items, total } = unwrapAggregate(raw)
 
   return { items, total, page: current, pageSize }

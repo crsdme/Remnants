@@ -1,4 +1,4 @@
-import type { CashregisterAccountDTO, CashregisterAccountPopulatedDTO } from '@remnant/shared'
+import type { CashregisterAccountDTO } from '@remnant/shared'
 import type { CashregisterAccountDB } from '@/types'
 
 export function mapCashregisterAccountToDTO(cashregisterAccount: CashregisterAccountDB): CashregisterAccountDTO {

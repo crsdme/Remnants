@@ -1,3 +1,6 @@
+import type {
+  ProductPropertyGroupPopulatedDTO,
+} from '@remnant/shared'
 import type { z } from 'zod'
 import type { productPropertyGroupDBSchema } from '../schemas'
 import {
@@ -30,6 +33,7 @@ export function parseRemoveProductPropertyGroup(x: unknown): RemoveProductProper
 }
 
 export type GetProductPropertyGroupsRepoPayload = GetProductPropertyGroupsPayload
+export interface GetProductPropertyGroupsRepoResult { items: ProductPropertyGroupPopulatedDTO[], total: number, page: number, pageSize: number }
 
 export type CreateProductPropertyGroupRepoPayload = CreateProductPropertyGroupPayload
 

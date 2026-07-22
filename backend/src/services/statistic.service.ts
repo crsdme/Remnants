@@ -44,11 +44,11 @@ export async function get({ payload, user }: { payload: GetOrderStatisticRequest
     payload: parseGetOrderPayments({ filters: { paymentDate: date }, pagination: { full: true } }),
   })
 
-  const { data: { items: expenses, pagination: { total: expensesCount } } } = await ExpenseService.get({
-    payload: parseGetExpenses({ filters: { createdAt: date }, pagination: { full: true } }),
-  })
+  // const { data: { items: expenses, pagination: { total: expensesCount } } } = await ExpenseService.get({
+  //   payload: parseGetExpenses({ filters: { createdAt: date }, pagination: { full: true } }),
+  // })
 
-  console.log(orderItemsCreated, paymentsForOrders, paymentsByDate, expenses)
+  console.log(orderItemsCreated, paymentsForOrders, paymentsByDate)
 
   // const { paid, unpaid } = calcPaidUnpaid(orders, orderItemsCreated, paymentsForOrders)
 
@@ -112,7 +112,7 @@ export async function get({ payload, user }: { payload: GetOrderStatisticRequest
         amount: [],
       },
       expense: {
-        count: expensesCount,
+        count: 0,
         categories: [],
         amount: [],
       },

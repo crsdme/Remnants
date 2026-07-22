@@ -1,5 +1,6 @@
-import { idSchema, idSchemaOptional, numberFromStringSchema } from '@remnant/shared'
+import { idSchema, idSchemaOptional, languageStringSchema, numberFromStringSchema } from '@remnant/shared'
 import { z } from 'zod'
+import { productDBPopulatedSchema } from './product.schema'
 
 export const warehouseTransactionDBSchema = z.object({
   _id: idSchema,
@@ -21,12 +22,31 @@ export const warehouseTransactionDBSchema = z.object({
   updatedAt: z.coerce.date(),
 })
 
+export const WarehouseTransactionDBPopulatedSchema = warehouseTransactionDBSchema.omit({
+  fromWarehouse: true,
+  toWarehouse: true,
+  removed: true,
+}).extend({
+  fromWarehouse: z.object({
+    id: idSchema,
+    names: languageStringSchema,
+  }),
+  toWarehouse: z.object({
+    id: idSchema,
+    names: languageStringSchema,
+  }),
+})
+
 export const warehouseTransactionItemDBSchema = z.object({
   _id: idSchema,
   transactionId: idSchema,
   productId: idSchema,
   quantity: z.number(),
   price: z.number(),
+})
+
+export const warehouseTransactionItemDBPopulatedSchema = warehouseTransactionItemDBSchema.extend({
+  product: productDBPopulatedSchema,
 })
 
 export const editWarehouseTransactionRepoSchema = z.object({

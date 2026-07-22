@@ -1,7 +1,7 @@
 import type { WarehouseTransactionLogDTO } from '@remnant/shared'
 import type { WarehouseTransactionLogDB } from '@/types/'
 
-export function mapWarehouseTransactionLogToDTO(warehouseTransactionLog: WarehouseTransactionLogDB): WarehouseTransactionLogDTO {
+export function mapWarehouseTransactionLogRepoToDTO(warehouseTransactionLog: WarehouseTransactionLogDB): WarehouseTransactionLogDTO {
   return {
     id: warehouseTransactionLog._id,
     productId: warehouseTransactionLog.productId,

@@ -1,5 +1,14 @@
 import { z } from 'zod'
-import { dateRangeSchema, idSchema, idSchemaOptional, languageStringSchema, paginationSchema, responseItemSchema, responseListSchema, sorterParamsSchema } from './common'
+import {
+  dateRangeSchema,
+  idSchema,
+  idSchemaOptional,
+  languageStringSchema,
+  paginationSchema,
+  responseListSchema,
+  responseSchema,
+  sorterParamsSchema,
+} from './common'
 
 export const warehouseTransactionLogSchema = z.object({
   id: idSchema,
@@ -74,7 +83,7 @@ export const createWarehouseTransactionLogsSchema = z.object({
 
 export type CreateWarehouseTransactionLogsRequest = z.input<typeof createWarehouseTransactionLogsSchema>
 
-export const createWarehouseTransactionLogsResponseSchema = responseItemSchema(warehouseTransactionLogSchema)
+export const createWarehouseTransactionLogsResponseSchema = responseSchema
 export type CreateWarehouseTransactionLogsResponse = z.output<typeof createWarehouseTransactionLogsResponseSchema>
 
 export const getWarehouseTransactionLogsResponseSchema = responseListSchema(warehouseTransactionLogPopulatedSchema)

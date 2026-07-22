@@ -1,6 +1,6 @@
 import { z } from 'zod'
 import { dateRangeSchema, idSchema, idSchemaOptional, languageStringSchema, paginationSchema, responseItemSchema, responseListSchema, responseSchema, sorterParamsSchema } from './common'
-import { productSchema } from './product.schema'
+import { productSchema, productSchemaPopulated } from './product.schema'
 
 export const inventoryStatusSchema = z.enum(['draft', 'confirmed', 'awaiting', 'received', 'cancelled'])
 export type InventoryStatus = z.output<typeof inventoryStatusSchema>
@@ -135,8 +135,8 @@ export type GetInventoryItemsResponse = z.output<typeof getInventoryItemsRespons
 export const receiveInventoryResponseSchema = responseSchema
 export type ReceiveInventoryResponse = z.output<typeof receiveInventoryResponseSchema>
 
-export const scanBarcodeToDraftInventoryResponseSchema = z.object({
-  product: productSchema,
+export const scanBarcodeToDraftInventoryResponseSchema = responseSchema.extend({
+  product: productSchemaPopulated,
   productIndex: z.number().optional(),
   inventoryId: idSchemaOptional,
 })

@@ -4,7 +4,6 @@ import type {
   editOrderPaymentRepoSchema,
   orderPaymentDBPopulatedSchema,
   orderPaymentDBSchema,
-  orderPaymentPopulatedRepoItemSchema,
 } from '@/schemas/order-payment.schema'
 import {
   createOrderPaymentSchema,
@@ -16,8 +15,6 @@ import {
 export type OrderPaymentDB = z.infer<typeof orderPaymentDBSchema>
 
 export type OrderPaymentDBPopulated = z.infer<typeof orderPaymentDBPopulatedSchema>
-
-export type OrderPaymentPopulatedRepoItem = z.infer<typeof orderPaymentPopulatedRepoItemSchema>
 
 export type GetOrderPaymentsPayload = z.output<typeof getOrderPaymentsSchema>
 export function parseGetOrderPayments(x: unknown): GetOrderPaymentsPayload {
@@ -40,7 +37,7 @@ export function parseRemoveOrderPayments(x: unknown): RemoveOrderPaymentsPayload
 }
 
 export type GetOrderPaymentsRepoPayload = GetOrderPaymentsPayload
-export interface GetOrderPaymentsRepoResult { items: OrderPaymentPopulatedRepoItem[], total: number, page: number, pageSize: number }
+export interface GetOrderPaymentsRepoResult { items: OrderPaymentDBPopulated[], total: number, page: number, pageSize: number }
 
 export type CreateOrderPaymentsRepoPayload = z.infer<typeof createOrderPaymentRepoSchema>
 

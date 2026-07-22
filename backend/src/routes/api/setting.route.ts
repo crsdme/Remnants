@@ -1,5 +1,5 @@
 import type { RequestHandler } from 'express'
-import { editSettingSchema, getSettingSchema } from '@remnant/shared'
+import { editSettingSchema, getSettingsSchema } from '@remnant/shared'
 import { Router } from 'express'
 import * as SettingController from '@/controllers/setting.controller'
 import { checkPermissions, validateBodyRequest, validateQueryRequest } from '@/middleware'
@@ -8,7 +8,7 @@ const router = Router()
 
 router.get(
   '/get',
-  validateQueryRequest(getSettingSchema),
+  validateQueryRequest(getSettingsSchema),
   SettingController.get as RequestHandler,
 )
 

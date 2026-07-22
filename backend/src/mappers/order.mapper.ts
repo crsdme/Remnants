@@ -80,8 +80,8 @@ export function mapOrderItemPopulatedToDTO(order: OrderItemDBPopulated): OrderIt
       unit: order.product.unit,
       images: order.product.images,
       productPropertiesGroup: order.product.productPropertiesGroup,
-      productProperties: order.product.productProperties.map(({ _id, ...item }) => ({
-        id: _id,
+      productProperties: order.product.productProperties.map(({ id, ...item }) => ({
+        id,
         ...item,
       })),
       warehouseStock: order.product.warehouseStock,

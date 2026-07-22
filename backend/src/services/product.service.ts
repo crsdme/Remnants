@@ -32,7 +32,6 @@ import * as CurrencyRepository from '@/repositories/currencies.repo'
 import * as LanguageRepository from '@/repositories/language.repo'
 import * as ProductPropertyGroupRepository from '@/repositories/product-property-group.repo'
 import * as ProductPropertyOptionRepository from '@/repositories/product-property-option.repo'
-import * as ProductPropertyRepository from '@/repositories/product-property.repo'
 import * as ProductRepository from '@/repositories/products.repo'
 import * as SiteRepository from '@/repositories/site.repo'
 import * as UnitRepository from '@/repositories/unit.repo'
@@ -43,7 +42,6 @@ import {
   parseGetCategories,
   parseGetCurrency,
   parseGetLanguages,
-  parseGetProductProperties,
   parseGetProductPropertyGroups,
   parseGetProductPropertyOptions,
   parseGetProductsRepo,
@@ -425,14 +423,14 @@ export async function importHandler({ file }: { file: Express.Multer.File }): Pr
   const parsedProducts = storedFile.map(row => ({
     _id: parseId(row, 'id'),
     names: extractLangMap(row, 'name'),
-    price: toNumber(row, 'price'),
-    currency: parseId(row, 'currency'),
-    purchasePrice: toNumber(row, 'purchasePrice'),
-    purchaseCurrency: parseId(row, 'purchaseCurrency'),
+    minorPrice: toMinor(toNumber(row, 'price'), 2),
+    currencyId: parseId(row, 'currency'),
+    minorPurchasePrice: toMinor(toNumber(row, 'purchasePrice'), 2),
+    purchaseCurrencyId: parseId(row, 'purchaseCurrency'),
     barcodes: parseMultiSelect(row, 'barcodes', 'values'),
-    categories: parseMultiSelect(row, 'categories', 'id'),
-    unit: parseId(row, 'unit'),
-    productPropertiesGroup: parseId(row, 'productPropertiesGroup'),
+    categoriesIds: parseMultiSelect(row, 'categories', 'id'),
+    unitId: parseId(row, 'unit'),
+    productPropertiesGroupId: parseId(row, 'productPropertiesGroup'),
     productProperties: parseProductProperties(row)
       .map(property => ({
         _id: property._id,
@@ -453,14 +451,14 @@ export async function importHandler({ file }: { file: Express.Multer.File }): Pr
         update: {
           $set: {
             names: product.names as LanguageString,
-            price: product.price,
-            currency: product.currency,
-            purchasePrice: product.purchasePrice,
-            purchaseCurrency: product.purchaseCurrency,
+            minorPrice: product.minorPrice,
+            currencyId: product.currencyId,
+            minorPurchasePrice: product.minorPurchasePrice,
+            purchaseCurrencyId: product.purchaseCurrencyId,
             barcodes: product.barcodes,
-            categories: product.categories,
-            unit: product.unit,
-            productPropertiesGroup: product.productPropertiesGroup,
+            categoriesIds: product.categoriesIds,
+            unitId: product.unitId,
+            productPropertiesGroupId: product.productPropertiesGroupId,
             productProperties: product.productProperties,
           },
         },
@@ -577,7 +575,6 @@ export async function exportHandler({ payload, user }: { payload: ExportProducts
     units,
     categories,
     productPropertiesGroups,
-    productProperties,
     selectedProducts,
   ] = await Promise.all([
     LanguageRepository.list(parseGetLanguages({ filters: { active: [true] }, pagination: { full: true } })),
@@ -585,7 +582,6 @@ export async function exportHandler({ payload, user }: { payload: ExportProducts
     UnitRepository.list(parseGetUnits({ filters: { active: [true] }, pagination: { full: true } })),
     CategoryRepository.list(parseGetCategories({ filters: { active: [true] }, pagination: { full: true } })),
     ProductPropertyGroupRepository.list(parseGetProductPropertyGroups({ filters: { active: [true] }, pagination: { full: true } })),
-    ProductPropertyRepository.list(parseGetProductProperties({ filters: { active: [true] }, pagination: { full: true } })),
     ProductRepository.list({
       filters: { ids, language },
       pagination: { current: 1, pageSize: 1000, full: true },
@@ -615,8 +611,7 @@ export async function exportHandler({ payload, user }: { payload: ExportProducts
     const groupName = products[0].productPropertiesGroup?.names?.[language] as string ?? groupId
     const sheet = workbook.addWorksheet(groupName)
 
-    const productPropertiesIds = productPropertiesGroups.items.find(item => item.id === groupId)?.productProperties || []
-    const productPropertiesData = productProperties.items.filter(item => productPropertiesIds.includes(item.id))
+    const productPropertiesData = productPropertiesGroups.items.find(item => item.id === groupId)?.productProperties ?? []
 
     const dynamicKeys: { key: string, header: string, id: string, type: string }[] = []
     const dynamicColumns: { key: string, header: string }[] = []
@@ -677,7 +672,7 @@ export async function exportHandler({ payload, user }: { payload: ExportProducts
       row.images = product.images.map(image => `${STORAGE_URLS.productImages}/${image.filename}`).join(', ')
 
       for (const lang of languages.items) {
-        row[`name_${lang.code}`] = product.names?.[lang.code] ?? ''
+        row[`name_${lang.code}`] = product.names?.[lang.code as keyof typeof product.names] ?? ''
       }
 
       row.price = product.price

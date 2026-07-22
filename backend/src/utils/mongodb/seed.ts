@@ -1474,6 +1474,16 @@ async function createUserRoles() {
   await UserService.create({
     name: 'Admin',
     login: 'admin',
+    access: {
+      warehouses: [],
+      cashregisters: [],
+      sites: [],
+      expenseCategories: [],
+      cashregisterAccounts: [],
+      deliveryServices: [],
+      orderSources: [],
+      orderStatuses: [],
+    },
     password: 'admin',
     role: admin.id,
     active: true,
@@ -1483,6 +1493,16 @@ async function createUserRoles() {
     name: 'Manager',
     login: 'manager',
     password: 'manager',
+    access: {
+      warehouses: [],
+      cashregisters: [],
+      sites: [],
+      expenseCategories: [],
+      cashregisterAccounts: [],
+      deliveryServices: [],
+      orderSources: [],
+      orderStatuses: [],
+    },
     role: manager.id,
     active: true,
   })

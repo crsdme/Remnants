@@ -1,6 +1,6 @@
 import type {
   AggregateResult,
-  WarehouseTransactionLogDTO,
+  WarehouseTransactionLogPopulatedDTO,
 } from '@remnant/shared'
 import type { ClientSession, PipelineStage } from 'mongoose'
 import type {
@@ -107,8 +107,15 @@ export async function list(payload: GetWarehouseTransactionLogsPayload): Promise
         deltaCount: 1,
         refType: 1,
         refId: 1,
-        resource: 1,
-        warehouse: 1,
+        resource: {
+          id: '$resource._id',
+          seq: '$resource.seq',
+          name: '$resource.name',
+        },
+        warehouse: {
+          id: '$warehouse._id',
+          names: '$warehouse.names',
+        },
         user: {
           id: '$user._id',
           name: '$user.name',
@@ -129,7 +136,7 @@ export async function list(payload: GetWarehouseTransactionLogsPayload): Promise
     },
   ]
 
-  const raw = await WarehouseTransactionLogModel.aggregate<AggregateResult<WarehouseTransactionLogDTO>>(pipeline).exec()
+  const raw = await WarehouseTransactionLogModel.aggregate<AggregateResult<WarehouseTransactionLogPopulatedDTO>>(pipeline).exec()
   const { items, total } = unwrapAggregate(raw)
 
   return { items, total, page: current, pageSize }

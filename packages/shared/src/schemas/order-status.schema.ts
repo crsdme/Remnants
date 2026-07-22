@@ -8,7 +8,7 @@ export const orderStatusSchema = z.object({
   color: z.string().optional(),
   isLocked: z.boolean().optional().default(false),
   isSelectable: z.boolean().optional().default(false),
-  ordersCount: z.number().optional().default(0),
+  ordersCount: z.number().optional(),
   createdAt: z.coerce.date(),
   updatedAt: z.coerce.date(),
 })

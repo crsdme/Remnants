@@ -7,7 +7,6 @@ import type {
   GetOrderPaymentsRepoResult,
   OrderPaymentDB,
   OrderPaymentDBPopulated,
-  OrderPaymentPopulatedRepoItem,
 } from '@/types/'
 import { OrderPaymentModel } from '@/models'
 import { buildQuery, buildSortQuery, unwrapAggregate } from '@/utils'
@@ -93,8 +92,8 @@ export async function list({ payload }: { payload: GetOrderPaymentsRepoPayload }
         _id: 0,
         id: '$_id',
         order: '$orderId',
-        cashregister: '$cashregisterId',
-        cashregisterAccount: '$cashregisterAccountId',
+        cashregister: { id: '$cashregister._id', names: '$cashregister.names' },
+        cashregisterAccount: { id: '$cashregisterAccount._id', names: '$cashregisterAccount.names' },
         currency: { id: '$currency._id', names: '$currency.names', symbols: '$currency.symbols', scale: '$currency.scale', paymentEpsilon: '$currency.paymentEpsilon' },
         minorAmount: 1,
         paymentStatus: 1,
@@ -121,7 +120,7 @@ export async function list({ payload }: { payload: GetOrderPaymentsRepoPayload }
     },
   ]
 
-  const raw = await OrderPaymentModel.aggregate<AggregateResult<OrderPaymentPopulatedRepoItem>>(pipeline).exec()
+  const raw = await OrderPaymentModel.aggregate<AggregateResult<OrderPaymentDBPopulated>>(pipeline).exec()
   const { items, total } = unwrapAggregate(raw)
 
   return { items, total, page: current, pageSize }

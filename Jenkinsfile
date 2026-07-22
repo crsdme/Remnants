@@ -8,11 +8,24 @@ pipeline {
         }
       }
     }
-    stage('Build and Run') {
+    stage('Build backend') {
       steps {
         dir('/home/remnants/dev.remnant') {
-          sh 'docker compose down'
-          sh 'docker compose up -d --build'
+          sh 'BUILDKIT_MAX_PARALLELISM=1 docker compose build backend'
+        }
+      }
+    }
+    stage('Build frontend') {
+      steps {
+        dir('/home/remnants/dev.remnant') {
+          sh 'BUILDKIT_MAX_PARALLELISM=1 docker compose build frontend'
+        }
+      }
+    }
+    stage('Up') {
+      steps {
+        dir('/home/remnants/dev.remnant') {
+          sh 'docker compose up -d --no-build'
         }
       }
     }

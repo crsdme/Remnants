@@ -8,7 +8,6 @@ export function mapUserRoleToDTO(userRole: UserRoleDB): UserRoleDTO {
     permissions: userRole.permissions,
     priority: userRole.priority,
     active: userRole.active,
-    removed: userRole.removed,
     createdAt: userRole.createdAt,
     updatedAt: userRole.updatedAt,
   }

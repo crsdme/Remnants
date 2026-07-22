@@ -22,6 +22,16 @@ async function initializeApp() {
     await UserService.create({
       name: 'Admin',
       login: 'admin',
+      access: {
+        warehouses: [],
+        cashregisters: [],
+        sites: [],
+        expenseCategories: [],
+        cashregisterAccounts: [],
+        deliveryServices: [],
+        orderSources: [],
+        orderStatuses: [],
+      },
       password: 'admin',
       role: roleRequest.data?.id?.toString() ?? '',
       active: true,

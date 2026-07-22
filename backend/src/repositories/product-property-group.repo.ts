@@ -1,15 +1,16 @@
-import type { AggregateResult, ProductPropertyGroupDTO } from '@remnant/shared'
+import type { AggregateResult, ProductPropertyGroupPopulatedDTO } from '@remnant/shared'
 import type { PipelineStage } from 'mongoose'
 import type {
   CreateProductPropertyGroupRepoPayload,
   EditProductPropertyGroupRepoPayload,
   GetProductPropertyGroupsRepoPayload,
+  GetProductPropertyGroupsRepoResult,
   ProductPropertyGroupDB,
 } from '@/types/'
 import { ProductPropertyGroupModel } from '@/models'
 import { buildQuery, buildSortQuery, unwrapAggregate } from '@/utils'
 
-export async function list(payload: GetProductPropertyGroupsRepoPayload): Promise<{ items: ProductPropertyGroupDTO[], total: number, page: number, pageSize: number }> {
+export async function list(payload: GetProductPropertyGroupsRepoPayload): Promise<GetProductPropertyGroupsRepoResult> {
   const {
     current,
     pageSize,
@@ -104,7 +105,7 @@ export async function list(payload: GetProductPropertyGroupsRepoPayload): Promis
     },
   ]
 
-  const raw = await ProductPropertyGroupModel.aggregate<AggregateResult<ProductPropertyGroupDTO>>(pipeline).exec()
+  const raw = await ProductPropertyGroupModel.aggregate<AggregateResult<ProductPropertyGroupPopulatedDTO>>(pipeline).exec()
   const { items, total } = unwrapAggregate(raw)
 
   return { items, total, page: current, pageSize }

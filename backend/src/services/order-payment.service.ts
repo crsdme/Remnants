@@ -12,7 +12,6 @@ import type {
   RemoveOrderPaymentsPayload,
 } from '@/types'
 import {
-  mapOrderPaymentPopulatedItem,
   mapOrderPaymentToDTO,
 } from '@/mappers'
 import * as CurrencyRepo from '@/repositories/currencies.repo'
@@ -23,7 +22,7 @@ import { toMinor } from '@/utils/money'
 export async function get({ payload }: { payload: GetOrderPaymentsPayload }): Promise<GetOrderPaymentsResponse> {
   const { items, total, page, pageSize } = await OrderPaymentRepo.list({ payload })
 
-  const mappedItems = items.map(mapOrderPaymentPopulatedItem)
+  const mappedItems = items.map(mapOrderPaymentToDTO)
 
   return {
     status: 'success',

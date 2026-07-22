@@ -527,7 +527,7 @@ export async function createOne(payload: CreateProductsRepoPayload) {
   return ProductModel.create(payload)
 }
 
-export async function bulkWrite(payload: AnyBulkWriteOperation<ProductDB>[]) {
+export async function bulkWrite(payload: AnyBulkWriteOperation<any>[]) {
   return ProductModel.bulkWrite(payload)
 }
 

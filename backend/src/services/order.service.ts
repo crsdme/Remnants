@@ -33,7 +33,7 @@ import { toMinorType } from '@remnant/shared'
 import mongoose from 'mongoose'
 import PDFDocument from 'pdfkit'
 import { v4 as uuidv4 } from 'uuid'
-import { mapOrderItemPopulatedToDTO, mapOrderPaymentPopulatedItem, mapOrderPopulatedToDTO } from '@/mappers'
+import { mapOrderItemPopulatedToDTO, mapOrderPaymentRepoToDTO, mapOrderPopulatedToDTO } from '@/mappers'
 import * as CurrencyRepo from '@/repositories/currencies.repo'
 import * as OrderPaymentRepository from '@/repositories/order-payment.repo'
 import * as OrderRepository from '@/repositories/order.repo'
@@ -156,7 +156,7 @@ export async function getOrderPayments({ payload }: { payload: GetOrderPaymentsP
     code: 'ORDER_PAYMENTS_FETCHED',
     message: 'Order payments fetched',
     data: {
-      items: items.map(mapOrderPaymentPopulatedItem),
+      items: items.map(mapOrderPaymentRepoToDTO),
       pagination: {
         page,
         pageSize,
@@ -1765,7 +1765,7 @@ async function applyPaymentsDiff(params: {
     payload: parseGetOrderPayments({ filters: { order: [orderId] }, pagination: { full: true } }),
   })
 
-  const oldById = new Map(oldPayments.items.map(p => [p.id, mapOrderPaymentPopulatedItem(p)]))
+  const oldById = new Map(oldPayments.items.map(p => [p._id, mapOrderPaymentRepoToDTO(p)]))
 
   const activePaymentIds: string[] = []
 

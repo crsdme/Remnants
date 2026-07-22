@@ -13,14 +13,14 @@ export function mapAutomationDocToDTO(doc: AutomationDB): AutomationDTO {
       type: doc.trigger.type,
       params: doc.trigger.params,
     },
-    conditions: doc.conditions.map(condition => ({
-      field: condition.field,
-      operator: condition.operator,
-      params: condition.params,
+    conditions: doc.conditions.map(({ field, operator, params }) => ({
+      field,
+      operator,
+      params,
     })),
-    actions: doc.actions.map(action => ({
-      field: action.field,
-      params: action.params,
+    actions: doc.actions.map(({ field, params }) => ({
+      field,
+      params,
     })),
     active: doc.active,
     removed: doc.removed,

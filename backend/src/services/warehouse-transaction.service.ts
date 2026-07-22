@@ -19,10 +19,10 @@ import type {
   RemoveWarehouseTransactionsPayload,
   ScanBarcodeToDraftPayload,
 } from '@/types/'
-import { mapProductPopulatedRepoToDTO, mapWarehouseTransactionToDTO } from '@/mappers/'
-import * as BarcodeRepo from '@/repositories/barcodes.repo'
+import { mapWarehouseTransactionItemRepoToDTO } from '@/mappers/warehouse-transaction.mapper'
 import * as UserAccessRepo from '@/repositories/user-access.repo'
 import * as WarehouseTransactionRepo from '@/repositories/warehouse-transaction.repo'
+import * as BarcodeService from '@/services/barcode.service'
 import * as QuantityService from '@/services/quantity.service'
 import { parseGetBarcodes, parseGetWarehouseTransactions, parseGetWarehouseTransactionsItems } from '@/types/'
 import { getScopeIdsForUser } from '@/utils'
@@ -58,10 +58,7 @@ export async function get({
 export async function getItems({ payload }: { payload: GetWarehouseTransactionsItemsPayload }): Promise<GetWarehouseTransactionsItemsResponse> {
   const { items, total, page, pageSize } = await WarehouseTransactionRepo.listItems(payload)
 
-  const mappedItems = items.map(item => ({
-    ...item,
-    product: mapProductPopulatedRepoToDTO(item.product),
-  }))
+  const mappedItems = items.map(mapWarehouseTransactionItemRepoToDTO)
 
   return {
     status: 'success',
@@ -86,9 +83,13 @@ export async function getDetails({ payload }: { payload: GetWarehouseTransaction
   if (warehouseTransaction === undefined)
     throw new HttpError(404, 'Warehouse transaction not found', 'WAREHOUSE_TRANSACTION_NOT_FOUND')
 
-  const { items: warehouseTransactionItems } = await WarehouseTransactionRepo.listItems(parseGetWarehouseTransactionsItems(
-    { filters: { transactionId: warehouseTransaction.id }, pagination: { full: true } },
-  ))
+  // const { items: warehouseTransactionItems } = await WarehouseTransactionRepo.listItems(parseGetWarehouseTransactionsItems(
+  //   { filters: { transactionId: warehouseTransaction.id }, pagination: { full: true } },
+  // ))
+
+  const { data: { items: warehouseTransactionItems } } = await getItems({
+    payload: parseGetWarehouseTransactionsItems({ filters: { transactionId: warehouseTransaction.id }, pagination: { full: true } }),
+  })
 
   return {
     status: 'success',
@@ -104,7 +105,7 @@ export async function getDetails({ payload }: { payload: GetWarehouseTransaction
 export async function scanBarcodeToDraft({ payload }: { payload: ScanBarcodeToDraftPayload }): Promise<ScanBarcodeToDraftResponse> {
   const { barcode, transactionId } = payload
 
-  const { items } = await BarcodeRepo.list(parseGetBarcodes({ filters: { codes: [barcode] }, pagination: { full: true } }))
+  const { data: { items } } = await BarcodeService.get({ payload: parseGetBarcodes({ filters: { codes: [barcode] }, pagination: { full: true } }) })
 
   return {
     status: 'success',
@@ -138,7 +139,6 @@ export async function edit({ payload }: { payload: EditWarehouseTransactionPaylo
     status: 'success',
     code: 'WAREHOUSE_TRANSACTION_EDITED',
     message: 'Warehouse transaction edited',
-    data: mapWarehouseTransactionToDTO(warehouseTransaction),
   }
 }
 
@@ -264,7 +264,6 @@ async function inWarehauseTransaction({ payload, user }: { payload: PayloadByTyp
     status: 'success',
     code: 'WAREHOUSE_TRANSACTION_CREATED',
     message: 'Warehouse transaction created',
-    data: mapWarehouseTransactionToDTO(warehouseTransaction),
   }
 }
 
@@ -304,7 +303,6 @@ async function outWarehauseTransaction({ payload, user }: { payload: PayloadByTy
     status: 'success',
     code: 'WAREHOUSE_TRANSACTION_CREATED',
     message: 'Warehouse transaction created',
-    data: mapWarehouseTransactionToDTO(warehouseTransaction),
   }
 }
 
@@ -362,7 +360,6 @@ async function transferWarehauseTransaction({ payload, user }: { payload: Payloa
     status: 'success',
     code: 'WAREHOUSE_TRANSACTION_CREATED',
     message: 'Warehouse transaction created',
-    data: mapWarehouseTransactionToDTO(warehouseTransaction),
   }
 }
 
@@ -419,6 +416,5 @@ export async function receive({ payload, user }: { payload: ReceiveWarehouseTran
     status: 'success',
     code: 'WAREHOUSE_TRANSACTION_RECEIVED',
     message: 'Warehouse transaction received',
-    data: mapWarehouseTransactionToDTO(warehouseTransaction),
   }
 }
