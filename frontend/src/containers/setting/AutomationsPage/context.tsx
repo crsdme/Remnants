@@ -96,9 +96,9 @@ function getAutomationFormValues(automation?: AutomationDTO) {
     return {
       name: '',
       trigger: '',
-      params: [],
-      conditions: [],
-      actions: [],
+      params: [] as string[],
+      conditions: [] as any[],
+      actions: [] as any[],
       active: true,
     }
   }
