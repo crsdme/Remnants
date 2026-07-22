@@ -3,7 +3,7 @@ import { booleanArraySchema, dateRangeSchema, idSchema, paginationSchema, respon
 
 export const automationTriggerSchema = z.object({
   type: z.string().trim(),
-  params: z.unknown().optional(),
+  params: z.array(z.string().trim()).optional().default([]),
 })
 
 export type AutomationTrigger = z.output<typeof automationTriggerSchema>
@@ -11,14 +11,14 @@ export type AutomationTrigger = z.output<typeof automationTriggerSchema>
 export const automationConditionSchema = z.object({
   field: z.string().trim(),
   operator: z.string().trim(),
-  params: z.unknown().optional(),
+  params: z.array(z.string().trim()).optional().default([]),
 })
 
 export type AutomationCondition = z.output<typeof automationConditionSchema>
 
 export const automationActionSchema = z.object({
   field: z.string().trim(),
-  params: z.unknown().optional(),
+  params: z.array(z.string().trim()).optional().default([]),
 })
 
 export type AutomationAction = z.output<typeof automationActionSchema>

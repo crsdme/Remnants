@@ -93,21 +93,13 @@ function getActionFormDefaults() {
 
 function getAutomationFormValues(automation?: AutomationDTO) {
   if (!automation) {
-    return {
-      name: '',
-      trigger: '',
-      params: [] as string[],
-      conditions: [] as any[],
-      actions: [] as any[],
-      active: true,
-    }
+    return getAutomationFormDefaults()
   }
+  const params = automation.trigger.params
   return {
     name: automation.name,
     trigger: automation.trigger.type,
-    params: automation.trigger.params,
-    conditions: automation.conditions,
-    actions: automation.actions,
+    params: Array.isArray(params) ? [...params] : [],
     active: automation.active,
   }
 }

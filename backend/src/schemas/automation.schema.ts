@@ -9,12 +9,12 @@ export const automationTriggerDBSchema = z.object({
 export const automationConditionDBSchema = z.object({
   field: z.string(),
   operator: z.string(),
-  params: z.unknown(),
+  params: z.array(z.string()).default([]),
 })
 
 export const automationActionDBSchema = z.object({
   field: z.string(),
-  params: z.unknown(),
+  params: z.array(z.string()).default([]),
 })
 
 export const automationDBSchema = z.object({
