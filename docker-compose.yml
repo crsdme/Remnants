@@ -3,7 +3,7 @@ services:
     build:
       context: .
       dockerfile: ./frontend/Dockerfile
-    container_name: raw-frontend
+    container_name: dev-frontend
     restart: always
     expose:
       - "80"
@@ -15,16 +15,16 @@ services:
       - backend
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.raw-frontend.rule=Host(`raw.stoneremnant.pp.ua`)"
-      - "traefik.http.routers.raw-frontend.entrypoints=websecure"
-      - "traefik.http.routers.raw-frontend.tls.certresolver=letsencrypt"
-      - "traefik.http.services.raw-frontend.loadbalancer.server.port=80"
+      - "traefik.http.routers.dev-frontend.rule=Host(`dev.stoneremnant.pp.ua`)"
+      - "traefik.http.routers.dev-frontend.entrypoints=websecure"
+      - "traefik.http.routers.dev-frontend.tls.certresolver=letsencrypt"
+      - "traefik.http.services.dev-frontend.loadbalancer.server.port=80"
 
   backend:
     build:
       context: .
       dockerfile: ./backend/Dockerfile
-    container_name: raw-backend
+    container_name: dev-backend
     restart: always
     expose:
       - "3001"
@@ -36,10 +36,10 @@ services:
       - ./backend/storage:/app/storage
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.raw-backend.rule=Host(`apiraw.stoneremnant.pp.ua`)"
-      - "traefik.http.routers.raw-backend.entrypoints=websecure"
-      - "traefik.http.routers.raw-backend.tls.certresolver=letsencrypt"
-      - "traefik.http.services.raw-backend.loadbalancer.server.port=3001"
+      - "traefik.http.routers.dev-backend.rule=Host(`api.dev.stoneremnant.pp.ua`)"
+      - "traefik.http.routers.dev-backend.entrypoints=websecure"
+      - "traefik.http.routers.dev-backend.tls.certresolver=letsencrypt"
+      - "traefik.http.services.dev-backend.loadbalancer.server.port=3001"
 
 networks:
   shared_network:
