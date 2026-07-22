@@ -1,8 +1,8 @@
 import type {
-  LanguageString,
   OrderStatusDTO,
 } from '@remnant/shared'
 import type { z } from 'zod'
+import type { orderStatusDBSchema } from '../schemas'
 import {
   createOrderStatusSchema,
   editOrderStatusSchema,
@@ -10,19 +10,7 @@ import {
   removeOrderStatusesSchema,
 } from '@remnant/shared'
 
-export interface OrderStatusDB {
-  _id: string
-  names: LanguageString
-  priority: number
-  color: string
-  removed: boolean
-  isLocked: boolean
-  isSelectable: boolean
-  createdBy: string
-  removedBy: string
-  createdAt: Date
-  updatedAt: Date
-}
+export type OrderStatusDB = z.infer<typeof orderStatusDBSchema>
 
 export type GetOrderStatusesPayload = z.output<typeof getOrderStatusesSchema>
 export function parseGetOrderStatuses(x: unknown): GetOrderStatusesPayload {

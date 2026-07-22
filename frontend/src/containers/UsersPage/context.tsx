@@ -1,4 +1,4 @@
-import type { UserPopulatedDTO } from '@remnant/shared'
+import type { UserAccessScopesDTO, UserPopulatedDTO } from '@remnant/shared'
 
 import type { ReactNode } from 'react'
 
@@ -37,6 +37,7 @@ interface UserFormValues {
   password: string
   active: boolean
   role: string
+  access: UserAccessScopesDTO
 }
 
 export function UserProvider({ children }: { children: ReactNode }) {
@@ -158,12 +159,33 @@ export function useUserContext(): UserContextType {
 }
 
 function createUserFormSchema(t: (key: string, options?: Record<string, unknown>) => string) {
+  const idsSchema = z.array(z.string().uuid()).default([])
+
   return z.object({
     name: z.string({ required_error: t('form.errors.required') }).min(5, { message: t('form.errors.min_length', { count: 5 }) }).trim(),
     login: z.string({ required_error: t('form.errors.required') }).min(5, { message: t('form.errors.min_length', { count: 5 }) }).trim(),
     password: z.string().optional(),
-    role: z.string({ required_error: t('form.errors.required') }).trim(),
+    role: z.string({ required_error: t('form.errors.required') }).min(1, { message: t('form.errors.required') }).trim(),
     active: z.boolean().default(true),
+    access: z.object({
+      warehouses: idsSchema,
+      sites: idsSchema,
+      expenseCategories: idsSchema,
+      cashregisters: idsSchema,
+      cashregisterAccounts: idsSchema,
+      deliveryServices: idsSchema,
+      orderSources: idsSchema,
+      orderStatuses: idsSchema,
+    }).default({
+      warehouses: [],
+      sites: [],
+      expenseCategories: [],
+      cashregisters: [],
+      cashregisterAccounts: [],
+      deliveryServices: [],
+      orderSources: [],
+      orderStatuses: [],
+    }),
   })
 }
 
@@ -175,6 +197,16 @@ function getUserFormValues(user?: UserPopulatedDTO): UserFormValues {
       password: '',
       active: true,
       role: '',
+      access: {
+        warehouses: [],
+        sites: [],
+        expenseCategories: [],
+        cashregisters: [],
+        cashregisterAccounts: [],
+        deliveryServices: [],
+        orderSources: [],
+        orderStatuses: [],
+      },
     }
   }
   return {
@@ -182,6 +214,16 @@ function getUserFormValues(user?: UserPopulatedDTO): UserFormValues {
     login: user.login,
     password: '',
     active: user.active,
-    role: user.role.id,
+    role: user.role?.id ?? '',
+    access: {
+      warehouses: user.access?.warehouses ?? [],
+      sites: user.access?.sites ?? [],
+      expenseCategories: user.access?.expenseCategories ?? [],
+      cashregisters: user.access?.cashregisters ?? [],
+      cashregisterAccounts: user.access?.cashregisterAccounts ?? [],
+      deliveryServices: user.access?.deliveryServices ?? [],
+      orderSources: user.access?.orderSources ?? [],
+      orderStatuses: user.access?.orderStatuses ?? [],
+    },
   }
 }

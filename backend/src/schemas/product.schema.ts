@@ -1,13 +1,13 @@
-import { dateRangeSchema, idSchema, languageStringSchema, numberFromStringSchema, paginationSchema, sorterParamsSchema } from '@remnant/shared'
+import { dateRangeSchema, idSchema, idSchemaOptional, languageStringSchema, minorSchema, numberFromStringSchema, paginationSchema, sorterParamsSchema } from '@remnant/shared'
 import { z } from 'zod'
 
 export const productDBSchema = z.object({
   _id: idSchema,
   seq: z.number(),
   names: languageStringSchema,
-  minorPrice: numberFromStringSchema,
+  minorPrice: minorSchema,
   currencyId: idSchema,
-  minorPurchasePrice: numberFromStringSchema,
+  minorPurchasePrice: minorSchema,
   purchaseCurrencyId: idSchema,
   barcodesIds: z.array(idSchema),
   categoriesIds: z.array(idSchema),
@@ -46,14 +46,14 @@ export const productDBPopulatedSchema = z.object({
   _id: idSchema,
   seq: z.number(),
   names: languageStringSchema,
-  minorPrice: numberFromStringSchema,
+  minorPrice: minorSchema,
   currency: z.object({
     id: idSchema,
     names: languageStringSchema,
     symbols: languageStringSchema,
     scale: numberFromStringSchema,
   }),
-  minorPurchasePrice: numberFromStringSchema,
+  minorPurchasePrice: minorSchema,
   purchaseCurrency: z.object({
     id: idSchema,
     names: languageStringSchema,
@@ -84,7 +84,7 @@ export const productDBPopulatedSchema = z.object({
     names: languageStringSchema,
   }),
   productProperties: z.array(z.object({
-    _id: idSchema,
+    id: idSchema,
     value: z.unknown(),
     data: z.object({
       id: idSchema,
@@ -125,7 +125,7 @@ export const getProductRepoSchema = z.object({
     unit: z.array(idSchema).optional(),
     barcodes: z.string().optional(),
     categories: z.array(idSchema).optional(),
-    selectedWarehouse: z.string().optional(),
+    selectedWarehouse: idSchemaOptional,
     createdAt: dateRangeSchema.optional(),
     updatedAt: dateRangeSchema.optional(),
   }).optional().default({}),
@@ -150,9 +150,9 @@ export const createProductRepoSchema = z.object({
   names: languageStringSchema,
   minorPrice: numberFromStringSchema,
   minorPurchasePrice: numberFromStringSchema,
-  currencyId: z.string(),
-  purchaseCurrencyId: z.string(),
-  productPropertiesGroupId: z.string(),
+  currencyId: idSchema,
+  purchaseCurrencyId: idSchema,
+  productPropertiesGroupId: idSchema,
   productProperties: z.array(z.object({
     _id: idSchema,
     value: z.unknown(),
@@ -169,9 +169,9 @@ export const editProductRepoSchema = z.object({
   names: languageStringSchema,
   minorPrice: numberFromStringSchema,
   minorPurchasePrice: numberFromStringSchema,
-  currencyId: z.string(),
-  purchaseCurrencyId: z.string(),
-  productPropertiesGroupId: z.string(),
+  currencyId: idSchema,
+  purchaseCurrencyId: idSchema,
+  productPropertiesGroupId: idSchema,
   productProperties: z.array(z.object({
     _id: idSchema,
     value: z.unknown(),

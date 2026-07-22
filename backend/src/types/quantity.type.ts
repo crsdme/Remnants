@@ -2,6 +2,7 @@ import type {
   QuantityDTO,
 } from '@remnant/shared'
 import type { z } from 'zod'
+import type { quantityDBSchema } from '../schemas'
 import {
   countQuantitiesSchema,
   createQuantitiesSchema,
@@ -10,15 +11,8 @@ import {
   removeQuantitiesSchema,
 } from '@remnant/shared'
 
-export interface QuantityDB {
-  _id: string
-  count: number
-  productId: string
-  warehouse: string
-  status: 'available' | 'reserved' | 'sold'
-  createdAt: Date
-  updatedAt: Date
-}
+export type QuantityDB = z.infer<typeof quantityDBSchema>
+
 export type CreateQuantityPayload = z.output<typeof createQuantitiesSchema>
 export function parseCreateQuantity(x: unknown): CreateQuantityPayload {
   return createQuantitiesSchema.parse(x)

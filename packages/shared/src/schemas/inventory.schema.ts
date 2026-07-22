@@ -1,19 +1,22 @@
 import { z } from 'zod'
-import { dateRangeSchema, idSchema, paginationSchema, responseItemSchema, responseListSchema, responseSchema, sorterParamsSchema } from './common'
+import { dateRangeSchema, idSchema, idSchemaOptional, languageStringSchema, paginationSchema, responseItemSchema, responseListSchema, responseSchema, sorterParamsSchema } from './common'
 import { productSchema } from './product.schema'
+
+export const inventoryStatusSchema = z.enum(['draft', 'confirmed', 'awaiting', 'received', 'cancelled'])
+export type InventoryStatus = z.output<typeof inventoryStatusSchema>
+
+const inventoryRelationSchema = z.object({
+  id: idSchema,
+  names: languageStringSchema,
+})
 
 export const inventorySchema = z.object({
   id: idSchema,
   seq: z.number(),
-  status: z.string().trim(),
-  warehouse: idSchema,
-  categories: z.array(idSchema),
+  status: inventoryStatusSchema,
+  warehouse: inventoryRelationSchema,
+  categories: z.array(inventoryRelationSchema),
   comment: z.string().trim().optional(),
-  items: z.array(z.object({
-    id: idSchema,
-    quantity: z.number(),
-    receivedQuantity: z.number(),
-  })),
   createdAt: z.coerce.date(),
   updatedAt: z.coerce.date(),
 })
@@ -32,12 +35,14 @@ export type InventoryItemDTO = z.output<typeof inventoryItemSchema>
 export const getInventoriesSchema = z.object({
   filters: z.object({
     seq: z.string().optional(),
-    status: z.string().trim().optional(),
-    warehouse: idSchema.optional(),
+    status: inventoryStatusSchema.optional(),
+    warehouse: idSchemaOptional,
+    category: idSchemaOptional,
     createdAt: dateRangeSchema.optional(),
     updatedAt: dateRangeSchema.optional(),
   }).optional().default({}),
   sorters: z.object({
+    seq: sorterParamsSchema.optional(),
     status: sorterParamsSchema.optional(),
     warehouse: sorterParamsSchema.optional(),
     updatedAt: sorterParamsSchema.optional(),
@@ -50,7 +55,7 @@ export type GetInventoriesRequest = z.input<typeof getInventoriesSchema>
 
 export const createInventorySchema = z.object({
   warehouse: idSchema,
-  categories: z.array(idSchema),
+  categories: z.array(idSchema).min(1),
   comment: z.string().trim().optional(),
   items: z.array(z.object({
     id: idSchema,
@@ -69,7 +74,7 @@ export type RemoveInventoriesRequest = z.input<typeof removeInventoriesSchema>
 
 export const getInventoryItemsSchema = z.object({
   filters: z.object({
-    inventoryId: z.string().trim().optional(),
+    inventoryId: idSchemaOptional,
   }).optional().default({}),
   pagination: paginationSchema.optional().default({}),
 })
@@ -78,12 +83,14 @@ export type GetInventoryItemsRequest = z.input<typeof getInventoryItemsSchema>
 
 export const editInventorySchema = z.object({
   warehouse: idSchema,
+  categories: z.array(idSchema).min(1),
   id: idSchema,
-  status: z.string().trim().optional(),
+  status: inventoryStatusSchema.optional(),
   comment: z.string().trim().optional(),
   items: z.array(z.object({
     id: idSchema,
     quantity: z.number(),
+    receivedQuantity: z.number(),
   })),
 })
 
@@ -93,7 +100,7 @@ export const scanBarcodeToDraftsSchema = z.object({
   filters: z.object({
     barcode: z.string().trim(),
     category: idSchema,
-    inventoryId: idSchema.optional(),
+    inventoryId: idSchemaOptional,
   }),
   sorters: z.object({
     createdAt: sorterParamsSchema.optional(),
@@ -105,7 +112,7 @@ export type ScanBarcodeToDraftsRequest = z.input<typeof scanBarcodeToDraftsSchem
 export const scanBarcodeToDraftInventorySchema = z.object({
   barcode: z.string().trim(),
   category: idSchema,
-  inventoryId: idSchema.optional(),
+  inventoryId: idSchemaOptional,
 })
 
 export type ScanBarcodeToDraftInventoryRequest = z.input<typeof scanBarcodeToDraftInventorySchema>
@@ -131,6 +138,6 @@ export type ReceiveInventoryResponse = z.output<typeof receiveInventoryResponseS
 export const scanBarcodeToDraftInventoryResponseSchema = z.object({
   product: productSchema,
   productIndex: z.number().optional(),
-  inventoryId: idSchema.optional(),
+  inventoryId: idSchemaOptional,
 })
 export type ScanBarcodeToDraftInventoryResponse = z.output<typeof scanBarcodeToDraftInventoryResponseSchema>

@@ -1,16 +1,19 @@
 import type { NextFunction, Response } from 'express'
 
-import type { CreateWarehousePayload, EditWarehousePayload, GetWarehousesPayload, RemoveWarehousesPayload, ValidatedRequest } from '@/types/'
+import type { CreateWarehousePayload, EditWarehousePayload, GetWarehousesPayload, RemoveWarehousesPayload, ValidatedAuthedRequest, ValidatedRequest } from '@/types/'
 
 import * as WarehouseService from '@/services/warehouse.service'
 
 export async function get(
-  req: ValidatedRequest<GetWarehousesPayload, never>,
+  req: ValidatedAuthedRequest<GetWarehousesPayload, never>,
   res: Response,
   next: NextFunction,
 ) {
   try {
-    const serviceResponse = await WarehouseService.get({ payload: req.validated.query })
+    const serviceResponse = await WarehouseService.get({
+      payload: req.validated.query,
+      user: req.user,
+    })
 
     res.status(200).json(serviceResponse)
   }
@@ -55,7 +58,7 @@ export async function remove(
   next: NextFunction,
 ) {
   try {
-    const serviceResponse = await WarehouseService.remove(req.validated.body)
+    const serviceResponse = await WarehouseService.remove({ payload: req.validated.body })
 
     res.status(200).json(serviceResponse)
   }

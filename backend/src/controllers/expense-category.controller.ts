@@ -4,18 +4,20 @@ import type {
   EditExpenseCategoriesPayload,
   GetExpenseCategoriesPayload,
   RemoveExpenseCategoriesPayload,
+  ValidatedAuthedRequest,
   ValidatedRequest,
 } from '@/types'
 import * as ExpenseCategoryService from '@/services/expense-category.service'
 
 export async function get(
-  req: ValidatedRequest<GetExpenseCategoriesPayload, never>,
+  req: ValidatedAuthedRequest<GetExpenseCategoriesPayload, never>,
   res: Response,
   next: NextFunction,
 ) {
   try {
     const serviceResponse = await ExpenseCategoryService.get({
       payload: req.validated.query,
+      user: req.user,
     })
 
     res.status(200).json(serviceResponse)

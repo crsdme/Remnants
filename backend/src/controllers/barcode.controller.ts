@@ -109,7 +109,7 @@ export async function print(
 ) {
   try {
     const { doc } = await BarcodeService.print({
-      payload: req.validated.body,
+      payload: req.validated.query,
     })
 
     res.setHeader('Content-Type', 'application/pdf')

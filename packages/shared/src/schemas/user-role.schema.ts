@@ -15,6 +15,7 @@ export type UserRoleDTO = z.output<typeof userRoleSchema>
 
 export const getUserRoleSchema = z.object({
   filters: z.object({
+    ids: z.array(idSchema).optional(),
     names: z.string().optional(),
     permissions: z.string().optional(),
     priority: z.number().optional(),

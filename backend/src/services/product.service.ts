@@ -167,7 +167,7 @@ export async function create({ payload, uploadedImages }: { payload: CreateProdu
   if (generateBarcode) {
     await BarcodeService.create({
       payload: {
-        products: [{ id: createdProduct._id.toString(), lineQuantity: 1 }],
+        products: [{ id: createdProduct._id.toString(), unitsPerScan: 1 }],
         active: true,
       },
     })
@@ -484,7 +484,7 @@ export async function importHandler({ file }: { file: Express.Multer.File }): Pr
         await BarcodeService.create({
           payload: {
             code: barcode,
-            products: [{ id: createdProduct._id.toString(), lineQuantity: 1 }],
+            products: [{ id: createdProduct._id.toString(), unitsPerScan: 1 }],
             active: true,
           },
         })

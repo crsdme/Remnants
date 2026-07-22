@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { idSchema, paginationSchema, responseItemSchema, responseListSchema, responseSchema, sorterParamsSchema } from './common'
+import { idSchema, idSchemaOptional, paginationSchema, responseItemSchema, responseListSchema, responseSchema, sorterParamsSchema } from './common'
 
 export const quantitySchema = z.object({
   id: idSchema,
@@ -15,8 +15,8 @@ export type QuantityDTO = z.output<typeof quantitySchema>
 
 export const getQuantitiesSchema = z.object({
   filters: z.object({
-    productId: idSchema.optional(),
-    warehouse: idSchema.optional(),
+    productId: idSchemaOptional,
+    warehouse: idSchemaOptional,
     status: z.enum(['available', 'reserved', 'sold']).optional(),
     count: z.number().optional(),
   }).optional().default({}),

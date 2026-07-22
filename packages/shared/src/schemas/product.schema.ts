@@ -1,6 +1,6 @@
 import type { Buffer } from 'node:buffer'
 import { z } from 'zod'
-import { dateRangeSchema, idSchema, languageStringSchema, numberFromStringSchema, paginationSchema, responseItemSchema, responseListSchema, responseSchema, sorterParamsSchema } from './common'
+import { dateRangeSchema, idSchema, idSchemaOptional, languageStringSchema, numberFromStringSchema, paginationSchema, responseListSchema, responseSchema, sorterParamsSchema } from './common'
 
 function hasIdsOrFilters(data: {
   ids?: unknown
@@ -14,9 +14,9 @@ export const productSchema = z.object({
   seq: z.number(),
   names: languageStringSchema,
   price: numberFromStringSchema,
-  purchasePrice: numberFromStringSchema,
+  purchasePrice: numberFromStringSchema.optional(),
   currency: idSchema,
-  purchaseCurrency: idSchema,
+  purchaseCurrency: idSchemaOptional,
   barcodes: z.array(idSchema),
   categories: z.array(idSchema),
   unit: idSchema,
@@ -42,7 +42,7 @@ export const productSchemaPopulated = z.object({
   seq: z.number(),
   names: languageStringSchema,
   price: numberFromStringSchema,
-  purchasePrice: numberFromStringSchema,
+  purchasePrice: numberFromStringSchema.optional(),
   currency: z.object({
     id: idSchema,
     names: languageStringSchema,
@@ -54,7 +54,7 @@ export const productSchemaPopulated = z.object({
     names: languageStringSchema,
     symbols: languageStringSchema,
     scale: numberFromStringSchema,
-  }),
+  }).optional(),
   barcodes: z.array(z.object({
     code: z.string(),
     id: idSchema,
@@ -123,7 +123,7 @@ export const getProductSchema = z.object({
     unit: z.array(idSchema).optional(),
     barcodes: z.string().optional(),
     categories: z.array(idSchema).optional(),
-    selectedWarehouse: z.string().optional(),
+    selectedWarehouse: idSchemaOptional,
     createdAt: dateRangeSchema.optional(),
     updatedAt: dateRangeSchema.optional(),
   }).optional().default({}),
@@ -169,9 +169,9 @@ export const createProductSchema = z.object({
   names: languageStringSchema,
   price: numberFromStringSchema,
   purchasePrice: numberFromStringSchema,
-  currency: z.string(),
-  purchaseCurrency: z.string(),
-  productPropertiesGroup: z.string(),
+  currency: idSchema,
+  purchaseCurrency: idSchema,
+  productPropertiesGroup: idSchema,
   productProperties: z.array(z.object({
     id: idSchema,
     value: z.unknown(),
@@ -203,9 +203,9 @@ export const editProductSchema = z.object({
   names: languageStringSchema,
   price: numberFromStringSchema,
   purchasePrice: numberFromStringSchema,
-  currency: z.string(),
-  purchaseCurrency: z.string(),
-  productPropertiesGroup: z.string(),
+  currency: idSchema,
+  purchaseCurrency: idSchema,
+  productPropertiesGroup: idSchema,
   productProperties: z.array(z.object({
     id: idSchema,
     value: z.unknown(),
@@ -252,14 +252,14 @@ export const batchProductSchema = z.object({
     language: z.string().optional().default('en'),
     price: numberFromStringSchema.optional(),
     purchasePrice: numberFromStringSchema.optional(),
-    currency: z.string().optional(),
-    purchaseCurrency: z.string().optional(),
-    productPropertiesGroup: z.string().optional(),
+    currency: idSchemaOptional,
+    purchaseCurrency: idSchemaOptional,
+    productPropertiesGroup: idSchemaOptional,
     productProperties: z.array(z.object({
       id: idSchema,
       value: z.unknown(),
     })).optional(),
-    unit: z.string().optional(),
+    unit: idSchemaOptional,
     categories: z.array(idSchema).min(1).optional(),
     createdAt: dateRangeSchema.optional(),
     updatedAt: dateRangeSchema.optional(),

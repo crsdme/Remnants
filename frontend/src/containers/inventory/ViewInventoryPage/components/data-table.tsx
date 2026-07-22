@@ -28,9 +28,9 @@ export function DataTable() {
     pageSize: 10,
   })
 
-  const selectedCategory = useWatch({
+  const selectedCategories = useWatch({
     control: form.control,
-    name: 'category',
+    name: 'categories',
   })
 
   const selectedWarehouse = useWatch({
@@ -44,10 +44,10 @@ export function DataTable() {
   })
 
   const { products, productsCount } = useProductQuery(
-    { pagination, filters: { categories: [selectedCategory] }, sorters: {} },
+    { pagination, filters: { categories: selectedCategories }, sorters: {} },
     {
       options: {
-        enabled: !!selectedCategory && !!selectedWarehouse,
+        enabled: selectedCategories.length > 0 && !!selectedWarehouse,
       },
     },
   )
@@ -133,18 +133,19 @@ export function DataTable() {
 
           <FormField
             control={form.control}
-            name="category"
+            name="categories"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>
                   <p>
-                    {t('page.create-inventory.form.category')}
+                    {t('page.create-inventory.form.categories')}
                     <span className="text-destructive ml-1">*</span>
                   </p>
                 </FormLabel>
                 <FormControl>
                   <AsyncSelectNew
                     {...field}
+                    multi
                     onChange={(e) => {
                       field.onChange(e)
                       form.setValue('items', [])

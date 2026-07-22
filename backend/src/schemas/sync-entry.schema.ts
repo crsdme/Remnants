@@ -1,11 +1,24 @@
-import { dateRangeSchema, paginationSchema, responseItemSchema, responseListSchema, responseSchema, sorterParamsSchema } from '@remnant/shared'
+import { dateRangeSchema, idSchema, paginationSchema, responseItemSchema, responseListSchema, responseSchema, sorterParamsSchema } from '@remnant/shared'
 import { z } from 'zod'
 
-export const syncEntrySchema = z.object({
-  id: z.string(),
+export const syncEntryDBSchema = z.object({
+  _id: idSchema,
   sourceType: z.string(),
-  sourceId: z.string(),
-  site: z.string(),
+  sourceId: idSchema,
+  site: idSchema,
+  externalId: z.string(),
+  status: z.enum(['pending', 'synced', 'error']),
+  syncedAt: z.coerce.date(),
+  lastError: z.string(),
+  createdAt: z.coerce.date(),
+  updatedAt: z.coerce.date(),
+})
+
+export const syncEntrySchema = z.object({
+  id: idSchema,
+  sourceType: z.string(),
+  sourceId: idSchema,
+  site: idSchema,
   externalId: z.string(),
   status: z.enum(['pending', 'synced', 'error']),
   syncedAt: z.date(),
@@ -17,8 +30,8 @@ export const syncEntrySchema = z.object({
 export const getSyncEntriesSchema = z.object({
   filters: z.object({
     sourceType: z.string(),
-    sourceId: z.string(),
-    site: z.string(),
+    sourceId: idSchema,
+    site: idSchema,
     externalId: z.string(),
     createdAt: dateRangeSchema.optional(),
     updatedAt: dateRangeSchema.optional(),
@@ -31,8 +44,8 @@ export const getSyncEntriesSchema = z.object({
 
 export const createSyncEntrySchema = z.object({
   sourceType: z.string(),
-  sourceId: z.string(),
-  site: z.string(),
+  sourceId: idSchema,
+  site: idSchema,
   externalId: z.string(),
   status: z.string(),
   syncedAt: z.date(),
@@ -40,10 +53,10 @@ export const createSyncEntrySchema = z.object({
 })
 
 export const editSyncEntrySchema = z.object({
-  id: z.string(),
+  id: idSchema,
   sourceType: z.string(),
-  sourceId: z.string(),
-  site: z.string(),
+  sourceId: idSchema,
+  site: idSchema,
   externalId: z.string(),
   status: z.string(),
   syncedAt: z.date(),
@@ -51,14 +64,14 @@ export const editSyncEntrySchema = z.object({
 })
 
 export const removeSyncEntriesSchema = z.object({
-  ids: z.array(z.string()),
+  ids: z.array(idSchema),
 })
 
 export const countSyncEntriesSchema = z.object({
   filters: z.object({
     sourceType: z.string(),
-    sourceId: z.string(),
-    site: z.string(),
+    sourceId: idSchema,
+    site: idSchema,
     externalId: z.string(),
     createdAt: dateRangeSchema.optional(),
     updatedAt: dateRangeSchema.optional(),
@@ -66,19 +79,19 @@ export const countSyncEntriesSchema = z.object({
 })
 
 export const syncProductCreateSchema = z.object({
-  siteId: z.string(),
-  productId: z.string(),
+  siteId: idSchema,
+  productId: idSchema,
 })
 
 export const syncProductEditSchema = z.object({
-  siteId: z.string(),
-  productId: z.string(),
+  siteId: idSchema,
+  productId: idSchema,
   difference: z.record(z.string(), z.unknown()),
 })
 
 export const syncProductQuantitySchema = z.object({
-  siteId: z.string(),
-  productId: z.string(),
+  siteId: idSchema,
+  productId: idSchema,
   quantity: z.number(),
 })
 

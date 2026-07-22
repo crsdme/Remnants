@@ -5,7 +5,7 @@ import type {
   GetInventoriesResponse,
   GetInventoryItemsResponse,
   RemoveInventoriesResponse,
-  ScanBarcodeToDraftResponse,
+  ScanBarcodeToDraftInventoryResponse,
 } from '@remnant/shared'
 import type {
   CreateInventoriesPayload,
@@ -13,7 +13,7 @@ import type {
   GetInventoriesPayload,
   GetInventoryItemsPayload,
   RemoveInventoriesPayload,
-  ScanBarcodeToDraftInventoryPayload,
+  ScanBarcodeToDraftsPayload,
 } from '@/types/'
 import { v4 as uuidv4 } from 'uuid'
 import { mapInventoryToDTO } from '@/mappers'
@@ -76,8 +76,8 @@ export async function getItems({ payload }: { payload: GetInventoryItemsPayload 
   }
 }
 
-export async function scanBarcodeToDraft({ payload }: { payload: ScanBarcodeToDraftInventoryPayload }): Promise<ScanBarcodeToDraftResponse> {
-  const { barcode, category } = payload
+export async function scanBarcodeToDraft({ payload }: { payload: ScanBarcodeToDraftsPayload }): Promise<ScanBarcodeToDraftInventoryResponse> {
+  const { barcode, category } = payload.filters
 
   const { data: { items: [product] } } = await ProductService.get({
     payload: parseGetProducts({ filters: { codes: [barcode] }, pagination: { full: true } }),
@@ -109,7 +109,9 @@ export async function create({ payload, user }: { payload: CreateInventoriesPayl
     payload: {
       _id: inventoryId,
       warehouse,
-      categories,
+      categoriesIds: categories,
+      createdBy,
+      status: 'confirmed',
       comment,
     },
   })
@@ -119,13 +121,13 @@ export async function create({ payload, user }: { payload: CreateInventoriesPayl
 
   const mappedItems = products.map((product) => {
     const item = items.find(p => p.id === product.id)
+    const bookQuantity = product.warehouseStock.find(q => q.warehouse === warehouse)?.count ?? 0
 
     if (!item) {
-      const productQuantity = product.warehouseStock.find(q => q.warehouse === warehouse)
       return {
         inventoryId,
         productId: product.id,
-        quantity: productQuantity?.count ?? 0,
+        quantity: bookQuantity,
         receivedQuantity: 0,
       }
     }
@@ -163,13 +165,14 @@ export async function create({ payload, user }: { payload: CreateInventoriesPayl
 }
 
 export async function edit({ payload }: { payload: EditInventoriesPayload }): Promise<EditInventoryResponse> {
-  const { id, warehouse, comment } = payload
+  const { id, warehouse, categories, comment } = payload
 
   const inventory = await InventoryRepo.updateById({
     id,
     payload: {
       status: 'draft',
       warehouse,
+      categoriesIds: categories,
       comment,
     },
   })
@@ -187,12 +190,39 @@ export async function edit({ payload }: { payload: EditInventoriesPayload }): Pr
 
 export async function remove({ payload, user }: { payload: RemoveInventoriesPayload, user: AuthUser }): Promise<RemoveInventoriesResponse> {
   for (const id of payload.ids) {
-    await InventoryRepo.removeById(id, user.id)
+    const inventory = await InventoryRepo.findById(id)
+
+    if (inventory === null || inventory.removed)
+      throw new HttpError(404, 'Inventory not found', 'INVENTORY_NOT_FOUND')
+
+    if (inventory.status === 'cancelled')
+      throw new HttpError(400, 'Inventory already cancelled', 'INVENTORY_ALREADY_CANCELLED')
+
+    const inventoryItems = await InventoryRepo.findItemsByInventoryId(id)
+
+    for (const item of inventoryItems) {
+      await QuantityService.count({
+        payload: {
+          productId: item.productId,
+          warehouse: inventory.warehouse,
+          count: item.quantity,
+          mode: 'set',
+          userId: user.id,
+          refType: 'inventory',
+          refId: id,
+        },
+      })
+    }
+
+    const cancelled = await InventoryRepo.cancelById(id, user.id)
+
+    if (cancelled === null)
+      throw new HttpError(400, 'Inventory already cancelled', 'INVENTORY_ALREADY_CANCELLED')
   }
 
   return {
     status: 'success',
-    code: 'WAREHOUSE_TRANSACTION_REMOVED',
-    message: 'Warehouse transaction removed',
+    code: 'INVENTORIES_REMOVED',
+    message: 'Inventories removed',
   }
 }

@@ -1,8 +1,8 @@
 import type {
-  LanguageString,
   UserRoleDTO,
 } from '@remnant/shared'
 import type { z } from 'zod'
+import type { userRoleDBSchema } from '../schemas'
 import {
   createUserRoleSchema,
   editUserRoleSchema,
@@ -10,17 +10,7 @@ import {
   removeUserRoleSchema,
 } from '@remnant/shared'
 
-export interface UserRoleDB {
-  _id: string
-  seq: number
-  names: LanguageString
-  permissions: string[]
-  priority: number
-  active: boolean
-  removed: boolean
-  createdAt: Date
-  updatedAt: Date
-}
+export type UserRoleDB = z.infer<typeof userRoleDBSchema>
 
 export type GetUserRolesPayload = z.output<typeof getUserRoleSchema>
 export function parseGetUserRoles(x: unknown): GetUserRolesPayload {

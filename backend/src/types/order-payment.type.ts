@@ -1,8 +1,11 @@
-import type {
-  OrderPaymentDTOPopulated,
-} from '@remnant/shared'
 import type { z } from 'zod'
-import type { CurrencyDB } from '@/types'
+import type {
+  createOrderPaymentRepoSchema,
+  editOrderPaymentRepoSchema,
+  orderPaymentDBPopulatedSchema,
+  orderPaymentDBSchema,
+  orderPaymentPopulatedRepoItemSchema,
+} from '@/schemas/order-payment.schema'
 import {
   createOrderPaymentSchema,
   editOrderPaymentSchema,
@@ -10,28 +13,11 @@ import {
   removeOrderPaymentsSchema,
 } from '@remnant/shared'
 
-export interface OrderPaymentDB {
-  _id: string
-  orderId: string
-  cashregisterId: string
-  cashregisterAccountId: string
-  minorAmount: number
-  currencyId: string
-  paymentStatus: string
-  paymentDate: Date
-  transactionId: string
-  comment: string
-  createdBy: string
-  removedBy: string
-  removed: boolean
-  createdAt: Date
-  updatedAt: Date
-}
+export type OrderPaymentDB = z.infer<typeof orderPaymentDBSchema>
 
-export type OrderPaymentDBPopulated
-  = Omit<OrderPaymentDB, 'currencyId'> & {
-    currency: CurrencyDB
-  }
+export type OrderPaymentDBPopulated = z.infer<typeof orderPaymentDBPopulatedSchema>
+
+export type OrderPaymentPopulatedRepoItem = z.infer<typeof orderPaymentPopulatedRepoItemSchema>
 
 export type GetOrderPaymentsPayload = z.output<typeof getOrderPaymentsSchema>
 export function parseGetOrderPayments(x: unknown): GetOrderPaymentsPayload {
@@ -53,33 +39,9 @@ export function parseRemoveOrderPayments(x: unknown): RemoveOrderPaymentsPayload
   return removeOrderPaymentsSchema.parse(x)
 }
 
-export interface OrderPaymentPopulatedRepoItem extends Omit<OrderPaymentDTOPopulated, 'amount' | 'currency'> {
-  minorAmount: number
-  currency: {
-    id: string
-    names: OrderPaymentDTOPopulated['currency']['names']
-    symbols: OrderPaymentDTOPopulated['currency']['symbols']
-    scale: number
-    paymentEpsilon?: number
-  }
-}
-
 export type GetOrderPaymentsRepoPayload = GetOrderPaymentsPayload
 export interface GetOrderPaymentsRepoResult { items: OrderPaymentPopulatedRepoItem[], total: number, page: number, pageSize: number }
 
-export interface CreateOrderPaymentsRepoPayload extends Omit<CreateOrderPaymentsPayload, 'amount'> {
-  minorAmount: number
-}
+export type CreateOrderPaymentsRepoPayload = z.infer<typeof createOrderPaymentRepoSchema>
 
-export interface EditOrderPaymentsRepoPayload {
-  orderId?: string
-  cashregisterId?: string
-  cashregisterAccountId?: string
-  minorAmount?: number
-  currencyId?: string
-  paymentStatus?: string
-  paymentDate?: Date
-  comment?: string
-  removed?: boolean
-  removedBy?: string
-}
+export type EditOrderPaymentsRepoPayload = z.infer<typeof editOrderPaymentRepoSchema>

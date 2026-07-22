@@ -1,12 +1,12 @@
 import type { responseSchema } from './common/'
 import { z } from 'zod'
-import { dateRangeSchema } from './common/'
+import { dateRangeSchema, idSchema } from './common/'
 
 export const getStatisticSchema = z.object({
   filters: z.object({
     date: dateRangeSchema,
-    cashregister: z.array(z.string()).optional(),
-    cashregisterAccount: z.array(z.string()).optional(),
+    cashregister: z.array(idSchema).optional(),
+    cashregisterAccount: z.array(idSchema).optional(),
   }).optional().default({
     date: {
       from: new Date(new Date().setHours(0, 0, 0, 0)),

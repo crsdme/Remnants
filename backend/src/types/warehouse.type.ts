@@ -1,8 +1,8 @@
 import type {
-  LanguageString,
   WarehouseDTO,
 } from '@remnant/shared'
 import type { z } from 'zod'
+import type { warehouseDBSchema } from '../schemas'
 import {
   createWarehousesSchema,
   editWarehousesSchema,
@@ -10,15 +10,7 @@ import {
   removeWarehousesSchema,
 } from '@remnant/shared'
 
-export interface WarehouseDB {
-  _id: string
-  names: LanguageString
-  priority: number
-  active: boolean
-  removed: boolean
-  createdAt: Date
-  updatedAt: Date
-}
+export type WarehouseDB = z.infer<typeof warehouseDBSchema>
 
 export type GetWarehousesPayload = z.output<typeof getWarehousesSchema>
 export function parseGetWarehouses(x: unknown): GetWarehousesPayload {

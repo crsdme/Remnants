@@ -17,9 +17,20 @@ import type {
   OrderPaymentPopulatedRepoItem,
 } from '@/types'
 import { OrderItemModel, OrderModel, OrderPaymentModel } from '@/models'
-import { buildQuery, buildSortQuery, unwrapAggregate } from '@/utils'
+import { applyScopeIdsToQuery, buildQuery, buildSortQuery, unwrapAggregate } from '@/utils'
 
-export async function list({ payload }: { payload: GetOrdersRepoPayload }): Promise<GetOrdersRepoResult> {
+export async function list({
+  payload,
+  options = {},
+}: {
+  payload: GetOrdersRepoPayload
+  options?: {
+    warehouseIds?: string[] | null
+    deliveryServiceIds?: string[] | null
+    orderSourceIds?: string[] | null
+    orderStatusIds?: string[] | null
+  }
+}): Promise<GetOrdersRepoResult> {
   const {
     current,
     pageSize,
@@ -82,6 +93,11 @@ export async function list({ payload }: { payload: GetOrdersRepoPayload }): Prom
       removed: { type: 'exact' },
     },
   })
+
+  applyScopeIdsToQuery(query, options.warehouseIds, 'warehouse')
+  applyScopeIdsToQuery(query, options.deliveryServiceIds, 'deliveryService')
+  applyScopeIdsToQuery(query, options.orderSourceIds, 'orderSource')
+  applyScopeIdsToQuery(query, options.orderStatusIds, 'orderStatus')
   const sorters = buildSortQuery(payload.sorters, { seq: -1 })
 
   const profitStages: PipelineStage[] = []

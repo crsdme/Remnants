@@ -28,11 +28,11 @@ const InventorySchema: Schema = new Schema(
       ref: 'Warehouse',
       required: true,
     },
-    category: {
+    categoriesIds: [{
       type: String,
       ref: 'Category',
       required: true,
-    },
+    }],
     createdBy: {
       type: String,
       ref: 'User',
@@ -42,6 +42,10 @@ const InventorySchema: Schema = new Schema(
       type: String,
       ref: 'User',
       default: null,
+    },
+    removed: {
+      type: Boolean,
+      default: false,
     },
     comment: {
       type: String,
@@ -90,7 +94,7 @@ InventorySchema.set('toJSON', {
 InventorySchema.pre('save', async function (this: InventoryDoc, next) {
   if (this.isNew) {
     const counter = await CounterModel.findByIdAndUpdate(
-      'orders',
+      'inventory',
       { $inc: { seq: 1 } },
       { new: true, upsert: true },
     )

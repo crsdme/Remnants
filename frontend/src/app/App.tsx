@@ -193,6 +193,14 @@ export default function App() {
             path="/barcodes"
             element={<ProtectedRoute children={<Pages.BarcodesPage />} permissions={['barcode.page']} />}
           />
+          <Route
+            path="/barcodes/create"
+            element={<ProtectedRoute children={<Pages.CreateBarcodePage />} permissions={['barcode.create']} />}
+          />
+          <Route
+            path="/barcodes/edit/:id"
+            element={<ProtectedRoute children={<Pages.EditBarcodePage />} permissions={['barcode.edit']} />}
+          />
 
           <Route
             path="/inventories"

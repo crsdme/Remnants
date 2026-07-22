@@ -5,16 +5,16 @@ export const balanceSchema = z.object({
   id: idSchema,
   seq: z.number(),
   warehouseBalance: z.array(z.object({
-    warehouseId: z.string(),
+    warehouseId: idSchema,
     totals: z.array(z.object({
-      currencyId: z.string(),
+      currencyId: idSchema,
       amount: z.number(),
     })),
   })),
   cashregisterBalance: z.array(z.object({
-    cashregisterId: z.string(),
+    cashregisterId: idSchema,
     totals: z.array(z.object({
-      currencyId: z.string(),
+      currencyId: idSchema,
       amount: z.number(),
     })),
   })),
@@ -27,8 +27,8 @@ export const getBalanceSchema = z.object({
       from: new Date(new Date().setHours(0, 0, 0, 0)),
       to: new Date(new Date().setHours(23, 59, 59, 999)),
     }),
-    warehouses: z.array(z.string()).optional(),
-    cashregisters: z.array(z.string()).optional(),
+    warehouses: z.array(idSchema).optional(),
+    cashregisters: z.array(idSchema).optional(),
   }),
   pagination: paginationSchema.optional().default({}),
 })

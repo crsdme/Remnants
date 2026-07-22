@@ -7,9 +7,9 @@ import type {
   GetWarehousesRepoResult,
 } from '@/types/'
 import { WarehouseModel } from '@/models'
-import { buildQuery, buildSortQuery, unwrapAggregate } from '@/utils'
+import { applyScopeIdsToQuery, buildQuery, buildSortQuery, unwrapAggregate } from '@/utils'
 
-export async function list(payload: GetWarehousesRepoPayload): Promise<GetWarehousesRepoResult> {
+export async function list(payload: GetWarehousesRepoPayload, options: { scopeIds?: string[] | null } = {}): Promise<GetWarehousesRepoResult> {
   const {
     current,
     pageSize,
@@ -36,6 +36,8 @@ export async function list(payload: GetWarehousesRepoPayload): Promise<GetWareho
     },
     language,
   })
+
+  applyScopeIdsToQuery(query, options.scopeIds)
 
   const sorters = buildSortQuery(payload.sorters, { priority: 1 })
 

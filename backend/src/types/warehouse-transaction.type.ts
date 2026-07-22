@@ -11,6 +11,8 @@ import type {
   createWarehouseTransactionItemsRepoSchema,
   editWarehouseTransactionItemRepoSchema,
   editWarehouseTransactionRepoSchema,
+  warehouseTransactionDBSchema,
+  warehouseTransactionItemDBSchema,
 } from '@/schemas'
 import {
   createWarehouseTransactionSchema,
@@ -22,33 +24,9 @@ import {
   scanBarcodeToDraftSchema,
 } from '@remnant/shared'
 
-export interface WarehouseTransactionDB {
-  _id: string
-  seq: number
-  type: string
-  fromWarehouse: string
-  toWarehouse: string
-  requiresReceiving: boolean
-  status: string
-  accepted: boolean
-  acceptedBy: string
-  createdBy: string
-  removedBy: string
-  comment: string
-  removedAt: Date
-  removed: boolean
-  acceptedAt: Date
-  createdAt: Date
-  updatedAt: Date
-}
+export type WarehouseTransactionDB = z.infer<typeof warehouseTransactionDBSchema>
 
-export interface WarehouseTransactionItemDB {
-  _id: string
-  transactionId: string
-  productId: string
-  quantity: number
-  price: number
-}
+export type WarehouseTransactionItemDB = z.infer<typeof warehouseTransactionItemDBSchema>
 
 export type GetWarehouseTransactionsPayload = z.output<typeof getWarehouseTransactionsSchema>
 export function parseGetWarehouseTransactions(x: unknown): GetWarehouseTransactionsPayload {

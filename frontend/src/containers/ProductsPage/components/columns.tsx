@@ -199,7 +199,7 @@ export function useColumns({ filters }: { filters: { selectedWarehouse: string }
       if (!hasPermission(permissions, 'product.purchasePrice'))
         return []
       return [
-        columnHelper.accessor(row => `${row.purchasePrice} ${row.purchaseCurrency.symbols[language] ?? ''}`, {
+        columnHelper.accessor(row => `${row.purchasePrice} ${row.purchaseCurrency?.symbols[language] ?? ''}`, {
           id: 'purchasePrice',
           size: 150,
           meta: {
@@ -210,7 +210,7 @@ export function useColumns({ filters }: { filters: { selectedWarehouse: string }
           },
           header: ({ column }) => sortHeader(column, t('page.products.table.purchasePrice')),
         }),
-        columnHelper.accessor(row => row.purchaseCurrency.symbols[language] ?? '', {
+        columnHelper.accessor(row => row.purchaseCurrency?.symbols[language] ?? '', {
           id: 'purchaseCurrency',
           size: 150,
           meta: {

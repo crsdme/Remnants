@@ -2,7 +2,7 @@ import type {
   UserPopulatedDTO,
 } from '@remnant/shared'
 import type { z } from 'zod'
-import type { userPopulatedDBSchema } from '@/schemas/user.schema'
+import type { userDBSchema, userPopulatedDBSchema } from '@/schemas/user.schema'
 import {
   createUserSchema,
   editUserSchema,
@@ -10,20 +10,9 @@ import {
   removeUserSchema,
 } from '@remnant/shared'
 
-export interface UserDB {
-  _id: string
-  seq: number
-  login: string
-  password: string
-  name: string
-  role: string
-  active: boolean
-  removed: boolean
-  createdAt: Date
-  updatedAt: Date
-}
+export type UserDB = z.infer<typeof userDBSchema>
 
-export type UserPopulatedDB = z.output<typeof userPopulatedDBSchema>
+export type UserPopulatedDB = z.infer<typeof userPopulatedDBSchema>
 
 export type GetUsersPayload = z.output<typeof getUserSchema>
 export function parseGetUsers(x: unknown): GetUsersPayload {

@@ -6,9 +6,12 @@ import type {
   GetCashregisterAccountsRepoPayload,
 } from '@/types'
 import { CashregisterAccountModel } from '@/models'
-import { buildQuery, buildSortQuery, unwrapAggregate } from '@/utils'
+import { applyScopeIdsToQuery, buildQuery, buildSortQuery, unwrapAggregate } from '@/utils'
 
-export async function list(payload: GetCashregisterAccountsRepoPayload): Promise<{ items: CashregisterAccountPopulatedDTO[], total: number, page: number, pageSize: number }> {
+export async function list(
+  payload: GetCashregisterAccountsRepoPayload,
+  options: { scopeIds?: string[] | null } = {},
+): Promise<{ items: CashregisterAccountPopulatedDTO[], total: number, page: number, pageSize: number }> {
   const {
     current = 1,
     pageSize = 10,
@@ -35,6 +38,8 @@ export async function list(payload: GetCashregisterAccountsRepoPayload): Promise
     },
     language: 'en',
   })
+
+  applyScopeIdsToQuery(query, options.scopeIds)
 
   const sorters = buildSortQuery(payload.sorters, { priority: 1 })
 

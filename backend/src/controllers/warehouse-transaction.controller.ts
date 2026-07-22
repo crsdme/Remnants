@@ -14,13 +14,14 @@ import type {
 import * as WarehouseTransactionService from '@/services/warehouse-transaction.service'
 
 export async function get(
-  req: ValidatedRequest<GetWarehouseTransactionsPayload, never>,
+  req: ValidatedAuthedRequest<GetWarehouseTransactionsPayload, never>,
   res: Response,
   next: NextFunction,
 ) {
   try {
     const serviceResponse = await WarehouseTransactionService.get({
       payload: req.validated.query,
+      user: req.user,
     })
 
     res.status(200).json(serviceResponse)

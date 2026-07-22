@@ -122,7 +122,7 @@ export function useColumns({ isLoading, addProduct, filters }: { isLoading: bool
         return []
       return [
         columnHelper.accessor(
-          row => `${row.purchasePrice} ${row.purchaseCurrency.symbols[language]}`,
+          row => `${row.purchasePrice} ${row.purchaseCurrency?.symbols[language] ?? ''}`,
           {
             id: 'purchasePrice',
             size: 150,

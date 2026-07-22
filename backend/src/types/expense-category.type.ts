@@ -1,8 +1,8 @@
 import type {
   ExpenseCategoryDTO,
-  LanguageString,
 } from '@remnant/shared'
 import type { z } from 'zod'
+import type { expenseCategoryDBSchema } from '../schemas'
 import {
   createExpenseCategorySchema,
   editExpenseCategorySchema,
@@ -10,16 +10,7 @@ import {
   removeExpenseCategoriesSchema,
 } from '@remnant/shared'
 
-export interface ExpenseCategoryDB {
-  _id: string
-  names: LanguageString
-  color: string
-  comment: string
-  priority: number
-  removed: boolean
-  createdAt: Date
-  updatedAt: Date
-}
+export type ExpenseCategoryDB = z.infer<typeof expenseCategoryDBSchema>
 
 export type GetExpenseCategoriesPayload = z.output<typeof getExpenseCategoriesSchema>
 export function parseGetExpenseCategories(x: unknown): GetExpenseCategoriesPayload {

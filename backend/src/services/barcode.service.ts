@@ -1,10 +1,11 @@
 import type {
-  BarcodeDTO,
+  BarcodeDTOPopulated,
   CreateBarcodeResponse,
   EditBarcodeResponse,
   GenerateCodeResponse,
   GetBarcodeByCodeResponse,
   GetBarcodesResponse,
+  LanguageCode,
   PrintBarcodeResponse,
   RemoveBarcodesResponse,
 } from '@remnant/shared'
@@ -36,28 +37,32 @@ export type PdfKitDoc = InstanceType<typeof PDFDocument>
 export async function get({ payload }: { payload: GetBarcodesPayload }): Promise<GetBarcodesResponse> {
   const { items, total, page, pageSize } = await barcodesRepo.list(payload)
 
+  const mappedItems = items.map(item => mapBarcodeToDTO(item))
+
   return {
     status: 'success',
     code: 'BARCODES_FETCHED',
     message: 'Barcodes fetched',
     data: {
-      items,
+      items: mappedItems,
       pagination: { total, page, pageSize },
     },
   }
 }
 
 export async function getByCode({ payload }: { payload: GetBarcodeByCodePayload }): Promise<GetBarcodeByCodeResponse> {
-  const { items: [data] } = await barcodesRepo.list(parseGetBarcodes({ filters: { codes: [payload.code] } }))
+  const { items } = await barcodesRepo.list(parseGetBarcodes({ filters: { codes: [payload.code] } }))
 
-  if (data === null)
+  if (items === null)
     throw new HttpError(400, 'Barcode not found', 'BARCODE_NOT_FOUND')
+
+  const mappedItems = items.map(item => mapBarcodeToDTO(item))
 
   return {
     status: 'success',
     code: 'BARCODE_FETCHED',
     message: 'Barcode fetched',
-    data,
+    data: mappedItems[0],
   }
 }
 
@@ -66,13 +71,14 @@ export async function create({ payload }: { payload: CreateBarcodesPayload }): P
 
   const parsedProducts = products.map(product => ({
     _id: product.id,
-    lineQuantity: product.lineQuantity,
+    unitsPerScan: product.unitsPerScan,
   }))
 
   if (code === undefined || code.length === 0) {
     const { data: barcode } = await generateCode()
     code = barcode
   }
+
   const barcode = await barcodesRepo.createOne({
     code,
     products: parsedProducts,
@@ -99,7 +105,6 @@ export async function create({ payload }: { payload: CreateBarcodesPayload }): P
     status: 'success',
     code: 'BARCODE_CREATED',
     message: 'Barcode created',
-    data: mapBarcodeToDTO(barcode),
   }
 }
 
@@ -122,7 +127,7 @@ export async function edit({ payload }: { payload: EditBarcodesPayload }): Promi
 
   const parsedProducts = products.map(product => ({
     _id: product.id,
-    lineQuantity: product.lineQuantity,
+    unitsPerScan: product.unitsPerScan,
   }))
 
   await productsRepo.removeBarcodeFromProducts(id)
@@ -150,7 +155,6 @@ export async function edit({ payload }: { payload: EditBarcodesPayload }): Promi
     status: 'success',
     code: 'BARCODE_EDITED',
     message: 'Barcode edited',
-    data: mapBarcodeToDTO(barcode),
   }
 }
 
@@ -191,19 +195,21 @@ export async function print({ payload }: { payload: PrintBarcodePayload }): Prom
     pagination: { current: 1, pageSize: 1000, full: true },
   })
 
+  const mappedBarcodes = barcodes.map(item => mapBarcodeToDTO(item))
+
   if (barcodes.length === 0)
     throw new HttpError(400, 'Barcodes not found', 'BARCODES_NOT_FOUND')
 
   if (size === '60x30')
-    return print60x30({ barcodes, size, language })
+    return print60x30({ barcodes: mappedBarcodes, size, language })
 
   if (size === '55x40')
-    return print55x40({ barcodes, size, language })
+    return print55x40({ barcodes: mappedBarcodes, size, language })
 
-  return print20x30({ barcodes, size, language })
+  return print20x30({ barcodes: mappedBarcodes, size, language })
 }
 
-async function print20x30(payload: { barcodes: BarcodeDTO[], size: string, language: LanguageCode }): Promise<PrintBarcodeResponse<PdfKitDoc>> {
+async function print20x30(payload: { barcodes: BarcodeDTOPopulated[], size: string, language: string }): Promise<PrintBarcodeResponse<PdfKitDoc>> {
   const { barcodes, size, language } = payload
   const [w, h] = size.split('x').map(Number)
   const padding = 10
@@ -250,7 +256,7 @@ async function print20x30(payload: { barcodes: BarcodeDTO[], size: string, langu
     )
 
     doc.text(
-      product.names?.[language] || 'ERROR',
+      product.names?.[language as LanguageCode] ?? 'ERROR',
       padding,
       doc.y,
       { width: contentWidth, height: 50, ellipsis: true, lineBreak: false },
@@ -265,7 +271,7 @@ async function print20x30(payload: { barcodes: BarcodeDTO[], size: string, langu
   }
 }
 
-async function print60x30(payload: { barcodes: BarcodeDTO[], size: string, language: string }): Promise<PrintBarcodeResponse<PdfKitDoc>> {
+async function print60x30(payload: { barcodes: BarcodeDTOPopulated[], size: string, language: LanguageCode }): Promise<PrintBarcodeResponse<PdfKitDoc>> {
   const { barcodes, size, language } = payload
   const [w, h] = size.split('x').map(Number)
   const padding = 10
@@ -325,7 +331,7 @@ async function print60x30(payload: { barcodes: BarcodeDTO[], size: string, langu
   }
 }
 
-async function print55x40(payload: { barcodes: BarcodeDTO[], size: string, language: string }): Promise<PrintBarcodeResponse<PdfKitDoc>> {
+async function print55x40(payload: { barcodes: BarcodeDTOPopulated[], size: string, language: string }): Promise<PrintBarcodeResponse<PdfKitDoc>> {
   const { barcodes, size, language } = payload
   const [w, h] = size.split('x').map(Number)
   const padding = 10
@@ -467,7 +473,7 @@ async function print55x40(payload: { barcodes: BarcodeDTO[], size: string, langu
     doc.addPage({ size: [w * 8.49, h * 8.49] })
     doc.font('Manrope-Bold').fontSize(170)
 
-    const bigCode = (product.names?.[language] ?? '').split('#')[1] ?? 'ERROR'
+    const bigCode = (product.names?.[language as LanguageCode] ?? '').split('#')[1] ?? 'ERROR'
 
     const bigCodeHeight = doc.y
 

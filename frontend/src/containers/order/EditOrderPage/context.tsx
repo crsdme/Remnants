@@ -58,14 +58,14 @@ export function EditOrderProvider({ children }: { children: ReactNode }) {
   const paymentForm = useForm<PaymentFormValues>({
     resolver: zodResolver(paymentFormSchema) as Resolver<PaymentFormValues>,
     defaultValues: {
-      id: '',
-      cashregister: '',
-      cashregisterAccount: '',
+      id: undefined,
+      cashregister: undefined,
+      cashregisterAccount: undefined,
       amount: 0,
-      currency: '',
+      currency: undefined,
       paymentDate: new Date(),
       paymentStatus: PAYMENT_STATUSES[0].id,
-      comment: '',
+      comment: undefined,
     },
   })
 
@@ -74,13 +74,13 @@ export function EditOrderProvider({ children }: { children: ReactNode }) {
   const informationForm = useForm<InformationFormValues>({
     resolver: zodResolver(informationFormSchema) as Resolver<InformationFormValues>,
     defaultValues: {
-      warehouse: '',
-      orderSource: '',
-      orderStatus: '',
-      deliveryService: '',
-      client: '',
+      warehouse: undefined,
+      orderSource: undefined,
+      orderStatus: undefined,
+      deliveryService: undefined,
+      client: undefined,
       items: [],
-      comment: '',
+      comment: undefined,
     },
   })
 
@@ -89,13 +89,13 @@ export function EditOrderProvider({ children }: { children: ReactNode }) {
   const clientForm = useForm<ClientFormValues>({
     resolver: zodResolver(clientFormSchema) as Resolver<ClientFormValues>,
     defaultValues: {
-      name: '',
-      middleName: '',
-      lastName: '',
-      country: '',
+      name: undefined,
+      middleName: undefined,
+      lastName: undefined,
+      country: undefined,
       phones: [],
       emails: [],
-      comment: '',
+      comment: undefined,
     },
   })
 

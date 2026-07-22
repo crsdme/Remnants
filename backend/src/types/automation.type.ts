@@ -2,6 +2,12 @@ import type {
   AutomationDTO,
 } from '@remnant/shared'
 import type { z } from 'zod'
+import type {
+  automationActionDBSchema,
+  automationConditionDBSchema,
+  automationDBSchema,
+  automationTriggerDBSchema,
+} from '../schemas'
 import {
   createAutomationSchema,
   editAutomationSchema,
@@ -10,33 +16,13 @@ import {
   runAutomationsSchema,
 } from '@remnant/shared'
 
-export interface AutomationTriggerDB {
-  type: string
-  params: string[]
-}
+export type AutomationTriggerDB = z.infer<typeof automationTriggerDBSchema>
 
-export interface AutomationConditionDB {
-  field: string
-  operator: string
-  params: unknown
-}
+export type AutomationConditionDB = z.infer<typeof automationConditionDBSchema>
 
-export interface AutomationActionDB {
-  field: string
-  params: unknown
-}
+export type AutomationActionDB = z.infer<typeof automationActionDBSchema>
 
-export interface AutomationDB {
-  _id: string
-  name: string
-  trigger: AutomationTriggerDB
-  conditions: AutomationConditionDB[]
-  actions: AutomationActionDB[]
-  active: boolean
-  removed: boolean
-  createdAt: Date
-  updatedAt: Date
-}
+export type AutomationDB = z.infer<typeof automationDBSchema>
 
 export type GetAutomationsPayload = z.output<typeof getAutomationsSchema>
 export function parseGetAutomations(x: unknown): GetAutomationsPayload {

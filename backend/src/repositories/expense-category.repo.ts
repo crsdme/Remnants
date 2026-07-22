@@ -7,9 +7,12 @@ import type {
   GetExpenseCategoriesRepoResult,
 } from '@/types/'
 import { ExpenseCategoryModel } from '@/models'
-import { buildQuery, buildSortQuery, unwrapAggregate } from '@/utils'
+import { applyScopeIdsToQuery, buildQuery, buildSortQuery, unwrapAggregate } from '@/utils'
 
-export async function list(payload: GetExpenseCategoriesRepoPayload): Promise<GetExpenseCategoriesRepoResult> {
+export async function list(
+  payload: GetExpenseCategoriesRepoPayload,
+  options: { scopeIds?: string[] | null } = {},
+): Promise<GetExpenseCategoriesRepoResult> {
   const {
     current,
     pageSize,
@@ -26,7 +29,7 @@ export async function list(payload: GetExpenseCategoriesRepoPayload): Promise<Ge
   } = payload.filters
 
   const query = buildQuery({
-    filters: { ids, names, color, priority, comment, createdAt, updatedAt },
+    filters: { _id: ids, names, color, priority, comment, createdAt, updatedAt },
     rules: {
       _id: { type: 'array' },
       names: { type: 'string', langAware: true },
@@ -37,6 +40,8 @@ export async function list(payload: GetExpenseCategoriesRepoPayload): Promise<Ge
       updatedAt: { type: 'dateRange' },
     },
   })
+
+  applyScopeIdsToQuery(query, options.scopeIds)
 
   const sorters = buildSortQuery(payload.sorters, { priority: 1 })
 

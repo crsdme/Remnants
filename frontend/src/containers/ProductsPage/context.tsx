@@ -433,8 +433,8 @@ function getProductFormDefaults(
       categories: product.categories.map((category: { id: string }) => category.id),
       price: product.price,
       currency: product.currency.id,
-      purchasePrice: product.purchasePrice,
-      purchaseCurrency: product.purchaseCurrency.id,
+      purchasePrice: product.purchasePrice || 0,
+      purchaseCurrency: product.purchaseCurrency?.id || '',
       productProperties: product.productProperties.reduce(
         (acc, property) => ({ ...acc, [`${property.id}`]: property.value }),
         {} as Record<string, unknown>,

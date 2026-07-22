@@ -1,8 +1,8 @@
 import type {
-  LanguageString,
   SiteDTO,
 } from '@remnant/shared'
 import type { z } from 'zod'
+import type { siteDBSchema } from '../schemas'
 import {
   createSiteSchema,
   editSiteSchema,
@@ -10,18 +10,7 @@ import {
   removeSitesSchema,
 } from '@remnant/shared'
 
-export interface SiteDB {
-  _id: string
-  names: LanguageString
-  url: string
-  key: string
-  priority: number
-  active: boolean
-  warehouses: string[]
-  removed: boolean
-  createdAt: Date
-  updatedAt: Date
-}
+export type SiteDB = z.infer<typeof siteDBSchema>
 
 export type GetSitesPayload = z.output<typeof getSitesSchema>
 export function parseGetSites(x: unknown): GetSitesPayload {

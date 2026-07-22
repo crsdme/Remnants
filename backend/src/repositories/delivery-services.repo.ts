@@ -7,9 +7,12 @@ import type {
   GetDeliveryServicesRepoResult,
 } from '@/types/'
 import { DeliveryServiceModel } from '@/models'
-import { buildQuery, buildSortQuery, unwrapAggregate } from '@/utils'
+import { applyScopeIdsToQuery, buildQuery, buildSortQuery, unwrapAggregate } from '@/utils'
 
-export async function list(payload: GetDeliveryServicesRepoPayload): Promise<GetDeliveryServicesRepoResult> {
+export async function list(
+  payload: GetDeliveryServicesRepoPayload,
+  options: { scopeIds?: string[] | null } = {},
+): Promise<GetDeliveryServicesRepoResult> {
   const {
     current,
     pageSize,
@@ -36,6 +39,8 @@ export async function list(payload: GetDeliveryServicesRepoPayload): Promise<Get
     },
     language,
   })
+
+  applyScopeIdsToQuery(query, options.scopeIds)
 
   const sorters = buildSortQuery(payload.sorters, { priority: 1 })
 

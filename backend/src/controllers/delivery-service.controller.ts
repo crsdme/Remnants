@@ -4,18 +4,20 @@ import type {
   EditDeliveryServicesPayload,
   GetDeliveryServicesPayload,
   RemoveDeliveryServicesPayload,
+  ValidatedAuthedRequest,
   ValidatedRequest,
 } from '@/types'
 import * as DeliveryServiceService from '@/services/delivery-service.service'
 
 export async function get(
-  req: ValidatedRequest<GetDeliveryServicesPayload, never>,
+  req: ValidatedAuthedRequest<GetDeliveryServicesPayload, never>,
   res: Response,
   next: NextFunction,
 ) {
   try {
     const serviceResponse = await DeliveryServiceService.get({
       payload: req.validated.query,
+      user: req.user,
     })
 
     res.status(200).json(serviceResponse)

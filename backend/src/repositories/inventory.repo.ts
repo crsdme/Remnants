@@ -21,6 +21,9 @@ export async function list({ payload }: { payload: GetInventoriesRepoPayload }):
 
   const {
     seq,
+    status,
+    warehouse,
+    category,
     createdAt,
     updatedAt,
   } = payload.filters
@@ -28,14 +31,21 @@ export async function list({ payload }: { payload: GetInventoriesRepoPayload }):
   const query = buildQuery({
     filters: {
       seq,
+      status,
+      warehouse,
+      category,
       createdAt,
       updatedAt,
     },
     rules: {
       seq: { type: 'number' },
+      status: { type: 'exact' },
+      warehouse: { type: 'exact' },
+      category: { type: 'exact', field: 'categoriesIds' },
       createdAt: { type: 'dateRange' },
       updatedAt: { type: 'dateRange' },
     },
+    removed: false,
   })
 
   const sorters = buildSortQuery(payload.sorters, { seq: -1 })
@@ -50,9 +60,9 @@ export async function list({ payload }: { payload: GetInventoriesRepoPayload }):
     {
       $lookup: {
         from: 'categories',
-        localField: 'category',
+        localField: 'categoriesIds',
         foreignField: '_id',
-        as: 'category',
+        as: 'categories',
       },
     },
     {
@@ -67,9 +77,6 @@ export async function list({ payload }: { payload: GetInventoriesRepoPayload }):
       $addFields: {
         warehouse: {
           $first: '$warehouse',
-        },
-        category: {
-          $first: '$category',
         },
       },
     },
@@ -89,14 +96,14 @@ export async function list({ payload }: { payload: GetInventoriesRepoPayload }):
             else: '$$REMOVE',
           },
         },
-        category: {
-          $cond: {
-            if: { $gt: ['$category', null] },
-            then: {
-              id: '$category._id',
-              names: '$category.names',
+        categories: {
+          $map: {
+            input: '$categories',
+            as: 'category',
+            in: {
+              id: '$$category._id',
+              names: '$$category.names',
             },
-            else: '$$REMOVE',
           },
         },
         comment: 1,
@@ -443,6 +450,18 @@ export async function updateOneItem({ payload, session }: { payload: EditInvento
 
 export async function findById(id: string) {
   return InventoryModel.findById(id).exec()
+}
+
+export async function findItemsByInventoryId(inventoryId: string) {
+  return InventoryItemModel.find({ inventoryId }).exec()
+}
+
+export async function cancelById(id: string, cancelledBy: string) {
+  return InventoryModel.findOneAndUpdate(
+    { _id: id, status: { $ne: 'cancelled' } },
+    { $set: { status: 'cancelled', removedBy: cancelledBy, removedAt: new Date() } },
+    { new: true, runValidators: true },
+  ).exec()
 }
 
 export async function removeById(id: string, removedBy: string) {

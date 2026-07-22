@@ -1,4 +1,5 @@
 import type {
+  AuthUser,
   CreateOrderSourceResponse,
   EditOrderSourceResponse,
   GetOrderSourcesResponse,
@@ -12,10 +13,20 @@ import type {
 } from '@/types'
 import { mapOrderSourceToDTO } from '@/mappers/'
 import * as OrderSourceRepo from '@/repositories/order-source.repo'
-import { HttpError } from '@/utils/'
+import * as UserAccessRepo from '@/repositories/user-access.repo'
+import { getScopeIdsForUser, HttpError } from '@/utils/'
 
-export async function get({ payload }: { payload: GetOrderSourcesPayload }): Promise<GetOrderSourcesResponse> {
-  const { items, total, page, pageSize } = await OrderSourceRepo.list(payload)
+export async function get({
+  payload,
+  user,
+}: {
+  payload: GetOrderSourcesPayload
+  user: AuthUser
+}): Promise<GetOrderSourcesResponse> {
+  const access = await UserAccessRepo.getScopesByUserId(user.id)
+  const scopeIds = getScopeIdsForUser(access, 'orderSources', user)
+
+  const { items, total, page, pageSize } = await OrderSourceRepo.list(payload, { scopeIds })
 
   return {
     status: 'success',

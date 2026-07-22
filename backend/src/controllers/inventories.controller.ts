@@ -5,7 +5,7 @@ import type {
   GetInventoriesPayload,
   GetInventoryItemsPayload,
   RemoveInventoriesPayload,
-  ScanBarcodeToDraftPayload,
+  ScanBarcodeToDraftsPayload,
   ValidatedAuthedRequest,
   ValidatedRequest,
 } from '@/types'
@@ -36,7 +36,7 @@ export async function getItems(
 ) {
   try {
     const serviceResponse = await InventoriesService.getItems({
-      payload: req.validated.body,
+      payload: req.validated.query,
     })
 
     res.status(200).json(serviceResponse)
@@ -47,13 +47,13 @@ export async function getItems(
 }
 
 export async function scanBarcodeToDraft(
-  req: ValidatedRequest<ScanBarcodeToDraftPayload, never>,
+  req: ValidatedRequest<ScanBarcodeToDraftsPayload, never>,
   res: Response,
   next: NextFunction,
 ) {
   try {
     const serviceResponse = await InventoriesService.scanBarcodeToDraft({
-      payload: req.validated.body,
+      payload: req.validated.query,
     })
 
     res.status(200).json(serviceResponse)

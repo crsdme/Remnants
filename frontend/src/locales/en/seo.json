@@ -44,6 +44,12 @@
   "title.page.barcodes": "Barcodes - Remnant",
   "description.page.barcodes": "Manage barcodes in Remnant",
 
+  "title.page.barcode-create": "Create Barcode - Remnant",
+  "description.page.barcode-create": "Create a new barcode in Remnant",
+
+  "title.page.barcode-edit": "Edit Barcode - Remnant",
+  "description.page.barcode-edit": "Edit an existing barcode in Remnant",
+
   "title.page.money-transactions": "Money Transactions - Remnant",
   "description.page.money-transactions": "Manage money transactions in Remnant",
 

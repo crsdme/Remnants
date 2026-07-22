@@ -2,6 +2,7 @@ import type {
   SettingDTO,
 } from '@remnant/shared'
 import type { z } from 'zod'
+import type { settingDBSchema } from '../schemas'
 import {
   createSettingSchema,
   editSettingSchema,
@@ -9,17 +10,7 @@ import {
   removeSettingSchema,
 } from '@remnant/shared'
 
-export interface SettingDB {
-  _id: string
-  key: string
-  value: string
-  scope: string
-  isPublic: boolean
-  description: string
-  removed: boolean
-  createdAt: Date
-  updatedAt: Date
-}
+export type SettingDB = z.infer<typeof settingDBSchema>
 
 export type GetSettingsPayload = z.output<typeof getSettingsSchema>
 export function parseGetSettings(x: unknown): GetSettingsPayload {

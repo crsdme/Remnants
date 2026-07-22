@@ -7,9 +7,18 @@ import type {
   MoneyTransactionPopulated,
 } from '@/types/'
 import { MoneyTransactionModel } from '@/models'
-import { buildQuery, buildSortQuery, unwrapAggregate } from '@/utils'
+import { applyScopeIdsToQuery, buildQuery, buildSortQuery, unwrapAggregate } from '@/utils'
 
-export async function list({ payload }: { payload: GetMoneyTransactionsRepoPayload }): Promise<GetMoneyTransactionsRepoResult> {
+export async function list({
+  payload,
+  options = {},
+}: {
+  payload: GetMoneyTransactionsRepoPayload
+  options?: {
+    cashregisterIds?: string[] | null
+    cashregisterAccountIds?: string[] | null
+  }
+}): Promise<GetMoneyTransactionsRepoResult> {
   const {
     current,
     pageSize,
@@ -49,6 +58,9 @@ export async function list({ payload }: { payload: GetMoneyTransactionsRepoPaylo
     },
     removed: false,
   })
+
+  applyScopeIdsToQuery(query, options.cashregisterIds, 'cashregisterId')
+  applyScopeIdsToQuery(query, options.cashregisterAccountIds, 'accountId')
 
   const sorters = buildSortQuery(payload.sorters, { createdAt: 1 })
 

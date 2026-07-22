@@ -13,9 +13,12 @@ import type {
   WarehouseTransactionItemDB,
 } from '@/types/'
 import { WarehouseTransactionItemModel, WarehouseTransactionModel } from '@/models'
-import { buildQuery, buildSortQuery, unwrapAggregate } from '@/utils'
+import { applyScopeIdsToAnyOfFields, buildQuery, buildSortQuery, unwrapAggregate } from '@/utils'
 
-export async function list(payload: GetWarehouseTransactionsRepoPayload): Promise<GetWarehouseTransactionsRepoResult> {
+export async function list(
+  payload: GetWarehouseTransactionsRepoPayload,
+  options: { warehouseIds?: string[] | null } = {},
+): Promise<GetWarehouseTransactionsRepoResult> {
   const {
     current,
     pageSize,
@@ -37,6 +40,8 @@ export async function list(payload: GetWarehouseTransactionsRepoPayload): Promis
       updatedAt: { type: 'dateRange' },
     },
   })
+
+  applyScopeIdsToAnyOfFields(query, options.warehouseIds, ['fromWarehouse', 'toWarehouse'])
 
   const sorters = buildSortQuery(payload.sorters, { createdAt: 1 })
 
@@ -337,10 +342,10 @@ export async function listItems(payload: GetWarehouseTransactionsItemsRepoPayloa
               _id: 0,
               seq: 1,
               names: 1,
-              price: 1,
-              currency: { id: '$currency._id', names: 1, symbols: 1 },
-              purchasePrice: 1,
-              purchaseCurrency: { id: '$purchaseCurrency._id', names: 1, symbols: 1 },
+              minorPrice: 1,
+              currency: { id: '$currency._id', names: 1, symbols: 1, scale: '$currency.scale' },
+              minorPurchasePrice: 1,
+              purchaseCurrency: { id: '$purchaseCurrency._id', names: 1, symbols: 1, scale: '$purchaseCurrency.scale' },
               barcodes: { id: 1, code: 1 },
               categories: { id: 1, names: 1 },
               unit: { id: '$unit._id', names: 1, symbols: 1 },

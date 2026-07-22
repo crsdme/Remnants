@@ -1,4 +1,5 @@
 import type {
+  AuthUser,
   CreateDeliveryServiceResponse,
   EditDeliveryServiceResponse,
   GetDeliveryServicesResponse,
@@ -13,10 +14,20 @@ import type {
 import { mapDeliveryServiceToDTO } from '@/mappers/'
 import { DeliveryServiceModel } from '@/models/'
 import * as DeliveryServicesRepo from '@/repositories/delivery-services.repo'
-import { HttpError } from '@/utils/'
+import * as UserAccessRepo from '@/repositories/user-access.repo'
+import { getScopeIdsForUser, HttpError } from '@/utils/'
 
-export async function get({ payload }: { payload: GetDeliveryServicesPayload }): Promise<GetDeliveryServicesResponse> {
-  const { items, total, page, pageSize } = await DeliveryServicesRepo.list(payload)
+export async function get({
+  payload,
+  user,
+}: {
+  payload: GetDeliveryServicesPayload
+  user: AuthUser
+}): Promise<GetDeliveryServicesResponse> {
+  const access = await UserAccessRepo.getScopesByUserId(user.id)
+  const scopeIds = getScopeIdsForUser(access, 'deliveryServices', user)
+
+  const { items, total, page, pageSize } = await DeliveryServicesRepo.list(payload, { scopeIds })
 
   return {
     status: 'success',

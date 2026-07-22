@@ -1,17 +1,13 @@
 import type { Column } from '@tanstack/react-table'
 
-import type { ViewInventoryTableRow } from '../../ViewInventoryPage/context'
+import type { InventoryTableRow } from '../context'
 import { createColumnHelper } from '@tanstack/react-table'
 import {
   ArrowDown,
   ArrowUp,
-  Check,
-  ChevronDown,
-  ChevronRight,
   ChevronsUpDown,
   Copy,
   Eye,
-  Pencil,
   Trash,
 } from 'lucide-react'
 
@@ -27,15 +23,15 @@ import { useInventoryContext } from '../context'
 
 const sortIcons = { asc: ArrowUp, desc: ArrowDown }
 
-const columnHelper = createColumnHelper<ViewInventoryTableRow>()
+const columnHelper = createColumnHelper<InventoryTableRow>()
 
 export function useColumns() {
   const { t, language } = useLocale()
-  const { isLoading } = useInventoryContext()
+  const { isLoading, removeInventory } = useInventoryContext()
   const navigate = useNavigate()
 
   const columns = useMemo(() => {
-    function sortHeader(column: Column<ViewInventoryTableRow, unknown>, label: string) {
+    function sortHeader(column: Column<InventoryTableRow, unknown>, label: string) {
       const sorted = column.getIsSorted()
       const Icon = sorted ? sortIcons[sorted] : ChevronsUpDown
 
@@ -50,15 +46,6 @@ export function useColumns() {
           <Icon className="w-4 h-4" />
         </Button>
       )
-    }
-
-    function warehouseLabel(row: ViewInventoryTableRow) {
-      const w = row.warehouse
-      if (w === undefined || w === null)
-        return t('page.warehouse-transactions.table.empty')
-      if (typeof w === 'string')
-        return w
-      return w.names?.[language] ?? t('page.warehouse-transactions.table.empty')
     }
 
     function actionColumn() {
@@ -80,33 +67,21 @@ export function useColumns() {
               icon: <Copy className="h-4 w-4" />,
             },
             {
-              permission: 'inventory.edit',
-              onClick: async () => {},
-              label: t('table.edit'),
-              icon: <Pencil className="h-4 w-4" />,
-            },
-            {
               permission: 'inventory.view',
               onClick: async () => navigate(`/inventories/view/${item.seq}`),
               label: t('table.view'),
               icon: <Eye className="h-4 w-4" />,
             },
-            ...(item.status === 'awaiting'
+            ...(item.status !== 'cancelled'
               ? [{
-                  permission: 'inventory.receive',
-                  onClick: async () => {},
-                  label: t('table.receive'),
-                  icon: <Check className="h-4 w-4" />,
+                  permission: 'inventory.delete',
+                  onClick: () => removeInventory({ ids: [item.id] }),
+                  label: t('table.delete'),
+                  icon: <Trash className="h-4 w-4" />,
+                  isDestructive: true,
+                  isConfirm: true,
                 }]
               : []),
-            {
-              permission: 'inventory.delete',
-              onClick: () => {},
-              label: t('table.delete'),
-              icon: <Trash className="h-4 w-4" />,
-              isDestructive: true,
-              isConfirm: true,
-            },
           ]
 
           return <TableActionDropdown actions={actions} />
@@ -114,33 +89,8 @@ export function useColumns() {
       })
     }
 
-    function expanderColumn() {
-      return columnHelper.display({
-        id: 'expander',
-        header: '',
-        cell: ({ row }) => {
-          return (
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => row.toggleExpanded()}
-              style={{ width: 24, height: 24, padding: 0 }}
-            >
-              {row.getIsExpanded()
-                ? <ChevronDown size={16} />
-                : <ChevronRight size={16} />}
-            </Button>
-          )
-        },
-        size: 24,
-        enableSorting: false,
-        enableHiding: false,
-      })
-    }
-
     return [
-      expanderColumn(),
-      columnHelper.display({
+      columnHelper.accessor('seq', {
         id: 'seq',
         meta: {
           title: t('page.inventories.table.seq'),
@@ -148,23 +98,27 @@ export function useColumns() {
           filterType: 'number',
           sortable: true,
         },
-        cell: ({ row }) => row.original.seq,
+        header: ({ column }) => sortHeader(column, t('page.inventories.table.seq')),
       }),
       columnHelper.display({
-        id: 'category',
-        size: 150,
+        id: 'categories',
+        size: 200,
         meta: {
-          title: t('page.inventories.table.category'),
+          title: t('page.inventories.table.categories'),
           filterable: true,
           filterType: 'select',
           sortable: true,
           defaultVisible: true,
         },
-        header: ({ column }) => sortHeader(column, t('page.inventories.table.category')),
+        header: ({ column }) => sortHeader(column, t('page.inventories.table.categories')),
         cell: ({ row }) => (
-          <Badge>
-            {row.original.category?.names?.[language] ?? t('page.warehouse-transactions.table.empty')}
-          </Badge>
+          <div className="flex flex-wrap gap-1">
+            {row.original.categories.map(category => (
+              <Badge key={category.id}>
+                {category.names?.[language] ?? t('page.warehouse-transactions.table.empty')}
+              </Badge>
+            ))}
+          </div>
         ),
       }),
       columnHelper.display({
@@ -175,7 +129,11 @@ export function useColumns() {
           filterType: 'select',
         },
         header: () => t('page.inventories.table.warehouse'),
-        cell: ({ row }) => <Badge variant="outline">{warehouseLabel(row.original)}</Badge>,
+        cell: ({ row }) => (
+          <Badge variant="outline">
+            {row.original.warehouse?.names?.[language] ?? t('page.warehouse-transactions.table.empty')}
+          </Badge>
+        ),
       }),
       columnHelper.accessor('status', {
         id: 'status',
@@ -191,6 +149,7 @@ export function useColumns() {
             confirmed: 'success',
             cancelled: 'destructive',
             received: 'success',
+            awaiting: 'warning',
           } as const
           const status = row.original.status
           return (
@@ -231,7 +190,7 @@ export function useColumns() {
       }),
       actionColumn(),
     ]
-  }, [isLoading, language, navigate, t])
+  }, [isLoading, language, navigate, removeInventory, t])
 
   return columns
 }

@@ -1,16 +1,15 @@
-import { flexRender, getCoreRowModel, getExpandedRowModel, useReactTable } from '@tanstack/react-table'
-import { Fragment, useState } from 'react'
+import { flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table'
+import { useState } from 'react'
 
-import { useTranslation } from 'react-i18next'
 import { useInventoryQuery } from '@/api/hooks'
 import { ColumnVisibilityMenu, TablePagination } from '@/components'
 import { Skeleton, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui'
+import { useListQueryState, useLocale } from '@/utils/hooks'
 
-import { useListQueryState } from '@/utils/hooks'
 import { useColumns } from './columns'
 
 export function DataTable() {
-  const { t } = useTranslation()
+  const { t } = useLocale()
 
   const [columnVisibility, setColumnVisibility] = useState({})
 
@@ -18,9 +17,10 @@ export function DataTable() {
     pagination,
     setPagination,
     sorting,
+    setSorting,
     filters,
     sorters,
-  } = useListQueryState()
+  } = useListQueryState({})
 
   const columns = useColumns()
 
@@ -33,8 +33,8 @@ export function DataTable() {
     data: inventories,
     columns,
     getCoreRowModel: getCoreRowModel(),
-    getExpandedRowModel: getExpandedRowModel(),
     onColumnVisibilityChange: setColumnVisibility,
+    onSortingChange: setSorting,
     manualSorting: true,
     enableSortingRemoval: true,
     state: {
@@ -85,18 +85,16 @@ export function DataTable() {
 
     if (table.getRowModel().rows?.length) {
       return table.getRowModel().rows.map(row => (
-        <Fragment key={row.id}>
-          <TableRow data-state={row.getIsSelected() && 'selected'}>
-            {row.getVisibleCells().map(cell => (
-              <TableCell
-                key={cell.id}
-                className={`max-w-[${cell.column.columnDef.size}px]`}
-              >
-                {flexRender(cell.column.columnDef.cell, cell.getContext())}
-              </TableCell>
-            ))}
-          </TableRow>
-        </Fragment>
+        <TableRow key={row.id} data-state={row.getIsSelected() && 'selected'}>
+          {row.getVisibleCells().map(cell => (
+            <TableCell
+              key={cell.id}
+              className={`max-w-[${cell.column.columnDef.size}px]`}
+            >
+              {flexRender(cell.column.columnDef.cell, cell.getContext())}
+            </TableCell>
+          ))}
+        </TableRow>
       ))
     }
 
@@ -111,9 +109,9 @@ export function DataTable() {
 
   return (
     <>
-      <div className="w-full flex justify-between items-end max-md:flex-col gap-2 py-2">
+      <div className="w-full flex justify-between items-start max-md:flex-col gap-2 py-2">
         <div className="flex gap-2">
-          <ColumnVisibilityMenu table={table} tableId="cashregister-account" />
+          <ColumnVisibilityMenu table={table} tableId="inventories" />
         </div>
       </div>
       <div className="border rounded-sm">

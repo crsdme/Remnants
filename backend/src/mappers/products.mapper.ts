@@ -1,9 +1,9 @@
 import type { ProductPopulatedDTO } from '@remnant/shared'
-import type { ProductPopulatedRepo } from '@/types/'
+import type { ProductDBPopulated } from '@/types/'
 import { STORAGE_URLS } from '@/config'
 import { fromMinor } from '@/utils/money'
 
-export function mapProductPopulatedRepoToDTO(product: ProductPopulatedRepo): ProductPopulatedDTO {
+export function mapProductPopulatedRepoToDTO(product: ProductDBPopulated): ProductPopulatedDTO {
   const {
     minorPrice,
     minorPurchasePrice,
@@ -14,20 +14,23 @@ export function mapProductPopulatedRepoToDTO(product: ProductPopulatedRepo): Pro
   } = product
 
   return {
+    id: product._id,
     ...rest,
     price: Number.parseFloat(fromMinor(minorPrice, currency.scale)),
     currency: {
       id: currency.id,
       names: currency.names,
       symbols: currency.symbols,
+      scale: currency.scale,
     },
-    ...(minorPurchasePrice !== undefined && purchaseCurrency
+    ...(minorPurchasePrice !== undefined && purchaseCurrency !== undefined
       ? {
           purchasePrice: Number.parseFloat(fromMinor(minorPurchasePrice, purchaseCurrency.scale)),
           purchaseCurrency: {
             id: purchaseCurrency.id,
             names: purchaseCurrency.names,
             symbols: purchaseCurrency.symbols,
+            scale: purchaseCurrency.scale,
           },
         }
       : {}),
@@ -38,5 +41,5 @@ export function mapProductPopulatedRepoToDTO(product: ProductPopulatedRepo): Pro
       name: image.name,
       type: image.type,
     })),
-  } as ProductPopulatedDTO
+  }
 }

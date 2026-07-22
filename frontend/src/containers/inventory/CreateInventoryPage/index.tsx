@@ -2,7 +2,7 @@ import { Helmet } from 'react-helmet'
 import { useTranslation } from 'react-i18next'
 
 import { ActionBar } from './components/action-bar'
-import { DataTable } from './components/data-table'
+import { CreateInventoryForm } from './components/form'
 import { CreateInventoryProvider } from './context'
 
 export function CreateInventoryPage() {
@@ -16,7 +16,7 @@ export function CreateInventoryPage() {
       </Helmet>
       <CreateInventoryProvider>
         <ActionBar />
-        <DataTable />
+        <CreateInventoryForm />
       </CreateInventoryProvider>
     </>
   )

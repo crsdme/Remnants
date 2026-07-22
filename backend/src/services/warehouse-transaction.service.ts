@@ -19,16 +19,26 @@ import type {
   RemoveWarehouseTransactionsPayload,
   ScanBarcodeToDraftPayload,
 } from '@/types/'
-import { STORAGE_URLS } from '@/config'
-import { mapWarehouseTransactionToDTO } from '@/mappers/'
+import { mapProductPopulatedRepoToDTO, mapWarehouseTransactionToDTO } from '@/mappers/'
 import * as BarcodeRepo from '@/repositories/barcodes.repo'
+import * as UserAccessRepo from '@/repositories/user-access.repo'
 import * as WarehouseTransactionRepo from '@/repositories/warehouse-transaction.repo'
 import * as QuantityService from '@/services/quantity.service'
 import { parseGetBarcodes, parseGetWarehouseTransactions, parseGetWarehouseTransactionsItems } from '@/types/'
+import { getScopeIdsForUser } from '@/utils'
 import { HttpError } from '@/utils/httpError'
 
-export async function get({ payload }: { payload: GetWarehouseTransactionsPayload }): Promise<GetWarehouseTransactionsResponse> {
-  const { items, total, page, pageSize } = await WarehouseTransactionRepo.list(payload)
+export async function get({
+  payload,
+  user,
+}: {
+  payload: GetWarehouseTransactionsPayload
+  user: AuthUser
+}): Promise<GetWarehouseTransactionsResponse> {
+  const access = await UserAccessRepo.getScopesByUserId(user.id)
+  const warehouseIds = getScopeIdsForUser(access, 'warehouses', user)
+
+  const { items, total, page, pageSize } = await WarehouseTransactionRepo.list(payload, { warehouseIds })
 
   return {
     status: 'success',
@@ -50,16 +60,7 @@ export async function getItems({ payload }: { payload: GetWarehouseTransactionsI
 
   const mappedItems = items.map(item => ({
     ...item,
-    product: {
-      ...item.product,
-      images: item.product.images.map(image => ({
-        id: image.id,
-        path: `${STORAGE_URLS.productImages}/${image.filename}`,
-        filename: image.filename,
-        name: image.name,
-        type: image.type,
-      })),
-    },
+    product: mapProductPopulatedRepoToDTO(item.product),
   }))
 
   return {

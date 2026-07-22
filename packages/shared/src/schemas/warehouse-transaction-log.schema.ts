@@ -1,14 +1,14 @@
 import { z } from 'zod'
-import { dateRangeSchema, idSchema, languageStringSchema, paginationSchema, responseItemSchema, responseListSchema, sorterParamsSchema } from './common'
+import { dateRangeSchema, idSchema, idSchemaOptional, languageStringSchema, paginationSchema, responseItemSchema, responseListSchema, sorterParamsSchema } from './common'
 
 export const warehouseTransactionLogSchema = z.object({
   id: idSchema,
-  productId: z.string().trim(),
-  warehouseId: z.string().trim(),
+  productId: idSchema,
+  warehouseId: idSchema,
   deltaCount: z.number().int(),
   refType: z.string().trim(),
-  refId: z.string().trim(),
-  userId: z.string().trim(),
+  refId: idSchema,
+  userId: idSchema,
   createdAt: z.coerce.date(),
   updatedAt: z.coerce.date(),
 })
@@ -19,7 +19,7 @@ export const warehouseTransactionLogPopulatedSchema = z.object({
   id: idSchema,
   deltaCount: z.number().int(),
   refType: z.string().trim(),
-  refId: z.string().trim(),
+  refId: idSchema,
   user: z.object({
     id: idSchema,
     name: z.string().trim(),
@@ -41,11 +41,11 @@ export type WarehouseTransactionLogPopulatedDTO = z.output<typeof warehouseTrans
 
 export const getWarehouseTransactionLogsSchema = z.object({
   filters: z.object({
-    productId: z.string().trim().optional(),
-    warehouseId: z.string().trim().optional(),
+    productId: idSchemaOptional,
+    warehouseId: idSchemaOptional,
     refType: z.string().trim().optional(),
-    refId: z.string().trim().optional(),
-    userId: z.string().trim().optional(),
+    refId: idSchemaOptional,
+    userId: idSchemaOptional,
     createdAt: dateRangeSchema.optional(),
     updatedAt: dateRangeSchema.optional(),
   }).optional().default({}),
@@ -64,12 +64,12 @@ export const getWarehouseTransactionLogsSchema = z.object({
 export type GetWarehouseTransactionLogsRequest = z.input<typeof getWarehouseTransactionLogsSchema>
 
 export const createWarehouseTransactionLogsSchema = z.object({
-  productId: z.string().trim(),
-  warehouseId: z.string().trim(),
+  productId: idSchema,
+  warehouseId: idSchema,
   deltaCount: z.number().int(),
   refType: z.string().trim(),
-  refId: z.string().trim(),
-  userId: z.string().trim(),
+  refId: idSchema,
+  userId: idSchema,
 })
 
 export type CreateWarehouseTransactionLogsRequest = z.input<typeof createWarehouseTransactionLogsSchema>

@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { dateRangeSchema, idSchema, paginationSchema, responseItemSchema, responseListSchema, sorterParamsSchema } from './common'
+import { dateRangeSchema, idSchema, idSchemaOptional, paginationSchema, responseItemSchema, responseListSchema, sorterParamsSchema } from './common'
 
 export const auditLogChangeSchema = z.object({
   path: z.string(),
@@ -12,7 +12,7 @@ export type AuditLogChange = z.output<typeof auditLogChangeSchema>
 export const auditLogSchema = z.object({
   id: idSchema,
   resourceType: z.string(),
-  resourceId: z.string(),
+  resourceId: idSchema,
   resource: z.unknown(),
   action: z.string(),
   changes: z.array(auditLogChangeSchema),
@@ -26,7 +26,7 @@ export type AuditLogDTO = z.output<typeof auditLogSchema>
 export const auditLogPopulatedSchema = z.object({
   id: idSchema,
   resourceType: z.string(),
-  resourceId: z.string(),
+  resourceId: idSchema,
   resource: z.unknown(),
   action: z.string(),
   changes: z.array(auditLogChangeSchema),
@@ -45,7 +45,7 @@ export const getAuditLogsSchema = z.object({
   filters: z.object({
     ids: idSchema.array().optional(),
     resourceType: z.array(z.string().trim()).optional(),
-    resourceId: z.array(z.string().trim()).optional(),
+    resourceId: z.array(idSchema).optional(),
     action: z.array(z.string().trim()).optional(),
     createdAt: dateRangeSchema.optional(),
     updatedAt: dateRangeSchema.optional(),
@@ -64,7 +64,7 @@ export type GetAuditLogsRequest = z.input<typeof getAuditLogsSchema>
 
 export const createAuditLogsSchema = z.object({
   resourceType: z.string(),
-  resourceId: z.string(),
+  resourceId: idSchema,
   action: z.string(),
   changes: z.array(z.object({
     path: z.string(),
@@ -79,7 +79,7 @@ export type CreateAuditLogsRequest = z.input<typeof createAuditLogsSchema>
 export const editAuditLogsSchema = z.object({
   id: idSchema,
   resourceType: z.string().optional(),
-  resourceId: z.string().optional(),
+  resourceId: idSchemaOptional,
   action: z.string().optional(),
   changes: z.array(z.object({
     path: z.string(),

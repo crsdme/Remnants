@@ -62,7 +62,7 @@ export function DataTable() {
 
   const removeProduct = (productId: string) => {
     const selectedProducts = informationForm.getValues('items')
-    const index = selectedProducts.findIndex(item => item.product === productId)
+    const index = selectedProducts.findIndex(item => item.id === productId)
     if (index !== -1) {
       itemsField.remove(index)
     }

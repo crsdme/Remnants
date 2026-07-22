@@ -1,5 +1,6 @@
 import type { AuditLogPopulatedDTO } from '@remnant/shared'
 import type { z } from 'zod'
+import type { auditLogDBSchema } from '../schemas'
 import {
   createAuditLogsSchema,
   editAuditLogsSchema,
@@ -7,17 +8,7 @@ import {
   removeAuditLogsSchema,
 } from '@remnant/shared'
 
-export interface AuditLogDB {
-  _id: string
-  resourceType: string
-  resourceId: string
-  action: string
-  changes: { path: string, before: unknown, after: unknown }[]
-  comment?: string
-  createdAt: Date
-  updatedAt: Date
-  resource?: unknown
-}
+export type AuditLogDB = z.infer<typeof auditLogDBSchema>
 
 export type GetAuditLogsPayload = z.output<typeof getAuditLogsSchema>
 export function parseGetAuditLogs(x: unknown): GetAuditLogsPayload {

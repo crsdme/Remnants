@@ -1,7 +1,7 @@
 import type { BarcodeDTO } from './barcode.schema'
 import type { ProductDTO } from './product.schema'
 import { z } from 'zod'
-import { dateRangeSchema, idSchema, languageStringSchema, numberFromStringSchema, paginationSchema, responseItemSchema, responseListSchema, responseSchema, sorterParamsSchema } from './common'
+import { dateRangeSchema, idSchema, idSchemaOptional, languageStringSchema, numberFromStringSchema, paginationSchema, responseItemSchema, responseListSchema, responseSchema, sorterParamsSchema } from './common'
 
 export const warehouseTransactionSchema = z.object({
   id: idSchema,
@@ -41,16 +41,16 @@ export type WarehouseTransactionItemDTO = z.output<typeof warehouseTransactionIt
 export const getWarehouseTransactionsSchema = z.object({
   filters: z.object({
     seq: z.number().optional(),
-    id: idSchema.optional(),
+    id: idSchemaOptional,
     type: z.string().trim().optional(),
     direction: z.string().trim().optional(),
-    accountId: z.string().trim().optional(),
+    accountId: idSchemaOptional,
     amount: numberFromStringSchema.optional(),
-    currency: idSchema.optional(),
-    cashregister: idSchema.optional(),
+    currency: idSchemaOptional,
+    cashregister: idSchemaOptional,
     description: z.string().trim().optional(),
     sourceModel: z.string().trim().optional(),
-    sourceId: z.string().trim().optional(),
+    sourceId: idSchemaOptional,
     createdAt: dateRangeSchema.optional(),
     updatedAt: dateRangeSchema.optional(),
   }).optional().default({}),
@@ -121,7 +121,7 @@ export type RemoveWarehouseTransactionsRequest = z.input<typeof removeWarehouseT
 
 export const getWarehouseTransactionsItemsSchema = z.object({
   filters: z.object({
-    transactionId: z.string().trim().optional(),
+    transactionId: idSchemaOptional,
   }).optional().default({}),
   pagination: paginationSchema.optional().default({}),
 })
@@ -178,7 +178,7 @@ export const receiveWarehouseTransactionSchema = z.object({
 })
 export const scanBarcodeToDraftSchema = z.object({
   barcode: z.string().trim(),
-  transactionId: z.string().trim().optional(),
+  transactionId: idSchemaOptional,
 })
 
 export type ReceiveWarehouseTransactionRequest = z.input<typeof receiveWarehouseTransactionSchema>

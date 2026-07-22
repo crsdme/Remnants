@@ -14,7 +14,7 @@ import { useInventoryQuery } from '@/api/hooks'
 
 export interface ViewInventoryFormValues {
   warehouse: string
-  category: string
+  categories: string[]
   comment?: string
   items: {
     id: string
@@ -24,10 +24,7 @@ export interface ViewInventoryFormValues {
 }
 
 /** List / table row when API returns populated warehouse or category names */
-export type ViewInventoryTableRow = Omit<InventoryDTO, 'warehouse'> & {
-  warehouse?: string | { id?: string, names?: Partial<Record<'ru' | 'en', string>> } | null
-  category?: { names?: Partial<Record<'ru' | 'en', string>> } | null
-}
+export type ViewInventoryTableRow = InventoryDTO
 
 interface ViewInventoryContextType {
   isLoading: boolean
@@ -99,7 +96,7 @@ export function useViewInventoryContext(): ViewInventoryContextType {
 function createViewInventoryFormSchema(t: (key: string, options?: Record<string, unknown>) => string) {
   return z.object({
     warehouse: z.string({ required_error: t('form.errors.required') }),
-    category: z.string({ required_error: t('form.errors.required') }),
+    categories: z.array(z.string()).min(1, { message: t('form.errors.required') }),
     comment: z.string().optional(),
     items: z.array(z.object({
       id: z.string({ required_error: t('form.errors.required') }),
@@ -113,19 +110,15 @@ function getViewInventoryFormValues(inventory?: InventoryDTO): ViewInventoryForm
   if (inventory === undefined) {
     return {
       warehouse: '',
-      category: '',
+      categories: [],
       comment: '',
       items: [],
     }
   }
   return {
-    warehouse: inventory.warehouse,
-    category: inventory.categories[0] ?? '',
+    warehouse: inventory.warehouse.id,
+    categories: inventory.categories.map(category => category.id),
     comment: inventory.comment ?? '',
-    items: inventory.items.map(item => ({
-      id: item.id,
-      lineQuantity: item.quantity,
-      receivedQuantity: item.receivedQuantity,
-    })),
+    items: [],
   }
 }

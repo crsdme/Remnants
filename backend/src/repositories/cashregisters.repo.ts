@@ -2,9 +2,12 @@ import type { AggregateResult, CashregisterPopulatedDTO } from '@remnant/shared'
 import type { PipelineStage } from 'mongoose'
 import type { CreateCashregistersRepoPayload, EditCashregistersRepoPayload, GetCashregistersRepoPayload } from '@/types'
 import { CashregisterModel } from '@/models'
-import { buildQuery, buildSortQuery, unwrapAggregate } from '@/utils'
+import { applyScopeIdsToQuery, buildQuery, buildSortQuery, unwrapAggregate } from '@/utils'
 
-export async function list(payload: GetCashregistersRepoPayload): Promise<{ items: CashregisterPopulatedDTO[], total: number, page: number, pageSize: number }> {
+export async function list(
+  payload: GetCashregistersRepoPayload,
+  options: { scopeIds?: string[] | null } = {},
+): Promise<{ items: CashregisterPopulatedDTO[], total: number, page: number, pageSize: number }> {
   const {
     current = 1,
     pageSize = 10,
@@ -30,6 +33,8 @@ export async function list(payload: GetCashregistersRepoPayload): Promise<{ item
     },
     language,
   })
+
+  applyScopeIdsToQuery(query, options.scopeIds)
 
   const sorters = buildSortQuery(payload.sorters, { priority: 1 })
 

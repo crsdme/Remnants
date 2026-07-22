@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { dateRangeSchema, idSchema, languageStringSchema, numberFromStringSchema, paginationSchema, responseItemSchema, responseListSchema, responseSchema, sorterParamsSchema } from './common'
+import { dateRangeSchema, idSchema, idSchemaOptional, languageStringSchema, numberFromStringSchema, paginationSchema, responseItemSchema, responseListSchema, responseSchema, sorterParamsSchema } from './common'
 
 export const orderPaymentSchema = z.object({
   id: idSchema,
@@ -58,15 +58,15 @@ export type OrderPaymentDTOPopulated = z.output<typeof orderPaymentDTOPopulatedS
 export const getOrderPaymentsSchema = z.object({
   filters: z.object({
     order: z.array(idSchema).optional().default([]),
-    cashregister: z.string().trim().optional(),
-    cashregisterAccount: z.string().trim().optional(),
+    cashregister: idSchemaOptional,
+    cashregisterAccount: idSchemaOptional,
     amount: numberFromStringSchema.optional(),
-    currency: z.string().trim().optional(),
+    currency: idSchemaOptional,
     paymentStatus: z.string().trim().optional(),
     paymentDate: dateRangeSchema.optional(),
-    transaction: z.string().trim().optional(),
-    createdBy: z.string().trim().optional(),
-    removedBy: z.string().trim().optional(),
+    transaction: idSchemaOptional,
+    createdBy: idSchemaOptional,
+    removedBy: idSchemaOptional,
     createdAt: dateRangeSchema.optional(),
     updatedAt: dateRangeSchema.optional(),
   }).optional().default({}),
@@ -79,11 +79,11 @@ export const getOrderPaymentsSchema = z.object({
 export type GetOrderPaymentsRequest = z.input<typeof getOrderPaymentsSchema>
 
 export const createOrderPaymentSchema = z.object({
-  orderId: z.string(),
-  cashregisterId: z.string(),
-  cashregisterAccountId: z.string(),
+  orderId: idSchema,
+  cashregisterId: idSchema,
+  cashregisterAccountId: idSchema,
   amount: numberFromStringSchema,
-  currencyId: z.string(),
+  currencyId: idSchema,
   paymentStatus: z.string(),
   createdBy: z.string().optional(),
   paymentDate: z.date().optional().default(() => new Date()),
@@ -94,11 +94,11 @@ export type CreateOrderPaymentRequest = z.input<typeof createOrderPaymentSchema>
 
 export const editOrderPaymentSchema = z.object({
   id: idSchema,
-  orderId: z.string(),
-  cashregisterId: z.string(),
-  cashregisterAccountId: z.string(),
+  orderId: idSchema,
+  cashregisterId: idSchema,
+  cashregisterAccountId: idSchema,
   amount: numberFromStringSchema,
-  currencyId: z.string(),
+  currencyId: idSchema,
   paymentStatus: z.string(),
   paymentDate: z.date(),
   comment: z.string().optional(),

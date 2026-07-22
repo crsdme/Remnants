@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { booleanArraySchema, dateRangeSchema, idSchema, languageStringSchema, numberFromStringSchema, paginationSchema, responseItemSchema, responseListSchema, responseSchema, sorterParamsSchema } from './common'
+import { booleanArraySchema, dateRangeSchema, idSchema, idSchemaOptional, languageStringSchema, numberFromStringSchema, paginationSchema, responseItemSchema, responseListSchema, responseSchema, sorterParamsSchema } from './common'
 
 export const productPropertyOptionSchema = z.object({
   id: idSchema,
@@ -20,7 +20,7 @@ export const getProductPropertyOptionSchema = z.object({
     names: z.string().trim().optional(),
     language: z.string().optional().default('en'),
     priority: numberFromStringSchema.optional(),
-    productProperty: idSchema.optional(),
+    productProperty: idSchemaOptional,
     active: booleanArraySchema.optional(),
     createdAt: dateRangeSchema.optional(),
     updatedAt: dateRangeSchema.optional(),

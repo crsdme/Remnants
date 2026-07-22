@@ -1,8 +1,8 @@
 import type {
-  LanguageString,
   OrderSourceDTO,
 } from '@remnant/shared'
 import type { z } from 'zod'
+import type { orderSourceDBSchema } from '../schemas'
 import {
   createOrderSourceSchema,
   editOrderSourceSchema,
@@ -10,17 +10,7 @@ import {
   removeOrderSourcesSchema,
 } from '@remnant/shared'
 
-export interface OrderSourceDB {
-  _id: string
-  names: LanguageString
-  priority: number
-  color: string
-  removed: boolean
-  createdBy: string
-  removedBy: string
-  createdAt: Date
-  updatedAt: Date
-}
+export type OrderSourceDB = z.infer<typeof orderSourceDBSchema>
 
 export type GetOrderSourcesPayload = z.output<typeof getOrderSourcesSchema>
 export function parseGetOrderSources(x: unknown): GetOrderSourcesPayload {

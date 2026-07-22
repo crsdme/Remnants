@@ -1,7 +1,5 @@
-import type {
-  LanguageString,
-} from '@remnant/shared'
 import type { z } from 'zod'
+import type { productPropertyOptionDBSchema } from '../schemas'
 import {
   createProductPropertyOptionSchema,
   editProductPropertyOptionSchema,
@@ -9,17 +7,7 @@ import {
   removeProductPropertyOptionSchema,
 } from '@remnant/shared'
 
-export interface ProductPropertyOptionDB {
-  _id: string
-  names: LanguageString
-  productProperty: string
-  priority: number
-  active: boolean
-  color: string
-  removed: boolean
-  createdAt: Date
-  updatedAt: Date
-}
+export type ProductPropertyOptionDB = z.infer<typeof productPropertyOptionDBSchema>
 
 export type GetProductPropertyOptionsPayload = z.output<typeof getProductPropertyOptionSchema>
 export function parseGetProductPropertyOptions(x: unknown): GetProductPropertyOptionsPayload {

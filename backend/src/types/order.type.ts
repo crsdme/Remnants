@@ -3,7 +3,6 @@ import type {
   createOrderSchema,
   editOrderSchema,
   getOrderDetailsSchema,
-  OrderDTOPopulated,
   printDraftInvoiceOrderSchema,
   printInvoiceOrderSchema,
   printOrderLabelOrderSchema,

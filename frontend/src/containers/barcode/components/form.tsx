@@ -16,10 +16,10 @@ import {
   Separator,
 } from '@/components/ui'
 import { useBarcodeScanned, useLocale } from '@/utils/hooks'
-import { useBarcodeContext } from '../context'
+import { useBarcodeFormContext } from './form-context'
 
 export function BarcodeForm() {
-  const { isLoading, form, submitBarcodeForm, generateBarcode, closeModal, getBarcode } = useBarcodeContext()
+  const { isLoading, form, submitBarcodeForm, generateBarcode, cancelForm, getBarcode } = useBarcodeFormContext()
   const { t } = useLocale()
 
   const productsField = useFieldArray({
@@ -35,14 +35,14 @@ export function BarcodeForm() {
       const index = selectedProducts.findIndex(p => p.id === product.id)
       productsField.update(index, {
         ...existing,
-        lineQuantity: existing.lineQuantity + selectedQuantity,
+        unitsPerScan: existing.unitsPerScan + selectedQuantity,
       })
     }
     else {
       productsField.append({
         ...product,
         id: product.id,
-        lineQuantity: selectedQuantity,
+        unitsPerScan: selectedQuantity,
       })
     }
   }
@@ -63,10 +63,12 @@ export function BarcodeForm() {
       return
 
     const current = selectedProducts[index]
-    const updated = { ...current, [field]: value }
-
-    if (field === 'lineQuantity') {
-      updated.lineQuantity = value ?? current.lineQuantity ?? 1
+    const quantityField = field === 'lineQuantity' ? 'unitsPerScan' : field
+    const updated = {
+      ...current,
+      [quantityField]: field === 'lineQuantity'
+        ? (value ?? current.unitsPerScan ?? 1)
+        : value,
     }
 
     productsField.update(index, updated)
@@ -87,7 +89,10 @@ export function BarcodeForm() {
       <ProductTable addProduct={addProduct} />
       <Separator className="my-4" />
       <ProductSelectedTable
-        products={form.getValues('products') || []}
+        products={(form.getValues('products') || []).map(product => ({
+          ...product,
+          lineQuantity: product.unitsPerScan,
+        }))}
         removeProduct={removeProduct}
         isLoading={isLoading}
         changeProduct={updateProduct}
@@ -148,7 +153,7 @@ export function BarcodeForm() {
           <Button
             type="button"
             variant="secondary"
-            onClick={() => closeModal()}
+            onClick={cancelForm}
             disabled={isLoading}
           >
             {t('button.cancel')}

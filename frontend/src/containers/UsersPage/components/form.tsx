@@ -1,4 +1,14 @@
-import { useUserRoleOptions } from '@/api/hooks'
+import {
+  useCashregisterAccountOptions,
+  useCashregisterOptions,
+  useDeliveryServiceOptions,
+  useExpenseCategoryOptions,
+  useOrderSourceOptions,
+  useOrderStatusOptions,
+  useSiteOptions,
+  useUserRoleOptions,
+  useWarehouseOptions,
+} from '@/api/hooks'
 import { AsyncSelectNew } from '@/components/AsyncSelectNew'
 import {
   Button,
@@ -20,6 +30,14 @@ export function UserForm() {
   const { isLoading, form, closeModal, submitUserForm } = useUserContext()
 
   const loadUserRolesOptions = useUserRoleOptions()
+  const loadWarehouseOptions = useWarehouseOptions()
+  const loadSiteOptions = useSiteOptions()
+  const loadExpenseCategoryOptions = useExpenseCategoryOptions()
+  const loadCashregisterOptions = useCashregisterOptions()
+  const loadCashregisterAccountOptions = useCashregisterAccountOptions()
+  const loadDeliveryServiceOptions = useDeliveryServiceOptions()
+  const loadOrderSourceOptions = useOrderSourceOptions()
+  const loadOrderStatusOptions = useOrderStatusOptions()
 
   return (
     <Form {...form}>
@@ -110,19 +128,209 @@ export function UserForm() {
               </FormLabel>
               <FormControl>
                 <AsyncSelectNew
+                  {...field}
                   loadOptions={loadUserRolesOptions}
                   renderOption={e => e.names[language]}
                   getDisplayValue={e => e.names[language]}
                   getOptionValue={e => e.id}
-                  name="role"
-                  field={field}
                   disabled={isLoading}
+                  clearable
                 />
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
+
+        <FormField
+          control={form.control}
+          name="access.warehouses"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>{t('page.users.form.access.warehouses')}</FormLabel>
+              <FormControl>
+                <AsyncSelectNew
+                  {...field}
+                  loadOptions={loadWarehouseOptions}
+                  renderOption={e => e.names[language]}
+                  getDisplayValue={e => e.names[language]}
+                  getOptionValue={e => e.id}
+                  disabled={isLoading}
+                  clearable
+                  multi
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="access.sites"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>{t('page.users.form.access.sites')}</FormLabel>
+              <FormControl>
+                <AsyncSelectNew
+                  {...field}
+                  loadOptions={async (params) => {
+                    return loadSiteOptions({
+                      query: params?.query ?? '',
+                      selectedValue: params?.selectedValue,
+                    })
+                  }}
+                  renderOption={e => e.names[language]}
+                  getDisplayValue={e => e.names[language]}
+                  getOptionValue={e => e.id}
+                  disabled={isLoading}
+                  clearable
+                  multi
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="access.expenseCategories"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>{t('page.users.form.access.expenseCategories')}</FormLabel>
+              <FormControl>
+                <AsyncSelectNew
+                  {...field}
+                  loadOptions={loadExpenseCategoryOptions}
+                  renderOption={e => e.names[language]}
+                  getDisplayValue={e => e.names[language]}
+                  getOptionValue={e => e.id}
+                  disabled={isLoading}
+                  clearable
+                  multi
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="access.cashregisters"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>{t('page.users.form.access.cashregisters')}</FormLabel>
+              <FormControl>
+                <AsyncSelectNew
+                  {...field}
+                  loadOptions={loadCashregisterOptions}
+                  renderOption={e => e.names[language]}
+                  getDisplayValue={e => e.names[language]}
+                  getOptionValue={e => e.id}
+                  disabled={isLoading}
+                  clearable
+                  multi
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="access.cashregisterAccounts"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>{t('page.users.form.access.cashregisterAccounts')}</FormLabel>
+              <FormControl>
+                <AsyncSelectNew
+                  {...field}
+                  loadOptions={loadCashregisterAccountOptions}
+                  renderOption={e => e.names[language]}
+                  getDisplayValue={e => e.names[language]}
+                  getOptionValue={e => e.id}
+                  disabled={isLoading}
+                  clearable
+                  multi
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="access.deliveryServices"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>{t('page.users.form.access.deliveryServices')}</FormLabel>
+              <FormControl>
+                <AsyncSelectNew
+                  {...field}
+                  loadOptions={loadDeliveryServiceOptions}
+                  renderOption={e => e.names[language]}
+                  getDisplayValue={e => e.names[language]}
+                  getOptionValue={e => e.id}
+                  disabled={isLoading}
+                  clearable
+                  multi
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="access.orderSources"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>{t('page.users.form.access.orderSources')}</FormLabel>
+              <FormControl>
+                <AsyncSelectNew
+                  {...field}
+                  loadOptions={loadOrderSourceOptions}
+                  renderOption={e => e.names[language]}
+                  getDisplayValue={e => e.names[language]}
+                  getOptionValue={e => e.id}
+                  disabled={isLoading}
+                  clearable
+                  multi
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="access.orderStatuses"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>{t('page.users.form.access.orderStatuses')}</FormLabel>
+              <FormControl>
+                <AsyncSelectNew
+                  {...field}
+                  loadOptions={loadOrderStatusOptions}
+                  renderOption={e => e.names[language]}
+                  getDisplayValue={e => e.names[language]}
+                  getOptionValue={e => e.id}
+                  disabled={isLoading}
+                  clearable
+                  multi
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
         <div className="flex gap-2 flex-wrap pb-2">
           <FormField
             control={form.control}

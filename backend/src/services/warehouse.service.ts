@@ -1,4 +1,5 @@
 import type {
+  AuthUser,
   CreateWarehousesResponse,
   EditWarehousesResponse,
   GetWarehousesResponse,
@@ -11,11 +12,15 @@ import type {
   RemoveWarehousesPayload,
 } from '@/types/'
 import { mapWarehouseToDTO } from '@/mappers/'
+import * as UserAccessRepo from '@/repositories/user-access.repo'
 import * as WarehouseRepo from '@/repositories/warehouse.repo'
-import { HttpError } from '@/utils/httpError'
+import { getScopeIdsForUser, HttpError } from '@/utils'
 
-export async function get({ payload }: { payload: GetWarehousesPayload }): Promise<GetWarehousesResponse> {
-  const { items, total, page, pageSize } = await WarehouseRepo.list(payload)
+export async function get({ payload, user }: { payload: GetWarehousesPayload, user: AuthUser }): Promise<GetWarehousesResponse> {
+  const access = await UserAccessRepo.getScopesByUserId(user.id)
+  const scopeIds = getScopeIdsForUser(access, 'warehouses', user)
+
+  const { items, total, page, pageSize } = await WarehouseRepo.list(payload, { scopeIds })
 
   return {
     status: 'success',

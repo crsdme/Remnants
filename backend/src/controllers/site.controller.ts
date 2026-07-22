@@ -1,16 +1,17 @@
 import type { NextFunction, Response } from 'express'
-import type { ValidatedRequest } from '@/types'
+import type { ValidatedAuthedRequest, ValidatedRequest } from '@/types'
 import type { CreateSitePayload, EditSitePayload, GetSitesPayload, RemoveSitesPayload } from '@/types/'
 import * as SiteService from '@/services/site.service'
 
 export async function get(
-  req: ValidatedRequest<GetSitesPayload, never>,
+  req: ValidatedAuthedRequest<GetSitesPayload, never>,
   res: Response,
   next: NextFunction,
 ) {
   try {
     const serviceResponse = await SiteService.get({
       payload: req.validated.query,
+      user: req.user,
     })
 
     res.status(200).json(serviceResponse)

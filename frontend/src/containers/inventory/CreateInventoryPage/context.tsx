@@ -1,18 +1,15 @@
 import type { ReactNode } from 'react'
-import type { Resolver, UseFormReturn } from 'react-hook-form'
+import type { FieldErrors, Resolver, UseFormReturn } from 'react-hook-form'
 
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useQueryClient } from '@tanstack/react-query'
 import { createContext, useContext, useMemo, useState } from 'react'
 import { useForm } from 'react-hook-form'
-
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
 import { z } from 'zod'
 
-import {
-  useInventoryCreate,
-} from '@/api/hooks'
+import { useInventoryCreate } from '@/api/hooks'
 import { useInventoryScanOptions } from '@/api/hooks/inventory/useInventoryScanOptions'
 import { useLocale } from '@/utils/hooks'
 
@@ -20,7 +17,7 @@ type LoadInventoryScanOptionsFn = ReturnType<typeof useInventoryScanOptions>
 
 export interface CreateInventoryFormValues {
   warehouse: string
-  category: string
+  categories: string[]
   comment?: string
   items: {
     id: string
@@ -33,6 +30,7 @@ interface CreateInventoryContextType {
   isLoading: boolean
   form: UseFormReturn<CreateInventoryFormValues>
   getBarcode: (params: { barcode: string, category: string }) => ReturnType<LoadInventoryScanOptionsFn>
+  onError: (formErrors: FieldErrors<CreateInventoryFormValues>) => void
   submitInventoryForm: (params: CreateInventoryFormValues) => void
 }
 
@@ -56,12 +54,14 @@ export function CreateInventoryProvider({ children }: { children: ReactNode }) {
   const useMutateCreateInventory = useInventoryCreate({
     options: {
       onSuccess: ({ data }) => {
+        setIsLoading(false)
         void queryClient.invalidateQueries({ queryKey: ['inventories'] })
         void queryClient.invalidateQueries({ queryKey: ['products'] })
         toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data?.message || ''}` })
-        void navigate(`/inventories/`)
+        void navigate('/inventories')
       },
       onError: ({ response }) => {
+        setIsLoading(false)
         const error = response.data.error
         toast.error(t(`error.title.${error.code}`), { description: `${t(`error.description.${error.code}`)} ${error.description || ''}` })
       },
@@ -76,9 +76,9 @@ export function CreateInventoryProvider({ children }: { children: ReactNode }) {
   const submitInventoryForm = (params: CreateInventoryFormValues) => {
     setIsLoading(true)
 
-    return useMutateCreateInventory.mutate({
+    useMutateCreateInventory.mutate({
       warehouse: params.warehouse,
-      categories: [params.category],
+      categories: params.categories,
       comment: params.comment,
       items: params.items.map(item => ({
         id: item.id,
@@ -88,14 +88,21 @@ export function CreateInventoryProvider({ children }: { children: ReactNode }) {
     })
   }
 
+  const onError = (formErrors: FieldErrors<CreateInventoryFormValues>) => {
+    if (formErrors.items) {
+      toast.error(String(formErrors.items.message ?? ''))
+    }
+  }
+
   const value: CreateInventoryContextType = useMemo(
     () => ({
       isLoading,
       form,
       getBarcode,
+      onError,
       submitInventoryForm,
     }),
-    [isLoading, form, getBarcode, submitInventoryForm],
+    [isLoading, form, getBarcode, onError, submitInventoryForm],
   )
 
   return <CreateInventoryContext.Provider value={value}>{children}</CreateInventoryContext.Provider>
@@ -113,20 +120,20 @@ export function useCreateInventoryContext(): CreateInventoryContextType {
 function createCreateInventoryFormSchema(t: (key: string, options?: Record<string, unknown>) => string) {
   return z.object({
     warehouse: z.string({ required_error: t('form.errors.required') }),
-    category: z.string({ required_error: t('form.errors.required') }),
+    categories: z.array(z.string()).min(1, { message: t('form.errors.required') }),
     comment: z.string().optional(),
     items: z.array(z.object({
       id: z.string({ required_error: t('form.errors.required') }),
       lineQuantity: z.number({ required_error: t('form.errors.required') }),
       receivedQuantity: z.number().optional(),
-    })).min(1, { message: t('form.errors.required.products') }),
+    })),
   })
 }
 
 function getCreateInventoryFormDefaults(): CreateInventoryFormValues {
   return {
     warehouse: '',
-    category: '',
+    categories: [],
     comment: '',
     items: [],
   }

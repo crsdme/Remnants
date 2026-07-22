@@ -27,24 +27,24 @@ export async function get(payload: GetUsersPayload): Promise<GetUsersResponse> {
 }
 
 export async function create(payload: CreateUsersPayload): Promise<CreateUserResponse> {
-  const user = await UserRepository.createOne(payload)
+  const { user, access } = await UserRepository.createOne(payload)
 
   return {
     status: 'success',
     code: 'USER_CREATED',
     message: 'User created',
-    data: mapUserToDTO(user),
+    data: mapUserToDTO(user, access),
   }
 }
 
 export async function edit(payload: EditUsersPayload): Promise<EditUserResponse> {
-  const user = await UserRepository.updateById(payload.id, payload)
+  const { user, access } = await UserRepository.updateById(payload.id, payload)
 
   return {
     status: 'success',
     code: 'USER_EDITED',
     message: 'User edited',
-    data: mapUserToDTO(user),
+    data: mapUserToDTO(user, access),
   }
 }
 

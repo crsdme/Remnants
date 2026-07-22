@@ -1,4 +1,5 @@
 import type {
+  AuthUser,
   CreateCashregisterResponse,
   EditCashregisterResponse,
   GetCashregistersResponse,
@@ -12,10 +13,20 @@ import type {
 } from '@/types'
 import { mapCashregisterToDTO } from '@/mappers/'
 import * as cashregisterRepo from '@/repositories/cashregisters.repo'
-import { HttpError } from '@/utils/'
+import * as UserAccessRepo from '@/repositories/user-access.repo'
+import { getScopeIdsForUser, HttpError } from '@/utils/'
 
-export async function get({ payload }: { payload: GetCashregistersPayload }): Promise<GetCashregistersResponse> {
-  const { items, total, page, pageSize } = await cashregisterRepo.list(payload)
+export async function get({
+  payload,
+  user,
+}: {
+  payload: GetCashregistersPayload
+  user: AuthUser
+}): Promise<GetCashregistersResponse> {
+  const access = await UserAccessRepo.getScopesByUserId(user.id)
+  const scopeIds = getScopeIdsForUser(access, 'cashregisters', user)
+
+  const { items, total, page, pageSize } = await cashregisterRepo.list(payload, { scopeIds })
 
   return {
     status: 'success',

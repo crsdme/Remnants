@@ -1,7 +1,5 @@
-import type {
-  LanguageString,
-} from '@remnant/shared'
 import type { z } from 'zod'
+import type { productPropertyDBSchema } from '../schemas'
 import {
   createProductPropertySchema,
   editProductPropertySchema,
@@ -9,21 +7,7 @@ import {
   removeProductPropertySchema,
 } from '@remnant/shared'
 
-export interface ProductPropertyDB {
-  _id: string
-  names: LanguageString
-  symbols: LanguageString
-  options: string[]
-  priority: number
-  type: 'text' | 'select' | 'color' | 'number' | 'boolean' | 'multiSelect'
-  isRequired: boolean
-  showInTable: boolean
-  showInStatistics: boolean
-  active: boolean
-  removed: boolean
-  createdAt: Date
-  updatedAt: Date
-}
+export type ProductPropertyDB = z.infer<typeof productPropertyDBSchema>
 
 export type GetProductPropertiesPayload = z.output<typeof getProductPropertySchema>
 export function parseGetProductProperties(x: unknown): GetProductPropertiesPayload {

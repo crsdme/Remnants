@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import { booleanArraySchema, dateRangeSchema, idSchema, paginationSchema, responseItemSchema, responseListSchema, responseSchema, sorterParamsSchema } from './common'
+import { userAccessScopesSchema } from './user-access.schema'
 import { userRoleSchema } from './user-role.schema'
 
 export const userSchema = z.object({
@@ -10,6 +11,7 @@ export const userSchema = z.object({
   password: z.string(),
   role: z.string(),
   active: z.boolean(),
+  access: userAccessScopesSchema,
   createdAt: z.coerce.date(),
   updatedAt: z.coerce.date(),
 })
@@ -22,6 +24,7 @@ export const userPopulatedSchema = z.object({
   login: z.string(),
   role: userRoleSchema,
   active: z.boolean(),
+  access: userAccessScopesSchema,
   createdAt: z.coerce.date(),
   updatedAt: z.coerce.date(),
 })
@@ -55,6 +58,7 @@ export const createUserSchema = z.object({
   password: z.string(),
   role: z.string(),
   active: z.boolean().optional(),
+  access: userAccessScopesSchema.default({}),
 })
 
 export type CreateUserRequest = z.input<typeof createUserSchema>
@@ -66,6 +70,7 @@ export const editUserSchema = z.object({
   password: z.string().optional(),
   role: z.string(),
   active: z.boolean().optional(),
+  access: userAccessScopesSchema.default({}),
 })
 
 export type EditUserRequest = z.input<typeof editUserSchema>

@@ -7,9 +7,12 @@ import type {
   GetSitesRepoResult,
 } from '@/types/'
 import { SiteModel } from '@/models'
-import { buildQuery, buildSortQuery, unwrapAggregate } from '@/utils'
+import { applyScopeIdsToQuery, buildQuery, buildSortQuery, unwrapAggregate } from '@/utils'
 
-export async function list(payload: GetSitesRepoPayload): Promise<GetSitesRepoResult> {
+export async function list(
+  payload: GetSitesRepoPayload,
+  options: { scopeIds?: string[] | null } = {},
+): Promise<GetSitesRepoResult> {
   const {
     current,
     pageSize,
@@ -37,6 +40,8 @@ export async function list(payload: GetSitesRepoPayload): Promise<GetSitesRepoRe
       updatedAt: { type: 'dateRange' },
     },
   })
+
+  applyScopeIdsToQuery(query, options.scopeIds)
 
   const sorters = buildSortQuery(payload.sorters, { priority: 1 })
 

@@ -12,8 +12,6 @@ import type {
   RemoveOrderPaymentsPayload,
 } from '@/types'
 import {
-  mapCreateOrderPaymentPayloadToRepoPayload,
-  mapEditOrderPaymentPayloadToRepoPayload,
   mapOrderPaymentPopulatedItem,
   mapOrderPaymentToDTO,
 } from '@/mappers'

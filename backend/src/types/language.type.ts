@@ -2,6 +2,7 @@ import type {
   LanguageDTO,
 } from '@remnant/shared'
 import type { z } from 'zod'
+import type { languageDBSchema } from '../schemas'
 import {
   createLanguageSchema,
   editLanguageSchema,
@@ -9,18 +10,7 @@ import {
   removeLanguageSchema,
 } from '@remnant/shared'
 
-export interface LanguageDB {
-  _id: string
-  seq: number
-  name: string
-  code: string
-  main: boolean
-  priority: number
-  active: boolean
-  removed: boolean
-  createdAt: Date
-  updatedAt: Date
-}
+export type LanguageDB = z.infer<typeof languageDBSchema>
 
 export type GetLanguagesPayload = z.output<typeof getLanguageSchema>
 export function parseGetLanguages(x: unknown): GetLanguagesPayload {

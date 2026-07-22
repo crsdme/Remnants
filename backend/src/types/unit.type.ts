@@ -1,8 +1,8 @@
 import type {
-  LanguageString,
   UnitDTO,
 } from '@remnant/shared'
 import type { z } from 'zod'
+import type { unitDBSchema } from '../schemas'
 import {
   createUnitSchema,
   editUnitSchema,
@@ -10,17 +10,7 @@ import {
   removeUnitSchema,
 } from '@remnant/shared'
 
-export interface UnitDB {
-  _id: string
-  seq: number
-  names: LanguageString
-  symbols: LanguageString
-  priority: number
-  active: boolean
-  removed: boolean
-  createdAt: Date
-  updatedAt: Date
-}
+export type UnitDB = z.infer<typeof unitDBSchema>
 
 export type GetUnitsPayload = z.output<typeof getUnitSchema>
 export function parseGetUnits(x: unknown): GetUnitsPayload {

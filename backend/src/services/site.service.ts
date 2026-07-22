@@ -1,4 +1,5 @@
 import type {
+  AuthUser,
   CreateSiteResponse,
   EditSiteResponse,
   GetSitesResponse,
@@ -12,10 +13,20 @@ import type {
 } from '@/types/'
 import { mapSiteToDTO } from '@/mappers/'
 import * as SiteRepo from '@/repositories/site.repo'
-import { HttpError } from '@/utils/'
+import * as UserAccessRepo from '@/repositories/user-access.repo'
+import { getScopeIdsForUser, HttpError } from '@/utils/'
 
-export async function get({ payload }: { payload: GetSitesPayload }): Promise<GetSitesResponse> {
-  const { items, total, page, pageSize } = await SiteRepo.list(payload)
+export async function get({
+  payload,
+  user,
+}: {
+  payload: GetSitesPayload
+  user: AuthUser
+}): Promise<GetSitesResponse> {
+  const access = await UserAccessRepo.getScopesByUserId(user.id)
+  const scopeIds = getScopeIdsForUser(access, 'sites', user)
+
+  const { items, total, page, pageSize } = await SiteRepo.list(payload, { scopeIds })
 
   return {
     status: 'success',

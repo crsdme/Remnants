@@ -44,6 +44,12 @@
   "title.page.barcodes": "Штрих-коды - Remnant",
   "description.page.barcodes": "Управление штрих-кодами в Remnant",
 
+  "title.page.barcode-create": "Создание штрих-кода - Remnant",
+  "description.page.barcode-create": "Создание нового штрих-кода в Remnant",
+
+  "title.page.barcode-edit": "Редактирование штрих-кода - Remnant",
+  "description.page.barcode-edit": "Редактирование существующего штрих-кода в Remnant",
+
   "title.page.money-transactions": "Денежные транзакции - Remnant",
   "description.page.money-transactions": "Управление денежными транзакциями в Remnant",
 

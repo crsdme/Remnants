@@ -1,4 +1,5 @@
 import type {
+  AuthUser,
   CreateMoneyTransactionResponse,
   CreateMoneyTransactionTransferResponse,
   GetMoneyTransactionsResponse,
@@ -12,11 +13,27 @@ import type {
 import { v4 as uuidv4 } from 'uuid'
 import * as CurrencyRepo from '@/repositories/currencies.repo'
 import * as MoneyTransactionRepo from '@/repositories/money-transaction.repo'
+import * as UserAccessRepo from '@/repositories/user-access.repo'
+import { getScopeIdsForUser } from '@/utils'
 import { HttpError } from '@/utils/httpError'
 import { fromMinor, toMinor } from '@/utils/money'
 
-export async function get({ payload }: { payload: GetMoneyTransactionsPayload }): Promise<GetMoneyTransactionsResponse> {
-  const { items, total, page, pageSize } = await MoneyTransactionRepo.list({ payload })
+export async function get({
+  payload,
+  user,
+}: {
+  payload: GetMoneyTransactionsPayload
+  user: AuthUser
+}): Promise<GetMoneyTransactionsResponse> {
+  const access = await UserAccessRepo.getScopesByUserId(user.id)
+
+  const { items, total, page, pageSize } = await MoneyTransactionRepo.list({
+    payload,
+    options: {
+      cashregisterIds: getScopeIdsForUser(access, 'cashregisters', user),
+      cashregisterAccountIds: getScopeIdsForUser(access, 'cashregisterAccounts', user),
+    },
+  })
 
   const mappedItems = items.map(item => ({
     ...item,

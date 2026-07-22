@@ -11,6 +11,7 @@ import {
   Trash,
 } from 'lucide-react'
 import { useMemo } from 'react'
+import { useNavigate } from 'react-router-dom'
 
 import { TableActionDropdown } from '@/components'
 import { Badge, Button, Checkbox } from '@/components/ui'
@@ -25,7 +26,8 @@ const columnHelper = createColumnHelper<BarcodeDTO>()
 
 export function useColumns() {
   const { t, language } = useLocale()
-  const { isLoading, openModal, removeBarcodes } = useBarcodeContext()
+  const navigate = useNavigate()
+  const { isLoading, removeBarcodes } = useBarcodeContext()
 
   const columns = useMemo(() => {
     function sortHeader(column: Column<BarcodeDTO>, label: string) {
@@ -97,7 +99,7 @@ export function useColumns() {
             },
             {
               permission: 'barcode.edit',
-              onClick: () => openModal(item),
+              onClick: () => void navigate(`/barcodes/edit/${item.id}`),
               label: t('table.edit'),
               icon: <Pencil className="h-4 w-4" />,
             },
@@ -216,6 +218,6 @@ export function useColumns() {
       }),
       actionColumn(),
     ]
-  }, [language, isLoading, openModal, removeBarcodes, t])
+  }, [language, isLoading, navigate, removeBarcodes, t])
   return columns
 }

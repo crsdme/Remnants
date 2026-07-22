@@ -1,13 +1,17 @@
+import { minorNumberSchema, toMinorType } from '@remnant/shared'
+import { z } from 'zod'
 import { resolvePaymentEpsilon, toMinor } from '@/utils/money'
 
 export type PaymentStatus = 'paid' | 'unpaid' | 'partially_paid' | 'overpaid'
 
-export interface MoneyLike {
-  currency: string
-  totalMinor: number
-  scale: number
-  exchangeRateToCalculationCurrency?: number
-}
+export const moneyLikeSchema = z.object({
+  currency: z.string(),
+  totalMinor: minorNumberSchema,
+  scale: z.number(),
+  exchangeRateToCalculationCurrency: z.number().optional(),
+})
+
+export type MoneyLike = z.infer<typeof moneyLikeSchema>
 
 export interface CalculationCurrency {
   currency: string
@@ -27,14 +31,16 @@ export function buildPricesByCurrency(
         throw new Error(`Currency not found: ${item.currency}`)
 
       if (acc[item.currency] === undefined) {
-        acc[item.currency] = {
+        acc[item.currency] = moneyLikeSchema.parse({
           currency: item.currency,
           totalMinor: 0,
           scale: currencyDoc.scale,
-        }
+        })
       }
 
-      acc[item.currency].totalMinor += toMinor(item.price, currencyDoc.scale) * item.quantity
+      acc[item.currency].totalMinor = toMinorType(
+        acc[item.currency].totalMinor + toMinor(item.price, currencyDoc.scale) * item.quantity,
+      )
 
       return acc
     }, {}),
@@ -53,14 +59,16 @@ export function buildPaymentsByCurrency(
         throw new Error(`Currency not found: ${payment.currency}`)
 
       if (acc[payment.currency] === undefined) {
-        acc[payment.currency] = {
+        acc[payment.currency] = moneyLikeSchema.parse({
           currency: payment.currency,
           totalMinor: 0,
           scale: currencyDoc.scale,
-        }
+        })
       }
 
-      acc[payment.currency].totalMinor += toMinor(payment.amount, currencyDoc.scale)
+      acc[payment.currency].totalMinor = toMinorType(
+        acc[payment.currency].totalMinor + toMinor(payment.amount, currencyDoc.scale),
+      )
 
       return acc
     }, {}),
@@ -80,7 +88,7 @@ export function resolveCalculationCurrency(
 export function toCalculationMinor(
   value: MoneyLike,
   calculationCurrency: CalculationCurrency,
-): number {
+) {
   const amountMajor = value.totalMinor / (10 ** value.scale)
 
   if (value.currency === calculationCurrency.currency)
@@ -105,13 +113,13 @@ export function getPaymentStatus(
   const epsilonMinor = toMinor(calculationCurrency.paymentEpsilon, calculationCurrency.scale)
 
   const orderTotalMinor = prices.reduce(
-    (sum, price) => sum + toCalculationMinor(price, calculationCurrency),
-    0,
+    (sum, price) => toMinorType(sum + toCalculationMinor(price, calculationCurrency)),
+    toMinorType(0),
   )
 
   const paidTotalMinor = payments.reduce(
-    (sum, payment) => sum + toCalculationMinor(payment, calculationCurrency),
-    0,
+    (sum, payment) => toMinorType(sum + toCalculationMinor(payment, calculationCurrency)),
+    toMinorType(0),
   )
 
   const balanceMinor = orderTotalMinor - paidTotalMinor

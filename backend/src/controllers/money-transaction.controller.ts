@@ -1,15 +1,16 @@
 import type { NextFunction, Response } from 'express'
-import type { CreateMoneyTransactionsPayload, CreateMoneyTransactionTransferPayload, GetMoneyTransactionsPayload, ValidatedRequest } from '@/types'
+import type { CreateMoneyTransactionsPayload, CreateMoneyTransactionTransferPayload, GetMoneyTransactionsPayload, ValidatedAuthedRequest, ValidatedRequest } from '@/types'
 import * as MoneyTransactionService from '@/services/money-transaction.service'
 
 export async function get(
-  req: ValidatedRequest<GetMoneyTransactionsPayload, never>,
+  req: ValidatedAuthedRequest<GetMoneyTransactionsPayload, never>,
   res: Response,
   next: NextFunction,
 ) {
   try {
     const serviceResponse = await MoneyTransactionService.get({
       payload: req.validated.query,
+      user: req.user,
     })
 
     res.status(200).json(serviceResponse)

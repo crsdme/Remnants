@@ -1,8 +1,8 @@
 import type {
   DeliveryServiceDTO,
-  LanguageString,
 } from '@remnant/shared'
 import type { z } from 'zod'
+import type { deliveryServiceDBSchema } from '../schemas'
 import {
   createDeliveryServiceSchema,
   editDeliveryServiceSchema,
@@ -10,17 +10,7 @@ import {
   removeDeliveryServicesSchema,
 } from '@remnant/shared'
 
-export interface DeliveryServiceDB {
-  _id: string
-  names: LanguageString
-  type: 'novaposhta' | 'selfpickup'
-  color: string
-  priority: number
-  active: boolean
-  removed: boolean
-  createdAt: Date
-  updatedAt: Date
-}
+export type DeliveryServiceDB = z.infer<typeof deliveryServiceDBSchema>
 
 export type GetDeliveryServicesPayload = z.output<typeof getDeliveryServicesSchema>
 export function parseGetDeliveryServices(x: unknown): GetDeliveryServicesPayload {

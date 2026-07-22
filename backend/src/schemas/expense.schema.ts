@@ -1,10 +1,10 @@
-import { idSchema, languageStringSchema, numberFromStringSchema } from '@remnant/shared'
+import { idSchema, idSchemaOptional, languageStringSchema, minorSchema, numberFromStringSchema } from '@remnant/shared'
 import { z } from 'zod'
 
 export const expenseDBSchema = z.object({
   _id: idSchema,
   seq: numberFromStringSchema,
-  minorAmount: numberFromStringSchema,
+  minorAmount: minorSchema,
   currencyId: idSchema,
   cashregisterId: idSchema,
   cashregisterAccountId: idSchema,
@@ -51,7 +51,7 @@ export const expenseDBPopulatedSchema = expenseDBSchema.omit({
 })
 
 export const createExpenseRepoSchema = z.object({
-  minorAmount: numberFromStringSchema,
+  minorAmount: minorSchema,
   currencyId: idSchema,
   cashregisterId: idSchema,
   cashregisterAccountId: idSchema,
@@ -60,17 +60,17 @@ export const createExpenseRepoSchema = z.object({
   sourceId: idSchema,
   type: z.string().trim(),
   comment: z.string().optional(),
-  createdBy: idSchema.optional(),
+  createdBy: idSchemaOptional,
 })
 
 export const editExpenseRepoSchema = z.object({
-  minorAmount: numberFromStringSchema.optional(),
-  currencyId: idSchema.optional(),
-  cashregisterId: idSchema.optional(),
-  cashregisterAccountId: idSchema.optional(),
+  minorAmount: minorSchema.optional(),
+  currencyId: idSchemaOptional,
+  cashregisterId: idSchemaOptional,
+  cashregisterAccountId: idSchemaOptional,
   categoryIds: z.array(idSchema).optional(),
   sourceModel: z.enum(['manual', 'cashregister', 'cashregisterAccount', 'order', 'expense', 'procurement']).optional(),
-  sourceId: idSchema.optional(),
+  sourceId: idSchemaOptional,
   type: z.string().trim().optional(),
   comment: z.string().optional(),
 })

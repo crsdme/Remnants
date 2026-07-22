@@ -5,6 +5,7 @@ import type {
   editSyncEntryResponseSchema,
   getSyncEntriesResponseSchema,
   removeSyncEntriesResponseSchema,
+  syncEntryDBSchema,
   syncEntrySchema,
   syncProductCreateResponseSchema,
   syncProductCreateSchema,
@@ -21,18 +22,7 @@ import {
   removeSyncEntriesSchema,
 } from '@/schemas/'
 
-export interface SyncEntryDB {
-  _id: string
-  sourceType: string
-  sourceId: string
-  site: string
-  externalId: string
-  status: 'pending' | 'synced' | 'error'
-  syncedAt: Date
-  lastError: string
-  createdAt: Date
-  updatedAt: Date
-}
+export type SyncEntryDB = z.infer<typeof syncEntryDBSchema>
 
 export type CreateSyncEntryPayload = z.output<typeof createSyncEntrySchema>
 export function parseCreateSyncEntry(x: unknown): CreateSyncEntryPayload {

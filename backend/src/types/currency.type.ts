@@ -1,9 +1,9 @@
 import type {
   CurrencyDTO,
   ExchangeRateDTOPopulated,
-  LanguageString,
 } from '@remnant/shared'
 import type { z } from 'zod'
+import type { currencyDBSchema, exchangeRateDBSchema } from '../schemas'
 import {
   createCurrencySchema,
   editCurrencySchema,
@@ -13,30 +13,9 @@ import {
   removeCurrencySchema,
 } from '@remnant/shared'
 
-export interface CurrencyDB {
-  _id: string
-  seq: number
-  names: LanguageString
-  symbols: LanguageString
-  scale: number
-  paymentEpsilon?: number
-  priority: number
-  active: boolean
-  removed: boolean
-  createdAt: Date
-  updatedAt: Date
-}
+export type CurrencyDB = z.infer<typeof currencyDBSchema>
 
-export interface ExchangeRateDB {
-  _id: string
-  fromCurrency: string
-  toCurrency: string
-  rate: number
-  comment: string
-  removed: boolean
-  createdAt: Date
-  updatedAt: Date
-}
+export type ExchangeRateDB = z.infer<typeof exchangeRateDBSchema>
 
 export type GetCurrencyPayload = z.output<typeof getCurrencySchema>
 export function parseGetCurrency(x: unknown): GetCurrencyPayload {

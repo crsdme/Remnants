@@ -1,6 +1,7 @@
-import type { AggregateResult, BarcodeDTO } from '@remnant/shared'
+import type { AggregateResult } from '@remnant/shared'
 import type { PipelineStage } from 'mongoose'
 import type { CreateBarcodesRepoPayload, EditBarcodesRepoPayload, GetBarcodeByCodeRepoResult, GetBarcodesRepoPayload } from '@/types'
+import type { BarcodeDBPopulated } from '@/types/'
 import { BarcodeModel } from '@/models'
 import { buildQuery, buildSortQuery, unwrapAggregate } from '@/utils'
 import { productPopulatedStages } from './products.repo'
@@ -64,7 +65,7 @@ export async function list(payload: GetBarcodesRepoPayload): Promise<GetBarcodeB
                       vars: {
                         prod: { $arrayElemAt: ['$products', '$$idx'] },
                       },
-                      in: '$$prod.lineQuantity',
+                      in: '$$prod.unitsPerScan',
                     },
                   },
                 },
@@ -79,7 +80,6 @@ export async function list(payload: GetBarcodesRepoPayload): Promise<GetBarcodeB
         _id: 0,
         id: '$_id',
         products: 1,
-        // productsData: 0,
         code: 1,
         active: 1,
         removed: 1,
@@ -100,7 +100,7 @@ export async function list(payload: GetBarcodesRepoPayload): Promise<GetBarcodeB
     },
   ]
 
-  const raw = await BarcodeModel.aggregate<AggregateResult<BarcodeDTO>>(pipeline).exec()
+  const raw = await BarcodeModel.aggregate<AggregateResult<BarcodeDBPopulated>>(pipeline).exec()
   const { items, total } = unwrapAggregate(raw)
 
   return { items, total, page: current, pageSize }

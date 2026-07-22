@@ -1,10 +1,9 @@
-import type {
-  CashregisterDTO,
-  LanguageString,
-  Replace,
-} from '@remnant/shared'
+import type { CashregisterDTO } from '@remnant/shared'
 import type { z } from 'zod'
-import type { CashregisterAccountDBPopulated } from './cashregister-account.type'
+import type {
+  cashregisterDBPopulatedSchema,
+  cashregisterDBSchema,
+} from '../schemas'
 import {
   createCashregisterSchema,
   editCashregisterSchema,
@@ -12,21 +11,9 @@ import {
   removeCashregistersSchema,
 } from '@remnant/shared'
 
-export interface CashregisterDB {
-  _id: string
-  seq: number
-  names: LanguageString
-  accounts: string[]
-  priority: number
-  active: boolean
-  removed: boolean
-  createdAt: Date
-  updatedAt: Date
-}
+export type CashregisterDB = z.infer<typeof cashregisterDBSchema>
 
-export type CashregisterDBPopulated = Replace<CashregisterDB, {
-  accounts: CashregisterAccountDBPopulated[]
-}>
+export type CashregisterDBPopulated = z.infer<typeof cashregisterDBPopulatedSchema>
 
 export type GetCashregistersPayload = z.output<typeof getCashregistersSchema>
 export function parseGetCashregisters(x: unknown): GetCashregistersPayload {

@@ -2,6 +2,7 @@ import type {
   ClientDTO,
 } from '@remnant/shared'
 import type { z } from 'zod'
+import type { clientDBSchema } from '../schemas'
 import {
   createClientSchema,
   editClientSchema,
@@ -9,25 +10,7 @@ import {
   removeClientsSchema,
 } from '@remnant/shared'
 
-export interface ClientDB {
-  _id: string
-  seq: number
-  name: string
-  middleName: string
-  lastName: string
-  emails: string[]
-  phones: string[]
-  addresses: string[]
-  socials: {
-    type: string
-    value: string
-  }[]
-  country: string
-  comment: string
-  removed: boolean
-  createdAt: Date
-  updatedAt: Date
-}
+export type ClientDB = z.infer<typeof clientDBSchema>
 
 export type GetClientsPayload = z.output<typeof getClientsSchema>
 export function parseGetClients(x: unknown): GetClientsPayload {

@@ -149,20 +149,24 @@ export function useColumns() {
         cell: ({ row }) => row.original.seq,
       }),
       columnHelper.display({
-        id: 'category',
-        size: 150,
+        id: 'categories',
+        size: 200,
         meta: {
-          title: t('page.inventories.table.category'),
+          title: t('page.inventories.table.categories'),
           filterable: true,
           filterType: 'select',
           sortable: true,
           defaultVisible: true,
         },
-        header: ({ column }) => sortHeader(column, t('page.inventories.table.category')),
+        header: ({ column }) => sortHeader(column, t('page.inventories.table.categories')),
         cell: ({ row }) => (
-          <Badge>
-            {row.original.category?.names?.[language] ?? t('page.warehouse-transactions.table.empty')}
-          </Badge>
+          <div className="flex flex-wrap gap-1">
+            {row.original.categories.map(category => (
+              <Badge key={category.id}>
+                {category.names?.[language] ?? t('page.warehouse-transactions.table.empty')}
+              </Badge>
+            ))}
+          </div>
         ),
       }),
       columnHelper.display({

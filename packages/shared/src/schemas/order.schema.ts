@@ -1,6 +1,6 @@
 import type { PipeableDocument } from '..'
 import { z } from 'zod'
-import { dateRangeSchema, idSchema, languageCodeSchema, languageStringSchema, numberFromStringSchema, paginationSchema, responseItemSchema, responseListSchema, responseSchema, sorterParamsSchema } from './common'
+import { dateRangeSchema, idSchema, idSchemaOptional, languageCodeSchema, languageStringSchema, numberFromStringSchema, paginationSchema, responseItemSchema, responseListSchema, responseSchema, sorterParamsSchema } from './common'
 import { orderPaymentDTOPopulatedSchema } from './order-payment.schema'
 
 export const orderSchema = z.object({
@@ -99,7 +99,7 @@ export const orderItemSchema = z.object({
   profit: z.number().optional(),
   exchangeRate: z.number().optional(),
   purchasePrice: z.number().optional(),
-  purchaseCurrency: idSchema.optional(),
+  purchaseCurrency: idSchemaOptional,
 })
 export type OrderItemDTO = z.infer<typeof orderItemSchema>
 
@@ -192,17 +192,17 @@ export const getOrdersSchema = z.object({
   filters: z.object({
     ids: z.array(idSchema).optional(),
     seq: z.string().trim().optional(),
-    warehouse: z.string().trim().optional(),
-    deliveryService: z.string().trim().optional(),
-    orderSource: z.string().trim().optional(),
-    orderStatus: z.array(z.string().trim()).default([]),
-    client: z.string().trim().optional(),
+    warehouse: idSchemaOptional,
+    deliveryService: idSchemaOptional,
+    orderSource: idSchemaOptional,
+    orderStatus: z.array(idSchema).default([]),
+    client: idSchemaOptional,
     comment: z.string().trim().optional(),
-    createdBy: z.string().trim().optional(),
-    confirmedBy: z.string().trim().optional(),
-    removedBy: z.string().trim().optional(),
+    createdBy: idSchemaOptional,
+    confirmedBy: idSchemaOptional,
+    removedBy: idSchemaOptional,
     removed: z.boolean().default(false),
-    orderPayments: z.array(z.string().trim()).default([]),
+    orderPayments: z.array(idSchema).default([]),
     createdAt: dateRangeSchema.optional(),
     updatedAt: dateRangeSchema.optional(),
   }).optional().default({}),
@@ -233,28 +233,28 @@ export const getOrderItemsSchema = z.object({
 export type GetOrderItemsRequest = z.input<typeof getOrderItemsSchema>
 
 export const createOrderSchema = z.object({
-  warehouse: z.string(),
-  deliveryService: z.string(),
-  orderSource: z.string(),
-  orderStatus: z.string(),
+  warehouse: idSchema,
+  deliveryService: idSchema,
+  orderSource: idSchema,
+  orderStatus: idSchema,
   orderPayments: z.array(z.object({
     amount: z.number(),
-    currency: z.string(),
-    cashregister: z.string(),
-    cashregisterAccount: z.string(),
+    currency: idSchema,
+    cashregister: idSchema,
+    cashregisterAccount: idSchema,
     paymentStatus: z.string(),
     paymentDate: z.string().optional(),
     comment: z.string().optional(),
   }).optional()),
-  client: z.string().optional(),
+  client: idSchemaOptional,
   comment: z.string().optional(),
   items: z.array(z.object({
-    product: z.string(),
+    product: idSchema,
     quantity: z.number(),
     price: z.number(),
     manualPrice: z.number().optional(),
     basePrice: z.number(),
-    currency: z.string(),
+    currency: idSchema,
     discountAmount: z.number().optional(),
     discountPercent: z.number().optional(),
   })),
@@ -264,30 +264,30 @@ export type CreateOrderRequest = z.input<typeof createOrderSchema>
 
 export const editOrderSchema = z.object({
   id: idSchema,
-  warehouse: z.string(),
-  deliveryService: z.string(),
-  orderSource: z.string(),
-  orderStatus: z.string(),
+  warehouse: idSchema,
+  deliveryService: idSchema,
+  orderSource: idSchema,
+  orderStatus: idSchema,
   orderPayments: z.array(z.object({
     id: z.string().optional(),
     amount: z.number(),
-    currency: z.string(),
-    cashregister: z.string(),
-    cashregisterAccount: z.string(),
+    currency: idSchema,
+    cashregister: idSchema,
+    cashregisterAccount: idSchema,
     paymentStatus: z.string(),
     paymentDate: z.string().optional(),
     comment: z.string().optional(),
   }).optional()),
-  client: z.string().optional(),
+  client: idSchemaOptional,
   comment: z.string().optional(),
   items: z.array(z.object({
     id: z.string().optional(),
-    product: z.string(),
+    product: idSchema,
     quantity: z.number(),
     price: z.number(),
     manualPrice: z.number().optional(),
     basePrice: z.number(),
-    currency: z.string(),
+    currency: idSchema,
     discountAmount: z.number().optional(),
     discountPercent: z.number().optional(),
   })),
@@ -322,7 +322,7 @@ export const printDraftInvoiceOrderSchema = z.object({
       })),
       value: z.unknown(),
     })),
-    currency: z.string(),
+    currency: idSchema,
     price: z.number(),
     manualPrice: z.number().optional(),
     basePrice: z.number(),

@@ -7,10 +7,30 @@ import type {
   GetProductsRepoPayload,
   GetProductsRepoResult,
   ProductDB,
-  ProductPopulatedRepo,
+  ProductDBPopulated,
 } from '@/types'
 import { ProductModel } from '@/models'
+import * as CurrencyRepo from '@/repositories/currencies.repo'
 import { buildQuery, buildSortQuery, unwrapAggregate } from '@/utils'
+import { toMinor } from '@/utils/money'
+
+async function toMinorFilterValue(
+  amount: number | undefined,
+  currencyIds: string[] | undefined,
+): Promise<number | undefined> {
+  if (amount === undefined)
+    return undefined
+
+  const currencyId = currencyIds?.length === 1 ? currencyIds[0] : undefined
+  if (currencyId === undefined)
+    return amount
+
+  const currency = await CurrencyRepo.findOne({ _id: currencyId })
+  if (!currency)
+    return amount
+
+  return toMinor(amount, currency.scale)
+}
 
 export async function list(payload: GetProductsRepoPayload): Promise<GetProductsRepoResult> {
   const {
@@ -38,13 +58,16 @@ export async function list(payload: GetProductsRepoPayload): Promise<GetProducts
     updatedAt,
   } = payload.filters
 
+  const minorPriceFilter = await toMinorFilterValue(price, currency)
+  const minorPurchasePriceFilter = await toMinorFilterValue(purchasePrice, purchaseCurrency)
+
   const query = buildQuery({
     filters: {
       _id: ids,
       seq,
       names,
-      price,
-      purchasePrice,
+      price: minorPriceFilter,
+      purchasePrice: minorPurchasePriceFilter,
       barcodes,
       categories,
       unit,
@@ -426,7 +449,7 @@ export async function list(payload: GetProductsRepoPayload): Promise<GetProducts
     },
   ]
 
-  const raw = await ProductModel.aggregate<AggregateResult<ProductPopulatedRepo>>(pipeline).exec()
+  const raw = await ProductModel.aggregate<AggregateResult<ProductDBPopulated>>(pipeline).exec()
   const { items, total } = unwrapAggregate(raw)
 
   return { items, total, page: current, pageSize }
@@ -448,15 +471,18 @@ export async function findIndex(payload: GetProductsIndexRepoPayload) {
     productProperties,
   } = payload.filters
 
+  const minorPriceFilter = await toMinorFilterValue(price, undefined)
+  const minorPurchasePriceFilter = await toMinorFilterValue(purchasePrice, undefined)
+
   const query = buildQuery({
-    filters: { _id: ids, seq, names, price, purchasePrice, barcodes, categories, unit, productPropertiesGroup, productProperties },
+    filters: { _id: ids, seq, names, price: minorPriceFilter, purchasePrice: minorPurchasePriceFilter, barcodes, categories, unit, productPropertiesGroup, productProperties },
     rules: {
       _id: { type: 'array' },
       seq: { type: 'exact' },
       names: { type: 'string', langAware: true },
       active: { type: 'array' },
-      price: { type: 'exact' },
-      purchasePrice: { type: 'exact' },
+      price: { type: 'exact', field: 'minorPrice' },
+      purchasePrice: { type: 'exact', field: 'minorPurchasePrice' },
       barcodes: { type: 'array' },
       categories: { type: 'array' },
       unit: { type: 'exact' },
@@ -530,18 +556,16 @@ export async function findById(id: string, session?: ClientSession) {
 }
 
 export async function addBarcodeToProducts(productIds: string[], barcodeId: string) {
-  return ProductModel.findOneAndUpdate(
+  return ProductModel.updateMany(
     { _id: { $in: productIds } },
-    { $push: { barcodes: barcodeId } },
-    { new: true, runValidators: true },
+    { $push: { barcodesIds: barcodeId } },
   ).exec()
 }
 
 export async function removeBarcodeFromProducts(barcodeId: string) {
-  return ProductModel.findOneAndUpdate(
-    { barcodes: { $in: [barcodeId] } },
-    { $pull: { barcodes: { $in: [barcodeId] } } },
-    { new: true, runValidators: true },
+  return ProductModel.updateMany(
+    { barcodesIds: barcodeId },
+    { $pull: { barcodesIds: barcodeId } },
   ).exec()
 }
 
@@ -667,7 +691,7 @@ export function productPopulatedStages({
     {
       $lookup: {
         from: 'currencies',
-        localField: 'currency',
+        localField: 'currencyId',
         foreignField: '_id',
         as: 'currency',
       },
@@ -676,7 +700,7 @@ export function productPopulatedStages({
     {
       $lookup: {
         from: 'currencies',
-        localField: 'purchaseCurrency',
+        localField: 'purchaseCurrencyId',
         foreignField: '_id',
         as: 'purchaseCurrency',
       },
@@ -685,7 +709,7 @@ export function productPopulatedStages({
     {
       $lookup: {
         from: 'units',
-        localField: 'unit',
+        localField: 'unitId',
         foreignField: '_id',
         as: 'unit',
       },
@@ -694,7 +718,7 @@ export function productPopulatedStages({
     {
       $lookup: {
         from: 'categories',
-        localField: 'categories',
+        localField: 'categoriesIds',
         foreignField: '_id',
         as: 'categories',
       },
@@ -712,7 +736,7 @@ export function productPopulatedStages({
     {
       $lookup: {
         from: 'product-property-groups',
-        localField: 'productPropertiesGroup',
+        localField: 'productPropertiesGroupId',
         foreignField: '_id',
         as: 'productPropertiesGroup',
       },
@@ -721,7 +745,7 @@ export function productPopulatedStages({
     {
       $lookup: {
         from: 'barcodes',
-        localField: 'barcodes',
+        localField: 'barcodesIds',
         foreignField: '_id',
         as: 'barcodes',
       },
@@ -844,19 +868,21 @@ export function productPopulatedStages({
       id: '$_id',
       seq: 1,
       names: 1,
-      price: 1,
+      minorPrice: 1,
       currency: {
         id: '$currency._id',
         names: '$currency.names',
         symbols: '$currency.symbols',
+        scale: '$currency.scale',
       },
       ...(hasPurchasePricePermission
         ? {
-            purchasePrice: 1,
+            minorPurchasePrice: 1,
             purchaseCurrency: {
               id: '$purchaseCurrency._id',
               names: '$purchaseCurrency.names',
               symbols: '$purchaseCurrency.symbols',
+              scale: '$purchaseCurrency.scale',
             },
           }
         : {}),

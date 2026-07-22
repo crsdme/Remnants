@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { dateRangeSchema, idSchema, numberFromStringSchema, paginationSchema, responseItemSchema, responseListSchema, responseSchema, sorterParamsSchema } from './common'
+import { dateRangeSchema, idSchema, idSchemaOptional, numberFromStringSchema, paginationSchema, responseItemSchema, responseListSchema, responseSchema, sorterParamsSchema } from './common'
 import { currencySchema } from './currency.schema'
 
 export const procurementSchema = z.object({
@@ -41,9 +41,9 @@ export type ProcurementItemDTO = z.infer<typeof procurementItemSchema>
 export const getProcurementsSchema = z.object({
   filters: z.object({
     seq: z.array(numberFromStringSchema).optional(),
-    supplier: idSchema.optional(),
+    supplier: idSchemaOptional,
     status: z.string().trim().optional(),
-    warehouse: idSchema.optional(),
+    warehouse: idSchemaOptional,
     createdAt: dateRangeSchema.optional(),
     updatedAt: dateRangeSchema.optional(),
   }).optional().default({}),
@@ -82,7 +82,7 @@ export type RemoveProcurementsRequest = z.input<typeof removeProcurementsSchema>
 
 export const getProcurementItemsSchema = z.object({
   filters: z.object({
-    procurementId: z.string().trim().optional(),
+    procurementId: idSchemaOptional,
   }).optional().default({}),
   pagination: paginationSchema.optional().default({}),
 })
@@ -103,7 +103,7 @@ export type EditProcurementRequest = z.input<typeof editProcurementSchema>
 
 export const scanBarcodeSchema = z.object({
   barcode: z.string().trim(),
-  procurementId: idSchema.optional(),
+  procurementId: idSchemaOptional,
 })
 
 export type ScanBarcodeProcurementRequest = z.input<typeof scanBarcodeSchema>

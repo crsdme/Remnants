@@ -1,51 +1,24 @@
 import type {
-  BarcodeDTO,
   getBarcodeByCodeSchema,
-  LanguageString,
 } from '@remnant/shared'
+import type { z } from 'zod'
+import type {
+  barcodeDBPopulatedSchema,
+  barcodeDBSchema,
+  createBarcodeRepoSchema,
+  editBarcodeRepoSchema,
+} from '@/schemas/'
 import {
   createBarcodeSchema,
   editBarcodeSchema,
   getBarcodesSchema,
-  idSchema,
   printBarcodeSchema,
   removeBarcodesSchema,
 } from '@remnant/shared'
-import { z } from 'zod'
 
-export interface BarcodeDB {
-  _id: string
-  code: string
-  products: {
-    _id: string
-    names: LanguageString
-    productProperties: {
-      _id: string
-      names: LanguageString
-      options: string[]
-      value: unknown
-      optionData: {
-        _id: string
-        names: LanguageString
-      }[]
-    }[]
-    categories: {
-      _id: string
-      names: LanguageString
-    }[]
-    images: {
-      _id: string
-      filename: string
-      name: string
-      type: string
-      path: string
-    }[]
-    lineQuantity: number
-  }[]
-  active: boolean
-  createdAt: Date
-  updatedAt: Date
-}
+export type BarcodeDB = z.infer<typeof barcodeDBSchema>
+
+export type BarcodeDBPopulated = z.infer<typeof barcodeDBPopulatedSchema>
 
 export type GetBarcodesPayload = z.output<typeof getBarcodesSchema>
 export function parseGetBarcodes(x: unknown): GetBarcodesPayload {
@@ -73,31 +46,13 @@ export function parsePrintBarcode(x: unknown): PrintBarcodePayload {
 }
 
 export type GetBarcodesRepoPayload = GetBarcodesPayload
-export interface GetBarcodesRepoResult { items: BarcodeDTO[], total: number, page: number, pageSize: number }
+export interface GetBarcodesRepoResult { items: BarcodeDBPopulated[], total: number, page: number, pageSize: number }
 
-export const createBarcodeSchemaPayload = z.object({
-  code: z.string().trim().optional(),
-  products: z.array(z.object({
-    _id: idSchema,
-    lineQuantity: z.number().int().positive(),
-  })).min(1),
-  active: z.boolean().optional().default(true),
-})
+export type CreateBarcodesRepoPayload = z.output<typeof createBarcodeRepoSchema>
 
-export type CreateBarcodesRepoPayload = z.output<typeof createBarcodeSchemaPayload>
-
-export const editBarcodeSchemaPayload = z.object({
-  code: z.string().trim().optional(),
-  products: z.array(z.object({
-    _id: idSchema,
-    lineQuantity: z.number().int().positive(),
-  })).min(1),
-  active: z.boolean().optional().default(true),
-})
-
-export type EditBarcodesRepoPayload = z.output<typeof editBarcodeSchemaPayload>
+export type EditBarcodesRepoPayload = z.output<typeof editBarcodeRepoSchema>
 
 export type GetBarcodeByCodePayload = z.output<typeof getBarcodeByCodeSchema>
 
 export type GetBarcodeByCodeRepoPayload = GetBarcodeByCodePayload
-export interface GetBarcodeByCodeRepoResult { items: BarcodeDTO[], total: number, page: number, pageSize: number }
+export interface GetBarcodeByCodeRepoResult { items: BarcodeDBPopulated[], total: number, page: number, pageSize: number }

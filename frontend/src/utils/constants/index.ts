@@ -24,24 +24,24 @@ export const NAV_MENU_ITEMS = [
     icon: 'ShoppingCart',
     permissions: ['order.page'],
   },
-  {
-    id: 'leades',
-    url: '/leades',
-    icon: 'Users',
-    permissions: ['lead.page'],
-  },
-  {
-    id: 'chats',
-    url: '/chats',
-    icon: 'MessageSquare',
-    permissions: ['chat.page'],
-  },
-  {
-    id: 'tasks',
-    url: '/tasks',
-    icon: 'ListChecks',
-    permissions: ['task.page'],
-  },
+  // {
+  //   id: 'leades',
+  //   url: '/leades',
+  //   icon: 'Users',
+  //   permissions: ['lead.page'],
+  // },
+  // {
+  //   id: 'chats',
+  //   url: '/chats',
+  //   icon: 'MessageSquare',
+  //   permissions: ['chat.page'],
+  // },
+  // {
+  //   id: 'tasks',
+  //   url: '/tasks',
+  //   icon: 'ListChecks',
+  //   permissions: ['task.page'],
+  // },
   {
     id: 'catalog',
     icon: 'Package',
@@ -60,10 +60,10 @@ export const NAV_MENU_ITEMS = [
     permissions: ['statistic.page', 'orderStatistic.page', 'productStatistic.page', 'stockStatistic.page'],
     items: [
       { id: 'orderStatistic', url: '/statistics/orders', permissions: ['orderStatistic.page'] },
-      { id: 'productStatistic', url: '/statistic/product', permissions: ['productStatistic.page'] },
-      { id: 'stockStatistic', url: '/statistic/stock', permissions: ['stockStatistic.page'] },
-      { id: 'productionStatistic', url: '/statistic/production', permissions: ['productionStatistic.page'] },
-      { id: 'metrics', url: '/statistic/metrics', permissions: ['metrics.page'] },
+      // { id: 'productStatistic', url: '/statistic/product', permissions: ['productStatistic.page'] },
+      // { id: 'stockStatistic', url: '/statistic/stock', permissions: ['stockStatistic.page'] },
+      // { id: 'productionStatistic', url: '/statistic/production', permissions: ['productionStatistic.page'] },
+      // { id: 'metrics', url: '/statistic/metrics', permissions: ['metrics.page'] },
     ],
   },
   {
@@ -72,9 +72,9 @@ export const NAV_MENU_ITEMS = [
     permissions: ['marketing.page', 'client.page', 'promocode.page', 'coupon.page', 'bonus.page'],
     items: [
       { id: 'clients', url: '/clients', permissions: ['client.page'] },
-      { id: 'promocodes', url: '/promocodes', permissions: ['promocode.page'] },
-      { id: 'coupons', url: '/coupons', permissions: ['coupon.page'] },
-      { id: 'bonuses', url: '/bonuses', permissions: ['bonus.page'] },
+      // { id: 'promocodes', url: '/promocodes', permissions: ['promocode.page'] },
+      // { id: 'coupons', url: '/coupons', permissions: ['coupon.page'] },
+      // { id: 'bonuses', url: '/bonuses', permissions: ['bonus.page'] },
     ],
   },
   {
@@ -102,29 +102,29 @@ export const NAV_MENU_ITEMS = [
         permissions: ['cashregisterAccount.page'],
       },
       { id: 'expenses', url: '/expenses', permissions: ['expense.page'] },
-      { id: 'investors', url: '/investors', permissions: ['investor.page'] },
-      { id: 'suppliers', url: '/suppliers', permissions: ['supplier.page'] },
+      // { id: 'investors', url: '/investors', permissions: ['investor.page'] },
+      // { id: 'suppliers', url: '/suppliers', permissions: ['supplier.page'] },
       { id: 'moneyTransactions', url: '/money-transactions', permissions: ['moneyTransaction.page'] },
       { id: 'balances', url: '/balances', permissions: ['balance.page'] },
     ],
   },
-  {
-    id: 'socials',
-    icon: 'Globe',
-    permissions: ['social.page', 'news.page', 'update.page', 'tour.page'],
-    items: [
-      { id: 'news', url: '/socials/news', permissions: ['news.page'] },
-      { id: 'updates', url: '/updates', permissions: ['update.page'] },
-      { id: 'tour', url: '/tour', permissions: ['tour.page'] },
-    ],
-  },
+  // {
+  //   id: 'socials',
+  //   icon: 'Globe',
+  //   permissions: ['social.page', 'news.page', 'update.page', 'tour.page'],
+  //   items: [
+  //     { id: 'news', url: '/socials/news', permissions: ['news.page'] },
+  //     { id: 'updates', url: '/updates', permissions: ['update.page'] },
+  //     { id: 'tour', url: '/tour', permissions: ['tour.page'] },
+  //   ],
+  // },
   {
     id: 'users',
     icon: 'Users',
     permissions: ['user.page', 'timetable.page', 'userRole.page'],
     items: [
       { id: 'users', url: '/users', permissions: ['user.page'] },
-      { id: 'timetable', url: '/users/timetable', permissions: ['timetable.page'] },
+      // { id: 'timetable', url: '/users/timetable', permissions: ['timetable.page'] },
       { id: 'userRoles', url: '/users/roles', permissions: ['userRole.page'] },
     ],
   },
@@ -150,12 +150,12 @@ export const NAV_MENU_ITEMS = [
       { id: 'units', url: '/settings/units', permissions: ['unit.page'] },
     ],
   },
-  {
-    id: 'documents',
-    url: '/documents',
-    icon: 'FileText',
-    permissions: ['document.page'],
-  },
+  // {
+  //   id: 'documents',
+  //   url: '/documents',
+  //   icon: 'FileText',
+  //   permissions: ['document.page'],
+  // },
 ]
 
 export const SOCIAL_TYPES = [

@@ -1,5 +1,5 @@
 import type { RequestHandler } from 'express'
-import { createInventorySchema, editInventorySchema, getInventoriesSchema, getInventoryItemsSchema, removeInventoriesSchema, scanBarcodeToDraftSchema } from '@remnant/shared'
+import { createInventorySchema, editInventorySchema, getInventoriesSchema, getInventoryItemsSchema, removeInventoriesSchema, scanBarcodeToDraftsSchema } from '@remnant/shared'
 import { Router } from 'express'
 import * as InventoriesController from '@/controllers/inventories.controller'
 import { checkPermissions, validateBodyRequest, validateQueryRequest } from '@/middleware'
@@ -20,7 +20,7 @@ router.get(
 
 router.get(
   '/scan/barcode',
-  validateQueryRequest(scanBarcodeToDraftSchema),
+  validateQueryRequest(scanBarcodeToDraftsSchema),
   InventoriesController.scanBarcodeToDraft as RequestHandler,
 )
 

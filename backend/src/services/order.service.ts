@@ -27,7 +27,9 @@ import type {
   PrintOrderLabelOrderPayload,
   RemoveOrdersPayload,
 } from '@/types'
+import type { MoneyLike } from '@/utils/order-payment-status'
 import path from 'node:path'
+import { toMinorType } from '@remnant/shared'
 import mongoose from 'mongoose'
 import PDFDocument from 'pdfkit'
 import { v4 as uuidv4 } from 'uuid'
@@ -36,6 +38,7 @@ import * as CurrencyRepo from '@/repositories/currencies.repo'
 import * as OrderPaymentRepository from '@/repositories/order-payment.repo'
 import * as OrderRepository from '@/repositories/order.repo'
 import * as ProductsRepository from '@/repositories/products.repo'
+import * as UserAccessRepo from '@/repositories/user-access.repo'
 import * as AutomationService from '@/services/automation.service'
 import * as ExchangeRateService from '@/services/currency.service'
 import * as MoneyTransactionService from '@/services/money-transaction.service'
@@ -43,7 +46,7 @@ import * as OrderPaymentService from '@/services/order-payment.service'
 import * as QuantityService from '@/services/quantity.service'
 import * as UserService from '@/services/user.service'
 import { parseGetCurrency, parseGetOrderItems, parseGetOrderPayments, parseGetOrders } from '@/types/'
-import { drawHr, getDifferenceDeep, getHardcodeData, HttpError } from '@/utils'
+import { drawHr, getHardcodeData, getScopeIdsForUser, HttpError } from '@/utils'
 import { toMinor } from '@/utils/money'
 import {
   buildCalculationCurrency,
@@ -57,6 +60,7 @@ type PDFDoc = PDFKit.PDFDocument
 
 export async function get({ payload, user }: { payload: GetOrdersPayload, user: AuthUser }): Promise<GetOrdersResponse> {
   const hasProfitPermission = await UserService.checkPermission('order.profit', user.id)
+  const access = await UserAccessRepo.getScopesByUserId(user.id)
 
   const { items, total, page, pageSize } = await OrderRepository.list({
     payload: {
@@ -64,6 +68,12 @@ export async function get({ payload, user }: { payload: GetOrdersPayload, user: 
       pagination: payload.pagination,
       sorters: payload.sorters,
       hasProfitPermission,
+    },
+    options: {
+      warehouseIds: getScopeIdsForUser(access, 'warehouses', user),
+      deliveryServiceIds: getScopeIdsForUser(access, 'deliveryServices', user),
+      orderSourceIds: getScopeIdsForUser(access, 'orderSources', user),
+      orderStatusIds: getScopeIdsForUser(access, 'orderStatuses', user),
     },
   })
 
@@ -227,8 +237,8 @@ export async function create({ payload, user }: { payload: CreateOrderPayload, u
         minorBasePrice: toMinor(item.basePrice, currency.scale),
         minorPrice: toMinor(item.price, currency.scale),
         minorPurchasePrice: product.minorPurchasePrice,
-        minorProfit: profit,
-        minorDiscountAmount: item.discountAmount !== undefined ? toMinor(item.discountAmount, currency.scale) : 0,
+        minorProfit: toMinorType(profit),
+        minorDiscountAmount: item.discountAmount !== undefined ? toMinor(item.discountAmount, currency.scale) : toMinorType(0),
         discountPercent: item.discountPercent,
         order: orderId,
         purchaseCurrency: product.purchaseCurrencyId,
@@ -295,6 +305,8 @@ export async function create({ payload, user }: { payload: CreateOrderPayload, u
 
 export async function payOrder({ payload, user }: { payload: PayOrderPayload, user: AuthUser }): Promise<PayOrderResponse> {
   const { id } = payload
+
+  console.log(id, user)
 
   // const { data: order } = await OrderRepository.getById({ id })
 
@@ -1456,8 +1468,8 @@ async function calculateProfit({
 }
 
 async function computeOrderPaymentStatus(
-  prices: { currency: string, totalMinor: number, scale: number, exchangeRateToCalculationCurrency?: number }[],
-  payments: { currency: string, totalMinor: number, scale: number, exchangeRateToCalculationCurrency?: number }[],
+  prices: MoneyLike[],
+  payments: MoneyLike[],
   currencies: { id: string, scale: number, paymentEpsilon?: number | null }[],
 ) {
   const calculationCurrencyId = resolveCalculationCurrency(payments, prices)
@@ -1474,7 +1486,7 @@ async function computeOrderPaymentStatus(
 }
 
 async function withCalculationRates(
-  entries: { currency: string, totalMinor: number, scale: number, exchangeRateToCalculationCurrency?: number }[],
+  entries: MoneyLike[],
   calculationCurrencyId: string,
 ) {
   return Promise.all(entries.map(async (entry) => {
@@ -1616,7 +1628,7 @@ async function applyItemsDiff(params: {
         currency: newItem.currency,
         minorPurchasePrice: product.minorPurchasePrice,
         purchaseCurrency: product.purchaseCurrencyId,
-        minorProfit: profit,
+        minorProfit: toMinorType(profit),
         exchangeRate,
       }
 
@@ -1679,9 +1691,9 @@ async function applyItemsDiff(params: {
           minorManualPrice: toMinor(newItem.price, currency.scale),
           minorBasePrice: toMinor(newItem.basePrice, currency.scale),
           minorPrice: toMinor(newItem.price, currency.scale),
-          minorPurchasePrice: toMinor(product.minorPurchasePrice, purchaseCurrency.scale),
-          minorProfit: profit,
-          minorDiscountAmount: newItem.discountAmount !== undefined ? toMinor(newItem.discountAmount, currency.scale) : 0,
+          minorPurchasePrice: product.minorPurchasePrice,
+          minorProfit: toMinorType(profit),
+          minorDiscountAmount: newItem.discountAmount !== undefined ? toMinor(newItem.discountAmount, currency.scale) : toMinorType(0),
           discountPercent: newItem.discountPercent,
           currency: newItem.currency,
           order: orderId,

@@ -1,12 +1,12 @@
 import { z } from 'zod'
-import { booleanArraySchema, dateRangeSchema, idSchema, languageStringSchema, numberFromStringSchema, paginationSchema, responseItemSchema, responseListSchema, responseSchema, sorterParamsSchema, stringToBooleanSchema } from './common'
+import { booleanArraySchema, dateRangeSchema, idSchema, idSchemaOptional, languageStringSchema, numberFromStringSchema, paginationSchema, responseItemSchema, responseListSchema, responseSchema, sorterParamsSchema, stringToBooleanSchema } from './common'
 
 export const categorySchema = z.object({
   id: idSchema,
   seq: z.number(),
   names: languageStringSchema,
   priority: numberFromStringSchema,
-  parent: idSchema.optional(),
+  parent: idSchemaOptional,
   active: z.boolean().optional().default(true),
   createdAt: z.coerce.date(),
   updatedAt: z.coerce.date(),
@@ -20,7 +20,7 @@ export const getCategoriesSchema = z.object({
     names: z.string().trim().optional(),
     language: z.string().default('en'),
     priority: numberFromStringSchema.optional(),
-    parent: idSchema.optional(),
+    parent: idSchemaOptional,
     createdAt: dateRangeSchema.optional(),
     updatedAt: dateRangeSchema.optional(),
     active: booleanArraySchema.optional(),
@@ -42,7 +42,7 @@ export type GetCategoriesRequest = z.input<typeof getCategoriesSchema>
 export const createCategorySchema = z.object({
   names: languageStringSchema,
   priority: z.number().optional().default(0),
-  parent: idSchema.optional(),
+  parent: idSchemaOptional,
   active: z.boolean().optional().default(true),
 })
 
@@ -52,7 +52,7 @@ export const editCategorySchema = z.object({
   id: idSchema,
   names: languageStringSchema,
   priority: z.number().optional().default(0),
-  parent: idSchema.optional(),
+  parent: idSchemaOptional,
   active: z.boolean().optional().default(true),
 })
 

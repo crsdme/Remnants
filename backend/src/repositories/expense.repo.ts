@@ -8,9 +8,16 @@ import type {
   GetExpensesRepoResult,
 } from '@/types/'
 import { ExpenseModel } from '@/models'
-import { buildQuery, buildSortQuery, unwrapAggregate } from '@/utils'
+import { applyScopeIdsToQuery, buildQuery, buildSortQuery, unwrapAggregate } from '@/utils'
 
-export async function list(payload: GetExpensesRepoPayload): Promise<GetExpensesRepoResult> {
+export async function list(
+  payload: GetExpensesRepoPayload,
+  options: {
+    categoryIds?: string[] | null
+    cashregisterIds?: string[] | null
+    cashregisterAccountIds?: string[] | null
+  } = {},
+): Promise<GetExpensesRepoResult> {
   const {
     current,
     pageSize,
@@ -31,14 +38,26 @@ export async function list(payload: GetExpensesRepoPayload): Promise<GetExpenses
   } = payload.filters
 
   const query = buildQuery({
-    filters: { ids, seq, amount, currency, cashregister, cashregisterAccount, sourceModel, sourceId, type, createdAt, updatedAt },
+    filters: {
+      _id: ids,
+      seq,
+      amount,
+      currency,
+      cashregisterId: cashregister,
+      cashregisterAccountId: cashregisterAccount,
+      sourceModel,
+      sourceId,
+      type,
+      createdAt,
+      updatedAt,
+    },
     rules: {
       _id: { type: 'array' },
       seq: { type: 'exact' },
       amount: { type: 'exact' },
       currency: { type: 'exact' },
-      cashregister: { type: 'exact' },
-      cashregisterAccount: { type: 'exact' },
+      cashregisterId: { type: 'exact' },
+      cashregisterAccountId: { type: 'exact' },
       sourceModel: { type: 'exact' },
       sourceId: { type: 'exact' },
       type: { type: 'exact' },
@@ -46,6 +65,10 @@ export async function list(payload: GetExpensesRepoPayload): Promise<GetExpenses
       updatedAt: { type: 'dateRange' },
     },
   })
+
+  applyScopeIdsToQuery(query, options.categoryIds, 'categoryIds')
+  applyScopeIdsToQuery(query, options.cashregisterIds, 'cashregisterId')
+  applyScopeIdsToQuery(query, options.cashregisterAccountIds, 'cashregisterAccountId')
 
   const sorters = buildSortQuery(payload.sorters, { seq: 1 })
 

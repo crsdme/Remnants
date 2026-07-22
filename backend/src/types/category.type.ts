@@ -1,8 +1,8 @@
 import type {
   CategoryDTO,
-  LanguageString,
 } from '@remnant/shared'
 import type { z } from 'zod'
+import type { categoryDBSchema } from '../schemas'
 import {
   createCategorySchema,
   editCategorySchema,
@@ -10,17 +10,7 @@ import {
   removeCategoriesSchema,
 } from '@remnant/shared'
 
-export interface CategoryDB {
-  _id: string
-  seq: number
-  names: LanguageString
-  parent?: string
-  priority: number
-  active: boolean
-  removed: boolean
-  createdAt: Date
-  updatedAt: Date
-}
+export type CategoryDB = z.infer<typeof categoryDBSchema>
 
 export type GetCategoriesPayload = z.output<typeof getCategoriesSchema>
 export function parseGetCategories(x: unknown): GetCategoriesPayload {

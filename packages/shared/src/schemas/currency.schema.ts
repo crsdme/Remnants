@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { booleanArraySchema, dateRangeSchema, idSchema, languageStringSchema, numberFromStringSchema, paginationSchema, responseItemSchema, responseListSchema, responseSchema, sorterParamsSchema } from './common'
+import { booleanArraySchema, dateRangeSchema, idSchema, idSchemaOptional, languageStringSchema, numberFromStringSchema, paginationSchema, responseItemSchema, responseListSchema, responseSchema, sorterParamsSchema } from './common'
 
 export const currencySchema = z.object({
   id: idSchema,
@@ -112,8 +112,8 @@ export type RemoveCurrencyRequest = z.input<typeof removeCurrencySchema>
 export const getExchangeRatesSchema = z.object({
   filters: z.object({
     ids: z.array(idSchema).optional(),
-    fromCurrency: idSchema.optional(),
-    toCurrency: idSchema.optional(),
+    fromCurrency: idSchemaOptional,
+    toCurrency: idSchemaOptional,
   }).optional().default({}),
   sorters: z.object({
     rate: sorterParamsSchema.optional(),

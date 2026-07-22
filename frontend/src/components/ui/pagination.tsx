@@ -54,17 +54,17 @@ function PaginationLink({ className, isActive, size = 'icon', ...props }: Pagina
   )
 }
 
-function PaginationPrevious({ className, ...props }: React.ComponentProps<typeof Button>) {
+function PaginationPrevious({ className, type = 'button', ...props }: React.ComponentProps<typeof Button>) {
   return (
-    <Button size="icon" className={cn('gap-1 px-2.5 sm:pl-2.5', className)} {...props}>
+    <Button type={type} size="icon" className={cn('gap-1 px-2.5 sm:pl-2.5', className)} {...props}>
       <ChevronLeftIcon />
     </Button>
   )
 }
 
-function PaginationNext({ className, ...props }: React.ComponentProps<typeof Button>) {
+function PaginationNext({ className, type = 'button', ...props }: React.ComponentProps<typeof Button>) {
   return (
-    <Button size="icon" className={cn('gap-1 px-2.5 sm:pr-2.5', className)} {...props}>
+    <Button type={type} size="icon" className={cn('gap-1 px-2.5 sm:pr-2.5', className)} {...props}>
       <ChevronRightIcon />
     </Button>
   )

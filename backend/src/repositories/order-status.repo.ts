@@ -7,9 +7,12 @@ import type {
   GetOrderStatusesRepoResult,
 } from '@/types/'
 import { OrderStatusModel } from '@/models'
-import { buildQuery, buildSortQuery, unwrapAggregate } from '@/utils'
+import { applyScopeIdsToQuery, buildQuery, buildSortQuery, unwrapAggregate } from '@/utils'
 
-export async function list(payload: GetOrderStatusesRepoPayload): Promise<GetOrderStatusesRepoResult> {
+export async function list(
+  payload: GetOrderStatusesRepoPayload,
+  options: { scopeIds?: string[] | null } = {},
+): Promise<GetOrderStatusesRepoResult> {
   const {
     current,
     pageSize,
@@ -42,6 +45,8 @@ export async function list(payload: GetOrderStatusesRepoPayload): Promise<GetOrd
     },
     language,
   })
+
+  applyScopeIdsToQuery(query, options.scopeIds)
 
   const sorters = buildSortQuery(payload.sorters, { priority: 1 })
 

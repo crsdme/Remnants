@@ -1,15 +1,16 @@
 import type { NextFunction, Response } from 'express'
-import type { CreateCashregisterAccountPayload, EditCashregisterAccountPayload, GetCashregisterAccountsPayload, RemoveCashregisterAccountsPayload, ValidatedRequest } from '@/types'
+import type { CreateCashregisterAccountPayload, EditCashregisterAccountPayload, GetCashregisterAccountsPayload, RemoveCashregisterAccountsPayload, ValidatedAuthedRequest, ValidatedRequest } from '@/types'
 import * as CashregisterAccountService from '@/services/cashregister-account.service'
 
 export async function get(
-  req: ValidatedRequest<GetCashregisterAccountsPayload>,
+  req: ValidatedAuthedRequest<GetCashregisterAccountsPayload, never>,
   res: Response,
   next: NextFunction,
 ) {
   try {
     const serviceResponse = await CashregisterAccountService.get({
       payload: req.validated.query,
+      user: req.user,
     })
 
     res.status(200).json(serviceResponse)

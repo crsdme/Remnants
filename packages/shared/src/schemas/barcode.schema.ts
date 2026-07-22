@@ -1,20 +1,30 @@
 import type { Response } from '../types/common.type'
 import { z } from 'zod'
-import { booleanArraySchema, dateRangeSchema, idSchema, languageCodeSchema, paginationSchema, responseItemSchema, responseListSchema, responseSchema, sorterParamsSchema } from './common'
+import { booleanArraySchema, dateRangeSchema, idSchema, languageCodeSchema, languageStringSchema, numberFromStringSchema, paginationSchema, responseItemSchema, responseListSchema, responseSchema, sorterParamsSchema } from './common'
 import { productSchemaPopulated } from './product.schema'
 
-export const barcodeProductSchema = z.object({
+export const barcodeDTOSchema = z.object({
   id: idSchema,
   code: z.string().trim(),
   products: z.array(productSchemaPopulated.extend({
     unitsPerScan: z.number().int().positive(),
   })),
   active: z.boolean().optional().default(true),
-  createdAt: dateRangeSchema,
-  updatedAt: dateRangeSchema,
+  createdAt: z.coerce.date(),
+  updatedAt: z.coerce.date(),
 })
 
-export type BarcodeDTO = z.output<typeof barcodeProductSchema>
+export type BarcodeDTO = z.output<typeof barcodeDTOSchema>
+
+export const barcodeDTOPopulatedSchema = barcodeDTOSchema.omit({
+  products: true,
+}).extend({
+  products: z.array(productSchemaPopulated.extend({
+    unitsPerScan: z.number().int().positive(),
+  })),
+})
+
+export type BarcodeDTOPopulated = z.output<typeof barcodeDTOPopulatedSchema>
 
 export const getBarcodesSchema = z.object({
   filters: z.object({
@@ -40,7 +50,7 @@ export const createBarcodeSchema = z.object({
   code: z.string().trim().optional(),
   products: z.array(z.object({
     id: idSchema,
-    lineQuantity: z.number().int().positive(),
+    unitsPerScan: z.number().int().positive(),
   })).min(1),
   active: z.boolean().optional().default(true),
 })
@@ -52,7 +62,7 @@ export const editBarcodeSchema = z.object({
   code: z.string().trim(),
   products: z.array(z.object({
     id: idSchema,
-    lineQuantity: z.number().int().positive(),
+    unitsPerScan: z.number().int().positive(),
   })).min(1),
   active: z.boolean().optional().default(true),
 })
@@ -85,16 +95,16 @@ export const getBarcodeByCodeSchema = z.object({
 
 export type GetBarcodeByCodeRequest = z.input<typeof getBarcodeByCodeSchema>
 
-export const getBarcodeByCodeResponseSchema = responseItemSchema(barcodeProductSchema)
+export const getBarcodeByCodeResponseSchema = responseItemSchema(barcodeDTOPopulatedSchema)
 export type GetBarcodeByCodeResponse = z.output<typeof getBarcodeByCodeResponseSchema>
 
-export const getBarcodesResponseSchema = responseListSchema(barcodeProductSchema)
+export const getBarcodesResponseSchema = responseListSchema(barcodeDTOPopulatedSchema)
 export type GetBarcodesResponse = z.output<typeof getBarcodesResponseSchema>
 
-export const createBarcodeResponseSchema = responseItemSchema(barcodeProductSchema)
+export const createBarcodeResponseSchema = responseSchema
 export type CreateBarcodeResponse = z.output<typeof createBarcodeResponseSchema>
 
-export const editBarcodeResponseSchema = responseItemSchema(barcodeProductSchema)
+export const editBarcodeResponseSchema = responseSchema
 export type EditBarcodeResponse = z.output<typeof editBarcodeResponseSchema>
 
 export const removeBarcodesResponseSchema = responseSchema

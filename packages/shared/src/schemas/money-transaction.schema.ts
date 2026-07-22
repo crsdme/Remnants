@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { dateRangeSchema, idSchema, languageStringSchema, numberFromStringSchema, paginationSchema, responseItemSchema, responseListSchema, responseSchema, sorterParamsSchema } from './common'
+import { dateRangeSchema, idSchema, idSchemaOptional, languageStringSchema, numberFromStringSchema, paginationSchema, responseItemSchema, responseListSchema, responseSchema, sorterParamsSchema } from './common'
 
 export const moneyTransactionSchema = z.object({
   id: idSchema,
@@ -25,9 +25,9 @@ export const moneyTransactionSchema = z.object({
   description: z.string().trim().optional(),
   sourceModel: z.string().trim(),
   confirmed: z.boolean(),
-  sourceId: idSchema.optional(),
+  sourceId: idSchemaOptional,
   createdBy: idSchema,
-  removedBy: idSchema.optional(),
+  removedBy: idSchemaOptional,
   createdAt: z.coerce.date(),
   updatedAt: z.coerce.date(),
 })
@@ -37,13 +37,13 @@ export const getMoneyTransactionsSchema = z.object({
   filters: z.object({
     type: z.string().trim().optional(),
     direction: z.string().trim().optional(),
-    accountId: z.string().trim().optional(),
+    accountId: idSchemaOptional,
     amount: numberFromStringSchema.optional(),
-    currency: idSchema.optional(),
-    cashregister: idSchema.optional(),
+    currency: idSchemaOptional,
+    cashregister: idSchemaOptional,
     description: z.string().trim().optional(),
     sourceModel: z.string().trim().optional(),
-    sourceId: z.string().trim().optional(),
+    sourceId: idSchemaOptional,
     createdAt: dateRangeSchema.optional(),
     updatedAt: dateRangeSchema.optional(),
   }).optional().default({}),
@@ -66,9 +66,9 @@ export const createMoneyTransactionSchema = z.object({
   amount: z.number(),
   sourceModel: z.enum(['manual', 'cashregister', 'cashregisterAccount', 'order', 'expense', 'procurement']),
   type: z.enum(['income', 'expense', 'procurement']),
-  sourceId: idSchema.optional(),
+  sourceId: idSchemaOptional,
   role: z.string().trim().optional(),
-  transferId: idSchema.optional(),
+  transferId: idSchemaOptional,
   description: z.string().trim().optional(),
   direction: z.enum(['in', 'out']),
   accountId: idSchema,
@@ -80,9 +80,9 @@ export const createMoneyTransactionTransferSchema = z.object({
   amount: z.number(),
   sourceModel: z.enum(['manual', 'cashregister', 'cashregisterAccount', 'order', 'expense', 'procurement']),
   type: z.enum(['transfer-account', 'transfer-cashregister']),
-  sourceId: idSchema.optional(),
+  sourceId: idSchemaOptional,
   role: z.string().trim().optional(),
-  transferId: idSchema.optional(),
+  transferId: idSchemaOptional,
   description: z.string().trim().optional(),
   accountFrom: idSchema,
   accountTo: idSchema,
@@ -101,9 +101,9 @@ export const createMoneyTransactionRepoSchema = z.object({
   accountId: idSchema,
   cashregisterId: idSchema,
   sourceModel: z.enum(['manual', 'cashregister', 'cashregisterAccount', 'order', 'expense', 'procurement']),
-  sourceId: idSchema.optional(),
+  sourceId: idSchemaOptional,
   role: z.string().trim().optional(),
-  transferId: idSchema.optional(),
+  transferId: idSchemaOptional,
   description: z.string().trim().optional(),
 })
 

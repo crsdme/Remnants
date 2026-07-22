@@ -13,6 +13,7 @@ export async function list(payload: GetUserRolesRepoPayload): Promise<GetUserRol
   const { current, pageSize } = payload.pagination
 
   const {
+    ids,
     names = '',
     permissions = [],
     priority = undefined,
@@ -22,8 +23,9 @@ export async function list(payload: GetUserRolesRepoPayload): Promise<GetUserRol
   } = payload.filters
 
   const query = buildQuery({
-    filters: { names, permissions, priority, active, createdAt, updatedAt },
+    filters: { _id: ids, names, permissions, priority, active, createdAt, updatedAt },
     rules: {
+      _id: { type: 'array' },
       names: { type: 'string', langAware: true },
       permissions: { type: 'array' },
       priority: { type: 'exact' },

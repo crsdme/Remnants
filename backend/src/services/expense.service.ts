@@ -1,4 +1,5 @@
 import type {
+  AuthUser,
   CreateExpenseResponse,
   EditExpenseResponse,
   GetExpensesResponse,
@@ -13,13 +14,26 @@ import type {
 import { mapExpenseToDTO } from '@/mappers'
 import * as CurrencyRepo from '@/repositories/currencies.repo'
 import * as ExpenseRepo from '@/repositories/expense.repo'
+import * as UserAccessRepo from '@/repositories/user-access.repo'
 import * as MoneyTransactionService from '@/services/money-transaction.service'
-import { HttpError } from '@/utils/'
+import { getScopeIdsForUser, HttpError } from '@/utils/'
 import { fromMinor, toMinor } from '@/utils/money'
 
-export async function get({ payload }: { payload: GetExpensesPayload }): Promise<GetExpensesResponse> {
-  const { items, total, page, pageSize } = await ExpenseRepo.list(payload)
-  console.log(JSON.stringify(items, null, 2))
+export async function get({
+  payload,
+  user,
+}: {
+  payload: GetExpensesPayload
+  user: AuthUser
+}): Promise<GetExpensesResponse> {
+  const access = await UserAccessRepo.getScopesByUserId(user.id)
+
+  const { items, total, page, pageSize } = await ExpenseRepo.list(payload, {
+    categoryIds: getScopeIdsForUser(access, 'expenseCategories', user),
+    cashregisterIds: getScopeIdsForUser(access, 'cashregisters', user),
+    cashregisterAccountIds: getScopeIdsForUser(access, 'cashregisterAccounts', user),
+  })
+
   return {
     status: 'success',
     code: 'EXPENSES_FETCHED',

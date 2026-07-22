@@ -1,4 +1,6 @@
-export * from './BarcodesPage'
+export * from './barcode/BarcodesPage'
+export * from './barcode/CreateBarcodePage'
+export * from './barcode/EditBarcodePage'
 export * from './CashregisterAccountsPage'
 export * from './CashregistersPage'
 export * from './CategoriesPage'

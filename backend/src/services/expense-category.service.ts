@@ -1,4 +1,5 @@
 import type {
+  AuthUser,
   CreateExpenseCategoryResponse,
   EditExpenseCategoryResponse,
   GetExpenseCategoriesResponse,
@@ -12,10 +13,20 @@ import type {
 } from '@/types/expense-category.type'
 import { mapExpenseCategoryToDTO } from '@/mappers'
 import * as ExpenseCategoryRepo from '@/repositories/expense-category.repo'
-import { HttpError } from '@/utils/'
+import * as UserAccessRepo from '@/repositories/user-access.repo'
+import { getScopeIdsForUser, HttpError } from '@/utils/'
 
-export async function get({ payload }: { payload: GetExpenseCategoriesPayload }): Promise<GetExpenseCategoriesResponse> {
-  const { items, total, page, pageSize } = await ExpenseCategoryRepo.list(payload)
+export async function get({
+  payload,
+  user,
+}: {
+  payload: GetExpenseCategoriesPayload
+  user: AuthUser
+}): Promise<GetExpenseCategoriesResponse> {
+  const access = await UserAccessRepo.getScopesByUserId(user.id)
+  const scopeIds = getScopeIdsForUser(access, 'expenseCategories', user)
+
+  const { items, total, page, pageSize } = await ExpenseCategoryRepo.list(payload, { scopeIds })
 
   return {
     status: 'success',

@@ -4,18 +4,20 @@ import type {
   EditOrderSourcePayload,
   GetOrderSourcesPayload,
   RemoveOrderSourcesPayload,
+  ValidatedAuthedRequest,
   ValidatedRequest,
 } from '@/types'
 import * as OrderSourceService from '@/services/order-source.service'
 
 export async function get(
-  req: ValidatedRequest<GetOrderSourcesPayload, never>,
+  req: ValidatedAuthedRequest<GetOrderSourcesPayload, never>,
   res: Response,
   next: NextFunction,
 ): Promise<void> {
   try {
     const serviceResponse = await OrderSourceService.get({
       payload: req.validated.query,
+      user: req.user,
     })
 
     res.status(200).json(serviceResponse)
