@@ -36,7 +36,7 @@ services:
       - ./backend/storage:/app/storage
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.dev-backend.rule=Host(`api.dev.stoneremnant.pp.ua`)"
+      - "traefik.http.routers.dev-backend.rule=Host(`apidev.stoneremnant.pp.ua`)"
       - "traefik.http.routers.dev-backend.entrypoints=websecure"
       - "traefik.http.routers.dev-backend.tls.certresolver=letsencrypt"
       - "traefik.http.services.dev-backend.loadbalancer.server.port=3001"
