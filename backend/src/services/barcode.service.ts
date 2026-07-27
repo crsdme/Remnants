@@ -829,6 +829,12 @@ async function print55x40(payload: {
       }
       if (
         property.id === propertyIds.HAIR_TYPE
+        && (property?.value || []).includes(hairTypes.GOLD)
+      ) {
+        type.push('Gold')
+      }
+      if (
+        property.id === propertyIds.HAIR_TYPE
         && (property?.value || []).includes(hairTypes.BROWN)
       ) {
         type.push('Brown')

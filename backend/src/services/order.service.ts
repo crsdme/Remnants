@@ -1022,9 +1022,9 @@ export async function printInvoice(payload: OrderTypes.printInvoiceOrderParams):
     },
   }
 
-  const { propertyIds, hairTypes, invoicePrefix, invoiceAddition } = getHardcodeData()
+  const { propertyIds, hairTypes } = getHardcodeData()
 
-  const contentWidth = params.size[0] - margins * 2
+  // const contentWidth = params.size[0] - margins * 2
   // const contentHeight = size.h - padding * 2
 
   const tableColumns = {
@@ -1333,6 +1333,24 @@ export async function printInvoice(payload: OrderTypes.printInvoiceOrderParams):
       ]
     }
 
+    if (type.includes(hairTypes.GOLD)) {
+      table = [
+        { min: 40, max: 44, price: 4800 },
+        { min: 45, max: 49, price: 4900 },
+        { min: 50, max: 54, price: 5000 },
+        { min: 55, max: 59, price: 5100 },
+        { min: 60, max: 64, price: 5200 },
+        { min: 65, max: 69, price: 5300 },
+        { min: 70, max: 74, price: 5400 },
+        { min: 75, max: 79, price: 5500 },
+        { min: 80, max: 84, price: 5600 },
+        { min: 85, max: 89, price: 5700 },
+        { min: 90, max: 94, price: 5800 },
+        { min: 95, max: 99, price: 5900 },
+        { min: 100, max: 104, price: 6000 },
+      ]
+    }
+
     for (const row of table) {
       if (lengthCm >= row.min && lengthCm <= row.max) {
         return row.price * multiply
@@ -1476,7 +1494,7 @@ export async function printInvoice(payload: OrderTypes.printInvoiceOrderParams):
 }
 
 export async function printDraftInvoice(payload: OrderTypes.printDraftInvoiceOrderParams): Promise<OrderTypes.printDraftInvoiceOrderResult> {
-  const { products, client, language } = payload
+  const { products, language } = payload
   const mm = 2.83464567
   const margins = 30
   const params = {
@@ -1810,7 +1828,7 @@ export async function printDraftInvoice(payload: OrderTypes.printDraftInvoiceOrd
 
   doc.fontSize(10)
 
-  renderTableHeader(doc)
+  // renderTableHeader(doc)
 
   const totals = { count: 0, weight: 0, amount: {} } as any
   for (const product of productsData) {
