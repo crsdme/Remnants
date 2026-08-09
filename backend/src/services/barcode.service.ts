@@ -715,6 +715,7 @@ const PROVIDER_E_SUFFIX_CATEGORY_ID = [
   'e6946264-f2c5-4651-9160-f1b034b25883',
   '622c506f-476a-4825-9bdd-c06031e8a82c',
   'e10a34a9-a81c-4ed5-b4eb-e296758f3211',
+  '1e4c799e-9597-4844-ab56-bd78571842c9',
 ]
 
 function getProductCategoryId(cat: any): string | undefined {
@@ -1203,7 +1204,7 @@ async function print55x40Dyed(payload: {
     let length = ''
     let weight = ''
     let segment = 'Standard'
-    const type: string[] = []
+    let type: string[] = ['Raw']
     let colorCategory: string = ''
     // REPLACED
 
@@ -1259,43 +1260,43 @@ async function print55x40Dyed(payload: {
         property.id === propertyIds.HAIR_TYPE
         && (property?.value || []).includes(hairTypes.VIRGIN)
       ) {
-        type.push('Virgin')
+        type = ['Virgin']
       }
       if (
         property.id === propertyIds.HAIR_TYPE
         && (property?.value || []).includes(hairTypes.SILKY)
       ) {
-        type.push('Silky')
+        type = ['Silky']
       }
       if (
         property.id === propertyIds.HAIR_TYPE
         && (property?.value || []).includes(hairTypes.BROWN)
       ) {
-        type.push('Brown')
+        type = ['Brown']
       }
       if (
         property.id === propertyIds.HAIR_TYPE
         && (property?.value || []).includes(hairTypes.GRAY)
       ) {
-        type.push('Gray')
+        type = ['Gray']
       }
       if (
         property.id === propertyIds.HAIR_TYPE
         && (property?.value || []).includes(hairTypes.SLAVIC)
       ) {
-        type.push('Slavic')
+        type = ['Slavic']
       }
       if (
         property.id === propertyIds.HAIR_TYPE
         && (property?.value || []).includes(hairTypes.ALBINO)
       ) {
-        type.push('Albino')
+        type = ['Albino']
       }
       if (
         property.id === propertyIds.HAIR_TYPE
         && (property?.value || []).includes(hairTypes.RED)
       ) {
-        type.push('Red')
+        type = ['Red']
       }
       if (
         property.id === propertyIds.HAIR_TYPE
