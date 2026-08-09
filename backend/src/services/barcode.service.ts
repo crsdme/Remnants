@@ -803,7 +803,7 @@ async function print55x40(payload: {
 
     let length = ''
     let weight = ''
-    const type = [] as string[]
+    let type: string[] = ['Raw']
 
     for (const property of product.productProperties || []) {
       if (
@@ -822,49 +822,49 @@ async function print55x40(payload: {
         property.id === propertyIds.HAIR_TYPE
         && (property?.value || []).includes(hairTypes.VIRGIN)
       ) {
-        type.push('Virgin')
+        type = ['Virgin']
       }
       if (
         property.id === propertyIds.HAIR_TYPE
         && (property?.value || []).includes(hairTypes.SILKY)
       ) {
-        type.push('Silky')
+        type = ['Silky']
       }
       if (
         property.id === propertyIds.HAIR_TYPE
         && (property?.value || []).includes(hairTypes.GOLD)
       ) {
-        type.push('Gold')
+        type = ['Gold']
       }
       if (
         property.id === propertyIds.HAIR_TYPE
         && (property?.value || []).includes(hairTypes.BROWN)
       ) {
-        type.push('Brown')
+        type = ['Brown']
       }
       if (
         property.id === propertyIds.HAIR_TYPE
         && (property?.value || []).includes(hairTypes.GRAY)
       ) {
-        type.push('Gray')
+        type = ['Gray']
       }
       if (
         property.id === propertyIds.HAIR_TYPE
         && (property?.value || []).includes(hairTypes.SLAVIC)
       ) {
-        type.push('Slavic')
+        type = ['Slavic']
       }
       if (
         property.id === propertyIds.HAIR_TYPE
         && (property?.value || []).includes(hairTypes.ALBINO)
       ) {
-        type.push('Albino')
+        type = ['Albino']
       }
       if (
         property.id === propertyIds.HAIR_TYPE
         && (property?.value || []).includes(hairTypes.RED)
       ) {
-        type.push('Red')
+        type = ['Red']
       }
       if (
         property.id === propertyIds.HAIR_TYPE
