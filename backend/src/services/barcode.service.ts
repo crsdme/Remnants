@@ -1362,12 +1362,6 @@ async function print55x40Dyed(payload: {
       })
 
       doc.font('Manrope-Bold').fontSize(72)
-      // doc.text(
-      //   type.join(', '),
-      //   padding,
-      //   doc.y,
-      //   { width: contentWidth, height: 50, ellipsis: true, lineBreak: false, align: 'center' },
-      // )
 
       doc.text(segment, padding, doc.y + 20, {
         width: contentWidth,
@@ -1377,11 +1371,11 @@ async function print55x40Dyed(payload: {
         align: 'center',
       })
 
-      doc.text(colorCategory, padding, doc.y + 20, {
+      doc.font('Manrope-Bold').fontSize(60)
+
+      doc.text(colorCategory, padding, doc.y + 60, {
         width: contentWidth,
-        height: 50,
-        ellipsis: true,
-        lineBreak: false,
+        height: 20,
         align: 'center',
       })
     }
@@ -1403,8 +1397,8 @@ async function print55x40Dyed(payload: {
         align: 'center',
       })
 
-      doc.font('Manrope-Bold').fontSize(72)
-      doc.text(colorCategory, padding, doc.y - 35, {
+      doc.font('Manrope-Bold').fontSize(60)
+      doc.text(colorCategory, padding, doc.y - 25, {
         width: contentWidth,
         height: 50,
         ellipsis: true,
