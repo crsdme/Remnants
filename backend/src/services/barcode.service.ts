@@ -756,12 +756,12 @@ async function print55x40(payload: {
   const { propertyIds, hairTypes, providerPrice, propertyGroups }
     = getHardcodeData()
 
-  const isDyed = payload.barcodes.some(
-    (barcode: any) =>
-      barcode.products[0]?.productPropertiesGroup?.id?.toString()
-      === propertyGroups.dyed,
-  )
-  // const isDyed = true
+  // const isDyed = payload.barcodes.some(
+  //   (barcode: any) =>
+  //     barcode.products[0]?.productPropertiesGroup?.id?.toString()
+  //     === propertyGroups.dyed,
+  // )
+  const isDyed = true
   //  REPLACED
 
   if (isDyed)
@@ -1206,7 +1206,8 @@ async function print55x40Dyed(payload: {
     let weight = ''
     let segment = 'Standard'
     let type: string[] = ['Raw']
-    let colorCategory: string = ''
+    let suffix = ''
+    let colorCategory: string = 'Natural Color'
     // REPLACED
 
     for (const property of product.productProperties || []) {
@@ -1313,6 +1314,11 @@ async function print55x40Dyed(payload: {
       }
     }
 
+    if (segment.includes('India')) {
+      suffix = 'IN'
+      segment = ''
+    }
+
     const lenWgt = [length || '000cm', weight || '000g']
       .filter(Boolean)
       .join(', ')
@@ -1381,47 +1387,62 @@ async function print55x40Dyed(payload: {
     }
 
     async function frontside() {
-      doc.font('Manrope-Bold').fontSize(68)
-
-      const bigCode
-        = (product.names?.[language] || '').split('#')[1] || '00000'
-
-      const bigCodeHeight = doc.y
+      const code
+        = ((product.names?.[language] || '').split('#')[1] || '00000').trim()
+      const bigCode = suffix ? `${code}${suffix}` : code
 
       doc.font('Manrope-Bold').fontSize(82)
-
-      doc.text(segment, padding, doc.y - 90, {
+      doc.text(segment, padding, -10, {
         width: contentWidth,
-        height: 50,
         lineBreak: false,
         align: 'center',
       })
 
-      doc.font('Manrope-Bold').fontSize(60)
-      doc.text(colorCategory, padding, doc.y - 25, {
-        width: contentWidth,
-        height: 50,
-        ellipsis: true,
-        lineBreak: false,
-        align: 'center',
-      })
+      if (colorCategory) {
+        doc.font('Manrope-Bold').fontSize(60)
+        doc.text(colorCategory, padding, 70, {
+          width: contentWidth,
+          ellipsis: true,
+          lineBreak: false,
+          align: 'center',
+        })
+      }
 
-      doc.font('Manrope-Bold').fontSize(142)
+      doc.font('Manrope-Bold')
 
-      doc.text(bigCode, padding, bigCodeHeight + 40, {
-        width: contentWidth,
-        height: 50,
+      const pageWidth = doc.page.width
+      const maxWidth = contentWidth
+      const characterSpacing = -15
+      const maxFontSize = 200
+
+      let fontSize = maxFontSize
+      while (fontSize > 10) {
+        doc.fontSize(fontSize)
+        const textWidth = doc.widthOfString(bigCode, { characterSpacing })
+        if (textWidth <= maxWidth)
+          break
+        fontSize -= 1
+      }
+
+      doc.fontSize(fontSize)
+      const textWidth = doc.widthOfString(bigCode, { characterSpacing })
+      const x = (pageWidth - textWidth) / 2
+
+      doc.text(bigCode, x, 95, {
         lineBreak: false,
-        align: 'center',
+        characterSpacing,
+        baseline: 'top',
       })
+      doc.addContent('0 Tc')
 
       doc.font('Manrope-Bold').fontSize(72)
-      doc.text(lenWgt, padding, doc.y - 50, {
+      doc.text(lenWgt, padding, 260, {
         width: contentWidth,
         height: 50,
         ellipsis: false,
         lineBreak: false,
         align: 'center',
+        characterSpacing: 0.001,
       })
 
       if (symbol) {
