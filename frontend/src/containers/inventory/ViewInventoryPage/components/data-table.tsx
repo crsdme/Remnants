@@ -79,7 +79,7 @@ export function DataTable() {
           <ClipboardList className="size-5 shrink-0" />
           <p className="text-lg font-bold">{t('page.view-inventory.information-form.title')}</p>
           <Separator className="flex-1" />
-          <Badge variant={statusBadge[inventory.status as keyof typeof statusBadge] ?? 'default'}>
+          <Badge variant={statusBadge[inventory.status] ?? 'default'}>
             {t(`page.inventories.table.status.${inventory.status.toLowerCase()}`)}
           </Badge>
         </div>

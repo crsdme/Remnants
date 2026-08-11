@@ -1,7 +1,7 @@
 import type { AuditLogPopulatedDTO } from '@remnant/shared'
 import { ExternalLink } from 'lucide-react'
-import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+import { Link } from 'react-router-dom'
 import { AuditChangesList, PermissionGate } from '@/components'
 import {
   Badge,

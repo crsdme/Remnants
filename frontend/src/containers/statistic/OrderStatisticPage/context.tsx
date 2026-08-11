@@ -1,5 +1,8 @@
 import type { StatisticsDTO } from '@remnant/shared'
 import type { ReactNode } from 'react'
+import type { DateRange } from 'react-day-picker'
+import type { Resolver } from 'react-hook-form'
+import type { FilterSearchParams } from '@/utils/hooks'
 
 import { zodResolver } from '@hookform/resolvers/zod'
 import { createContext, useCallback, useContext, useEffect, useMemo } from 'react'
@@ -39,8 +42,8 @@ const emptyStatistics: StatisticsDTO = {
   series: [],
 }
 
-interface OrderStatisticFilters {
-  date: { from?: Date, to?: Date }
+interface OrderStatisticFilters extends Record<string, unknown> {
+  date: DateRange
   cashregister: string[]
   cashregisterAccount: string[]
 }
@@ -54,7 +57,7 @@ interface OrderStatisticContextType {
 }
 
 interface OrderStatisticFormValues {
-  date: { from?: Date, to?: Date }
+  date: DateRange
   cashregister?: string[]
   cashregisterAccount?: string[]
 }
@@ -64,9 +67,7 @@ const OrderStatisticContext = createContext<OrderStatisticContextType | undefine
 export function OrderStatisticProvider({ children }: { children: ReactNode }) {
   const defaultFilters = useMemo(() => getDefaultFilters(), [])
 
-  const readFilters = useCallback((params: {
-    get: (key: string) => string | undefined
-  }): Partial<OrderStatisticFilters> => {
+  const readFilters = useCallback((params: FilterSearchParams): Partial<OrderStatisticFilters> => {
     const from = parseQueryDate(params.get('dateFrom'))
     const to = parseQueryDate(params.get('dateTo'))
     return {
@@ -80,10 +81,7 @@ export function OrderStatisticProvider({ children }: { children: ReactNode }) {
   }, [defaultFilters])
 
   const writeFilters = useCallback((
-    params: {
-      set: (key: string, value: string | number | null | undefined) => void
-      delete: (key: string) => void
-    },
+    params: FilterSearchParams,
     next: Partial<OrderStatisticFilters>,
   ) => {
     setQueryParam(params, 'dateFrom', next.date?.from?.toISOString() ?? null)
@@ -120,7 +118,7 @@ export function OrderStatisticProvider({ children }: { children: ReactNode }) {
   const formSchema = useMemo(() => createOrderStatisticFilterSchema(), [])
 
   const form = useForm<OrderStatisticFormValues>({
-    resolver: zodResolver(formSchema),
+    resolver: zodResolver(formSchema) as Resolver<OrderStatisticFormValues>,
     defaultValues: {
       date: filters.date,
       cashregister: filters.cashregister,
@@ -177,7 +175,7 @@ function createOrderStatisticFilterSchema() {
   })
 }
 
-function getDefaultDateRange() {
+function getDefaultDateRange(): DateRange {
   return {
     from: new Date(new Date().setHours(0, 0, 0, 0)),
     to: new Date(new Date().setHours(23, 59, 59, 999)),

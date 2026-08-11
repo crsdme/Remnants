@@ -8,7 +8,7 @@ import type {
 } from 'mongodb'
 import { toMinor } from '@/utils/money'
 
-export type IndexSpec = {
+export interface IndexSpec {
   key: IndexSpecification
   options?: CreateIndexesOptions
 }
@@ -85,7 +85,7 @@ export async function setDefaultWhereMissing(
     log(`  default ${field}=${JSON.stringify(value)}: ${result.modifiedCount}`)
 }
 
-type MoneyFieldSpec = {
+interface MoneyFieldSpec {
   from: string
   to: string
   /** Field holding currency id before/after rename (prefer old name if still present). */

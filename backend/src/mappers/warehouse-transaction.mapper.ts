@@ -4,7 +4,7 @@ import { mapProductPopulatedRepoToDTO } from './products.mapper'
 
 export function mapWarehouseTransactionToDTO(warehouseTransaction: WarehouseTransactionDBPopulated): WarehouseTransactionDTO {
   return {
-    id: warehouseTransaction._id,
+    id: warehouseTransaction.id,
     seq: warehouseTransaction.seq,
     type: warehouseTransaction.type,
     fromWarehouse: warehouseTransaction.fromWarehouse !== undefined

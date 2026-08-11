@@ -1,9 +1,10 @@
 import type { ReactNode } from 'react'
+import type { OrderPaymentListItem } from './OrderPaymentsList'
 import { FileText } from 'lucide-react'
 import { useCurrencyQuery } from '@/api/hooks'
 import { Button, Separator } from '@/components/ui'
 import { useLocale } from '@/utils/hooks'
-import { OrderPaymentsList, type OrderPaymentListItem } from './OrderPaymentsList'
+import { OrderPaymentsList } from './OrderPaymentsList'
 
 export const ORDER_INFORMATION_FORM_ID = 'order-information-form'
 

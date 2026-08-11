@@ -2,15 +2,15 @@ import type { OrderDTOPopulated, OrderPaymentDTOPopulated } from '@remnant/share
 import type { ReactNode } from 'react'
 import type { Resolver, UseFormReturn } from 'react-hook-form'
 
+import type { UploadedFile } from '@/components/FileUploadDnd'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { createContext, useContext, useEffect, useMemo, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { useParams } from 'react-router-dom'
 import { toast } from 'sonner'
-import { z } from 'zod'
 
+import { z } from 'zod'
 import { useOrderDetailQuery } from '@/api/hooks'
-import type { UploadedFile } from '@/components/FileUploadDnd'
 import { useLocale } from '@/utils/hooks'
 
 function createPaymentFormSchema(t: (key: string) => string) {

@@ -24,7 +24,7 @@ const columnHelper = createColumnHelper<ExpensePopulatedDTO>()
 function isImageFile(type: string, name: string) {
   if (type.startsWith('image/'))
     return true
-  return /\.(png|jpe?g|webp|gif)$/i.test(name)
+  return /\.(?:png|jpe?g|webp|gif)$/i.test(name)
 }
 
 export function useColumns() {

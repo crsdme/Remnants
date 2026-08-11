@@ -6,8 +6,8 @@
     "moduleDetection": "force",
     "module": "ESNext",
     "moduleResolution": "bundler",
-    "allowImportingTsExtensions": true,
     "types": ["node"],
+    "allowImportingTsExtensions": true,
     "allowJs": true,
     "checkJs": true,
     "strict": true,
@@ -15,11 +15,11 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noEmit": true,
-    "isolatedModules": true,
-    "skipLibCheck": true,
     "noUncheckedSideEffectImports": true,
     "allowSyntheticDefaultImports": true,
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "isolatedModules": true,
+    "skipLibCheck": true
   },
   "include": [
     "vite.config.ts",

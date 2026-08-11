@@ -167,7 +167,7 @@ export function useColumns() {
           } as const
           const status = row.original.status
           return (
-            <Badge variant={badgeType[status as keyof typeof badgeType] ?? 'default'}>
+            <Badge variant={badgeType[status] ?? 'default'}>
               {t(`page.inventories.table.status.${status.toLowerCase()}`)}
             </Badge>
           )

@@ -1,6 +1,6 @@
 import type { Response } from '../types/common.type'
 import { z } from 'zod'
-import { booleanArraySchema, dateRangeSchema, idSchema, languageCodeSchema, languageStringSchema, numberFromStringSchema, paginationSchema, responseItemSchema, responseListSchema, responseSchema, sorterParamsSchema } from './common'
+import { booleanArraySchema, dateRangeSchema, idSchema, languageCodeSchema, paginationSchema, responseItemSchema, responseListSchema, responseSchema, sorterParamsSchema } from './common'
 import { productSchemaPopulated } from './product.schema'
 
 export const barcodeDTOSchema = z.object({

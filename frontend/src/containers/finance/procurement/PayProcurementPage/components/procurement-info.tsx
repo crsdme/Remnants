@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 import { useTranslation } from 'react-i18next'
 import { Badge, Skeleton } from '@/components/ui'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
@@ -8,7 +6,7 @@ import { formatDate } from '@/utils/helpers'
 import { usePayProcurementContext } from '../context'
 
 export function PayProcurementInfo() {
-  const { t, i18n } = useTranslation()
+  const { t } = useTranslation()
   const { procurement } = usePayProcurementContext()
 
   if (!procurement) {
@@ -42,7 +40,7 @@ export function PayProcurementInfo() {
               <div className="flex wrap gap-2">
                 {procurement.itemsByCurrency.map(item => (
                   <Badge key={item.currency.id}>
-                    {`${item.amount} ${item.currency.symbols[i18n.language] || ''}`}
+                    {/* {`${item.amount} ${item.currency.symbols[i18n.language] || ''}`} */}
                   </Badge>
                 ))}
               </div>

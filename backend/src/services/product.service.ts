@@ -480,7 +480,7 @@ export async function importHandler({ file }: { file: Express.Multer.File }): Pr
         barcodes,
       } = product
 
-      if (!currencyId || !purchaseCurrencyId || !unitId || !productPropertiesGroupId) {
+      if (currencyId === null || purchaseCurrencyId === null || unitId === null || productPropertiesGroupId === null) {
         throw new HttpError(
           400,
           'Product import row is missing required currency, purchase currency, unit or property group',

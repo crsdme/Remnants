@@ -1,5 +1,6 @@
 import type { StatisticMoneyDTO, StatisticsDTO } from '@remnant/shared'
 import type { ChartConfig } from '@/components/ui/chart'
+import type { SupportedLanguage } from '@/utils/constants'
 import { Area, AreaChart, CartesianGrid, XAxis } from 'recharts'
 import { useCashregisterAccountOptions, useCashregisterOptions } from '@/api/hooks'
 import { PermissionGate } from '@/components'
@@ -37,7 +38,7 @@ import { useOrderStatisticContext } from '../context'
 
 function formatMoneyList(
   amounts: StatisticMoneyDTO[] | undefined,
-  language: string,
+  language: SupportedLanguage,
   empty = '—',
 ) {
   if (!amounts?.length)
@@ -150,7 +151,7 @@ export function DataTable() {
                   <FormLabel>{t('page.order-statistic.form.date')}</FormLabel>
                   <FormControl>
                     <DateRangePicker
-                      {...field}
+                      value={field.value}
                       onSelect={field.onChange}
                       disabled={isLoading || isFetching}
                     />

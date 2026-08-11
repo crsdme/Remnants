@@ -1,6 +1,7 @@
 import type { Dispatch, SetStateAction } from 'react'
+import type { UploadedFile } from '@/components/FileUploadDnd'
 import { FileImage } from 'lucide-react'
-import { FileUploadDnd, ORDER_FILE_ACCEPT, type UploadedFile } from '@/components/FileUploadDnd'
+import { FileUploadDnd, ORDER_FILE_ACCEPT } from '@/components/FileUploadDnd'
 import { Separator } from '@/components/ui'
 import { useLocale } from '@/utils/hooks'
 

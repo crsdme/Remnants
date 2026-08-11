@@ -41,7 +41,7 @@ interface SortableFileItemProps {
 function isImageType(type: string, name: string) {
   if (type.startsWith('image/'))
     return true
-  return /\.(png|jpe?g|webp|gif)$/i.test(name)
+  return /\.(?:png|jpe?g|webp|gif)$/i.test(name)
 }
 
 function fileExtension(name: string) {

@@ -1,4 +1,3 @@
-import type { ProductDTO } from './product.schema'
 import { z } from 'zod'
 import { barcodeDTOPopulatedSchema } from './barcode.schema'
 import {

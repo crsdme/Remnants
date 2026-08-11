@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 import { flexRender, getCoreRowModel, getExpandedRowModel, useReactTable } from '@tanstack/react-table'
 
 import { Fragment, useState } from 'react'
@@ -25,13 +23,13 @@ export function DataTable() {
 
   const columns = useColumns()
 
-  const { procurements, procurementsCount, isLoading, isFetching } = useProcurementQuery(
+  const { procurementsCount, isLoading, isFetching } = useProcurementQuery(
     { pagination, filters, sorters },
     { options: { placeholderData: prevData => prevData } },
   )
 
   const table = useReactTable({
-    data: procurements,
+    data: [],
     columns,
     getCoreRowModel: getCoreRowModel(),
     getExpandedRowModel: getExpandedRowModel(),

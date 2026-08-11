@@ -169,7 +169,7 @@ function SubRowExchangeRates({ property, columnsLength, editExchangeRate }:
     { pagination: { full: true }, filters: { fromCurrencyId: property.id } },
     { options: { placeholderData: prevData => prevData } },
   )
- 
+
   const { language } = useLocale()
 
   if (isLoading || isFetching) {

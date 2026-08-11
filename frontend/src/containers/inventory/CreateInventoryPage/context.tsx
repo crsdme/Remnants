@@ -523,7 +523,7 @@ export function CreateInventoryProvider({ children }: { children: ReactNode }) {
 
     void (async () => {
       try {
-        await Promise.all(pendingEntries.map(([productId, receivedQuantity]) =>
+        await Promise.all(pendingEntries.map(async ([productId, receivedQuantity]) =>
           upsertMutation.mutateAsync({
             inventoryId: currentInventoryId,
             productId,

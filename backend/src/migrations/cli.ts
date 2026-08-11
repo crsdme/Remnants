@@ -1,7 +1,7 @@
 import mongoose from 'mongoose'
 import { connectDB, disconnectDB } from '@/config/db'
-import { runMigrations } from './runner'
 import { migrations } from './registry'
+import { runMigrations } from './runner'
 import { createMongoMigrationStore } from './store/mongo.migration.store'
 
 async function main() {
