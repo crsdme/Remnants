@@ -160,7 +160,7 @@ export async function remove({ payload, user }: { payload: RemoveWarehouseTransa
             payload: {
               mode: 'dec',
               productId: item.productId,
-              warehouseId: warehouseTransaction.toWarehouseId,
+              warehouseId: warehouseTransaction.toWarehouseId ?? '',
               count: item.quantity,
               userId: user.id,
               refType: 'warehouse-transaction',
@@ -175,7 +175,7 @@ export async function remove({ payload, user }: { payload: RemoveWarehouseTransa
             payload: {
               mode: 'inc',
               productId: item.productId,
-              warehouseId: warehouseTransaction.fromWarehouseId,
+              warehouseId: warehouseTransaction.fromWarehouseId ?? '',
               count: item.quantity,
               userId: user.id,
               refType: 'warehouse-transaction',
@@ -190,7 +190,7 @@ export async function remove({ payload, user }: { payload: RemoveWarehouseTransa
             payload: {
               mode: 'inc',
               productId: item.productId,
-              warehouseId: warehouseTransaction.fromWarehouseId,
+              warehouseId: warehouseTransaction.fromWarehouseId ?? '',
               count: item.quantity,
               userId: user.id,
               refType: 'warehouse-transaction',
@@ -202,7 +202,7 @@ export async function remove({ payload, user }: { payload: RemoveWarehouseTransa
               payload: {
                 mode: 'dec',
                 productId: item.productId,
-                warehouseId: warehouseTransaction.toWarehouseId,
+                warehouseId: warehouseTransaction.toWarehouseId ?? '',
                 count: item.quantity,
                 userId: user.id,
                 refType: 'warehouse-transaction',
@@ -384,7 +384,7 @@ export async function receive({ payload, user }: { payload: ReceiveWarehouseTran
     receivedQuantity: product.receivedQuantity,
   }))
 
-  if (warehouseTransaction.toWarehouseId) {
+  if (warehouseTransaction.toWarehouseId !== undefined) {
     for (const product of mappedProducts) {
       await QuantityService.count({
         payload: {

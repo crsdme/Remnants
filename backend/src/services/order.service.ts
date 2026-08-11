@@ -2103,7 +2103,7 @@ function resolveOrderFiles({
       }
     }
 
-    if (!file.filename)
+    if (file.filename === undefined || file.filename === null)
       return undefined
 
     return {
