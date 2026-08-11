@@ -1315,7 +1315,7 @@ async function print55x40Dyed(payload: {
     }
 
     if (segment.includes('India')) {
-      suffix = 'IN'
+      suffix = 'i'
       segment = ''
     }
 
