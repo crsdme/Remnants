@@ -37,6 +37,7 @@ const CONFIGS = {
       NATURAL_COLOR: '962ff5ac-4e16-4648-8ef4-bb6b41e865c2',
       BLONDE: '2a570cec-761c-4fa3-8a80-aa6cbd33cf14',
       BALAYAGE: '62d60f2e-86ed-40ee-9eda-cddd42e934e4',
+      EXTREAMELY: '5d656b42-1247-4418-9bb9-0bd94941ed40',
     },
     propertyGroups: {
       raw: 'f676759b-2e39-4644-b3cb-b2ae71afda25',
@@ -104,6 +105,7 @@ const CONFIGS = {
       '622c506f-476a-4825-9bdd-c06031e8a82c': 375,
       'e10a34a9-a81c-4ed5-b4eb-e296758f3211': 931,
       '1e4c799e-9597-4844-ab56-bd78571842c9': 870,
+      '8aa5b465-78ef-4557-938c-ece7bc427f36': 1214,
     },
     propertyIds: {
       LENGTH: 'efcc3c51-a146-4975-bc5b-196745f76891',
@@ -122,6 +124,7 @@ const CONFIGS = {
       NATURAL_COLOR: '962ff5ac-4e16-4648-8ef4-bb6b41e865c2',
       BLONDE: '2a570cec-761c-4fa3-8a80-aa6cbd33cf14',
       BALAYAGE: '62d60f2e-86ed-40ee-9eda-cddd42e934e4',
+      EXTREAMELY: '5d656b42-1247-4418-9bb9-0bd94941ed40',
     },
     propertyGroups: {
       raw: 'f676759b-2e39-4644-b3cb-b2ae71afda25',
@@ -188,6 +191,7 @@ const CONFIGS = {
       NATURAL_COLOR: '962ff5ac-4e16-4648-8ef4-bb6b41e865c2',
       BLONDE: '2a570cec-761c-4fa3-8a80-aa6cbd33cf14',
       BALAYAGE: '62d60f2e-86ed-40ee-9eda-cddd42e934e4',
+      EXTREAMELY: '5d656b42-1247-4418-9bb9-0bd94941ed40',
     },
     propertyGroups: {
       raw: '',

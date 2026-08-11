@@ -716,6 +716,7 @@ const PROVIDER_E_SUFFIX_CATEGORY_ID = [
   '622c506f-476a-4825-9bdd-c06031e8a82c',
   'e10a34a9-a81c-4ed5-b4eb-e296758f3211',
   '1e4c799e-9597-4844-ab56-bd78571842c9',
+  '8aa5b465-78ef-4557-938c-ece7bc427f36',
 ]
 
 function getProductCategoryId(cat: any): string | undefined {
@@ -1255,6 +1256,12 @@ async function print55x40Dyed(payload: {
         && property.value === colorCategories.BLONDE
       ) {
         colorCategory = 'Blonde'
+      }
+      if (
+        property.id === propertyIds.COLOR_CATEGORY
+        && property.value === colorCategories.EXTREAMELY
+      ) {
+        colorCategory = 'Extremely Color'
       }
       if (
         property.id === propertyIds.HAIR_TYPE
