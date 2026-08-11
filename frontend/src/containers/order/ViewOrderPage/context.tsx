@@ -10,7 +10,7 @@ import { toast } from 'sonner'
 import { z } from 'zod'
 
 import { useOrderDetailQuery } from '@/api/hooks'
-import { PAYMENT_STATUSES } from '@/utils/constants'
+import type { UploadedFile } from '@/components/FileUploadDnd'
 import { useLocale } from '@/utils/hooks'
 
 function createPaymentFormSchema(t: (key: string) => string) {
@@ -20,7 +20,6 @@ function createPaymentFormSchema(t: (key: string) => string) {
     amount: z.number().default(0),
     currency: z.string({ required_error: t('form.errors.required') }).min(1, { message: t('form.errors.required') }),
     paymentDate: z.date().optional(),
-    paymentStatus: z.string({ required_error: t('form.errors.required') }).min(1, { message: t('form.errors.required') }),
     comment: z.string().optional(),
   })
 }
@@ -103,6 +102,7 @@ interface ViewOrderContextType {
   informationForm: UseFormReturn<InformationFormValues>
   clientForm: UseFormReturn<ClientFormValues>
   payments: OrderPaymentDTOPopulated[]
+  files: UploadedFile[]
   disabled: boolean
 }
 
@@ -110,6 +110,7 @@ const ViewOrderContext = createContext<ViewOrderContextType | undefined>(undefin
 
 export function ViewOrderProvider({ children }: { children: ReactNode }) {
   const [payments, setPayments] = useState<OrderPaymentDTOPopulated[]>([])
+  const [files, setFiles] = useState<UploadedFile[]>([])
   const { t } = useLocale()
   const { seq } = useParams()
 
@@ -132,7 +133,6 @@ export function ViewOrderProvider({ children }: { children: ReactNode }) {
       amount: 0,
       currency: '',
       paymentDate: new Date(),
-      paymentStatus: PAYMENT_STATUSES[0].id,
       comment: '',
     },
   })
@@ -176,7 +176,7 @@ export function ViewOrderProvider({ children }: { children: ReactNode }) {
       orderSource: order.orderSource.id,
       orderStatus: order.orderStatus.id,
       deliveryService: order.deliveryService.id,
-      client: order.client.id,
+      client: order.client?.id,
       items: items.map(item => ({
         ...item.product,
         id: item.id,
@@ -197,6 +197,18 @@ export function ViewOrderProvider({ children }: { children: ReactNode }) {
 
     // eslint-disable-next-line react-hooks-extra/no-direct-set-state-in-use-effect -- TEMPORARY FIX
     setPayments(defaultPayments as unknown as OrderPaymentDTOPopulated[])
+
+    // eslint-disable-next-line react-hooks-extra/no-direct-set-state-in-use-effect -- синхронизация файлов при загрузке заказа
+    setFiles((order.files ?? []).map(file => ({
+      id: file.id,
+      file: file.path,
+      preview: file.type.startsWith('image/') ? file.path : '',
+      name: file.name,
+      type: file.type,
+      path: file.path,
+      filename: file.filename,
+      isNew: false,
+    })))
   }, [order, items, defaultPayments, informationForm])
 
   const value: ViewOrderContextType = useMemo(
@@ -206,10 +218,11 @@ export function ViewOrderProvider({ children }: { children: ReactNode }) {
       paymentForm,
       informationForm,
       payments,
+      files,
       clientForm,
       disabled,
     }),
-    [order, isLoading, paymentForm, informationForm, clientForm, payments, disabled],
+    [order, isLoading, paymentForm, informationForm, clientForm, payments, files, disabled],
   )
 
   return <ViewOrderContext.Provider value={value}>{children}</ViewOrderContext.Provider>

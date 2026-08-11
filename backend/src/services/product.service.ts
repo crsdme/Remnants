@@ -35,6 +35,7 @@ import * as ProductPropertyOptionRepository from '@/repositories/product-propert
 import * as ProductRepository from '@/repositories/products.repo'
 import * as SiteRepository from '@/repositories/site.repo'
 import * as UnitRepository from '@/repositories/unit.repo'
+import * as AuditLogsService from '@/services/audit-logs.service'
 import * as BarcodeService from '@/services/barcode.service'
 import * as SyncEntryService from '@/services/sync-entry.service'
 import * as UserService from '@/services/user.service'
@@ -48,7 +49,7 @@ import {
   parseGetSites,
   parseGetUnits,
 } from '@/types/'
-import { HttpError } from '@/utils'
+import { buildAuditChanges, getDifferenceDeep, HttpError, toAuditSnapshot } from '@/utils'
 import { toMinor } from '@/utils/money'
 import {
   extractLangMap,
@@ -59,6 +60,8 @@ import {
   toBoolean,
   toNumber,
 } from '@/utils/parseTools'
+
+const PRODUCT_AUDIT_OMIT = ['barcodeIds', 'quantityIds', 'stockStatusId', 'lastSaleAt'] as const
 
 export async function get({ payload, user }: { payload: GetProductsPayload, user?: AuthUser }): Promise<GetProductsResponse> {
   const hasPurchasePricePermission = await UserService.checkPermission('product.purchasePrice', user?.id)
@@ -93,7 +96,7 @@ export async function getIndex({ payload }: { payload: GetProductsIndexPayload }
   }
 }
 
-export async function create({ payload, uploadedImages }: { payload: CreateProductsPayload, uploadedImages: Express.Multer.File[] }): Promise<CreateProductResponse> {
+export async function create({ payload, uploadedImages, user }: { payload: CreateProductsPayload, uploadedImages: Express.Multer.File[], user?: AuthUser }): Promise<CreateProductResponse> {
   const {
     names,
     price,
@@ -137,7 +140,7 @@ export async function create({ payload, uploadedImages }: { payload: CreateProdu
     minorPrice: toMinor(price, currencyDoc.scale),
     minorPurchasePrice: toMinor(purchasePrice, purchaseCurrencyDoc.scale),
     currencyId: currency,
-    categoriesIds: categories,
+    categoryIds: categories,
     purchaseCurrencyId: purchaseCurrency,
     productPropertiesGroupId: productPropertiesGroup,
     productProperties: parsedProductProperties,
@@ -145,6 +148,8 @@ export async function create({ payload, uploadedImages }: { payload: CreateProdu
     images: parsedUploadedImages.map(image => ({
       path: image.path,
       filename: image.filename,
+      name: image.name,
+      type: image.type,
     })),
   })
 
@@ -171,26 +176,16 @@ export async function create({ payload, uploadedImages }: { payload: CreateProdu
     })
   }
 
-  // AuditLogsService.create({
-  //   resourceType: 'product',
-  //   resourceId: product._id.toString(),
-  //   action: 'create',
-  //   changes: diffToChangesFromDeep(
-  //     normalizeProduct(null),
-  //     normalizeProduct({
-  //       names,
-  //       price,
-  //       purchasePrice,
-  //       currency,
-  //       categories,
-  //       purchaseCurrency,
-  //       productPropertiesGroup,
-  //       productProperties: parsedProductProperties,
-  //       unit,
-  //       images: parsedUploadedImages,
-  //     }),
-  //   ),
-  // })
+  const changes = buildAuditChanges(null, createdProduct, { omit: PRODUCT_AUDIT_OMIT })
+  if (changes.length > 0) {
+    await AuditLogsService.create({
+      resourceType: 'product',
+      resourceId: createdProduct._id.toString(),
+      action: 'create',
+      changes,
+      createdBy: user?.id,
+    })
+  }
 
   return {
     status: 'success',
@@ -199,7 +194,7 @@ export async function create({ payload, uploadedImages }: { payload: CreateProdu
   }
 }
 
-export async function edit({ payload, uploadedImages }: { payload: EditProductsPayload, uploadedImages: Express.Multer.File[] }): Promise<EditProductResponse> {
+export async function edit({ payload, uploadedImages, user }: { payload: EditProductsPayload, uploadedImages: Express.Multer.File[], user?: AuthUser }): Promise<EditProductResponse> {
   const {
     names,
     price,
@@ -217,18 +212,17 @@ export async function edit({ payload, uploadedImages }: { payload: EditProductsP
     syncSites,
   } = payload
 
-  // const oldProduct = await ProductRepository.findById(id)
+  const oldProduct = await ProductRepository.findById(id)
+
+  if (!oldProduct)
+    throw new HttpError(404, 'Product not found', 'PRODUCT_NOT_FOUND')
 
   const parsedProductProperties = productProperties.map(property => ({
     _id: property.id,
     value: property.value,
   }))
 
-  let parsedUploadedImagesIds: string[] = []
-
-  if (typeof uploadedImagesIds === 'string') {
-    parsedUploadedImagesIds = [uploadedImagesIds]
-  }
+  const parsedUploadedImagesIds = uploadedImagesIds ?? []
 
   const parsedUploadedImages = parsedUploadedImagesIds.map((image, index) => {
     if (uploadedImages[index] !== undefined) {
@@ -261,8 +255,8 @@ export async function edit({ payload, uploadedImages }: { payload: EditProductsP
     return ({
       path: path.join(path.resolve(), pathName),
       filename: image.filename,
-      name: Buffer.from(image.originalname, 'latin1').toString('utf8').slice(0, 40),
-      type: image.mimetype,
+      name: image.name,
+      type: image.type,
     })
   }).filter(item => item !== undefined)
 
@@ -282,7 +276,7 @@ export async function edit({ payload, uploadedImages }: { payload: EditProductsP
     minorPrice: toMinor(price, currencyDoc.scale),
     minorPurchasePrice: toMinor(purchasePrice, purchaseCurrencyDoc.scale),
     currencyId: currency,
-    categoriesIds: categories,
+    categoryIds: categories,
     purchaseCurrencyId: purchaseCurrency,
     productPropertiesGroupId: productPropertiesGroup,
     productProperties: parsedProductProperties,
@@ -290,6 +284,8 @@ export async function edit({ payload, uploadedImages }: { payload: EditProductsP
     images: parsedImages.map(image => ({
       path: image.path,
       filename: image.filename,
+      name: image.name,
+      type: image.type,
     })),
   }
 
@@ -305,9 +301,13 @@ export async function edit({ payload, uploadedImages }: { payload: EditProductsP
     syncSitesId = items.map(site => site.id)
   }
 
+  const differenceRaw = getDifferenceDeep(
+    toAuditSnapshot(oldProduct, { omit: PRODUCT_AUDIT_OMIT }),
+    toAuditSnapshot(newProduct, { omit: PRODUCT_AUDIT_OMIT }),
+  )
+  const difference = (Array.isArray(differenceRaw) ? {} : differenceRaw) as Record<string, unknown>
+
   for (const site of syncSitesId) {
-    // const difference = getDifferenceDeep(normalizeProduct(oldProduct?.toObject()), normalizeProduct(newProduct))
-    const difference = {}
     await SyncEntryService.syncProductEdit({
       siteId: site,
       productId: updatedProduct._id.toString(),
@@ -315,18 +315,16 @@ export async function edit({ payload, uploadedImages }: { payload: EditProductsP
     })
   }
 
-  // AuditLogsService.create({
-  //   resourceType: 'product',
-  //   resourceId: product._id.toString(),
-  //   action: 'edit',
-  //   changes: diffToChangesFromDeep(
-  //     normalizeProduct(oldProduct?.toObject()),
-  //     normalizeProduct(newProduct),
-  //   ),
-  // })
-
-  if (updatedProduct === null)
-    throw new HttpError(400, 'Product not edited', 'PRODUCT_NOT_EDITED')
+  const changes = buildAuditChanges(oldProduct, newProduct, { omit: PRODUCT_AUDIT_OMIT })
+  if (changes.length > 0) {
+    await AuditLogsService.create({
+      resourceType: 'product',
+      resourceId: updatedProduct._id.toString(),
+      action: 'edit',
+      changes,
+      createdBy: user?.id,
+    })
+  }
 
   return {
     status: 'success',
@@ -335,7 +333,7 @@ export async function edit({ payload, uploadedImages }: { payload: EditProductsP
   }
 }
 
-export async function remove({ payload }: { payload: RemoveProductsPayload }): Promise<RemoveProductResponse> {
+export async function remove({ payload, user }: { payload: RemoveProductsPayload, user?: AuthUser }): Promise<RemoveProductResponse> {
   const { ids } = payload
 
   for (const id of ids) {
@@ -344,15 +342,18 @@ export async function remove({ payload }: { payload: RemoveProductsPayload }): P
     if (!product)
       throw new HttpError(400, 'Product not removed', 'PRODUCT_NOT_REMOVED')
 
-    // AuditLogsService.create({
-    //   resourceType: 'product',
-    //   resourceId: id.toString(),
-    //   action: 'remove',
-    //   changes: diffToChangesFromDeep(
-    //     normalizeProduct(product?.toObject()),
-    //     normalizeProduct(null),
-    //   ),
-    // })
+    const removed = await ProductRepository.removeById(id)
+
+    if (!removed)
+      throw new HttpError(400, 'Product not removed', 'PRODUCT_NOT_REMOVED')
+
+    await AuditLogsService.create({
+      resourceType: 'product',
+      resourceId: id.toString(),
+      action: 'remove',
+      changes: buildAuditChanges(product, null, { omit: PRODUCT_AUDIT_OMIT }),
+      createdBy: user?.id,
+    })
   }
 
   return {
@@ -428,7 +429,7 @@ export async function importHandler({ file }: { file: Express.Multer.File }): Pr
     minorPurchasePrice: toMinor(toNumber(row, 'purchasePrice'), 2),
     purchaseCurrencyId: parseId(row, 'purchaseCurrency'),
     barcodes: parseMultiSelect(row, 'barcodes', 'values'),
-    categoriesIds: parseMultiSelect(row, 'categories', 'id'),
+    categoryIds: parseMultiSelect(row, 'categories', 'id'),
     unitId: parseId(row, 'unit'),
     productPropertiesGroupId: parseId(row, 'productPropertiesGroup'),
     productProperties: parseProductProperties(row)
@@ -456,7 +457,7 @@ export async function importHandler({ file }: { file: Express.Multer.File }): Pr
             minorPurchasePrice: product.minorPurchasePrice,
             purchaseCurrencyId: product.purchaseCurrencyId,
             barcodes: product.barcodes,
-            categoriesIds: product.categoriesIds,
+            categoryIds: product.categoryIds,
             unitId: product.unitId,
             productPropertiesGroupId: product.productPropertiesGroupId,
             productProperties: product.productProperties,
@@ -470,18 +471,60 @@ export async function importHandler({ file }: { file: Express.Multer.File }): Pr
 
   if (productsForCreate.length > 0) {
     for (const product of productsForCreate) {
+      const {
+        currencyId,
+        purchaseCurrencyId,
+        unitId,
+        productPropertiesGroupId,
+        generateBarcode,
+        barcodes,
+      } = product
+
+      if (!currencyId || !purchaseCurrencyId || !unitId || !productPropertiesGroupId) {
+        throw new HttpError(
+          400,
+          'Product import row is missing required currency, purchase currency, unit or property group',
+          'PRODUCT_IMPORT_INVALID_ROW',
+        )
+      }
+
+      if (product.categoryIds.length === 0) {
+        throw new HttpError(
+          400,
+          'Product import row must include at least one category',
+          'PRODUCT_IMPORT_INVALID_ROW',
+        )
+      }
+
       const createdProduct = await ProductRepository.createOne({
-        ...product,
+        names: product.names as LanguageString,
+        minorPrice: product.minorPrice,
+        currencyId,
+        minorPurchasePrice: product.minorPurchasePrice,
+        purchaseCurrencyId,
+        categoryIds: product.categoryIds,
+        unitId,
+        productPropertiesGroupId,
         productProperties: product.productProperties.map(property => ({
           _id: property._id,
           value: property.value,
         })),
+        images: product.images,
       })
 
-      for (const barcode of product.barcodes) {
+      for (const barcode of barcodes) {
         await BarcodeService.create({
           payload: {
             code: barcode,
+            products: [{ id: createdProduct._id.toString(), unitsPerScan: 1 }],
+            active: true,
+          },
+        })
+      }
+
+      if (generateBarcode) {
+        await BarcodeService.create({
+          payload: {
             products: [{ id: createdProduct._id.toString(), unitsPerScan: 1 }],
             active: true,
           },
@@ -725,7 +768,7 @@ export async function exportHandler({ payload, user }: { payload: ExportProducts
     for (const [index, property] of dynamicKeys.entries()) {
       if (['select', 'multiSelect', 'color'].includes(property.type)) {
         const productPropertiesOptions = await ProductPropertyOptionRepository.list(parseGetProductPropertyOptions(
-          { filters: { productProperty: property.id }, pagination: { full: true } },
+          { filters: { productPropertyId: property.id }, pagination: { full: true } },
         ))
 
         if (!propertiesLetters[property.id])

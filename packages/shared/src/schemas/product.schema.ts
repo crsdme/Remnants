@@ -23,8 +23,13 @@ export const productSchema = z.object({
   productPropertiesGroup: idSchema,
   productProperties: z.array(idSchema),
   warehouseStock: z.array(z.object({
-    warehouse: idSchema,
+    warehouseId: idSchema,
     count: z.number(),
+    stockStatus: z.object({
+      id: idSchema,
+      names: languageStringSchema,
+      color: z.string().optional(),
+    }).nullable().optional(),
   })),
   images: z.array(z.object({
     id: idSchema,
@@ -89,8 +94,13 @@ export const productSchemaPopulated = z.object({
     }),
   })),
   warehouseStock: z.array(z.object({
-    warehouse: idSchema,
+    warehouseId: idSchema,
     count: z.number(),
+    stockStatus: z.object({
+      id: idSchema,
+      names: languageStringSchema,
+      color: z.string().optional(),
+    }).nullable().optional(),
   })),
   images: z.array(z.object({
     id: idSchema,
@@ -124,6 +134,7 @@ export const getProductSchema = z.object({
     barcodes: z.string().optional(),
     categories: z.array(idSchema).optional(),
     selectedWarehouse: idSchemaOptional,
+    stockStatusId: idSchemaOptional,
     createdAt: dateRangeSchema.optional(),
     updatedAt: dateRangeSchema.optional(),
   }).optional().default({}),
@@ -179,18 +190,21 @@ export const createProductSchema = z.object({
   unit: idSchema,
   categories: z.array(idSchema).min(1),
   images: z.array(z.object({
-    filename: z.string(),
-    originalname: z.string(),
-    mimetype: z.string(),
-    path: z.string(),
+    id: z.string().optional(),
+    filename: z.string().optional().default(''),
+    name: z.string(),
+    type: z.string(),
+    path: z.string().optional().default(''),
+    isNew: z.boolean().optional().default(false),
   })).optional().default([]),
-  uploadedImages: z.array(z.object({
-    filename: z.string(),
-    originalname: z.string(),
-    mimetype: z.string(),
-    path: z.string(),
-  })).optional().default([]),
-  uploadedImagesIds: z.array(idSchema).optional(),
+  uploadedImagesIds: z.preprocess(
+    (val) => {
+      if (val === undefined || val === null || val === '')
+        return undefined
+      return Array.isArray(val) ? val : [val]
+    },
+    z.array(z.string()).optional(),
+  ),
   generateBarcode: z.boolean().optional().default(false),
   isAutoSyncEnabled: z.boolean().optional().default(false),
   syncSites: z.array(idSchema).optional().default([]),
@@ -213,20 +227,21 @@ export const editProductSchema = z.object({
   unit: idSchema,
   categories: z.array(idSchema).min(1),
   images: z.array(z.object({
-    id: idSchema,
-    filename: z.string(),
-    originalname: z.string(),
-    mimetype: z.string(),
-    path: z.string(),
+    id: z.string(),
+    filename: z.string().optional().default(''),
+    name: z.string(),
+    type: z.string(),
+    path: z.string().optional().default(''),
     isNew: z.boolean().optional().default(false),
   })).optional().default([]),
-  uploadedImages: z.array(z.object({
-    filename: z.string(),
-    originalname: z.string(),
-    mimetype: z.string(),
-    path: z.string(),
-  })).optional().default([]),
-  uploadedImagesIds: z.array(idSchema).optional(),
+  uploadedImagesIds: z.preprocess(
+    (val) => {
+      if (val === undefined || val === null || val === '')
+        return undefined
+      return Array.isArray(val) ? val : [val]
+    },
+    z.array(z.string()).optional(),
+  ),
   isAutoSyncEnabled: z.boolean().optional().default(false),
   syncSites: z.array(idSchema).optional().default([]),
 })

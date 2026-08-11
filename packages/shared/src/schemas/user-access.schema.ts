@@ -2,38 +2,38 @@ import { z } from 'zod'
 import { idSchema } from './common'
 
 export const USER_ACCESS_SCOPE_KEYS = [
-  'warehouses',
-  'sites',
-  'expenseCategories',
-  'cashregisters',
-  'cashregisterAccounts',
-  'deliveryServices',
-  'orderSources',
-  'orderStatuses',
+  'warehouseIds',
+  'siteIds',
+  'expenseCategoryIds',
+  'cashregisterIds',
+  'cashregisterAccountIds',
+  'deliveryServiceIds',
+  'orderSourceIds',
+  'orderStatusIds',
 ] as const
 
 export type UserAccessScopeKey = (typeof USER_ACCESS_SCOPE_KEYS)[number]
 
 export const emptyUserAccessScopes = {
-  warehouses: [] as string[],
-  sites: [] as string[],
-  expenseCategories: [] as string[],
-  cashregisters: [] as string[],
-  cashregisterAccounts: [] as string[],
-  deliveryServices: [] as string[],
-  orderSources: [] as string[],
-  orderStatuses: [] as string[],
+  warehouseIds: [] as string[],
+  siteIds: [] as string[],
+  expenseCategoryIds: [] as string[],
+  cashregisterIds: [] as string[],
+  cashregisterAccountIds: [] as string[],
+  deliveryServiceIds: [] as string[],
+  orderSourceIds: [] as string[],
+  orderStatusIds: [] as string[],
 }
 
 export const userAccessScopesSchema = z.object({
-  warehouses: z.array(idSchema).default([]),
-  sites: z.array(idSchema).default([]),
-  expenseCategories: z.array(idSchema).default([]),
-  cashregisters: z.array(idSchema).default([]),
-  cashregisterAccounts: z.array(idSchema).default([]),
-  deliveryServices: z.array(idSchema).default([]),
-  orderSources: z.array(idSchema).default([]),
-  orderStatuses: z.array(idSchema).default([]),
+  warehouseIds: z.array(idSchema).default([]),
+  siteIds: z.array(idSchema).default([]),
+  expenseCategoryIds: z.array(idSchema).default([]),
+  cashregisterIds: z.array(idSchema).default([]),
+  cashregisterAccountIds: z.array(idSchema).default([]),
+  deliveryServiceIds: z.array(idSchema).default([]),
+  orderSourceIds: z.array(idSchema).default([]),
+  orderStatusIds: z.array(idSchema).default([]),
 })
 
 export type UserAccessScopesDTO = z.output<typeof userAccessScopesSchema>

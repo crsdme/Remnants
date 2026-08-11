@@ -61,30 +61,75 @@ export function getDifferenceDeep(prev: Record<string, unknown>, next: Record<st
   return result
 }
 
-// --------------AI BRUH---------------
+export interface AuditChange {
+  path: string
+  before: unknown
+  after: unknown
+}
 
-interface Change { path: string, before: unknown, after: unknown }
+const DEFAULT_AUDIT_OMIT = new Set([
+  '_id',
+  'id',
+  '__v',
+  'createdAt',
+  'updatedAt',
+  'removed',
+  'seq',
+])
 
-// утилита для чтения значения по пути "a.b.c"
 function getByPath(obj: unknown, path: string) {
   if (!path)
     return obj
   return path.split('.').reduce((o, k) => (o == null ? o : o[k as keyof typeof o]), obj)
 }
 
-// обёртка: делает changes[] на основе результата getDifferenceDeep
-export function diffToChangesFromDeep(prev: Record<string, unknown>, next: Record<string, unknown>): Change[] {
-  const diff = getDifferenceDeep(prev, next)
-  const changes: Change[] = []
+function normalizeAuditValue(value: unknown, omit: Set<string>): unknown {
+  if (value == null)
+    return value
 
-  const isPlainObject = (v: unknown) =>
-    Object.prototype.toString.call(v) === '[object Object]'
+  if (value instanceof Date)
+    return value.toISOString()
+
+  if (value instanceof Map) {
+    return Object.fromEntries(
+      [...value.entries()].map(([key, nested]) => [String(key), normalizeAuditValue(nested, omit)]),
+    )
+  }
+
+  if (Array.isArray(value))
+    return value.map(item => normalizeAuditValue(item, omit))
+
+  if (isPlainObject(value)) {
+    const result: Record<string, unknown> = {}
+    for (const [key, nested] of Object.entries(value as Record<string, unknown>)) {
+      if (omit.has(key))
+        continue
+      result[key] = normalizeAuditValue(nested, omit)
+    }
+    return result
+  }
+
+  return value
+}
+
+/** Plain JSON-ish snapshot of any entity doc/payload for audit diffs. */
+export function toAuditSnapshot(
+  value: unknown,
+  options?: { omit?: Iterable<string> },
+): Record<string, unknown> {
+  const omit = new Set([...DEFAULT_AUDIT_OMIT, ...(options?.omit ?? [])])
+  const normalized = normalizeAuditValue(value, omit)
+  return isPlainObject(normalized) ? normalized as Record<string, unknown> : {}
+}
+
+export function diffToChangesFromDeep(prev: Record<string, unknown>, next: Record<string, unknown>): AuditChange[] {
+  const diff = getDifferenceDeep(prev, next)
+  const changes: AuditChange[] = []
 
   const walk = (node: unknown, basePath: string) => {
-    // если в diff лежит не объект (примитив/массив) — это «замена целиком» по basePath
     if (!isPlainObject(node)) {
       if (!basePath)
-        return // корень без пути нам не нужен
+        return
       changes.push({
         path: basePath,
         before: getByPath(prev, basePath),
@@ -98,11 +143,9 @@ export function diffToChangesFromDeep(prev: Record<string, unknown>, next: Recor
       const path = basePath ? `${basePath}.${key}` : key
 
       if (isPlainObject(child)) {
-        // в diff остались вложенные различия — спускаемся
         walk(child, path)
       }
       else {
-        // в diff лежит «final» значение (массив/примитив) — фиксируем изменение по этому пути
         changes.push({
           path,
           before: getByPath(prev, path),
@@ -114,4 +157,24 @@ export function diffToChangesFromDeep(prev: Record<string, unknown>, next: Recor
 
   walk(diff, '')
   return changes
+}
+
+/** Universal create/edit/remove audit changes from before/after snapshots. */
+export function buildAuditChanges(
+  before: unknown,
+  after: unknown,
+  options?: { omit?: Iterable<string> },
+): AuditChange[] {
+  const prev = toAuditSnapshot(before, options)
+  const next = toAuditSnapshot(after, options)
+
+  if (Object.keys(next).length === 0 && Object.keys(prev).length > 0) {
+    return Object.entries(prev).map(([path, value]) => ({
+      path,
+      before: value,
+      after: null,
+    }))
+  }
+
+  return diffToChangesFromDeep(prev, next)
 }

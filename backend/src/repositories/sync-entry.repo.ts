@@ -19,19 +19,19 @@ export async function list(payload: GetSyncEntriesRepoPayload): Promise<GetSyncE
   const {
     sourceType,
     sourceId,
-    site,
+    siteId,
     externalId,
     createdAt,
     updatedAt,
   } = payload.filters
 
   const query = buildQuery({
-    filters: { sourceType, sourceId, site, externalId, createdAt, updatedAt },
+    filters: { sourceType, sourceId, siteId, externalId, createdAt, updatedAt },
     rules: {
       _id: { type: 'array' },
       sourceType: { type: 'exact' },
       sourceId: { type: 'exact' },
-      site: { type: 'exact' },
+      siteId: { type: 'exact' },
       externalId: { type: 'exact' },
       createdAt: { type: 'dateRange' },
       updatedAt: { type: 'dateRange' },

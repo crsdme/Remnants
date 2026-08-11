@@ -9,7 +9,7 @@ import type {
   ProductDB,
   ProductDBPopulated,
 } from '@/types'
-import { ProductModel } from '@/models'
+import { ProductModel, QuantityModel } from '@/models'
 import * as CurrencyRepo from '@/repositories/currencies.repo'
 import { buildQuery, buildSortQuery, unwrapAggregate } from '@/utils'
 import { toMinor } from '@/utils/money'
@@ -54,6 +54,8 @@ export async function list(payload: GetProductsRepoPayload): Promise<GetProducts
     unit,
     productPropertiesGroup,
     productProperties,
+    selectedWarehouse,
+    stockStatusId,
     createdAt,
     updatedAt,
   } = payload.filters
@@ -61,9 +63,25 @@ export async function list(payload: GetProductsRepoPayload): Promise<GetProducts
   const minorPriceFilter = await toMinorFilterValue(price, currency)
   const minorPurchasePriceFilter = await toMinorFilterValue(purchasePrice, purchaseCurrency)
 
+  let scopedIds = ids
+  if (stockStatusId && selectedWarehouse) {
+    const matchedProductIds = await QuantityModel.distinct('productId', {
+      warehouseId: selectedWarehouse,
+      stockStatusId,
+    }).exec()
+
+    if (scopedIds?.length) {
+      const scopedSet = new Set(scopedIds)
+      scopedIds = matchedProductIds.filter(id => scopedSet.has(id))
+    }
+    else {
+      scopedIds = matchedProductIds
+    }
+  }
+
   const query = buildQuery({
     filters: {
-      _id: ids,
+      _id: scopedIds,
       seq,
       names,
       price: minorPriceFilter,
@@ -86,8 +104,8 @@ export async function list(payload: GetProductsRepoPayload): Promise<GetProducts
       purchasePrice: { type: 'exact', field: 'minorPurchasePrice' },
       currency: { type: 'array', field: 'currencyId' },
       purchaseCurrency: { type: 'array', field: 'purchaseCurrencyId' },
-      barcodes: { type: 'string', field: 'barcodesIds' },
-      categories: { type: 'array', field: 'categoriesIds' },
+      barcodes: { type: 'string', field: 'barcodeIds' },
+      categories: { type: 'array', field: 'categoryIds' },
       unit: { type: 'array', field: 'unitId' },
       productPropertiesGroup: { type: 'array', field: 'productPropertiesGroupId' },
       productProperties: { type: 'array' },
@@ -169,7 +187,7 @@ export async function list(payload: GetProductsRepoPayload): Promise<GetProducts
           {
             $lookup: {
               from: 'categories',
-              localField: 'categoriesIds',
+              localField: 'categoryIds',
               foreignField: '_id',
               as: 'categories',
             },
@@ -178,8 +196,46 @@ export async function list(payload: GetProductsRepoPayload): Promise<GetProducts
           {
             $lookup: {
               from: 'quantities',
-              localField: 'quantityIds',
-              foreignField: '_id',
+              let: { quantityIds: '$quantityIds' },
+              pipeline: [
+                {
+                  $match: {
+                    $expr: {
+                      $in: ['$_id', { $ifNull: ['$$quantityIds', []] }],
+                    },
+                  },
+                },
+                {
+                  $lookup: {
+                    from: 'product-stock-statuses',
+                    localField: 'stockStatusId',
+                    foreignField: '_id',
+                    as: '_stockStatus',
+                  },
+                },
+                {
+                  $project: {
+                    warehouseId: 1,
+                    count: 1,
+                    stockStatus: {
+                      $cond: [
+                        { $gt: [{ $size: '$_stockStatus' }, 0] },
+                        {
+                          $let: {
+                            vars: { s: { $arrayElemAt: ['$_stockStatus', 0] } },
+                            in: {
+                              id: '$$s._id',
+                              names: '$$s.names',
+                              color: '$$s.color',
+                            },
+                          },
+                        },
+                        null,
+                      ],
+                    },
+                  },
+                },
+              ],
               as: 'warehouseStock',
             },
           },
@@ -196,7 +252,7 @@ export async function list(payload: GetProductsRepoPayload): Promise<GetProducts
           {
             $lookup: {
               from: 'barcodes',
-              localField: 'barcodesIds',
+              localField: 'barcodeIds',
               foreignField: '_id',
               as: 'barcodes',
             },
@@ -410,8 +466,9 @@ export async function list(payload: GetProductsRepoPayload): Promise<GetProducts
                   input: { $ifNull: ['$warehouseStock', []] },
                   as: 'stock',
                   in: {
-                    warehouse: '$$stock.warehouse',
+                    warehouseId: '$$stock.warehouseId',
                     count: '$$stock.count',
+                    stockStatus: '$$stock.stockStatus',
                   },
                 },
               },
@@ -558,14 +615,14 @@ export async function findById(id: string, session?: ClientSession) {
 export async function addBarcodeToProducts(productIds: string[], barcodeId: string) {
   return ProductModel.updateMany(
     { _id: { $in: productIds } },
-    { $push: { barcodesIds: barcodeId } },
+    { $push: { barcodeIds: barcodeId } },
   ).exec()
 }
 
 export async function removeBarcodeFromProducts(barcodeId: string) {
   return ProductModel.updateMany(
-    { barcodesIds: barcodeId },
-    { $pull: { barcodesIds: barcodeId } },
+    { barcodeIds: barcodeId },
+    { $pull: { barcodeIds: barcodeId } },
   ).exec()
 }
 
@@ -718,7 +775,7 @@ export function productPopulatedStages({
     {
       $lookup: {
         from: 'categories',
-        localField: 'categoriesIds',
+        localField: 'categoryIds',
         foreignField: '_id',
         as: 'categories',
       },
@@ -727,8 +784,46 @@ export function productPopulatedStages({
     {
       $lookup: {
         from: 'quantities',
-        localField: 'quantityIds',
-        foreignField: '_id',
+        let: { quantityIds: '$quantityIds' },
+        pipeline: [
+          {
+            $match: {
+              $expr: {
+                $in: ['$_id', { $ifNull: ['$$quantityIds', []] }],
+              },
+            },
+          },
+          {
+            $lookup: {
+              from: 'product-stock-statuses',
+              localField: 'stockStatusId',
+              foreignField: '_id',
+              as: '_stockStatus',
+            },
+          },
+          {
+            $project: {
+              warehouseId: 1,
+              count: 1,
+              stockStatus: {
+                $cond: [
+                  { $gt: [{ $size: '$_stockStatus' }, 0] },
+                  {
+                    $let: {
+                      vars: { s: { $arrayElemAt: ['$_stockStatus', 0] } },
+                      in: {
+                        id: '$$s._id',
+                        names: '$$s.names',
+                        color: '$$s.color',
+                      },
+                    },
+                  },
+                  null,
+                ],
+              },
+            },
+          },
+        ],
         as: 'warehouseStock',
       },
     },
@@ -745,7 +840,7 @@ export function productPopulatedStages({
     {
       $lookup: {
         from: 'barcodes',
-        localField: 'barcodesIds',
+        localField: 'barcodeIds',
         foreignField: '_id',
         as: 'barcodes',
       },
@@ -847,7 +942,7 @@ export function productPopulatedStages({
                     input: '$warehouseStock',
                     as: 'q',
                     cond: {
-                      $eq: ['$$q.warehouse', selectedWarehouse],
+                      $eq: ['$$q.warehouseId', selectedWarehouse],
                     },
                   },
                 },
@@ -900,8 +995,8 @@ export function productPopulatedStages({
         : {}),
       warehouseStock: {
         count: 1,
-        warehouse: 1,
-        status: 1,
+        warehouseId: 1,
+        stockStatus: 1,
       },
       images: 1,
       productProperties: {

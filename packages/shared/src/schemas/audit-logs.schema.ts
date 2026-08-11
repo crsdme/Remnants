@@ -34,7 +34,7 @@ export const auditLogPopulatedSchema = z.object({
   createdBy: z.object({
     id: idSchema,
     name: z.string().trim(),
-  }),
+  }).nullable().optional(),
   createdAt: z.coerce.date(),
   updatedAt: z.coerce.date(),
 })
@@ -72,6 +72,7 @@ export const createAuditLogsSchema = z.object({
     after: z.unknown(),
   })),
   comment: z.string().optional(),
+  createdBy: idSchema.optional(),
 })
 
 export type CreateAuditLogsRequest = z.input<typeof createAuditLogsSchema>

@@ -6,7 +6,7 @@ export function mapProductPropertyToDTO(productProperty: ProductPropertyDB): Pro
     id: productProperty._id,
     names: productProperty.names,
     symbols: productProperty.symbols,
-    options: productProperty.options,
+    optionIds: productProperty.optionIds,
     priority: productProperty.priority,
     type: productProperty.type,
     isRequired: productProperty.isRequired,

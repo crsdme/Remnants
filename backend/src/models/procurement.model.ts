@@ -17,7 +17,7 @@ const ProcurementSchema: Schema = new Schema(
       type: Number,
       default: 0,
     },
-    supplier: {
+    supplierId: {
       type: String,
       ref: 'Supplier',
       required: true,
@@ -34,11 +34,11 @@ const ProcurementSchema: Schema = new Schema(
       default: 'unpaid',
       required: true,
     },
-    expenses: [{
+    expenseIds: [{
       type: String,
       ref: 'Expense',
     }],
-    payments: [{
+    paymentIds: [{
       type: String,
       ref: 'money-transaction',
     }],
@@ -84,7 +84,7 @@ const ProcurementItemSchema: Schema = new Schema({
     type: Number,
     required: true,
   },
-  purchaseCurrency: {
+  purchaseCurrencyId: {
     type: String,
     required: true,
     ref: 'Currency',
@@ -111,6 +111,15 @@ ProcurementSchema.pre('save', async function (this: ProcurementDoc, next) {
   }
   next()
 })
+
+ProcurementSchema.index({ status: 1 })
+ProcurementSchema.index({ paymentStatus: 1 })
+ProcurementSchema.index({ supplierId: 1 })
+ProcurementSchema.index({ seq: 1 })
+ProcurementSchema.index({ createdAt: -1 })
+
+ProcurementItemSchema.index({ procurementId: 1 })
+ProcurementItemSchema.index({ productId: 1 })
 
 export const ProcurementModel = mongoose.model<ProcurementDoc>('procurement', ProcurementSchema)
 export const ProcurementItemModel = mongoose.model<ProcurementItemDoc>('procurement-item', ProcurementItemSchema)

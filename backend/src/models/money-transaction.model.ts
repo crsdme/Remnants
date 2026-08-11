@@ -106,4 +106,12 @@ MoneyTransactionSchema.pre('save', async function (this: MoneyTransactionDoc, ne
   next()
 })
 
+MoneyTransactionSchema.index({ cashregisterId: 1, createdAt: -1 })
+MoneyTransactionSchema.index({ accountId: 1, createdAt: -1 })
+MoneyTransactionSchema.index({ sourceModel: 1, sourceId: 1 })
+MoneyTransactionSchema.index({ type: 1, createdAt: -1 })
+MoneyTransactionSchema.index({ transferId: 1 })
+MoneyTransactionSchema.index({ seq: 1 })
+MoneyTransactionSchema.index({ createdAt: -1 })
+
 export const MoneyTransactionModel = mongoose.model<MoneyTransactionDoc>('money-transaction', MoneyTransactionSchema)

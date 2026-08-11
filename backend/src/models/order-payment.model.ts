@@ -36,19 +36,6 @@ const OrderPaymentSchema: Schema = new Schema(
       ref: 'Currency',
       required: true,
     },
-    paymentStatus: {
-      type: String,
-      required: true,
-      enum: [
-        'pending',
-        'processing',
-        'paid',
-        'partially_paid',
-        'failed',
-        'cancelled',
-        'refunded',
-      ],
-    },
     paymentDate: {
       type: Date,
       default: new Date(),
@@ -86,5 +73,12 @@ OrderPaymentSchema.set('toJSON', {
     delete ret.removed
   },
 })
+
+OrderPaymentSchema.index({ orderId: 1, removed: 1 })
+OrderPaymentSchema.index({ cashregisterId: 1 })
+OrderPaymentSchema.index({ cashregisterAccountId: 1 })
+OrderPaymentSchema.index({ transactionId: 1 })
+OrderPaymentSchema.index({ paymentDate: -1 })
+OrderPaymentSchema.index({ createdAt: -1 })
 
 export const OrderPaymentModel = mongoose.model<OrderPaymentDoc>('order-payment', OrderPaymentSchema)

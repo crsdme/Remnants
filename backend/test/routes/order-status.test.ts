@@ -16,6 +16,8 @@ describe('order status API', () => {
         color: '#000000',
         isLocked: true,
         isSelectable: true,
+        isDisplayed: true,
+        includeInStatistics: true,
       })
       const orderStatusResponseParsed = parseResponse(createOrderStatusResponseSchema, orderStatusResponse)
 
@@ -35,6 +37,8 @@ describe('order status API', () => {
         priority: 1,
         isLocked: true,
         isSelectable: true,
+        isDisplayed: true,
+        includeInStatistics: true,
       })
     })
   })

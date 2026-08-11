@@ -18,16 +18,16 @@ export async function list(payload: GetQuantitiesRepoPayload): Promise<GetQuanti
 
   const {
     productId,
-    warehouse,
+    warehouseId,
     status,
     count,
   } = payload.filters
 
   const query = buildQuery({
-    filters: { productId, warehouse, status, count },
+    filters: { productId, warehouseId, status, count },
     rules: {
       productId: { type: 'exact' },
-      warehouse: { type: 'exact' },
+      warehouseId: { type: 'exact' },
       status: { type: 'exact' },
       count: { type: 'exact' },
     },
@@ -48,8 +48,10 @@ export async function list(payload: GetQuantitiesRepoPayload): Promise<GetQuanti
         id: '$_id',
         count: 1,
         productId: 1,
-        warehouse: 1,
+        warehouseId: 1,
         status: 1,
+        stockStatusId: 1,
+        lastSaleAt: 1,
         createdAt: 1,
         updatedAt: 1,
       },
@@ -87,6 +89,43 @@ export async function updateById({ id, payload, session }: { id: string, payload
 
 export async function findById(id: string) {
   return QuantityModel.findById(id).exec()
+}
+
+export async function findByProductWarehouse({
+  productId,
+  warehouseId,
+  session,
+}: {
+  productId: string
+  warehouseId: string
+  session?: ClientSession
+}) {
+  return QuantityModel.findOne({ productId, warehouseId }).session(session ?? null).exec()
+}
+
+export async function listProductWarehousePairs(session?: ClientSession) {
+  return QuantityModel
+    .find({})
+    .select({ productId: 1, warehouseId: 1 })
+    .session(session ?? null)
+    .lean()
+    .exec()
+}
+
+export async function updateStockStatusId({
+  id,
+  stockStatusId,
+  session,
+}: {
+  id: string
+  stockStatusId: string | null
+  session?: ClientSession
+}) {
+  return QuantityModel.findOneAndUpdate(
+    { _id: id },
+    { $set: { stockStatusId } },
+    { new: true, runValidators: true, session },
+  ).exec()
 }
 
 export async function findAndUpdate({ query, payload, session }: { query: FilterQuery<QuantityDB>, payload: UpdateQuery<QuantityDB>, session?: ClientSession }) {

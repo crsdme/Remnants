@@ -21,12 +21,12 @@ const WarehouseTransactionSchema: Schema = new Schema(
       enum: ['in', 'out', 'transfer'],
       required: true,
     },
-    fromWarehouse: {
+    fromWarehouseId: {
       type: String,
       default: null,
       ref: 'Warehouse',
     },
-    toWarehouse: {
+    toWarehouseId: {
       type: String,
       default: null,
       ref: 'Warehouse',
@@ -120,6 +120,16 @@ WarehouseTransactionSchema.pre('save', async function (this: WarehouseTransactio
 
   next()
 })
+
+WarehouseTransactionSchema.index({ removed: 1, seq: -1 })
+WarehouseTransactionSchema.index({ status: 1, removed: 1 })
+WarehouseTransactionSchema.index({ fromWarehouseId: 1 })
+WarehouseTransactionSchema.index({ toWarehouseId: 1 })
+WarehouseTransactionSchema.index({ createdAt: -1 })
+WarehouseTransactionSchema.index({ seq: 1 })
+
+WarehouseTransactionItemSchema.index({ transactionId: 1 })
+WarehouseTransactionItemSchema.index({ productId: 1 })
 
 export const WarehouseTransactionModel = mongoose.model<WarehouseTransactionDoc>('warehouse-transaction', WarehouseTransactionSchema)
 export const WarehouseTransactionItemModel = mongoose.model<WarehouseTransactionItemDoc>('warehouse-transaction-item', WarehouseTransactionItemSchema)

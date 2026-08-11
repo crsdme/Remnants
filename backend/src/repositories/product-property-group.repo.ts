@@ -19,19 +19,19 @@ export async function list(payload: GetProductPropertyGroupsRepoPayload): Promis
   const {
     names,
     language,
-    productProperties,
+    productPropertyIds,
     active,
     priority,
     createdAt,
   } = payload.filters
 
   const query = buildQuery({
-    filters: { names, active, priority, productProperties, createdAt },
+    filters: { names, active, priority, productPropertyIds, createdAt },
     rules: {
       names: { type: 'string', langAware: true },
       active: { type: 'array' },
       priority: { type: 'exact' },
-      productProperties: { type: 'array' },
+      productPropertyIds: { type: 'array' },
       createdAt: { type: 'dateRange' },
     },
     language,
@@ -49,7 +49,7 @@ export async function list(payload: GetProductPropertyGroupsRepoPayload): Promis
     {
       $lookup: {
         from: 'product-properties',
-        localField: 'productProperties',
+        localField: 'productPropertyIds',
         foreignField: '_id',
         as: 'productProperties',
       },
@@ -78,12 +78,16 @@ export async function list(payload: GetProductPropertyGroupsRepoPayload): Promis
             in: {
               id: '$$pp._id',
               names: '$$pp.names',
+              symbols: { $ifNull: ['$$pp.symbols', {}] },
+              optionIds: { $ifNull: ['$$pp.optionIds', []] },
               priority: '$$pp.priority',
               type: '$$pp.type',
               isRequired: '$$pp.isRequired',
               showInTable: '$$pp.showInTable',
               showInStatistics: '$$pp.showInStatistics',
               active: '$$pp.active',
+              createdAt: '$$pp.createdAt',
+              updatedAt: '$$pp.updatedAt',
             },
           },
         },

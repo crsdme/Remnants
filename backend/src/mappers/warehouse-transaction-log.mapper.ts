@@ -7,6 +7,8 @@ export function mapWarehouseTransactionLogRepoToDTO(warehouseTransactionLog: War
     productId: warehouseTransactionLog.productId,
     warehouseId: warehouseTransactionLog.warehouseId,
     deltaCount: warehouseTransactionLog.deltaCount,
+    previousCount: warehouseTransactionLog.previousCount,
+    afterCount: warehouseTransactionLog.afterCount,
     refType: warehouseTransactionLog.refType,
     refId: warehouseTransactionLog.refId,
     userId: warehouseTransactionLog.userId,

@@ -120,6 +120,7 @@
   "component.sidemenu.label.auditLogs": "Логи изменений",
   "component.sidemenu.label.sources": "Источники",
   "component.sidemenu.label.orderStatuses": "Статусы заказов",
+  "component.sidemenu.label.productStockStatuses": "Статусы остатков",
   "component.sidemenu.label.orderSources": "Источники заказов",
   "component.sidemenu.label.deliveryServices": "Сервисы доставки",
   "component.sidemenu.label.units": "Единицы измерения",
@@ -132,12 +133,28 @@
   "component.sidemenu.label.expenseCategories": "Категории расходов",
   "component.sidemenu.label.sites": "Сайты",
 
+  "component.commandMenu.search": "Поиск",
+  "component.commandMenu.title": "Командное меню",
+  "component.commandMenu.description": "Поиск страниц и действий",
+  "component.commandMenu.placeholder": "Введите команду или поиск...",
+  "component.commandMenu.empty": "Ничего не найдено",
+  "component.commandMenu.navigation": "Навигация",
+  "component.commandMenu.actions": "Действия",
+  "component.commandMenu.action.createOrder": "Создать заказ",
+  "component.commandMenu.action.createProcurement": "Создать закупку",
+  "component.commandMenu.action.createInventory": "Создать инвентаризацию",
+  "component.commandMenu.action.createWarehouseTransaction": "Создать складскую транзакцию",
+  "component.commandMenu.action.createBarcode": "Создать штрих-код",
+
   "component.asyncSelect.searchPlaceholder": "Поиск",
   "component.asyncSelect.noResultsMessage": "Ничего не найдено",
   "component.asyncSelect.placeholder": "Выберите",
 
   "component.fileUploadDnd.upload": "Загрузить файл",
   "component.fileUploadDnd.noFilesUploaded": "Файлы не загружены",
+  "component.fileUploadDnd.dropOrSelect": "Перетащите файлы или",
+  "component.fileUploadDnd.select": "выберите",
+  "component.fileUploadDnd.hint": "PNG, JPG, WEBP, PDF, TXT, XLS, CSV • до {{size}} МБ",
 
   "component.countrySelect.placeholder": "Выберите страну",
   "component.countrySelect.searchPlaceholder": "Поиск страны",
@@ -145,6 +162,10 @@
   "component.countrySelect.clearSelection": "Сбросить выбор",
 
   "component.productSelectTable.filter.placeholder": "Поиск товаров",
+
+  "component.productCatalog.search": "Название, артикул, категория...",
+  "component.productCatalog.searching": "Поиск...",
+  "component.productCatalog.in-stock": "В наличии: {{count}} шт.",
 
   "component.productTable.table.selectedProducts": "Выбранные товары ({{count}})",
   "component.productTable.table.images": "Изображения",

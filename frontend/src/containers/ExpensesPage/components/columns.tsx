@@ -6,6 +6,7 @@ import {
   ArrowUp,
   ChevronsUpDown,
   Copy,
+  FileText,
   Pencil,
   Trash,
 } from 'lucide-react'
@@ -19,6 +20,12 @@ import { useExpenseContext } from '../context'
 
 const sortIcons = { asc: ArrowUp, desc: ArrowDown }
 const columnHelper = createColumnHelper<ExpensePopulatedDTO>()
+
+function isImageFile(type: string, name: string) {
+  if (type.startsWith('image/'))
+    return true
+  return /\.(png|jpe?g|webp|gif)$/i.test(name)
+}
 
 export function useColumns() {
   const { t, language } = useLocale()
@@ -145,6 +152,53 @@ export function useColumns() {
           const currency = row.original.currency.symbols[language]
           return <Badge variant="destructive">{`-${amount} ${currency}`}</Badge>
         },
+      }),
+      columnHelper.accessor('files', {
+        id: 'files',
+        size: 120,
+        meta: {
+          title: t('page.expenses.table.files'),
+          defaultVisible: true,
+        },
+        header: () => t('page.expenses.table.files'),
+        cell: ({ row }) => {
+          const files = row.original.files ?? []
+          if (files.length === 0)
+            return <span className="text-muted-foreground">—</span>
+
+          return (
+            <div className="flex flex-wrap items-center gap-1.5">
+              {files.map((file) => {
+                const showImage = isImageFile(file.type, file.name)
+                return (
+                  <a
+                    key={file.id}
+                    href={file.path}
+                    target="_blank"
+                    rel="noreferrer"
+                    title={file.name}
+                    className="block shrink-0 overflow-hidden rounded border hover:opacity-80"
+                  >
+                    {showImage
+                      ? (
+                          <img
+                            src={file.path}
+                            alt={file.name}
+                            className="size-9 object-cover"
+                          />
+                        )
+                      : (
+                          <div className="flex size-9 items-center justify-center bg-muted/50 text-muted-foreground">
+                            <FileText className="size-4" />
+                          </div>
+                        )}
+                  </a>
+                )
+              })}
+            </div>
+          )
+        },
+        enableSorting: false,
       }),
       columnHelper.accessor('cashregister', {
         id: 'cashregister',

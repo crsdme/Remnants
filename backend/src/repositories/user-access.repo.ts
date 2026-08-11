@@ -6,14 +6,14 @@ import { HttpError } from '@/utils/httpError'
 
 function normalizeScopes(access?: Partial<UserAccessScopesDTO>): UserAccessScopesDTO {
   return {
-    warehouses: access?.warehouses ?? [],
-    sites: access?.sites ?? [],
-    expenseCategories: access?.expenseCategories ?? [],
-    cashregisters: access?.cashregisters ?? [],
-    cashregisterAccounts: access?.cashregisterAccounts ?? [],
-    deliveryServices: access?.deliveryServices ?? [],
-    orderSources: access?.orderSources ?? [],
-    orderStatuses: access?.orderStatuses ?? [],
+    warehouseIds: access?.warehouseIds ?? [],
+    siteIds: access?.siteIds ?? [],
+    expenseCategoryIds: access?.expenseCategoryIds ?? [],
+    cashregisterIds: access?.cashregisterIds ?? [],
+    cashregisterAccountIds: access?.cashregisterAccountIds ?? [],
+    deliveryServiceIds: access?.deliveryServiceIds ?? [],
+    orderSourceIds: access?.orderSourceIds ?? [],
+    orderStatusIds: access?.orderStatusIds ?? [],
   }
 }
 

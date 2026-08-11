@@ -87,10 +87,10 @@ export async function syncProductCreate(payload: SyncProductCreatePayload): Prom
   //   throw new HttpError(400, 'Site not found', 'SITE_NOT_FOUND')
   // }
 
-  // const syncEntry = await SyncEntryModel.findOne({ sourceType: 'product', sourceId: productId, site: siteId })
+  // const syncEntry = await SyncEntryModel.findOne({ sourceType: 'product', sourceId: productId, siteId })
 
   // if (!syncEntry) {
-  //   await SyncEntryModel.create({ sourceType: 'product', sourceId: productId, site: siteId, status: 'pending' })
+  //   await SyncEntryModel.create({ sourceType: 'product', sourceId: productId, siteId, status: 'pending' })
   // }
 
   // const { data: { items: [product] } } = await ProductService.get({
@@ -239,7 +239,7 @@ export async function syncProductCreate(payload: SyncProductCreatePayload): Prom
   // try {
   //   const response = await axios.post(apiUrl, syncProduct, { headers: { 'Content-Type': 'application/json' } })
 
-  //   await SyncEntryModel.updateOne({ sourceType: 'product', sourceId: productId, site: siteId }, {
+  //   await SyncEntryModel.updateOne({ sourceType: 'product', sourceId: productId, siteId }, {
   //     status: 'synced',
   //     syncedAt: new Date(),
   //     externalId: response.data.product_id,
@@ -247,7 +247,7 @@ export async function syncProductCreate(payload: SyncProductCreatePayload): Prom
   //   })
   // }
   // catch (error) {
-  //   await SyncEntryModel.updateOne({ sourceType: 'product', sourceId: product.id, site: siteId }, {
+  //   await SyncEntryModel.updateOne({ sourceType: 'product', sourceId: product.id, siteId }, {
   //     status: 'error',
   //     lastError: (error || '').toString(),
   //   })
@@ -272,7 +272,7 @@ export async function syncProductEdit(payload: SyncProductEditPayload): Promise<
   // if (!site)
   //   throw new HttpError(400, 'Site not found', 'SITE_NOT_FOUND')
 
-  // const syncEntry = await SyncEntryModel.findOne({ sourceType: 'product', sourceId: productId, site: siteId })
+  // const syncEntry = await SyncEntryModel.findOne({ sourceType: 'product', sourceId: productId, siteId })
 
   // if (!syncEntry) {
   //   throw new HttpError(400, 'Sync entry not found', 'SYNC_ENTRY_NOT_FOUND')
@@ -440,7 +440,7 @@ export async function syncProductEdit(payload: SyncProductEditPayload): Promise<
   // try {
   //   const response = await axios.post(apiUrl, syncProduct, { headers: { 'Content-Type': 'application/json' } })
 
-  //   await SyncEntryModel.updateOne({ sourceType: 'product', sourceId: productId, site: siteId }, {
+  //   await SyncEntryModel.updateOne({ sourceType: 'product', sourceId: productId, siteId }, {
   //     status: 'synced',
   //     syncedAt: new Date(),
   //     externalId: response.data.product_id,
@@ -448,7 +448,7 @@ export async function syncProductEdit(payload: SyncProductEditPayload): Promise<
   //   })
   // }
   // catch (error) {
-  //   await SyncEntryModel.updateOne({ sourceType: 'product', sourceId: product.id, site: siteId }, {
+  //   await SyncEntryModel.updateOne({ sourceType: 'product', sourceId: product.id, siteId }, {
   //     status: 'error',
   //     lastError: (error || '').toString(),
   //   })
@@ -470,12 +470,12 @@ export async function syncProductQuantity(payload: SyncProductQuantityPayload): 
   // if (!site)
   //   throw new HttpError(400, 'Site not found', 'SITE_NOT_FOUND')
 
-  // const syncEntry = await SyncEntryModel.findOne({ sourceType: 'product', sourceId: productId, site: siteId })
+  // const syncEntry = await SyncEntryModel.findOne({ sourceType: 'product', sourceId: productId, siteId })
 
   // if (!syncEntry)
   //   throw new HttpError(400, 'Sync entry not found', 'SYNC_ENTRY_NOT_FOUND')
 
-  // const quantities = await QuantityModel.find({ product: productId, warehouse: { $in: site.warehouses } })
+  // const quantities = await QuantityModel.find({ product: productId, warehouse: { $in: site.warehouseIds } })
 
   // if (quantities.length === 0)
   //   throw new HttpError(400, 'Quantity not found', 'QUANTITY_NOT_FOUND')
@@ -499,7 +499,7 @@ export async function syncProductQuantity(payload: SyncProductQuantityPayload): 
   // try {
   //   const response = await axios.post(apiUrl, syncProduct, { headers: { 'Content-Type': 'application/json' } })
 
-  //   await SyncEntryModel.updateOne({ sourceType: 'product', sourceId: productId, site: siteId }, {
+  //   await SyncEntryModel.updateOne({ sourceType: 'product', sourceId: productId, siteId }, {
   //     status: 'synced',
   //     syncedAt: new Date(),
   //     externalId: response.data.product_id,
@@ -507,7 +507,7 @@ export async function syncProductQuantity(payload: SyncProductQuantityPayload): 
   //   })
   // }
   // catch (error) {
-  //   await SyncEntryModel.updateOne({ sourceType: 'product', sourceId: productId, site: siteId }, {
+  //   await SyncEntryModel.updateOne({ sourceType: 'product', sourceId: productId, siteId }, {
   //     status: 'error',
   //     lastError: (error || '').toString(),
   //   })

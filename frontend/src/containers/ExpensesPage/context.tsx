@@ -1,6 +1,7 @@
-import type { ExpensePopulatedDTO } from '@remnant/shared'
-import type { ReactNode } from 'react'
+import type { CreateExpenseRequest, EditExpenseRequest, ExpensePopulatedDTO } from '@remnant/shared'
+import type { Dispatch, ReactNode, SetStateAction } from 'react'
 import type { Resolver, UseFormReturn } from 'react-hook-form'
+import type { UploadedFile } from '@/components/FileUploadDnd'
 
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useQueryClient } from '@tanstack/react-query'
@@ -22,6 +23,8 @@ interface ExpenseContextType {
   isLoading: boolean
   isEdit: boolean
   form: UseFormReturn<ExpenseFormValues>
+  files: UploadedFile[]
+  setFiles: Dispatch<SetStateAction<UploadedFile[]>>
   openModal: (expense?: ExpensePopulatedDTO) => void
   closeModal: () => void
   submitExpenseForm: (params: ExpenseFormValues) => void
@@ -37,6 +40,22 @@ export interface ExpenseFormValues {
   cashregisterAccount: string
   categories: string[]
   comment: string
+}
+
+function mapExpenseFiles(expense?: ExpensePopulatedDTO): UploadedFile[] {
+  if (!expense?.files)
+    return []
+
+  return expense.files.map(file => ({
+    id: file.id,
+    file: file.path,
+    preview: file.type.startsWith('image/') ? file.path : '',
+    name: file.name,
+    type: file.type,
+    path: file.path,
+    filename: file.filename,
+    isNew: false,
+  }))
 }
 
 function getExpenseFormValues(expense?: ExpensePopulatedDTO): ExpenseFormValues {
@@ -64,16 +83,17 @@ export function ExpenseProvider({ children }: { children: ReactNode }) {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [isEdit, setIsEdit] = useState(false)
   const [selectedExpense, setSelectedExpense] = useState<ExpensePopulatedDTO | null>(null)
+  const [files, setFiles] = useState<UploadedFile[]>([])
 
   const { t } = useLocale()
 
   const formSchema = useMemo(() =>
     z.object({
-      amount: z.number({ required_error: t('form.errors.required') }).min(0, { message: t('form.errors.min_value', { count: 0 }) }),
-      currency: z.string({ required_error: t('form.errors.required') }),
-      cashregister: z.string({ required_error: t('form.errors.required') }),
-      cashregisterAccount: z.string({ required_error: t('form.errors.required') }),
-      categories: z.array(z.string({ required_error: t('form.errors.required') })),
+      amount: z.number({ required_error: t('form.errors.required') }).gt(0, { message: t('form.errors.required') }),
+      currency: z.string({ required_error: t('form.errors.required') }).min(1, { message: t('form.errors.required') }),
+      cashregister: z.string({ required_error: t('form.errors.required') }).min(1, { message: t('form.errors.required') }),
+      cashregisterAccount: z.string({ required_error: t('form.errors.required') }).min(1, { message: t('form.errors.required') }),
+      categories: z.array(z.string()).min(1, { message: t('form.errors.required') }),
       comment: z.string().optional(),
     }), [t])
 
@@ -84,20 +104,23 @@ export function ExpenseProvider({ children }: { children: ReactNode }) {
 
   const queryClient = useQueryClient()
 
+  const openModal = (expense?: ExpensePopulatedDTO) => {
+    const nextFiles = mapExpenseFiles(expense)
+    setIsModalOpen(true)
+    setIsEdit(!!expense)
+    setSelectedExpense(expense ?? null)
+    setFiles(nextFiles)
+    form.reset(getExpenseFormValues(expense))
+  }
+
   const closeModal = () => {
     if (!isModalOpen)
       return
     setIsModalOpen(false)
     setIsEdit(false)
     setSelectedExpense(null)
-    form.reset()
-  }
-
-  const openModal = (expense?: ExpensePopulatedDTO) => {
-    setIsModalOpen(true)
-    setIsEdit(!!expense)
-    setSelectedExpense(expense ?? null)
-    form.reset(getExpenseFormValues(expense))
+    setFiles([])
+    form.reset(getExpenseFormValues())
   }
 
   const useMutateCreateExpense = useExpenseCreate({
@@ -150,10 +173,37 @@ export function ExpenseProvider({ children }: { children: ReactNode }) {
   }
 
   const submitExpenseForm = (params: ExpenseFormValues) => {
-    if (!selectedExpense)
-      return useMutateCreateExpense.mutate({ ...params, type: 'manual' })
+    const filesPayload = files.map(file => ({
+      id: file.id,
+      filename: file.filename ?? '',
+      name: file.name,
+      type: file.type,
+      path: file.path,
+      isNew: file.isNew,
+    }))
 
-    return useMutateEditExpense.mutate({ ...params, id: selectedExpense.id, type: 'manual' })
+    const payload = selectedExpense
+      ? { ...params, id: selectedExpense.id, type: 'manual', files: filesPayload }
+      : { ...params, type: 'manual', files: filesPayload }
+
+    const formData = new FormData()
+    for (const [key, value] of Object.entries(payload)) {
+      if (value === undefined)
+        continue
+      formData.append(key, JSON.stringify(value))
+    }
+
+    files
+      .filter((file): file is UploadedFile & { file: File } => file.isNew && typeof file.file !== 'string')
+      .forEach((file) => {
+        formData.append('uploadedFiles', file.file, file.name)
+        formData.append('uploadedFilesIds', file.id)
+      })
+
+    if (!selectedExpense)
+      return useMutateCreateExpense.mutate(formData as unknown as CreateExpenseRequest)
+
+    return useMutateEditExpense.mutate(formData as unknown as EditExpenseRequest)
   }
 
   const isLoading = useMutateCreateExpense.isPending || useMutateEditExpense.isPending || useMutateRemoveExpense.isPending
@@ -165,12 +215,14 @@ export function ExpenseProvider({ children }: { children: ReactNode }) {
       isLoading,
       isEdit,
       form,
+      files,
+      setFiles,
       openModal,
       closeModal,
       submitExpenseForm,
       removeExpense,
     }),
-    [selectedExpense, isModalOpen, isLoading, isEdit, form],
+    [selectedExpense, isModalOpen, isLoading, isEdit, form, files],
   )
 
   return <ExpenseContext.Provider value={value}>{children}</ExpenseContext.Provider>

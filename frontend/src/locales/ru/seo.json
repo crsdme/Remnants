@@ -65,6 +65,9 @@
   "title.page.order-statuses": "Статусы заказов - Remnant",
   "description.page.order-statuses": "Управление статусами заказов в Remnant",
 
+  "title.page.product-stock-statuses": "Статусы остатков - Remnant",
+  "description.page.product-stock-statuses": "Управление статусами остатков товаров в Remnant",
+
   "title.page.order-sources": "Источники заказов - Remnant",
   "description.page.order-sources": "Управление источниками заказов в Remnant",
 

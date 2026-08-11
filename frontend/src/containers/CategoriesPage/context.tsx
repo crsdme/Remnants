@@ -49,7 +49,7 @@ function getCategoryFormValues(category?: CategoryDTO): CategoryFormValues {
   return {
     names: { ...category.names },
     priority: category.priority,
-    parent: category.parent || undefined,
+    parent: category.parentId || undefined,
     active: category.active,
   }
 }
@@ -144,7 +144,7 @@ export function CategoryProvider({ children }: { children: ReactNode }) {
       return useMutateCreateCategory.mutate({
         names: params.names,
         priority: params.priority,
-        parent: params.parent,
+        parentId: params.parent,
         active: params.active,
       })
     }
@@ -153,7 +153,7 @@ export function CategoryProvider({ children }: { children: ReactNode }) {
       id: selectedCategory.id,
       names: params.names,
       priority: params.priority,
-      parent: params.parent,
+      parentId: params.parent,
       active: params.active,
     })
   }

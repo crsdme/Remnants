@@ -67,6 +67,22 @@ export async function list(payload: GetAuditLogsRepoPayload): Promise<GetAuditLo
           },
           {
             $lookup: {
+              from: 'barcodes',
+              localField: 'resourceId',
+              foreignField: '_id',
+              as: 'barcode',
+            },
+          },
+          {
+            $lookup: {
+              from: 'warehouse-transactions',
+              localField: 'resourceId',
+              foreignField: '_id',
+              as: 'warehouseTransaction',
+            },
+          },
+          {
+            $lookup: {
               from: 'users',
               localField: 'createdBy',
               foreignField: '_id',
@@ -80,13 +96,15 @@ export async function list(payload: GetAuditLogsRepoPayload): Promise<GetAuditLo
                   branches: [
                     { case: { $eq: ['$resourceType', 'product'] }, then: { $arrayElemAt: ['$product', 0] } },
                     { case: { $eq: ['$resourceType', 'order'] }, then: { $arrayElemAt: ['$order', 0] } },
+                    { case: { $eq: ['$resourceType', 'barcode'] }, then: { $arrayElemAt: ['$barcode', 0] } },
+                    { case: { $eq: ['$resourceType', 'warehouse-transaction'] }, then: { $arrayElemAt: ['$warehouseTransaction', 0] } },
                   ],
                   default: null,
                 },
               },
             },
           },
-          { $unset: ['product', 'order'] },
+          { $unset: ['product', 'order', 'barcode', 'warehouseTransaction'] },
           {
             $project: {
               _id: 0,
@@ -97,7 +115,21 @@ export async function list(payload: GetAuditLogsRepoPayload): Promise<GetAuditLo
               action: 1,
               changes: 1,
               comment: 1,
-              createdBy: 1,
+              createdBy: {
+                $cond: [
+                  { $gt: [{ $size: { $ifNull: ['$createdBy', []] } }, 0] },
+                  {
+                    $let: {
+                      vars: { user: { $arrayElemAt: ['$createdBy', 0] } },
+                      in: {
+                        id: { $toString: '$$user._id' },
+                        name: { $ifNull: ['$$user.name', ''] },
+                      },
+                    },
+                  },
+                  null,
+                ],
+              },
               createdAt: 1,
               updatedAt: 1,
             },

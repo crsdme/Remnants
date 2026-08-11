@@ -140,10 +140,22 @@ export function CashregisterAccountProvider({ children }: { children: ReactNode 
   }
 
   const submitCashregisterAccountForm = (params: CashregisterAccountFormValues) => {
-    if (selectedCashregisterAccount === undefined)
-      return useMutateCreateCashregisterAccount.mutate(params)
+    if (selectedCashregisterAccount === undefined) {
+      return useMutateCreateCashregisterAccount.mutate({
+        names: params.names,
+        currencyIds: params.currencies,
+        priority: params.priority,
+        active: params.active,
+      })
+    }
 
-    return useMutateEditCashregisterAccount.mutate({ ...params, id: selectedCashregisterAccount.id })
+    return useMutateEditCashregisterAccount.mutate({
+      id: selectedCashregisterAccount.id,
+      names: params.names,
+      currencyIds: params.currencies,
+      priority: params.priority,
+      active: params.active,
+    })
   }
 
   const isLoading = useMutateCreateCashregisterAccount.isPending || useMutateEditCashregisterAccount.isPending || useMutateRemoveCashregisterAccount.isPending

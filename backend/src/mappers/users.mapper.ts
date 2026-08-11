@@ -4,26 +4,26 @@ import type { UserAccessDB, UserDB } from '@/types'
 export function mapUserAccessToScopes(access?: UserAccessDB | null): UserAccessScopesDTO {
   if (access == null) {
     return {
-      warehouses: [],
-      sites: [],
-      expenseCategories: [],
-      cashregisters: [],
-      cashregisterAccounts: [],
-      deliveryServices: [],
-      orderSources: [],
-      orderStatuses: [],
+      warehouseIds: [],
+      siteIds: [],
+      expenseCategoryIds: [],
+      cashregisterIds: [],
+      cashregisterAccountIds: [],
+      deliveryServiceIds: [],
+      orderSourceIds: [],
+      orderStatusIds: [],
     }
   }
 
   return {
-    warehouses: access.warehouses ?? [],
-    sites: access.sites ?? [],
-    expenseCategories: access.expenseCategories ?? [],
-    cashregisters: access.cashregisters ?? [],
-    cashregisterAccounts: access.cashregisterAccounts ?? [],
-    deliveryServices: access.deliveryServices ?? [],
-    orderSources: access.orderSources ?? [],
-    orderStatuses: access.orderStatuses ?? [],
+    warehouseIds: access.warehouseIds ?? [],
+    siteIds: access.siteIds ?? [],
+    expenseCategoryIds: access.expenseCategoryIds ?? [],
+    cashregisterIds: access.cashregisterIds ?? [],
+    cashregisterAccountIds: access.cashregisterAccountIds ?? [],
+    deliveryServiceIds: access.deliveryServiceIds ?? [],
+    orderSourceIds: access.orderSourceIds ?? [],
+    orderStatusIds: access.orderStatusIds ?? [],
   }
 }
 
@@ -34,7 +34,7 @@ export function mapUserToDTO(user: UserDB, access?: UserAccessDB | null): UserDT
     login: user.login,
     name: user.name,
     password: user.password,
-    role: user.role,
+    roleId: user.roleId,
     active: user.active,
     access: mapUserAccessToScopes(access),
     createdAt: user.createdAt,

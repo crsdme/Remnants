@@ -1,5 +1,6 @@
 import type { ProductPopulatedDTO } from '@remnant/shared'
 import type { ProductDBPopulated } from '@/types/'
+import path from 'node:path'
 import { STORAGE_URLS } from '@/config'
 import { fromMinor } from '@/utils/money'
 
@@ -35,7 +36,7 @@ export function mapProductPopulatedRepoToDTO(product: ProductDBPopulated): Produ
         }
       : {}),
     images: images.map(image => ({
-      id: image.filename,
+      id: path.parse(image.filename).name,
       path: `${STORAGE_URLS.productImages}/${image.filename}`,
       filename: image.filename,
       name: image.name,

@@ -52,7 +52,7 @@ const ProductSchema: Schema = new Schema(
       ref: 'Currency',
       required: true,
     },
-    categoriesIds: [{
+    categoryIds: [{
       type: String,
       ref: 'Category',
     }],
@@ -98,7 +98,7 @@ const ProductSchema: Schema = new Schema(
       type: String,
       ref: 'Quantity',
     }],
-    barcodesIds: [{
+    barcodeIds: [{
       type: String,
       ref: 'Barcode',
     }],
@@ -148,9 +148,15 @@ ProductSchema.pre('save', async function (this: ProductDoc, next) {
   next()
 })
 
+ProductSchema.index({ removed: 1, seq: 1 })
 ProductSchema.index({ names: 1 })
 ProductSchema.index({ minorPrice: 1 })
 ProductSchema.index({ minorPurchasePrice: 1 })
-ProductSchema.index({ removed: 1 })
+ProductSchema.index({ categoryIds: 1 })
+ProductSchema.index({ barcodeIds: 1 })
+ProductSchema.index({ currencyId: 1 })
+ProductSchema.index({ unitId: 1 })
+ProductSchema.index({ productPropertiesGroupId: 1 })
+ProductSchema.index({ createdAt: -1 })
 
 export const ProductModel = mongoose.model<ProductDoc>('Product', ProductSchema)

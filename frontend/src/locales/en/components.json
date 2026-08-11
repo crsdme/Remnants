@@ -124,6 +124,7 @@
   "component.sidemenu.label.auditLogs": "Audit Logs",
   "component.sidemenu.label.sources": "Sources",
   "component.sidemenu.label.orderStatuses": "Order Statuses",
+  "component.sidemenu.label.productStockStatuses": "Product Stock Statuses",
   "component.sidemenu.label.automations": "Automations",
   "component.sidemenu.label.orderSources": "Order Sources",
   "component.sidemenu.label.deliveryServices": "Delivery Services",
@@ -136,8 +137,24 @@
   "component.sidemenu.label.expenseCategories": "Expense Categories",
   "component.sidemenu.label.sites": "Sites",
 
+  "component.commandMenu.search": "Search",
+  "component.commandMenu.title": "Command menu",
+  "component.commandMenu.description": "Search pages and actions",
+  "component.commandMenu.placeholder": "Type a command or search...",
+  "component.commandMenu.empty": "No results found",
+  "component.commandMenu.navigation": "Navigation",
+  "component.commandMenu.actions": "Actions",
+  "component.commandMenu.action.createOrder": "Create order",
+  "component.commandMenu.action.createProcurement": "Create procurement",
+  "component.commandMenu.action.createInventory": "Create inventory",
+  "component.commandMenu.action.createWarehouseTransaction": "Create warehouse transaction",
+  "component.commandMenu.action.createBarcode": "Create barcode",
+
   "component.fileUploadDnd.upload": "Upload file",
   "component.fileUploadDnd.noFilesUploaded": "No files uploaded",
+  "component.fileUploadDnd.dropOrSelect": "Drag files or",
+  "component.fileUploadDnd.select": "select",
+  "component.fileUploadDnd.hint": "PNG, JPG, WEBP, PDF, TXT, XLS, CSV • up to {{size}} MB",
 
   "component.countrySelect.placeholder": "Select country",
   "component.countrySelect.searchPlaceholder": "Search country",
@@ -145,6 +162,10 @@
   "component.countrySelect.clearSelection": "Clear selection",
 
   "component.productSelectTable.filter.placeholder": "Search products",
+
+  "component.productCatalog.search": "Name, SKU, category...",
+  "component.productCatalog.searching": "Searching...",
+  "component.productCatalog.in-stock": "In stock: {{count}} pcs",
 
   "component.productTable.table.selectedProducts": "Selected Products ({{count}})",
   "component.productTable.table.images": "Images",

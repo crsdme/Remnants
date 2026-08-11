@@ -52,5 +52,6 @@ SettingSchema.set('toJSON', {
 })
 
 SettingSchema.index({ key: 1 })
+SettingSchema.index({ scope: 1, key: 1 })
 
 export const SettingModel = mongoose.model<SettingDoc>('Setting', SettingSchema)

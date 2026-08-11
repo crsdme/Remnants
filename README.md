@@ -15,6 +15,4 @@ BACKEND NAMES OF FUNCTION/TYPES
 PLURAL
 
 #TODO BACK
-- {} to all repos
-- check all naming and fix it
 - plan how to use sessins in mongodb

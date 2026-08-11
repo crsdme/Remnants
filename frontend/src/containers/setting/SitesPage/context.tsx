@@ -184,6 +184,6 @@ function getSiteFormValues(site?: SiteDTO): SiteFormValues {
     key: site.key,
     priority: site.priority,
     active: site.active,
-    warehouses: [...site.warehouses],
+    warehouses: [...site.warehouseIds],
   }
 }

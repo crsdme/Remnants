@@ -6,15 +6,18 @@ import {
   ArrowUp,
   ChevronsUpDown,
   Copy,
+  ExternalLink,
   Eye,
 } from 'lucide-react'
 import { useMemo } from 'react'
+import { Link } from 'react-router-dom'
 
-import { TableActionDropdown } from '@/components'
+import { AuditChangesList, TableActionDropdown } from '@/components'
 import { Badge, Button } from '@/components/ui'
 import { formatDate } from '@/utils/helpers'
 import { useLocale } from '@/utils/hooks'
 import { useAuditLogsContext } from '../context'
+import { getAuditLogEntityPath } from '../utils'
 
 const sortIcons = { asc: ArrowUp, desc: ArrowDown }
 const columnHelper = createColumnHelper<AuditLogPopulatedDTO>()
@@ -51,6 +54,7 @@ export function useColumns() {
         enableHiding: false,
         cell: ({ row }) => {
           const item = row.original
+          const entityPath = getAuditLogEntityPath(item)
 
           const actions = [
             {
@@ -65,6 +69,15 @@ export function useColumns() {
               label: t('table.view'),
               icon: <Eye className="h-4 w-4" />,
             },
+            ...(entityPath
+              ? [{
+                  permission: 'audit-log.view',
+                  type: 'link' as const,
+                  link: entityPath,
+                  label: t('page.audit-logs.table.openEntity'),
+                  icon: <ExternalLink className="h-4 w-4" />,
+                }]
+              : []),
           ]
 
           return <TableActionDropdown actions={actions} />
@@ -73,37 +86,17 @@ export function useColumns() {
     }
 
     return [
-      columnHelper.display({
-        id: 'resourseInfo',
-        meta: {
-          title: t('page.audit-logs.table.resourceInfo'),
-        },
-        header: () => t('page.audit-logs.table.resourceInfo'),
-        cell: ({ row }) => {
-          const resource = row.original.resource as Record<string, any>
-
-          switch (row.original.resourceType) {
-            case 'product':
-              return (
-                <div className="flex items-center gap-2">
-                  <Badge variant="outline">{`#${resource.seq}`}</Badge>
-                  <Badge variant="outline">{resource.names?.[language]}</Badge>
-                </div>
-              )
-            case 'order':
-              return <p>{`${resource.seq} ${resource.client.name} ${resource.client.lastName} ${resource.client.middleName}`}</p>
-            default:
-              return <p>{resource.name}</p>
-          }
-        },
-      }),
       columnHelper.accessor('resourceType', {
         id: 'resourceType',
         meta: {
           title: t('page.audit-logs.table.resourceType'),
         },
         header: () => t('page.audit-logs.table.resourceType'),
-        cell: ({ row }) => <Badge variant="outline">{t(`page.audit-logs.table.resourceType.${row.original.resourceType}`)}</Badge>,
+        cell: ({ row }) => (
+          <Badge variant="outline">
+            {t(`page.audit-logs.table.resourceType.${row.original.resourceType}`)}
+          </Badge>
+        ),
       }),
       columnHelper.accessor('action', {
         id: 'action',
@@ -111,7 +104,45 @@ export function useColumns() {
           title: t('page.audit-logs.table.action'),
         },
         header: () => t('page.audit-logs.table.action'),
-        cell: ({ row }) => <Badge variant="outline">{t(`page.audit-logs.table.action.${row.original.action}`)}</Badge>,
+        cell: ({ row }) => (
+          <Badge variant="outline">
+            {t(`page.audit-logs.table.action.${row.original.action}`)}
+          </Badge>
+        ),
+      }),
+      columnHelper.display({
+        id: 'changes',
+        meta: {
+          title: t('page.audit-logs.table.changes'),
+        },
+        header: () => t('page.audit-logs.table.changes'),
+        cell: ({ row }) => (
+          <div className="max-h-36 max-w-xl overflow-auto py-1">
+            <AuditChangesList changes={row.original.changes} />
+          </div>
+        ),
+      }),
+      columnHelper.display({
+        id: 'entity',
+        size: 120,
+        meta: {
+          title: t('page.audit-logs.table.openEntity'),
+        },
+        header: () => t('page.audit-logs.table.openEntity'),
+        cell: ({ row }) => {
+          const path = getAuditLogEntityPath(row.original)
+          if (!path)
+            return null
+
+          return (
+            <Button size="sm" variant="outline" asChild>
+              <Link to={path}>
+                <ExternalLink className="mr-1.5 h-3.5 w-3.5" />
+                {t('page.audit-logs.table.openEntity')}
+              </Link>
+            </Button>
+          )
+        },
       }),
       columnHelper.accessor('createdAt', {
         id: 'createdAt',
@@ -123,17 +154,6 @@ export function useColumns() {
         },
         header: ({ column }) => sortHeader(column, t('table.createdAt')),
         cell: ({ row }) => formatDate(row.getValue('createdAt'), 'dd.MM.yyyy HH:mm', language),
-      }),
-      columnHelper.accessor('updatedAt', {
-        id: 'updatedAt',
-        meta: {
-          title: t('table.updatedAt'),
-          filterable: true,
-          filterType: 'date',
-          sortable: true,
-        },
-        header: ({ column }) => sortHeader(column, t('table.updatedAt')),
-        cell: ({ row }) => formatDate(row.getValue('updatedAt'), 'dd.MM.yyyy HH:mm', language),
       }),
       actionColumn(),
     ]

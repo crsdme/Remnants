@@ -15,8 +15,10 @@ export function CreateInventoryPage() {
         <meta name="description" content={t('description.page.create-inventory')} />
       </Helmet>
       <CreateInventoryProvider>
-        <ActionBar />
-        <CreateInventoryForm />
+        <div className="space-y-4">
+          <ActionBar />
+          <CreateInventoryForm />
+        </div>
       </CreateInventoryProvider>
     </>
   )

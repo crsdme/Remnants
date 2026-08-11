@@ -1,14 +1,14 @@
 export interface UserAccessDB {
   _id: string
   userId: string
-  warehouses: string[]
-  sites: string[]
-  expenseCategories: string[]
-  cashregisters: string[]
-  cashregisterAccounts: string[]
-  deliveryServices: string[]
-  orderSources: string[]
-  orderStatuses: string[]
+  warehouseIds: string[]
+  siteIds: string[]
+  expenseCategoryIds: string[]
+  cashregisterIds: string[]
+  cashregisterAccountIds: string[]
+  deliveryServiceIds: string[]
+  orderSourceIds: string[]
+  orderStatusIds: string[]
   createdAt: Date
   updatedAt: Date
 }

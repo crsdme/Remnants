@@ -29,7 +29,7 @@ describe('API', () => {
         priority: 1,
         active: true,
         color: '#000000',
-        productProperty: productPropertyResponseParsed.data.id,
+        productPropertyId: productPropertyResponseParsed.data.id,
       })
       const productPropertyOptionResponseParsed = parseResponse(createProductPropertyOptionResponseSchema, productPropertyOptionResponse)
 
@@ -48,7 +48,7 @@ describe('API', () => {
         priority: 1,
         active: true,
         color: '#000000',
-        productProperty: productPropertyResponseParsed.data.id,
+        productPropertyId: productPropertyResponseParsed.data.id,
       })
     })
   })

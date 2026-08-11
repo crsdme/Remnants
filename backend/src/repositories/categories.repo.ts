@@ -50,20 +50,20 @@ export async function list(payload: GetCategoriesRepoPayload): Promise<GetCatego
     names,
     language,
     active,
-    parent,
+    parentId,
     priority,
     createdAt,
     updatedAt,
   } = payload.filters
 
   const query = buildQuery({
-    filters: { _id: ids, names, active, priority, createdAt, updatedAt, parent },
+    filters: { _id: ids, names, active, priority, createdAt, updatedAt, parentId },
     rules: {
       _id: { type: 'array' },
       names: { type: 'string', langAware: true },
       active: { type: 'array' },
       priority: { type: 'exact' },
-      parent: { type: 'exact' },
+      parentId: { type: 'exact' },
       createdAt: { type: 'dateRange' },
       updatedAt: { type: 'dateRange' },
     },
@@ -86,7 +86,7 @@ export async function list(payload: GetCategoriesRepoPayload): Promise<GetCatego
         seq: 1,
         names: 1,
         priority: 1,
-        parent: 1,
+        parentId: 1,
         active: 1,
         createdAt: 1,
         updatedAt: 1,

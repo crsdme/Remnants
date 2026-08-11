@@ -1,0 +1,50 @@
+---
+description: Remnants — деньги (minor), i18n, permissions, чеклист новой сущности.
+alwaysApply: true
+---
+
+# Домен и фронт
+
+## Деньги — только minor
+
+Суммы в **минорных единицах** (копейки/центы), целое число / `Minor`, не float.
+
+- Поля: `minorPrice`, `minorAmount`, `minorPurchasePrice`, …
+- Схемы: `minorSchema` / `toMinorType` из `@remnant/shared`.
+- Валюта всегда через `currencyId` (UUID-строка), не код в поле суммы.
+
+```ts
+// ✅ minorPrice: 1999, currencyId: '…-uuid-…'
+// ❌ price: 19.99
+```
+
+## Локализация сущностей
+
+Мультиязычные названия — объект/Map по языкам (`names`, `LanguageString`), не одно поле `name`.
+
+- Схема: `languageStringSchema` (`ru` / `en`, …).
+- В Mongoose часто `Map` of `String` с проверкой `SUPPORTED_LANGUAGES`.
+
+## UI-строки (frontend)
+
+Новый текст интерфейса — ключи сразу в **`locales/en`** и **`locales/ru`**. Не хардкодить пользовательские строки в JSX.
+
+## Права доступа
+
+- Бэк: `checkPermissions('entity.action')` в роуте  
+  (пример: `product-stock-status.create`, `order.edit`).
+- Фронт: `PermissionGate` / `usePermission` с теми же строками прав.
+- Новое действие CRUD — добавить permission на бэке и обернуть UI на фронте.
+
+## Чеклист новой сущности
+
+1. `packages/shared` — request/response/DTO Zod + экспорт.
+2. Backend: `models` → `schemas` (DB) → `types` → `mappers` → `repositories` → `services` → `controllers` → `routes/api` + регистрация в `routes/api/index`.
+3. Permissions в роуте; UUID `_id`, без ObjectId.
+4. Тест: factory + `test/routes/<entity>.test.ts`.
+5. Frontend: `api/requests` + `api/hooks/<entity>` + `containers/…` + route в `App.tsx`.
+6. Locales `en`/`ru`; `PermissionGate` на кнопках create/edit/remove.
+
+## Не коммитить
+
+`.env`, секреты, `logs/`, `node_modules/`, `.tsbuildinfo`, артефакты сборки.

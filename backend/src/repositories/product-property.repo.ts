@@ -20,7 +20,7 @@ export async function list(payload: GetProductPropertiesRepoPayload): Promise<{ 
     names,
     language,
     symbols,
-    options,
+    optionIds,
     type,
     priority,
     active,
@@ -30,13 +30,13 @@ export async function list(payload: GetProductPropertiesRepoPayload): Promise<{ 
   } = payload.filters
 
   const query = buildQuery({
-    filters: { _id: ids, names, symbols, options, type, priority, active, showInTable, showInStatistics, createdAt },
+    filters: { _id: ids, names, symbols, optionIds, type, priority, active, showInTable, showInStatistics, createdAt },
     rules: {
       _id: { type: 'array' },
       names: { type: 'string', langAware: true },
       symbols: { type: 'string', langAware: true },
       active: { type: 'array' },
-      options: { type: 'array' },
+      optionIds: { type: 'array' },
       type: { type: 'exact' },
       priority: { type: 'exact' },
       showInTable: { type: 'exact' },
@@ -62,7 +62,7 @@ export async function list(payload: GetProductPropertiesRepoPayload): Promise<{ 
         seq: 1,
         names: 1,
         symbols: 1,
-        options: 1,
+        optionIds: 1,
         type: 1,
         isRequired: 1,
         showInTable: 1,

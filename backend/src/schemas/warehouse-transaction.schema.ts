@@ -6,35 +6,37 @@ export const warehouseTransactionDBSchema = z.object({
   _id: idSchema,
   seq: numberFromStringSchema,
   type: z.string(),
-  fromWarehouse: idSchema,
-  toWarehouse: idSchema,
-  requiresReceiving: z.boolean(),
+  fromWarehouseId: idSchemaOptional,
+  toWarehouseId: idSchemaOptional,
+  requiresReceiving: z.boolean().optional().default(true),
   status: z.string(),
-  accepted: z.boolean(),
-  acceptedBy: idSchema,
-  createdBy: idSchema,
-  removedBy: idSchema,
-  comment: z.string(),
-  removedAt: z.coerce.date(),
+  accepted: z.boolean().optional().default(false),
+  acceptedBy: idSchemaOptional,
+  createdBy: idSchemaOptional,
+  removedBy: idSchemaOptional,
+  comment: z.string().optional().default(''),
+  removedAt: z.coerce.date().optional().nullable(),
   removed: z.boolean().default(false),
-  acceptedAt: z.coerce.date(),
+  acceptedAt: z.coerce.date().optional().nullable(),
   createdAt: z.coerce.date(),
   updatedAt: z.coerce.date(),
 })
 
 export const WarehouseTransactionDBPopulatedSchema = warehouseTransactionDBSchema.omit({
-  fromWarehouse: true,
-  toWarehouse: true,
+  _id: true,
+  fromWarehouseId: true,
+  toWarehouseId: true,
   removed: true,
 }).extend({
+  id: idSchema,
   fromWarehouse: z.object({
     id: idSchema,
     names: languageStringSchema,
-  }),
+  }).optional(),
   toWarehouse: z.object({
     id: idSchema,
     names: languageStringSchema,
-  }),
+  }).optional(),
 })
 
 export const warehouseTransactionItemDBSchema = z.object({

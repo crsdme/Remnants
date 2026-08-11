@@ -192,7 +192,7 @@ export function useColumns({ isLoading, addProduct, filters }: { isLoading: bool
         },
         header: ({ column }) => sortHeader(column, t('component.productTable.table.quantity')),
         cell: ({ row }) => {
-          const quantity = row.original.warehouseStock.find((q: any) => q.warehouse === '622b4c21-4937-4afe-b9df-d63b250c4555')
+          const quantity = row.original.warehouseStock.find((q: any) => q.warehouseId === '622b4c21-4937-4afe-b9df-d63b250c4555')
           const unit = row.original.unit.symbols[language]
 
           return quantity ? `${quantity.count} ${unit}` : `0 ${unit}`

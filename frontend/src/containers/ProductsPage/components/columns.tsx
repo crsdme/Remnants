@@ -300,9 +300,35 @@ export function useColumns({ filters }: { filters: { selectedWarehouse: string }
         },
         header: ({ column }) => sortHeader(column, t('page.products.table.quantity')),
         cell: ({ row }) => {
-          const quantity = row.original.warehouseStock.find(q => q.warehouse === filters.selectedWarehouse)
+          const quantity = row.original.warehouseStock.find(q => q.warehouseId === filters.selectedWarehouse)
           const unit = row.original.unit.symbols[language] ?? ''
           return quantity ? `${quantity.count} ${unit}` : `0 ${unit}`
+        },
+      }),
+      columnHelper.display({
+        id: 'stockStatus',
+        size: 150,
+        meta: {
+          title: t('page.products.table.stockStatus'),
+          defaultVisible: true,
+        },
+        header: t('page.products.table.stockStatus'),
+        cell: ({ row }) => {
+          const stockStatus = row.original.warehouseStock.find(q => q.warehouseId === filters.selectedWarehouse)?.stockStatus
+          if (!stockStatus)
+            return <span className="text-muted-foreground">—</span>
+
+          return (
+            <Badge
+              variant="outline"
+              style={{
+                borderColor: stockStatus.color,
+                color: stockStatus.color,
+              }}
+            >
+              {stockStatus.names[language] || stockStatus.names.en}
+            </Badge>
+          )
         },
       }),
       columnHelper.accessor(row => `${row.unit.names[language] ?? ''}`, {

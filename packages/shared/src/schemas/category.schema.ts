@@ -6,7 +6,7 @@ export const categorySchema = z.object({
   seq: z.number(),
   names: languageStringSchema,
   priority: numberFromStringSchema,
-  parent: idSchemaOptional,
+  parentId: idSchemaOptional,
   active: z.boolean().optional().default(true),
   createdAt: z.coerce.date(),
   updatedAt: z.coerce.date(),
@@ -20,7 +20,7 @@ export const getCategoriesSchema = z.object({
     names: z.string().trim().optional(),
     language: z.string().default('en'),
     priority: numberFromStringSchema.optional(),
-    parent: idSchemaOptional,
+    parentId: idSchemaOptional,
     createdAt: dateRangeSchema.optional(),
     updatedAt: dateRangeSchema.optional(),
     active: booleanArraySchema.optional(),
@@ -29,7 +29,7 @@ export const getCategoriesSchema = z.object({
     names: sorterParamsSchema.optional(),
     active: sorterParamsSchema.optional(),
     priority: sorterParamsSchema.optional(),
-    parent: sorterParamsSchema.optional(),
+    parentId: sorterParamsSchema.optional(),
     updatedAt: sorterParamsSchema.optional(),
     createdAt: sorterParamsSchema.optional(),
   }).optional(),
@@ -42,7 +42,7 @@ export type GetCategoriesRequest = z.input<typeof getCategoriesSchema>
 export const createCategorySchema = z.object({
   names: languageStringSchema,
   priority: z.number().optional().default(0),
-  parent: idSchemaOptional,
+  parentId: idSchemaOptional,
   active: z.boolean().optional().default(true),
 })
 
@@ -52,7 +52,7 @@ export const editCategorySchema = z.object({
   id: idSchema,
   names: languageStringSchema,
   priority: z.number().optional().default(0),
-  parent: idSchemaOptional,
+  parentId: idSchemaOptional,
   active: z.boolean().optional().default(true),
 })
 

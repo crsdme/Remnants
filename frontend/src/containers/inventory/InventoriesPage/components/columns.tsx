@@ -8,6 +8,8 @@ import {
   ChevronsUpDown,
   Copy,
   Eye,
+  FileSpreadsheet,
+  Pencil,
   Trash,
 } from 'lucide-react'
 
@@ -27,7 +29,7 @@ const columnHelper = createColumnHelper<InventoryTableRow>()
 
 export function useColumns() {
   const { t, language } = useLocale()
-  const { isLoading, removeInventory } = useInventoryContext()
+  const { isLoading, removeInventory, exportInventoryExcel } = useInventoryContext()
   const navigate = useNavigate()
 
   const columns = useMemo(() => {
@@ -61,20 +63,34 @@ export function useColumns() {
 
           const actions = [
             {
-              permission: 'inventory.copy',
+              permission: 'inventory.read',
               onClick: async () => navigator.clipboard.writeText(item.id),
               label: t('table.copy'),
               icon: <Copy className="h-4 w-4" />,
             },
             {
-              permission: 'inventory.view',
+              permission: 'inventory.read',
               onClick: async () => navigate(`/inventories/view/${item.seq}`),
               label: t('table.view'),
               icon: <Eye className="h-4 w-4" />,
             },
-            ...(item.status !== 'cancelled'
+            {
+              permission: 'inventory.read',
+              onClick: async () => exportInventoryExcel({ id: item.id, seq: item.seq }),
+              label: t('page.inventories.table.exportExcel'),
+              icon: <FileSpreadsheet className="h-4 w-4" />,
+            },
+            ...(item.status === 'draft'
               ? [{
-                  permission: 'inventory.delete',
+                  permission: 'inventory.edit',
+                  onClick: async () => navigate(`/inventories/edit/${item.seq}`),
+                  label: t('page.inventories.table.continue'),
+                  icon: <Pencil className="h-4 w-4" />,
+                }]
+              : []),
+            ...(item.status === 'draft'
+              ? [{
+                  permission: 'inventory.remove',
                   onClick: () => removeInventory({ ids: [item.id] }),
                   label: t('table.delete'),
                   icon: <Trash className="h-4 w-4" />,
@@ -148,8 +164,6 @@ export function useColumns() {
             draft: 'default',
             confirmed: 'success',
             cancelled: 'destructive',
-            received: 'success',
-            awaiting: 'warning',
           } as const
           const status = row.original.status
           return (
@@ -190,7 +204,7 @@ export function useColumns() {
       }),
       actionColumn(),
     ]
-  }, [isLoading, language, navigate, removeInventory, t])
+  }, [exportInventoryExcel, isLoading, language, navigate, removeInventory, t])
 
   return columns
 }

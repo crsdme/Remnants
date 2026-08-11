@@ -1,324 +1,496 @@
 import type {
   AuthUser,
-  // CurrencyDTO,
-  // ExpenseCategoryDTO,
-  // ExpenseDTO,
-  GetOrderStatisticRequest,
+  GetOrderStatisticPayload,
   GetStatisticResponse,
-  // OrderItemDTO,
-  // OrderPaymentDTO,
+  LanguageString,
+  OrderDTOPopulated,
+  OrderItemDTOPopulated,
+  OrderPaymentDTOPopulated,
+  StatisticMoneyDTO,
+  StatisticsDTO,
 } from '@remnant/shared'
+import { toMinorType } from '@remnant/shared'
 import * as ExpenseService from '@/services/expense.service'
 import * as OrderPaymentService from '@/services/order-payment.service'
 import * as OrderService from '@/services/order.service'
-// import * as UserService from '@/services/user.service'
+import * as OrderStatusService from '@/services/order-status.service'
+import * as UserService from '@/services/user.service'
 import {
   parseGetExpenses,
   parseGetOrderItems,
   parseGetOrderPayments,
+  parseGetOrderStatuses,
   parseGetOrders,
 } from '@/types'
+import { fromMinor, toMinor } from '@/utils/money'
 
-export async function get({ payload, user }: { payload: GetOrderStatisticRequest, user: AuthUser }): Promise<GetStatisticResponse> {
-  const { date } = payload.filters || {}
+type CurrencySnippet = StatisticMoneyDTO['currency']
 
-  // const hasProfitPermission = await UserService.checkPermission('order.profit', user.id)
+interface MoneyBucket {
+  currency: CurrencySnippet
+  minor: number
+}
 
-  const { data: { items: orders } } = await OrderService.get({
-    payload: parseGetOrders({ filters: { createdAt: date, removed: false }, pagination: { full: true } }),
-    user,
-  })
+type MoneyMap = Record<string, MoneyBucket>
 
+function toCurrencySnippet(currency: {
+  id: string
+  names: LanguageString
+  symbols: LanguageString
+  scale: number
+}): CurrencySnippet {
+  return {
+    id: currency.id,
+    names: currency.names,
+    symbols: currency.symbols,
+    scale: currency.scale,
+  }
+}
+
+function addMajor(map: MoneyMap, currency: CurrencySnippet, majorAmount: number) {
+  if (!currency?.id || !Number.isFinite(majorAmount) || majorAmount === 0)
+    return
+
+  const minorDelta = toMinor(majorAmount, currency.scale)
+  const existing = map[currency.id]
+  if (!existing) {
+    map[currency.id] = { currency: toCurrencySnippet(currency), minor: minorDelta }
+    return
+  }
+  existing.minor += minorDelta
+}
+
+function mapToMoneyArray(map: MoneyMap): StatisticMoneyDTO[] {
+  return Object.values(map)
+    .filter(row => row.minor !== 0)
+    .map(row => ({
+      currency: row.currency,
+      total: Number.parseFloat(fromMinor(toMinorType(row.minor), row.currency.scale)),
+    }))
+    .sort((a, b) => a.currency.id.localeCompare(b.currency.id))
+}
+
+function diffMoneyMaps(income: MoneyMap, expense: MoneyMap): MoneyMap {
+  const result: MoneyMap = {}
+  for (const [id, row] of Object.entries(income)) {
+    result[id] = { currency: row.currency, minor: row.minor }
+  }
+  for (const [id, row] of Object.entries(expense)) {
+    if (!result[id]) {
+      result[id] = { currency: row.currency, minor: -row.minor }
+    }
+    else {
+      result[id].minor -= row.minor
+    }
+  }
+  return result
+}
+
+function dayKey(date: Date | string): string {
+  const d = date instanceof Date ? date : new Date(date)
+  const y = d.getFullYear()
+  const m = String(d.getMonth() + 1).padStart(2, '0')
+  const day = String(d.getDate()).padStart(2, '0')
+  return `${y}-${m}-${day}`
+}
+
+function eachDayKeys(from?: Date, to?: Date): string[] {
+  if (!from || !to)
+    return []
+
+  const keys: string[] = []
+  const cursor = new Date(from)
+  cursor.setHours(0, 0, 0, 0)
+  const end = new Date(to)
+  end.setHours(0, 0, 0, 0)
+
+  // Cap series length to avoid huge responses
+  const maxDays = 366
+  let guard = 0
+  while (cursor <= end && guard < maxDays) {
+    keys.push(dayKey(cursor))
+    cursor.setDate(cursor.getDate() + 1)
+    guard += 1
+  }
+  return keys
+}
+
+function matchesCashFilters(
+  payment: { cashregister?: { id: string }, cashregisterAccount?: { id: string } },
+  cashregisterIds: string[],
+  cashregisterAccountIds: string[],
+) {
+  if (cashregisterIds.length > 0 && !cashregisterIds.includes(payment.cashregister?.id ?? ''))
+    return false
+  if (cashregisterAccountIds.length > 0 && !cashregisterAccountIds.includes(payment.cashregisterAccount?.id ?? ''))
+    return false
+  return true
+}
+
+function isPaidStatus(status: OrderDTOPopulated['orderPaymentStatus']) {
+  return status === 'paid' || status === 'overpaid'
+}
+
+function isCountedInStatistics(includeInStatistics: boolean | undefined) {
+  return includeInStatistics !== false
+}
+
+export async function get({
+  payload,
+  user,
+}: {
+  payload: GetOrderStatisticPayload
+  user: AuthUser
+}): Promise<GetStatisticResponse> {
+  const { date, cashregister = [], cashregisterAccount = [] } = payload.filters || {}
+  const hasProfitPermission = await UserService.checkPermission('order.profit', user.id)
+
+  const [
+    { data: { items: statuses } },
+    { data: { items: ordersRaw } },
+    { data: { items: paymentsByDateRaw } },
+    { data: { items: expensesRaw } },
+  ] = await Promise.all([
+    OrderStatusService.get({
+      payload: parseGetOrderStatuses({ pagination: { full: true } }),
+      user,
+    }),
+    OrderService.get({
+      payload: parseGetOrders({ filters: { createdAt: date, removed: false }, pagination: { full: true } }),
+      user,
+    }),
+    OrderPaymentService.get({
+      payload: parseGetOrderPayments({ filters: { paymentDate: date }, pagination: { full: true } }),
+    }),
+    ExpenseService.get({
+      payload: parseGetExpenses({ filters: { createdAt: date }, pagination: { full: true } }),
+      user,
+    }),
+  ])
+
+  const countedStatusIds = new Set(
+    statuses
+      .filter(status => isCountedInStatistics(status.includeInStatistics))
+      .map(status => status.id),
+  )
+
+  const orders = ordersRaw.filter(order => countedStatusIds.has(order.orderStatus.id))
   const orderIds = orders.map(order => order.id)
+  const orderById = new Map(orders.map(order => [order.id, order]))
 
-  const { data: { items: orderItemsCreated } } = await OrderService.getItems({
-    payload: parseGetOrderItems({ filters: { order: orderIds, showFullData: true }, pagination: { full: true } }),
-    user,
+  // Status lookup for payments whose order is outside the createdAt range
+  const orderStatusByOrderId = new Map(
+    ordersRaw.map(order => [order.id, order.orderStatus.id]),
+  )
+
+  const paymentOrderIds = [...new Set(
+    paymentsByDateRaw
+      .map(payment => payment.order)
+      .filter((orderId): orderId is string => Boolean(orderId)),
+  )]
+  const missingPaymentOrderIds = paymentOrderIds.filter(id => !orderStatusByOrderId.has(id))
+
+  let orderItems: OrderItemDTOPopulated[] = []
+  let paymentsForOrders: OrderPaymentDTOPopulated[] = []
+
+  const [itemsAndPayments, extraPaymentOrdersResult] = await Promise.all([
+    orderIds.length > 0
+      ? Promise.all([
+          OrderService.getItems({
+            payload: parseGetOrderItems({ filters: { order: orderIds }, pagination: { full: true } }),
+            user,
+          }),
+          OrderPaymentService.get({
+            payload: parseGetOrderPayments({ filters: { order: orderIds }, pagination: { full: true } }),
+          }),
+        ])
+      : Promise.resolve(null),
+    missingPaymentOrderIds.length > 0
+      ? OrderService.get({
+          payload: parseGetOrders({
+            filters: { ids: missingPaymentOrderIds, removed: false },
+            pagination: { full: true },
+          }),
+          user,
+        })
+      : Promise.resolve(null),
+  ])
+
+  if (itemsAndPayments) {
+    orderItems = itemsAndPayments[0].data.items
+    paymentsForOrders = itemsAndPayments[1].data.items
+  }
+
+  if (extraPaymentOrdersResult) {
+    for (const order of extraPaymentOrdersResult.data.items)
+      orderStatusByOrderId.set(order.id, order.orderStatus.id)
+  }
+
+  const paymentsByDate = paymentsByDateRaw.filter((payment) => {
+    const statusId = orderStatusByOrderId.get(payment.order)
+    if (!statusId || !countedStatusIds.has(statusId))
+      return false
+    return matchesCashFilters(payment, cashregister, cashregisterAccount)
   })
 
-  const { data: { items: paymentsForOrders } } = await OrderPaymentService.get({
-    payload: parseGetOrderPayments({ filters: { order: orderIds }, pagination: { full: true } }),
+  const expenses = expensesRaw.filter(e =>
+    matchesCashFilters(e, cashregister, cashregisterAccount),
+  )
+
+  const turnoverMap: MoneyMap = {}
+  const paidAmountMap: MoneyMap = {}
+  const unpaidAmountMap: MoneyMap = {}
+  const incomeMap: MoneyMap = {}
+  const expenseMap: MoneyMap = {}
+  const marginMap: MoneyMap = {}
+
+  for (const item of orderItems) {
+    const lineTotal = (Number(item.price) || 0) * (Number(item.quantity) || 0)
+    addMajor(turnoverMap, item.currency, lineTotal)
+    if (hasProfitPermission && item.profit != null) {
+      addMajor(marginMap, item.currency, (Number(item.profit) || 0) * (Number(item.quantity) || 0))
+    }
+  }
+
+  // Paid / unpaid amounts per order × currency (from items vs payments)
+  const orderItemTotals: Record<string, MoneyMap> = {}
+  for (const item of orderItems) {
+    const orderId = typeof item.order === 'string' ? item.order : String(item.order)
+    orderItemTotals[orderId] ||= {}
+    const lineTotal = (Number(item.price) || 0) * (Number(item.quantity) || 0)
+    addMajor(orderItemTotals[orderId], item.currency, lineTotal)
+  }
+
+  const orderPaidMap: Record<string, MoneyMap> = {}
+  for (const payment of paymentsForOrders) {
+    const orderId = payment.order
+    if (!orderId)
+      continue
+    orderPaidMap[orderId] ||= {}
+    addMajor(orderPaidMap[orderId], payment.currency, Number(payment.amount) || 0)
+  }
+
+  let paidCount = 0
+  let unpaidCount = 0
+
+  for (const order of orders) {
+    if (isPaidStatus(order.orderPaymentStatus))
+      paidCount += 1
+    else
+      unpaidCount += 1
+
+    const totals = orderItemTotals[order.id] || {}
+    const paid = orderPaidMap[order.id] || {}
+    const currencyIds = new Set([...Object.keys(totals), ...Object.keys(paid)])
+
+    for (const currencyId of currencyIds) {
+      const due = totals[currencyId]?.minor ?? 0
+      const got = paid[currencyId]?.minor ?? 0
+      const currency = totals[currencyId]?.currency ?? paid[currencyId]?.currency
+      if (!currency)
+        continue
+
+      const paidPart = Math.min(got, due)
+      const remain = Math.max(0, due - got)
+
+      if (paidPart !== 0) {
+        paidAmountMap[currencyId] ||= { currency, minor: 0 }
+        paidAmountMap[currencyId].minor += paidPart
+      }
+      if (remain !== 0) {
+        unpaidAmountMap[currencyId] ||= { currency, minor: 0 }
+        unpaidAmountMap[currencyId].minor += remain
+      }
+    }
+  }
+
+  for (const payment of paymentsByDate) {
+    addMajor(incomeMap, payment.currency, Number(payment.amount) || 0)
+  }
+
+  const expenseCategories: Record<string, {
+    category: { id: string, names: LanguageString }
+    count: number
+    currencies: MoneyMap
+  }> = {}
+
+  for (const expense of expenses) {
+    addMajor(expenseMap, expense.currency, Number(expense.amount) || 0)
+
+    for (const category of expense.categories) {
+      const categoryId = category.id
+      if (!expenseCategories[categoryId]) {
+        expenseCategories[categoryId] = {
+          category: { id: category.id, names: category.names },
+          count: 0,
+          currencies: {},
+        }
+      }
+      expenseCategories[categoryId].count += 1
+      addMajor(expenseCategories[categoryId].currencies, expense.currency, Number(expense.amount) || 0)
+    }
+  }
+
+  const cashProfitMap = diffMoneyMaps(incomeMap, expenseMap)
+
+  // Products aggregation
+  const productsMap: Record<string, {
+    product: { id: string, names: LanguageString }
+    quantity: number
+    amount: MoneyMap
+    profit: MoneyMap
+  }> = {}
+
+  for (const item of orderItems) {
+    const productId = item.product.id
+    if (!productsMap[productId]) {
+      productsMap[productId] = {
+        product: { id: item.product.id, names: item.product.names },
+        quantity: 0,
+        amount: {},
+        profit: {},
+      }
+    }
+    productsMap[productId].quantity += Number(item.quantity) || 0
+    addMajor(
+      productsMap[productId].amount,
+      item.currency,
+      (Number(item.price) || 0) * (Number(item.quantity) || 0),
+    )
+    if (hasProfitPermission && item.profit != null) {
+      addMajor(
+        productsMap[productId].profit,
+        item.currency,
+        (Number(item.profit) || 0) * (Number(item.quantity) || 0),
+      )
+    }
+  }
+
+  const productItems = Object.values(productsMap)
+    .map((row) => {
+      const entry: StatisticsDTO['products']['items'][number] = {
+        product: row.product,
+        quantity: row.quantity,
+        amount: mapToMoneyArray(row.amount),
+      }
+      if (hasProfitPermission)
+        entry.profit = mapToMoneyArray(row.profit)
+      return entry
+    })
+    .sort((a, b) => {
+      const aTotal = a.amount.reduce((s, m) => s + Math.abs(m.total), 0)
+      const bTotal = b.amount.reduce((s, m) => s + Math.abs(m.total), 0)
+      return bTotal - aTotal
+    })
+
+  // Daily series
+  const dayKeys = eachDayKeys(date?.from, date?.to)
+  const seriesMaps: Record<string, {
+    turnover: MoneyMap
+    income: MoneyMap
+    expenses: MoneyMap
+  }> = {}
+
+  for (const key of dayKeys) {
+    seriesMaps[key] = { turnover: {}, income: {}, expenses: {} }
+  }
+
+  // Assign item turnover to order created day
+  for (const item of orderItems) {
+    const orderId = typeof item.order === 'string' ? item.order : String(item.order)
+    const order = orderById.get(orderId)
+    if (!order?.createdAt)
+      continue
+    const key = dayKey(order.createdAt)
+    if (!seriesMaps[key])
+      continue
+    addMajor(
+      seriesMaps[key].turnover,
+      item.currency,
+      (Number(item.price) || 0) * (Number(item.quantity) || 0),
+    )
+  }
+
+  for (const payment of paymentsByDate) {
+    const key = dayKey(payment.paymentDate)
+    if (!seriesMaps[key])
+      continue
+    addMajor(seriesMaps[key].income, payment.currency, Number(payment.amount) || 0)
+  }
+
+  for (const expense of expenses) {
+    const key = dayKey(expense.createdAt)
+    if (!seriesMaps[key])
+      continue
+    addMajor(seriesMaps[key].expenses, expense.currency, Number(expense.amount) || 0)
+  }
+
+  const series: StatisticsDTO['series'] = dayKeys.map((key) => {
+    const day = seriesMaps[key]
+    const profit = diffMoneyMaps(day.income, day.expenses)
+    return {
+      date: key,
+      turnover: mapToMoneyArray(day.turnover),
+      income: mapToMoneyArray(day.income),
+      expenses: mapToMoneyArray(day.expenses),
+      profit: mapToMoneyArray(profit),
+    }
   })
 
-  const { data: { items: paymentsByDate, pagination: { total: orderPaymentsCount } } } = await OrderPaymentService.get({
-    payload: parseGetOrderPayments({ filters: { paymentDate: date }, pagination: { full: true } }),
-  })
-
-  // const { data: { items: expenses, pagination: { total: expensesCount } } } = await ExpenseService.get({
-  //   payload: parseGetExpenses({ filters: { createdAt: date }, pagination: { full: true } }),
-  // })
-
-  console.log(orderItemsCreated, paymentsForOrders, paymentsByDate)
-
-  // const { paid, unpaid } = calcPaidUnpaid(orders, orderItemsCreated, paymentsForOrders)
-
-  // const statistics = {
-  //   range: date,
-  //   orders: {
-  //     count: orders.length,
-  //     amount: sumOrdersItemsAmount(orderItemsCreated),
-  //     paid: {
-  //       count: paid.count,
-  //       amount: paid.amount,
-  //     },
-  //     unpaid: {
-  //       count: unpaid.count,
-  //       amount: unpaid.amount,
-  //     },
-  //   },
-  //   payments: {
-  //     count: orderPaymentsCount,
-  //     amount: sumPaymentsAmount(paymentsByDate),
-  //     income: {
-  //       count: orderPaymentsCount,
-  //       amount: sumPaymentsAmount(paymentsByDate),
-  //     },
-  //     expense: {
-  //       count: expensesCount,
-  //       categories: groupExpenses(expenses),
-  //       amount: sumExpensesAmount(expenses),
-  //     },
-  //     profit: {
-  //       count: orderPaymentsCount,
-  //       amount: diffMoney(sumPaymentsAmount(paymentsByDate), sumExpensesAmount(expenses)),
-  //     },
-  //   },
-  //   products: {
-  //     count: 0,
-  //     // attributes: aggregateProductAttributes(orderItemsCreated),
-  //     // categories: aggregateProductCategories(orderItemsCreated),
-  //   },
-  // }
-
-  const statistics = {
-    range: date,
+  const statistics: StatisticsDTO = {
+    range: date ?? {},
     orders: {
       count: orders.length,
-      amount: [],
+      amount: mapToMoneyArray(turnoverMap),
       paid: {
-        count: 0,
-        amount: [],
+        count: paidCount,
+        amount: mapToMoneyArray(paidAmountMap),
       },
       unpaid: {
-        count: 0,
-        amount: [],
+        count: unpaidCount,
+        amount: mapToMoneyArray(unpaidAmountMap),
       },
     },
     payments: {
-      count: orderPaymentsCount,
-      amount: [],
+      count: paymentsByDate.length,
+      amount: mapToMoneyArray(incomeMap),
       income: {
-        count: orderPaymentsCount,
-        amount: [],
+        count: paymentsByDate.length,
+        amount: mapToMoneyArray(incomeMap),
       },
       expense: {
-        count: 0,
-        categories: [],
-        amount: [],
+        count: expenses.length,
+        amount: mapToMoneyArray(expenseMap),
+        categories: Object.values(expenseCategories).map(cat => ({
+          category: cat.category,
+          count: cat.count,
+          currencies: mapToMoneyArray(cat.currencies),
+        })),
       },
       profit: {
-        count: orderPaymentsCount,
-        amount: [],
+        count: paymentsByDate.length + expenses.length,
+        amount: mapToMoneyArray(cashProfitMap),
       },
+      ...(hasProfitPermission
+        ? {
+            margin: {
+              count: orderItems.length,
+              amount: mapToMoneyArray(marginMap),
+            },
+          }
+        : {}),
     },
     products: {
-      count: 0,
-      // attributes: aggregateProductAttributes(orderItemsCreated),
-      // categories: aggregateProductCategories(orderItemsCreated),
+      count: productItems.length,
+      items: productItems,
     },
+    series,
   }
-
-  console.log(statistics)
 
   return {
     status: 'success',
     code: 'STATISTICS_FETCHED',
     message: 'Statistics fetched',
-    // statistics,
+    data: statistics,
   }
 }
-
-// function sumOrdersItemsAmount(orderItems: OrderItem[]) {
-//   const amountMap: Record<string, { currency: any, total: number }> = {}
-
-//   for (const it of orderItems) {
-//     const price = Number(it.price) || 0
-//     const qty = Number(it.quantity) || 0
-//     addMoney(amountMap, it.currency, price * qty)
-//   }
-
-//   return mapToMoneyArray(amountMap)
-// }
-
-// function sumPaymentsAmount(orderPayments: OrderPayment[]) {
-//   const amountMap: Record<string, { currency: any, total: number }> = {}
-
-//   for (const p of orderPayments) {
-//     addMoney(amountMap, p.currency, Number(p.amount) || 0)
-//   }
-
-//   return mapToMoneyArray(amountMap)
-// }
-
-// function sumExpensesAmount(expenses: Expense[]) {
-//   const amountMap: Record<string, { currency: any, total: number }> = {}
-
-//   for (const e of expenses) {
-//     addMoney(amountMap, e.currency, Number(e.amount) || 0)
-//   }
-
-//   return mapToMoneyArray(amountMap)
-// }
-
-// function calcPaidUnpaid(
-//   orders: { id: string }[],
-//   orderItems: OrderItemDTO[],
-//   orderPayments: OrderPaymentDTO[],
-// ) {
-//   const totals: Record<string, Record<string, { currency: CurrencyDTO, total: number }>> = {}
-//   for (const it of orderItems) {
-//     const orderId = String((it as any).order?.id ?? (it as any).order)
-//     const currencyId = it.currency?.id
-//     if (!orderId || !currencyId)
-//       continue
-
-//     const amount = (Number(it.price) || 0) * (Number(it.quantity) || 0)
-//     totals[orderId] ||= {}
-//     totals[orderId][currencyId] ||= { currency: it.currency, total: 0 }
-//     totals[orderId][currencyId].total += amount
-//   }
-
-//   const paidMap: Record<string, Record<string, { currency: any, paid: number }>> = {}
-//   for (const p of orderPayments) {
-//     const orderId = String((p as any).order?.id ?? (p as any).order)
-//     const currencyId = p.currency?.id
-//     if (!orderId || !currencyId)
-//       continue
-
-//     paidMap[orderId] ||= {}
-//     paidMap[orderId][currencyId] ||= { currency: p.currency, paid: 0 }
-//     paidMap[orderId][currencyId].paid += Number(p.amount) || 0
-//   }
-
-//   const paidAmountMap: Record<string, { currency: any, total: number }> = {}
-//   const unpaidAmountMap: Record<string, { currency: any, total: number }> = {}
-//   let paidCount = 0
-//   let unpaidCount = 0
-
-//   for (const o of orders) {
-//     const orderId = String(o.id)
-//     const orderTotals = totals[orderId]
-
-//     if (!orderTotals) {
-//       unpaidCount += 1
-//       continue
-//     }
-
-//     let isFullyPaid = true
-
-//     for (const currencyId of Object.keys(orderTotals)) {
-//       const { currency, total } = orderTotals[currencyId]
-//       const paid = paidMap[orderId]?.[currencyId]?.paid ?? 0
-
-//       const paidPart = Math.min(paid, total)
-//       const remain = Math.max(0, total - paid)
-
-//       addMoney(paidAmountMap, currency, paidPart)
-//       addMoney(unpaidAmountMap, currency, remain)
-
-//       if (remain > 0)
-//         isFullyPaid = false
-//     }
-
-//     if (isFullyPaid)
-//       paidCount++
-//     else unpaidCount++
-//   }
-
-//   return {
-//     paid: { count: paidCount, amount: mapToMoneyArray(paidAmountMap) },
-//     unpaid: { count: unpaidCount, amount: mapToMoneyArray(unpaidAmountMap) },
-//   }
-// }
-
-// function groupExpenses(expenses: ExpenseDTO[]) {
-//   const result: Record<string, { category: ExpenseCategoryDTO, total: number, currencies: Record<string, { currency: CurrencyDTO, total: number, count: number }>, count: number }> = {}
-
-//   for (const expense of expenses) {
-//     const amount = expense.amount || 0
-//     const currencyId = expense.currency.id
-
-//     for (const category of expense.categories) {
-//       const categoryId = category.id
-
-//       if (!result[categoryId]) {
-//         result[categoryId] = {
-//           category,
-//           total: 0,
-//           currencies: {},
-//           count: 0,
-//         }
-//       }
-
-//       result[categoryId].total += Number.parseFloat(amount.toFixed(2))
-//       result[categoryId].count += 1
-
-//       if (!result[categoryId].currencies[currencyId]) {
-//         result[categoryId].currencies[currencyId] = {
-//           currency: expense.currency,
-//           total: 0,
-//           count: 0,
-//         }
-//       }
-//       result[categoryId].currencies[currencyId].total += Number.parseFloat(
-//         amount.toFixed(2),
-//       )
-//       result[categoryId].currencies[currencyId].count += 1
-//     }
-//   }
-
-//   return Object.values(result).map((cat: any) => ({
-//     category: cat.category,
-//     total: cat.total,
-//     count: cat.count,
-//     currencies: Object.values(cat.currencies),
-//   }))
-// }
-
-// interface MoneyRow { currency: any, total: number }
-
-// function addMoney(
-//   map: Record<string, { currency: any, total: number }>,
-//   currency: any,
-//   amount: number,
-// ) {
-//   if (!currency?.id)
-//     return
-//   const id = currency.id
-//   if (!map[id])
-//     map[id] = { currency, total: 0 }
-//   map[id].total += amount
-// }
-
-// function diffMoney(income: MoneyRow[], expense: MoneyRow[]): MoneyRow[] {
-//   const map: Record<string, { currency: any, total: number }> = {}
-
-//   for (const r of income) {
-//     addMoney(map, r.currency, Number(r.total) || 0)
-//   }
-
-//   for (const r of expense) {
-//     addMoney(map, r.currency, -(Number(r.total) || 0))
-//   }
-
-//   return mapToMoneyArray(map)
-// }
-
-// function mapToMoneyArray(
-//   map: Record<string, { currency: any, total: number }>,
-// ): MoneyRow[] {
-//   return Object.values(map).map(x => ({
-//     currency: x.currency,
-//     total: Number.parseFloat((x.total || 0).toFixed(2)),
-//   }))
-// }

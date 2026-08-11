@@ -110,10 +110,10 @@ export function DataTable() {
           </TableCell>
         ))}
       </TableRow>
-      {row.getIsExpanded() && row.original.options?.length > 0 && (
+      {row.getIsExpanded() && row.original.optionIds?.length > 0 && (
         <SubRowOptions
           property={row.original}
-          optionIds={row.original.options}
+          optionIds={row.original.optionIds}
           columnsLength={columns.length}
           editOption={productPropertiesContext.openOptionsModal}
           removeOption={productPropertiesContext.removeOption}

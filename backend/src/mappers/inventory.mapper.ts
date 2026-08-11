@@ -9,10 +9,10 @@ export function mapInventoryToDTO(inventory: InventoryDB): InventoryDTO {
     seq: inventory.seq,
     status: inventory.status,
     warehouse: {
-      id: inventory.warehouse,
+      id: inventory.warehouseId,
       names: {},
     },
-    categories: inventory.categoriesIds.map(categoryId => ({
+    categories: inventory.categoryIds.map(categoryId => ({
       id: categoryId,
       names: {},
     })),

@@ -61,5 +61,8 @@ const AuditLogsSchema: Schema = new Schema(
 )
 
 AuditLogsSchema.index({ resourceType: 1, resourceId: 1, createdAt: -1 })
+AuditLogsSchema.index({ createdBy: 1, createdAt: -1 })
+AuditLogsSchema.index({ action: 1, createdAt: -1 })
+AuditLogsSchema.index({ createdAt: -1 })
 
 export const AuditLogsModel = mongoose.model<AuditLogDoc>('audit-logs', AuditLogsSchema)

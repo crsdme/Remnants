@@ -60,6 +60,25 @@ const ExpenseSchema: Schema = new Schema(
       type: String,
       default: '',
     },
+    files: [{
+      _id: false,
+      path: {
+        type: String,
+        required: true,
+      },
+      filename: {
+        type: String,
+        required: true,
+      },
+      name: {
+        type: String,
+        required: true,
+      },
+      type: {
+        type: String,
+        required: true,
+      },
+    }],
     createdBy: {
       type: String,
       ref: 'User',
@@ -140,6 +159,16 @@ ExpenseSchema.pre('save', async function (this: ExpenseDoc, next) {
 
   next()
 })
+
+ExpenseSchema.index({ removed: 1, seq: -1 })
+ExpenseSchema.index({ cashregisterId: 1 })
+ExpenseSchema.index({ cashregisterAccountId: 1 })
+ExpenseSchema.index({ categoryIds: 1 })
+ExpenseSchema.index({ sourceModel: 1, sourceId: 1 })
+ExpenseSchema.index({ createdAt: -1 })
+
+ExpenseCategorySchema.index({ removed: 1 })
+ExpenseCategorySchema.index({ priority: 1 })
 
 export const ExpenseModel = mongoose.model<ExpenseDoc>('expense', ExpenseSchema)
 export const ExpenseCategoryModel = mongoose.model<ExpenseCategoryDoc>('expense-category', ExpenseCategorySchema)

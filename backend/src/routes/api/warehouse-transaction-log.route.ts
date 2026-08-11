@@ -1,14 +1,15 @@
 import type { RequestHandler } from 'express'
-import { getWarehouseTransactionLogsSchema } from '@remnant/shared'
+import { getWarehouseTransactionLogsResponseSchema, getWarehouseTransactionLogsSchema } from '@remnant/shared'
 import { Router } from 'express'
 import * as WarehouseTransactionLogController from '@/controllers/warehouse-transaction-log.controller'
-import { validateQueryRequest } from '@/middleware'
+import { validateQueryRequest, validateResponse } from '@/middleware'
 
 const router = Router()
 
 router.get(
   '/get',
   validateQueryRequest(getWarehouseTransactionLogsSchema),
+  validateResponse(getWarehouseTransactionLogsResponseSchema),
   WarehouseTransactionLogController.get as RequestHandler,
 )
 

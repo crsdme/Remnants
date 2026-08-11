@@ -61,4 +61,7 @@ UserRoleSchema.set('toJSON', {
   },
 })
 
+UserRoleSchema.index({ removed: 1, active: 1 })
+UserRoleSchema.index({ priority: 1 })
+
 export const UserRoleModel = mongoose.model<UserRoleDoc>('user-role', UserRoleSchema)

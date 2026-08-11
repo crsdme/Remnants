@@ -9,6 +9,8 @@ export const orderStatusDBSchema = z.object({
   removed: z.boolean().default(false),
   isLocked: z.boolean(),
   isSelectable: z.boolean(),
+  isDisplayed: z.boolean().default(true),
+  includeInStatistics: z.boolean().default(true),
   createdBy: idSchema,
   removedBy: idSchema,
   createdAt: z.coerce.date(),

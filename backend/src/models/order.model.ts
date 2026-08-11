@@ -18,27 +18,27 @@ const OrderSchema: Schema = new Schema(
       type: Number,
       default: 0,
     },
-    warehouse: {
+    warehouseId: {
       type: String,
       ref: 'warehouse',
       required: true,
     },
-    deliveryService: {
+    deliveryServiceId: {
       type: String,
       ref: 'deliveryService',
       required: true,
     },
-    orderSource: {
+    orderSourceId: {
       type: String,
       ref: 'orderSource',
       required: true,
     },
-    orderStatus: {
+    orderStatusId: {
       type: String,
       ref: 'orderStatus',
       required: true,
     },
-    orderPayments: [{
+    orderPaymentIds: [{
       type: String,
       ref: 'orderPayment',
       required: true,
@@ -48,7 +48,7 @@ const OrderSchema: Schema = new Schema(
       enum: ['paid', 'unpaid', 'partially_paid', 'overpaid'],
       default: 'unpaid',
     },
-    client: {
+    clientId: {
       type: String,
       ref: 'client',
     },
@@ -56,6 +56,25 @@ const OrderSchema: Schema = new Schema(
       type: String,
       default: '',
     },
+    files: [{
+      _id: false,
+      path: {
+        type: String,
+        required: true,
+      },
+      filename: {
+        type: String,
+        required: true,
+      },
+      name: {
+        type: String,
+        required: true,
+      },
+      type: {
+        type: String,
+        required: true,
+      },
+    }],
     createdBy: {
       type: String,
       ref: 'user',
@@ -79,12 +98,17 @@ const OrderSchema: Schema = new Schema(
 type OrderItemDoc = HydratedDocument<OrderItemDB>
 
 const OrderItemSchema: Schema = new Schema({
-  order: {
+  _id: {
+    type: String,
+    default: uuidv4,
+    validate: uuidValidator,
+  },
+  orderId: {
     type: String,
     required: true,
     ref: 'Order',
   },
-  product: {
+  productId: {
     type: String,
     ref: 'Product',
     required: true,
@@ -109,7 +133,7 @@ const OrderItemSchema: Schema = new Schema({
     type: Number,
     required: true,
   },
-  purchaseCurrency: {
+  purchaseCurrencyId: {
     type: String,
     ref: 'Currency',
     required: true,
@@ -118,7 +142,7 @@ const OrderItemSchema: Schema = new Schema({
     type: Number,
     required: true,
   },
-  currency: {
+  currencyId: {
     type: String,
     required: true,
   },
@@ -180,6 +204,19 @@ OrderSchema.pre('save', async function (this: OrderDoc, next) {
   }
   next()
 })
+
+OrderSchema.index({ removed: 1, seq: -1 })
+OrderSchema.index({ warehouseId: 1, removed: 1 })
+OrderSchema.index({ orderStatusId: 1, removed: 1 })
+OrderSchema.index({ orderSourceId: 1, removed: 1 })
+OrderSchema.index({ clientId: 1 })
+OrderSchema.index({ orderPaymentStatus: 1, removed: 1 })
+OrderSchema.index({ createdBy: 1 })
+OrderSchema.index({ createdAt: -1 })
+OrderSchema.index({ seq: 1 })
+
+OrderItemSchema.index({ orderId: 1, removed: 1 })
+OrderItemSchema.index({ productId: 1 })
 
 export const OrderModel = mongoose.model<OrderDoc>('order', OrderSchema)
 export const OrderItemModel = mongoose.model<OrderItemDoc>('order-item', OrderItemSchema)

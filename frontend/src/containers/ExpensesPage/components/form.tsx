@@ -3,6 +3,7 @@ import { useCallback } from 'react'
 import { useWatch } from 'react-hook-form'
 import { useCashregisterAccountOptions, useCashregisterOptions, useCurrencyOptions, useExpenseCategoryOptions } from '@/api/hooks'
 import { AsyncSelectNew } from '@/components/AsyncSelectNew'
+import { FileUploadDnd, ORDER_FILE_ACCEPT } from '@/components/FileUploadDnd'
 import {
   Button,
   Form,
@@ -19,7 +20,7 @@ import { useExpenseContext } from '../context'
 
 export function ExpenseForm() {
   const { t, language } = useLocale()
-  const { isLoading, form, closeModal, submitExpenseForm } = useExpenseContext()
+  const { isLoading, isEdit, selectedExpense, form, files, setFiles, closeModal, submitExpenseForm } = useExpenseContext()
 
   const selectedCashregister = useWatch({ control: form.control, name: 'cashregister' })
   const selectedAccount = useWatch({ control: form.control, name: 'cashregisterAccount' })
@@ -56,7 +57,10 @@ export function ExpenseForm() {
             name="cashregister"
             render={({ field }) => (
               <FormItem className="flex-1">
-                <FormLabel>{t('page.expenses.form.cashregister')}</FormLabel>
+                <FormLabel>
+                  {t('page.expenses.form.cashregister')}
+                  <span className="text-destructive ml-1">*</span>
+                </FormLabel>
                 <FormControl>
                   <AsyncSelectNew
                     {...field}
@@ -72,7 +76,7 @@ export function ExpenseForm() {
                     }}
                     name="cashregister"
                     clearable
-                    selectFirstOption
+                    selectFirstOption={!isEdit}
                   />
                 </FormControl>
                 <FormMessage />
@@ -85,7 +89,10 @@ export function ExpenseForm() {
             name="cashregisterAccount"
             render={({ field }) => (
               <FormItem className="flex-1">
-                <FormLabel>{t('page.expenses.form.cashregisterAccount')}</FormLabel>
+                <FormLabel>
+                  {t('page.expenses.form.cashregisterAccount')}
+                  <span className="text-destructive ml-1">*</span>
+                </FormLabel>
                 <FormControl>
                   <AsyncSelectNew
                     {...field}
@@ -100,7 +107,7 @@ export function ExpenseForm() {
                     }}
                     name="cashregisterAccount"
                     clearable
-                    selectFirstOption
+                    selectFirstOption={!isEdit}
                   />
                 </FormControl>
                 <FormMessage />
@@ -114,7 +121,10 @@ export function ExpenseForm() {
           name="amount"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>{t('page.expenses.form.amount')}</FormLabel>
+              <FormLabel>
+                {t('page.expenses.form.amount')}
+                <span className="text-destructive ml-1">*</span>
+              </FormLabel>
               <div className="flex items-center gap-2">
                 <FormControl>
                   <Input
@@ -139,7 +149,7 @@ export function ExpenseForm() {
                       disabled={isLoading || !selectedAccount}
                       clearable
                       triggerClassName="flex-1 max-w-[80px]"
-                      selectFirstOption
+                      selectFirstOption={!isEdit}
                       placeholder="..."
                     />
                   )}
@@ -155,7 +165,10 @@ export function ExpenseForm() {
           name="categories"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>{t('page.expenses.form.categories')}</FormLabel>
+              <FormLabel>
+                {t('page.expenses.form.categories')}
+                <span className="text-destructive ml-1">*</span>
+              </FormLabel>
               <div className="flex items-center gap-2">
                 <FormControl>
                   <AsyncSelectNew
@@ -176,6 +189,22 @@ export function ExpenseForm() {
             </FormItem>
           )}
         />
+
+        <div className="space-y-2 pt-1 pb-5">
+          <p className="text-sm font-medium leading-none">
+            {t('page.expenses.form.files')}
+          </p>
+          <FileUploadDnd
+            key={selectedExpense?.id ?? 'new-expense'}
+            files={files}
+            setFiles={setFiles}
+            isLoading={isLoading}
+            variant="button"
+            accept={ORDER_FILE_ACCEPT}
+            maxSizeMb={10}
+            hint={t('page.expenses.form.files-hint')}
+          />
+        </div>
 
         <FormField
           control={form.control}

@@ -2,13 +2,16 @@ import type { ProductPopulatedDTO } from '@remnant/shared'
 
 import type { OrderLineItemFormValues } from '../context'
 
-import { useFieldArray } from 'react-hook-form'
+import { useFieldArray, useWatch } from 'react-hook-form'
 
-import { ProductSelectedTable, ProductTable } from '@/components'
-import { Separator } from '@/components/ui'
+import { Button } from '@/components/ui'
 import { roundNumber } from '@/utils/helpers/'
-import { useBarcodeScanned } from '@/utils/hooks'
+import { useBarcodeScanned, useLocale } from '@/utils/hooks'
 
+import { OrderClientSection } from '../../components/OrderClientSection'
+import { OrderFilesSection } from '../../components/OrderFilesSection'
+import { OrderProductsSection } from '../../components/OrderProductsSection'
+import { OrderSidebar, OrderSidebarSubmitButton } from '../../components/OrderSidebar'
 import { useCreateOrderContext } from '../context'
 
 import { ClientForm } from './client-form'
@@ -16,7 +19,22 @@ import { InformationForm } from './information-form'
 import { PaymentForm } from './payment-form'
 
 export function DataTable() {
-  const { informationForm, isLoading, getBarcode } = useCreateOrderContext()
+  const { t } = useLocale()
+  const {
+    informationForm,
+    isLoading,
+    getBarcode,
+    payments,
+    files,
+    setFiles,
+    openPaymentModal,
+    removePayment,
+    printDraftInvoice,
+    openClientModal,
+  } = useCreateOrderContext()
+
+  const items = useWatch({ control: informationForm.control, name: 'items' }) || []
+  const clientId = useWatch({ control: informationForm.control, name: 'client' })
 
   const itemsField = useFieldArray({
     control: informationForm.control,
@@ -103,7 +121,7 @@ export function DataTable() {
 
       const byPercent = discountPercent > 0 ? currentPrice * (discountPercent / 100) : 0
       const rawDisc = discountAmount > 0 ? discountAmount : byPercent
-      const discount = Math.min(Math.max(rawDisc, 0), currentPrice)
+      const discount = Math.min(Math.max(rawDisc, 0), Math.max(currentPrice, 0))
 
       updated.price = roundNumber(currentPrice - discount)
       updated.selectedPrice = updated.price
@@ -120,23 +138,53 @@ export function DataTable() {
   })
 
   return (
-    <>
-      <ProductTable addProduct={addProduct} />
-      <Separator className="my-4" />
-      <ProductSelectedTable
-        products={informationForm.getValues('items') || []}
-        removeProduct={removeProduct}
+    <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1fr_320px] lg:items-start">
+      <div className="min-w-0 space-y-4">
+        <OrderClientSection
+          value={clientId || undefined}
+          onChange={id => informationForm.setValue('client', id || '', { shouldDirty: true })}
+          onCreate={openClientModal}
+          disabled={isLoading}
+          titlePrefix="create-order"
+        />
+        <OrderProductsSection
+          products={items}
+          addProduct={addProduct}
+          removeProduct={removeProduct}
+          changeProduct={updateProduct}
+          isLoading={isLoading}
+          titlePrefix="create-order"
+        />
+        <InformationForm />
+        <OrderFilesSection
+          files={files}
+          setFiles={setFiles}
+          isLoading={isLoading}
+          titlePrefix="create-order"
+        />
+        <PaymentForm />
+        <ClientForm />
+      </div>
+
+      <OrderSidebar
+        items={items}
+        payments={payments}
+        titlePrefix="create-order"
         isLoading={isLoading}
-        changeProduct={updateProduct}
-        isReceiving={false}
-        isSelectedPrice={true}
-        isDiscount={true}
-        isQuantity={true}
-        includeTotal={true}
+        onAddPayment={openPaymentModal}
+        onRemovePayment={removePayment}
+        actions={(
+          <>
+            <Button type="button" variant="outline" className="w-full" onClick={printDraftInvoice}>
+              {t('page.create-order.form.print-draft-invoice')}
+            </Button>
+            <OrderSidebarSubmitButton
+              isLoading={isLoading}
+              label={t('page.create-order.button.create')}
+            />
+          </>
+        )}
       />
-      <InformationForm />
-      <PaymentForm />
-      <ClientForm />
-    </>
+    </div>
   )
 }

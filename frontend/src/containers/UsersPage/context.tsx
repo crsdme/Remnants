@@ -36,7 +36,7 @@ interface UserFormValues {
   login: string
   password: string
   active: boolean
-  role: string
+  roleId: string
   access: UserAccessScopesDTO
 }
 
@@ -165,26 +165,26 @@ function createUserFormSchema(t: (key: string, options?: Record<string, unknown>
     name: z.string({ required_error: t('form.errors.required') }).min(5, { message: t('form.errors.min_length', { count: 5 }) }).trim(),
     login: z.string({ required_error: t('form.errors.required') }).min(5, { message: t('form.errors.min_length', { count: 5 }) }).trim(),
     password: z.string().optional(),
-    role: z.string({ required_error: t('form.errors.required') }).min(1, { message: t('form.errors.required') }).trim(),
+    roleId: z.string({ required_error: t('form.errors.required') }).min(1, { message: t('form.errors.required') }).trim(),
     active: z.boolean().default(true),
     access: z.object({
-      warehouses: idsSchema,
-      sites: idsSchema,
-      expenseCategories: idsSchema,
-      cashregisters: idsSchema,
-      cashregisterAccounts: idsSchema,
-      deliveryServices: idsSchema,
-      orderSources: idsSchema,
-      orderStatuses: idsSchema,
+      warehouseIds: idsSchema,
+      siteIds: idsSchema,
+      expenseCategoryIds: idsSchema,
+      cashregisterIds: idsSchema,
+      cashregisterAccountIds: idsSchema,
+      deliveryServiceIds: idsSchema,
+      orderSourceIds: idsSchema,
+      orderStatusIds: idsSchema,
     }).default({
-      warehouses: [],
-      sites: [],
-      expenseCategories: [],
-      cashregisters: [],
-      cashregisterAccounts: [],
-      deliveryServices: [],
-      orderSources: [],
-      orderStatuses: [],
+      warehouseIds: [],
+      siteIds: [],
+      expenseCategoryIds: [],
+      cashregisterIds: [],
+      cashregisterAccountIds: [],
+      deliveryServiceIds: [],
+      orderSourceIds: [],
+      orderStatusIds: [],
     }),
   })
 }
@@ -196,16 +196,16 @@ function getUserFormValues(user?: UserPopulatedDTO): UserFormValues {
       login: '',
       password: '',
       active: true,
-      role: '',
+      roleId: '',
       access: {
-        warehouses: [],
-        sites: [],
-        expenseCategories: [],
-        cashregisters: [],
-        cashregisterAccounts: [],
-        deliveryServices: [],
-        orderSources: [],
-        orderStatuses: [],
+        warehouseIds: [],
+        siteIds: [],
+        expenseCategoryIds: [],
+        cashregisterIds: [],
+        cashregisterAccountIds: [],
+        deliveryServiceIds: [],
+        orderSourceIds: [],
+        orderStatusIds: [],
       },
     }
   }
@@ -214,16 +214,16 @@ function getUserFormValues(user?: UserPopulatedDTO): UserFormValues {
     login: user.login,
     password: '',
     active: user.active,
-    role: user.role?.id ?? '',
+    roleId: user.role?.id ?? '',
     access: {
-      warehouses: user.access?.warehouses ?? [],
-      sites: user.access?.sites ?? [],
-      expenseCategories: user.access?.expenseCategories ?? [],
-      cashregisters: user.access?.cashregisters ?? [],
-      cashregisterAccounts: user.access?.cashregisterAccounts ?? [],
-      deliveryServices: user.access?.deliveryServices ?? [],
-      orderSources: user.access?.orderSources ?? [],
-      orderStatuses: user.access?.orderStatuses ?? [],
+      warehouseIds: user.access?.warehouseIds ?? [],
+      siteIds: user.access?.siteIds ?? [],
+      expenseCategoryIds: user.access?.expenseCategoryIds ?? [],
+      cashregisterIds: user.access?.cashregisterIds ?? [],
+      cashregisterAccountIds: user.access?.cashregisterAccountIds ?? [],
+      deliveryServiceIds: user.access?.deliveryServiceIds ?? [],
+      orderSourceIds: user.access?.orderSourceIds ?? [],
+      orderStatusIds: user.access?.orderStatusIds ?? [],
     },
   }
 }

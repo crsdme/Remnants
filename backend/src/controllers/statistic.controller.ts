@@ -1,10 +1,10 @@
-import type { GetOrderStatisticRequest } from '@remnant/shared'
+import type { GetOrderStatisticPayload } from '@remnant/shared'
 import type { NextFunction, Response } from 'express'
 import type { ValidatedAuthedRequest } from '@/types'
 import * as StatisticService from '@/services/statistic.service'
 
 export async function get(
-  req: ValidatedAuthedRequest<GetOrderStatisticRequest, never>,
+  req: ValidatedAuthedRequest<GetOrderStatisticPayload, never>,
   res: Response,
   next: NextFunction,
 ) {

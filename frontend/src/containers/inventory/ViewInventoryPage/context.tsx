@@ -1,84 +1,152 @@
-import type { InventoryDTO } from '@remnant/shared'
+import type {
+  InventoryDTO,
+  InventoryItemDTO,
+  InventoryItemViewFilter,
+  InventoryProgressDTO,
+} from '@remnant/shared'
 import type { ReactNode } from 'react'
-import type { Resolver, UseFormReturn } from 'react-hook-form'
 
-import { zodResolver } from '@hookform/resolvers/zod'
-import { createContext, useContext, useEffect, useMemo } from 'react'
-import { useForm } from 'react-hook-form'
-import { useTranslation } from 'react-i18next'
+import { createContext, useCallback, useContext, useMemo, useState } from 'react'
 import { useParams } from 'react-router-dom'
 
-import { z } from 'zod'
-
-import { useInventoryQuery } from '@/api/hooks'
-
-export interface ViewInventoryFormValues {
-  warehouse: string
-  categories: string[]
-  comment?: string
-  items: {
-    id: string
-    lineQuantity: number
-    receivedQuantity?: number
-  }[]
-}
-
-/** List / table row when API returns populated warehouse or category names */
-export type ViewInventoryTableRow = InventoryDTO
+import {
+  useInventoryItemsQuery,
+  useInventoryProgressQuery,
+  useInventoryQuery,
+} from '@/api/hooks'
+import { useDebounceValue } from '@/utils/hooks'
 
 interface ViewInventoryContextType {
   isLoading: boolean
-  form: UseFormReturn<ViewInventoryFormValues>
+  isItemsLoading: boolean
   inventory: InventoryDTO | undefined
+  inventoryItems: InventoryItemDTO[]
+  inventoryItemsCount: number
+  progress: InventoryProgressDTO | undefined
+  viewFilter: InventoryItemViewFilter
+  setViewFilter: (view: InventoryItemViewFilter) => void
+  search: string
+  setSearch: (value: string) => void
+  pagination: { current: number, pageSize: number }
+  setPagination: (value: { current: number, pageSize: number }) => void
 }
 
 const ViewInventoryContext = createContext<ViewInventoryContextType | undefined>(undefined)
 
 export function ViewInventoryProvider({ children }: { children: ReactNode }) {
-  const { t } = useTranslation()
   const { seq } = useParams()
-
-  const formSchema = useMemo(() => createViewInventoryFormSchema(t), [t])
-
-  const form = useForm<ViewInventoryFormValues>({
-    resolver: zodResolver(formSchema) as Resolver<ViewInventoryFormValues>,
-    defaultValues: getViewInventoryFormValues(),
-  })
+  const [viewFilter, setViewFilter] = useState<InventoryItemViewFilter>('all')
+  const [search, setSearch] = useState('')
+  const debouncedSearch = useDebounceValue(search, 300)
+  const [pagination, setPaginationState] = useState({ current: 1, pageSize: 20 })
 
   const {
     inventories,
-    isPending,
-    isFetching,
+    isPending: isInventoryPending,
+    isFetching: isInventoryFetching,
   } = useInventoryQuery(
     { filters: { seq } },
     {
       options: {
+        enabled: !!seq,
         refetchOnMount: false,
         refetchOnReconnect: false,
         refetchOnWindowFocus: false,
         staleTime: 5 * 60 * 1000,
-        gcTime: 30 * 60 * 1000,
       },
     },
   )
 
   const inventory = inventories[0]
 
-  useEffect(() => {
-    if (!inventory?.id)
-      return
-    form.reset(getViewInventoryFormValues(inventory))
-  }, [inventory?.id, form, inventory])
+  const {
+    data: inventoryItemsResponse,
+    isPending: isItemsPending,
+  } = useInventoryItemsQuery(
+    {
+      filters: {
+        inventoryId: inventory?.id,
+        view: viewFilter,
+        search: debouncedSearch || undefined,
+      },
+      pagination,
+    },
+    {
+      options: {
+        enabled: !!inventory?.id,
+        staleTime: 30_000,
+        placeholderData: (previousData, previousQuery) => {
+          const previousView = (previousQuery?.queryKey[3] as { filters?: { view?: InventoryItemViewFilter } } | undefined)?.filters?.view ?? 'all'
+          if (previousView !== viewFilter)
+            return undefined
+          return previousData
+        },
+        refetchOnWindowFocus: false,
+      },
+    },
+  )
 
-  const isLoading = isPending || isFetching
+  const { data: progressResponse } = useInventoryProgressQuery(
+    { filters: { inventoryId: inventory?.id ?? '' } },
+    {
+      options: {
+        enabled: !!inventory?.id,
+        staleTime: 30_000,
+        refetchOnWindowFocus: false,
+      },
+    },
+  )
+
+  const inventoryItems = inventoryItemsResponse?.data?.data?.items ?? []
+  const inventoryItemsCount = inventoryItemsResponse?.data?.data?.pagination?.total ?? 0
+  const progress = progressResponse?.data?.data
+
+  const setPagination = useCallback((value: { current: number, pageSize: number }) => {
+    setPaginationState(value)
+  }, [])
+
+  const handleSetViewFilter = useCallback((view: InventoryItemViewFilter) => {
+    setViewFilter(view)
+    setPaginationState(state => ({ ...state, current: 1 }))
+  }, [])
+
+  const handleSetSearch = useCallback((value: string) => {
+    setSearch(value)
+    setPaginationState(state => ({ ...state, current: 1 }))
+  }, [])
+
+  const isLoading = !!seq && (isInventoryPending || isInventoryFetching)
+  const isItemsLoading = !!inventory?.id && isItemsPending && !inventoryItemsResponse
 
   const value: ViewInventoryContextType = useMemo(
     () => ({
       isLoading,
-      form,
+      isItemsLoading,
       inventory,
+      inventoryItems,
+      inventoryItemsCount,
+      progress,
+      viewFilter,
+      setViewFilter: handleSetViewFilter,
+      search,
+      setSearch: handleSetSearch,
+      pagination,
+      setPagination,
     }),
-    [isLoading, form, inventory],
+    [
+      isLoading,
+      isItemsLoading,
+      inventory,
+      inventoryItems,
+      inventoryItemsCount,
+      progress,
+      viewFilter,
+      handleSetViewFilter,
+      search,
+      handleSetSearch,
+      pagination,
+      setPagination,
+    ],
   )
 
   return <ViewInventoryContext.Provider value={value}>{children}</ViewInventoryContext.Provider>
@@ -91,34 +159,4 @@ export function useViewInventoryContext(): ViewInventoryContextType {
     throw new Error('useViewInventoryContext - ViewInventoryContext')
   }
   return context
-}
-
-function createViewInventoryFormSchema(t: (key: string, options?: Record<string, unknown>) => string) {
-  return z.object({
-    warehouse: z.string({ required_error: t('form.errors.required') }),
-    categories: z.array(z.string()).min(1, { message: t('form.errors.required') }),
-    comment: z.string().optional(),
-    items: z.array(z.object({
-      id: z.string({ required_error: t('form.errors.required') }),
-      lineQuantity: z.number({ required_error: t('form.errors.required') }),
-      receivedQuantity: z.number().optional(),
-    })).min(1, { message: t('form.errors.required.products') }),
-  })
-}
-
-function getViewInventoryFormValues(inventory?: InventoryDTO): ViewInventoryFormValues {
-  if (inventory === undefined) {
-    return {
-      warehouse: '',
-      categories: [],
-      comment: '',
-      items: [],
-    }
-  }
-  return {
-    warehouse: inventory.warehouse.id,
-    categories: inventory.categories.map(category => category.id),
-    comment: inventory.comment ?? '',
-    items: [],
-  }
 }

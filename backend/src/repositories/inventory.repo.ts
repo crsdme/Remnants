@@ -10,6 +10,7 @@ import type {
   GetInventoryItemsRepoPayload,
   GetInventoryItemsRepoResult,
 } from '@/types'
+import { v4 as uuidv4 } from 'uuid'
 import { InventoryItemModel, InventoryModel } from '@/models'
 import { buildQuery, buildSortQuery, unwrapAggregate } from '@/utils'
 
@@ -22,7 +23,7 @@ export async function list({ payload }: { payload: GetInventoriesRepoPayload }):
   const {
     seq,
     status,
-    warehouse,
+    warehouseId,
     category,
     createdAt,
     updatedAt,
@@ -32,7 +33,7 @@ export async function list({ payload }: { payload: GetInventoriesRepoPayload }):
     filters: {
       seq,
       status,
-      warehouse,
+      warehouseId,
       category,
       createdAt,
       updatedAt,
@@ -40,8 +41,8 @@ export async function list({ payload }: { payload: GetInventoriesRepoPayload }):
     rules: {
       seq: { type: 'number' },
       status: { type: 'exact' },
-      warehouse: { type: 'exact' },
-      category: { type: 'exact', field: 'categoriesIds' },
+      warehouseId: { type: 'exact' },
+      category: { type: 'exact', field: 'categoryIds' },
       createdAt: { type: 'dateRange' },
       updatedAt: { type: 'dateRange' },
     },
@@ -60,7 +61,7 @@ export async function list({ payload }: { payload: GetInventoriesRepoPayload }):
     {
       $lookup: {
         from: 'categories',
-        localField: 'categoriesIds',
+        localField: 'categoryIds',
         foreignField: '_id',
         as: 'categories',
       },
@@ -68,7 +69,7 @@ export async function list({ payload }: { payload: GetInventoriesRepoPayload }):
     {
       $lookup: {
         from: 'warehouses',
-        localField: 'warehouse',
+        localField: 'warehouseId',
         foreignField: '_id',
         as: 'warehouse',
       },
@@ -134,10 +135,13 @@ export async function listItems({ payload }: { payload: GetInventoryItemsRepoPay
   const {
     current,
     pageSize,
+    full,
   } = payload.pagination
 
   const {
     inventoryId,
+    view = 'all',
+    search,
   } = payload.filters
 
   const query = buildQuery({
@@ -147,238 +151,90 @@ export async function listItems({ payload }: { payload: GetInventoryItemsRepoPay
     rules: {
       inventoryId: { type: 'string' },
     },
+    removed: false,
   })
 
-  // const projection: Record<string, unknown> = {
-  //   _id: 0,
-  //   id: '$_id',
-  //   order: 1,
-  //   product: 1,
-  //   quantity: 1,
-  //   price: 1,
-  //   manualPrice: 1,
-  //   basePrice: 1,
-  //   currency: { id: '$currency._id', names: 1, symbols: 1 },
-  //   discountAmount: 1,
-  //   discountPercent: 1,
-  //   transactionId: 1,
-  //   createdAt: 1,
-  // }
-
-  // if (showFullData) {
-  //   projection.profit = 1
-  //   projection.exchangeRate = 1
-  //   projection.purchasePrice = 1
-  //   projection.purchaseCurrency = { id: '$purchaseCurrency._id', names: 1, symbols: 1 }
-  // }
+  const viewMatch: Record<string, unknown> = {}
+  if (view === 'counted') {
+    viewMatch.counted = true
+  }
+  else if (view === 'uncounted') {
+    viewMatch.counted = false
+  }
+  else if (view === 'mismatch') {
+    viewMatch.$expr = {
+      $and: [
+        { $eq: ['$counted', true] },
+        { $ne: ['$receivedQuantity', '$quantity'] },
+      ],
+    }
+  }
 
   const pipeline: PipelineStage[] = [
-    {
-      $match: query,
-    },
-    {
-      $match: query,
-    },
+    { $match: query },
+    ...(Object.keys(viewMatch).length > 0 ? [{ $match: viewMatch }] : []),
     {
       $lookup: {
         from: 'products',
         let: { productId: '$productId' },
         pipeline: [
           { $match: { $expr: { $eq: ['$_id', '$$productId'] } } },
-          { $unwind: { path: '$productProperties', preserveNullAndEmptyArrays: true } },
-          {
-            $lookup: {
-              from: 'product-properties',
-              localField: 'productProperties._id',
-              foreignField: '_id',
-              as: 'productProperties.data',
-            },
-          },
-          {
-            $lookup: {
-              from: 'product-property-options',
-              localField: 'productProperties.value',
-              foreignField: '_id',
-              as: 'productProperties.optionData',
-            },
-          },
-          {
-            $lookup: {
-              from: 'product-property-options',
-              let: { valueArr: '$productProperties.value' },
-              pipeline: [
-                {
-                  $match: {
-                    $expr: {
-                      $in: [
-                        '$_id',
-                        {
-                          $cond: [
-                            { $isArray: ['$$valueArr'] },
-                            '$$valueArr',
-                            [{ $ifNull: ['$$valueArr', null] }],
-                          ],
-                        },
-                      ],
-                    },
-                  },
-                },
-              ],
-              as: 'productProperties.optionData',
-            },
-          },
-          {
-            $group: {
-              _id: '$_id',
-              doc: { $first: '$$ROOT' },
-              productProperties: { $push: '$productProperties' },
-            },
-          },
-          {
-            $addFields: {
-              'doc.productProperties': '$productProperties',
-            },
-          },
-          {
-            $replaceRoot: {
-              newRoot: '$doc',
-            },
-          },
-          {
-            $lookup: {
-              from: 'currencies',
-              localField: 'currency',
-              foreignField: '_id',
-              as: 'currency',
-            },
-          },
-          {
-            $lookup: {
-              from: 'currencies',
-              localField: 'purchaseCurrency',
-              foreignField: '_id',
-              as: 'purchaseCurrency',
-            },
-          },
           {
             $lookup: {
               from: 'units',
-              localField: 'unit',
+              localField: 'unitId',
               foreignField: '_id',
               as: 'unit',
             },
           },
           {
             $lookup: {
-              from: 'categories',
-              localField: 'categories',
-              foreignField: '_id',
-              as: 'categories',
-            },
-          },
-          {
-            $lookup: {
-              from: 'quantities',
-              localField: 'quantity',
-              foreignField: '_id',
-              as: 'quantity',
-            },
-          },
-          {
-            $lookup: {
-              from: 'product-property-groups',
-              localField: 'productPropertiesGroup',
-              foreignField: '_id',
-              as: 'productPropertiesGroup',
-            },
-          },
-          {
-            $lookup: {
               from: 'barcodes',
-              localField: 'barcodes',
+              localField: 'barcodeIds',
               foreignField: '_id',
               as: 'barcodes',
             },
           },
           {
-            $addFields: {
-              currency: { $arrayElemAt: ['$currency', 0] },
-              purchaseCurrency: { $arrayElemAt: ['$purchaseCurrency', 0] },
-              unit: { $arrayElemAt: ['$unit', 0] },
-              productPropertiesGroup: { $arrayElemAt: ['$productPropertiesGroup', 0] },
-              productProperties: {
+            $project: {
+              _id: 0,
+              id: '$_id',
+              seq: 1,
+              names: 1,
+              images: {
                 $map: {
-                  input: '$productProperties',
-                  as: 'prop',
+                  input: { $ifNull: ['$images', []] },
+                  as: 'img',
                   in: {
-                    $mergeObjects: [
-                      '$$prop',
-                      {
-                        id: '$$prop._id',
-                        data: { $arrayElemAt: ['$$prop.data', 0] },
-                        optionData: {
-                          $map: {
-                            input: '$$prop.optionData',
-                            as: 'option',
-                            in: {
-                              $mergeObjects: [
-                                '$$option',
-                                {
-                                  id: '$$option._id',
-                                  names: '$$option.names',
-                                  color: '$$option.color',
-                                },
-                              ],
-                            },
-                          },
-                        },
-                      },
-                    ],
+                    id: { $ifNull: ['$$img.id', '$$img.filename'] },
+                    filename: '$$img.filename',
+                    name: '$$img.name',
+                    type: '$$img.type',
+                    path: '$$img.path',
                   },
                 },
               },
-              categories: {
-                $map: {
-                  input: '$categories',
-                  as: 'prop',
-                  in: {
-                    $mergeObjects: [
-                      '$$prop',
-                      {
-                        id: '$$prop._id',
-                      },
-                    ],
+              unit: {
+                $cond: [
+                  { $gt: [{ $size: '$unit' }, 0] },
+                  {
+                    id: { $arrayElemAt: ['$unit._id', 0] },
+                    names: { $arrayElemAt: ['$unit.names', 0] },
+                    symbols: { $arrayElemAt: ['$unit.symbols', 0] },
                   },
-                },
+                  '$$REMOVE',
+                ],
               },
               barcodes: {
                 $map: {
                   input: '$barcodes',
                   as: 'barcode',
-                  in: { $mergeObjects: ['$$barcode', { id: '$$barcode._id', code: '$$barcode.code' }] },
+                  in: {
+                    id: '$$barcode._id',
+                    code: '$$barcode.code',
+                  },
                 },
               },
-            },
-          },
-          {
-            $project: {
-              _id: 0,
-              seq: 1,
-              names: 1,
-              price: 1,
-              currency: { id: '$currency._id', names: 1, symbols: 1 },
-              purchasePrice: 1,
-              purchaseCurrency: { id: '$purchaseCurrency._id', names: 1, symbols: 1 },
-              barcodes: { id: 1, code: 1 },
-              categories: { id: 1, names: 1 },
-              unit: { id: '$unit._id', names: 1, symbols: 1 },
-              quantity: { count: 1, warehouse: 1, status: 1 },
-              images: 1,
-              productProperties: { id: 1, value: 1, data: { names: 1, type: 1, isRequired: 1, showInTable: 1 }, optionData: { id: 1, names: 1, color: 1 } },
-              productPropertiesGroup: { id: '$productPropertiesGroup._id', names: 1 },
-              createdAt: 1,
-              updatedAt: 1,
-              id: '$_id',
             },
           },
         ],
@@ -387,41 +243,184 @@ export async function listItems({ payload }: { payload: GetInventoryItemsRepoPay
     },
     {
       $addFields: {
+        product: { $first: '$product' },
+      },
+    },
+    {
+      $lookup: {
+        from: 'inventories',
+        localField: 'inventoryId',
+        foreignField: '_id',
+        as: '_inventory',
+      },
+    },
+    {
+      $lookup: {
+        from: 'quantities',
+        let: {
+          productId: '$productId',
+          warehouseId: { $arrayElemAt: ['$_inventory.warehouseId', 0] },
+        },
+        pipeline: [
+          {
+            $match: {
+              $expr: {
+                $and: [
+                  { $eq: ['$productId', '$$productId'] },
+                  { $eq: ['$warehouseId', '$$warehouseId'] },
+                ],
+              },
+            },
+          },
+          {
+            $lookup: {
+              from: 'product-stock-statuses',
+              localField: 'stockStatusId',
+              foreignField: '_id',
+              as: '_stockStatus',
+            },
+          },
+          {
+            $project: {
+              _id: 0,
+              stockStatus: {
+                $cond: [
+                  { $gt: [{ $size: '$_stockStatus' }, 0] },
+                  {
+                    $let: {
+                      vars: { s: { $arrayElemAt: ['$_stockStatus', 0] } },
+                      in: {
+                        id: '$$s._id',
+                        names: '$$s.names',
+                        color: '$$s.color',
+                      },
+                    },
+                  },
+                  null,
+                ],
+              },
+            },
+          },
+        ],
+        as: '_quantity',
+      },
+    },
+    {
+      $addFields: {
         product: {
-          $first: '$product',
+          $cond: [
+            { $ifNull: ['$product', false] },
+            {
+              $mergeObjects: [
+                '$product',
+                {
+                  stockStatus: {
+                    $ifNull: [{ $arrayElemAt: ['$_quantity.stockStatus', 0] }, null],
+                  },
+                },
+              ],
+            },
+            '$$REMOVE',
+          ],
         },
       },
     },
+  ]
+
+  if (search != null && search !== '') {
+    const escaped = search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+    const searchRegex = { $regex: escaped, $options: 'i' }
+    const seqNumber = Number(search)
+    pipeline.push({
+      $match: {
+        $or: [
+          { 'product.names.ru': searchRegex },
+          { 'product.names.en': searchRegex },
+          { 'product.barcodes.code': searchRegex },
+          ...(Number.isFinite(seqNumber) ? [{ 'product.seq': seqNumber }] : []),
+        ],
+      },
+    })
+  }
+
+  pipeline.push(
     {
       $project: {
         _id: 0,
-        id: '$_id',
+        id: { $toString: '$_id' },
+        productId: 1,
         product: 1,
         quantity: 1,
+        receivedQuantity: { $ifNull: ['$receivedQuantity', null] },
+        counted: { $ifNull: ['$counted', false] },
         inventoryId: 1,
         createdAt: 1,
+        updatedAt: 1,
       },
     },
-    // {
-    //   $project: projection,
-    // },
     {
       $facet: {
-        items: [
-          { $skip: (current - 1) * pageSize },
-          { $limit: pageSize },
-        ],
+        items: full
+          ? [{ $skip: 0 }]
+          : [
+              { $skip: (current - 1) * pageSize },
+              { $limit: pageSize },
+            ],
         count: [
           { $count: 'count' },
         ],
       },
     },
-  ]
+  )
 
   const raw = await InventoryItemModel.aggregate<AggregateResult<InventoryItemDTO>>(pipeline).exec()
   const { items, total } = unwrapAggregate(raw)
 
   return { items, total, page: current, pageSize }
+}
+
+export async function getProgress(inventoryId: string) {
+  const [result] = await InventoryItemModel.aggregate<{
+    total: number
+    counted: number
+    mismatches: number
+  }>([
+    { $match: { inventoryId } },
+    {
+      $group: {
+        _id: null,
+        total: { $sum: 1 },
+        counted: {
+          $sum: { $cond: [{ $eq: ['$counted', true] }, 1, 0] },
+        },
+        mismatches: {
+          $sum: {
+            $cond: [
+              {
+                $and: [
+                  { $eq: ['$counted', true] },
+                  { $ne: ['$receivedQuantity', '$quantity'] },
+                ],
+              },
+              1,
+              0,
+            ],
+          },
+        },
+      },
+    },
+  ]).exec()
+
+  const total = result?.total ?? 0
+  const counted = result?.counted ?? 0
+  const mismatches = result?.mismatches ?? 0
+
+  return {
+    total,
+    counted,
+    uncounted: Math.max(total - counted, 0),
+    mismatches,
+  }
 }
 
 export async function create({ payload, session }: { payload: CreateInventoriesRepoPayload, session?: ClientSession }) {
@@ -454,6 +453,43 @@ export async function findById(id: string) {
 
 export async function findItemsByInventoryId(inventoryId: string) {
   return InventoryItemModel.find({ inventoryId }).exec()
+}
+
+export async function findItemByInventoryAndProduct(inventoryId: string, productId: string) {
+  return InventoryItemModel.findOne({ inventoryId, productId }).exec()
+}
+
+export async function upsertItemByProduct({
+  inventoryId,
+  productId,
+  payload,
+  session,
+}: {
+  inventoryId: string
+  productId: string
+  payload: {
+    quantity?: number
+    receivedQuantity: number | null
+    counted: boolean
+  }
+  session?: ClientSession
+}) {
+  return InventoryItemModel.findOneAndUpdate(
+    { inventoryId, productId },
+    {
+      $set: {
+        receivedQuantity: payload.receivedQuantity,
+        counted: payload.counted,
+      },
+      $setOnInsert: {
+        _id: uuidv4(),
+        inventoryId,
+        productId,
+        quantity: payload.quantity ?? 0,
+      },
+    },
+    { new: true, upsert: true, runValidators: true, session },
+  ).exec()
 }
 
 export async function cancelById(id: string, cancelledBy: string) {

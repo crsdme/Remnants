@@ -17,8 +17,8 @@ export const currencyDBSchema = z.object({
 
 export const exchangeRateDBSchema = z.object({
   _id: idSchema,
-  fromCurrency: idSchema,
-  toCurrency: idSchema,
+  fromCurrencyId: idSchema,
+  toCurrencyId: idSchema,
   rate: z.number(),
   comment: z.string(),
   removed: z.boolean().default(false),

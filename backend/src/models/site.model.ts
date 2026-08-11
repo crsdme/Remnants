@@ -42,7 +42,7 @@ const SiteSchema: Schema = new Schema(
       type: Boolean,
       default: true,
     },
-    warehouses: [{
+    warehouseIds: [{
       type: String,
       ref: 'warehouse',
       default: [],
@@ -64,5 +64,9 @@ SiteSchema.set('toJSON', {
     delete ret.removed
   },
 })
+
+SiteSchema.index({ removed: 1 })
+SiteSchema.index({ key: 1 })
+SiteSchema.index({ priority: 1 })
 
 export const SiteModel = mongoose.model<SiteDoc>('site', SiteSchema)

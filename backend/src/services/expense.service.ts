@@ -11,6 +11,8 @@ import type {
   GetExpensesPayload,
   RemoveExpensesPayload,
 } from '@/types'
+import path from 'node:path'
+import { STORAGE_PATHS } from '@/config/constants'
 import { mapExpenseToDTO } from '@/mappers'
 import * as CurrencyRepo from '@/repositories/currencies.repo'
 import * as ExpenseRepo from '@/repositories/expense.repo'
@@ -29,9 +31,9 @@ export async function get({
   const access = await UserAccessRepo.getScopesByUserId(user.id)
 
   const { items, total, page, pageSize } = await ExpenseRepo.list(payload, {
-    categoryIds: getScopeIdsForUser(access, 'expenseCategories', user),
-    cashregisterIds: getScopeIdsForUser(access, 'cashregisters', user),
-    cashregisterAccountIds: getScopeIdsForUser(access, 'cashregisterAccounts', user),
+    categoryIds: getScopeIdsForUser(access, 'expenseCategoryIds', user),
+    cashregisterIds: getScopeIdsForUser(access, 'cashregisterIds', user),
+    cashregisterAccountIds: getScopeIdsForUser(access, 'cashregisterAccountIds', user),
   })
 
   return {
@@ -49,11 +51,23 @@ export async function get({
   }
 }
 
-export async function create({ payload }: { payload: CreateExpensePayload }): Promise<CreateExpenseResponse> {
+export async function create({
+  payload,
+  uploadedFiles = [],
+}: {
+  payload: CreateExpensePayload
+  uploadedFiles?: Express.Multer.File[]
+}): Promise<CreateExpenseResponse> {
   const currency = await CurrencyRepo.findOne({ _id: payload.currency })
 
   if (currency === null)
     throw new HttpError(400, 'Currency not found', 'CURRENCY_NOT_FOUND')
+
+  const resolvedFiles = resolveExpenseFiles({
+    files: payload.files ?? [],
+    uploadedFilesIds: payload.uploadedFilesIds,
+    uploadedFiles,
+  })
 
   const expense = await ExpenseRepo.createOne({
     minorAmount: toMinor(payload.amount, currency.scale),
@@ -61,10 +75,10 @@ export async function create({ payload }: { payload: CreateExpensePayload }): Pr
     cashregisterId: payload.cashregister,
     cashregisterAccountId: payload.cashregisterAccount,
     categoryIds: payload.categories,
-    sourceModel: 'expense',
-    sourceId: '123',
+    sourceModel: 'manual',
     type: payload.type,
     comment: payload.comment,
+    files: resolvedFiles,
     // createdBy: payload.createdBy,
   })
 
@@ -89,7 +103,13 @@ export async function create({ payload }: { payload: CreateExpensePayload }): Pr
   }
 }
 
-export async function edit({ payload }: { payload: EditExpensePayload }): Promise<EditExpenseResponse> {
+export async function edit({
+  payload,
+  uploadedFiles = [],
+}: {
+  payload: EditExpensePayload
+  uploadedFiles?: Express.Multer.File[]
+}): Promise<EditExpenseResponse> {
   const { id } = payload
 
   const oldExpense = await ExpenseRepo.findById(id)
@@ -103,6 +123,12 @@ export async function edit({ payload }: { payload: EditExpensePayload }): Promis
 
   if (currency === null || oldCurrency === null)
     throw new HttpError(400, 'Currency not found', 'CURRENCY_NOT_FOUND')
+
+  const resolvedFiles = resolveExpenseFiles({
+    files: payload.files ?? [],
+    uploadedFilesIds: payload.uploadedFilesIds,
+    uploadedFiles,
+  })
 
   await MoneyTransactionService.createTransaction({
     payload: {
@@ -130,6 +156,17 @@ export async function edit({ payload }: { payload: EditExpensePayload }): Promis
       amount: payload.amount,
       description: `Expense ${id}`,
     },
+  })
+
+  await ExpenseRepo.updateById(id, {
+    minorAmount: toMinor(payload.amount, currency.scale),
+    currencyId: payload.currency,
+    cashregisterId: payload.cashregister,
+    cashregisterAccountId: payload.cashregisterAccount,
+    categoryIds: payload.categories,
+    type: payload.type,
+    comment: payload.comment,
+    files: resolvedFiles,
   })
 
   return {
@@ -174,4 +211,59 @@ export async function remove({ payload }: { payload: RemoveExpensesPayload }): P
     code: 'EXPENSES_REMOVED',
     message: 'Expenses removed',
   }
+}
+
+function resolveExpenseFiles({
+  files,
+  uploadedFilesIds,
+  uploadedFiles,
+}: {
+  files: Array<{
+    id?: string
+    filename?: string
+    name: string
+    type: string
+    path?: string
+    isNew?: boolean
+  }>
+  uploadedFilesIds?: string[]
+  uploadedFiles: Express.Multer.File[]
+}) {
+  const parsedUploadedFiles = (uploadedFilesIds ?? []).map((fileId, index) => {
+    if (uploadedFiles[index] === undefined)
+      return undefined
+
+    return {
+      id: fileId,
+      path: uploadedFiles[index].path,
+      filename: uploadedFiles[index].filename,
+      name: Buffer.from(uploadedFiles[index].originalname, 'latin1').toString('utf8').slice(0, 80),
+      type: uploadedFiles[index].mimetype,
+    }
+  }).filter(item => item !== undefined)
+
+  return files.map((file) => {
+    if (file.isNew) {
+      const uploaded = parsedUploadedFiles.find(item => item.id === file.id)
+      if (!uploaded)
+        return undefined
+
+      return {
+        path: uploaded.path,
+        filename: uploaded.filename,
+        name: uploaded.name,
+        type: uploaded.type,
+      }
+    }
+
+    if (!file.filename)
+      return undefined
+
+    return {
+      path: path.join(STORAGE_PATHS.expenseFiles, file.filename),
+      filename: file.filename,
+      name: file.name,
+      type: file.type,
+    }
+  }).filter(item => item !== undefined)
 }

@@ -20,15 +20,15 @@ const InventorySchema: Schema = new Schema(
     },
     status: {
       type: String,
-      enum: ['draft', 'confirmed', 'awaiting', 'received', 'cancelled'],
+      enum: ['draft', 'confirmed', 'cancelled'],
       default: 'draft',
     },
-    warehouse: {
+    warehouseId: {
       type: String,
       ref: 'Warehouse',
       required: true,
     },
-    categoriesIds: [{
+    categoryIds: [{
       type: String,
       ref: 'Category',
       required: true,
@@ -60,6 +60,10 @@ const InventorySchema: Schema = new Schema(
 )
 
 const InventoryItemSchema: Schema = new Schema({
+  _id: {
+    type: String,
+    default: uuidv4,
+  },
   inventoryId: {
     type: String,
     required: true,
@@ -77,10 +81,13 @@ const InventoryItemSchema: Schema = new Schema({
   },
   receivedQuantity: {
     type: Number,
-    required: true,
-    default: 0,
+    default: null,
   },
-})
+  counted: {
+    type: Boolean,
+    default: false,
+  },
+}, { timestamps: true })
 
 InventorySchema.set('toJSON', {
   virtuals: true,
@@ -102,6 +109,16 @@ InventorySchema.pre('save', async function (this: InventoryDoc, next) {
   }
   next()
 })
+
+InventorySchema.index({ removed: 1, seq: -1 })
+InventorySchema.index({ warehouseId: 1, removed: 1 })
+InventorySchema.index({ status: 1 })
+InventorySchema.index({ categoryIds: 1 })
+InventorySchema.index({ createdAt: -1 })
+
+InventoryItemSchema.index({ inventoryId: 1 })
+InventoryItemSchema.index({ productId: 1 })
+InventoryItemSchema.index({ inventoryId: 1, productId: 1 }, { unique: true })
 
 export const InventoryModel = mongoose.model<InventoryDoc>('inventory', InventorySchema)
 export const InventoryItemModel = mongoose.model<InventoryItemDoc>('inventory-item', InventoryItemSchema)

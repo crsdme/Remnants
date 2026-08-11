@@ -8,7 +8,7 @@ export function mapProductPropertyOptionToDTO(productPropertyOption: ProductProp
     priority: productPropertyOption.priority,
     active: productPropertyOption.active,
     color: productPropertyOption.color,
-    productProperty: productPropertyOption.productProperty,
+    productPropertyId: productPropertyOption.productPropertyId,
     createdAt: productPropertyOption.createdAt,
     updatedAt: productPropertyOption.updatedAt,
   }

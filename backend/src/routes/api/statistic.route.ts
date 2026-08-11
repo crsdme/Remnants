@@ -1,14 +1,16 @@
 import type { RequestHandler } from 'express'
-import { getStatisticSchema } from '@remnant/shared'
+import { getStatisticResponseSchema, getStatisticSchema } from '@remnant/shared'
 import { Router } from 'express'
 import * as StatisticController from '@/controllers/statistic.controller'
-import { validateQueryRequest } from '@/middleware'
+import { checkPermissions, validateQueryRequest, validateResponse } from '@/middleware'
 
 const router = Router()
 
 router.get(
   '/orders/get',
   validateQueryRequest(getStatisticSchema),
+  checkPermissions('orderStatistic.read'),
+  validateResponse(getStatisticResponseSchema),
   StatisticController.get as RequestHandler,
 )
 

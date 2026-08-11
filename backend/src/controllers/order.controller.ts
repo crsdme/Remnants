@@ -75,8 +75,12 @@ export async function create(
   next: NextFunction,
 ) {
   try {
+    if (req.files === undefined)
+      req.files = []
+
     const serviceResponse = await OrderService.create({
       payload: req.validated.body,
+      uploadedFiles: req.files as Express.Multer.File[],
       user: req.user,
     })
 
@@ -93,8 +97,12 @@ export async function edit(
   next: NextFunction,
 ) {
   try {
+    if (req.files === undefined)
+      req.files = []
+
     const serviceResponse = await OrderService.edit({
       payload: req.validated.body,
+      uploadedFiles: req.files as Express.Multer.File[],
       user: req.user,
     })
 
@@ -130,7 +138,7 @@ export async function printInvoice(
 ) {
   try {
     const { doc } = await OrderService.printInvoice({
-      payload: req.validated.body,
+      payload: req.validated.query,
     })
 
     res.setHeader('Content-Type', 'application/pdf')

@@ -16,6 +16,7 @@ export async function list(
   const {
     current,
     pageSize,
+    full,
   } = payload.pagination
 
   const {
@@ -23,16 +24,17 @@ export async function list(
     language,
     color,
     priority,
-    includeAll,
     includeCount,
     isLocked,
     isSelectable,
+    isDisplayed,
+    includeInStatistics,
     createdAt,
     updatedAt,
   } = payload.filters
 
   const query = buildQuery({
-    filters: { names, color, priority, createdAt, updatedAt, isLocked, isSelectable },
+    filters: { names, color, priority, createdAt, updatedAt, isLocked, isSelectable, isDisplayed, includeInStatistics },
     rules: {
       _id: { type: 'array' },
       names: { type: 'string', langAware: true },
@@ -40,6 +42,8 @@ export async function list(
       priority: { type: 'exact' },
       isLocked: { type: 'exact' },
       isSelectable: { type: 'exact' },
+      isDisplayed: { type: 'exact' },
+      includeInStatistics: { type: 'exact' },
       createdAt: { type: 'dateRange' },
       updatedAt: { type: 'dateRange' },
     },
@@ -63,7 +67,7 @@ export async function list(
               $match: {
                 $expr: {
                   $and: [
-                    { $eq: ['$orderStatus', '$$statusId'] },
+                    { $eq: ['$orderStatusId', '$$statusId'] },
                     // { $ne: ['$removed', true] },
                   ],
                 },
@@ -98,6 +102,8 @@ export async function list(
         priority: 1,
         isLocked: 1,
         isSelectable: 1,
+        isDisplayed: { $ifNull: ['$isDisplayed', true] },
+        includeInStatistics: { $ifNull: ['$includeInStatistics', true] },
         createdAt: 1,
         updatedAt: 1,
         ...(includeCount ? { ordersCount: 1 } : {}),
@@ -106,8 +112,12 @@ export async function list(
     {
       $facet: {
         items: [
-          { $skip: (current - 1) * pageSize },
-          { $limit: pageSize },
+          ...(full
+            ? []
+            : [
+                { $skip: (current - 1) * pageSize },
+                { $limit: pageSize },
+              ]),
         ],
         count: [
           { $count: 'count' },
@@ -118,22 +128,6 @@ export async function list(
 
   const raw = await OrderStatusModel.aggregate<AggregateResult<OrderStatusDTO>>(pipeline).exec()
   const { items, total } = unwrapAggregate(raw)
-
-  if (includeAll) {
-    const virtualAllStatus = {
-      id: 'all',
-      names: { en: 'All' },
-      color: '#000000',
-      isLocked: false,
-      isSelectable: false,
-      priority: -1,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      ordersCount: items.reduce<number>((acc, item) => acc + (item.ordersCount ?? 0), 0),
-    }
-
-    items.unshift(virtualAllStatus)
-  }
 
   return { items, total, page: current, pageSize }
 }

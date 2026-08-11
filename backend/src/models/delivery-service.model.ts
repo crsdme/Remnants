@@ -63,4 +63,7 @@ DeliveryServiceSchema.set('toJSON', {
   },
 })
 
+DeliveryServiceSchema.index({ removed: 1, active: 1 })
+DeliveryServiceSchema.index({ priority: 1 })
+
 export const DeliveryServiceModel = mongoose.model<DeliveryServiceDoc>('delivery-service', DeliveryServiceSchema)

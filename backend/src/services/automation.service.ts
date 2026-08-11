@@ -7,6 +7,7 @@ import type {
 } from '@remnant/shared'
 import type { ClientSession } from 'mongoose'
 import type {
+  AutomationActionDB,
   CreateAutomationPayload,
   EditAutomationPayload,
   GetAutomationsPayload,
@@ -15,7 +16,12 @@ import type {
 } from '@/types/'
 import { mapAutomationDocToDTO } from '@/mappers'
 import * as AutomationRepo from '@/repositories/automation.repo'
+import * as OrderRepository from '@/repositories/order.repo'
 import { HttpError } from '@/utils'
+import {
+  matchesAutomationConditions,
+  matchesAutomationTriggerParams,
+} from '@/utils/automation'
 
 export async function get({ payload }: { payload: GetAutomationsPayload }): Promise<GetAutomationsResponse> {
   const { items, total, page, pageSize } = await AutomationRepo.list(payload)
@@ -72,8 +78,104 @@ export async function remove({ payload }: { payload: RemoveAutomationsPayload })
   }
 }
 
+async function executeAction({
+  action,
+  orderId,
+  userId,
+  session,
+}: {
+  action: AutomationActionDB
+  orderId: string
+  userId: string
+  session?: ClientSession
+}) {
+  const params = (action.params ?? []).map(String)
+
+  switch (action.field) {
+    case 'order-status-update': {
+      const orderStatusId = params[0]
+      if (!orderStatusId)
+        return
+      await OrderRepository.patchById({
+        id: orderId,
+        payload: { orderStatusId },
+        session,
+      })
+      return
+    }
+    case 'order-source-update': {
+      const orderSourceId = params[0]
+      if (!orderSourceId)
+        return
+      await OrderRepository.patchById({
+        id: orderId,
+        payload: { orderSourceId },
+        session,
+      })
+      return
+    }
+    case 'order-delivery-service-update': {
+      const deliveryServiceId = params[0]
+      if (!deliveryServiceId)
+        return
+      await OrderRepository.patchById({
+        id: orderId,
+        payload: { deliveryServiceId },
+        session,
+      })
+      return
+    }
+    case 'order-mark-removed': {
+      await OrderRepository.removeById(orderId, { removedBy: userId, session })
+      return
+    }
+    case 'pay-order':
+      // Pay flow is not fully implemented yet; keep as a no-op action slot.
+      return
+    default:
+      return
+  }
+}
+
 export async function run({ payload, session }: { payload: RunAutomationsPayload, session?: ClientSession }): Promise<RunAutomationsResponse> {
-  console.log('automation run', payload.toString().slice(0, 100), session?.toString().slice(0, 100))
+  const automations = await AutomationRepo.listActiveByTriggerType({
+    type: payload.type,
+    session,
+  })
+
+  if (!automations.length) {
+    return {
+      status: 'success',
+      code: 'AUTOMATIONS_RAN',
+      message: 'Automations run',
+    }
+  }
+
+  for (const automation of automations) {
+    const order = await OrderRepository.findOne({
+      payload: { id: payload.entityId },
+      session,
+    })
+
+    if (!order)
+      throw new HttpError(404, 'Order not found', 'ORDER_NOT_FOUND')
+
+    if (!matchesAutomationTriggerParams(order, payload.type, automation.trigger.params ?? []))
+      continue
+
+    if (!matchesAutomationConditions(order, automation.conditions ?? []))
+      continue
+
+    for (const action of automation.actions ?? []) {
+      await executeAction({
+        action,
+        orderId: order._id.toString(),
+        userId: payload.user,
+        session,
+      })
+    }
+  }
+
   return {
     status: 'success',
     code: 'AUTOMATIONS_RAN',

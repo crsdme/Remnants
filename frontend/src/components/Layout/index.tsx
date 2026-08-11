@@ -3,6 +3,7 @@ import { Outlet } from 'react-router-dom'
 
 import { LanguageButton, ThemeButton } from '@/components'
 import { LayoutSidebar } from '@/components/LayoutSidebar'
+import { OfflineBanner } from '@/components/OfflineBanner'
 import { Avatar, AvatarFallback, AvatarImage, Separator, SidebarInset, SidebarProvider, SidebarTrigger } from '@/components/ui'
 
 export default function Layout() {
@@ -12,6 +13,7 @@ export default function Layout() {
     <SidebarProvider>
       <LayoutSidebar />
       <SidebarInset>
+        <OfflineBanner />
         <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
           <div className="flex items-center gap-2 px-4">
             <SidebarTrigger className="-ml-1" />

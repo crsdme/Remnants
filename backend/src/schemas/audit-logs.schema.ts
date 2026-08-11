@@ -12,6 +12,7 @@ export const auditLogDBSchema = z.object({
     after: z.unknown(),
   })),
   comment: z.string().optional(),
+  createdBy: idSchema.optional(),
   createdAt: z.coerce.date(),
   updatedAt: z.coerce.date(),
   resource: z.unknown().optional(),

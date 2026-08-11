@@ -193,7 +193,7 @@ export function useColumns() {
           return <Badge variant={isActive ? 'success' : 'destructive'}>{t(`table.active.${isActive}`)}</Badge>
         },
       }),
-      columnHelper.accessor('parent', {
+      columnHelper.accessor('parentId', {
         id: 'parent',
         meta: {
           title: t('page.categories.table.parent'),

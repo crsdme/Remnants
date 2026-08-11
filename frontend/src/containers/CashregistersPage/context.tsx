@@ -146,7 +146,7 @@ export function CashregisterProvider({ children }: { children: ReactNode }) {
     return useMutateEditCashregister.mutate({
       id: selectedCashregister.id,
       names: params.names,
-      accounts: params.accounts,
+      accountIds: params.accounts,
       priority: params.priority,
       active: params.active,
     })

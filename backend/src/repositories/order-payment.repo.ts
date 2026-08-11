@@ -15,6 +15,7 @@ export async function list({ payload }: { payload: GetOrderPaymentsRepoPayload }
   const {
     current,
     pageSize,
+    full,
   } = payload.pagination
 
   const {
@@ -22,7 +23,6 @@ export async function list({ payload }: { payload: GetOrderPaymentsRepoPayload }
     cashregister,
     cashregisterAccount,
     currency,
-    paymentStatus,
     paymentDate,
     transaction,
     createdBy,
@@ -37,7 +37,6 @@ export async function list({ payload }: { payload: GetOrderPaymentsRepoPayload }
       cashregisterId: cashregister,
       cashregisterAccountId: cashregisterAccount,
       currencyId: currency,
-      paymentStatus,
       paymentDate,
       transactionId: transaction,
       createdBy,
@@ -51,7 +50,6 @@ export async function list({ payload }: { payload: GetOrderPaymentsRepoPayload }
       cashregisterId: { type: 'string' },
       cashregisterAccountId: { type: 'string' },
       currencyId: { type: 'string' },
-      paymentStatus: { type: 'string' },
       paymentDate: { type: 'dateRange' },
       transactionId: { type: 'string' },
       createdBy: { type: 'string' },
@@ -73,6 +71,22 @@ export async function list({ payload }: { payload: GetOrderPaymentsRepoPayload }
     },
     {
       $lookup: {
+        from: 'cashregisters',
+        localField: 'cashregisterId',
+        foreignField: '_id',
+        as: 'cashregister',
+      },
+    },
+    {
+      $lookup: {
+        from: 'cashregister-accounts',
+        localField: 'cashregisterAccountId',
+        foreignField: '_id',
+        as: 'cashregisterAccount',
+      },
+    },
+    {
+      $lookup: {
         from: 'currencies',
         localField: 'currencyId',
         foreignField: '_id',
@@ -81,6 +95,8 @@ export async function list({ payload }: { payload: GetOrderPaymentsRepoPayload }
     },
     {
       $addFields: {
+        cashregister: { $arrayElemAt: ['$cashregister', 0] },
+        cashregisterAccount: { $arrayElemAt: ['$cashregisterAccount', 0] },
         currency: { $arrayElemAt: ['$currencyData', 0] },
       },
     },
@@ -89,16 +105,14 @@ export async function list({ payload }: { payload: GetOrderPaymentsRepoPayload }
     },
     {
       $project: {
-        _id: 0,
-        id: '$_id',
-        order: '$orderId',
+        _id: 1,
+        orderId: 1,
         cashregister: { id: '$cashregister._id', names: '$cashregister.names' },
         cashregisterAccount: { id: '$cashregisterAccount._id', names: '$cashregisterAccount.names' },
         currency: { id: '$currency._id', names: '$currency.names', symbols: '$currency.symbols', scale: '$currency.scale', paymentEpsilon: '$currency.paymentEpsilon' },
         minorAmount: 1,
-        paymentStatus: 1,
         paymentDate: 1,
-        transaction: '$transactionId',
+        transactionId: 1,
         comment: 1,
         createdAt: 1,
         updatedAt: 1,
@@ -109,10 +123,12 @@ export async function list({ payload }: { payload: GetOrderPaymentsRepoPayload }
     },
     {
       $facet: {
-        items: [
-          { $skip: (current - 1) * pageSize },
-          { $limit: pageSize },
-        ],
+        items: full
+          ? []
+          : [
+              { $skip: (current - 1) * pageSize },
+              { $limit: pageSize },
+            ],
         count: [
           { $count: 'count' },
         ],
@@ -135,37 +151,66 @@ export async function getById({ id }: { id: string }): Promise<OrderPaymentDBPop
     },
     {
       $lookup: {
+        from: 'cashregisters',
+        localField: 'cashregisterId',
+        foreignField: '_id',
+        as: 'cashregister',
+      },
+    },
+    {
+      $lookup: {
+        from: 'cashregister-accounts',
+        localField: 'cashregisterAccountId',
+        foreignField: '_id',
+        as: 'cashregisterAccount',
+      },
+    },
+    {
+      $lookup: {
         from: 'currencies',
         localField: 'currencyId',
         foreignField: '_id',
-        pipeline: [
-          {
-            $project: {
-              id: '$_id',
-              names: 1,
-              symbols: 1,
-              scale: 1,
-            },
-          },
-        ],
         as: 'currency',
       },
     },
     {
-      $unwind: {
-        path: '$currency',
-        preserveNullAndEmptyArrays: true,
+      $addFields: {
+        cashregister: { $arrayElemAt: ['$cashregister', 0] },
+        cashregisterAccount: { $arrayElemAt: ['$cashregisterAccount', 0] },
+        currency: { $arrayElemAt: ['$currency', 0] },
       },
     },
     {
-      $unset: 'currencyId',
+      $project: {
+        _id: 1,
+        orderId: 1,
+        cashregister: {
+          id: '$cashregister._id',
+          names: '$cashregister.names',
+        },
+        cashregisterAccount: {
+          id: '$cashregisterAccount._id',
+          names: '$cashregisterAccount.names',
+        },
+        currency: {
+          id: '$currency._id',
+          names: '$currency.names',
+          symbols: '$currency.symbols',
+          scale: '$currency.scale',
+        },
+        minorAmount: 1,
+        paymentDate: 1,
+        transactionId: 1,
+        comment: 1,
+        createdBy: 1,
+        removedBy: 1,
+        createdAt: 1,
+        updatedAt: 1,
+      },
     },
   ]).exec()
 
-  if (doc === null)
-    return null
-
-  return doc
+  return doc ?? null
 }
 
 export async function createOne({ payload, session }: { payload: CreateOrderPaymentsRepoPayload, session?: ClientSession }): Promise<OrderPaymentDB[]> {

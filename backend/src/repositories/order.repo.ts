@@ -12,6 +12,7 @@ import type {
   GetOrderPaymentsRepoResult,
   GetOrdersRepoPayload,
   GetOrdersRepoResult,
+  OrderDB,
   OrderDBPopulated,
   OrderItemDBPopulated,
   OrderPaymentDBPopulated,
@@ -34,6 +35,7 @@ export async function list({
   const {
     current,
     pageSize,
+    full,
   } = payload.pagination
 
   const {
@@ -54,10 +56,6 @@ export async function list({
     removed,
   } = payload.filters
 
-  let orderStatusQuery = orderStatus
-  if (orderStatus.includes('all'))
-    orderStatusQuery = []
-
   const query = buildQuery({
     filters: {
       _id: ids,
@@ -65,7 +63,7 @@ export async function list({
       warehouse,
       deliveryService,
       orderSource,
-      orderStatus: orderStatusQuery,
+      orderStatus,
       orderPayments,
       client,
       comment,
@@ -79,12 +77,12 @@ export async function list({
     rules: {
       _id: { type: 'array' },
       seq: { type: 'number' },
-      warehouse: { type: 'string' },
-      deliveryService: { type: 'string' },
-      orderSource: { type: 'string' },
-      orderStatus: { type: 'array' },
-      orderPayments: { type: 'array' },
-      client: { type: 'string' },
+      warehouse: { type: 'string', field: 'warehouseId' },
+      deliveryService: { type: 'string', field: 'deliveryServiceId' },
+      orderSource: { type: 'string', field: 'orderSourceId' },
+      orderStatus: { type: 'array', field: 'orderStatusId' },
+      orderPayments: { type: 'array', field: 'orderPaymentIds' },
+      client: { type: 'string', field: 'clientId' },
       comment: { type: 'string' },
       createdBy: { type: 'string' },
       removedBy: { type: 'string' },
@@ -94,13 +92,13 @@ export async function list({
     },
   })
 
-  applyScopeIdsToQuery(query, options.warehouseIds, 'warehouse')
-  applyScopeIdsToQuery(query, options.deliveryServiceIds, 'deliveryService')
-  applyScopeIdsToQuery(query, options.orderSourceIds, 'orderSource')
-  applyScopeIdsToQuery(query, options.orderStatusIds, 'orderStatus')
+  applyScopeIdsToQuery(query, options.warehouseIds, 'warehouseId')
+  applyScopeIdsToQuery(query, options.deliveryServiceIds, 'deliveryServiceId')
+  applyScopeIdsToQuery(query, options.orderSourceIds, 'orderSourceId')
+  applyScopeIdsToQuery(query, options.orderStatusIds, 'orderStatusId')
   const sorters = buildSortQuery(payload.sorters, { seq: -1 })
 
-  const profitStages: PipelineStage[] = []
+  const profitStages: PipelineStage.FacetPipelineStage[] = []
 
   if (payload.hasProfitPermission === true) {
     profitStages.push(
@@ -109,10 +107,10 @@ export async function list({
           from: 'order-items',
           let: { oid: '$_id' },
           pipeline: [
-            { $match: { $expr: { $and: [{ $eq: ['$order', '$$oid'] }, { $ne: ['$removed', true] }] } } },
+            { $match: { $expr: { $and: [{ $eq: ['$orderId', '$$oid'] }, { $ne: ['$removed', true] }] } } },
             {
               $addFields: {
-                curKey: { $ifNull: ['$currency.id', { $ifNull: ['$currency._id', '$currency'] }] },
+                curKey: { $ifNull: ['$currencyId.id', { $ifNull: ['$currencyId._id', '$currencyId'] }] },
                 lineTotal: {
                   $multiply: [
                     { $toDouble: { $ifNull: ['$minorProfit', 0] } },
@@ -124,7 +122,7 @@ export async function list({
             {
               $lookup: {
                 from: 'currencies',
-                localField: 'currency',
+                localField: 'currencyId',
                 foreignField: '_id',
                 as: 'currency',
               },
@@ -158,152 +156,172 @@ export async function list({
       $sort: sorters,
     },
     {
-      $lookup: {
-        from: 'clients',
-        localField: 'client',
-        foreignField: '_id',
-        as: 'client',
-      },
-    },
-    {
-      $lookup: {
-        from: 'delivery-services',
-        localField: 'deliveryService',
-        foreignField: '_id',
-        as: 'deliveryService',
-      },
-    },
-    {
-      $lookup: {
-        from: 'order-sources',
-        localField: 'orderSource',
-        foreignField: '_id',
-        as: 'orderSource',
-      },
-    },
-    {
-      $lookup: {
-        from: 'order-statuses',
-        localField: 'orderStatus',
-        foreignField: '_id',
-        as: 'orderStatus',
-      },
-    },
-    {
-      $lookup: {
-        from: 'warehouses',
-        localField: 'warehouse',
-        foreignField: '_id',
-        as: 'warehouse',
-      },
-    },
-    {
-      $lookup: {
-        from: 'order-payments',
-        localField: 'orderPayments',
-        foreignField: '_id',
-        as: 'orderPayments',
-      },
-    },
-    {
-      $lookup: {
-        from: 'order-items',
-        localField: '_id',
-        foreignField: 'order',
-        as: 'orderItems',
-      },
-    },
-    {
-      $addFields: {
-        orderItems: {
-          $filter: {
-            input: '$orderItems',
-            as: 'item',
-            cond: { $ne: ['$$item.removed', true] },
-          },
-        },
-      },
-    },
-    {
-      $lookup: {
-        from: 'order-items',
-        let: { oid: '$_id' },
-        pipeline: [
-          { $match: { $expr: { $and: [{ $eq: ['$order', '$$oid'] }, { $ne: ['$removed', true] }] } } },
+      $facet: {
+        items: [
+          ...(full
+            ? []
+            : [
+                { $skip: (current - 1) * pageSize },
+                { $limit: pageSize },
+              ]),
           {
-            $addFields: {
-              curKey: { $ifNull: ['$currency.id', { $ifNull: ['$currency._id', '$currency'] }] },
-              lineTotal: {
-                $multiply: [
-                  { $toDouble: { $ifNull: ['$minorPrice', 0] } },
-                  { $toDouble: { $ifNull: ['$quantity', 0] } },
-                ],
-              },
+            $lookup: {
+              from: 'clients',
+              localField: 'clientId',
+              foreignField: '_id',
+              as: 'client',
             },
           },
           {
             $lookup: {
-              from: 'currencies',
-              localField: 'currency',
+              from: 'delivery-services',
+              localField: 'deliveryServiceId',
               foreignField: '_id',
-              as: 'currency',
+              as: 'deliveryService',
             },
           },
+          {
+            $lookup: {
+              from: 'order-sources',
+              localField: 'orderSourceId',
+              foreignField: '_id',
+              as: 'orderSource',
+            },
+          },
+          {
+            $lookup: {
+              from: 'order-statuses',
+              localField: 'orderStatusId',
+              foreignField: '_id',
+              as: 'orderStatus',
+            },
+          },
+          {
+            $lookup: {
+              from: 'warehouses',
+              localField: 'warehouseId',
+              foreignField: '_id',
+              as: 'warehouse',
+            },
+          },
+          {
+            $lookup: {
+              from: 'order-payments',
+              let: { paymentIds: { $ifNull: ['$orderPaymentIds', []] } },
+              pipeline: [
+                { $match: { $expr: { $in: ['$_id', '$$paymentIds'] } } },
+                {
+                  $lookup: {
+                    from: 'currencies',
+                    localField: 'currencyId',
+                    foreignField: '_id',
+                    as: 'currency',
+                  },
+                },
+                {
+                  $project: {
+                    _id: 0,
+                    id: '$_id',
+                    minorAmount: 1,
+                    scale: { $ifNull: [{ $arrayElemAt: ['$currency.scale', 0] }, 2] },
+                    paymentDate: 1,
+                    comment: { $ifNull: ['$comment', ''] },
+                  },
+                },
+              ],
+              as: 'orderPayments',
+            },
+          },
+          {
+            $lookup: {
+              from: 'order-items',
+              let: { oid: '$_id' },
+              pipeline: [
+                { $match: { $expr: { $and: [{ $eq: ['$orderId', '$$oid'] }, { $ne: ['$removed', true] }] } } },
+                {
+                  $addFields: {
+                    curKey: { $ifNull: ['$currencyId.id', { $ifNull: ['$currencyId._id', '$currencyId'] }] },
+                    lineTotal: {
+                      $multiply: [
+                        { $toDouble: { $ifNull: ['$minorPrice', 0] } },
+                        { $toDouble: { $ifNull: ['$quantity', 0] } },
+                      ],
+                    },
+                  },
+                },
+                {
+                  $lookup: {
+                    from: 'currencies',
+                    localField: 'currencyId',
+                    foreignField: '_id',
+                    as: 'currency',
+                  },
+                },
+                {
+                  $addFields: {
+                    currency: { $arrayElemAt: ['$currency', 0] },
+                  },
+                },
+                {
+                  $group: {
+                    _id: '$curKey',
+                    currency: { $last: '$currency._id' },
+                    scale: { $last: '$currency.scale' },
+                    total: { $sum: '$lineTotal' },
+                  },
+                },
+                { $project: { _id: 0, currency: 1, scale: 1, total: 1 } },
+              ],
+              as: 'totals',
+            },
+          },
+          ...profitStages,
           {
             $addFields: {
-              currency: { $arrayElemAt: ['$currency', 0] },
+              client: { $arrayElemAt: ['$client', 0] },
+              deliveryService: { $arrayElemAt: ['$deliveryService', 0] },
+              orderSource: { $arrayElemAt: ['$orderSource', 0] },
+              orderStatus: { $arrayElemAt: ['$orderStatus', 0] },
+              warehouse: { $arrayElemAt: ['$warehouse', 0] },
             },
           },
           {
-            $group: {
-              _id: '$curKey',
-              currency: { $last: '$currency._id' },
-              scale: { $last: '$currency.scale' },
-              total: { $sum: '$lineTotal' },
+            $project: {
+              _id: 0,
+              id: '$_id',
+              seq: 1,
+              client: {
+                $cond: [
+                  { $ifNull: ['$client._id', false] },
+                  {
+                    id: '$client._id',
+                    seq: '$client.seq',
+                    name: '$client.name',
+                    lastName: '$client.lastName',
+                    middleName: '$client.middleName',
+                    phones: '$client.phones',
+                    emails: '$client.emails',
+                  },
+                  null,
+                ],
+              },
+              deliveryService: { id: '$deliveryService._id', names: 1, type: 1, color: 1, priority: 1 },
+              orderSource: { id: '$orderSource._id', names: 1, type: 1, color: 1, priority: 1 },
+              orderStatus: { id: '$orderStatus._id', names: 1, type: 1, color: 1, isLocked: 1, priority: 1 },
+              warehouse: { id: '$warehouse._id', names: 1, priority: 1 },
+              totals: 1,
+              orderPayments: 1,
+              profit: 1,
+              orderPaymentStatus: 1,
+              comment: 1,
+              files: { $ifNull: ['$files', []] },
+              createdAt: 1,
+              updatedAt: 1,
+              createdBy: 1,
+              confirmedBy: 1,
+              removedBy: 1,
             },
           },
-          { $project: { _id: 0, currency: 1, scale: 1, total: 1 } },
-        ],
-        as: 'totals',
-      },
-    },
-    ...profitStages,
-    {
-      $addFields: {
-        client: { $arrayElemAt: ['$client', 0] },
-        deliveryService: { $arrayElemAt: ['$deliveryService', 0] },
-        orderSource: { $arrayElemAt: ['$orderSource', 0] },
-        orderStatus: { $arrayElemAt: ['$orderStatus', 0] },
-        warehouse: { $arrayElemAt: ['$warehouse', 0] },
-      },
-    },
-    {
-      $project: {
-        _id: 0,
-        id: '$_id',
-        seq: 1,
-        client: { id: '$client._id', name: 1, lastName: 1, middleName: 1, phones: 1, emails: 1 },
-        deliveryService: { id: '$deliveryService._id', names: 1, type: 1, color: 1 },
-        orderSource: { id: '$orderSource._id', names: 1, type: 1, color: 1 },
-        orderStatus: { id: '$orderStatus._id', names: 1, type: 1, color: 1, isLocked: 1 },
-        warehouse: { id: '$warehouse._id', names: 1 },
-        totals: 1,
-        orderPayments: 1,
-        profit: 1,
-        orderPaymentStatus: 1,
-        comment: 1,
-        createdAt: 1,
-        updatedAt: 1,
-        createdBy: 1,
-        confirmedBy: 1,
-        removedBy: 1,
-      },
-    },
-    {
-      $facet: {
-        items: [
-          { $skip: (current - 1) * pageSize },
-          { $limit: pageSize },
         ],
         count: [
           { $count: 'count' },
@@ -322,6 +340,7 @@ export async function listItems({ payload }: { payload: GetOrderItemsRepoPayload
   const {
     current,
     pageSize,
+    full,
   } = payload.pagination
 
   const {
@@ -333,14 +352,14 @@ export async function listItems({ payload }: { payload: GetOrderItemsRepoPayload
       order,
     },
     rules: {
-      order: { type: 'array' },
+      order: { type: 'array', field: 'orderId' },
       seq: { type: 'array' },
     },
   })
 
   const projection: Record<string, unknown> = {
     _id: 1,
-    order: 1,
+    orderId: 1,
     product: 1,
     quantity: 1,
     minorManualPrice: 1,
@@ -368,13 +387,13 @@ export async function listItems({ payload }: { payload: GetOrderItemsRepoPayload
     discountPercent: 1,
     exchangeRate: 1,
     order: 1,
-    currency: { id: '$currency._id', names: '$currency.names', symbols: '$currency.symbols' },
+    currency: { id: '$currency._id', names: '$currency.names', symbols: '$currency.symbols', scale: '$currency.scale' },
     barcodes: { id: 1, code: 1 },
     categories: { id: 1, names: 1 },
     unit: { id: '$unit._id', names: '$unit.names', symbols: '$unit.symbols' },
-    warehouseStock: { count: 1, warehouse: 1, status: 1 },
+    warehouseStock: { count: 1, warehouseId: 1, status: 1 },
     images: 1,
-    productProperties: { id: 1, value: 1, data: { names: 1, symbols: 1, type: 1, isRequired: 1, showInTable: 1, showInStatistics: 1 }, optionData: { id: 1, names: 1, color: 1 } },
+    productProperties: { id: 1, value: 1, data: { names: 1, symbols: 1, type: 1, isRequired: 1, showInTable: 1, showInStatistics: 1 }, options: { id: 1, names: 1, color: 1 } },
     productPropertiesGroup: { id: '$productPropertiesGroup._id', names: '$productPropertiesGroup.names' },
     createdAt: 1,
     updatedAt: 1,
@@ -399,84 +418,208 @@ export async function listItems({ payload }: { payload: GetOrderItemsRepoPayload
       $match: query,
     },
     {
-      $lookup: {
-        from: 'currencies',
-        localField: 'currency',
-        foreignField: '_id',
-        as: 'currency',
-      },
-    },
-    {
-      $lookup: {
-        from: 'products',
-        let: { productId: '$product' },
-        pipeline: [
-          { $match: { $expr: { $eq: ['$_id', '$$productId'] } } },
-          { $unwind: { path: '$productProperties', preserveNullAndEmptyArrays: true } },
-          {
-            $lookup: {
-              from: 'product-properties',
-              localField: 'productProperties._id',
-              foreignField: '_id',
-              as: 'productProperties.data',
-            },
-          },
-          {
-            $lookup: {
-              from: 'product-property-options',
-              localField: 'productProperties.value',
-              foreignField: '_id',
-              as: 'productProperties.optionData',
-            },
-          },
-          {
-            $lookup: {
-              from: 'product-property-options',
-              let: { valueArr: '$productProperties.value' },
-              pipeline: [
-                {
-                  $match: {
-                    $expr: {
-                      $in: [
-                        '$_id',
-                        {
-                          $cond: [
-                            { $isArray: ['$$valueArr'] },
-                            '$$valueArr',
-                            [{ $ifNull: ['$$valueArr', null] }],
-                          ],
-                        },
-                      ],
-                    },
-                  },
-                },
-              ],
-              as: 'productProperties.optionData',
-            },
-          },
-          {
-            $group: {
-              _id: '$_id',
-              doc: { $first: '$$ROOT' },
-              productProperties: { $push: '$productProperties' },
-            },
-          },
-          {
-            $addFields: {
-              'doc.productProperties': '$productProperties',
-            },
-          },
-          {
-            $replaceRoot: {
-              newRoot: '$doc',
-            },
-          },
+      $facet: {
+        items: [
+          ...(full
+            ? []
+            : [
+                { $skip: (current - 1) * pageSize },
+                { $limit: pageSize },
+              ]),
           {
             $lookup: {
               from: 'currencies',
               localField: 'currencyId',
               foreignField: '_id',
               as: 'currency',
+            },
+          },
+          {
+            $lookup: {
+              from: 'products',
+              let: { productId: '$productId' },
+              pipeline: [
+                { $match: { $expr: { $eq: ['$_id', '$$productId'] } } },
+                { $unwind: { path: '$productProperties', preserveNullAndEmptyArrays: true } },
+                {
+                  $lookup: {
+                    from: 'product-properties',
+                    localField: 'productProperties._id',
+                    foreignField: '_id',
+                    as: 'productProperties.data',
+                  },
+                },
+                {
+                  $lookup: {
+                    from: 'product-property-options',
+                    localField: 'productProperties.value',
+                    foreignField: '_id',
+                    as: 'productProperties.options',
+                  },
+                },
+                {
+                  $lookup: {
+                    from: 'product-property-options',
+                    let: { valueArr: '$productProperties.value' },
+                    pipeline: [
+                      {
+                        $match: {
+                          $expr: {
+                            $in: [
+                              '$_id',
+                              {
+                                $cond: [
+                                  { $isArray: ['$$valueArr'] },
+                                  '$$valueArr',
+                                  [{ $ifNull: ['$$valueArr', null] }],
+                                ],
+                              },
+                            ],
+                          },
+                        },
+                      },
+                    ],
+                    as: 'productProperties.options',
+                  },
+                },
+                {
+                  $group: {
+                    _id: '$_id',
+                    doc: { $first: '$$ROOT' },
+                    productProperties: { $push: '$productProperties' },
+                  },
+                },
+                {
+                  $addFields: {
+                    'doc.productProperties': '$productProperties',
+                  },
+                },
+                {
+                  $replaceRoot: {
+                    newRoot: '$doc',
+                  },
+                },
+                {
+                  $lookup: {
+                    from: 'currencies',
+                    localField: 'currencyId',
+                    foreignField: '_id',
+                    as: 'currency',
+                  },
+                },
+                {
+                  $lookup: {
+                    from: 'currencies',
+                    localField: 'purchaseCurrencyId',
+                    foreignField: '_id',
+                    as: 'purchaseCurrency',
+                  },
+                },
+                {
+                  $lookup: {
+                    from: 'units',
+                    localField: 'unitId',
+                    foreignField: '_id',
+                    as: 'unit',
+                  },
+                },
+                {
+                  $lookup: {
+                    from: 'categories',
+                    localField: 'categoryIds',
+                    foreignField: '_id',
+                    as: 'categories',
+                  },
+                },
+                {
+                  $lookup: {
+                    from: 'quantities',
+                    localField: 'quantityIds',
+                    foreignField: '_id',
+                    as: 'warehouseStock',
+                  },
+                },
+                {
+                  $lookup: {
+                    from: 'product-property-groups',
+                    localField: 'productPropertiesGroupId',
+                    foreignField: '_id',
+                    as: 'productPropertiesGroup',
+                  },
+                },
+                {
+                  $lookup: {
+                    from: 'barcodes',
+                    localField: 'barcodeIds',
+                    foreignField: '_id',
+                    as: 'barcodes',
+                  },
+                },
+                {
+                  $addFields: {
+                    currency: { $arrayElemAt: ['$currency', 0] },
+                    purchaseCurrency: { $arrayElemAt: ['$purchaseCurrency', 0] },
+                    unit: { $arrayElemAt: ['$unit', 0] },
+                    productPropertiesGroup: { $arrayElemAt: ['$productPropertiesGroup', 0] },
+                    productProperties: {
+                      $map: {
+                        input: '$productProperties',
+                        as: 'prop',
+                        in: {
+                          $mergeObjects: [
+                            '$$prop',
+                            {
+                              id: '$$prop._id',
+                              data: { $arrayElemAt: ['$$prop.data', 0] },
+                              options: {
+                                $map: {
+                                  input: '$$prop.options',
+                                  as: 'option',
+                                  in: {
+                                    $mergeObjects: [
+                                      '$$option',
+                                      {
+                                        id: '$$option._id',
+                                        names: '$$option.names',
+                                        color: '$$option.color',
+                                      },
+                                    ],
+                                  },
+                                },
+                              },
+                            },
+                          ],
+                        },
+                      },
+                    },
+                    categories: {
+                      $map: {
+                        input: '$categories',
+                        as: 'prop',
+                        in: {
+                          $mergeObjects: [
+                            '$$prop',
+                            {
+                              id: '$$prop._id',
+                            },
+                          ],
+                        },
+                      },
+                    },
+                    barcodes: {
+                      $map: {
+                        input: '$barcodes',
+                        as: 'barcode',
+                        in: { $mergeObjects: ['$$barcode', { id: '$$barcode._id', code: '$$barcode.code' }] },
+                      },
+                    },
+                  },
+                },
+                {
+                  $project: productProjection,
+                },
+              ],
+              as: 'product',
             },
           },
           {
@@ -488,128 +631,17 @@ export async function listItems({ payload }: { payload: GetOrderItemsRepoPayload
             },
           },
           {
-            $lookup: {
-              from: 'units',
-              localField: 'unitId',
-              foreignField: '_id',
-              as: 'unit',
-            },
-          },
-          {
-            $lookup: {
-              from: 'categories',
-              localField: 'categoriesIds',
-              foreignField: '_id',
-              as: 'categories',
-            },
-          },
-          {
-            $lookup: {
-              from: 'quantities',
-              localField: 'quantityIds',
-              foreignField: '_id',
-              as: 'warehouseStock',
-            },
-          },
-          {
-            $lookup: {
-              from: 'product-property-groups',
-              localField: 'productPropertiesGroupId',
-              foreignField: '_id',
-              as: 'productPropertiesGroup',
-            },
-          },
-          {
-            $lookup: {
-              from: 'barcodes',
-              localField: 'barcodesIds',
-              foreignField: '_id',
-              as: 'barcodes',
-            },
-          },
-          {
             $addFields: {
+              product: {
+                $first: '$product',
+              },
               currency: { $arrayElemAt: ['$currency', 0] },
               purchaseCurrency: { $arrayElemAt: ['$purchaseCurrency', 0] },
-              unit: { $arrayElemAt: ['$unit', 0] },
-              productPropertiesGroup: { $arrayElemAt: ['$productPropertiesGroup', 0] },
-              productProperties: {
-                $map: {
-                  input: '$productProperties',
-                  as: 'prop',
-                  in: {
-                    $mergeObjects: [
-                      '$$prop',
-                      {
-                        id: '$$prop._id',
-                        data: { $arrayElemAt: ['$$prop.data', 0] },
-                        optionData: {
-                          $map: {
-                            input: '$$prop.optionData',
-                            as: 'option',
-                            in: {
-                              $mergeObjects: [
-                                '$$option',
-                                {
-                                  id: '$$option._id',
-                                  names: '$$option.names',
-                                  color: '$$option.color',
-                                },
-                              ],
-                            },
-                          },
-                        },
-                      },
-                    ],
-                  },
-                },
-              },
-              categories: {
-                $map: {
-                  input: '$categories',
-                  as: 'prop',
-                  in: {
-                    $mergeObjects: [
-                      '$$prop',
-                      {
-                        id: '$$prop._id',
-                      },
-                    ],
-                  },
-                },
-              },
-              barcodes: {
-                $map: {
-                  input: '$barcodes',
-                  as: 'barcode',
-                  in: { $mergeObjects: ['$$barcode', { id: '$$barcode._id', code: '$$barcode.code' }] },
-                },
-              },
             },
           },
           {
-            $project: productProjection,
+            $project: projection,
           },
-        ],
-        as: 'product',
-      },
-    },
-    {
-      $addFields: {
-        product: {
-          $first: '$product',
-        },
-        currency: { $arrayElemAt: ['$currency', 0] },
-      },
-    },
-    {
-      $project: projection,
-    },
-    {
-      $facet: {
-        items: [
-          { $skip: (current - 1) * pageSize },
-          { $limit: pageSize },
         ],
         count: [
           { $count: 'count' },
@@ -628,6 +660,7 @@ export async function listPayments({ payload }: { payload: GetOrderPaymentsRepoP
   const {
     current,
     pageSize,
+    full,
   } = payload.pagination
 
   const {
@@ -655,67 +688,71 @@ export async function listPayments({ payload }: { payload: GetOrderPaymentsRepoP
       $sort: sorters,
     },
     {
-      $lookup: {
-        from: 'cashregisters',
-        localField: 'cashregisterId',
-        foreignField: '_id',
-        as: 'cashregister',
-      },
-    },
-    {
-      $lookup: {
-        from: 'cashregister-accounts',
-        localField: 'cashregisterAccountId',
-        foreignField: '_id',
-        as: 'cashregisterAccount',
-      },
-    },
-    {
-      $lookup: {
-        from: 'moneytransactions',
-        localField: 'transactionId',
-        foreignField: '_id',
-        as: 'transaction',
-      },
-    },
-    {
-      $lookup: {
-        from: 'currencies',
-        localField: 'currencyId',
-        foreignField: '_id',
-        as: 'currency',
-      },
-    },
-    {
-      $addFields: {
-        cashregister: { $arrayElemAt: ['$cashregister', 0] },
-        cashregisterAccount: { $arrayElemAt: ['$cashregisterAccount', 0] },
-        transaction: { $arrayElemAt: ['$transaction', 0] },
-        currency: { $arrayElemAt: ['$currency', 0] },
-      },
-    },
-    {
-      $project: {
-        _id: 0,
-        id: '$_id',
-        order: '$orderId',
-        cashregister: { id: '$cashregister._id', names: '$cashregister.names' },
-        cashregisterAccount: { id: '$cashregisterAccount._id', names: '$cashregisterAccount.names' },
-        transaction: { id: '$transaction._id', type: '$transaction.type', minorAmount: '$transaction.minorAmount' },
-        currency: { id: '$currency._id', names: 1, symbols: 1, scale: 1 },
-        minorAmount: 1,
-        paymentStatus: 1,
-        paymentDate: 1,
-        comment: 1,
-        createdAt: 1,
-        updatedAt: 1,
-      },
-    },
-    {
       $facet: {
         items: [
-          { $skip: (current - 1) * pageSize },
-          { $limit: pageSize },
+          ...(full
+            ? []
+            : [
+                { $skip: (current - 1) * pageSize },
+                { $limit: pageSize },
+              ]),
+          {
+            $lookup: {
+              from: 'cashregisters',
+              localField: 'cashregisterId',
+              foreignField: '_id',
+              as: 'cashregister',
+            },
+          },
+          {
+            $lookup: {
+              from: 'cashregister-accounts',
+              localField: 'cashregisterAccountId',
+              foreignField: '_id',
+              as: 'cashregisterAccount',
+            },
+          },
+          {
+            $lookup: {
+              from: 'moneytransactions',
+              localField: 'transactionId',
+              foreignField: '_id',
+              as: 'transaction',
+            },
+          },
+          {
+            $lookup: {
+              from: 'currencies',
+              localField: 'currencyId',
+              foreignField: '_id',
+              as: 'currency',
+            },
+          },
+          {
+            $addFields: {
+              cashregister: { $arrayElemAt: ['$cashregister', 0] },
+              cashregisterAccount: { $arrayElemAt: ['$cashregisterAccount', 0] },
+              transaction: { $arrayElemAt: ['$transaction', 0] },
+              currency: { $arrayElemAt: ['$currency', 0] },
+            },
+          },
+          {
+            $project: {
+              _id: 1,
+              orderId: 1,
+              cashregister: { id: '$cashregister._id', names: '$cashregister.names' },
+              cashregisterAccount: { id: '$cashregisterAccount._id', names: '$cashregisterAccount.names' },
+              currency: { id: '$currency._id', names: '$currency.names', symbols: '$currency.symbols', scale: '$currency.scale' },
+              minorAmount: 1,
+              paymentDate: 1,
+              transactionId: 1,
+              comment: 1,
+              createdBy: 1,
+              removedBy: 1,
+              createdAt: 1,
+              updatedAt: 1,
+            },
+          },
         ],
         count: [
           { $count: 'count' },
@@ -754,26 +791,55 @@ export async function updateOneItem({ payload, session }: { payload: EditOrderIt
   ).exec()
 }
 
-export async function findOne({ payload, session }: { payload: FindOneOrderRepoPayload, session?: ClientSession }) {
+export type OrderWithPopulatedClient = Omit<OrderDB, 'clientId'> & {
+  clientId: {
+    _id: string
+    name?: string
+    lastName?: string
+    middleName?: string
+    phones?: string[]
+    emails?: string[]
+  } | null
+}
+
+export async function findOne({ payload, session }: { payload: FindOneOrderRepoPayload, session?: ClientSession }): Promise<OrderWithPopulatedClient | null> {
   const { id, seq } = payload
-  return OrderModel.findOne(
+  const order = await OrderModel.findOne(
     { $or: [{ _id: id }, { seq }] },
     undefined,
     { session },
   )
-    .populate('client', 'name lastName middleName phones emails')
-    .lean<OrderDBPopulated>()
+    .populate('clientId', 'name lastName middleName phones emails')
+    .lean()
     .exec()
+
+  return order as unknown as OrderWithPopulatedClient | null
 }
 
 export async function findById(id: string) {
   return OrderModel.findById(id).exec()
 }
 
-export async function removeById(id: string) {
+export async function removeById(id: string, options?: { removedBy?: string, session?: ClientSession }) {
   return OrderModel.findOneAndUpdate(
     { _id: id },
-    { $set: { removed: true } },
-    { new: true, runValidators: true },
+    { $set: { removed: true, ...(options?.removedBy ? { removedBy: options.removedBy } : {}) } },
+    { new: true, runValidators: true, session: options?.session },
+  ).exec()
+}
+
+export async function patchById({
+  id,
+  payload,
+  session,
+}: {
+  id: string
+  payload: Record<string, unknown>
+  session?: ClientSession
+}) {
+  return OrderModel.findOneAndUpdate(
+    { _id: id },
+    { $set: payload },
+    { new: true, runValidators: true, session },
   ).exec()
 }

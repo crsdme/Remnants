@@ -34,7 +34,7 @@ const CategorySchema: Schema = new Schema(
         message: 'Supported languages only',
       },
     },
-    parent: {
+    parentId: {
       type: String,
       ref: 'Category',
       required: false,
@@ -78,5 +78,10 @@ CategorySchema.pre('save', async function (this: CategoryDoc, next) {
 
   next()
 })
+
+CategorySchema.index({ parentId: 1 })
+CategorySchema.index({ removed: 1, active: 1 })
+CategorySchema.index({ priority: 1 })
+CategorySchema.index({ seq: 1 })
 
 export const CategoryModel = mongoose.model<CategoryDoc>('category', CategorySchema)

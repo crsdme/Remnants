@@ -1,5 +1,5 @@
 import { Minus, Plus, Trash2 } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { CalcNumberInput } from '@/components/CalcNumberInput'
 import { Badge, Button, Input, Separator } from '@/components/ui'
 import { useLocale } from '@/utils/hooks'
 
@@ -10,25 +10,12 @@ export function EditableCell({ product, field, onChange, className, disabled }: 
   className?: string
   disabled?: boolean
 }) {
-  const [localValue, setLocalValue] = useState(product[field])
-
-  useEffect(() => {
-    setLocalValue(product[field])
-  }, [product[field]])
-
   return (
-    <Input
-      value={localValue}
+    <CalcNumberInput
+      value={product[field]}
       className={`pr-10 w-30 ${className}`}
-      onChange={(e) => {
-        setLocalValue(e.target.value)
-      }}
-      onBlur={() => {
-        const val = Number.parseFloat(localValue)
-        if (!Number.isNaN(val)) {
-          onChange(val)
-        }
-      }}
+      onValueChange={onChange}
+      allowNegative={true}
       disabled={disabled}
     />
   )

@@ -15,6 +15,8 @@ export const warehouseTransactionLogSchema = z.object({
   productId: idSchema,
   warehouseId: idSchema,
   deltaCount: z.number().int(),
+  previousCount: z.number().int().optional(),
+  afterCount: z.number().int().optional(),
   refType: z.string().trim(),
   refId: idSchema,
   userId: idSchema,
@@ -27,6 +29,8 @@ export type WarehouseTransactionLogDTO = z.output<typeof warehouseTransactionLog
 export const warehouseTransactionLogPopulatedSchema = z.object({
   id: idSchema,
   deltaCount: z.number().int(),
+  previousCount: z.number().int().optional(),
+  afterCount: z.number().int().optional(),
   refType: z.string().trim(),
   refId: idSchema,
   user: z.object({
@@ -76,6 +80,8 @@ export const createWarehouseTransactionLogsSchema = z.object({
   productId: idSchema,
   warehouseId: idSchema,
   deltaCount: z.number().int(),
+  previousCount: z.number().int(),
+  afterCount: z.number().int(),
   refType: z.string().trim(),
   refId: idSchema,
   userId: idSchema,

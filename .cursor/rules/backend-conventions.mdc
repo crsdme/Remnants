@@ -1,0 +1,56 @@
+---
+description: Remnants backend — нейминг типов, роуты, слои, Zod shared vs backend.
+globs: backend/**/*.ts
+alwaysApply: false
+---
+
+# Backend — соглашения
+
+## Нейминг файлов и символов
+
+- **Файлы** сущности — единственное число: `product.service.ts`, `order-status.route.ts`.
+- **Типы/функции** — часто множественное: `GetProductsPayload`, `parseGetProductStockStatuses`.
+
+## Типы по слоям
+
+| Суффикс | Смысл |
+|---------|--------|
+| `*Query` | `z.input` схемы (сырой вход до coerce) — если нужен |
+| `*Payload` | `z.output` схемы (после parse) — основной вход service/controller |
+| `*Response` | ответ API с DTO (`ResponseList` / `ResponseItem` / …) |
+| `*RepoPayload` | вход repository |
+| `*RepoResult` | выход repository |
+| `*DB` | документ/форма в БД (`z.infer` DB-схемы) |
+| `*DTO` | клиентский DTO из `@remnant/shared` |
+
+Пример: `GetProductStockStatusesPayload`, `GetProductStockStatusesRepoResult`, `ProductStockStatusDB`.
+
+Парсеры рядом с типами: `parseCreateX(x) => createXSchema.parse(x)`.
+
+## Роуты
+
+Паттерн: `api/<entity>/<method>`
+
+Типичные методы: `GET /get`, `POST /create`, `POST /edit`, `POST /remove`.
+
+В роуте: `validateQueryRequest` / `validateBodyRequest` → `checkPermissions('entity.action')` → `validateResponse` → controller.
+
+## Ответственность слоёв
+
+- **controller** — только `req.validated` → service → `res.json`; без бизнес-логики.
+- **service** — правила, оркестрация, формирование `Response*`.
+- **repository** — запросы к Mongo; без HTTP и без сборки API-ответа.
+- **mapper** — только преобразование DB ↔ DTO.
+
+## Zod: shared vs backend
+
+- Контракт API (request/response/DTO) — в `packages/shared`.
+- `backend/src/schemas` — DB-схемы и сервер-only валидация; **не дублировать** API-схемы без нужды.
+- Импорт контракта: `from '@remnant/shared'`.
+
+## Тесты
+
+- Route/API: `backend/test/routes/<entity>.test.ts`
+- Factories: `backend/test/factories/<entity>.factory.ts`
+- Unit: `backend/test/unit/`
+- Новый CRUD — покрыть route-тест (happy path + validation/permissions по аналогии с соседними).

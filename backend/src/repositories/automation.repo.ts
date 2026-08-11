@@ -1,6 +1,7 @@
 import type { AggregateResult, AutomationDTO } from '@remnant/shared'
-import type { PipelineStage } from 'mongoose'
+import type { ClientSession, PipelineStage } from 'mongoose'
 import type {
+  AutomationDB,
   CreateAutomationsRepoPayload,
   EditAutomationsRepoPayload,
   GetAutomationsRepoPayload,
@@ -90,4 +91,21 @@ export async function removeById(id: string) {
     { $set: { removed: true } },
     { new: true, runValidators: true },
   ).exec()
+}
+
+export async function listActiveByTriggerType({
+  type,
+  session,
+}: {
+  type: string
+  session?: ClientSession
+}): Promise<AutomationDB[]> {
+  return AutomationModel.find({
+    'trigger.type': type,
+    active: true,
+    removed: { $ne: true },
+  })
+    .session(session ?? null)
+    .lean()
+    .exec() as Promise<AutomationDB[]>
 }

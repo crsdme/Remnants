@@ -1,5 +1,6 @@
 import type { BarcodeDTOPopulated } from '@remnant/shared'
 import type { BarcodeDBPopulated } from '@/types'
+import path from 'node:path'
 import { STORAGE_URLS } from '@/config'
 import { fromMinor } from '@/utils/money'
 
@@ -39,7 +40,7 @@ export function mapBarcodeToDTO(barcode: BarcodeDBPopulated): BarcodeDTOPopulate
             }
           : {}),
         images: images.map(image => ({
-          id: image.filename,
+          id: path.parse(image.filename).name,
           path: `${STORAGE_URLS.productImages}/${image.filename}`,
           filename: image.filename,
           name: image.name,

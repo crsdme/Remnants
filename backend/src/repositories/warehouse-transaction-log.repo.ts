@@ -56,7 +56,7 @@ export async function list(payload: GetWarehouseTransactionLogsPayload): Promise
         from: 'warehouse-transactions',
         localField: 'refId',
         foreignField: '_id',
-        as: 'warehouse-transaction',
+        as: 'warehouseTransaction',
       },
     },
     {
@@ -65,6 +65,22 @@ export async function list(payload: GetWarehouseTransactionLogsPayload): Promise
         localField: 'refId',
         foreignField: '_id',
         as: 'order',
+      },
+    },
+    {
+      $lookup: {
+        from: 'inventories',
+        localField: 'refId',
+        foreignField: '_id',
+        as: 'inventory',
+      },
+    },
+    {
+      $lookup: {
+        from: 'products',
+        localField: 'refId',
+        foreignField: '_id',
+        as: 'product',
       },
     },
     {
@@ -86,11 +102,27 @@ export async function list(payload: GetWarehouseTransactionLogsPayload): Promise
     {
       $addFields: {
         resource: {
-          $cond: [
-            { $eq: ['$resourceType', 'warehouse-transaction'] },
-            { $first: '$warehouse-transaction' },
-            { $first: '$order' },
-          ],
+          $switch: {
+            branches: [
+              {
+                case: { $in: ['$refType', ['warehouse', 'warehouse-transaction']] },
+                then: { $arrayElemAt: ['$warehouseTransaction', 0] },
+              },
+              {
+                case: { $eq: ['$refType', 'order'] },
+                then: { $arrayElemAt: ['$order', 0] },
+              },
+              {
+                case: { $eq: ['$refType', 'inventory'] },
+                then: { $arrayElemAt: ['$inventory', 0] },
+              },
+              {
+                case: { $eq: ['$refType', 'product'] },
+                then: { $arrayElemAt: ['$product', 0] },
+              },
+            ],
+            default: null,
+          },
         },
         warehouse: {
           $first: '$warehouse',
@@ -105,12 +137,21 @@ export async function list(payload: GetWarehouseTransactionLogsPayload): Promise
         _id: 0,
         id: '$_id',
         deltaCount: 1,
+        previousCount: 1,
+        afterCount: 1,
         refType: 1,
         refId: 1,
         resource: {
-          id: '$resource._id',
-          seq: '$resource.seq',
-          name: '$resource.name',
+          id: { $ifNull: ['$resource._id', '$refId'] },
+          seq: {
+            $convert: {
+              input: '$resource.seq',
+              to: 'string',
+              onError: '',
+              onNull: '',
+            },
+          },
+          name: { $ifNull: ['$resource.name', ''] },
         },
         warehouse: {
           id: '$warehouse._id',

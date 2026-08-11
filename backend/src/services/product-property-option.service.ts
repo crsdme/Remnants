@@ -39,7 +39,7 @@ export async function create({ payload }: { payload: CreateProductPropertyOption
   if (productPropertyOption === null)
     throw new HttpError(400, 'Product property option not created', 'PRODUCT_PROPERTY_OPTION_NOT_CREATED')
 
-  await ProductPropertyRepo.updateOptions(payload.productProperty, { $push: { options: productPropertyOption._id } })
+  await ProductPropertyRepo.updateOptions(payload.productPropertyId, { $push: { optionIds: productPropertyOption._id } })
 
   return {
     status: 'success',
@@ -70,7 +70,7 @@ export async function remove({ payload }: { payload: RemoveProductPropertyOption
     if (productPropertyOption === null)
       throw new HttpError(400, 'Product property option not removed', 'PRODUCT_PROPERTY_OPTION_NOT_REMOVED')
 
-    await ProductPropertyRepo.updateOptions(productPropertyOption.productProperty, { $pull: { options: id } })
+    await ProductPropertyRepo.updateOptions(productPropertyOption.productPropertyId, { $pull: { optionIds: id } })
   }
 
   return {

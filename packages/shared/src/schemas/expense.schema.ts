@@ -1,7 +1,8 @@
 import { z } from 'zod'
 import {
   dateRangeSchema,
-  idSchema, idSchemaOptional,
+  idSchema,
+  idSchemaOptional,
   languageStringSchema,
   numberFromStringSchema,
   paginationSchema,
@@ -9,6 +10,32 @@ import {
   responseSchema,
   sorterParamsSchema,
 } from './common'
+
+const expenseFileSchema = z.object({
+  id: z.string(),
+  filename: z.string(),
+  name: z.string(),
+  type: z.string(),
+  path: z.string(),
+})
+
+const expenseFileInputSchema = z.object({
+  id: z.string().optional(),
+  filename: z.string().optional().default(''),
+  name: z.string(),
+  type: z.string(),
+  path: z.string().optional().default(''),
+  isNew: z.boolean().optional().default(false),
+})
+
+const uploadedFilesIdsSchema = z.preprocess(
+  (val) => {
+    if (val === undefined || val === null || val === '')
+      return undefined
+    return Array.isArray(val) ? val : [val]
+  },
+  z.array(z.string()).optional(),
+)
 
 export const expenseDTOSchema = z.object({
   id: idSchema,
@@ -18,12 +45,13 @@ export const expenseDTOSchema = z.object({
   cashregister: idSchema,
   cashregisterAccount: idSchema,
   categories: z.array(idSchema),
-  sourceModel: z.string().trim(),
-  sourceId: idSchema,
+  sourceModel: z.string().trim().optional(),
+  sourceId: idSchemaOptional,
   type: z.string().trim(),
   comment: z.string().optional(),
-  createdBy: idSchema,
-  removedBy: idSchema,
+  files: z.array(expenseFileSchema).optional().default([]),
+  createdBy: idSchemaOptional,
+  removedBy: idSchemaOptional,
   createdAt: z.coerce.date(),
   updatedAt: z.coerce.date(),
 })
@@ -85,6 +113,15 @@ export const getExpensesSchema = z.object({
 
 export type GetExpensesRequest = z.input<typeof getExpensesSchema>
 
+const commentSchema = z.preprocess(
+  (val) => {
+    if (val === undefined || val === null || val === '')
+      return undefined
+    return String(val)
+  },
+  z.string().optional(),
+)
+
 export const createExpenseSchema = z.object({
   amount: numberFromStringSchema,
   currency: idSchema,
@@ -92,7 +129,9 @@ export const createExpenseSchema = z.object({
   cashregisterAccount: idSchema,
   categories: z.array(idSchema),
   type: z.string().trim(),
-  comment: z.string().optional(),
+  comment: commentSchema,
+  files: z.array(expenseFileInputSchema).optional().default([]),
+  uploadedFilesIds: uploadedFilesIdsSchema,
 })
 
 export type CreateExpenseRequest = z.input<typeof createExpenseSchema>
@@ -105,7 +144,9 @@ export const editExpenseSchema = z.object({
   cashregisterAccount: idSchema,
   categories: z.array(idSchema),
   type: z.string().trim(),
-  comment: z.string().optional(),
+  comment: commentSchema,
+  files: z.array(expenseFileInputSchema).optional().default([]),
+  uploadedFilesIds: uploadedFilesIdsSchema,
 })
 
 export type EditExpenseRequest = z.input<typeof editExpenseSchema>

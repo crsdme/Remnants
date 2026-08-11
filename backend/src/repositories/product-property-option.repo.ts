@@ -21,18 +21,18 @@ export async function list(payload: GetProductPropertyOptionsRepoPayload): Promi
     language,
     priority,
     active,
-    productProperty,
+    productPropertyId,
     createdAt,
   } = payload.filters
 
   const query = buildQuery({
-    filters: { _id: ids, names, priority, active, productProperty, createdAt },
+    filters: { _id: ids, names, priority, active, productPropertyId, createdAt },
     rules: {
       _id: { type: 'array' },
       names: { type: 'string', langAware: true },
       active: { type: 'array' },
       priority: { type: 'exact' },
-      productProperty: { type: 'exact' },
+      productPropertyId: { type: 'exact' },
       createdAt: { type: 'dateRange' },
     },
     language,
@@ -55,7 +55,7 @@ export async function list(payload: GetProductPropertyOptionsRepoPayload): Promi
         priority: 1,
         active: 1,
         color: 1,
-        productProperty: 1,
+        productPropertyId: 1,
         createdAt: 1,
         updatedAt: 1,
       },

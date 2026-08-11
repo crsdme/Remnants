@@ -138,6 +138,32 @@ export function useColumns() {
         header: t('page.order-statuses.table.isSelectable'),
         cell: ({ row }) => <Badge variant={row.original.isSelectable ? 'success' : 'destructive'}>{t(`table.yesno.${row.original.isSelectable}`)}</Badge>,
       }),
+      columnHelper.accessor('isDisplayed', {
+        id: 'isDisplayed',
+        meta: {
+          title: t('page.order-statuses.table.isDisplayed'),
+          batchEdit: true,
+          batchEditType: 'boolean',
+          filterable: true,
+          filterType: 'boolean',
+          sortable: true,
+        },
+        header: t('page.order-statuses.table.isDisplayed'),
+        cell: ({ row }) => <Badge variant={row.original.isDisplayed ? 'success' : 'destructive'}>{t(`table.yesno.${row.original.isDisplayed}`)}</Badge>,
+      }),
+      columnHelper.accessor('includeInStatistics', {
+        id: 'includeInStatistics',
+        meta: {
+          title: t('page.order-statuses.table.includeInStatistics'),
+          batchEdit: true,
+          batchEditType: 'boolean',
+          filterable: true,
+          filterType: 'boolean',
+          sortable: true,
+        },
+        header: t('page.order-statuses.table.includeInStatistics'),
+        cell: ({ row }) => <Badge variant={row.original.includeInStatistics ? 'success' : 'destructive'}>{t(`table.yesno.${row.original.includeInStatistics}`)}</Badge>,
+      }),
       columnHelper.accessor('isLocked', {
         id: 'isLocked',
         meta: {

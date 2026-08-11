@@ -36,6 +36,8 @@ interface OrderStatusFormValues {
   priority: number
   isLocked: boolean
   isSelectable: boolean
+  isDisplayed: boolean
+  includeInStatistics: boolean
 }
 
 export function OrderStatusProvider({ children }: { children: ReactNode }) {
@@ -160,6 +162,8 @@ function createOrderStatusFormSchema(t: (key: string, options?: Record<string, u
     priority: z.number().default(0),
     isLocked: z.boolean().default(false),
     isSelectable: z.boolean().default(false),
+    isDisplayed: z.boolean().default(true),
+    includeInStatistics: z.boolean().default(true),
   })
 }
 
@@ -171,6 +175,8 @@ function getOrderStatusFormValues(orderStatus?: OrderStatusDTO): OrderStatusForm
       priority: 0,
       isLocked: false,
       isSelectable: false,
+      isDisplayed: true,
+      includeInStatistics: true,
     }
   }
   return {
@@ -179,5 +185,7 @@ function getOrderStatusFormValues(orderStatus?: OrderStatusDTO): OrderStatusForm
     priority: orderStatus.priority,
     isLocked: orderStatus.isLocked,
     isSelectable: orderStatus.isSelectable,
+    isDisplayed: orderStatus.isDisplayed ?? true,
+    includeInStatistics: orderStatus.includeInStatistics ?? true,
   }
 }

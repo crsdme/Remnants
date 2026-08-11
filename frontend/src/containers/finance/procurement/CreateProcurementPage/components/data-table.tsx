@@ -35,7 +35,7 @@ type CreateProcurementProductRow = ProductPopulatedDTO & BaseProductRow & {
   selectedPrice?: number
   selectedCurrency?: ProductPopulatedDTO['currency']
   purchasePrice?: number
-  purchaseCurrency?: ProductPopulatedDTO['currency']
+  purchaseCurrencyId?: ProductPopulatedDTO['currency']
   receivedQuantity?: number
 }
 
@@ -66,7 +66,7 @@ export function DataTable() {
         ...product,
         quantity: selectedQuantity,
         purchasePrice: product.price,
-        purchaseCurrency: product.currency,
+        purchaseCurrencyId: product.currency,
       })
     }
   }
@@ -115,7 +115,7 @@ export function DataTable() {
       currencies,
       loadCurrencyOptions,
       field: 'purchasePrice',
-      currencyField: 'purchaseCurrency',
+      currencyField: 'purchaseCurrencyId',
     }),
     makeQuantityColumn(procurementProductColumnHelper, { t, language, field: 'quantity' }),
     makeActionColumn(procurementProductColumnHelper, { t }),
@@ -164,7 +164,7 @@ export function DataTable() {
 
           <FormField
             control={form.control}
-            name="supplier"
+            name="supplierId"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>

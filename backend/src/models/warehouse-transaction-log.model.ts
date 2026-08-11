@@ -27,6 +27,14 @@ const WarehouseTransactionLogSchema: Schema = new Schema(
       type: Number,
       required: true,
     },
+    previousCount: {
+      type: Number,
+      required: false,
+    },
+    afterCount: {
+      type: Number,
+      required: false,
+    },
     refType: {
       type: String,
       required: true,
@@ -46,6 +54,9 @@ const WarehouseTransactionLogSchema: Schema = new Schema(
 )
 
 WarehouseTransactionLogSchema.index({ productId: 1, warehouseId: 1, createdAt: 1 })
+WarehouseTransactionLogSchema.index({ refType: 1, refId: 1 })
+WarehouseTransactionLogSchema.index({ userId: 1 })
+WarehouseTransactionLogSchema.index({ createdAt: -1 })
 
 WarehouseTransactionLogSchema.set('toJSON', {
   virtuals: true,

@@ -12,12 +12,16 @@ import type {
   inventoryItemDBSchema,
 } from '@/schemas'
 import {
+  confirmInventorySchema,
   createInventorySchema,
   editInventorySchema,
+  exportInventorySchema,
   getInventoriesSchema,
   getInventoryItemsSchema,
+  getInventoryProgressSchema,
   removeInventoriesSchema,
   scanBarcodeToDraftsSchema,
+  upsertInventoryItemSchema,
 } from '@remnant/shared'
 
 export type InventoryDB = z.infer<typeof inventoryDBSchema>
@@ -33,6 +37,11 @@ export function parseGetInventoryItems(x: unknown): GetInventoryItemsPayload {
   return getInventoryItemsSchema.parse(x)
 }
 
+export type GetInventoryProgressPayload = z.output<typeof getInventoryProgressSchema>
+export function parseGetInventoryProgress(x: unknown): GetInventoryProgressPayload {
+  return getInventoryProgressSchema.parse(x)
+}
+
 export type CreateInventoriesPayload = z.output<typeof createInventorySchema>
 export function parseCreateInventory(x: unknown): CreateInventoriesPayload {
   return createInventorySchema.parse(x)
@@ -43,6 +52,16 @@ export function parseEditInventory(x: unknown): EditInventoriesPayload {
   return editInventorySchema.parse(x)
 }
 
+export type UpsertInventoryItemPayload = z.output<typeof upsertInventoryItemSchema>
+export function parseUpsertInventoryItem(x: unknown): UpsertInventoryItemPayload {
+  return upsertInventoryItemSchema.parse(x)
+}
+
+export type ConfirmInventoryPayload = z.output<typeof confirmInventorySchema>
+export function parseConfirmInventory(x: unknown): ConfirmInventoryPayload {
+  return confirmInventorySchema.parse(x)
+}
+
 export type RemoveInventoriesPayload = z.output<typeof removeInventoriesSchema>
 export function parseRemoveInventories(x: unknown): RemoveInventoriesPayload {
   return removeInventoriesSchema.parse(x)
@@ -51,6 +70,11 @@ export function parseRemoveInventories(x: unknown): RemoveInventoriesPayload {
 export type ScanBarcodeToDraftsPayload = z.output<typeof scanBarcodeToDraftsSchema>
 export function parseScanBarcodeToDrafts(x: unknown): ScanBarcodeToDraftsPayload {
   return scanBarcodeToDraftsSchema.parse(x)
+}
+
+export type ExportInventoryPayload = z.output<typeof exportInventorySchema>
+export function parseExportInventory(x: unknown): ExportInventoryPayload {
+  return exportInventorySchema.parse(x)
 }
 
 export type GetInventoriesRepoPayload = GetInventoriesPayload

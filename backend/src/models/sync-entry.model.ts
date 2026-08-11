@@ -16,14 +16,12 @@ const SyncEntrySchema: Schema = new Schema(
     sourceType: {
       type: String,
       required: true,
-      index: true,
     },
     sourceId: {
       type: String,
       required: true,
-      index: true,
     },
-    site: {
+    siteId: {
       type: String,
       ref: 'site',
       default: [],
@@ -55,5 +53,10 @@ SyncEntrySchema.set('toJSON', {
     delete ret._id
   },
 })
+
+SyncEntrySchema.index({ sourceType: 1, sourceId: 1 })
+SyncEntrySchema.index({ siteId: 1 })
+SyncEntrySchema.index({ externalId: 1 })
+SyncEntrySchema.index({ status: 1 })
 
 export const SyncEntryModel = mongoose.model<SyncEntryDoc>('sync-entry', SyncEntrySchema)

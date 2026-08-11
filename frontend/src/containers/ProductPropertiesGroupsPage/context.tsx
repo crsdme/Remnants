@@ -21,7 +21,7 @@ function createGroupFormSchema(t: (key: string, options?: Record<string, unknown
   return z.object({
     names: z.record(z.string({ required_error: t('form.errors.required') }).min(3, { message: t('form.errors.min_length', { count: 3 }) }).trim()),
     priority: z.number().optional(),
-    productProperties: z.array(z.string()).optional(),
+    productPropertyIds: z.array(z.string()).optional(),
     active: z.boolean().optional(),
   })
 }
@@ -33,14 +33,14 @@ function getGroupFormDefaults(productPropertyGroup?: any): ProductPropertyGroupF
     return {
       names: {},
       priority: 0,
-      productProperties: [],
+      productPropertyIds: [],
       active: true,
     }
   }
   return {
     names: { ...productPropertyGroup.names },
     priority: productPropertyGroup.priority,
-    productProperties: productPropertyGroup.productProperties.map((productProperty: { id: string }) => productProperty.id),
+    productPropertyIds: productPropertyGroup.productProperties.map((productProperty: { id: string }) => productProperty.id),
     active: productPropertyGroup.active,
   }
 }

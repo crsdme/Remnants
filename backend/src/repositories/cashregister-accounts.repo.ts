@@ -57,7 +57,7 @@ export async function list(
         pipeline: [
           {
             $match: {
-              $expr: { $in: ['$$accountId', '$accounts'] },
+              $expr: { $in: ['$$accountId', '$accountIds'] },
               ...(cashregister.length > 0 ? { _id: { $in: cashregister } } : {}),
             },
           },
@@ -72,7 +72,7 @@ export async function list(
     {
       $lookup: {
         from: 'currencies',
-        localField: 'currencies',
+        localField: 'currencyIds',
         foreignField: '_id',
         as: 'currencies',
         pipeline: [

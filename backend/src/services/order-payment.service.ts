@@ -51,7 +51,6 @@ export async function create({ payload, session }: { payload: CreateOrderPayment
       cashregisterId: payload.cashregisterId,
       cashregisterAccountId: payload.cashregisterAccountId,
       currencyId: payload.currencyId,
-      paymentStatus: payload.paymentStatus,
       paymentDate: payload.paymentDate !== undefined ? new Date(payload.paymentDate) : new Date(),
       comment: payload.comment,
       createdBy: payload.createdBy,

@@ -78,13 +78,13 @@ const ExchangeRateSchema: Schema = new Schema(
       default: uuidv4,
       validate: uuidValidator,
     },
-    fromCurrency: {
+    fromCurrencyId: {
       type: String,
       required: true,
       ref: 'Currency',
       validate: uuidValidator,
     },
-    toCurrency: {
+    toCurrencyId: {
       type: String,
       required: true,
       ref: 'Currency',
@@ -106,9 +106,8 @@ const ExchangeRateSchema: Schema = new Schema(
   { timestamps: true },
 )
 
-CurrencySchema.index({ active: 1 })
+CurrencySchema.index({ removed: 1, active: 1 })
 CurrencySchema.index({ priority: 1 })
-CurrencySchema.index({ removed: 1 })
 CurrencySchema.index({ createdAt: 1 })
 
 CurrencySchema.set('toJSON', {
@@ -136,6 +135,8 @@ CurrencySchema.pre('save', async function (this: CurrencyDoc, next) {
 
   next()
 })
+
+ExchangeRateSchema.index({ fromCurrencyId: 1, toCurrencyId: 1 })
 
 export const CurrencyModel = mongoose.model<CurrencyDoc>('Currency', CurrencySchema)
 export const ExchangeRateModel = mongoose.model<ExchangeRateDoc>('Exchange-Rate', ExchangeRateSchema)

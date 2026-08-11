@@ -14,7 +14,7 @@ import { useCurrencyQuery, useCurrencySelectOptions, useProductPropertyQuery } f
 import { ImageGallery } from '@/components'
 import { Badge, Button, Popover, PopoverContent, PopoverTrigger, Separator } from '@/components/ui'
 import { useAuthContext } from '@/contexts'
-import { formatDate } from '@/utils/helpers'
+import { formatDate, formatMinor, toMinor } from '@/utils/helpers'
 import { hasPermission } from '@/utils/helpers/permission'
 import { useLocale } from '@/utils/hooks'
 import { AsyncSelectMenu } from '../AsyncSelectMenu'
@@ -410,7 +410,6 @@ export function useColumns(
                       productId: product.product,
                       field: 'receivedQuantity',
                       value,
-                      isDebounced: true,
                     })}
                     field="receivedQuantity"
                     className="w-20"
@@ -451,8 +450,11 @@ export function useColumns(
         header: () => t('component.productTable.table.selectedPrice'),
         footer: ({ table }) => {
           const { rows } = table.getRowModel()
-          const currencySymbolsById = currencies.reduce((acc: Record<string, string>, currency) => {
-            acc[currency.id] = currency.symbols?.[language] || currency.id
+          const currencyById = currencies.reduce((acc: Record<string, { symbol: string, scale: number }>, currency) => {
+            acc[currency.id] = {
+              symbol: currency.symbols?.[language] || currency.id,
+              scale: currency.scale ?? 0,
+            }
             return acc
           }, {})
 
@@ -463,18 +465,22 @@ export function useColumns(
             if (!currencyId)
               return acc
 
-            const rowTotal = (p.lineQuantity ?? 0) * (p.selectedPrice ?? 0)
+            const scale = currencyById[currencyId]?.scale ?? 2
+            const rowTotalMinor = (p.lineQuantity ?? 0) * toMinor(p.selectedPrice ?? 0, scale)
             const key = String(currencyId)
 
-            acc[key] = (acc[key] ?? 0) + rowTotal
+            acc[key] = (acc[key] ?? 0) + rowTotalMinor
             return acc
           }, {} as Record<string, number>)
 
-          const badges = Object.entries(totalsByCurrencyId).map(([currencyId, sum]) => (
-            <Badge key={currencyId}>
-              {`${Number(sum).toString()} ${currencySymbolsById[currencyId] || currencyId}`}
-            </Badge>
-          ))
+          const badges = Object.entries(totalsByCurrencyId).map(([currencyId, sumMinor]) => {
+            const { symbol, scale } = currencyById[currencyId] || { symbol: currencyId, scale: 2 }
+            return (
+              <Badge key={currencyId}>
+                {`${formatMinor(sumMinor, scale)} ${symbol}`}
+              </Badge>
+            )
+          })
 
           return badges.length
             ? <div className="flex flex-wrap gap-2">{badges}</div>
@@ -490,7 +496,6 @@ export function useColumns(
                   productId: product.id,
                   field: 'selectedPrice',
                   value,
-                  isDebounced: true,
                 })}
                 field="selectedPrice"
                 className="w-20 pr-2"
@@ -569,7 +574,6 @@ export function useColumns(
                         productId: product.id,
                         field: 'discountAmount',
                         value: val,
-                        isDebounced: true,
                       })}
                       field="discountAmount"
                       className="w-full"
@@ -586,7 +590,6 @@ export function useColumns(
                         productId: product.id,
                         field: 'discountPercent',
                         value: val,
-                        isDebounced: true,
                       })}
                       field="discountPercent"
                       className="w-full"
@@ -667,7 +670,6 @@ export function useColumns(
                     productId: item.id,
                     field: 'lineQuantity',
                     value: val,
-                    isDebounced: true,
                   })}
                   field="lineQuantity"
                   className="w-20"

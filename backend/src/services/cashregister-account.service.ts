@@ -25,7 +25,7 @@ export async function get({
   user: AuthUser
 }): Promise<GetCashregisterAccountsResponse> {
   const access = await UserAccessRepo.getScopesByUserId(user.id)
-  const scopeIds = getScopeIdsForUser(access, 'cashregisterAccounts', user)
+  const scopeIds = getScopeIdsForUser(access, 'cashregisterAccountIds', user)
 
   const { items, total, page, pageSize } = await cashregisterAccountsRepo.list(payload, { scopeIds })
 
@@ -85,7 +85,7 @@ export async function remove({ payload }: { payload: RemoveCashregisterAccountsP
       action: 'remove',
       changes: [
         { path: 'names', before: data.names, after: null },
-        { path: 'currencies', before: data.currencies, after: null },
+        { path: 'currencyIds', before: data.currencyIds, after: null },
         { path: 'priority', before: data.priority, after: null },
         { path: 'active', before: data.active, after: null },
         { path: 'removed', before: false, after: true },

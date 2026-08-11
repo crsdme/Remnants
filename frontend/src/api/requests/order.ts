@@ -28,12 +28,20 @@ export async function getOrderItems(params: GetOrderItemsRequest) {
   return api.get<GetOrderItemsResponse>('orders/get/items', { params })
 }
 
-export async function createOrder(params: CreateOrderRequest) {
-  return api.post<CreateOrderResponse>('orders/create', { ...params })
+export async function createOrder(params: CreateOrderRequest | FormData) {
+  return api.post<CreateOrderResponse>('orders/create', params, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  })
 }
 
-export async function editOrder(params: EditOrderRequest) {
-  return api.post<EditOrderResponse>('orders/edit', params)
+export async function editOrder(params: EditOrderRequest | FormData) {
+  return api.post<EditOrderResponse>('orders/edit', params, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  })
 }
 
 export async function removeOrder(params: RemoveOrdersRequest) {

@@ -5,7 +5,7 @@ import { productPropertySchema } from './product-property.schema'
 export const productPropertyGroupSchema = z.object({
   id: idSchema,
   names: languageStringSchema,
-  productProperties: z.array(idSchema),
+  productPropertyIds: z.array(idSchema),
   priority: z.number(),
   active: z.boolean(),
   createdAt: z.coerce.date(),
@@ -30,7 +30,7 @@ export const getProductPropertyGroupSchema = z.object({
   filters: z.object({
     names: z.string().trim().optional(),
     language: z.string().optional().default('en'),
-    productProperties: idSchemaOptional,
+    productPropertyIds: idSchemaOptional,
     active: booleanArraySchema.optional(),
     priority: numberFromStringSchema.optional(),
     createdAt: dateRangeSchema.optional(),
@@ -50,7 +50,7 @@ export type GetProductPropertyGroupRequest = z.input<typeof getProductPropertyGr
 
 export const createProductPropertyGroupSchema = z.object({
   names: languageStringSchema,
-  productProperties: z.array(idSchema).optional(),
+  productPropertyIds: z.array(idSchema).optional(),
   priority: z.number().optional().default(0),
   active: z.boolean().optional().default(true),
 })
@@ -60,7 +60,7 @@ export type CreateProductPropertyGroupRequest = z.input<typeof createProductProp
 export const editProductPropertyGroupSchema = z.object({
   id: idSchema,
   names: languageStringSchema,
-  productProperties: z.array(idSchema).optional(),
+  productPropertyIds: z.array(idSchema).optional(),
   priority: z.number().optional().default(0),
   active: z.boolean().optional().default(true),
 })

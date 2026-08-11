@@ -1,11 +1,15 @@
 import type { NextFunction, Response } from 'express'
 import type {
+  ConfirmInventoryPayload,
   CreateInventoriesPayload,
   EditInventoriesPayload,
+  ExportInventoryPayload,
   GetInventoriesPayload,
   GetInventoryItemsPayload,
+  GetInventoryProgressPayload,
   RemoveInventoriesPayload,
   ScanBarcodeToDraftsPayload,
+  UpsertInventoryItemPayload,
   ValidatedAuthedRequest,
   ValidatedRequest,
 } from '@/types'
@@ -36,6 +40,23 @@ export async function getItems(
 ) {
   try {
     const serviceResponse = await InventoriesService.getItems({
+      payload: req.validated.query,
+    })
+
+    res.status(200).json(serviceResponse)
+  }
+  catch (err) {
+    next(err)
+  }
+}
+
+export async function getProgress(
+  req: ValidatedRequest<GetInventoryProgressPayload, never>,
+  res: Response,
+  next: NextFunction,
+) {
+  try {
+    const serviceResponse = await InventoriesService.getProgress({
       payload: req.validated.query,
     })
 
@@ -81,6 +102,41 @@ export async function create(
   }
 }
 
+export async function upsertItem(
+  req: ValidatedRequest<UpsertInventoryItemPayload, never>,
+  res: Response,
+  next: NextFunction,
+) {
+  try {
+    const serviceResponse = await InventoriesService.upsertItem({
+      payload: req.validated.body,
+    })
+
+    res.status(200).json(serviceResponse)
+  }
+  catch (err) {
+    next(err)
+  }
+}
+
+export async function confirm(
+  req: ValidatedAuthedRequest<ConfirmInventoryPayload, never>,
+  res: Response,
+  next: NextFunction,
+) {
+  try {
+    const serviceResponse = await InventoriesService.confirm({
+      payload: req.validated.body,
+      user: req.user,
+    })
+
+    res.status(200).json(serviceResponse)
+  }
+  catch (err) {
+    next(err)
+  }
+}
+
 export async function edit(
   req: ValidatedRequest<EditInventoriesPayload, never>,
   res: Response,
@@ -110,6 +166,29 @@ export async function remove(
     })
 
     res.status(200).json(serviceResponse)
+  }
+  catch (err) {
+    next(err)
+  }
+}
+
+export async function exportExcel(
+  req: ValidatedRequest<ExportInventoryPayload, never>,
+  res: Response,
+  next: NextFunction,
+) {
+  try {
+    const serviceResponse = await InventoriesService.exportExcel({
+      payload: req.validated.body,
+    })
+
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    res.setHeader('Content-Disposition', `attachment; filename="${serviceResponse.filename}"`)
+    res.setHeader('X-Export-Code', serviceResponse.code)
+    res.setHeader('X-Export-Message', serviceResponse.message ?? '')
+    res.setHeader('X-Export-Filename', serviceResponse.filename)
+    res.setHeader('Access-Control-Expose-Headers', 'x-export-code, x-export-message, x-export-filename, content-disposition')
+    res.send(serviceResponse.buffer)
   }
   catch (err) {
     next(err)

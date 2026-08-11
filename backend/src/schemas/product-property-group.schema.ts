@@ -4,7 +4,7 @@ import { z } from 'zod'
 export const productPropertyGroupDBSchema = z.object({
   _id: idSchema,
   names: languageStringSchema,
-  productProperties: z.array(idSchema),
+  productPropertyIds: z.array(idSchema),
   priority: z.number(),
   active: z.boolean(),
   removed: z.boolean().default(false),

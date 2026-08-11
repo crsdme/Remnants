@@ -5,7 +5,7 @@ export const productPropertyDBSchema = z.object({
   _id: idSchema,
   names: languageStringSchema,
   symbols: languageStringSchema,
-  options: z.array(idSchema),
+  optionIds: z.array(idSchema),
   priority: z.number(),
   type: z.enum(['text', 'select', 'color', 'number', 'boolean', 'multiSelect']),
   isRequired: z.boolean(),

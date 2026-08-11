@@ -97,6 +97,7 @@ export function BarcodeForm() {
         isLoading={isLoading}
         changeProduct={updateProduct}
         includeFooterTotal={true}
+        isQuantity={true}
       />
       <Separator className="my-4" />
       <form

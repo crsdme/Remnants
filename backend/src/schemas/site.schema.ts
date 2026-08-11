@@ -8,7 +8,7 @@ export const siteDBSchema = z.object({
   key: z.string(),
   priority: z.number(),
   active: z.boolean(),
-  warehouses: z.array(idSchema),
+  warehouseIds: z.array(idSchema),
   removed: z.boolean().default(false),
   createdAt: z.coerce.date(),
   updatedAt: z.coerce.date(),

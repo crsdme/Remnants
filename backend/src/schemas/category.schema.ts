@@ -5,7 +5,7 @@ export const categoryDBSchema = z.object({
   _id: idSchema,
   seq: numberFromStringSchema,
   names: languageStringSchema,
-  parent: idSchemaOptional,
+  parentId: idSchemaOptional,
   priority: z.number(),
   active: z.boolean(),
   removed: z.boolean().default(false),

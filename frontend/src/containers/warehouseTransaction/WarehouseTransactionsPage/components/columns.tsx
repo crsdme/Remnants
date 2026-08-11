@@ -65,7 +65,7 @@ export function useColumns() {
             },
             ...(item.status === 'awaiting'
               ? [{
-                  permission: 'warehouse-transaction.receive',
+                  permission: 'warehouseTransaction.receive',
                   onClick: () => void navigate(`/warehouse-transactions/receive/${item.seq}`),
                   label: t('table.receive'),
                   icon: <Check className="h-4 w-4" />,

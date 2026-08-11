@@ -36,7 +36,7 @@ export async function get({
   user: AuthUser
 }): Promise<GetWarehouseTransactionsResponse> {
   const access = await UserAccessRepo.getScopesByUserId(user.id)
-  const warehouseIds = getScopeIdsForUser(access, 'warehouses', user)
+  const warehouseIds = getScopeIdsForUser(access, 'warehouseIds', user)
 
   const { items, total, page, pageSize } = await WarehouseTransactionRepo.list(payload, { warehouseIds })
 
@@ -160,7 +160,7 @@ export async function remove({ payload, user }: { payload: RemoveWarehouseTransa
             payload: {
               mode: 'dec',
               productId: item.productId,
-              warehouse: warehouseTransaction.toWarehouse,
+              warehouseId: warehouseTransaction.toWarehouseId,
               count: item.quantity,
               userId: user.id,
               refType: 'warehouse-transaction',
@@ -175,7 +175,7 @@ export async function remove({ payload, user }: { payload: RemoveWarehouseTransa
             payload: {
               mode: 'inc',
               productId: item.productId,
-              warehouse: warehouseTransaction.fromWarehouse,
+              warehouseId: warehouseTransaction.fromWarehouseId,
               count: item.quantity,
               userId: user.id,
               refType: 'warehouse-transaction',
@@ -190,7 +190,7 @@ export async function remove({ payload, user }: { payload: RemoveWarehouseTransa
             payload: {
               mode: 'inc',
               productId: item.productId,
-              warehouse: warehouseTransaction.fromWarehouse,
+              warehouseId: warehouseTransaction.fromWarehouseId,
               count: item.quantity,
               userId: user.id,
               refType: 'warehouse-transaction',
@@ -202,7 +202,7 @@ export async function remove({ payload, user }: { payload: RemoveWarehouseTransa
               payload: {
                 mode: 'dec',
                 productId: item.productId,
-                warehouse: warehouseTransaction.toWarehouse,
+                warehouseId: warehouseTransaction.toWarehouseId,
                 count: item.quantity,
                 userId: user.id,
                 refType: 'warehouse-transaction',
@@ -228,11 +228,11 @@ type PayloadByType<T extends CreateWarehouseTransactionPayload['type']>
   = Extract<CreateWarehouseTransactionPayload, { type: T }>
 
 async function inWarehauseTransaction({ payload, user }: { payload: PayloadByType<'in'>, user: AuthUser }): Promise<CreateWarehouseTransactionResponse> {
-  const { type, toWarehouse, comment, products } = payload
+  const { type, toWarehouseId, comment, products } = payload
 
   const warehouseTransaction = await WarehouseTransactionRepo.createOne({
     type,
-    toWarehouse,
+    toWarehouseId,
     comment,
     createdBy: user.id,
     status: 'confirmed',
@@ -254,7 +254,7 @@ async function inWarehauseTransaction({ payload, user }: { payload: PayloadByTyp
         refType: 'warehouse',
         refId: warehouseTransaction._id.toString(),
         productId: product.productId,
-        warehouse: toWarehouse,
+        warehouseId: toWarehouseId,
         count: product.quantity,
       },
     })
@@ -268,11 +268,11 @@ async function inWarehauseTransaction({ payload, user }: { payload: PayloadByTyp
 }
 
 async function outWarehauseTransaction({ payload, user }: { payload: PayloadByType<'out'>, user: AuthUser }): Promise<CreateWarehouseTransactionResponse> {
-  const { type, fromWarehouse, comment, products } = payload
+  const { type, fromWarehouseId, comment, products } = payload
 
   const warehouseTransaction = await WarehouseTransactionRepo.createOne({
     type,
-    fromWarehouse,
+    fromWarehouseId,
     comment,
     createdBy: user.id,
     status: 'confirmed',
@@ -291,7 +291,7 @@ async function outWarehauseTransaction({ payload, user }: { payload: PayloadByTy
         mode: 'dec',
         userId: user.id,
         productId: product.productId,
-        warehouse: fromWarehouse,
+        warehouseId: fromWarehouseId,
         count: product.quantity,
         refType: 'warehouse',
         refId: warehouseTransaction._id.toString(),
@@ -307,12 +307,12 @@ async function outWarehauseTransaction({ payload, user }: { payload: PayloadByTy
 }
 
 async function transferWarehauseTransaction({ payload, user }: { payload: PayloadByType<'transfer'>, user: AuthUser }): Promise<CreateWarehouseTransactionResponse> {
-  const { type, fromWarehouse, toWarehouse, requiresReceiving, comment, products } = payload
+  const { type, fromWarehouseId, toWarehouseId, requiresReceiving, comment, products } = payload
 
   const warehouseTransaction = await WarehouseTransactionRepo.createOne({
     type,
-    fromWarehouse,
-    toWarehouse,
+    fromWarehouseId,
+    toWarehouseId,
     requiresReceiving,
     products,
     comment,
@@ -331,7 +331,7 @@ async function transferWarehauseTransaction({ payload, user }: { payload: Payloa
       payload: {
         mode: 'dec',
         productId: product.productId,
-        warehouse: fromWarehouse,
+        warehouseId: fromWarehouseId,
         count: product.quantity,
         userId: user.id,
         refType: 'warehouse',
@@ -344,7 +344,7 @@ async function transferWarehauseTransaction({ payload, user }: { payload: Payloa
         payload: {
           mode: 'inc',
           productId: product.productId,
-          warehouse: toWarehouse,
+          warehouseId: toWarehouseId,
           count: product.quantity,
           userId: user.id,
           refType: 'warehouse',
@@ -384,13 +384,13 @@ export async function receive({ payload, user }: { payload: ReceiveWarehouseTran
     receivedQuantity: product.receivedQuantity,
   }))
 
-  if (warehouseTransaction.toWarehouse) {
+  if (warehouseTransaction.toWarehouseId) {
     for (const product of mappedProducts) {
       await QuantityService.count({
         payload: {
           mode: 'inc',
           productId: product.productId,
-          warehouse: warehouseTransaction.toWarehouse,
+          warehouseId: warehouseTransaction.toWarehouseId,
           count: product.receivedQuantity,
           userId: user.id,
           refType: 'warehouse-transaction',

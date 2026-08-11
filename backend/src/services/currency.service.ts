@@ -47,14 +47,14 @@ export async function create({ payload }: { payload: CreateCurrencyPayload }): P
   for (const other of currencies) {
     exchangeRates.push(
       {
-        fromCurrency: currency._id,
-        toCurrency: other._id,
+        fromCurrencyId: currency._id,
+        toCurrencyId: other._id,
         rate: 1,
         comment: 'Auto-created on currency creation',
       },
       {
-        fromCurrency: other._id,
-        toCurrency: currency._id,
+        fromCurrencyId: other._id,
+        toCurrencyId: currency._id,
         rate: 1,
         comment: 'Auto-created on currency creation',
       },
@@ -100,8 +100,8 @@ export async function remove({ payload }: { payload: RemoveCurrencyPayload }): P
   await ExchangeRateModel.updateMany(
     {
       $or: [
-        { fromCurrency: { $in: ids } },
-        { toCurrency: { $in: ids } },
+        { fromCurrencyId: { $in: ids } },
+        { toCurrencyId: { $in: ids } },
       ],
     },
     { $set: { removed: true } },

@@ -7,7 +7,7 @@ export const productPropertyOptionSchema = z.object({
   priority: z.number(),
   active: z.boolean(),
   color: z.string().optional(),
-  productProperty: idSchema,
+  productPropertyId: idSchema,
   createdAt: z.coerce.date(),
   updatedAt: z.coerce.date(),
 })
@@ -20,7 +20,7 @@ export const getProductPropertyOptionSchema = z.object({
     names: z.string().trim().optional(),
     language: z.string().optional().default('en'),
     priority: numberFromStringSchema.optional(),
-    productProperty: idSchemaOptional,
+    productPropertyId: idSchemaOptional,
     active: booleanArraySchema.optional(),
     createdAt: dateRangeSchema.optional(),
     updatedAt: dateRangeSchema.optional(),
@@ -42,7 +42,7 @@ export const createProductPropertyOptionSchema = z.object({
   priority: z.number().optional().default(0),
   active: z.boolean().optional().default(true),
   color: z.string().optional(),
-  productProperty: idSchema,
+  productPropertyId: idSchema,
 })
 
 export type CreateProductPropertyOptionRequest = z.input<typeof createProductPropertyOptionSchema>
@@ -50,7 +50,7 @@ export type CreateProductPropertyOptionRequest = z.input<typeof createProductPro
 export const editProductPropertyOptionSchema = z.object({
   id: idSchema,
   names: languageStringSchema,
-  productProperty: idSchema,
+  productPropertyId: idSchema,
   priority: z.number().optional().default(0),
   active: z.boolean().optional().default(true),
   color: z.string().optional(),

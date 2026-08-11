@@ -30,8 +30,8 @@ export async function get({
   const { items, total, page, pageSize } = await MoneyTransactionRepo.list({
     payload,
     options: {
-      cashregisterIds: getScopeIdsForUser(access, 'cashregisters', user),
-      cashregisterAccountIds: getScopeIdsForUser(access, 'cashregisterAccounts', user),
+      cashregisterIds: getScopeIdsForUser(access, 'cashregisterIds', user),
+      cashregisterAccountIds: getScopeIdsForUser(access, 'cashregisterAccountIds', user),
     },
   })
 

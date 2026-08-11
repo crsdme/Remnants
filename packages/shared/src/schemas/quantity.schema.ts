@@ -5,8 +5,10 @@ export const quantitySchema = z.object({
   id: idSchema,
   count: z.number(),
   productId: idSchema,
-  warehouse: idSchema,
+  warehouseId: idSchema,
   status: z.enum(['available', 'reserved', 'sold']),
+  stockStatusId: idSchema.nullable().optional(),
+  lastSaleAt: z.coerce.date().nullable().optional(),
   createdAt: z.coerce.date(),
   updatedAt: z.coerce.date(),
 })
@@ -16,14 +18,14 @@ export type QuantityDTO = z.output<typeof quantitySchema>
 export const getQuantitiesSchema = z.object({
   filters: z.object({
     productId: idSchemaOptional,
-    warehouse: idSchemaOptional,
+    warehouseId: idSchemaOptional,
     status: z.enum(['available', 'reserved', 'sold']).optional(),
     count: z.number().optional(),
   }).optional().default({}),
   sorters: z.object({
     count: sorterParamsSchema.optional(),
     status: sorterParamsSchema.optional(),
-    warehouse: sorterParamsSchema.optional(),
+    warehouseId: sorterParamsSchema.optional(),
     updatedAt: sorterParamsSchema.optional(),
     createdAt: sorterParamsSchema.optional(),
   }).optional().default({}),
@@ -35,7 +37,7 @@ export type GetQuantitiesRequest = z.input<typeof getQuantitiesSchema>
 export const createQuantitiesSchema = z.object({
   count: z.number(),
   productId: idSchema,
-  warehouse: idSchema,
+  warehouseId: idSchema,
 })
 
 export type CreateQuantitiesRequest = z.input<typeof createQuantitiesSchema>
@@ -44,7 +46,7 @@ export const editQuantitiesSchema = z.object({
   id: idSchema,
   count: z.number(),
   productId: idSchema,
-  warehouse: idSchema,
+  warehouseId: idSchema,
 })
 
 export type EditQuantitiesRequest = z.input<typeof editQuantitiesSchema>
@@ -57,7 +59,7 @@ export type RemoveQuantitiesRequest = z.input<typeof removeQuantitiesSchema>
 
 export const countQuantitiesSchema = z.object({
   productId: idSchema,
-  warehouse: idSchema,
+  warehouseId: idSchema,
   mode: z.enum(['inc', 'dec', 'set']).optional().default('inc'),
   count: z.number(),
   userId: idSchema,

@@ -54,4 +54,7 @@ WarehouseSchema.set('toJSON', {
   },
 })
 
+WarehouseSchema.index({ removed: 1 })
+WarehouseSchema.index({ priority: 1 })
+
 export const WarehouseModel = mongoose.model<WarehouseDoc>('Warehouse', WarehouseSchema)

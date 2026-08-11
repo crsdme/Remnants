@@ -6,7 +6,7 @@ export function mapCashregisterAccountToDTO(cashregisterAccount: CashregisterAcc
     id: cashregisterAccount._id,
     names: cashregisterAccount.names,
     seq: cashregisterAccount.seq,
-    currencies: cashregisterAccount.currencies,
+    currencyIds: cashregisterAccount.currencyIds,
     priority: cashregisterAccount.priority,
     active: cashregisterAccount.active,
     createdAt: cashregisterAccount.createdAt,

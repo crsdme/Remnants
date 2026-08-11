@@ -269,7 +269,7 @@ export function ProductProvider({ children }: { children: ReactNode }) {
   const submitProductForm = (params: ProductFormValues) => {
     const productParams = {
       ...params,
-      images: (params.images || []).map((image: any) => ({
+      images: images.map(image => ({
         id: image.id,
         filename: image.filename,
         name: image.name,
@@ -277,7 +277,7 @@ export function ProductProvider({ children }: { children: ReactNode }) {
         path: image.path,
         isNew: image.isNew,
       })),
-      uploadedImages: (params.images || []).filter(
+      uploadedImages: images.filter(
         (image): image is UploadedFile & { file: File } => typeof image.file !== 'string',
       ),
     }

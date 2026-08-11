@@ -166,10 +166,10 @@ function SubRowExchangeRates({ property, columnsLength, editExchangeRate }:
   editExchangeRate: (exchangeRate: ExchangeRateDTOPopulated) => void
 }) {
   const { items: exchangeRates = [], isLoading, isFetching, error } = useCurrencyExcangeRateQuery(
-    { pagination: { full: true }, filters: { fromCurrency: property.id } },
+    { pagination: { full: true }, filters: { fromCurrencyId: property.id } },
     { options: { placeholderData: prevData => prevData } },
   )
-
+ 
   const { language } = useLocale()
 
   if (isLoading || isFetching) {

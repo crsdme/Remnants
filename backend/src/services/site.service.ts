@@ -24,7 +24,7 @@ export async function get({
   user: AuthUser
 }): Promise<GetSitesResponse> {
   const access = await UserAccessRepo.getScopesByUserId(user.id)
-  const scopeIds = getScopeIdsForUser(access, 'sites', user)
+  const scopeIds = getScopeIdsForUser(access, 'siteIds', user)
 
   const { items, total, page, pageSize } = await SiteRepo.list(payload, { scopeIds })
 

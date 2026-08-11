@@ -69,4 +69,7 @@ LanguageSchema.pre('save', async function (this: LanguageDoc, next) {
   next()
 })
 
+LanguageSchema.index({ code: 1 })
+LanguageSchema.index({ removed: 1, active: 1 })
+
 export const LanguageModel = mongoose.model<LanguageDoc>('Language', LanguageSchema)

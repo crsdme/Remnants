@@ -22,10 +22,19 @@ const QuantitySchema: Schema = new Schema(
       ref: 'Product',
       required: true,
     },
-    warehouse: {
+    warehouseId: {
       type: String,
       ref: 'Warehouse',
       required: true,
+    },
+    stockStatusId: {
+      type: String,
+      ref: 'product-stock-status',
+      default: null,
+    },
+    lastSaleAt: {
+      type: Date,
+      default: null,
     },
   },
   { timestamps: true },
@@ -49,6 +58,9 @@ QuantitySchema.set('toJSON', {
   },
 })
 
-QuantitySchema.index({ productId: 1, warehouse: 1 })
+QuantitySchema.index({ productId: 1, warehouseId: 1 })
+QuantitySchema.index({ warehouseId: 1 })
+QuantitySchema.index({ warehouseId: 1, stockStatusId: 1 })
+QuantitySchema.index({ stockStatusId: 1 })
 
 export const QuantityModel = mongoose.model<QuantityDoc>('quantity', QuantitySchema)

@@ -24,7 +24,7 @@ export async function get({
   user: AuthUser
 }): Promise<GetOrderStatusesResponse> {
   const access = await UserAccessRepo.getScopesByUserId(user.id)
-  const scopeIds = getScopeIdsForUser(access, 'orderStatuses', user)
+  const scopeIds = getScopeIdsForUser(access, 'orderStatusIds', user)
 
   const { items, total, page, pageSize } = await OrderStatusRepo.list(payload, { scopeIds })
 

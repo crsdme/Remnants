@@ -9,8 +9,8 @@ export const productDBSchema = z.object({
   currencyId: idSchema,
   minorPurchasePrice: minorSchema,
   purchaseCurrencyId: idSchema,
-  barcodesIds: z.array(idSchema),
-  categoriesIds: z.array(idSchema),
+  barcodeIds: z.array(idSchema),
+  categoryIds: z.array(idSchema),
   unitId: idSchema,
   images: z.array(z.object({
     filename: z.string(),
@@ -101,8 +101,13 @@ export const productDBPopulatedSchema = z.object({
     })),
   })),
   warehouseStock: z.array(z.object({
-    warehouse: idSchema,
+    warehouseId: idSchema,
     count: z.number(),
+    stockStatus: z.object({
+      id: idSchema,
+      names: languageStringSchema,
+      color: z.string().optional(),
+    }).nullable().optional(),
   })),
   removed: z.boolean().default(false),
   createdAt: z.coerce.date(),
@@ -126,6 +131,7 @@ export const getProductRepoSchema = z.object({
     barcodes: z.string().optional(),
     categories: z.array(idSchema).optional(),
     selectedWarehouse: idSchemaOptional,
+    stockStatusId: idSchemaOptional,
     createdAt: dateRangeSchema.optional(),
     updatedAt: dateRangeSchema.optional(),
   }).optional().default({}),
@@ -158,9 +164,11 @@ export const createProductRepoSchema = z.object({
     value: z.unknown(),
   })),
   unitId: idSchema,
-  categoriesIds: z.array(idSchema).min(1),
+  categoryIds: z.array(idSchema).min(1),
   images: z.array(z.object({
     filename: z.string(),
+    name: z.string(),
+    type: z.string(),
     path: z.string(),
   })).optional().default([]),
 })
@@ -177,9 +185,11 @@ export const editProductRepoSchema = z.object({
     value: z.unknown(),
   })),
   unitId: idSchema,
-  categoriesIds: z.array(idSchema).min(1),
+  categoryIds: z.array(idSchema).min(1),
   images: z.array(z.object({
     filename: z.string(),
+    name: z.string(),
+    type: z.string(),
     path: z.string(),
   })).optional().default([]),
 })

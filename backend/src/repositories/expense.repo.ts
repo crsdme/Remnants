@@ -21,6 +21,7 @@ export async function list(
   const {
     current,
     pageSize,
+    full,
   } = payload.pagination
 
   const {
@@ -163,16 +164,21 @@ export async function list(
         sourceId: 1,
         type: 1,
         comment: 1,
+        files: { $ifNull: ['$files', []] },
+        createdBy: 1,
+        removedBy: 1,
         createdAt: 1,
         updatedAt: 1,
       },
     },
     {
       $facet: {
-        items: [
-          { $skip: (current - 1) * pageSize },
-          { $limit: pageSize },
-        ],
+        items: full
+          ? []
+          : [
+              { $skip: (current - 1) * pageSize },
+              { $limit: pageSize },
+            ],
         count: [
           { $count: 'count' },
         ],

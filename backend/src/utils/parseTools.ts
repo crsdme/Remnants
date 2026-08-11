@@ -106,18 +106,39 @@ export function parseFormData(body: Record<string, unknown>): Record<string, unk
   return obj
 }
 
-export function parseId(record: Record<string, unknown>, key: string): string {
-  if (typeof record[key] !== 'string')
-    return ''
+const UUID_STRING_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+const UUID_IN_PARENS_RE = /\(\s*([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})\s*\)\s*$/i
 
-  const match = record[key].toString().match(/\(\s*([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})\s*\)/i)
-  return match ? match[1] : ''
+export function parseId(record: Record<string, unknown>, key: string): string | undefined {
+  if (typeof record[key] !== 'string')
+    return undefined
+
+  const value = record[key].toString().trim()
+  if (!value)
+    return undefined
+
+  const parenMatch = value.match(UUID_IN_PARENS_RE)
+  if (parenMatch)
+    return parenMatch[1]
+
+  if (UUID_STRING_RE.test(value))
+    return value
+
+  return undefined
 }
 
 export function parseMultiSelect(record: Record<string, unknown>, key: string, mode: 'values' | 'id' = 'values'): string[] {
+  const prefix = `${key.toLowerCase()}_`
   return Object.entries(record)
-    .filter(([key]) => key.toLowerCase().startsWith(`${key}_`))
-    .map(([, val]) => mode === 'values' ? val as string : getId(record, key))
+    .filter(([entryKey]) => entryKey.toLowerCase().startsWith(prefix))
+    .map(([, val]) => {
+      if (val == null || val === '')
+        return ''
+      if (mode === 'values')
+        return String(val)
+      const match = String(val).match(UUID_IN_PARENS_RE)
+      return match ? match[1] : ''
+    })
     .filter(Boolean)
 }
 
@@ -128,7 +149,7 @@ const UUID_IN_VALUE_RE = new RegExp(`\\((${UUID_RE.source})\\)`, 'gi')
 export function parseProductProperties(
   row: Record<string, unknown>,
 ): Array<{ _id: string, value: unknown }> {
-  const items: Array<{ id: string, idx: number, value: unknown }> = []
+  const items: Array<{ id: string, idx: number, value: unknown, indexed: boolean }> = []
 
   for (const [rawKey, rawVal] of Object.entries(row)) {
     if (typeof rawVal !== 'string')
@@ -137,8 +158,9 @@ export function parseProductProperties(
     if (!m)
       continue
     const id = m[1]
-    const idx = m[2] ? Number(m[2]) : 0
-    items.push({ id, idx, value: parseCell(rawVal) })
+    const indexed = m[2] !== undefined
+    const idx = indexed ? Number(m[2]) : 0
+    items.push({ id, idx, value: parseCell(rawVal), indexed })
   }
 
   if (items.length === 0)
@@ -146,21 +168,24 @@ export function parseProductProperties(
 
   items.sort((a, b) => (a.id === b.id ? a.idx - b.idx : a.id.localeCompare(b.id)))
 
-  const map = new Map<string, unknown[]>()
+  const map = new Map<string, { values: unknown[], isMultiSelect: boolean }>()
   for (const it of items) {
     if (!map.has(it.id))
-      map.set(it.id, [])
-    map.get(it.id)!.push(it.value)
+      map.set(it.id, { values: [], isMultiSelect: false })
+    const entry = map.get(it.id)!
+    entry.values.push(it.value)
+    if (it.indexed)
+      entry.isMultiSelect = true
   }
 
   const result: Array<{ _id: string, value: unknown }> = []
-  for (const [id, values] of map.entries()) {
-    result.push({ _id: id, value: mergeValues(values) })
+  for (const [id, { values, isMultiSelect }] of map.entries()) {
+    result.push({ _id: id, value: mergeValues(values, isMultiSelect) })
   }
   return result
 }
 
-function mergeValues(values: unknown[]): unknown {
+function mergeValues(values: unknown[], isMultiSelect = false): unknown {
   const flat = values
     // eslint-disable-next-line ts/no-unsafe-return
     .flatMap(v => (Array.isArray(v) ? v : [v]))
@@ -175,8 +200,14 @@ function mergeValues(values: unknown[]): unknown {
         uniq.push(v)
       }
     }
+    // multiSelect columns are exported as Type_1 (uuid_1), … — always store as array
+    if (isMultiSelect)
+      return uniq
     return uniq.length > 1 ? uniq : (uniq[0] ?? null)
   }
+
+  if (isMultiSelect)
+    return flat
 
   return flat.length > 1 ? flat : (flat[0] ?? null)
 }

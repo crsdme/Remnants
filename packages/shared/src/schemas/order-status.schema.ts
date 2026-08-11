@@ -8,6 +8,8 @@ export const orderStatusSchema = z.object({
   color: z.string().optional(),
   isLocked: z.boolean().optional().default(false),
   isSelectable: z.boolean().optional().default(false),
+  isDisplayed: z.boolean().optional().default(true),
+  includeInStatistics: z.boolean().optional().default(true),
   ordersCount: z.number().optional(),
   createdAt: z.coerce.date(),
   updatedAt: z.coerce.date(),
@@ -21,10 +23,11 @@ export const getOrderStatusesSchema = z.object({
     language: z.string().optional().default('en'),
     color: z.string().optional(),
     priority: numberFromStringSchema.optional(),
-    includeAll: stringToBooleanSchema.optional(),
     includeCount: stringToBooleanSchema.optional(),
     isLocked: stringToBooleanSchema.optional(),
     isSelectable: stringToBooleanSchema.optional(),
+    isDisplayed: stringToBooleanSchema.optional(),
+    includeInStatistics: stringToBooleanSchema.optional(),
     createdAt: dateRangeSchema.optional(),
     updatedAt: dateRangeSchema.optional(),
   }).optional().default({}),
@@ -35,6 +38,8 @@ export const getOrderStatusesSchema = z.object({
     updatedAt: sorterParamsSchema.optional(),
     createdAt: sorterParamsSchema.optional(),
     isSelectable: sorterParamsSchema.optional(),
+    isDisplayed: sorterParamsSchema.optional(),
+    includeInStatistics: sorterParamsSchema.optional(),
   }).optional().default({}),
   pagination: paginationSchema.optional().default({}),
 })
@@ -47,6 +52,8 @@ export const createOrderStatusSchema = z.object({
   color: z.string().optional(),
   isLocked: stringToBooleanSchema.optional(),
   isSelectable: stringToBooleanSchema.optional(),
+  isDisplayed: stringToBooleanSchema.optional().default(true),
+  includeInStatistics: stringToBooleanSchema.optional().default(true),
 })
 
 export type CreateOrderStatusRequest = z.input<typeof createOrderStatusSchema>
@@ -58,6 +65,8 @@ export const editOrderStatusSchema = z.object({
   color: z.string().optional(),
   isLocked: stringToBooleanSchema.optional(),
   isSelectable: stringToBooleanSchema.optional(),
+  isDisplayed: stringToBooleanSchema.optional(),
+  includeInStatistics: stringToBooleanSchema.optional(),
 })
 
 export type EditOrderStatusRequest = z.input<typeof editOrderStatusSchema>

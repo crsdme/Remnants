@@ -14,6 +14,7 @@ import * as OrderStatusService from '../../services/order-status.service'
 import * as ProductPropertyGroupService from '../../services/product-property-group.service'
 import * as ProductPropertyOptionService from '../../services/product-property-option.service'
 import * as ProductPropertyService from '../../services/product-property.service'
+import * as ProductStockStatusService from '../../services/product-stock-status.service'
 import * as ProductService from '../../services/product.service'
 import * as SiteService from '../../services/site.service'
 import * as UnitService from '../../services/unit.service'
@@ -48,6 +49,7 @@ async function seedData() {
     const deliveryServices = await createDeliveryServices()
     await createOrderSources()
     const statuses = await createOrderStatuses()
+    await createProductStockStatuses()
     await createCashregisters()
     const warehouses = await createWarehouses()
     await createUserRoles()
@@ -59,6 +61,7 @@ async function seedData() {
     await createClients()
     await createExpenseCategories()
     await createSites(warehouses)
+    await ProductStockStatusService.recomputeAll()
 
     console.log('✅ Test data seeded successfully!')
     process.exit(0)
@@ -80,7 +83,7 @@ async function createSites(warehouses: { warehouse1: { id: string }, warehouse2:
       key: 'example',
       priority: 1,
       active: true,
-      warehouses: [warehouses.warehouse1.id, warehouses.warehouse2.id],
+      warehouseIds: [warehouses.warehouse1.id, warehouses.warehouse2.id],
     },
   })
 }
@@ -375,7 +378,7 @@ async function createProductProperties() {
     await ProductPropertyOptionService.create({
       payload: {
         names: colorItem.names,
-        productProperty: colorItem.id,
+        productPropertyId: colorItem.id,
         active: true,
         priority: 1,
         color: colorItem.color,
@@ -390,7 +393,7 @@ async function createProductProperties() {
           en: `SK${i + 1}`,
           ru: `SK${i + 1}`,
         },
-        productProperty: model.id,
+        productPropertyId: model.id,
         active: true,
         priority: 1,
       },
@@ -404,7 +407,7 @@ async function createProductProperties() {
           en: `Parameter ${i + 1}`,
           ru: `Параметр ${i + 1}`,
         },
-        productProperty: parameters.id,
+        productPropertyId: parameters.id,
         active: true,
         priority: i + 1,
       },
@@ -418,7 +421,7 @@ async function createProductProperties() {
         ru: 'Свойства продукта',
       },
       priority: 1,
-      productProperties: [sku.id, boxes.id, isNew.id, color.id, model.id, parameters.id],
+      productPropertyIds: [sku.id, boxes.id, isNew.id, color.id, model.id, parameters.id],
       active: true,
     },
   })
@@ -438,9 +441,9 @@ async function createProducts(productProperties: {
   const { data: { items: currencies } } = await CurrencyService.get({ payload: parseGetCurrency({}) })
   const { data: { items: units } } = await UnitService.get({ payload: parseGetUnits({}) })
   const { data: { items: productPropertyGroups } } = await ProductPropertyGroupService.get({ payload: parseGetProductPropertyGroups({}) })
-  const { data: { items: modelOptions } } = await ProductPropertyOptionService.get({ payload: parseGetProductPropertyOptions({ filters: { productProperty: productProperties.model.id } }) })
-  const { data: { items: colorOptions } } = await ProductPropertyOptionService.get({ payload: parseGetProductPropertyOptions({ filters: { productProperty: productProperties.color.id } }) })
-  const { data: { items: parametersOptions } } = await ProductPropertyOptionService.get({ payload: parseGetProductPropertyOptions({ filters: { productProperty: productProperties.parameters.id } }) })
+  const { data: { items: modelOptions } } = await ProductPropertyOptionService.get({ payload: parseGetProductPropertyOptions({ filters: { productPropertyId: productProperties.model.id } }) })
+  const { data: { items: colorOptions } } = await ProductPropertyOptionService.get({ payload: parseGetProductPropertyOptions({ filters: { productPropertyId: productProperties.color.id } }) })
+  const { data: { items: parametersOptions } } = await ProductPropertyOptionService.get({ payload: parseGetProductPropertyOptions({ filters: { productPropertyId: productProperties.parameters.id } }) })
 
   const products = [
     {
@@ -1309,6 +1312,8 @@ async function createOrderStatuses() {
       },
       priority: 2,
       isSelectable: true,
+      isDisplayed: true,
+      includeInStatistics: true,
       isLocked: false,
     },
   })
@@ -1322,6 +1327,8 @@ async function createOrderStatuses() {
       isLocked: true,
       priority: 4,
       isSelectable: false,
+      isDisplayed: true,
+      includeInStatistics: true,
     },
   })
 
@@ -1334,10 +1341,86 @@ async function createOrderStatuses() {
       isLocked: true,
       priority: 5,
       isSelectable: false,
+      isDisplayed: true,
+      includeInStatistics: false,
     },
   })
 
   return { inProgress, completed, removed }
+}
+
+async function createProductStockStatuses() {
+  await ProductStockStatusService.create({
+    payload: {
+      names: { en: 'Out of stock', ru: 'Нет в наличии' },
+      color: '#ef4444',
+      priority: 1,
+      active: true,
+      isDefault: false,
+      conditions: [{ field: 'qty', operator: 'eq', value: 0 }],
+    },
+  })
+
+  await ProductStockStatusService.create({
+    payload: {
+      names: { en: 'Low stock', ru: 'Мало' },
+      color: '#f97316',
+      priority: 2,
+      active: true,
+      isDefault: false,
+      conditions: [{ field: 'qty', operator: 'lte', value: 2 }],
+    },
+  })
+
+  await ProductStockStatusService.create({
+    payload: {
+      names: { en: 'Overstock', ru: 'Переизбыток' },
+      color: '#a855f7',
+      priority: 3,
+      active: true,
+      isDefault: false,
+      conditions: [{ field: 'qty', operator: 'gt', value: 50 }],
+    },
+  })
+
+  await ProductStockStatusService.create({
+    payload: {
+      names: { en: 'Not selling', ru: 'Не продаётся' },
+      color: '#eab308',
+      priority: 4,
+      active: true,
+      isDefault: false,
+      conditions: [
+        { field: 'qty', operator: 'gt', value: 0 },
+        { field: 'daysSinceLastSale', operator: 'gt', value: 30 },
+      ],
+    },
+  })
+
+  await ProductStockStatusService.create({
+    payload: {
+      names: { en: 'Forgotten', ru: 'Забытый' },
+      color: '#64748b',
+      priority: 5,
+      active: true,
+      isDefault: false,
+      conditions: [
+        { field: 'qty', operator: 'eq', value: 0 },
+        { field: 'daysSinceQtyChange', operator: 'gt', value: 60 },
+      ],
+    },
+  })
+
+  await ProductStockStatusService.create({
+    payload: {
+      names: { en: 'Normal', ru: 'Норм' },
+      color: '#22c55e',
+      priority: 100,
+      active: true,
+      isDefault: true,
+      conditions: [],
+    },
+  })
 }
 
 async function createCashregisters() {
@@ -1351,7 +1434,7 @@ async function createCashregisters() {
       },
       active: true,
       priority: 1,
-      currencies: [currencies[0].id],
+      currencyIds: [currencies[0].id],
     },
   })
 
@@ -1363,7 +1446,7 @@ async function createCashregisters() {
       },
       active: true,
       priority: 1,
-      currencies: [currencies[0].id, currencies[1].id],
+      currencyIds: [currencies[0].id, currencies[1].id],
     },
   })
 
@@ -1375,7 +1458,7 @@ async function createCashregisters() {
       },
       active: true,
       priority: 1,
-      accounts: [cashAccount.data.id, cardAccount.data.id],
+      accountIds: [cashAccount.data.id, cardAccount.data.id],
     },
   })
 }
@@ -1452,6 +1535,12 @@ async function createUserRoles() {
       'warehouseTransaction.page',
       'warehouseTransaction.read',
       'warehouseTransaction.create',
+      'warehouseTransaction.receive',
+      'inventory.page',
+      'inventory.read',
+      'inventory.create',
+      'inventory.edit',
+      'inventory.remove',
       'unit.read',
       'cashrehister.page',
       'cashrehister.read',
@@ -1475,17 +1564,17 @@ async function createUserRoles() {
     name: 'Admin',
     login: 'admin',
     access: {
-      warehouses: [],
-      cashregisters: [],
-      sites: [],
-      expenseCategories: [],
-      cashregisterAccounts: [],
-      deliveryServices: [],
-      orderSources: [],
-      orderStatuses: [],
+      warehouseIds: [],
+      cashregisterIds: [],
+      siteIds: [],
+      expenseCategoryIds: [],
+      cashregisterAccountIds: [],
+      deliveryServiceIds: [],
+      orderSourceIds: [],
+      orderStatusIds: [],
     },
     password: 'admin',
-    role: admin.id,
+    roleId: admin.id,
     active: true,
   })
 
@@ -1494,16 +1583,16 @@ async function createUserRoles() {
     login: 'manager',
     password: 'manager',
     access: {
-      warehouses: [],
-      cashregisters: [],
-      sites: [],
-      expenseCategories: [],
-      cashregisterAccounts: [],
-      deliveryServices: [],
-      orderSources: [],
-      orderStatuses: [],
+      warehouseIds: [],
+      cashregisterIds: [],
+      siteIds: [],
+      expenseCategoryIds: [],
+      cashregisterAccountIds: [],
+      deliveryServiceIds: [],
+      orderSourceIds: [],
+      orderStatusIds: [],
     },
-    role: manager.id,
+    roleId: manager.id,
     active: true,
   })
 }
@@ -1528,6 +1617,10 @@ async function createAutomations({ removed, selfpickup, completed }: { removed: 
         {
           field: 'order-status-update',
           params: [removed.id],
+        },
+        {
+          field: 'order-mark-removed',
+          params: [],
         },
       ],
     },

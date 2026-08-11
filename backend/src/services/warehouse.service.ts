@@ -18,7 +18,7 @@ import { getScopeIdsForUser, HttpError } from '@/utils'
 
 export async function get({ payload, user }: { payload: GetWarehousesPayload, user: AuthUser }): Promise<GetWarehousesResponse> {
   const access = await UserAccessRepo.getScopesByUserId(user.id)
-  const scopeIds = getScopeIdsForUser(access, 'warehouses', user)
+  const scopeIds = getScopeIdsForUser(access, 'warehouseIds', user)
 
   const { items, total, page, pageSize } = await WarehouseRepo.list(payload, { scopeIds })
 

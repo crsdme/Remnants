@@ -20,7 +20,7 @@ export const cashregisterAccountSchema = z.object({
   id: idSchema,
   seq: z.number(),
   names: languageStringSchema,
-  currencies: z.array(idSchema),
+  currencyIds: z.array(idSchema),
   priority: z.number(),
   active: z.boolean(),
   createdAt: z.coerce.date(),
@@ -56,7 +56,7 @@ export type GetCashregisterAccountsRequest = z.input<typeof getCashregisterAccou
 
 export const createCashregisterAccountSchema = z.object({
   names: languageStringSchema,
-  currencies: z.array(idSchema).min(1, { message: 'Currency is required' }),
+  currencyIds: z.array(idSchema).min(1, { message: 'Currency is required' }),
   priority: z.number().optional().default(0),
   active: z.boolean().optional().default(true),
 })
@@ -66,7 +66,7 @@ export type CreateCashregisterAccountRequest = z.input<typeof createCashregister
 export const editCashregisterAccountSchema = z.object({
   id: idSchema,
   names: languageStringSchema,
-  currencies: z.array(idSchema).min(1, { message: 'Currency is required' }),
+  currencyIds: z.array(idSchema).min(1, { message: 'Currency is required' }),
   priority: z.number().optional().default(0),
   active: z.boolean().optional().default(true),
 })

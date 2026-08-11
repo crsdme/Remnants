@@ -3,7 +3,6 @@
     "incremental": true,
     "tsBuildInfoFile": "./.tsbuildinfo",
     "target": "ES6",
-    "baseUrl": ".",
     "rootDir": "./src",
     "module": "commonjs",
     "paths": {

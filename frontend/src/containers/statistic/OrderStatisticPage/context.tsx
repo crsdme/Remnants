@@ -1,65 +1,107 @@
+import type { StatisticsDTO } from '@remnant/shared'
 import type { ReactNode } from 'react'
 
 import { zodResolver } from '@hookform/resolvers/zod'
-import { createContext, useContext, useMemo, useState } from 'react'
+import { createContext, useCallback, useContext, useEffect, useMemo } from 'react'
 import { useForm } from 'react-hook-form'
 
 import { z } from 'zod'
 import {
   useOrderStatisticQuery,
 } from '@/api/hooks'
+import {
+  parseQueryCsv,
+  parseQueryDate,
+  setQueryParam,
+  setQueryParamCsv,
+  useListQueryState,
+} from '@/utils/hooks'
+
+const emptyStatistics: StatisticsDTO = {
+  range: {},
+  orders: {
+    count: 0,
+    amount: [],
+    paid: { count: 0, amount: [] },
+    unpaid: { count: 0, amount: [] },
+  },
+  payments: {
+    count: 0,
+    amount: [],
+    income: { count: 0, amount: [] },
+    expense: { count: 0, amount: [], categories: [] },
+    profit: { count: 0, amount: [] },
+  },
+  products: {
+    count: 0,
+    items: [],
+  },
+  series: [],
+}
+
+interface OrderStatisticFilters {
+  date: { from?: Date, to?: Date }
+  cashregister: string[]
+  cashregisterAccount: string[]
+}
 
 interface OrderStatisticContextType {
   isLoading: boolean
   isFetching: boolean
-  form: any
-  statistics: any
-  onSubmit: (data: any) => void
+  form: ReturnType<typeof useForm<OrderStatisticFormValues>>
+  statistics: StatisticsDTO
+  onSubmit: (data: OrderStatisticFormValues) => void
+}
+
+interface OrderStatisticFormValues {
+  date: { from?: Date, to?: Date }
+  cashregister?: string[]
+  cashregisterAccount?: string[]
 }
 
 const OrderStatisticContext = createContext<OrderStatisticContextType | undefined>(undefined)
 
 export function OrderStatisticProvider({ children }: { children: ReactNode }) {
-  const [filters, setFilters] = useState(() => getDefaultFilters())
+  const defaultFilters = useMemo(() => getDefaultFilters(), [])
+
+  const readFilters = useCallback((params: {
+    get: (key: string) => string | undefined
+  }): Partial<OrderStatisticFilters> => {
+    const from = parseQueryDate(params.get('dateFrom'))
+    const to = parseQueryDate(params.get('dateTo'))
+    return {
+      date: {
+        from: from ?? defaultFilters.date.from,
+        to: to ?? defaultFilters.date.to,
+      },
+      cashregister: parseQueryCsv(params.get('cashregister')),
+      cashregisterAccount: parseQueryCsv(params.get('cashregisterAccount')),
+    }
+  }, [defaultFilters])
+
+  const writeFilters = useCallback((
+    params: {
+      set: (key: string, value: string | number | null | undefined) => void
+      delete: (key: string) => void
+    },
+    next: Partial<OrderStatisticFilters>,
+  ) => {
+    setQueryParam(params, 'dateFrom', next.date?.from?.toISOString() ?? null)
+    setQueryParam(params, 'dateTo', next.date?.to?.toISOString() ?? null)
+    setQueryParamCsv(params, 'cashregister', next.cashregister ?? [])
+    setQueryParamCsv(params, 'cashregisterAccount', next.cashregisterAccount ?? [])
+  }, [])
+
+  const listQueryOptions = useMemo(() => ({
+    defaults: { filters: defaultFilters },
+    readFilters,
+    writeFilters,
+  }), [defaultFilters, readFilters, writeFilters])
+
+  const { filters, setFilters } = useListQueryState<OrderStatisticFilters>(listQueryOptions)
 
   const {
-    statistics = {
-      range: { from: new Date(new Date().setHours(0, 0, 0, 0)), to: new Date(new Date().setHours(23, 59, 59, 999)) },
-      orders: {
-        count: 0,
-        amount: [],
-        paid: {
-          count: 0,
-          amount: [],
-        },
-        unpaid: {
-          count: 0,
-          amount: [],
-        },
-      },
-      payments: {
-        count: 0,
-        amount: [],
-        income: {
-          count: 0,
-          amount: [],
-        },
-        expense: {
-          count: 0,
-          categories: [],
-          amount: [],
-        },
-        profit: {
-          count: 0,
-          amount: [],
-        },
-      },
-      products: {
-        count: 0,
-        attributes: [],
-        categories: [],
-      },
-    },
+    statistics,
     isLoading,
     isFetching,
   } = useOrderStatisticQuery(
@@ -67,16 +109,39 @@ export function OrderStatisticProvider({ children }: { children: ReactNode }) {
     { options: { placeholderData: prevData => prevData } },
   )
 
-  const onSubmit = (data: any) => {
-    setFilters(data)
-  }
+  const onSubmit = useCallback((data: OrderStatisticFormValues) => {
+    setFilters({
+      date: data.date,
+      cashregister: data.cashregister ?? [],
+      cashregisterAccount: data.cashregisterAccount ?? [],
+    })
+  }, [setFilters])
 
   const formSchema = useMemo(() => createOrderStatisticFilterSchema(), [])
 
-  const form = useForm({
+  const form = useForm<OrderStatisticFormValues>({
     resolver: zodResolver(formSchema),
-    defaultValues: getDefaultStatisticFormValues(),
+    defaultValues: {
+      date: filters.date,
+      cashregister: filters.cashregister,
+      cashregisterAccount: filters.cashregisterAccount,
+    },
   })
+
+  const filtersKey = [
+    filters.date.from?.toISOString() ?? '',
+    filters.date.to?.toISOString() ?? '',
+    filters.cashregister.join(','),
+    filters.cashregisterAccount.join(','),
+  ].join('|')
+
+  useEffect(() => {
+    form.reset({
+      date: filters.date,
+      cashregister: filters.cashregister,
+      cashregisterAccount: filters.cashregisterAccount,
+    })
+  }, [filtersKey, form, filters])
 
   const value: OrderStatisticContextType = useMemo(
     () => ({
@@ -84,9 +149,9 @@ export function OrderStatisticProvider({ children }: { children: ReactNode }) {
       isFetching,
       form,
       onSubmit,
-      statistics,
+      statistics: statistics ?? emptyStatistics,
     }),
-    [isLoading, form, onSubmit, statistics],
+    [isLoading, isFetching, form, onSubmit, statistics],
   )
 
   return <OrderStatisticContext.Provider value={value}>{children}</OrderStatisticContext.Provider>
@@ -103,7 +168,10 @@ export function useOrderStatisticContext(): OrderStatisticContextType {
 
 function createOrderStatisticFilterSchema() {
   return z.object({
-    date: z.record(z.date()),
+    date: z.object({
+      from: z.date().optional(),
+      to: z.date().optional(),
+    }),
     cashregister: z.array(z.string()).optional(),
     cashregisterAccount: z.array(z.string()).optional(),
   })
@@ -116,16 +184,7 @@ function getDefaultDateRange() {
   }
 }
 
-function getDefaultFilters() {
-  return {
-    date: getDefaultDateRange(),
-    cashregister: [],
-    cashregisterAccount: [],
-    currency: '',
-  }
-}
-
-function getDefaultStatisticFormValues() {
+function getDefaultFilters(): OrderStatisticFilters {
   return {
     date: getDefaultDateRange(),
     cashregister: [],

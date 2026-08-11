@@ -26,8 +26,12 @@ export async function create(
   next: NextFunction,
 ) {
   try {
+    if (req.files === undefined)
+      req.files = []
+
     const serviceResponse = await ExpenseService.create({
       payload: req.validated.body,
+      uploadedFiles: req.files as Express.Multer.File[],
     })
 
     res.status(201).json(serviceResponse)
@@ -43,8 +47,12 @@ export async function edit(
   next: NextFunction,
 ) {
   try {
+    if (req.files === undefined)
+      req.files = []
+
     const serviceResponse = await ExpenseService.edit({
       payload: req.validated.body,
+      uploadedFiles: req.files as Express.Multer.File[],
     })
 
     res.status(200).json(serviceResponse)

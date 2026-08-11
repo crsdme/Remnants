@@ -25,6 +25,7 @@ import procurementRoutes from './procurement.route'
 import productPropertyGroupRoutes from './product-property-group.route'
 import productPropertyOptionRoutes from './product-property-option.route'
 import productPropertyRoutes from './product-property.route'
+import productStockStatusRoutes from './product-stock-status.route'
 import productRoutes from './product.route'
 import settingRoutes from './setting.route'
 import siteRoutes from './site.route'
@@ -61,6 +62,7 @@ router.use('/money-transactions', moneyTransactionRoutes)
 router.use('/cashregisters', cashregisterRoutes)
 router.use('/cashregister-accounts', cashregisterAccountRoutes)
 router.use('/order-statuses', orderStatusRoutes)
+router.use('/product-stock-statuses', productStockStatusRoutes)
 router.use('/order-sources', orderSourceRoutes)
 router.use('/delivery-services', deliveryServiceRoutes)
 router.use('/settings', settingRoutes)

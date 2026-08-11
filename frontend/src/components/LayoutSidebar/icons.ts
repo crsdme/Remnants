@@ -1,0 +1,33 @@
+import {
+  Banknote,
+  BarChart3,
+  ChevronsUpDown,
+  FileText,
+  Globe,
+  LayoutDashboard,
+  ListChecks,
+  MessageSquare,
+  Package,
+  Settings,
+  ShoppingCart,
+  Tag,
+  Users,
+  Warehouse,
+} from 'lucide-react'
+
+export const SIDEMENU_ICONS = {
+  LayoutDashboard,
+  ShoppingCart,
+  Package,
+  Users,
+  MessageSquare,
+  ListChecks,
+  BarChart3,
+  Tag,
+  Warehouse,
+  Banknote,
+  Globe,
+  Settings,
+  FileText,
+  ChevronsUpDown,
+}

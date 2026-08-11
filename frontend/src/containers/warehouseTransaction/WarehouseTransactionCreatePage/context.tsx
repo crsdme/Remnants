@@ -90,8 +90,8 @@ export function WarehouseTransactionProvider({ children }: { children: ReactNode
 
     void useMutateCreateWarehouseTransaction.mutate({
       type: params.type,
-      fromWarehouse: params.fromWarehouse,
-      toWarehouse: params.toWarehouse,
+      fromWarehouseId: params.fromWarehouse,
+      toWarehouseId: params.toWarehouse,
       requiresReceiving: params.requiresReceiving,
       comment: params.comment,
       products: productsForEditOrCreate,

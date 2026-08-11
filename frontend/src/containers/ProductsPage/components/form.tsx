@@ -913,7 +913,7 @@ function renderProductProperty({ property, form, isLoading, language }: {
                     pagination: { full: true },
                     filters: {
                       ...(selectedValue ? { ids: selectedValue } : { names: query }),
-                      productProperty: property.id,
+                      productPropertyId: property.id,
                       active: [true],
                       language,
                     },
@@ -954,7 +954,7 @@ function renderProductProperty({ property, form, isLoading, language }: {
                     pagination: { full: true },
                     filters: {
                       ...(selectedValue ? { ids: selectedValue } : { names: query }),
-                      productProperty: property.id,
+                      productPropertyId: property.id,
                       active: [true],
                       language,
                     },
@@ -996,7 +996,7 @@ function renderProductProperty({ property, form, isLoading, language }: {
                     pagination: { full: true },
                     filters: {
                       ...(selectedValue ? { ids: selectedValue } : { names: query }),
-                      productProperty: property.id,
+                      productPropertyId: property.id,
                       active: [true],
                       language,
                     },

@@ -6,6 +6,8 @@ export const warehouseTransactionLogDBSchema = z.object({
   productId: idSchema,
   warehouseId: idSchema,
   deltaCount: z.number(),
+  previousCount: z.number().optional(),
+  afterCount: z.number().optional(),
   refType: z.string(),
   refId: idSchema,
   userId: idSchema,

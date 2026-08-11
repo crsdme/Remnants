@@ -74,4 +74,9 @@ ClientSchema.pre('save', async function (this: ClientDoc, next) {
   next()
 })
 
+ClientSchema.index({ removed: 1, seq: 1 })
+ClientSchema.index({ phones: 1 })
+ClientSchema.index({ emails: 1 })
+ClientSchema.index({ createdAt: -1 })
+
 export const ClientModel = mongoose.model<ClientDB>('client', ClientSchema)

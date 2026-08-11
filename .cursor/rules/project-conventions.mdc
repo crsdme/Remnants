@@ -1,0 +1,61 @@
+---
+description: Remnants — обзор монорепо, структура, запрет ObjectId.
+alwaysApply: true
+---
+
+# Remnants — обзор
+
+Монорепо: `backend/`, `frontend/`, `packages/shared/` (Zod + DTO для API).
+
+## ID — НЕ использовать ObjectId
+
+Запрещены `ObjectId` / `Types.ObjectId` / `Schema.Types.ObjectId`.
+
+- `_id` и ссылки (`*Id`, `*Ids`) — **строковые UUID**.
+- Валидация: `z.string().uuid()` (`idSchema` в shared).
+- Генерация: `uuidv4` + `uuidValidator` в Mongoose.
+- В API/на фронте id — `string` (UUID).
+
+```ts
+// ✅
+_id: { type: String, default: uuidv4, validate: uuidValidator }
+currencyId: { type: String, ref: 'Currency', required: true }
+
+// ❌
+_id: { type: Schema.Types.ObjectId, auto: true }
+```
+
+Legacy ObjectId — только миграции (`backend/src/migrations`), не новый код.
+
+## Backend (`backend/src/`)
+
+Слой: **route → controller → service → repository → model**. Mapper: DB ↔ DTO.
+
+| Папка | Назначение |
+|-------|------------|
+| `routes/api/` | Express-роуты |
+| `controllers/` | HTTP, вызов service |
+| `services/` | Бизнес-логика |
+| `repositories/` | MongoDB |
+| `models/` | Mongoose |
+| `mappers/` | DB ↔ DTO |
+| `schemas/` | Zod (сервер/DB) |
+| `types/` | TS-типы сущности |
+| `middleware/` | auth, validation, upload |
+| `migrations/` | миграции БД |
+| `test/` | Vitest (рядом с `backend/`) |
+
+## Frontend (`frontend/src/`)
+
+| Папка | Назначение |
+|-------|------------|
+| `app/` | `App.tsx`, роутинг |
+| `api/hooks/<entity>/` | React Query хуки |
+| `api/requests/` | HTTP-вызовы |
+| `containers/` | страницы фич |
+| `components/` | переиспользуемый UI |
+| `components/ui/` | UI-примитивы |
+| `locales/en`, `locales/ru` | i18n |
+| `utils/` | helpers, hooks, types |
+
+Новая сущность: shared → backend (model…route + test) → frontend (hooks + container + locales).

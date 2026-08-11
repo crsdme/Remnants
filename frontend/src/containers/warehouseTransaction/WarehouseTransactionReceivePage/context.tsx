@@ -119,8 +119,8 @@ export function WarehouseTransactionProvider({ children }: { children: ReactNode
 
     form.reset({
       type: warehouseTransaction.type as 'in' | 'out' | 'transfer',
-      fromWarehouse: warehouseTransaction.fromWarehouse.id,
-      toWarehouse: warehouseTransaction.toWarehouse.id,
+      fromWarehouse: warehouseTransaction?.fromWarehouse?.id ?? '',
+      toWarehouse: warehouseTransaction?.toWarehouse?.id ?? '',
       requiresReceiving: warehouseTransaction.requiresReceiving,
       comment: warehouseTransaction.comment,
       products: warehouseTransactionItems.map(item => ({

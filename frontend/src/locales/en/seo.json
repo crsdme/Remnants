@@ -65,6 +65,9 @@
   "title.page.order-statuses": "Order Statuses - Remnant",
   "description.page.order-statuses": "Manage order statuses in Remnant",
 
+  "title.page.product-stock-statuses": "Product Stock Statuses - Remnant",
+  "description.page.product-stock-statuses": "Manage product stock statuses in Remnant",
+
   "title.page.order-sources": "Order Sources - Remnant",
   "description.page.order-sources": "Manage order sources in Remnant",
 

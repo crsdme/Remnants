@@ -18,6 +18,13 @@ export function parseQueryCsv(value: string | null | undefined): string[] {
   return value ? value.split(',').map(s => s.trim()).filter(Boolean) : []
 }
 
+export function parseQueryDate(value: string | null | undefined): Date | undefined {
+  if (!value)
+    return undefined
+  const date = new Date(value)
+  return Number.isNaN(date.getTime()) ? undefined : date
+}
+
 interface QueryParamWriter {
   set: (key: string, value: string) => void
   delete: (key: string) => void

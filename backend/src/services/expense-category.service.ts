@@ -24,7 +24,7 @@ export async function get({
   user: AuthUser
 }): Promise<GetExpenseCategoriesResponse> {
   const access = await UserAccessRepo.getScopesByUserId(user.id)
-  const scopeIds = getScopeIdsForUser(access, 'expenseCategories', user)
+  const scopeIds = getScopeIdsForUser(access, 'expenseCategoryIds', user)
 
   const { items, total, page, pageSize } = await ExpenseCategoryRepo.list(payload, { scopeIds })
 

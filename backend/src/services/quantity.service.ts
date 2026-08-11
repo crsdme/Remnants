@@ -5,17 +5,19 @@ import type {
   GetQuantitiesResponse,
   RemoveQuantitiesResponse,
 } from '@remnant/shared'
-import type { ClientSession } from 'mongoose'
+import type { ClientSession, UpdateQuery } from 'mongoose'
 import type {
   CountQuantitiesPayload,
   CreateQuantityPayload,
   EditQuantityPayload,
   GetQuantitiesPayload,
+  QuantityDB,
   RemoveQuantityPayload,
 } from '@/types'
 import { mapQuantityToDTO } from '@/mappers/'
 import * as ProductRepository from '@/repositories/products.repo'
 import * as QuantityRepository from '@/repositories/quantity.repo'
+import * as ProductStockStatusService from '@/services/product-stock-status.service'
 import * as WarehouseTransactionLogService from '@/services/warehouse-transaction-log.service'
 import { HttpError } from '@/utils/'
 
@@ -41,14 +43,14 @@ export async function create({ payload, session }: { payload: CreateQuantityPayl
   const {
     count,
     productId,
-    warehouse,
+    warehouseId,
   } = payload
 
   const quantity = await QuantityRepository.createOne({
     payload: {
       count,
       productId,
-      warehouse,
+      warehouseId,
     },
     session,
   })
@@ -56,6 +58,12 @@ export async function create({ payload, session }: { payload: CreateQuantityPayl
   await ProductRepository.addQuantityToProducts({
     productIds: [productId],
     quantityId: quantity[0]._id,
+    session,
+  })
+
+  await ProductStockStatusService.recomputeForProductWarehouse({
+    productId,
+    warehouseId,
     session,
   })
 
@@ -71,42 +79,75 @@ export async function count({ payload, session }: { payload: CountQuantitiesPayl
   const {
     count,
     productId,
-    warehouse,
+    warehouseId,
     mode = 'inc',
     userId,
     refType,
     refId,
   } = payload
 
+  const existing = await QuantityRepository.findByProductWarehouse({ productId, warehouseId, session })
+  const previousCount = existing?.count ?? 0
+  const afterCount = {
+    set: count,
+    inc: previousCount + count,
+    dec: previousCount - count,
+  }[mode]
+  const deltaCount = afterCount - previousCount
+
   const updateVariants = {
     set: { $set: { count } },
     inc: { $inc: { count } },
     dec: { $inc: { count: count * -1 } },
-  }[mode]
+  }[mode] as UpdateQuery<QuantityDB>
 
-  const createVariants = {
-    set: count,
-    inc: count,
-    dec: count * -1,
-  }[mode]
+  if (refType === 'order') {
+    updateVariants.$set = {
+      ...(updateVariants.$set as Record<string, unknown> | undefined),
+      lastSaleAt: new Date(),
+    }
+  }
 
   const quantity = await QuantityRepository.findAndUpdate({
-    query: { productId, warehouse },
+    query: { productId, warehouseId },
     payload: updateVariants,
     session,
   })
 
   await WarehouseTransactionLogService.create({
     productId,
-    warehouseId: warehouse,
-    deltaCount: createVariants,
+    warehouseId,
+    deltaCount,
+    previousCount,
+    afterCount,
     refType,
     refId,
     userId,
   }, session)
 
-  if (!quantity)
-    await create({ payload: { count: createVariants, productId, warehouse }, session })
+  if (!quantity) {
+    await create({ payload: { count: afterCount, productId, warehouseId }, session })
+
+    if (refType === 'order') {
+      await QuantityRepository.findAndUpdate({
+        query: { productId, warehouseId },
+        payload: { $set: { lastSaleAt: new Date() } },
+        session,
+      })
+      await ProductStockStatusService.recomputeForProductWarehouse({
+        productId,
+        warehouseId,
+        session,
+      })
+    }
+  }
+  else {
+    await ProductStockStatusService.recomputeForProductWarehouse({
+      productId,
+      warehouseId,
+      session,
+    })
+  }
 
   return {
     status: 'success',
@@ -122,13 +163,19 @@ export async function edit({ payload, session }: { payload: EditQuantityPayload,
       id: payload.id,
       count: payload.count,
       productId: payload.productId,
-      warehouse: payload.warehouse,
+      warehouseId: payload.warehouseId,
     },
     session,
   })
 
   if (!quantity)
     throw new HttpError(400, 'Quantity not edited', 'QUANTITY_NOT_EDITED')
+
+  await ProductStockStatusService.recomputeForProductWarehouse({
+    productId: payload.productId,
+    warehouseId: payload.warehouseId,
+    session,
+  })
 
   return {
     status: 'success',

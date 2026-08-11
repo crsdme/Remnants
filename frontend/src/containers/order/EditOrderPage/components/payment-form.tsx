@@ -14,11 +14,6 @@ import {
   FormLabel,
   FormMessage,
   Input,
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
   Sheet,
   SheetContent,
   SheetDescription,
@@ -26,7 +21,6 @@ import {
   SheetTitle,
   Textarea,
 } from '@/components/ui'
-import { PAYMENT_STATUSES } from '@/utils/constants'
 import { useLocale } from '@/utils/hooks'
 import { useEditOrderContext } from '../context'
 
@@ -185,53 +179,23 @@ export function FullForm({ form, onSubmit }: { form: UseFormReturn, onSubmit: (p
             )}
           />
 
-          <div className="flex gap-2 w-full">
-            <FormField
-              control={form.control}
-              name="paymentDate"
-              render={({ field }) => (
-                <FormItem className="flex-1">
-                  <FormLabel>{t('page.edit-order.form.payment-date')}</FormLabel>
-                  <FormControl>
-                    <DatePicker
-                      value={field.value}
-                      onChange={field.onChange}
-                      disabled={isLoading}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="paymentStatus"
-              render={({ field: currencyField }) => (
-                <FormItem className="flex-1">
-                  <FormLabel>{t('page.edit-order.form.payment-status')}</FormLabel>
-                  <Select
-                    onValueChange={currencyField.onChange}
+          <FormField
+            control={form.control}
+            name="paymentDate"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>{t('page.edit-order.form.payment-date')}</FormLabel>
+                <FormControl>
+                  <DatePicker
+                    value={field.value}
+                    onChange={field.onChange}
                     disabled={isLoading}
-                    {...currencyField}
-                  >
-                    <FormControl>
-                      <SelectTrigger className="w-full">
-                        <SelectValue placeholder={t('page.edit-order.form.payment-status')} />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {PAYMENT_STATUSES.map(status => (
-                        <SelectItem key={status.id} value={status.id}>
-                          {t(`payment-status.${status.id}`)}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </FormItem>
-              )}
-            />
-          </div>
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
           <FormField
             control={form.control}

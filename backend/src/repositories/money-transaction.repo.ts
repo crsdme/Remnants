@@ -139,6 +139,8 @@ export async function list({
         role: 1,
         transferId: 1,
         confirmed: 1,
+        createdBy: 1,
+        removedBy: 1,
         createdAt: 1,
         updatedAt: 1,
         description: 1,

@@ -7,7 +7,7 @@ export function mapCategoryToDTO(category: CategoryDB): CategoryDTO {
     seq: category.seq,
     names: category.names,
     priority: category.priority,
-    parent: category.parent,
+    parentId: category.parentId,
     active: category.active,
     createdAt: category.createdAt,
     updatedAt: category.updatedAt,

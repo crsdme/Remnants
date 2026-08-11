@@ -9,6 +9,8 @@ export function mapOrderStatusToDTO(orderStatus: OrderStatusDB): OrderStatusDTO 
     color: orderStatus.color,
     isLocked: orderStatus.isLocked,
     isSelectable: orderStatus.isSelectable,
+    isDisplayed: orderStatus.isDisplayed ?? true,
+    includeInStatistics: orderStatus.includeInStatistics ?? true,
     createdAt: orderStatus.createdAt,
     updatedAt: orderStatus.updatedAt,
   }

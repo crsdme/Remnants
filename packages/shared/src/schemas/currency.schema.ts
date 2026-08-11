@@ -17,8 +17,8 @@ export type CurrencyDTO = z.output<typeof currencySchema>
 
 export const exchangeRateSchema = z.object({
   id: idSchema,
-  fromCurrency: idSchema,
-  toCurrency: idSchema,
+  fromCurrencyId: idSchema,
+  toCurrencyId: idSchema,
   rate: z.number(),
   comment: z.string().optional(),
   createdAt: z.coerce.date(),
@@ -112,8 +112,8 @@ export type RemoveCurrencyRequest = z.input<typeof removeCurrencySchema>
 export const getExchangeRatesSchema = z.object({
   filters: z.object({
     ids: z.array(idSchema).optional(),
-    fromCurrency: idSchemaOptional,
-    toCurrency: idSchemaOptional,
+    fromCurrencyId: idSchemaOptional,
+    toCurrencyId: idSchemaOptional,
   }).optional().default({}),
   sorters: z.object({
     rate: sorterParamsSchema.optional(),

@@ -44,7 +44,7 @@ export async function list(
     {
       $lookup: {
         from: 'cashregister-accounts',
-        localField: 'accounts',
+        localField: 'accountIds',
         foreignField: '_id',
         as: 'account',
       },
@@ -91,7 +91,7 @@ export async function list(
       $addFields: {
         currencies: {
           $map: {
-            input: '$account.currencies',
+            input: '$account.currencyIds',
             as: 'accCurrency',
             in: {
               $let: {

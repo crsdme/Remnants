@@ -51,6 +51,8 @@ BarcodeSchema.pre('save', async function (this: BarcodeDoc, next) {
   next()
 })
 
-BarcodeSchema.index({ removed: 1 })
+BarcodeSchema.index({ code: 1 })
+BarcodeSchema.index({ 'products._id': 1 })
+BarcodeSchema.index({ removed: 1, active: 1 })
 
 export const BarcodeModel = mongoose.model<BarcodeDB>('Barcode', BarcodeSchema)

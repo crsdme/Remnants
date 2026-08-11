@@ -263,9 +263,9 @@ export function ProductPropertiesProvider({ children }: { children: ReactNode })
     if (!selectedProperty)
       return
     if (!selectedOption)
-      return useMutateCreateProductPropertyOption.mutate({ ...params, productProperty: selectedProperty.id })
+      return useMutateCreateProductPropertyOption.mutate({ ...params, productPropertyId: selectedProperty.id })
 
-    return useMutateEditProductPropertyOption.mutate({ ...params, id: selectedOption.id, productProperty: selectedProperty.id })
+    return useMutateEditProductPropertyOption.mutate({ ...params, id: selectedOption.id, productPropertyId: selectedProperty.id })
   }
 
   const removeProperty = (params: { ids: string[] }) => {

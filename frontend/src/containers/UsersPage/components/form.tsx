@@ -117,7 +117,7 @@ export function UserForm() {
         />
         <FormField
           control={form.control}
-          name="role"
+          name="roleId"
           render={({ field }) => (
             <FormItem>
               <FormLabel>
@@ -144,7 +144,7 @@ export function UserForm() {
 
         <FormField
           control={form.control}
-          name="access.warehouses"
+          name="access.warehouseIds"
           render={({ field }) => (
             <FormItem>
               <FormLabel>{t('page.users.form.access.warehouses')}</FormLabel>
@@ -167,7 +167,7 @@ export function UserForm() {
 
         <FormField
           control={form.control}
-          name="access.sites"
+          name="access.siteIds"
           render={({ field }) => (
             <FormItem>
               <FormLabel>{t('page.users.form.access.sites')}</FormLabel>
@@ -195,7 +195,7 @@ export function UserForm() {
 
         <FormField
           control={form.control}
-          name="access.expenseCategories"
+          name="access.expenseCategoryIds"
           render={({ field }) => (
             <FormItem>
               <FormLabel>{t('page.users.form.access.expenseCategories')}</FormLabel>
@@ -218,7 +218,7 @@ export function UserForm() {
 
         <FormField
           control={form.control}
-          name="access.cashregisters"
+          name="access.cashregisterIds"
           render={({ field }) => (
             <FormItem>
               <FormLabel>{t('page.users.form.access.cashregisters')}</FormLabel>
@@ -241,7 +241,7 @@ export function UserForm() {
 
         <FormField
           control={form.control}
-          name="access.cashregisterAccounts"
+          name="access.cashregisterAccountIds"
           render={({ field }) => (
             <FormItem>
               <FormLabel>{t('page.users.form.access.cashregisterAccounts')}</FormLabel>
@@ -264,7 +264,7 @@ export function UserForm() {
 
         <FormField
           control={form.control}
-          name="access.deliveryServices"
+          name="access.deliveryServiceIds"
           render={({ field }) => (
             <FormItem>
               <FormLabel>{t('page.users.form.access.deliveryServices')}</FormLabel>
@@ -287,7 +287,7 @@ export function UserForm() {
 
         <FormField
           control={form.control}
-          name="access.orderSources"
+          name="access.orderSourceIds"
           render={({ field }) => (
             <FormItem>
               <FormLabel>{t('page.users.form.access.orderSources')}</FormLabel>
@@ -310,7 +310,7 @@ export function UserForm() {
 
         <FormField
           control={form.control}
-          name="access.orderStatuses"
+          name="access.orderStatusIds"
           render={({ field }) => (
             <FormItem>
               <FormLabel>{t('page.users.form.access.orderStatuses')}</FormLabel>

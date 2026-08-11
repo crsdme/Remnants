@@ -8,7 +8,7 @@ export const userDBSchema = z.object({
   login: z.string(),
   password: z.string(),
   name: z.string(),
-  role: idSchema,
+  roleId: idSchema,
   active: z.boolean(),
   removed: z.boolean().default(false),
   createdAt: z.coerce.date(),

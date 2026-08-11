@@ -21,20 +21,20 @@ export const warehouseTransactionSchema = z.object({
   fromWarehouse: z.object({
     id: idSchema,
     names: languageStringSchema,
-  }),
+  }).optional(),
   toWarehouse: z.object({
     id: idSchema,
     names: languageStringSchema,
-  }),
-  requiresReceiving: z.boolean(),
+  }).optional(),
+  requiresReceiving: z.boolean().optional().default(true),
   status: z.string().trim(),
-  accepted: z.boolean(),
-  acceptedBy: idSchema,
-  createdBy: idSchema,
-  removedBy: idSchema,
-  comment: z.string().trim(),
-  removedAt: z.coerce.date(),
-  acceptedAt: z.coerce.date(),
+  accepted: z.boolean().optional().default(false),
+  acceptedBy: idSchemaOptional,
+  createdBy: idSchemaOptional,
+  removedBy: idSchemaOptional,
+  comment: z.string().trim().optional().default(''),
+  removedAt: z.coerce.date().optional().nullable(),
+  acceptedAt: z.coerce.date().optional().nullable(),
   createdAt: z.coerce.date(),
   updatedAt: z.coerce.date(),
 })
@@ -92,18 +92,18 @@ const baseCreateWarehouseTransactionSchema = z.object({
 
 const inWarehouseTransactionSchema = baseCreateWarehouseTransactionSchema.extend({
   type: z.literal('in'),
-  toWarehouse: idSchema,
+  toWarehouseId: idSchema,
 })
 
 const outWarehouseTransactionSchema = baseCreateWarehouseTransactionSchema.extend({
   type: z.literal('out'),
-  fromWarehouse: idSchema,
+  fromWarehouseId: idSchema,
 })
 
 const transferWarehouseTransactionSchema = baseCreateWarehouseTransactionSchema.extend({
   type: z.literal('transfer'),
-  fromWarehouse: idSchema,
-  toWarehouse: idSchema,
+  fromWarehouseId: idSchema,
+  toWarehouseId: idSchema,
   requiresReceiving: z.boolean().optional(),
 })
 
@@ -157,18 +157,18 @@ const baseEditWarehouseTransactionSchema = z.object({
 
 const inWarehouseTransactionEditSchema = baseEditWarehouseTransactionSchema.extend({
   type: z.literal('in'),
-  toWarehouse: idSchema,
+  toWarehouseId: idSchema,
 })
 
 const outWarehouseTransactionEditSchema = baseEditWarehouseTransactionSchema.extend({
   type: z.literal('out'),
-  fromWarehouse: idSchema,
+  fromWarehouseId: idSchema,
 })
 
 const transferWarehouseTransactionEditSchema = baseEditWarehouseTransactionSchema.extend({
   type: z.literal('transfer'),
-  fromWarehouse: idSchema,
-  toWarehouse: idSchema,
+  fromWarehouseId: idSchema,
+  toWarehouseId: idSchema,
   requiresReceiving: z.boolean().optional(),
 })
 

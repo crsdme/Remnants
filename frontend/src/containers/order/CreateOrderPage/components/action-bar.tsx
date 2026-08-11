@@ -4,7 +4,7 @@ export function ActionBar() {
   const { t } = useTranslation()
 
   return (
-    <div className="flex items-center justify-between flex-wrap gap-2">
+    <div className="mb-4 flex items-center justify-between flex-wrap gap-2">
       <div>
         <h2 className="text-2xl font-bold tracking-tight">{t('page.create-order.title')}</h2>
         <p className="text-muted-foreground">{t('page.create-order.description')}</p>

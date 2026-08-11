@@ -28,7 +28,7 @@ const ProductPropertyGroupSchema: Schema = new Schema(
         message: 'Supported languages only',
       },
     },
-    productProperties: [{
+    productPropertyIds: [{
       type: String,
       ref: 'product-property',
     }],
@@ -58,6 +58,6 @@ ProductPropertyGroupSchema.set('toJSON', {
   },
 })
 
-ProductPropertyGroupSchema.index({ removed: 1 })
+ProductPropertyGroupSchema.index({ removed: 1, active: 1 })
 
 export const ProductPropertyGroupModel = mongoose.model<ProductPropertyGroupDoc>('product-property-group', ProductPropertyGroupSchema)

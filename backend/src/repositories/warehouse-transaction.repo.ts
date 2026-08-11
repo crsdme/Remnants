@@ -42,7 +42,7 @@ export async function list(
     },
   })
 
-  applyScopeIdsToAnyOfFields(query, options.warehouseIds, ['fromWarehouse', 'toWarehouse'])
+  applyScopeIdsToAnyOfFields(query, options.warehouseIds, ['fromWarehouseId', 'toWarehouseId'])
 
   const sorters = buildSortQuery(payload.sorters, { createdAt: 1 })
 
@@ -56,7 +56,7 @@ export async function list(
     {
       $lookup: {
         from: 'warehouses',
-        localField: 'fromWarehouse',
+        localField: 'fromWarehouseId',
         foreignField: '_id',
         as: 'fromWarehouse',
       },
@@ -64,7 +64,7 @@ export async function list(
     {
       $lookup: {
         from: 'warehouses',
-        localField: 'toWarehouse',
+        localField: 'toWarehouseId',
         foreignField: '_id',
         as: 'toWarehouse',
       },
@@ -105,8 +105,14 @@ export async function list(
             else: '$$REMOVE',
           },
         },
+        requiresReceiving: { $ifNull: ['$requiresReceiving', true] },
         status: 1,
-        comment: 1,
+        accepted: { $ifNull: ['$accepted', false] },
+        acceptedBy: 1,
+        createdBy: 1,
+        removedBy: 1,
+        comment: { $ifNull: ['$comment', ''] },
+        acceptedAt: 1,
         createdAt: 1,
         updatedAt: 1,
       },
@@ -350,7 +356,7 @@ export async function listItems(payload: GetWarehouseTransactionsItemsRepoPayloa
               barcodes: { id: 1, code: 1 },
               categories: { id: 1, names: 1 },
               unit: { id: '$unit._id', names: 1, symbols: 1 },
-              quantity: { count: 1, warehouse: 1, status: 1 },
+              quantity: { count: 1, warehouseId: 1, status: 1 },
               images: 1,
               productProperties: { id: 1, value: 1, data: { names: 1, type: 1, isRequired: 1, showInTable: 1 }, optionData: { id: 1, names: 1, color: 1 } },
               productPropertiesGroup: { id: '$productPropertiesGroup._id', names: 1 },

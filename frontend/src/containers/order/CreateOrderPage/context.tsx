@@ -1,6 +1,6 @@
 import type { CreateOrderRequest, ProductPopulatedDTO } from '@remnant/shared'
 
-import type { ReactNode } from 'react'
+import type { Dispatch, ReactNode, SetStateAction } from 'react'
 import type { Resolver, UseFormReturn } from 'react-hook-form'
 
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -20,14 +20,13 @@ import {
   useOrderCreate,
   usePrintDraftInvoice,
 } from '@/api/hooks'
-import { PAYMENT_STATUSES } from '@/utils/constants'
+import type { UploadedFile } from '@/components/FileUploadDnd'
 import { useLocale } from '@/utils/hooks'
 
 interface DraftOrderPayment {
   id: string
   amount: number
   paymentDate?: Date
-  paymentStatus: string
   comment?: string
   cashregister: { id: string, names: { [key: string]: string } }
   cashregisterAccount: { id: string, names: { [key: string]: string } }
@@ -41,7 +40,6 @@ function createPaymentFormSchema(t: (key: string) => string) {
     amount: z.number().default(0),
     currency: z.string({ required_error: t('form.errors.required') }).min(1, { message: t('form.errors.required') }),
     paymentDate: z.date().optional(),
-    paymentStatus: z.string({ required_error: t('form.errors.required') }).min(1, { message: t('form.errors.required') }),
     comment: z.string().optional(),
   })
 }
@@ -128,6 +126,8 @@ interface CreateOrderContextType {
   openPaymentModal: () => void
   closePaymentModal: () => void
   payments: DraftOrderPayment[]
+  files: UploadedFile[]
+  setFiles: Dispatch<SetStateAction<UploadedFile[]>>
   removePayment: (id: string) => void
   createClient: (params: ClientFormValues) => void
   createOrder: (params: InformationFormValues) => void
@@ -143,6 +143,7 @@ export function CreateOrderProvider({ children }: { children: ReactNode }) {
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [payments, setPayments] = useState<DraftOrderPayment[]>([])
+  const [files, setFiles] = useState<UploadedFile[]>([])
   const navigate = useNavigate()
   const { t } = useLocale()
 
@@ -162,7 +163,6 @@ export function CreateOrderProvider({ children }: { children: ReactNode }) {
       amount: 0,
       currency: '',
       paymentDate: new Date(),
-      paymentStatus: PAYMENT_STATUSES[0].id,
       comment: '',
     },
   })
@@ -234,7 +234,6 @@ export function CreateOrderProvider({ children }: { children: ReactNode }) {
       currency,
       amount: params.amount,
       paymentDate: params.paymentDate,
-      paymentStatus: params.paymentStatus,
       comment: params.comment,
     }
 
@@ -253,7 +252,7 @@ export function CreateOrderProvider({ children }: { children: ReactNode }) {
         void queryClient.invalidateQueries({ queryKey: ['products'] })
         void queryClient.invalidateQueries({ queryKey: ['statistics'] })
         void queryClient.invalidateQueries({ queryKey: ['money-transactions'] })
-        void queryClient.invalidateQueries({ queryKey: ['order-statuses', 'get', { filters: { includeAll: true, includeCount: true } }] })
+        void queryClient.invalidateQueries({ queryKey: ['order-statuses'] })
         toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description || ''}` })
         void navigate('/orders')
       },
@@ -320,7 +319,6 @@ export function CreateOrderProvider({ children }: { children: ReactNode }) {
       currency: p.currency.id,
       cashregister: p.cashregister.id,
       cashregisterAccount: p.cashregisterAccount.id,
-      paymentStatus: p.paymentStatus,
       paymentDate: p.paymentDate?.toISOString(),
       comment: p.comment,
     }))
@@ -334,9 +332,29 @@ export function CreateOrderProvider({ children }: { children: ReactNode }) {
       comment: params.comment,
       items,
       orderPayments,
+      files: files.map(file => ({
+        id: file.id,
+        filename: file.filename ?? '',
+        name: file.name,
+        type: file.type,
+        path: file.path,
+        isNew: file.isNew,
+      })),
     }
 
-    useMutateCreateOrder.mutate(payload)
+    const formData = new FormData()
+    for (const [key, value] of Object.entries(payload)) {
+      formData.append(key, typeof value === 'object' ? JSON.stringify(value) : String(value ?? ''))
+    }
+
+    files
+      .filter((file): file is UploadedFile & { file: File } => file.isNew && typeof file.file !== 'string')
+      .forEach((file) => {
+        formData.append('uploadedFiles', file.file, file.name)
+        formData.append('uploadedFilesIds', file.id)
+      })
+
+    useMutateCreateOrder.mutate(formData as unknown as CreateOrderRequest)
   }
 
   const loadBarcodeOptions = useBarcodeOptions()
@@ -375,8 +393,10 @@ export function CreateOrderProvider({ children }: { children: ReactNode }) {
       isLoading,
       paymentForm,
       informationForm,
-      payments,
       clientForm,
+      payments,
+      files,
+      setFiles,
       printDraftInvoice,
       openClientModal,
       closeClientModal,
@@ -388,7 +408,7 @@ export function CreateOrderProvider({ children }: { children: ReactNode }) {
       createOrder,
       getBarcode,
     }),
-    [isClientModalOpen, isPaymentModalOpen, isLoading, paymentForm, informationForm, clientForm, payments],
+    [isClientModalOpen, isPaymentModalOpen, isLoading, paymentForm, informationForm, clientForm, payments, files],
   )
 
   return <CreateOrderContext.Provider value={value}>{children}</CreateOrderContext.Provider>

@@ -3,6 +3,32 @@ import { z } from 'zod'
 import { dateRangeSchema, idSchema, idSchemaOptional, languageCodeSchema, languageStringSchema, numberFromStringSchema, paginationSchema, responseItemSchema, responseListSchema, responseSchema, sorterParamsSchema } from './common'
 import { orderPaymentDTOPopulatedSchema } from './order-payment.schema'
 
+const orderFileSchema = z.object({
+  id: z.string(),
+  filename: z.string(),
+  name: z.string(),
+  type: z.string(),
+  path: z.string(),
+})
+
+const orderFileInputSchema = z.object({
+  id: z.string().optional(),
+  filename: z.string().optional().default(''),
+  name: z.string(),
+  type: z.string(),
+  path: z.string().optional().default(''),
+  isNew: z.boolean().optional().default(false),
+})
+
+const uploadedFilesIdsSchema = z.preprocess(
+  (val) => {
+    if (val === undefined || val === null || val === '')
+      return undefined
+    return Array.isArray(val) ? val : [val]
+  },
+  z.array(z.string()).optional(),
+)
+
 export const orderSchema = z.object({
   id: idSchema,
   seq: z.number(),
@@ -16,6 +42,7 @@ export const orderSchema = z.object({
     total: numberFromStringSchema,
   })),
   comment: z.string(),
+  files: z.array(orderFileSchema).optional().default([]),
   profit: z.array(z.object({
     currency: idSchema,
     total: numberFromStringSchema,
@@ -51,7 +78,7 @@ export const orderDTOPopulatedSchema = orderSchema.omit({
       value: z.string(),
     })).optional(),
     comment: z.string().optional(),
-  }),
+  }).nullable().optional(),
   warehouse: z.object({
     id: idSchema,
     names: languageStringSchema,
@@ -77,7 +104,6 @@ export const orderDTOPopulatedSchema = orderSchema.omit({
   orderPayments: z.array(z.object({
     id: idSchema,
     amount: numberFromStringSchema,
-    paymentStatus: z.enum(['paid', 'unpaid', 'partially_paid', 'overpaid']),
     paymentDate: z.coerce.date(),
     comment: z.string().optional(),
   })),
@@ -86,7 +112,8 @@ export const orderDTOPopulatedSchema = orderSchema.omit({
 export type OrderDTOPopulated = z.infer<typeof orderDTOPopulatedSchema>
 
 export const orderItemSchema = z.object({
-  id: idSchema,
+  // Legacy order-items used ObjectId; new ones use UUID.
+  id: z.string().min(1),
   order: idSchema,
   product: idSchema,
   quantity: z.number(),
@@ -94,7 +121,7 @@ export const orderItemSchema = z.object({
   discountAmount: z.number(),
   discountPercent: z.number(),
   basePrice: z.number(),
-  manualPrice: z.number(),
+  manualPrice: z.number().nullable(),
   currency: idSchema,
   profit: z.number().optional(),
   exchangeRate: z.number().optional(),
@@ -160,7 +187,7 @@ export const orderItemDTOPopulatedSchema = orderItemSchema.omit({
       }),
     })),
     warehouseStock: z.array(z.object({
-      warehouse: idSchema,
+      warehouseId: idSchema,
       count: z.number(),
     })),
     images: z.array(z.object({
@@ -242,12 +269,13 @@ export const createOrderSchema = z.object({
     currency: idSchema,
     cashregister: idSchema,
     cashregisterAccount: idSchema,
-    paymentStatus: z.string(),
     paymentDate: z.string().optional(),
     comment: z.string().optional(),
   }).optional()),
   client: idSchemaOptional,
   comment: z.string().optional(),
+  files: z.array(orderFileInputSchema).optional().default([]),
+  uploadedFilesIds: uploadedFilesIdsSchema,
   items: z.array(z.object({
     product: idSchema,
     quantity: z.number(),
@@ -274,12 +302,13 @@ export const editOrderSchema = z.object({
     currency: idSchema,
     cashregister: idSchema,
     cashregisterAccount: idSchema,
-    paymentStatus: z.string(),
     paymentDate: z.string().optional(),
     comment: z.string().optional(),
   }).optional()),
   client: idSchemaOptional,
   comment: z.string().optional(),
+  files: z.array(orderFileInputSchema).optional().default([]),
+  uploadedFilesIds: uploadedFilesIdsSchema,
   items: z.array(z.object({
     id: z.string().optional(),
     product: idSchema,
@@ -315,12 +344,19 @@ export const printDraftInvoiceOrderSchema = z.object({
     quantity: z.number(),
     productProperties: z.array(z.object({
       id: idSchema,
-      names: languageStringSchema,
+      names: languageStringSchema.optional(),
       options: z.array(z.object({
         id: idSchema,
         names: languageStringSchema,
-      })),
+      })).optional().default([]),
       value: z.unknown(),
+      data: z.object({
+        type: z.string().optional(),
+        names: languageStringSchema.optional(),
+        showInTable: z.boolean().optional(),
+        isRequired: z.boolean().optional(),
+        symbols: languageStringSchema.optional(),
+      }).optional(),
     })),
     currency: idSchema,
     price: z.number(),

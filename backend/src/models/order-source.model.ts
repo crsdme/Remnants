@@ -54,4 +54,7 @@ OrderSourceSchema.set('toJSON', {
   },
 })
 
+OrderSourceSchema.index({ removed: 1 })
+OrderSourceSchema.index({ priority: 1 })
+
 export const OrderSourceModel = mongoose.model<OrderSourceDoc>('order-source', OrderSourceSchema)

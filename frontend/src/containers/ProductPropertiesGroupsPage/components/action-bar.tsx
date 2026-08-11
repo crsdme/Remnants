@@ -97,7 +97,7 @@ export function ActionBar() {
                     ))}
                     <FormField
                       control={form.control}
-                      name="productProperties"
+                      name="productPropertyIds"
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>{t('page.product-properties-groups.form.productProperties')}</FormLabel>
@@ -108,7 +108,7 @@ export function ActionBar() {
                               getDisplayValue={e => e.names[language]}
                               getOptionValue={e => e.id}
                               className="w-full"
-                              name="productProperties"
+                              name="productPropertyIds"
                               value={field.value}
                               onChange={field.onChange}
                               multi

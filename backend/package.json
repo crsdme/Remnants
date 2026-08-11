@@ -14,6 +14,7 @@
     "db:init": "ts-node src/utils/mongodb/init.ts",
     "db:backup": "ts-node src/utils/mongodb/backup.ts",
     "db:seed": "tsx src/utils/mongodb/seed.ts",
+    "db:migrate": "tsx -r tsconfig-paths/register src/migrations/cli.ts",
     "test": "vitest",
     "check": "eslint . && tsc --noEmit"
   },
@@ -25,7 +26,7 @@
     "@types/uuid": "^10.0.0",
     "axios": "^1.10.0",
     "bcrypt": "^5.1.1",
-    "bwip-js": "^4.6.0",
+    "bwip-js": "^4.11.2",
     "cookie-parser": "^1.4.7",
     "dotenv": "^16.4.7",
     "exceljs": "^4.4.0",

@@ -2,25 +2,26 @@ import type { InventoryDTO } from '@remnant/shared'
 import type { ReactNode } from 'react'
 
 import { useQueryClient } from '@tanstack/react-query'
-import { createContext, useContext, useMemo, useState } from 'react'
-import { useTranslation } from 'react-i18next'
+import { createContext, useCallback, useContext, useMemo, useState } from 'react'
 import { toast } from 'sonner'
 
-import { useInventoryRemove } from '@/api/hooks'
+import { useInventoryExport, useInventoryRemove } from '@/api/hooks'
+import { downloadBlob } from '@/utils/helpers/download'
+import { useLocale } from '@/utils/hooks'
 
 export type InventoryTableRow = InventoryDTO
 
 interface InventoryContextType {
   isLoading: boolean
   removeInventory: (params: { ids: string[] }) => void
+  exportInventoryExcel: (params: { id: string, seq: number }) => void
 }
 
 const InventoryContext = createContext<InventoryContextType | undefined>(undefined)
 
 export function InventoryProvider({ children }: { children: ReactNode }) {
-  const { t } = useTranslation()
+  const { t, language } = useLocale()
   const [isLoading, setIsLoading] = useState(false)
-
   const queryClient = useQueryClient()
 
   const useMutateRemoveInventory = useInventoryRemove({
@@ -38,17 +39,45 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
     },
   })
 
-  const removeInventory = (params: { ids: string[] }) => {
+  const exportMutation = useInventoryExport({
+    options: {
+      onSuccess: ({ data, headers }) => {
+        setIsLoading(false)
+        const filename = headers['x-export-filename'] || 'inventory.xlsx'
+        downloadBlob(data, filename)
+        const code = headers['x-export-code'] || 'INVENTORY_EXPORTED'
+        toast.success(t(`response.title.${code}`), {
+          description: `${t(`response.description.${code}`)} ${headers['x-export-message'] || ''}`,
+        })
+      },
+      onError: () => {
+        setIsLoading(false)
+        toast.error(t('page.inventories.export.error'))
+      },
+    },
+  })
+
+  const removeInventory = useCallback((params: { ids: string[] }) => {
     setIsLoading(true)
     useMutateRemoveInventory.mutate(params)
-  }
+  }, [useMutateRemoveInventory])
+
+  const exportInventoryExcel = useCallback((params: { id: string, seq: number }) => {
+    setIsLoading(true)
+    exportMutation.mutate({
+      id: params.id,
+      language,
+      view: 'all',
+    })
+  }, [exportMutation, language])
 
   const value: InventoryContextType = useMemo(
     () => ({
       isLoading,
       removeInventory,
+      exportInventoryExcel,
     }),
-    [isLoading, removeInventory],
+    [isLoading, removeInventory, exportInventoryExcel],
   )
 
   return <InventoryContext.Provider value={value}>{children}</InventoryContext.Provider>

@@ -31,7 +31,7 @@ export function mapCashregisterToDTO(cashregister: CashregisterDB): Cashregister
     id: cashregister._id,
     names: cashregister.names,
     priority: cashregister.priority,
-    accounts: cashregister.accounts,
+    accountIds: cashregister.accountIds,
     active: cashregister.active,
     createdAt: cashregister.createdAt,
     updatedAt: cashregister.updatedAt,

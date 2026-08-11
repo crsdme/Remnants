@@ -28,6 +28,8 @@ interface ProductSelectedTableProps {
   isProfit?: boolean
   tableId?: string
   removable?: boolean
+  showHeader?: boolean
+  showColumnVisibility?: boolean
 }
 
 export function ProductSelectedTable(
@@ -47,6 +49,8 @@ export function ProductSelectedTable(
     isProfit = false,
     tableId = 'selected-products-component',
     removable = true,
+    showHeader = true,
+    showColumnVisibility = true,
   }: ProductSelectedTableProps,
 ) {
   const { t } = useTranslation()
@@ -194,17 +198,25 @@ export function ProductSelectedTable(
 
   return (
     <div className={cn('', className)}>
-      <div className="flex justify-between items-center max-md:flex-col gap-2 py-2">
-        <h3 className="text-lg font-medium flex items-center gap-2">
-          <Package className="size-5" />
-          <p className="text-lg font-medium">{t('component.productTable.table.selectedProducts', { count: products.reduce((acc, product) => acc + product.lineQuantity, 0) })}</p>
-        </h3>
-        <ColumnVisibilityMenu
-          table={table}
-          tableId={tableId}
-          className="min-w-full sm:min-w-[100px]"
-        />
-      </div>
+      {(showHeader || showColumnVisibility) && (
+        <div className="flex justify-between items-center max-md:flex-col gap-2 py-2">
+          {showHeader
+            ? (
+                <h3 className="flex items-center gap-2 text-lg font-bold">
+                  <Package className="size-5" />
+                  <span>{t('component.productTable.table.selectedProducts', { count: products.reduce((acc, product) => acc + product.lineQuantity, 0) })}</span>
+                </h3>
+              )
+            : <div />}
+          {showColumnVisibility && (
+            <ColumnVisibilityMenu
+              table={table}
+              tableId={tableId}
+              className="min-w-full sm:min-w-[100px]"
+            />
+          )}
+        </div>
+      )}
       <div className="border rounded-sm">
         <Table>
           <TableHeader>{renderTableHeader()}</TableHeader>

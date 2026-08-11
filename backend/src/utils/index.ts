@@ -1,3 +1,4 @@
+export * from './automation'
 export * from './buildUrl'
 export * from './getDiff'
 export * from './httpError'

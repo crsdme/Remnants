@@ -36,15 +36,24 @@ export function DataTable() {
   })
   const columns = useColumns()
 
+  const selectedOrderStatus = filters.orderStatus?.[0] || 'all'
+  const orderFilters = {
+    ...filters,
+    orderStatus: selectedOrderStatus === 'all' ? [] : filters.orderStatus,
+  }
+
   const { orders = [], ordersCount = 0, isLoading, isFetching } = useOrderQuery(
-    { pagination, filters, sorters },
+    { pagination, filters: orderFilters, sorters },
     { options: { placeholderData: prevData => prevData } },
   )
 
   const { orderStatuses = [] } = useOrderStatusQuery(
-    { filters: { includeAll: true, includeCount: true } },
+    { filters: { includeCount: true }, pagination: { full: true } },
     { options: { placeholderData: prevData => prevData } },
   )
+
+  const displayedOrderStatuses = orderStatuses.filter(status => status.isDisplayed !== false)
+  const allOrdersCount = orderStatuses.reduce((acc, status) => acc + (status.ordersCount || 0), 0)
 
   const table = useReactTable({
     data: orders,
@@ -148,15 +157,21 @@ export function DataTable() {
         </div>
       </div>
       <div className="w-full flex items-start max-md:flex-col gap-2 py-2">
-        <Tabs defaultValue="all" className="flex flex-wrap" value={filters.orderStatus?.[0] || 'all'}>
+        <Tabs defaultValue="all" className="flex flex-wrap" value={selectedOrderStatus}>
           <TabsList className="flex flex-wrap">
-            {orderStatuses.map(status => (
+            <TabsTrigger
+              value="all"
+              onClick={() => setFilters({ ...filters, orderStatus: ['all'] })}
+            >
+              {`${t('order-status.all')} ${allOrdersCount}`}
+            </TabsTrigger>
+            {displayedOrderStatuses.map(status => (
               <TabsTrigger
                 key={status.id}
                 value={status.id}
                 onClick={() => setFilters({ ...filters, orderStatus: [status.id] })}
               >
-                {`${status?.names?.[language] || t('order-status.all')} ${status.ordersCount || 0}`}
+                {`${status.names?.[language] ?? ''} ${status.ordersCount || 0}`}
               </TabsTrigger>
             ))}
           </TabsList>

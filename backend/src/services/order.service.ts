@@ -28,11 +28,13 @@ import type {
   RemoveOrdersPayload,
 } from '@/types'
 import type { MoneyLike } from '@/utils/order-payment-status'
+import { Buffer } from 'node:buffer'
 import path from 'node:path'
 import { toMinorType } from '@remnant/shared'
 import mongoose from 'mongoose'
 import PDFDocument from 'pdfkit'
 import { v4 as uuidv4 } from 'uuid'
+import { STORAGE_PATHS } from '@/config/constants'
 import { mapOrderItemPopulatedToDTO, mapOrderPaymentRepoToDTO, mapOrderPopulatedToDTO } from '@/mappers'
 import * as CurrencyRepo from '@/repositories/currencies.repo'
 import * as OrderPaymentRepository from '@/repositories/order-payment.repo'
@@ -47,7 +49,7 @@ import * as QuantityService from '@/services/quantity.service'
 import * as UserService from '@/services/user.service'
 import { parseGetCurrency, parseGetOrderItems, parseGetOrderPayments, parseGetOrders } from '@/types/'
 import { drawHr, getHardcodeData, getScopeIdsForUser, HttpError } from '@/utils'
-import { toMinor } from '@/utils/money'
+import { fromMinor, toMinor } from '@/utils/money'
 import {
   buildCalculationCurrency,
   buildPaymentsByCurrency,
@@ -70,10 +72,10 @@ export async function get({ payload, user }: { payload: GetOrdersPayload, user: 
       hasProfitPermission,
     },
     options: {
-      warehouseIds: getScopeIdsForUser(access, 'warehouses', user),
-      deliveryServiceIds: getScopeIdsForUser(access, 'deliveryServices', user),
-      orderSourceIds: getScopeIdsForUser(access, 'orderSources', user),
-      orderStatusIds: getScopeIdsForUser(access, 'orderStatuses', user),
+      warehouseIds: getScopeIdsForUser(access, 'warehouseIds', user),
+      deliveryServiceIds: getScopeIdsForUser(access, 'deliveryServiceIds', user),
+      orderSourceIds: getScopeIdsForUser(access, 'orderSourceIds', user),
+      orderStatusIds: getScopeIdsForUser(access, 'orderStatusIds', user),
     },
   })
 
@@ -166,9 +168,22 @@ export async function getOrderPayments({ payload }: { payload: GetOrderPaymentsP
   }
 }
 
-export async function create({ payload, user }: { payload: CreateOrderPayload, user: AuthUser }): Promise<CreateOrderResponse> {
+export async function create({
+  payload,
+  uploadedFiles = [],
+  user,
+}: {
+  payload: CreateOrderPayload
+  uploadedFiles?: Express.Multer.File[]
+  user: AuthUser
+}): Promise<CreateOrderResponse> {
   const orderId = uuidv4()
   const createdOrderPayments = []
+  const resolvedFiles = resolveOrderFiles({
+    files: payload.files ?? [],
+    uploadedFilesIds: payload.uploadedFilesIds,
+    uploadedFiles,
+  })
 
   const { items: currencies } = await CurrencyRepo.list(parseGetCurrency({ filters: { active: [true] } }))
 
@@ -182,7 +197,6 @@ export async function create({ payload, user }: { payload: CreateOrderPayload, u
         currencyId: payment.currency,
         cashregisterId: payment.cashregister,
         cashregisterAccountId: payment.cashregisterAccount,
-        paymentStatus: payment.paymentStatus,
         comment: payment.comment,
         createdBy: user.id.toString(),
         paymentDate: payment.paymentDate !== undefined ? new Date(payment.paymentDate) : new Date(),
@@ -230,9 +244,10 @@ export async function create({ payload, user }: { payload: CreateOrderPayload, u
 
     await OrderRepository.createOneItem({
       payload: {
-        product: item.product,
+        _id: uuidv4(),
+        productId: item.product,
         quantity: item.quantity,
-        currency: item.currency,
+        currencyId: item.currency,
         minorManualPrice: toMinor(item.price, currency.scale),
         minorBasePrice: toMinor(item.basePrice, currency.scale),
         minorPrice: toMinor(item.price, currency.scale),
@@ -240,8 +255,8 @@ export async function create({ payload, user }: { payload: CreateOrderPayload, u
         minorProfit: toMinorType(profit),
         minorDiscountAmount: item.discountAmount !== undefined ? toMinor(item.discountAmount, currency.scale) : toMinorType(0),
         discountPercent: item.discountPercent,
-        order: orderId,
-        purchaseCurrency: product.purchaseCurrencyId,
+        orderId,
+        purchaseCurrencyId: product.purchaseCurrencyId,
         exchangeRate,
         createdBy: user.id.toString(),
       },
@@ -252,7 +267,7 @@ export async function create({ payload, user }: { payload: CreateOrderPayload, u
         mode: 'dec',
         productId: item.product,
         count: item.quantity,
-        warehouse: payload.warehouse,
+        warehouseId: payload.warehouse,
         userId: user.id.toString(),
         refType: 'order',
         refId: orderId,
@@ -278,9 +293,25 @@ export async function create({ payload, user }: { payload: CreateOrderPayload, u
 
   const createdOrder = await OrderRepository.createOne({
     payload: {
-      ...payload,
       _id: orderId,
-      orderPayments: createdOrderPayments.map(p => p.id),
+      warehouseId: payload.warehouse,
+      deliveryServiceId: payload.deliveryService,
+      orderSourceId: payload.orderSource,
+      orderStatusId: payload.orderStatus,
+      orderPaymentIds: createdOrderPayments.map(p => p.id),
+      clientId: payload.client,
+      comment: payload.comment,
+      files: resolvedFiles,
+      items: payload.items.map(item => ({
+        productId: item.product,
+        quantity: item.quantity,
+        price: item.price,
+        manualPrice: item.manualPrice,
+        basePrice: item.basePrice,
+        currencyId: item.currency,
+        discountAmount: item.discountAmount,
+        discountPercent: item.discountPercent,
+      })),
       orderPaymentStatus,
     },
   })
@@ -385,11 +416,24 @@ export async function payOrder({ payload, user }: { payload: PayOrderPayload, us
   }
 }
 
-export async function edit({ payload, user }: { payload: EditOrderPayload, user: AuthUser }): Promise<EditOrderResponse> {
+export async function edit({
+  payload,
+  uploadedFiles = [],
+  user,
+}: {
+  payload: EditOrderPayload
+  uploadedFiles?: Express.Multer.File[]
+  user: AuthUser
+}): Promise<EditOrderResponse> {
   const session = await mongoose.startSession()
 
   try {
     let editedOrder = null
+    const resolvedFiles = resolveOrderFiles({
+      files: payload.files ?? [],
+      uploadedFilesIds: payload.uploadedFilesIds,
+      uploadedFiles,
+    })
 
     await session.withTransaction(async () => {
       const { id, items, orderPayments, warehouse } = payload
@@ -431,8 +475,24 @@ export async function edit({ payload, user }: { payload: EditOrderPayload, user:
       const order = await OrderRepository.updateById({
         id,
         payload: {
-          ...payload,
-          orderPayments: activePaymentIds,
+          warehouseId: payload.warehouse,
+          deliveryServiceId: payload.deliveryService,
+          orderSourceId: payload.orderSource,
+          orderStatusId: payload.orderStatus,
+          orderPaymentIds: activePaymentIds,
+          clientId: payload.client,
+          comment: payload.comment,
+          files: resolvedFiles,
+          items: payload.items.map(item => ({
+            productId: item.product,
+            quantity: item.quantity,
+            price: item.price,
+            manualPrice: item.manualPrice,
+            basePrice: item.basePrice,
+            currencyId: item.currency,
+            discountAmount: item.discountAmount,
+            discountPercent: item.discountPercent,
+          })),
           orderPaymentStatus,
         },
         session,
@@ -469,15 +529,76 @@ export async function edit({ payload, user }: { payload: EditOrderPayload, user:
 
 export async function remove({ payload, user }: { payload: RemoveOrdersPayload, user: AuthUser }): Promise<RemoveOrdersResponse> {
   for (const id of payload.ids) {
-    await OrderRepository.removeById(id)
+    const session = await mongoose.startSession()
 
-    await AutomationService.run({
-      payload: {
-        type: 'order-removed',
-        entityId: id,
-        user: user.id,
-      },
-    })
+    try {
+      await session.withTransaction(async () => {
+        const order = await OrderRepository.findOne({
+          payload: { id },
+          session,
+        })
+
+        if (!order)
+          throw new HttpError(404, 'Order not found', 'ORDER_NOT_FOUND')
+
+        if (order.removed)
+          throw new HttpError(400, 'Order already removed', 'ORDER_ALREADY_REMOVED')
+
+        const { items } = await OrderRepository.listItems({
+          payload: {
+            filters: { order: [id] },
+            pagination: { current: 1, pageSize: 1000, full: true },
+            hasProfitPermission: false,
+          },
+        })
+
+        const warehouseId = order.warehouseId.toString()
+        const userId = user.id.toString()
+
+        for (const item of items) {
+          if (item.removed)
+            continue
+
+          const productId = typeof item.product === 'string'
+            ? item.product
+            : item.product._id.toString()
+
+          await QuantityService.count({
+            payload: {
+              mode: 'inc',
+              productId,
+              count: item.quantity,
+              warehouseId,
+              userId,
+              refType: 'order',
+              refId: id,
+            },
+            session,
+          })
+
+          await OrderRepository.updateOneItem({
+            payload: {
+              id: item._id.toString(),
+              removed: true,
+              removedBy: userId,
+            },
+            session,
+          })
+        }
+
+        await AutomationService.run({
+          payload: {
+            type: 'order-removed',
+            entityId: id,
+            user: userId,
+          },
+          session,
+        })
+      })
+    }
+    finally {
+      await session.endSession()
+    }
   }
 
   return {
@@ -489,24 +610,27 @@ export async function remove({ payload, user }: { payload: RemoveOrdersPayload, 
 
 export async function printInvoice({ payload }: { payload: PrintInvoiceOrderPayload }): Promise<PrintInvoiceOrderResponse> {
   const { seq, language } = payload
+  const mm = 2.83464567
+  const margins = {
+    top: 50,
+    bottom: 50,
+    left: 30,
+    right: 30,
+  }
+  const size = [210 * mm, 297 * mm]
   const config = {
-    mm: 2.83464567,
+    mm,
     page: {
       widthMm: 210,
       heightMm: 297,
     },
-    contentWidth: 210 * 2.83464567 - 30 * 2 - 30 * 2,
-    contentHeight: 297 * 2.83464567 - 50 * 2 - 50 * 2,
-    margins: {
-      top: 50,
-      bottom: 50,
-      left: 30,
-      right: 30,
-    },
-    size: [210 * 2.83464567, 297 * 2.83464567],
+    contentWidth: size[0] - margins.left - margins.right,
+    contentHeight: size[1] - margins.top - margins.bottom,
+    margins,
+    size,
   }
 
-  const { propertyIds, hairTypes, invoicePrefix, invoiceAddition } = getHardcodeData()
+  const { propertyIds, hairTypes, colorCategories, segments, invoiceAddition } = getHardcodeData()
 
   const order = await OrderRepository.findOne({ payload: { seq } })
 
@@ -515,23 +639,23 @@ export async function printInvoice({ payload }: { payload: PrintInvoiceOrderPayl
 
   const { items } = await OrderRepository.listItems({
     payload: {
-      filters: { order: [order.id] },
+      filters: { order: [order._id] },
       pagination: { current: 1, pageSize: 1000, full: true },
       hasProfitPermission: false,
     },
   })
 
-  const hasDiscount = items.some(item => item.minorManualPrice > 0 || item.discountPercent > 0)
+  const hasDiscount = items.some(item => item.minorDiscountAmount > 0 || item.discountPercent > 0)
 
   const tableColumns = {
     name: { key: 'name', width: 100, x: config.margins.left, align: 'left', type: 'text' },
     length: { key: 'length', width: 50, x: config.margins.left + 100, align: 'left', type: 'text' },
     weight: { key: 'weight', width: 50, x: config.margins.left + 150, align: 'left', type: 'text' },
     type: { key: 'type', width: 80, x: config.margins.left + 200, align: 'left', type: 'text' },
-    price: { key: 'price', width: 60, x: config.margins.left + 280, align: 'left', type: 'text' },
-    quantity: { key: 'quantity', width: 60, x: config.margins.left + 340, align: 'left', type: 'text' },
-    discount: { key: 'discount', width: 50, x: config.margins.left + 400, align: 'left', type: 'text' },
-    total: { key: 'total', width: 100, x: config.page.widthMm - config.margins.right - 100, align: 'right', type: 'text' },
+    segment: { key: 'segment', width: 70, x: config.margins.left + 280, align: 'left', type: 'text' },
+    price: { key: 'price', width: 60, x: config.margins.left + 350, align: 'left', type: 'text' },
+    discount: { key: 'discount', width: 50, x: config.margins.left + 410, align: 'left', type: 'text' },
+    total: { key: 'total', width: 100, x: config.size[0] - config.margins.right - 100, align: 'right', type: 'text' },
   }
 
   const measureRowHeight = ({ doc, columns, options }: { doc: PDFDoc, columns: { key: string, width: number, x: number, align?: string, type?: string, value: string }[], options?: { padding?: number, maxHeight?: number, minHeight?: number } }) => {
@@ -554,12 +678,16 @@ export async function printInvoice({ payload }: { payload: PrintInvoiceOrderPayl
     return height
   }
 
-  const drawTableRow = (doc: PDFDoc, columns: { key: string, width: number, x: number, align?: string, type?: string, value: string }[]) => {
+  const drawTableRow = (doc: PDFDoc, columns: { key: string, width: number, x: number, align?: string, type?: string, value: string, underline?: boolean }[]) => {
     const y = doc.y
     const rowHeight = measureRowHeight({ doc, columns, options: { maxHeight: 70, minHeight: 22 } })
     for (const column of columns) {
       if (column.type === 'text') {
-        doc.text(column.value, column.x, y, { width: column.width, align: column.align as 'left' | 'right' })
+        doc.text(column.value, column.x, y, {
+          width: column.width,
+          align: column.align as 'left' | 'right',
+          underline: column.underline === true,
+        })
       }
       else if (column.type === 'image') {
         doc.image(column.value, column.x, y, {
@@ -570,14 +698,17 @@ export async function printInvoice({ payload }: { payload: PrintInvoiceOrderPayl
     }
   }
 
-  const drawHr = (doc: PDFDoc, gapTopPx = 6, gapBottomPx = 6) => {
+  const drawInvoiceHr = (doc: PDFDoc, gapTopPx = 6, gapBottomPx = 6) => {
     const y = doc.y + gapTopPx
+    const left = doc.page.margins.left
+    const right = doc.page.width - doc.page.margins.right
     doc
       .strokeColor('#D9D9D9')
       .lineWidth(1)
-      .moveTo(doc.x, y)
-      .lineTo(doc.page.width - doc.page.margins.right, y)
+      .moveTo(left, y)
+      .lineTo(right, y)
       .stroke()
+    doc.x = left
     doc.y = y + gapBottomPx
   }
 
@@ -590,42 +721,38 @@ export async function printInvoice({ payload }: { payload: PrintInvoiceOrderPayl
     }
   }
 
-  const renderTableHeader = (doc: PDFDoc) => {
-    doc.fontSize(10).font('Manrope-Bold')
-    const headerRow = [
-      {
-        ...tableColumns.name,
-        value: 'Name',
-      },
-      {
-        ...tableColumns.length,
-        value: 'Length',
-      },
-      {
-        ...tableColumns.weight,
-        value: 'Weight',
-      },
-      {
-        ...tableColumns.type,
-        value: 'Type',
-      },
-      {
-        ...tableColumns.price,
-        value: 'Price',
-      },
-      {
-        ...tableColumns.quantity,
-        value: 'Quantity',
-      },
-      ...(hasDiscount ? [{ ...tableColumns.discount, value: 'Discount' }] : []),
-      {
-        ...tableColumns.total,
-        value: 'Total',
-      },
-    ]
-    drawTableRow(doc, headerRow)
-    drawHr(doc, 8, 8)
+  const drawDraftWatermark = (doc: PDFDoc) => {
+    const prevX = doc.x
+    const prevY = doc.y
+
+    doc.save()
+    doc.font('Manrope-Bold')
+    doc.fontSize(75)
+    doc.fillColor('#B8B8B8')
+    doc.fillOpacity(0.1)
+
+    const stepX = 260
+    const stepY = 150
+    for (let row = 0; row < 8; row++) {
+      for (let col = 0; col < 5; col++) {
+        const x = -60 + col * stepX + (row % 2) * (stepX / 2)
+        const y = 30 + row * stepY
+        doc.save()
+        doc.translate(x, y)
+        doc.rotate(-28)
+        doc.text('Draft', 0, 0, { lineBreak: false })
+        doc.restore()
+      }
+    }
+
+    doc.restore()
+    // PDFKit save/restore does not restore font/size
     doc.font('Manrope')
+    doc.fontSize(10)
+    doc.fillColor('#000000')
+    doc.fillOpacity(1)
+    doc.x = prevX
+    doc.y = prevY
   }
 
   const doc = new PDFDocument({ autoFirstPage: false })
@@ -635,100 +762,45 @@ export async function printInvoice({ payload }: { payload: PrintInvoiceOrderPayl
   doc.registerFont('Manrope', path.resolve(__dirname, '../utils/fonts/Manrope-Regular.ttf'))
   doc.registerFont('Manrope-Bold', path.resolve(__dirname, '../utils/fonts/Manrope-ExtraBold.ttf'))
 
-  doc.fontSize(32)
-  doc.font('Manrope-Bold')
-  doc.image(
-    path.resolve(__dirname, '../utils/invoice/logo.png'),
-    config.margins.left,
-    doc.y,
-    { width: 141.67, height: 50 },
-  )
-  doc.text(
-    `${invoicePrefix}${order.seq + invoiceAddition}`,
-    config.margins.left,
-    doc.y,
-    { width: config.contentWidth, height: 25, align: 'right', ellipsis: true, lineBreak: false },
-  )
-
-  drawHr(doc, 8, 8)
-
-  // CLIENT
-
-  if (order.client !== null) {
-    doc.fontSize(12)
-    doc.font('Manrope-Bold')
-    doc.text(
-      'Client:',
-      config.margins.left,
-      doc.y,
-      { width: config.contentWidth, height: 25, align: 'left', ellipsis: true, lineBreak: false },
-    )
-
-    doc.fontSize(10)
-    doc.font('Manrope')
-    if (order.client.name !== undefined || order.client.lastName !== undefined || order.client.middleName !== undefined) {
-      doc.text(
-        `${order.client.name ?? ''} ${order.client.lastName ?? ''} ${order.client.middleName ?? ''}`,
-        config.margins.left,
-        doc.y,
-        { width: config.contentWidth, height: 25, align: 'left', ellipsis: true, lineBreak: false },
-      )
-    }
-
-    if (order.client.phones !== undefined && order.client.phones.length > 0) {
-      doc.text(
-        `${order.client.phones.join(', ')}`,
-        config.margins.left,
-        doc.y,
-        { width: config.contentWidth, height: 25, align: 'left', ellipsis: true, lineBreak: false },
-      )
-    }
-
-    if (order.client.emails !== undefined && order.client.emails.length > 0) {
-      doc.text(
-        `${order.client.emails.join(', ')}`,
-        config.margins.left,
-        doc.y,
-        { width: config.contentWidth, height: 25, align: 'left', ellipsis: true, lineBreak: false },
-      )
-    }
-
-    drawHr(doc, 8, 8)
-  }
-
-  // CLIENT
-
-  // INVOICE DATE
-
-  const fmt = new Intl.DateTimeFormat('ru-RU', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-  })
-
-  doc.fontSize(12)
-  doc.font('Manrope-Bold')
-  doc.text(
-    'Invoice date:',
-    config.margins.left,
-    doc.y,
-  )
-  doc.fontSize(10)
-  doc.font('Manrope')
-  doc.text(
-    `${fmt.format(order.createdAt)}`,
-    config.margins.left,
-    doc.y,
-  )
-  doc.font('Manrope-Bold')
-
-  drawHr(doc, 8, 8)
-
-  // INVOICE DATE
+  drawDraftWatermark(doc)
+  drawInvoiceHr(doc, 8, 8)
 
   // PRODUCTS
 
-  function getProductPrice(lengthCm: number, type: any[]): number | null {
+  function getProductPrice(lengthCm: number, type: string[], segmentIds: string[], colorCategoryIds: string[]): number | null {
+    const segmentTables: Record<string, { min: number, max: number, price: number }[]> = {
+      [segments.STANDART]: [
+        { min: 50, max: 54, price: 1400 },
+        { min: 55, max: 59, price: 1450 },
+        { min: 60, max: 64, price: 1500 },
+        { min: 65, max: 69, price: 1550 },
+        { min: 70, max: 74, price: 1600 },
+        { min: 75, max: 79, price: 1650 },
+        { min: 80, max: 84, price: 1700 },
+        { min: 85, max: 89, price: 1750 },
+      ],
+      [segments.PREMIUM]: [
+        { min: 50, max: 54, price: 1700 },
+        { min: 55, max: 59, price: 1750 },
+        { min: 60, max: 64, price: 1800 },
+        { min: 65, max: 69, price: 1850 },
+        { min: 70, max: 74, price: 1900 },
+        { min: 75, max: 79, price: 1950 },
+        { min: 80, max: 84, price: 2000 },
+        { min: 85, max: 89, price: 2050 },
+      ],
+      [segments.LUX]: [
+        { min: 50, max: 54, price: 2000 },
+        { min: 55, max: 59, price: 2100 },
+        { min: 60, max: 64, price: 2200 },
+        { min: 65, max: 69, price: 2300 },
+        { min: 70, max: 74, price: 2400 },
+        { min: 75, max: 79, price: 2500 },
+        { min: 80, max: 84, price: 2600 },
+        { min: 85, max: 89, price: 2700 },
+      ],
+    }
+
     let table = [
       { min: 40, max: 44, price: 900 },
       { min: 45, max: 49, price: 950 },
@@ -748,81 +820,94 @@ export async function printInvoice({ payload }: { payload: PrintInvoiceOrderPayl
     ]
 
     let multiply = 1
+    let surcharge = 0
+    const matchedSegment = segmentIds.find(id => id !== '' && segmentTables[id] !== undefined)
 
-    if (type.includes(hairTypes.CURLY)) {
-      multiply = 1.3
-    }
-
-    if (type.includes(hairTypes.VIRGIN)) {
-      table = [
-        { min: 40, max: 44, price: 1800 },
-        { min: 45, max: 49, price: 1900 },
-        { min: 50, max: 54, price: 2000 },
-        { min: 55, max: 59, price: 2100 },
-        { min: 60, max: 64, price: 2200 },
-        { min: 65, max: 69, price: 2300 },
-        { min: 70, max: 74, price: 2400 },
-        { min: 75, max: 79, price: 2500 },
-        { min: 80, max: 84, price: 2600 },
-        { min: 85, max: 89, price: 2700 },
-        { min: 90, max: 94, price: 2800 },
-        { min: 95, max: 99, price: 2900 },
-        { min: 100, max: 104, price: 3000 },
-        { min: 105, max: 109, price: 3100 },
-        { min: 110, max: 114, price: 3200 },
-      ]
-    }
-
-    if (type.includes(hairTypes.SLAVIC)) {
-      table = [
-        { min: 40, max: 44, price: 3600 },
-        { min: 45, max: 49, price: 3700 },
-        { min: 50, max: 54, price: 4800 },
-        { min: 55, max: 59, price: 4900 },
-        { min: 60, max: 64, price: 4000 },
-        { min: 65, max: 69, price: 4100 },
-        { min: 70, max: 74, price: 4200 },
-        { min: 75, max: 79, price: 4300 },
-        { min: 80, max: 84, price: 4400 },
-        { min: 85, max: 89, price: 4500 },
-        { min: 90, max: 94, price: 4600 },
-        { min: 95, max: 99, price: 4700 },
-        { min: 100, max: 104, price: 4800 },
-        { min: 105, max: 109, price: 4900 },
-        { min: 110, max: 114, price: 5000 },
-      ]
+    if (matchedSegment !== undefined) {
+      table = segmentTables[matchedSegment]
       multiply = 1
-    }
 
-    if (type.includes(hairTypes.SILKY) || type.includes(hairTypes.BROWN)) {
-      table = [
-        { min: 40, max: 44, price: 1300 },
-        { min: 45, max: 49, price: 1400 },
-        { min: 50, max: 54, price: 1500 },
-        { min: 55, max: 59, price: 1600 },
-        { min: 60, max: 64, price: 1700 },
-        { min: 65, max: 69, price: 1800 },
-        { min: 70, max: 74, price: 1900 },
-        { min: 75, max: 79, price: 2000 },
-        { min: 80, max: 84, price: 2100 },
-        { min: 85, max: 89, price: 2200 },
-        { min: 90, max: 94, price: 2300 },
-        { min: 95, max: 99, price: 2400 },
-        { min: 100, max: 104, price: 2500 },
-      ]
+      if (
+        colorCategoryIds.includes(colorCategories.BLONDE)
+        || colorCategoryIds.includes(colorCategories.PLATIN)
+        || colorCategoryIds.includes(colorCategories.OMBRE)
+      ) {
+        surcharge = 100
+      }
+    }
+    else {
+      if (type.includes(hairTypes.CURLY)) {
+        multiply = 1.3
+      }
+
+      if (type.includes(hairTypes.VIRGIN)) {
+        table = [
+          { min: 40, max: 44, price: 1800 },
+          { min: 45, max: 49, price: 1900 },
+          { min: 50, max: 54, price: 2000 },
+          { min: 55, max: 59, price: 2100 },
+          { min: 60, max: 64, price: 2200 },
+          { min: 65, max: 69, price: 2300 },
+          { min: 70, max: 74, price: 2400 },
+          { min: 75, max: 79, price: 2500 },
+          { min: 80, max: 84, price: 2600 },
+          { min: 85, max: 89, price: 2700 },
+          { min: 90, max: 94, price: 2800 },
+          { min: 95, max: 99, price: 2900 },
+          { min: 100, max: 104, price: 3000 },
+          { min: 105, max: 109, price: 3100 },
+          { min: 110, max: 114, price: 3200 },
+        ]
+      }
+
+      if (type.includes(hairTypes.SLAVIC)) {
+        table = [
+          { min: 40, max: 44, price: 3600 },
+          { min: 45, max: 49, price: 3700 },
+          { min: 50, max: 54, price: 4800 },
+          { min: 55, max: 59, price: 4900 },
+          { min: 60, max: 64, price: 4000 },
+          { min: 65, max: 69, price: 4100 },
+          { min: 70, max: 74, price: 4200 },
+          { min: 75, max: 79, price: 4300 },
+          { min: 80, max: 84, price: 4400 },
+          { min: 85, max: 89, price: 4500 },
+          { min: 90, max: 94, price: 4600 },
+          { min: 95, max: 99, price: 4700 },
+          { min: 100, max: 104, price: 4800 },
+          { min: 105, max: 109, price: 4900 },
+          { min: 110, max: 114, price: 5000 },
+        ]
+        multiply = 1
+      }
+
+      if (type.includes(hairTypes.SILKY) || type.includes(hairTypes.BROWN)) {
+        table = [
+          { min: 40, max: 44, price: 1300 },
+          { min: 45, max: 49, price: 1400 },
+          { min: 50, max: 54, price: 1500 },
+          { min: 55, max: 59, price: 1600 },
+          { min: 60, max: 64, price: 1700 },
+          { min: 65, max: 69, price: 1800 },
+          { min: 70, max: 74, price: 1900 },
+          { min: 75, max: 79, price: 2000 },
+          { min: 80, max: 84, price: 2100 },
+          { min: 85, max: 89, price: 2200 },
+          { min: 90, max: 94, price: 2300 },
+          { min: 95, max: 99, price: 2400 },
+          { min: 100, max: 104, price: 2500 },
+        ]
+      }
     }
 
     for (const row of table) {
       if (lengthCm >= row.min && lengthCm <= row.max) {
-        return row.price * multiply
+        return row.price * multiply + surcharge
       }
     }
+
     return null
   }
-
-  // function getNewProductPrice(weightGrams: number, packPrice: number) {
-  //   return Math.round((packPrice * 1000) / weightGrams)
-  // }
 
   const invoiceItems = items.map((item) => {
     if (item === null)
@@ -831,8 +916,13 @@ export async function printInvoice({ payload }: { payload: PrintInvoiceOrderPayl
     const type = item.product.productProperties.find(property => property.id === propertyIds.HAIR_TYPE)
     const weight = item.product.productProperties.find(property => property.id === propertyIds.WEIGHT)
     const length = item.product.productProperties.find(property => property.id === propertyIds.LENGTH)
-    const discount = item.minorManualPrice > 0 ? item.minorManualPrice * item.quantity : item.discountPercent > 0 ? item.discountPercent : 0
-    const discountType = item.minorManualPrice > 0 ? 'amount' : item.discountPercent > 0 ? 'percent' : 'none'
+    const segmentOptions = item.product.productProperties.find(property => property.id === propertyIds.SEGMENT)
+    const segment = segmentOptions?.options.map(option => option.names[language] ?? '').join(', ')
+    const colorCategory = item.product.productProperties.find(property => property.id === propertyIds.COLOR_CATEGORY)
+    const discountAmount = Number.parseFloat(fromMinor(item.minorDiscountAmount, item.currency.scale))
+    const price = Number.parseFloat(fromMinor(item.minorPrice, item.currency.scale))
+    const discount = discountAmount > 0 ? discountAmount * item.quantity : item.discountPercent > 0 ? item.discountPercent : 0
+    const discountType = discountAmount > 0 ? 'amount' : item.discountPercent > 0 ? 'percent' : 'none'
 
     if (!type || !weight || !length)
       return null
@@ -841,10 +931,17 @@ export async function printInvoice({ payload }: { payload: PrintInvoiceOrderPayl
       name: item.product.names[language] ?? '',
       length: length.value as number,
       weight: weight.value as number,
-      type: type?.options.map(option => option.names[language] ?? '').join(', ') || '',
-      price: getProductPrice(length.value as number, type.options.map(option => option.id)),
+      type: type.options.map(option => option.names[language] ?? '').join(', '),
+      segment,
+      colorCategory: colorCategory?.options.map(option => option.names[language] ?? '').join(', '),
+      price: getProductPrice(
+        length.value as number,
+        type.options.map(option => option.id),
+        segmentOptions?.options.map(option => option.id) ?? [],
+        colorCategory?.options.map(option => option.id) ?? [],
+      ),
       quantity: item.quantity,
-      total: item.minorPrice * item.quantity,
+      total: price * item.quantity,
       currency: item.currency,
       discount,
       discountType,
@@ -853,16 +950,16 @@ export async function printInvoice({ payload }: { payload: PrintInvoiceOrderPayl
 
   doc.fontSize(10)
 
-  renderTableHeader(doc)
-
   const totals: { count: number, weight: number, amount: Record<string, { currency: { id: string, symbols: Record<string, string> }, total: number }> } = { count: 0, weight: 0, amount: {} }
+
   for (const item of invoiceItems) {
     doc.font('Manrope')
     doc.fontSize(10)
+
     const row = [
       {
         ...tableColumns.name,
-        value: item.name,
+        value: item.name.replace('Raw Hair ', ''),
       },
       {
         ...tableColumns.length,
@@ -874,20 +971,23 @@ export async function printInvoice({ payload }: { payload: PrintInvoiceOrderPayl
       },
       {
         ...tableColumns.type,
-        value: `${item.type}`,
+        value: `${item.type !== '' ? item.type : item.colorCategory}`,
+      },
+      {
+        ...tableColumns.segment,
+        value: `${item.segment !== undefined ? item.segment : ''}`,
       },
       {
         ...tableColumns.price,
-        value: `${item.price} ${item.currency.symbols[language] ?? ''}`,
+        value: `${item.price}`,
+        underline: item.price != null
+          && item.weight > 0
+          && Math.abs((item.total / item.quantity) * 1000 / item.weight - item.price) > 5,
       },
-      {
-        ...tableColumns.quantity,
-        value: `${item.quantity} pcs`,
-      },
-      ...(hasDiscount ? [{ ...tableColumns.discount, value: `${item.discount} ${item.discountType === 'amount' ? item.currency.symbols[language] : '%'}` }] : []),
+      ...(hasDiscount ? [{ ...tableColumns.discount, value: `${item.discount} ${item.discountType === 'amount' ? '' : '%'}` }] : []),
       {
         ...tableColumns.total,
-        value: `${item.total.toFixed(0)} ${item.currency.symbols[language] ?? ''}`,
+        value: `${item.total}`,
       },
     ]
 
@@ -895,7 +995,7 @@ export async function printInvoice({ payload }: { payload: PrintInvoiceOrderPayl
     const hrH = 12
     const needPx = rowH + hrH
 
-    ensureSpace({ doc, needPx, size: config.size, margins: config.margins, onNewPage: () => renderTableHeader(doc) })
+    ensureSpace({ doc, needPx, size: config.size, margins: config.margins, onNewPage: () => drawDraftWatermark(doc) })
 
     totals.count += item.quantity
     totals.weight += item.weight
@@ -904,13 +1004,13 @@ export async function printInvoice({ payload }: { payload: PrintInvoiceOrderPayl
     }
     totals.amount[item.currency.id].total += item.total
     drawTableRow(doc, row)
-    drawHr(doc, 8, 8)
+    drawInvoiceHr(doc, 8, 8)
   }
 
   const totalRow = [
     {
       ...tableColumns.name,
-      value: '',
+      value: `${order.seq + invoiceAddition}`,
     },
     {
       ...tableColumns.length,
@@ -928,14 +1028,10 @@ export async function printInvoice({ payload }: { payload: PrintInvoiceOrderPayl
       ...tableColumns.price,
       value: ``,
     },
-    {
-      ...tableColumns.quantity,
-      value: `${totals.count} pcs`,
-    },
     ...(hasDiscount ? [{ ...tableColumns.discount, value: '' }] : []),
     {
       ...tableColumns.total,
-      value: Object.values(totals.amount).map(amount => `${amount.total.toFixed(0)} ${amount.currency.symbols[language] || ''}`).join(', '),
+      value: Object.values(totals.amount).map(amount => `${amount.total.toFixed(0)}`).join(', '),
     },
   ]
 
@@ -952,25 +1048,27 @@ export async function printInvoice({ payload }: { payload: PrintInvoiceOrderPayl
 
 export async function printDraftInvoice({ payload }: { payload: PrintDraftInvoiceOrderPayload }): Promise<PrintDraftInvoiceOrderResponse> {
   const { items, language } = payload
-
+  const mm = 2.83464567
+  const margins = {
+    top: 50,
+    bottom: 50,
+    left: 30,
+    right: 30,
+  }
+  const size = [210 * mm, 297 * mm]
   const config = {
-    mm: 2.83464567,
+    mm,
     page: {
       widthMm: 210,
       heightMm: 297,
     },
-    contentWidth: 210 * 2.83464567 - 30 * 2 - 30 * 2,
-    contentHeight: 297 * 2.83464567 - 50 * 2 - 50 * 2,
-    margins: {
-      top: 50,
-      bottom: 50,
-      left: 30,
-      right: 30,
-    },
-    size: [210 * 2.83464567, 297 * 2.83464567],
+    contentWidth: size[0] - margins.left - margins.right,
+    contentHeight: size[1] - margins.top - margins.bottom,
+    margins,
+    size,
   }
 
-  const { propertyIds, hairTypes } = getHardcodeData()
+  const { propertyIds, hairTypes, colorCategories, segments } = getHardcodeData()
 
   const hasDiscount = items.some(item => item.discountAmount > 0 || item.discountPercent > 0)
 
@@ -979,10 +1077,10 @@ export async function printDraftInvoice({ payload }: { payload: PrintDraftInvoic
     length: { key: 'length', width: 50, x: config.margins.left + 100, align: 'left', type: 'text' },
     weight: { key: 'weight', width: 50, x: config.margins.left + 150, align: 'left', type: 'text' },
     type: { key: 'type', width: 80, x: config.margins.left + 200, align: 'left', type: 'text' },
-    price: { key: 'price', width: 60, x: config.margins.left + 280, align: 'left', type: 'text' },
-    quantity: { key: 'quantity', width: 60, x: config.margins.left + 340, align: 'left', type: 'text' },
-    discount: { key: 'discount', width: 50, x: config.margins.left + 400, align: 'left', type: 'text' },
-    total: { key: 'total', width: 100, x: config.page.widthMm - config.margins.right - 100, align: 'right', type: 'text' },
+    segment: { key: 'segment', width: 70, x: config.margins.left + 280, align: 'left', type: 'text' },
+    price: { key: 'price', width: 60, x: config.margins.left + 350, align: 'left', type: 'text' },
+    discount: { key: 'discount', width: 50, x: config.margins.left + 410, align: 'left', type: 'text' },
+    total: { key: 'total', width: 100, x: config.size[0] - config.margins.right - 100, align: 'right', type: 'text' },
   }
 
   const measureRowHeight = ({ doc, columns, options }: { doc: PDFDoc, columns: { key: string, width: number, x: number, align?: string, type?: string, value: string }[], options?: { padding?: number, maxHeight?: number, minHeight?: number } }) => {
@@ -1005,12 +1103,16 @@ export async function printDraftInvoice({ payload }: { payload: PrintDraftInvoic
     return height
   }
 
-  const drawTableRow = (doc: PDFDoc, columns: { key: string, width: number, x: number, align?: string, type?: string, value: string }[]) => {
+  const drawTableRow = (doc: PDFDoc, columns: { key: string, width: number, x: number, align?: string, type?: string, value: string, underline?: boolean }[]) => {
     const y = doc.y
     const rowHeight = measureRowHeight({ doc, columns, options: { maxHeight: 70, minHeight: 22 } })
     for (const column of columns) {
       if (column.type === 'text') {
-        doc.text(column.value, column.x, y, { width: column.width, align: column.align as 'left' | 'right' })
+        doc.text(column.value, column.x, y, {
+          width: column.width,
+          align: column.align as 'left' | 'right',
+          underline: column.underline === true,
+        })
       }
       else if (column.type === 'image') {
         doc.image(column.value, column.x, y, {
@@ -1021,14 +1123,17 @@ export async function printDraftInvoice({ payload }: { payload: PrintDraftInvoic
     }
   }
 
-  const drawHr = (doc: PDFDoc, gapTopPx = 6, gapBottomPx = 6) => {
+  const drawInvoiceHr = (doc: PDFDoc, gapTopPx = 6, gapBottomPx = 6) => {
     const y = doc.y + gapTopPx
+    const left = doc.page.margins.left
+    const right = doc.page.width - doc.page.margins.right
     doc
       .strokeColor('#D9D9D9')
       .lineWidth(1)
-      .moveTo(doc.x, y)
-      .lineTo(doc.page.width - doc.page.margins.right, y)
+      .moveTo(left, y)
+      .lineTo(right, y)
       .stroke()
+    doc.x = left
     doc.y = y + gapBottomPx
   }
 
@@ -1041,14 +1146,38 @@ export async function printDraftInvoice({ payload }: { payload: PrintDraftInvoic
     }
   }
 
-  const renderTableHeader = (doc: PDFDoc) => {
-    doc.fontSize(10).font('Manrope-Bold')
-    drawTableRow(doc, Object.values(tableColumns).map(column => ({
-      ...column,
-      value: column.key,
-    })))
-    drawHr(doc, 8, 8)
+  const drawDraftWatermark = (doc: PDFDoc) => {
+    const prevX = doc.x
+    const prevY = doc.y
+
+    doc.save()
+    doc.font('Manrope-Bold')
+    doc.fontSize(75)
+    doc.fillColor('#B8B8B8')
+    doc.fillOpacity(0.1)
+
+    const stepX = 260
+    const stepY = 150
+    for (let row = 0; row < 8; row++) {
+      for (let col = 0; col < 5; col++) {
+        const x = -60 + col * stepX + (row % 2) * (stepX / 2)
+        const y = 30 + row * stepY
+        doc.save()
+        doc.translate(x, y)
+        doc.rotate(-28)
+        doc.text('Draft', 0, 0, { lineBreak: false })
+        doc.restore()
+      }
+    }
+
+    doc.restore()
+    // PDFKit save/restore does not restore font/size
     doc.font('Manrope')
+    doc.fontSize(10)
+    doc.fillColor('#000000')
+    doc.fillOpacity(1)
+    doc.x = prevX
+    doc.y = prevY
   }
 
   const doc = new PDFDocument({ autoFirstPage: false })
@@ -1058,54 +1187,45 @@ export async function printDraftInvoice({ payload }: { payload: PrintDraftInvoic
   doc.registerFont('Manrope', path.resolve(__dirname, '../utils/fonts/Manrope-Regular.ttf'))
   doc.registerFont('Manrope-Bold', path.resolve(__dirname, '../utils/fonts/Manrope-ExtraBold.ttf'))
 
-  doc.fontSize(32)
-  doc.font('Manrope-Bold')
-  doc.image(
-    path.resolve(__dirname, '../utils/invoice/logo.png'),
-    config.margins.left,
-    doc.y,
-    { width: 141.67, height: 50 },
-  )
-  doc.text(
-    `Draft invoice`,
-    config.margins.left,
-    doc.y,
-    { width: config.contentWidth, height: 25, align: 'right', ellipsis: true, lineBreak: false },
-  )
-
-  drawHr(doc, 8, 8)
-
-  // INVOICE DATE
-
-  const fmt = new Intl.DateTimeFormat('ru-RU', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-  })
-
-  doc.fontSize(12)
-  doc.font('Manrope-Bold')
-  doc.text(
-    'Invoice date:',
-    config.margins.left,
-    doc.y,
-  )
-  doc.fontSize(10)
-  doc.font('Manrope')
-  doc.text(
-    `${fmt.format(new Date())}`,
-    config.margins.left,
-    doc.y,
-  )
-  doc.font('Manrope-Bold')
-
-  drawHr(doc, 8, 8)
-
-  // INVOICE DATE
+  drawDraftWatermark(doc)
+  drawInvoiceHr(doc, 8, 8)
 
   // PRODUCTS
 
-  function getProductPrice(lengthCm: number, type: any[]): number | null {
+  function getProductPrice(lengthCm: number, type: string[], segmentIds: string[], colorCategoryIds: string[]): number | null {
+    const segmentTables: Record<string, { min: number, max: number, price: number }[]> = {
+      [segments.STANDART]: [
+        { min: 50, max: 54, price: 1400 },
+        { min: 55, max: 59, price: 1450 },
+        { min: 60, max: 64, price: 1500 },
+        { min: 65, max: 69, price: 1550 },
+        { min: 70, max: 74, price: 1600 },
+        { min: 75, max: 79, price: 1650 },
+        { min: 80, max: 84, price: 1700 },
+        { min: 85, max: 89, price: 1750 },
+      ],
+      [segments.PREMIUM]: [
+        { min: 50, max: 54, price: 1700 },
+        { min: 55, max: 59, price: 1750 },
+        { min: 60, max: 64, price: 1800 },
+        { min: 65, max: 69, price: 1850 },
+        { min: 70, max: 74, price: 1900 },
+        { min: 75, max: 79, price: 1950 },
+        { min: 80, max: 84, price: 2000 },
+        { min: 85, max: 89, price: 2050 },
+      ],
+      [segments.LUX]: [
+        { min: 50, max: 54, price: 2000 },
+        { min: 55, max: 59, price: 2100 },
+        { min: 60, max: 64, price: 2200 },
+        { min: 65, max: 69, price: 2300 },
+        { min: 70, max: 74, price: 2400 },
+        { min: 75, max: 79, price: 2500 },
+        { min: 80, max: 84, price: 2600 },
+        { min: 85, max: 89, price: 2700 },
+      ],
+    }
+
     let table = [
       { min: 40, max: 44, price: 900 },
       { min: 45, max: 49, price: 950 },
@@ -1125,81 +1245,94 @@ export async function printDraftInvoice({ payload }: { payload: PrintDraftInvoic
     ]
 
     let multiply = 1
+    let surcharge = 0
+    const matchedSegment = segmentIds.find(id => id !== '' && segmentTables[id] !== undefined)
 
-    if (type.includes(hairTypes.CURLY)) {
-      multiply = 1.3
-    }
-
-    if (type.includes(hairTypes.VIRGIN)) {
-      table = [
-        { min: 40, max: 44, price: 1800 },
-        { min: 45, max: 49, price: 1900 },
-        { min: 50, max: 54, price: 2000 },
-        { min: 55, max: 59, price: 2100 },
-        { min: 60, max: 64, price: 2200 },
-        { min: 65, max: 69, price: 2300 },
-        { min: 70, max: 74, price: 2400 },
-        { min: 75, max: 79, price: 2500 },
-        { min: 80, max: 84, price: 2600 },
-        { min: 85, max: 89, price: 2700 },
-        { min: 90, max: 94, price: 2800 },
-        { min: 95, max: 99, price: 2900 },
-        { min: 100, max: 104, price: 3000 },
-        { min: 105, max: 109, price: 3100 },
-        { min: 110, max: 114, price: 3200 },
-      ]
-    }
-
-    if (type.includes(hairTypes.SLAVIC)) {
-      table = [
-        { min: 40, max: 44, price: 3600 },
-        { min: 45, max: 49, price: 3700 },
-        { min: 50, max: 54, price: 4800 },
-        { min: 55, max: 59, price: 4900 },
-        { min: 60, max: 64, price: 4000 },
-        { min: 65, max: 69, price: 4100 },
-        { min: 70, max: 74, price: 4200 },
-        { min: 75, max: 79, price: 4300 },
-        { min: 80, max: 84, price: 4400 },
-        { min: 85, max: 89, price: 4500 },
-        { min: 90, max: 94, price: 4600 },
-        { min: 95, max: 99, price: 4700 },
-        { min: 100, max: 104, price: 4800 },
-        { min: 105, max: 109, price: 4900 },
-        { min: 110, max: 114, price: 5000 },
-      ]
+    if (matchedSegment !== undefined) {
+      table = segmentTables[matchedSegment]
       multiply = 1
-    }
 
-    if (type.includes(hairTypes.SILKY) || type.includes(hairTypes.BROWN)) {
-      table = [
-        { min: 40, max: 44, price: 1300 },
-        { min: 45, max: 49, price: 1400 },
-        { min: 50, max: 54, price: 1500 },
-        { min: 55, max: 59, price: 1600 },
-        { min: 60, max: 64, price: 1700 },
-        { min: 65, max: 69, price: 1800 },
-        { min: 70, max: 74, price: 1900 },
-        { min: 75, max: 79, price: 2000 },
-        { min: 80, max: 84, price: 2100 },
-        { min: 85, max: 89, price: 2200 },
-        { min: 90, max: 94, price: 2300 },
-        { min: 95, max: 99, price: 2400 },
-        { min: 100, max: 104, price: 2500 },
-      ]
+      if (
+        colorCategoryIds.includes(colorCategories.BLONDE)
+        || colorCategoryIds.includes(colorCategories.PLATIN)
+        || colorCategoryIds.includes(colorCategories.OMBRE)
+      ) {
+        surcharge = 100
+      }
+    }
+    else {
+      if (type.includes(hairTypes.CURLY)) {
+        multiply = 1.3
+      }
+
+      if (type.includes(hairTypes.VIRGIN)) {
+        table = [
+          { min: 40, max: 44, price: 1800 },
+          { min: 45, max: 49, price: 1900 },
+          { min: 50, max: 54, price: 2000 },
+          { min: 55, max: 59, price: 2100 },
+          { min: 60, max: 64, price: 2200 },
+          { min: 65, max: 69, price: 2300 },
+          { min: 70, max: 74, price: 2400 },
+          { min: 75, max: 79, price: 2500 },
+          { min: 80, max: 84, price: 2600 },
+          { min: 85, max: 89, price: 2700 },
+          { min: 90, max: 94, price: 2800 },
+          { min: 95, max: 99, price: 2900 },
+          { min: 100, max: 104, price: 3000 },
+          { min: 105, max: 109, price: 3100 },
+          { min: 110, max: 114, price: 3200 },
+        ]
+      }
+
+      if (type.includes(hairTypes.SLAVIC)) {
+        table = [
+          { min: 40, max: 44, price: 3600 },
+          { min: 45, max: 49, price: 3700 },
+          { min: 50, max: 54, price: 4800 },
+          { min: 55, max: 59, price: 4900 },
+          { min: 60, max: 64, price: 4000 },
+          { min: 65, max: 69, price: 4100 },
+          { min: 70, max: 74, price: 4200 },
+          { min: 75, max: 79, price: 4300 },
+          { min: 80, max: 84, price: 4400 },
+          { min: 85, max: 89, price: 4500 },
+          { min: 90, max: 94, price: 4600 },
+          { min: 95, max: 99, price: 4700 },
+          { min: 100, max: 104, price: 4800 },
+          { min: 105, max: 109, price: 4900 },
+          { min: 110, max: 114, price: 5000 },
+        ]
+        multiply = 1
+      }
+
+      if (type.includes(hairTypes.SILKY) || type.includes(hairTypes.BROWN)) {
+        table = [
+          { min: 40, max: 44, price: 1300 },
+          { min: 45, max: 49, price: 1400 },
+          { min: 50, max: 54, price: 1500 },
+          { min: 55, max: 59, price: 1600 },
+          { min: 60, max: 64, price: 1700 },
+          { min: 65, max: 69, price: 1800 },
+          { min: 70, max: 74, price: 1900 },
+          { min: 75, max: 79, price: 2000 },
+          { min: 80, max: 84, price: 2100 },
+          { min: 85, max: 89, price: 2200 },
+          { min: 90, max: 94, price: 2300 },
+          { min: 95, max: 99, price: 2400 },
+          { min: 100, max: 104, price: 2500 },
+        ]
+      }
     }
 
     for (const row of table) {
       if (lengthCm >= row.min && lengthCm <= row.max) {
-        return row.price * multiply
+        return row.price * multiply + surcharge
       }
     }
+
     return null
   }
-
-  // function getNewProductPrice(weightGrams: number, packPrice: number) {
-  //   return Math.round((packPrice * 1000) / weightGrams)
-  // }
 
   const invoiceItems = items.map((item) => {
     if (item === null)
@@ -1208,18 +1341,28 @@ export async function printDraftInvoice({ payload }: { payload: PrintDraftInvoic
     const type = item.productProperties.find(property => property.id === propertyIds.HAIR_TYPE)
     const weight = item.productProperties.find(property => property.id === propertyIds.WEIGHT)
     const length = item.productProperties.find(property => property.id === propertyIds.LENGTH)
+    const segmentOptions = item.productProperties.find(property => property.id === propertyIds.SEGMENT)
+    const segment = segmentOptions?.options.map(option => option.names[language] ?? '').join(', ')
+    const colorCategory = item.productProperties.find(property => property.id === propertyIds.COLOR_CATEGORY)
     const discount = item.discountAmount > 0 ? item.discountAmount * item.quantity : item.discountPercent > 0 ? item.discountPercent : 0
     const discountType = item.discountAmount > 0 ? 'amount' : item.discountPercent > 0 ? 'percent' : 'none'
 
-    if (!type || !weight || !length)
+    if (weight === undefined || length === undefined)
       return null
 
     return {
       name: item.names[language] ?? '',
       length: length.value as number,
       weight: weight.value as number,
-      type: type?.options.map(option => option.names[language] ?? '').join(', ') || '',
-      price: getProductPrice(length.value as number, type.options.map(option => option.id)),
+      type: type?.options.map(option => option.names[language] ?? '').join(', '),
+      segment,
+      colorCategory: colorCategory?.options.map(option => option.names[language] ?? '').join(', '),
+      price: getProductPrice(
+        length.value as number,
+        type?.options.map(option => option.id) ?? [],
+        segmentOptions?.options.map(option => option.id) ?? [],
+        colorCategory?.options.map(option => option.id) ?? [],
+      ),
       quantity: item.quantity,
       total: item.price * item.quantity,
       currency: item.currency,
@@ -1230,16 +1373,16 @@ export async function printDraftInvoice({ payload }: { payload: PrintDraftInvoic
 
   doc.fontSize(10)
 
-  renderTableHeader(doc)
-
   const totals: { count: number, weight: number, amount: Record<string, { currency: string, total: number }> } = { count: 0, weight: 0, amount: {} }
+
   for (const item of invoiceItems) {
     doc.font('Manrope')
     doc.fontSize(10)
+
     const row = [
       {
         ...tableColumns.name,
-        value: item.name,
+        value: item.name.replace('Raw Hair ', ''),
       },
       {
         ...tableColumns.length,
@@ -1251,20 +1394,23 @@ export async function printDraftInvoice({ payload }: { payload: PrintDraftInvoic
       },
       {
         ...tableColumns.type,
-        value: `${item.type}`,
+        value: `${item.type !== undefined ? item.type : item.colorCategory !== undefined ? item.colorCategory : ''}`,
+      },
+      {
+        ...tableColumns.segment,
+        value: `${item.segment !== undefined ? item.segment : ''}`,
       },
       {
         ...tableColumns.price,
         value: `${item.price}`,
-      },
-      {
-        ...tableColumns.quantity,
-        value: `${item.quantity} pcs`,
+        underline: item.price != null
+          && item.weight > 0
+          && Math.abs((item.total / item.quantity) * 1000 / item.weight - item.price) > 5,
       },
       ...(hasDiscount ? [{ ...tableColumns.discount, value: `${item.discount} ${item.discountType === 'amount' ? '' : '%'}` }] : []),
       {
         ...tableColumns.total,
-        value: `${item.total.toFixed(0)}`,
+        value: `${item.total}`,
       },
     ]
 
@@ -1272,7 +1418,7 @@ export async function printDraftInvoice({ payload }: { payload: PrintDraftInvoic
     const hrH = 12
     const needPx = rowH + hrH
 
-    ensureSpace({ doc, needPx, size: config.size, margins: config.margins, onNewPage: () => renderTableHeader(doc) })
+    ensureSpace({ doc, needPx, size: config.size, margins: config.margins, onNewPage: () => drawDraftWatermark(doc) })
 
     totals.count += item.quantity
     totals.weight += item.weight
@@ -1281,7 +1427,7 @@ export async function printDraftInvoice({ payload }: { payload: PrintDraftInvoic
     }
     totals.amount[item.currency].total += item.total
     drawTableRow(doc, row)
-    drawHr(doc, 8, 8)
+    drawInvoiceHr(doc, 8, 8)
   }
 
   const totalRow = [
@@ -1303,11 +1449,7 @@ export async function printDraftInvoice({ payload }: { payload: PrintDraftInvoic
     },
     {
       ...tableColumns.price,
-      value: ``,
-    },
-    {
-      ...tableColumns.quantity,
-      value: `${totals.count} pcs`,
+      value: '',
     },
     ...(hasDiscount ? [{ ...tableColumns.discount, value: '' }] : []),
     {
@@ -1367,24 +1509,24 @@ export async function printOrderLabel({ payload }: { payload: PrintOrderLabelOrd
     )
   }
 
-  if (order.client !== null) {
+  if (order.clientId !== null) {
     doc.y -= 15
     doc.font('Manrope-Bold')
     doc.fontSize(28)
     doc.text(
-      `${order.client.name ?? ''} ${order.client.lastName ?? ''} ${order.client.middleName ?? ''}`,
+      `${order.clientId.name ?? ''} ${order.clientId.lastName ?? ''} ${order.clientId.middleName ?? ''}`,
       margins.left,
       doc.y,
       { width: size[0] - margins.left - margins.right, height: 25, align: 'left' },
     )
     doc.text(
-      `${order.client.phones !== undefined && order.client.phones.length > 0 ? order.client.phones.join(', ') : ''}`,
+      `${order.clientId.phones !== undefined && order.clientId.phones.length > 0 ? order.clientId.phones.join(', ') : ''}`,
       margins.left,
       doc.y,
       { width: size[0] - margins.left - margins.right, height: 25, align: 'left' },
     )
     doc.text(
-      `${order.client.emails !== undefined && order.client.emails.length > 0 ? order.client.emails.join(', ') : ''}`,
+      `${order.clientId.emails !== undefined && order.clientId.emails.length > 0 ? order.clientId.emails.join(', ') : ''}`,
       margins.left,
       doc.y,
       { width: size[0] - margins.left - margins.right, height: 25, align: 'left' },
@@ -1423,7 +1565,7 @@ async function convertCurrency({
 
   const { data: { items: exchangeRates } } = await ExchangeRateService.getExchangeRates({
     payload: {
-      filters: { fromCurrency: fromCurrencyId, toCurrency: toCurrencyId },
+      filters: { fromCurrencyId, toCurrencyId },
       pagination: { current: 1, pageSize: 1, full: true },
       sorters: { createdAt: 'desc' },
     },
@@ -1530,7 +1672,7 @@ async function applyItemsDiff(params: {
   if (!order)
     throw new HttpError(400, 'Order not found', 'ORDER_NOT_FOUND')
 
-  const prevWarehouseId = order.warehouse.toString()
+  const prevWarehouseId = order.warehouseId.toString()
   const newWarehouseId = warehouseId.toString()
 
   const oldItems = await OrderRepository.listItems({
@@ -1559,7 +1701,7 @@ async function applyItemsDiff(params: {
               mode: 'dec',
               productId: newItem.product,
               count: deltaQuantity,
-              warehouse: newWarehouseId,
+              warehouseId: newWarehouseId,
               userId,
               refType: 'order',
               refId: orderId,
@@ -1574,7 +1716,7 @@ async function applyItemsDiff(params: {
             mode: 'inc',
             productId: oldItem.product._id,
             count: oldQuantity,
-            warehouse: prevWarehouseId,
+            warehouseId: prevWarehouseId,
             userId,
             refType: 'order',
             refId: orderId,
@@ -1587,7 +1729,7 @@ async function applyItemsDiff(params: {
             mode: 'dec',
             productId: newItem.product,
             count: newQuantity,
-            warehouse: newWarehouseId,
+            warehouseId: newWarehouseId,
             userId,
             refType: 'order',
             refId: orderId,
@@ -1615,19 +1757,19 @@ async function applyItemsDiff(params: {
         purchaseCurrency: product.purchaseCurrencyId,
       })
 
-      const oldItemObj = { ...oldItem }
+      const { product: _oldProduct, currency: _oldCurrency, purchaseCurrency: _oldPurchaseCurrency, ...oldItemObj } = oldItem
       const newItemObj = {
         ...oldItemObj,
-        product: newItem.product,
+        productId: newItem.product,
         quantity: newItem.quantity,
         minorBasePrice: toMinor(newItem.basePrice, currency.scale),
         minorManualPrice: toMinor(newItem.manualPrice ?? 0, currency.scale) ?? undefined,
         minorDiscountAmount: toMinor(newItem.discountAmount ?? 0, currency.scale) ?? undefined,
         discountPercent: newItem.discountPercent ?? undefined,
         minorPrice: toMinor(newItem.price, currency.scale),
-        currency: newItem.currency,
+        currencyId: newItem.currency,
         minorPurchasePrice: product.minorPurchasePrice,
-        purchaseCurrency: product.purchaseCurrencyId,
+        purchaseCurrencyId: product.purchaseCurrencyId,
         minorProfit: toMinorType(profit),
         exchangeRate,
       }
@@ -1686,7 +1828,8 @@ async function applyItemsDiff(params: {
 
       await OrderRepository.createOneItem({
         payload: {
-          product: newItem.product,
+          _id: uuidv4(),
+          productId: newItem.product,
           quantity: newItem.quantity,
           minorManualPrice: toMinor(newItem.price, currency.scale),
           minorBasePrice: toMinor(newItem.basePrice, currency.scale),
@@ -1695,9 +1838,9 @@ async function applyItemsDiff(params: {
           minorProfit: toMinorType(profit),
           minorDiscountAmount: newItem.discountAmount !== undefined ? toMinor(newItem.discountAmount, currency.scale) : toMinorType(0),
           discountPercent: newItem.discountPercent,
-          currency: newItem.currency,
-          order: orderId,
-          purchaseCurrency: product.purchaseCurrencyId,
+          currencyId: newItem.currency,
+          orderId,
+          purchaseCurrencyId: product.purchaseCurrencyId,
           exchangeRate,
           createdBy: userId,
         },
@@ -1709,7 +1852,7 @@ async function applyItemsDiff(params: {
           mode: 'dec',
           productId: newItem.product,
           count: newItem.quantity,
-          warehouse: newWarehouseId,
+          warehouseId: newWarehouseId,
           userId,
           refType: 'order',
           refId: orderId,
@@ -1734,7 +1877,7 @@ async function applyItemsDiff(params: {
         mode: 'inc',
         productId: oldItem.product._id,
         count: oldItem.quantity,
-        warehouse: prevWarehouseId,
+        warehouseId: prevWarehouseId,
         userId,
         refType: 'order',
         refId: orderId,
@@ -1786,7 +1929,6 @@ async function applyPaymentsDiff(params: {
           payload: {
             removed: true,
             removedBy: userId,
-            paymentStatus: 'cancelled',
           },
           session,
         })
@@ -1816,7 +1958,6 @@ async function applyPaymentsDiff(params: {
           payload: {
             orderId,
             createdBy: userId,
-            paymentStatus: 'paid',
             paymentDate: new Date(),
             cashregisterId: payment.cashregister,
             cashregisterAccountId: payment.cashregisterAccount,
@@ -1861,7 +2002,6 @@ async function applyPaymentsDiff(params: {
           orderId,
           createdBy: userId,
           currencyId: payment.currency,
-          paymentStatus: 'paid',
           paymentDate: new Date(),
           cashregisterId: payment.cashregister,
           cashregisterAccountId: payment.cashregisterAccount,
@@ -1897,7 +2037,6 @@ async function applyPaymentsDiff(params: {
       payload: {
         removed: true,
         removedBy: userId,
-        paymentStatus: 'cancelled',
       },
       session,
     })
@@ -1919,4 +2058,59 @@ async function applyPaymentsDiff(params: {
   }
 
   return activePaymentIds
+}
+
+function resolveOrderFiles({
+  files,
+  uploadedFilesIds,
+  uploadedFiles,
+}: {
+  files: Array<{
+    id?: string
+    filename?: string
+    name: string
+    type: string
+    path?: string
+    isNew?: boolean
+  }>
+  uploadedFilesIds?: string[]
+  uploadedFiles: Express.Multer.File[]
+}) {
+  const parsedUploadedFiles = (uploadedFilesIds ?? []).map((fileId, index) => {
+    if (uploadedFiles[index] === undefined)
+      return undefined
+
+    return {
+      id: fileId,
+      path: uploadedFiles[index].path,
+      filename: uploadedFiles[index].filename,
+      name: Buffer.from(uploadedFiles[index].originalname, 'latin1').toString('utf8').slice(0, 80),
+      type: uploadedFiles[index].mimetype,
+    }
+  }).filter(item => item !== undefined)
+
+  return files.map((file) => {
+    if (file.isNew) {
+      const uploaded = parsedUploadedFiles.find(item => item.id === file.id)
+      if (!uploaded)
+        return undefined
+
+      return {
+        path: uploaded.path,
+        filename: uploaded.filename,
+        name: uploaded.name,
+        type: uploaded.type,
+      }
+    }
+
+    if (!file.filename)
+      return undefined
+
+    return {
+      path: path.join(STORAGE_PATHS.orderFiles, file.filename),
+      filename: file.filename,
+      name: file.name,
+      type: file.type,
+    }
+  }).filter(item => item !== undefined)
 }

@@ -24,7 +24,7 @@ export async function get({
   user: AuthUser
 }): Promise<GetCashregistersResponse> {
   const access = await UserAccessRepo.getScopesByUserId(user.id)
-  const scopeIds = getScopeIdsForUser(access, 'cashregisters', user)
+  const scopeIds = getScopeIdsForUser(access, 'cashregisterIds', user)
 
   const { items, total, page, pageSize } = await cashregisterRepo.list(payload, { scopeIds })
 

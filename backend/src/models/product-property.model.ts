@@ -40,7 +40,7 @@ const ProductPropertySchema: Schema = new Schema(
         message: 'Supported languages only',
       },
     },
-    options: {
+    optionIds: {
       type: Array,
       ref: 'ProductPropertyOption',
     },
@@ -86,6 +86,7 @@ ProductPropertySchema.set('toJSON', {
   },
 })
 
-ProductPropertySchema.index({ removed: 1 })
+ProductPropertySchema.index({ removed: 1, active: 1 })
+ProductPropertySchema.index({ priority: 1 })
 
 export const ProductPropertyModel = mongoose.model<ProductPropertyDoc>('product-property', ProductPropertySchema)

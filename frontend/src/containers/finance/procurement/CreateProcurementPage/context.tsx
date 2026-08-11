@@ -19,12 +19,12 @@ import { useProcurementItemsOptions } from '@/api/hooks/procurement/useProcureme
 
 export interface CreateProcurementFormValues {
   comment?: string
-  supplier: string
+  supplierId: string
   items: {
     id: string
     quantity: number
     purchasePrice: number
-    purchaseCurrency: { id: string }
+    purchaseCurrencyId: { id: string }
   }[]
 }
 
@@ -78,7 +78,7 @@ export function CreateProcurementProvider({ children }: CreateProcurementProvide
     return useMutateCreateProcurement.mutate({
       comment: params.comment,
       items: params.items,
-      supplier: params.supplier,
+      supplierId: params.supplierId,
     })
   }
 
@@ -114,12 +114,12 @@ export function useCreateProcurementContext(): CreateProcurementContextType {
 function createCreateProcurementFormSchema(t: (key: string, options?: Record<string, unknown>) => string) {
   return z.object({
     comment: z.string().optional(),
-    supplier: z.string({ required_error: t('form.errors.required') }).min(1, { message: t('form.errors.required') }),
+    supplierId: z.string({ required_error: t('form.errors.required') }).min(1, { message: t('form.errors.required') }),
     items: z.array(z.object({
       id: z.string({ required_error: t('form.errors.required') }),
       quantity: z.number({ required_error: t('form.errors.required') }),
       purchasePrice: z.number({ required_error: t('form.errors.required') }),
-      purchaseCurrency: z.object({
+      purchaseCurrencyId: z.object({
         id: z.string({ required_error: t('form.errors.required') }),
       }),
     })).min(1, { message: t('form.errors.required.products') }),
@@ -129,7 +129,7 @@ function createCreateProcurementFormSchema(t: (key: string, options?: Record<str
 function getCreateProcurementFormDefaults(): CreateProcurementFormValues {
   return {
     comment: '',
-    supplier: '',
+    supplierId: '',
     items: [],
   }
 }

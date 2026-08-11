@@ -30,12 +30,12 @@ export function ProcurementProvider({ children }: { children: ReactNode }) {
   //   const items = await loadProcurementItemsOptions({ selectedValue: procurement?.id ? [procurement.id] : [] })
   //   const values = {
   //     comment: procurement.comment,
-  //     supplier: procurement.supplier,
+  //     supplierId: procurement.supplierId,
   //     items: items.map((item: any) => ({
   //       id: item.id,
   //       quantity: item.quantity,
   //       purchasePrice: item.purchasePrice,
-  //       purchaseCurrency: item.purchaseCurrency,
+  //       purchaseCurrencyId: item.purchaseCurrencyId,
   //     })),
   //   }
   //   form.reset(values)
@@ -106,11 +106,11 @@ export function ProcurementProvider({ children }: { children: ReactNode }) {
   //     return useMutateEditProcurement.mutate({
   //       id: selectedProcurement.id,
   //       comment: params.comment,
-  //       supplier: params.supplier,
+  //       supplierId: params.supplierId,
   //       status: params.status,
   //       warehouse: params.warehouse,
-  //       expenses: params.expenses,
-  //       payments: params.payments,
+  //       expenseIds: params.expenseIds,
+  //       paymentIds: params.paymentIds,
   //       items: params.items,
   //     })
   //   }
@@ -119,11 +119,11 @@ export function ProcurementProvider({ children }: { children: ReactNode }) {
   //     createdBy: params.createdBy,
   //     comment: params.comment,
   //     items: params.items,
-  //     supplier: params.supplier,
+  //     supplierId: params.supplierId,
   //     status: params.status,
   //     warehouse: params.warehouse,
-  //     expenses: params.expenses,
-  //     payments: params.payments,
+  //     expenseIds: params.expenseIds,
+  //     paymentIds: params.paymentIds,
   //   })
   // }
 

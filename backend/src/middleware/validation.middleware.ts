@@ -1,6 +1,7 @@
 import type { NextFunction, Request, RequestHandler, Response } from 'express'
 import type { z, ZodTypeAny } from 'zod'
 import type { ValidatedRequest } from '@/types'
+import { HttpError } from '@/utils/httpError'
 import { parseFormData } from '@/utils/parseTools'
 
 export function validateBodyRequest<TSchema extends ZodTypeAny>(
@@ -85,6 +86,38 @@ export function validateUpload(fieldName: string): RequestHandler {
       res.status(400).json({ error: `Missing file: ${fieldName}` })
       return
     }
+
+    next()
+  }
+}
+
+export function validateResponse<TSchema extends ZodTypeAny>(schema: TSchema): RequestHandler {
+  if (process.env.NODE_ENV === 'production') {
+    return (_req, _res, next) => next()
+  }
+
+  return (req, res, next) => {
+    const originalJson = res.json.bind(res)
+
+    res.json = ((body: unknown) => {
+      if (res.statusCode >= 400) {
+        return originalJson(body)
+      }
+
+      const result = schema.safeParse(body)
+
+      if (!result.success) {
+        next(new HttpError(
+          500,
+          `Response does not match schema: ${req.originalUrl}`,
+          'RESPONSE_SCHEMA_MISMATCH',
+          `${JSON.stringify(result.error.format())} || ${JSON.stringify(body)}`,
+        ))
+        return res
+      }
+
+      return originalJson(body)
+    }) as Response['json']
 
     next()
   }

@@ -31,6 +31,7 @@ export async function create(
     const serviceResponse = await ProductService.create({
       payload: req.validated.body,
       uploadedImages: req.files as Express.Multer.File[],
+      user: req.user,
     })
 
     res.status(201).json(serviceResponse)
@@ -46,9 +47,13 @@ export async function edit(
   next: NextFunction,
 ) {
   try {
+    if (req.files === undefined)
+      req.files = []
+
     const serviceResponse = await ProductService.edit({
       payload: req.validated.body,
       uploadedImages: req.files as Express.Multer.File[],
+      user: req.user,
     })
 
     res.status(200).json(serviceResponse)
@@ -64,7 +69,7 @@ export async function remove(
   next: NextFunction,
 ) {
   try {
-    const serviceResponse = await ProductService.remove({ payload: req.validated.body })
+    const serviceResponse = await ProductService.remove({ payload: req.validated.body, user: req.user })
 
     res.status(200).json(serviceResponse)
   }

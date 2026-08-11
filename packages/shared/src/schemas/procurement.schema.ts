@@ -5,11 +5,11 @@ import { currencySchema } from './currency.schema'
 export const procurementSchema = z.object({
   id: idSchema,
   seq: z.number(),
-  supplier: idSchema,
+  supplierId: idSchema,
   status: z.string().trim(),
   warehouse: idSchema,
-  expenses: z.array(idSchema),
-  payments: z.array(idSchema),
+  expenseIds: z.array(idSchema),
+  paymentIds: z.array(idSchema),
   itemsByCurrency: z.array(z.object({
     currency: currencySchema,
     amount: z.number(),
@@ -41,14 +41,14 @@ export type ProcurementItemDTO = z.infer<typeof procurementItemSchema>
 export const getProcurementsSchema = z.object({
   filters: z.object({
     seq: z.array(numberFromStringSchema).optional(),
-    supplier: idSchemaOptional,
+    supplierId: idSchemaOptional,
     status: z.string().trim().optional(),
     warehouse: idSchemaOptional,
     createdAt: dateRangeSchema.optional(),
     updatedAt: dateRangeSchema.optional(),
   }).optional().default({}),
   sorters: z.object({
-    supplier: sorterParamsSchema.optional(),
+    supplierId: sorterParamsSchema.optional(),
     status: sorterParamsSchema.optional(),
     warehouse: sorterParamsSchema.optional(),
     updatedAt: sorterParamsSchema.optional(),
@@ -65,11 +65,11 @@ export const createProcurementSchema = z.object({
     id: idSchema,
     quantity: z.number(),
     purchasePrice: z.number().min(0),
-    purchaseCurrency: z.object({
+    purchaseCurrencyId: z.object({
       id: idSchema,
     }),
   })),
-  supplier: idSchema,
+  supplierId: idSchema,
 })
 
 export type CreateProcurementRequest = z.input<typeof createProcurementSchema>
@@ -92,11 +92,11 @@ export type GetProcurementItemsRequest = z.input<typeof getProcurementItemsSchem
 export const editProcurementSchema = z.object({
   id: idSchema,
   comment: z.string().trim().optional(),
-  supplier: idSchema,
+  supplierId: idSchema,
   status: z.string().trim(),
   warehouse: idSchema,
-  expenses: z.array(idSchema),
-  payments: z.array(idSchema),
+  expenseIds: z.array(idSchema),
+  paymentIds: z.array(idSchema),
 })
 
 export type EditProcurementRequest = z.input<typeof editProcurementSchema>

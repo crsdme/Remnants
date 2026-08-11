@@ -59,8 +59,8 @@ export async function list(payload: GetCurrenciesRepoPayload): Promise<GetCurren
             $match: {
               $expr: {
                 $and: [
-                  { $isArray: '$currencies' },
-                  { $in: ['$$currencyId', '$currencies'] },
+                  { $isArray: '$currencyIds' },
+                  { $in: ['$$currencyId', '$currencyIds'] },
                 ],
               },
               ...(Array.isArray(cashregisterAccount) && cashregisterAccount.length > 0
@@ -144,16 +144,16 @@ export async function listExchangeRates(payload: GetExchangeRatesRepoPayload): P
 
   const {
     ids,
-    fromCurrency,
-    toCurrency,
+    fromCurrencyId,
+    toCurrencyId,
   } = payload.filters
 
   const query = buildQuery({
-    filters: { _id: ids, fromCurrency, toCurrency },
+    filters: { _id: ids, fromCurrencyId, toCurrencyId },
     rules: {
       _id: { type: 'array' },
-      fromCurrency: { type: 'exact' },
-      toCurrency: { type: 'exact' },
+      fromCurrencyId: { type: 'exact' },
+      toCurrencyId: { type: 'exact' },
     },
   })
 
@@ -165,7 +165,7 @@ export async function listExchangeRates(payload: GetExchangeRatesRepoPayload): P
     {
       $lookup: {
         from: 'currencies',
-        localField: 'fromCurrency',
+        localField: 'fromCurrencyId',
         foreignField: '_id',
         as: 'fromCurrency',
       },
@@ -173,7 +173,7 @@ export async function listExchangeRates(payload: GetExchangeRatesRepoPayload): P
     {
       $lookup: {
         from: 'currencies',
-        localField: 'toCurrency',
+        localField: 'toCurrencyId',
         foreignField: '_id',
         as: 'toCurrency',
       },
@@ -187,9 +187,9 @@ export async function listExchangeRates(payload: GetExchangeRatesRepoPayload): P
     {
       $project: {
         _id: 0,
-        id: '$_id',
+        id: { $toString: '$_id' },
         fromCurrency: {
-          id: '$fromCurrency._id',
+          id: { $toString: '$fromCurrency._id' },
           names: '$fromCurrency.names',
           symbols: '$fromCurrency.symbols',
           scale: { $ifNull: ['$fromCurrency.scale', 2] },
@@ -203,7 +203,7 @@ export async function listExchangeRates(payload: GetExchangeRatesRepoPayload): P
           active: { $ifNull: ['$fromCurrency.active', true] },
         },
         toCurrency: {
-          id: '$toCurrency._id',
+          id: { $toString: '$toCurrency._id' },
           names: '$toCurrency.names',
           symbols: '$toCurrency.symbols',
           scale: { $ifNull: ['$toCurrency.scale', 2] },
@@ -218,7 +218,8 @@ export async function listExchangeRates(payload: GetExchangeRatesRepoPayload): P
         },
         rate: 1,
         comment: 1,
-        removed: 1,
+        createdAt: 1,
+        updatedAt: 1,
       },
     },
     {

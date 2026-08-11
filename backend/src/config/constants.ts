@@ -1,14 +1,17 @@
 import path from 'node:path'
+import dotenv from 'dotenv'
+
+dotenv.config()
 
 export const SUPPORTED_LANGUAGES = ['ru', 'en'] as const
 
 export type SUPPORTED_LANGUAGES_TYPE = (typeof SUPPORTED_LANGUAGES)[number]
 
-export const BACKEND_URL = process.env.BACKEND_URL
+export const BACKEND_URL = process.env.BACKEND_URL ?? 'http://localhost:3001/'
 
 export const STORAGE_PATH = path.resolve('storage')
 
-export const STORAGE_URL = `${BACKEND_URL}storage`
+export const STORAGE_URL = `${BACKEND_URL.replace(/\/?$/, '/')}storage`
 
 export const STORAGE_PATHS = {
   import: path.join(STORAGE_PATH, 'import'),
@@ -21,6 +24,8 @@ export const STORAGE_PATHS = {
   exportProducts: path.join(STORAGE_PATH, 'export', 'products'),
   productImages: path.join(STORAGE_PATH, 'products', 'images'),
   cacheProductImages: path.join(STORAGE_PATH, 'cache', 'products', 'images'),
+  orderFiles: path.join(STORAGE_PATH, 'orders', 'files'),
+  expenseFiles: path.join(STORAGE_PATH, 'expenses', 'files'),
 }
 
 export const STORAGE_URLS = {
@@ -32,6 +37,8 @@ export const STORAGE_URLS = {
   importProducts: `${STORAGE_URL}/import/products`,
   exportProducts: `${STORAGE_URL}/export/products`,
   productImages: `${STORAGE_URL}/products/images`,
+  orderFiles: `${STORAGE_URL}/orders/files`,
+  expenseFiles: `${STORAGE_URL}/expenses/files`,
 }
 
 export const DEFAULT_SETTINGS = [

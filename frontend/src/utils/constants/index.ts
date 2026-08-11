@@ -83,9 +83,9 @@ export const NAV_MENU_ITEMS = [
     permissions: ['warehouse.page', 'purchase.page', 'procurement.page', 'production.page', 'inventory.page'],
     items: [
       { id: 'warehouses', url: '/warehouses', permissions: ['warehouses.page'] },
-      { id: 'purchases', url: '/purchases', permissions: ['purchase.page'] },
-      { id: 'procurements', url: '/procurements', permissions: ['procurement.page'] },
-      { id: 'production', url: '/production', permissions: ['production.page'] },
+      // { id: 'purchases', url: '/purchases', permissions: ['purchase.page'] },
+      // { id: 'procurements', url: '/procurements', permissions: ['procurement.page'] },
+      // { id: 'production', url: '/production', permissions: ['production.page'] },
       { id: 'inventories', url: '/inventories', permissions: ['inventory.page'] },
       { id: 'warehouseTransactions', url: '/warehouse-transactions', permissions: ['warehouseTransaction.page'] },
     ],
@@ -131,7 +131,7 @@ export const NAV_MENU_ITEMS = [
   {
     id: 'settings',
     icon: 'Settings',
-    permissions: ['settings.page', 'language.page', 'currency.page', 'source.page', 'orderStatus.page', 'deliveryService.page', 'unit.page', 'log.page'],
+    permissions: ['settings.page', 'language.page', 'currency.page', 'source.page', 'orderStatus.page', 'productStockStatus.page', 'deliveryService.page', 'unit.page', 'log.page'],
     items: [
       { id: 'automations', url: '/settings/automations', permissions: ['automation.page'] },
       { id: 'currencies', url: '/settings/currencies', permissions: ['currency.page'] },
@@ -144,6 +144,7 @@ export const NAV_MENU_ITEMS = [
       { id: 'languages', url: '/settings/languages', permissions: ['language.page'] },
       { id: 'orderSources', url: '/settings/order-sources', permissions: ['orderSource.page'] },
       { id: 'orderStatuses', url: '/settings/order-statuses', permissions: ['orderStatus.page'] },
+      { id: 'productStockStatuses', url: '/settings/product-stock-statuses', permissions: ['productStockStatus.page'] },
       { id: 'expenseCategories', url: '/settings/expense-categories', permissions: ['expenseCategory.page'] },
       { id: 'settings', url: '/settings', permissions: ['settings.page'] },
       { id: 'sites', url: '/settings/sites', permissions: ['site.page'] },
@@ -170,27 +171,6 @@ export const SOCIAL_TYPES = [
   },
   {
     id: 'viber',
-  },
-]
-
-export const PAYMENT_STATUSES = [
-  {
-    id: 'pending',
-  },
-  {
-    id: 'processing',
-  },
-  {
-    id: 'paid',
-  },
-  {
-    id: 'failed',
-  },
-  {
-    id: 'cancelled',
-  },
-  {
-    id: 'refunded',
   },
 ]
 
@@ -246,6 +226,9 @@ export const AUTOMATION_ACTIONS = [
       },
       {
         id: 'order-delivery-service-update',
+      },
+      {
+        id: 'order-mark-removed',
       },
       {
         id: 'pay-order',
@@ -305,9 +288,14 @@ export const USER_ROLE_PERMISSIONS = [
     permissions: ['warehouse.page', 'warehouse.read', 'warehouse.remove', 'warehouse.create', 'warehouse.edit', 'warehouse.auditLogs'],
   },
   {
+    group: 'inventory',
+    dependencies: ['language.read', 'warehouse.read', 'category.read'],
+    permissions: ['inventory.page', 'inventory.read', 'inventory.remove', 'inventory.create', 'inventory.edit'],
+  },
+  {
     group: 'warehouseTransaction',
     dependencies: ['language.read', 'warehouse.read'],
-    permissions: ['warehouseTransaction.page', 'warehouseTransaction.read', 'warehouseTransaction.remove', 'warehouseTransaction.create', 'warehouseTransaction.edit', 'warehouseTransaction.export', 'warehouseTransaction.auditLogs'],
+    permissions: ['warehouseTransaction.page', 'warehouseTransaction.read', 'warehouseTransaction.remove', 'warehouseTransaction.create', 'warehouseTransaction.edit', 'warehouseTransaction.export', 'warehouseTransaction.auditLogs', 'warehouseTransaction.receive'],
   },
   {
     group: 'unit',
@@ -362,6 +350,11 @@ export const USER_ROLE_PERMISSIONS = [
     group: 'orderStatus',
     dependencies: ['language.read'],
     permissions: ['orderStatus.page', 'orderStatus.read', 'orderStatus.remove', 'orderStatus.create', 'orderStatus.edit', 'orderStatus.auditLogs'],
+  },
+  {
+    group: 'productStockStatus',
+    dependencies: ['language.read'],
+    permissions: ['productStockStatus.page', 'productStockStatus.read', 'productStockStatus.remove', 'productStockStatus.create', 'productStockStatus.edit', 'productStockStatus.auditLogs'],
   },
   {
     group: 'balance',

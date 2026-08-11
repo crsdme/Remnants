@@ -143,6 +143,48 @@ export function OrderStatusForm() {
               </FormItem>
             )}
           />
+          <FormField
+            control={form.control}
+            name="isDisplayed"
+            render={({ field }) => (
+              <FormItem className="flex items-center justify-between rounded-md border p-4 grow">
+                <div className="space-y-1">
+                  <FormLabel className="text-sm">{t('page.order-statuses.form.isDisplayed')}</FormLabel>
+                  <FormDescription className="text-xs text-muted-foreground">
+                    {t('page.order-statuses.form.isDisplayed.description')}
+                  </FormDescription>
+                </div>
+                <FormControl>
+                  <Checkbox
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                    disabled={isLoading}
+                  />
+                </FormControl>
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="includeInStatistics"
+            render={({ field }) => (
+              <FormItem className="flex items-center justify-between rounded-md border p-4 grow">
+                <div className="space-y-1">
+                  <FormLabel className="text-sm">{t('page.order-statuses.form.includeInStatistics')}</FormLabel>
+                  <FormDescription className="text-xs text-muted-foreground">
+                    {t('page.order-statuses.form.includeInStatistics.description')}
+                  </FormDescription>
+                </div>
+                <FormControl>
+                  <Checkbox
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                    disabled={isLoading}
+                  />
+                </FormControl>
+              </FormItem>
+            )}
+          />
         </div>
 
         <div className="flex gap-2">

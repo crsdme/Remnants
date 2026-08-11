@@ -30,7 +30,7 @@ const UserSchema: Schema = new Schema(
       type: String,
       required: true,
     },
-    role: {
+    roleId: {
       type: String,
       required: true,
       ref: 'user-role',
@@ -52,6 +52,9 @@ UserSchema.index(
   { login: 1 },
   { unique: true, partialFilterExpression: { removed: false } },
 )
+UserSchema.index({ roleId: 1 })
+UserSchema.index({ removed: 1, active: 1 })
+UserSchema.index({ seq: 1 })
 
 UserSchema.virtual('id').get(function () {
   return this._id

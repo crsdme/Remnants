@@ -33,7 +33,7 @@ export async function list(payload: GetBarcodesRepoPayload): Promise<GetBarcodeB
     rules: {
       _id: { type: 'array' },
       code: { type: 'array' },
-      products: { type: 'array' },
+      products: { type: 'array', field: 'products._id' },
       active: { type: 'array' },
       createdAt: { type: 'dateRange' },
       updatedAt: { type: 'dateRange' },
@@ -44,54 +44,54 @@ export async function list(payload: GetBarcodesRepoPayload): Promise<GetBarcodeB
 
   const pipeline: PipelineStage[] = [
     { $match: query },
-    ...productPopulatedStages({
-      productIdPath: '$products._id',
-      as: 'productsData',
-      many: true,
-    }),
     { $sort: sorters },
-    {
-      $addFields: {
-        products: {
-          $map: {
-            input: { $range: [0, { $size: '$productsData' }] },
-            as: 'idx',
-            in: {
-              $mergeObjects: [
-                { $arrayElemAt: ['$productsData', '$$idx'] },
-                {
-                  unitsPerScan: {
-                    $let: {
-                      vars: {
-                        prod: { $arrayElemAt: ['$products', '$$idx'] },
-                      },
-                      in: '$$prod.unitsPerScan',
-                    },
-                  },
-                },
-              ],
-            },
-          },
-        },
-      },
-    },
-    {
-      $project: {
-        _id: 0,
-        id: '$_id',
-        products: 1,
-        code: 1,
-        active: 1,
-        removed: 1,
-        createdAt: 1,
-        updatedAt: 1,
-      },
-    },
     {
       $facet: {
         items: [
           { $skip: (current - 1) * pageSize },
           { $limit: pageSize },
+          ...productPopulatedStages({
+            productIdPath: '$products._id',
+            as: 'productsData',
+            many: true,
+          }),
+          {
+            $addFields: {
+              products: {
+                $map: {
+                  input: { $range: [0, { $size: '$productsData' }] },
+                  as: 'idx',
+                  in: {
+                    $mergeObjects: [
+                      { $arrayElemAt: ['$productsData', '$$idx'] },
+                      {
+                        unitsPerScan: {
+                          $let: {
+                            vars: {
+                              prod: { $arrayElemAt: ['$products', '$$idx'] },
+                            },
+                            in: '$$prod.unitsPerScan',
+                          },
+                        },
+                      },
+                    ],
+                  },
+                },
+              },
+            },
+          },
+          {
+            $project: {
+              _id: 0,
+              id: '$_id',
+              products: 1,
+              code: 1,
+              active: 1,
+              removed: 1,
+              createdAt: 1,
+              updatedAt: 1,
+            },
+          },
         ],
         count: [
           { $count: 'count' },

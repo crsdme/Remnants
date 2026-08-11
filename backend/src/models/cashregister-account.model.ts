@@ -34,7 +34,7 @@ const CashregisterAccountSchema: Schema = new Schema(
         message: 'Supported languages only',
       },
     },
-    currencies: [{
+    currencyIds: [{
       type: String,
       required: true,
       ref: 'Currency',
@@ -67,5 +67,9 @@ CashregisterAccountSchema.pre('save', async function (this: CashregisterAccountD
 
   next()
 })
+
+CashregisterAccountSchema.index({ removed: 1, active: 1 })
+CashregisterAccountSchema.index({ currencyIds: 1 })
+CashregisterAccountSchema.index({ priority: 1 })
 
 export const CashregisterAccountModel = mongoose.model<CashregisterAccountDB>('cashregister-account', CashregisterAccountSchema)

@@ -54,7 +54,7 @@
 //     {
 //       $lookup: {
 //         from: 'suppliers',
-//         localField: 'supplier',
+//         localField: 'supplierId',
 //         foreignField: '_id',
 //         as: 'supplier',
 //       },
@@ -70,7 +70,7 @@
 //     {
 //       $lookup: {
 //         from: 'money-transactions',
-//         localField: 'payments',
+//         localField: 'paymentIds',
 //         foreignField: '_id',
 //         as: 'paymentsDocs',
 //       },
@@ -78,7 +78,7 @@
 //     {
 //       $lookup: {
 //         from: 'currencies',
-//         localField: 'items.purchaseCurrency',
+//         localField: 'items.purchaseCurrencyId',
 //         foreignField: '_id',
 //         as: 'itemCurrencies',
 //       },
@@ -104,7 +104,7 @@
 //                   in: {
 //                     $let: {
 //                       vars: {
-//                         currId: '$$this.purchaseCurrency',
+//                         currId: '$$this.purchaseCurrencyId',
 //                         lineTotal: {
 //                           $multiply: [
 //                             { $ifNull: ['$$this.quantity', 0] },
@@ -448,7 +448,7 @@
 //           {
 //             $lookup: {
 //               from: 'currencies',
-//               localField: 'purchaseCurrency',
+//               localField: 'purchaseCurrencyId',
 //               foreignField: '_id',
 //               as: 'purchaseCurrency',
 //             },
@@ -731,7 +731,7 @@
 //           {
 //             $lookup: {
 //               from: 'currencies',
-//               localField: 'purchaseCurrency',
+//               localField: 'purchaseCurrencyId',
 //               foreignField: '_id',
 //               as: 'purchaseCurrency',
 //             },
@@ -915,11 +915,11 @@
 // }
 
 // export async function create(payload: createProcurementParams, user: RequestUser) {
-//   const { supplier, comment, items } = payload
+//   const { supplierId, comment, items } = payload
 //   const createdBy = user.id
 
 //   const procurement = await ProcurementModel.create({
-//     supplier,
+//     supplierId,
 //     status: 'draft',
 //     comment,
 //     createdBy,
@@ -928,7 +928,7 @@
 //   const mappedProducts = items.map((item: any) => ({
 //     procurementId: procurement._id,
 //     purchasePrice: item.purchasePrice,
-//     purchaseCurrency: item.purchaseCurrency.id,
+//     purchaseCurrencyId: item.purchaseCurrencyId.id,
 //     productId: item.id,
 //     quantity: item.quantity,
 //   }))
@@ -939,16 +939,16 @@
 // }
 
 // export async function edit(payload: editProcurementParams, user: RequestUser) {
-//   const { id, supplier, status, warehouse, expenses, payments, comment } = payload
+//   const { id, supplierId, status, warehouse, expenseIds, paymentIds, comment } = payload
 
 //   // const oldProcurement = await ProcurementModel.findById(id)
 
 //   const procurement = await ProcurementModel.findByIdAndUpdate(id, {
-//     supplier,
+//     supplierId,
 //     status,
 //     warehouse,
-//     expenses,
-//     payments,
+//     expenseIds,
+//     paymentIds,
 //     comment,
 //     updatedBy: user.id,
 //   }, { new: true })
@@ -1046,7 +1046,7 @@
 //   }
 
 //   const procurement = await ProcurementModel.findByIdAndUpdate(procurementId, {
-//     $addToSet: { payments: moneyTransaction.id },
+//     $addToSet: { paymentIds: moneyTransaction.id },
 //     updatedBy: user.id,
 //   })
 

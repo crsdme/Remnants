@@ -26,7 +26,7 @@ export const moneyTransactionSchema = z.object({
   sourceModel: z.string().trim(),
   confirmed: z.boolean(),
   sourceId: idSchemaOptional,
-  createdBy: idSchema,
+  createdBy: idSchemaOptional,
   removedBy: idSchemaOptional,
   createdAt: z.coerce.date(),
   updatedAt: z.coerce.date(),

@@ -1,206 +1,183 @@
-import { useMemo, useState } from 'react'
-
-import { useFieldArray, useWatch } from 'react-hook-form'
+import type { InventoryItemViewFilter } from '@remnant/shared'
+import { ClipboardList, Package } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
-import { useCategoryOptions, useProductQuery, useWarehouseOptions } from '@/api/hooks'
-import { AsyncSelectNew } from '@/components/AsyncSelectNew'
 import {
+  Badge,
   Button,
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
   Input,
   Separator,
+  Skeleton,
 } from '@/components/ui'
-import { useDebounceCallback, useLocale } from '@/utils/hooks'
+import { CountingTable } from '@/containers/inventory/CreateInventoryPage/components/CountingTable'
+import { useLocale } from '@/utils/hooks'
+import { cn } from '@/utils/lib/utils'
 import { useViewInventoryContext } from '../context'
-import { ProductSelectedTable } from './ProductTable'
+
+const VIEW_FILTERS: InventoryItemViewFilter[] = ['all', 'uncounted', 'counted', 'mismatch']
 
 export function DataTable() {
   const { t, language } = useLocale()
   const navigate = useNavigate()
-  const { form, isLoading } = useViewInventoryContext()
-  const [pagination, setPagination] = useState({
-    current: 1,
-    pageSize: 10,
-  })
+  const {
+    inventory,
+    isLoading,
+    isItemsLoading,
+    inventoryItems,
+    inventoryItemsCount,
+    progress,
+    viewFilter,
+    setViewFilter,
+    search,
+    setSearch,
+    pagination,
+    setPagination,
+  } = useViewInventoryContext()
 
-  const selectedCategories = useWatch({
-    control: form.control,
-    name: 'categories',
-  })
+  const countedPercent = progress && progress.total > 0
+    ? Math.round((progress.counted / progress.total) * 100)
+    : 0
 
-  const selectedWarehouse = useWatch({
-    control: form.control,
-    name: 'warehouse',
-  })
-
-  const itemsField = useFieldArray({
-    control: form.control,
-    name: 'items',
-  })
-
-  const { products, productsCount } = useProductQuery(
-    { pagination, filters: { categories: selectedCategories }, sorters: {} },
-    {
-      options: {
-        enabled: selectedCategories.length > 0 && !!selectedWarehouse,
-      },
-    },
-  )
-
-  const changeProduct = ({ productId, field, value }: { productId: string, field: string, value: any }) => {
-    const selectedItems = form.watch('items')
-
-    const index = selectedItems.findIndex(p => p.id === productId)
-    if (index !== -1) {
-      const updated = { ...selectedItems[index], [field]: value }
-      itemsField.update(index, updated)
-    }
-    else {
-      const product = products.find(p => p.id === productId)
-      if (!product)
-        return
-
-      itemsField.append({
-        id: product.id,
-        lineQuantity: 1,
-        receivedQuantity: 1,
-      })
-    }
+  const filterCount = (view: InventoryItemViewFilter) => {
+    if (!progress)
+      return ''
+    if (view === 'all')
+      return ` (${progress.total})`
+    if (view === 'uncounted')
+      return ` (${progress.uncounted})`
+    if (view === 'counted')
+      return ` (${progress.counted})`
+    return ` (${progress.mismatches})`
   }
 
-  const changePagination = useDebounceCallback((value: Pagination) => {
-    setPagination(state => ({ ...state, ...value }))
-  }, 50)
+  const statusBadge = {
+    draft: 'default',
+    confirmed: 'success',
+    cancelled: 'destructive',
+  } as const
 
-  const loadWarehouseOptions = useWarehouseOptions()
-  const loadCategoryOptions = useCategoryOptions()
+  if (isLoading && !inventory) {
+    return (
+      <div className="space-y-4">
+        <Skeleton className="h-40 w-full" />
+        <Skeleton className="h-80 w-full" />
+      </div>
+    )
+  }
 
-  const mergedProducts = useMemo(() => {
-    const selectedItems = form.watch('items')
-    return products.map((product: any) => {
-      const item = selectedItems.find(i => i.id === product.id)
-      return {
-        ...product,
-        ...item,
-      }
-    })
-  }, [products, itemsField.fields])
+  if (!inventory) {
+    return (
+      <div className="rounded-lg border bg-card p-8 text-center text-muted-foreground">
+        {t('page.view-inventory.notFound')}
+      </div>
+    )
+  }
 
   return (
-    <Form {...form}>
-      <ProductSelectedTable
-        products={mergedProducts}
-        productsCount={productsCount}
-        isLoading={isLoading}
-        changeProduct={changeProduct}
-        pagination={pagination}
-        changePagination={changePagination}
-      />
-      <Separator className="my-4" />
-      <form className="w-full space-y-1 mt-4">
-
-        <div className="flex gap-2">
-          <FormField
-            control={form.control}
-            name="warehouse"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>
-                  <p>
-                    {t('page.create-inventory.form.warehouse')}
-                    <span className="text-destructive ml-1">*</span>
-                  </p>
-                </FormLabel>
-                <FormControl>
-                  <AsyncSelectNew
-                    {...field}
-                    loadOptions={loadWarehouseOptions}
-                    renderOption={e => e.names[language]}
-                    getDisplayValue={e => e.names[language]}
-                    getOptionValue={e => e.id}
-                    disabled={isLoading}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="categories"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>
-                  <p>
-                    {t('page.create-inventory.form.categories')}
-                    <span className="text-destructive ml-1">*</span>
-                  </p>
-                </FormLabel>
-                <FormControl>
-                  <AsyncSelectNew
-                    {...field}
-                    multi
-                    onChange={(e) => {
-                      field.onChange(e)
-                      form.setValue('items', [])
-                    }}
-                    loadOptions={loadCategoryOptions}
-                    renderOption={e => e.names[language]}
-                    getDisplayValue={e => e.names[language]}
-                    getOptionValue={e => e.id}
-                    disabled={isLoading}
-                    searchable
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="comment"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>
-                  <p>
-                    {t('page.create-inventory.form.comment')}
-                  </p>
-                </FormLabel>
-                <FormControl>
-                  <Input
-                    {...field}
-                    placeholder={t('page.create-inventory.form.comment')}
-                    className="resize-none"
-                    disabled={isLoading}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
+    <div className="space-y-4">
+      <div className="space-y-3 rounded-lg border bg-card p-4">
+        <div className="flex items-center gap-2">
+          <ClipboardList className="size-5 shrink-0" />
+          <p className="text-lg font-bold">{t('page.view-inventory.information-form.title')}</p>
+          <Separator className="flex-1" />
+          <Badge variant={statusBadge[inventory.status as keyof typeof statusBadge] ?? 'default'}>
+            {t(`page.inventories.table.status.${inventory.status.toLowerCase()}`)}
+          </Badge>
         </div>
-        <div className="flex justify-end gap-2">
-          <Button
-            type="button"
-            variant="secondary"
-            onClick={() => void navigate('/inventories')}
-            disabled={isLoading}
-          >
-            {t('button.cancel')}
-          </Button>
-          <Button type="submit" disabled={isLoading} loading={isLoading}>
-            {t('button.submit')}
-          </Button>
+
+        <div className="grid gap-3 grid-cols-1 md:grid-cols-2">
+          <div>
+            <p className="text-sm text-muted-foreground">{t('page.create-inventory.form.warehouse')}</p>
+            <p className="font-medium">{inventory.warehouse?.names?.[language] ?? '—'}</p>
+          </div>
+          <div>
+            <p className="text-sm text-muted-foreground">{t('page.create-inventory.form.categories')}</p>
+            <div className="flex flex-wrap gap-1 mt-1">
+              {inventory.categories.map(category => (
+                <Badge key={category.id} variant="outline">
+                  {category.names?.[language] ?? category.id}
+                </Badge>
+              ))}
+            </div>
+          </div>
+          <div className="md:col-span-2">
+            <p className="text-sm text-muted-foreground">{t('page.create-inventory.form.comment')}</p>
+            <p className="font-medium whitespace-pre-wrap">{inventory.comment?.trim() || '—'}</p>
+          </div>
         </div>
-      </form>
-    </Form>
+      </div>
+
+      <div className="space-y-3 rounded-lg border bg-card p-4">
+        <div className="flex items-center gap-2">
+          <Package className="size-5 shrink-0" />
+          <p className="text-lg font-bold">{t('page.view-inventory.results.title')}</p>
+          <Separator className="flex-1" />
+        </div>
+
+        {progress && (
+          <div className="space-y-2">
+            <div className="flex flex-wrap items-center justify-between gap-2 text-sm">
+              <p>
+                {t('page.create-inventory.progress.label', {
+                  counted: progress.counted,
+                  total: progress.total,
+                })}
+              </p>
+              <p className="text-muted-foreground">
+                {t('page.create-inventory.progress.mismatches', { count: progress.mismatches })}
+              </p>
+            </div>
+            <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
+              <div
+                className="h-full rounded-full bg-primary transition-all"
+                style={{ width: `${countedPercent}%` }}
+              />
+            </div>
+          </div>
+        )}
+
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-wrap gap-2">
+            {VIEW_FILTERS.map(view => (
+              <Button
+                key={view}
+                type="button"
+                size="sm"
+                variant={viewFilter === view ? 'default' : 'outline'}
+                className={cn(viewFilter === view && 'pointer-events-none')}
+                onClick={() => setViewFilter(view)}
+              >
+                {t(`page.create-inventory.filter.${view}`)}
+                {filterCount(view)}
+              </Button>
+            ))}
+          </div>
+          <Input
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            placeholder={t('page.create-inventory.search.placeholder')}
+            className="sm:max-w-xs"
+          />
+        </div>
+
+        <CountingTable
+          items={inventoryItems}
+          itemsCount={inventoryItemsCount}
+          isLoading={isItemsLoading}
+          readOnly
+          pagination={pagination}
+          changePagination={setPagination}
+        />
+      </div>
+
+      <div className="flex justify-end">
+        <Button
+          type="button"
+          variant="secondary"
+          onClick={() => void navigate('/inventories')}
+        >
+          {t('button.back')}
+        </Button>
+      </div>
+    </div>
   )
 }

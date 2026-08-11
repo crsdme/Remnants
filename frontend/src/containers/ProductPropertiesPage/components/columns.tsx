@@ -50,7 +50,7 @@ export function useColumns() {
         id: 'expander',
         header: '',
         cell: ({ row }) => {
-          if ((row.original.options?.length ?? 0) > 0) {
+          if ((row.original.optionIds?.length ?? 0) > 0) {
             return (
               <Button
                 variant="ghost"

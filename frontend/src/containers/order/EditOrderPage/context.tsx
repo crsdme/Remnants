@@ -1,6 +1,6 @@
 import type { EditOrderRequest, OrderPaymentDTOPopulated, ProductPopulatedDTO } from '@remnant/shared'
 
-import type { ReactNode } from 'react'
+import type { Dispatch, ReactNode, SetStateAction } from 'react'
 import type { Resolver, UseFormReturn } from 'react-hook-form'
 
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -21,8 +21,8 @@ import {
   useOrderDetailQuery,
   useOrderEdit,
 } from '@/api/hooks'
+import type { UploadedFile } from '@/components/FileUploadDnd'
 import { useAuthContext } from '@/contexts/AuthContext'
-import { PAYMENT_STATUSES } from '@/utils/constants'
 import { hasPermission } from '@/utils/helpers'
 
 const EditOrderContext = createContext<EditOrderContextType | undefined>(undefined)
@@ -31,6 +31,7 @@ export function EditOrderProvider({ children }: { children: ReactNode }) {
   const [isClientModalOpen, setIsClientModalOpen] = useState(false)
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false)
   const [payments, setPayments] = useState<DraftOrderPayment[]>([])
+  const [files, setFiles] = useState<UploadedFile[]>([])
   const navigate = useNavigate()
   const { t } = useTranslation()
   const { seq } = useParams()
@@ -64,7 +65,6 @@ export function EditOrderProvider({ children }: { children: ReactNode }) {
       amount: 0,
       currency: undefined,
       paymentDate: new Date(),
-      paymentStatus: PAYMENT_STATUSES[0].id,
       comment: undefined,
     },
   })
@@ -126,7 +126,7 @@ export function EditOrderProvider({ children }: { children: ReactNode }) {
         void queryClient.invalidateQueries({ queryKey: ['products'] })
         void queryClient.invalidateQueries({ queryKey: ['statistics'] })
         void queryClient.invalidateQueries({ queryKey: ['money-transactions'] })
-        void queryClient.invalidateQueries({ queryKey: ['order-statuses', 'get', { filters: { includeAll: true, includeCount: true } }] })
+        void queryClient.invalidateQueries({ queryKey: ['order-statuses'] })
         toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description || ''}` })
         void navigate('/orders')
       },
@@ -170,7 +170,7 @@ export function EditOrderProvider({ children }: { children: ReactNode }) {
       orderSource: order.orderSource.id,
       orderStatus: order.orderStatus.id,
       deliveryService: order.deliveryService.id,
-      client: order.client.id,
+      client: order.client?.id,
       items: items.map(item => ({
         ...item.product,
         id: item.id,
@@ -193,7 +193,6 @@ export function EditOrderProvider({ children }: { children: ReactNode }) {
       id: p.id,
       amount: Number(p.amount),
       paymentDate: p.paymentDate,
-      paymentStatus: p.paymentStatus,
       comment: p.comment,
       cashregister: { id: p.cashregister.id, names: p.cashregister.names },
       cashregisterAccount: { id: p.cashregisterAccount.id, names: p.cashregisterAccount.names },
@@ -201,6 +200,18 @@ export function EditOrderProvider({ children }: { children: ReactNode }) {
     }))
     // eslint-disable-next-line react-hooks-extra/no-direct-set-state-in-use-effect -- синхронизация платежей при загрузке заказа
     setPayments(normalizedPayments)
+
+    // eslint-disable-next-line react-hooks-extra/no-direct-set-state-in-use-effect -- синхронизация файлов при загрузке заказа
+    setFiles((order.files ?? []).map(file => ({
+      id: file.id,
+      file: file.path,
+      preview: file.type.startsWith('image/') ? file.path : '',
+      name: file.name,
+      type: file.type,
+      path: file.path,
+      filename: file.filename,
+      isNew: false,
+    })))
   }, [order, items, informationForm, navigate, permissions, defaultPayments])
 
   const createPayment = (params: PaymentFormValues) => {
@@ -222,7 +233,6 @@ export function EditOrderProvider({ children }: { children: ReactNode }) {
       currency: { id: currency.id, symbols: currency.symbols },
       amount: params.amount,
       paymentDate: params.paymentDate,
-      paymentStatus: params.paymentStatus,
       comment: params.comment,
     }
 
@@ -260,7 +270,6 @@ export function EditOrderProvider({ children }: { children: ReactNode }) {
         currency: p.currency.id,
         cashregister: p.cashregister.id,
         cashregisterAccount: p.cashregisterAccount.id,
-        paymentStatus: p.paymentStatus,
         paymentDate: p.paymentDate?.toString(),
         comment: p.comment,
       }
@@ -280,9 +289,29 @@ export function EditOrderProvider({ children }: { children: ReactNode }) {
       comment: params.comment,
       items: mappedItems,
       orderPayments,
+      files: files.map(file => ({
+        id: file.id,
+        filename: file.filename ?? '',
+        name: file.name,
+        type: file.type,
+        path: file.path,
+        isNew: file.isNew,
+      })),
     }
 
-    mutateEditOrder.mutate(payload)
+    const formData = new FormData()
+    for (const [key, value] of Object.entries(payload)) {
+      formData.append(key, typeof value === 'object' ? JSON.stringify(value) : String(value ?? ''))
+    }
+
+    files
+      .filter((file): file is UploadedFile & { file: File } => file.isNew && typeof file.file !== 'string')
+      .forEach((file) => {
+        formData.append('uploadedFiles', file.file, file.name)
+        formData.append('uploadedFilesIds', file.id)
+      })
+
+    mutateEditOrder.mutate(formData as unknown as EditOrderRequest)
   }
 
   const loadBarcodeOptions = useBarcodeOptions()
@@ -300,6 +329,8 @@ export function EditOrderProvider({ children }: { children: ReactNode }) {
       paymentForm,
       informationForm,
       payments,
+      files,
+      setFiles,
       clientForm,
       permissions,
       openClientModal,
@@ -312,7 +343,7 @@ export function EditOrderProvider({ children }: { children: ReactNode }) {
       editOrder,
       getBarcode,
     }),
-    [isClientModalOpen, isPaymentModalOpen, isLoading, paymentForm, informationForm, clientForm, payments, permissions],
+    [isClientModalOpen, isPaymentModalOpen, isLoading, paymentForm, informationForm, clientForm, payments, files, permissions],
   )
 
   return <EditOrderContext.Provider value={value}>{children}</EditOrderContext.Provider>
@@ -331,7 +362,6 @@ interface DraftOrderPayment {
   id: string
   amount: number
   paymentDate?: Date
-  paymentStatus: string
   comment?: string
   cashregister: { id: string, names: { [key: string]: string } }
   cashregisterAccount: { id: string, names: { [key: string]: string } }
@@ -346,7 +376,6 @@ function createPaymentFormSchema(t: (key: string) => string) {
     amount: z.number().default(0),
     currency: z.string({ required_error: t('form.errors.required') }).min(1, { message: t('form.errors.required') }),
     paymentDate: z.date().optional(),
-    paymentStatus: z.string({ required_error: t('form.errors.required') }).min(1, { message: t('form.errors.required') }),
     comment: z.string().optional(),
   })
 }
@@ -434,6 +463,8 @@ interface EditOrderContextType {
   openPaymentModal: () => void
   closePaymentModal: () => void
   payments: DraftOrderPayment[]
+  files: UploadedFile[]
+  setFiles: Dispatch<SetStateAction<UploadedFile[]>>
   removePayment: (id: string) => void
   createClient: (params: ClientFormValues) => void
   editOrder: (params: InformationFormValues) => void

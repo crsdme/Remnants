@@ -7,22 +7,26 @@ export function mapWarehouseTransactionToDTO(warehouseTransaction: WarehouseTran
     id: warehouseTransaction._id,
     seq: warehouseTransaction.seq,
     type: warehouseTransaction.type,
-    fromWarehouse: {
-      id: warehouseTransaction.fromWarehouse.id,
-      names: warehouseTransaction.fromWarehouse.names,
-    },
-    toWarehouse: {
-      id: warehouseTransaction.toWarehouse.id,
-      names: warehouseTransaction.toWarehouse.names,
-    },
-    requiresReceiving: warehouseTransaction.requiresReceiving,
+    fromWarehouse: warehouseTransaction.fromWarehouse !== undefined
+      ? {
+          id: warehouseTransaction.fromWarehouse.id,
+          names: warehouseTransaction.fromWarehouse.names,
+        }
+      : undefined,
+    toWarehouse: warehouseTransaction.toWarehouse !== undefined
+      ? {
+          id: warehouseTransaction.toWarehouse.id,
+          names: warehouseTransaction.toWarehouse.names,
+        }
+      : undefined,
+    requiresReceiving: warehouseTransaction.requiresReceiving ?? true,
     status: warehouseTransaction.status,
-    accepted: warehouseTransaction.accepted,
+    accepted: warehouseTransaction.accepted ?? false,
     acceptedBy: warehouseTransaction.acceptedBy,
     removedAt: warehouseTransaction.removedAt,
     removedBy: warehouseTransaction.removedBy,
     acceptedAt: warehouseTransaction.acceptedAt,
-    comment: warehouseTransaction.comment,
+    comment: warehouseTransaction.comment ?? '',
     createdBy: warehouseTransaction.createdBy,
     createdAt: warehouseTransaction.createdAt,
     updatedAt: warehouseTransaction.updatedAt,

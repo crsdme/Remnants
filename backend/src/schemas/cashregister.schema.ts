@@ -6,7 +6,7 @@ export const cashregisterDBSchema = z.object({
   _id: idSchema,
   seq: numberFromStringSchema,
   names: languageStringSchema,
-  accounts: z.array(idSchema),
+  accountIds: z.array(idSchema),
   priority: z.number(),
   active: z.boolean(),
   removed: z.boolean().default(false),
@@ -15,7 +15,7 @@ export const cashregisterDBSchema = z.object({
 })
 
 export const cashregisterDBPopulatedSchema = cashregisterDBSchema.omit({
-  accounts: true,
+  accountIds: true,
 }).extend({
   accounts: z.array(cashregisterAccountDBPopulatedSchema),
 })

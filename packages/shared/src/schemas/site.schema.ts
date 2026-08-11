@@ -8,7 +8,7 @@ export const siteSchema = z.object({
   key: z.string().trim(),
   priority: z.number(),
   active: z.boolean(),
-  warehouses: z.array(idSchema),
+  warehouseIds: z.array(idSchema),
   createdAt: z.coerce.date(),
   updatedAt: z.coerce.date(),
 })
@@ -43,7 +43,7 @@ export const createSiteSchema = z.object({
   key: z.string().trim(),
   priority: z.number().optional().default(0),
   active: z.boolean().optional().default(true),
-  warehouses: z.array(idSchema).optional().default([]),
+  warehouseIds: z.array(idSchema).optional().default([]),
 })
 
 export type CreateSiteRequest = z.input<typeof createSiteSchema>
@@ -55,7 +55,7 @@ export const editSiteSchema = z.object({
   key: z.string().trim(),
   priority: z.number().optional().default(0),
   active: z.boolean().optional().default(true),
-  warehouses: z.array(idSchema).optional().default([]),
+  warehouseIds: z.array(idSchema).optional().default([]),
 })
 
 export type EditSiteRequest = z.input<typeof editSiteSchema>

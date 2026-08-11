@@ -5,7 +5,7 @@ export function mapProductPropertyGroupToDTO(productPropertyGroup: ProductProper
   return {
     id: productPropertyGroup._id,
     names: productPropertyGroup.names,
-    productProperties: productPropertyGroup.productProperties,
+    productPropertyIds: productPropertyGroup.productPropertyIds,
     priority: productPropertyGroup.priority,
     active: productPropertyGroup.active,
     createdAt: productPropertyGroup.createdAt,

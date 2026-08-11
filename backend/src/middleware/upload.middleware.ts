@@ -13,6 +13,7 @@ interface UploadOptions {
   mode?: UploadMode
   maxCount?: number
   allowedMimeTypes?: string[]
+  allowedExtensions?: string[]
 }
 
 export function uploadMiddleware({
@@ -26,10 +27,14 @@ export function uploadMiddleware({
     'image/gif',
     'image/webp',
     'application/pdf',
+    'text/plain',
     'text/csv',
+    'application/csv',
     'application/json',
+    'application/vnd.ms-excel',
     'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
   ],
+  allowedExtensions,
 }: UploadOptions) {
   const storage = multer.diskStorage({
     destination: (req, file, cb) => {
@@ -45,7 +50,11 @@ export function uploadMiddleware({
   })
 
   const fileFilter = (req: Request, file: Express.Multer.File, cb: multer.FileFilterCallback) => {
-    if (allowedMimeTypes.includes(file.mimetype)) {
+    const ext = path.extname(file.originalname).toLowerCase()
+    const mimeAllowed = allowedMimeTypes.includes(file.mimetype)
+    const extAllowed = allowedExtensions?.includes(ext) ?? false
+
+    if (mimeAllowed || extAllowed) {
       cb(null, true)
     }
     else {

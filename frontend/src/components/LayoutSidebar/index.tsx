@@ -1,19 +1,4 @@
-import {
-  Banknote,
-  BarChart3,
-  ChevronsUpDown,
-  FileText,
-  Globe,
-  LayoutDashboard,
-  ListChecks,
-  MessageSquare,
-  Package,
-  Settings,
-  ShoppingCart,
-  Tag,
-  Users,
-  Warehouse,
-} from 'lucide-react'
+import { ChevronsUpDown } from 'lucide-react'
 import * as React from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -22,25 +7,10 @@ import { useAuthContext } from '@/contexts'
 import { NAV_MENU_ITEMS } from '@/utils/constants'
 
 import { hasPermission } from '@/utils/helpers/permission'
+import { SidebarCommandMenu } from './command-menu'
+import { SIDEMENU_ICONS } from './icons'
 import { NavMain } from './navMain'
 import { NavUser } from './navUser'
-
-const SIDEMENU_ICONS = {
-  LayoutDashboard,
-  ShoppingCart,
-  Package,
-  Users,
-  MessageSquare,
-  ListChecks,
-  BarChart3,
-  Tag,
-  Warehouse,
-  Banknote,
-  Globe,
-  Settings,
-  FileText,
-  ChevronsUpDown,
-}
 
 export function LayoutSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { t } = useTranslation()
@@ -92,6 +62,7 @@ export function LayoutSidebar({ ...props }: React.ComponentProps<typeof Sidebar>
         </SidebarMenuButton>
       </SidebarHeader>
       <SidebarContent>
+        <SidebarCommandMenu />
         <NavMain items={data.navMain} />
       </SidebarContent>
       <SidebarFooter>

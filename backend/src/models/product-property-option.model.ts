@@ -32,7 +32,7 @@ const ProductPropertyOptionSchema: Schema = new Schema(
       type: Number,
       default: 0,
     },
-    productProperty: {
+    productPropertyId: {
       type: String,
       ref: 'product-property',
     },
@@ -61,6 +61,7 @@ ProductPropertyOptionSchema.set('toJSON', {
   },
 })
 
-ProductPropertyOptionSchema.index({ removed: 1 })
+ProductPropertyOptionSchema.index({ productPropertyId: 1 })
+ProductPropertyOptionSchema.index({ removed: 1, active: 1 })
 
 export const ProductPropertyOptionModel = mongoose.model<ProductPropertyOptionDoc>('product-property-option', ProductPropertyOptionSchema)

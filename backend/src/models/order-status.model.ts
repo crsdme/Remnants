@@ -44,6 +44,14 @@ const OrderStatusSchema: Schema = new Schema(
       type: Boolean,
       default: false,
     },
+    isDisplayed: {
+      type: Boolean,
+      default: true,
+    },
+    includeInStatistics: {
+      type: Boolean,
+      default: true,
+    },
     removed: {
       type: Boolean,
       default: false,
@@ -61,5 +69,8 @@ OrderStatusSchema.set('toJSON', {
     delete ret.removed
   },
 })
+
+OrderStatusSchema.index({ removed: 1 })
+OrderStatusSchema.index({ priority: 1 })
 
 export const OrderStatusModel = mongoose.model<OrderStatusDoc>('order-status', OrderStatusSchema)

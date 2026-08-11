@@ -1,12 +1,9 @@
 import type { UseFormReturn } from 'react-hook-form'
 
-import { Trash2Icon } from 'lucide-react'
-import { useNavigate } from 'react-router-dom'
-import { useClientOptions, useDeliveryServiceOptions, useOrderSourceOptions, useOrderStatusOptions, useWarehouseOptions } from '@/api/hooks'
+import { ClipboardList } from 'lucide-react'
+import { useDeliveryServiceOptions, useOrderSourceOptions, useOrderStatusOptions, useWarehouseOptions } from '@/api/hooks'
 import { AsyncSelectNew } from '@/components/AsyncSelectNew'
 import {
-  Badge,
-  Button,
   Form,
   FormControl,
   FormField,
@@ -16,29 +13,28 @@ import {
   Separator,
   Textarea,
 } from '@/components/ui'
-import { formatDate } from '@/utils/helpers/formatDate'
 import { useLocale } from '@/utils/hooks'
+import { ORDER_INFORMATION_FORM_ID } from '../../components/OrderSidebar'
 import { useViewOrderContext } from '../context'
 
 export function InformationForm({ form, onSubmit }: { form: UseFormReturn<any>, onSubmit: (payments: any) => void }) {
   const { t, language } = useLocale()
-  const { isLoading, payments, disabled } = useViewOrderContext()
-  const navigate = useNavigate()
+  const { isLoading, disabled } = useViewOrderContext()
 
   const loadWarehouseOptions = useWarehouseOptions()
   const loadOrderSourceOptions = useOrderSourceOptions()
   const loadOrderStatusOptions = useOrderStatusOptions()
   const loadDeliveryServiceOptions = useDeliveryServiceOptions()
-  const loadClientsOptions = useClientOptions()
 
   return (
-    <div className="flex flex-col gap-4 flex-1">
+    <div className="space-y-3 rounded-lg border bg-card p-4">
       <div className="flex items-center gap-2">
+        <ClipboardList className="size-5 shrink-0" />
         <p className="text-lg font-bold">{t('page.view-order.information-form.title')}</p>
         <Separator className="flex-1" />
       </div>
       <Form {...form}>
-        <form onSubmit={onSubmit}>
+        <form id={ORDER_INFORMATION_FORM_ID} onSubmit={onSubmit} className="space-y-3">
           <div className="grid gap-2 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
             <FormField
               control={form.control}
@@ -147,30 +143,6 @@ export function InformationForm({ form, onSubmit }: { form: UseFormReturn<any>, 
                 </FormItem>
               )}
             />
-            <FormField
-              control={form.control}
-              name="client"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>
-                    {t('page.view-order.form.client')}
-                  </FormLabel>
-                  <FormControl>
-                    <AsyncSelectNew
-                      {...field}
-                      loadOptions={loadClientsOptions}
-                      renderOption={e => `${e.name} ${e.middleName} ${e.lastName} (${e.emails?.join(', ')}) (${e.phones?.join(', ')})`}
-                      getDisplayValue={e => `${e.name} ${e.middleName} ${e.lastName} (${e.emails?.join(', ')}) (${e.phones?.join(', ')})`}
-                      getOptionValue={e => e.id}
-                      disabled={isLoading || disabled}
-                      searchable
-                      clearable
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
           </div>
 
           <FormField
@@ -191,37 +163,6 @@ export function InformationForm({ form, onSubmit }: { form: UseFormReturn<any>, 
               </FormItem>
             )}
           />
-
-          <div className="grid gap-2 grid-cols-1 md:grid-cols-2 lg:grid-cols-3 mb-2">
-            {payments.map((payment) => {
-              return (
-                <div key={payment.id} className="border border-gray-300 dark:border-gray-700 rounded-md p-2">
-                  <div className="flex items-center flex-wrap gap-2">
-                    <Badge variant="outline">{`${payment.amount} ${payment.currency.symbols[language]}`}</Badge>
-                    <Badge variant="outline">{`${payment.cashregister.names[language]} | ${payment.cashregisterAccount.names[language]}`}</Badge>
-                    <Badge variant="outline">{`${formatDate(payment.paymentDate, 'PPP')}`}</Badge>
-                    <Badge variant="outline">{t(`payment-status.${payment.paymentStatus}`)}</Badge>
-                    {payment.comment && <Badge variant="outline">{payment.comment}</Badge>}
-                  </div>
-                  <Button
-                    className="mt-2"
-                    variant="destructive"
-                    size="icon"
-                    onClick={() => { }}
-                    disabled={isLoading || disabled}
-                  >
-                    <Trash2Icon className="w-4 h-4" />
-                  </Button>
-                </div>
-              )
-            })}
-          </div>
-
-          <div className="flex justify-end gap-2">
-            <Button type="button" disabled={isLoading} loading={isLoading} onClick={() => void navigate('/orders')}>
-              {t('button.back')}
-            </Button>
-          </div>
         </form>
       </Form>
     </div>

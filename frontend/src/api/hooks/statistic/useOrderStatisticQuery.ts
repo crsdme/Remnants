@@ -1,4 +1,4 @@
-import type { GetOrderStatisticRequest } from '@remnant/shared'
+import type { GetOrderStatisticRequest, StatisticsDTO } from '@remnant/shared'
 
 import { useQuery } from '@tanstack/react-query'
 import { getOrderStatistic } from '@/api/requests'
@@ -11,7 +11,7 @@ export function useOrderStatisticQuery(params: GetOrderStatisticRequest, setting
     ...settings?.options,
   })
 
-  const statistics = query.data?.data || null
+  const statistics: StatisticsDTO | null = query.data?.data?.data ?? null
 
   return {
     ...query,

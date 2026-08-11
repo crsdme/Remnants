@@ -41,7 +41,13 @@ const ConditionSchema = new Schema({
 const ActionSchema = new Schema({
   field: {
     type: String,
-    enum: ['order-status-update', 'order-source-update', 'order-delivery-service-update', 'pay-order'],
+    enum: [
+      'order-status-update',
+      'order-source-update',
+      'order-delivery-service-update',
+      'order-mark-removed',
+      'pay-order',
+    ],
     required: true,
   },
   params: {

@@ -161,6 +161,10 @@ export default function App() {
             element={<ProtectedRoute children={<Pages.OrderStatusesPage />} permissions={['orderStatus.page']} />}
           />
           <Route
+            path="/settings/product-stock-statuses"
+            element={<ProtectedRoute children={<Pages.ProductStockStatusesPage />} permissions={['productStockStatus.page']} />}
+          />
+          <Route
             path="/settings/order-sources"
             element={<ProtectedRoute children={<Pages.OrderSourcesPage />} permissions={['orderSource.page']} />}
           />
@@ -209,6 +213,10 @@ export default function App() {
           <Route
             path="/inventories/create"
             element={<ProtectedRoute children={<Pages.CreateInventoryPage />} permissions={['inventory.create']} />}
+          />
+          <Route
+            path="/inventories/edit/:seq"
+            element={<ProtectedRoute children={<Pages.CreateInventoryPage />} permissions={['inventory.create', 'inventory.edit']} />}
           />
           <Route
             path="/inventories/view/:seq"
