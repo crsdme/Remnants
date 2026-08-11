@@ -21,6 +21,7 @@ import type {
   ScanBarcodeToDraftsPayload,
   UpsertInventoryItemPayload,
 } from '@/types/'
+import { Buffer } from 'node:buffer'
 import ExcelJS from 'exceljs'
 import { v4 as uuidv4 } from 'uuid'
 import { mapInventoryToDTO } from '@/mappers'

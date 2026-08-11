@@ -135,7 +135,8 @@ export async function convertMoneyFields(
         continue
       }
 
-      const currencyId = doc[field.currencyFrom] ?? (field.currencyTo ? doc[field.currencyTo] : undefined)
+      // eslint-disable-next-line ts/no-unsafe-assignment
+      const currencyId = doc[field.currencyFrom] ?? (field.currencyTo !== undefined ? doc[field.currencyTo] : undefined)
       const scale = getScale(scales, currencyId)
       const minor = toMinorSafe(doc[field.from], scale)
 
@@ -202,6 +203,7 @@ export async function backfillSeq(
     next += 1
     return {
       updateOne: {
+        // eslint-disable-next-line ts/no-unsafe-assignment
         filter: { _id: doc._id },
         update: { $set: { seq: next } },
       },

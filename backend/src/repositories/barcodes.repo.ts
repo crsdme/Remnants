@@ -54,7 +54,7 @@ export async function list(payload: GetBarcodesRepoPayload): Promise<GetBarcodeB
             productIdPath: '$products._id',
             as: 'productsData',
             many: true,
-          }),
+          }) as PipelineStage.FacetPipelineStage[],
           {
             $addFields: {
               products: {

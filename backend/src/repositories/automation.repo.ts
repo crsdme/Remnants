@@ -102,8 +102,8 @@ export async function listActiveByTriggerType({
 }): Promise<AutomationDB[]> {
   return AutomationModel.find({
     'trigger.type': type,
-    active: true,
-    removed: { $ne: true },
+    'active': true,
+    'removed': { $ne: true },
   })
     .session(session ?? null)
     .lean()

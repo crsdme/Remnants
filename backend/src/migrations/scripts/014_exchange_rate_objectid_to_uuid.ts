@@ -1,3 +1,4 @@
+import type { Document } from 'mongodb'
 import type { Migration } from '../types'
 import { v4 as uuidv4 } from 'uuid'
 
@@ -16,7 +17,7 @@ export const migration014ExchangeRateObjectIds: Migration = {
 
     for (const doc of docs) {
       const { _id, ...rest } = doc
-      await rates.insertOne({ ...rest, _id: uuidv4() })
+      await rates.insertOne({ ...rest, _id: uuidv4() } as Document)
       await rates.deleteOne({ _id })
     }
 

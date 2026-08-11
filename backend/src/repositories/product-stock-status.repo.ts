@@ -117,7 +117,7 @@ export async function removeById(id: string) {
 
 export async function unsetDefaults(excludeId?: string) {
   const filter: Record<string, unknown> = { isDefault: true, removed: false }
-  if (excludeId)
+  if (excludeId !== undefined)
     filter._id = { $ne: excludeId }
 
   return ProductStockStatusModel.updateMany(

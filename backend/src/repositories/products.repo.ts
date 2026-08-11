@@ -64,13 +64,13 @@ export async function list(payload: GetProductsRepoPayload): Promise<GetProducts
   const minorPurchasePriceFilter = await toMinorFilterValue(purchasePrice, purchaseCurrency)
 
   let scopedIds = ids
-  if (stockStatusId && selectedWarehouse) {
+  if (stockStatusId !== undefined && selectedWarehouse !== undefined) {
     const matchedProductIds = await QuantityModel.distinct('productId', {
       warehouseId: selectedWarehouse,
       stockStatusId,
     }).exec()
 
-    if (scopedIds?.length) {
+    if (scopedIds !== undefined && scopedIds.length > 0) {
       const scopedSet = new Set(scopedIds)
       scopedIds = matchedProductIds.filter(id => scopedSet.has(id))
     }

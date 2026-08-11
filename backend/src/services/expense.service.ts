@@ -11,6 +11,7 @@ import type {
   GetExpensesPayload,
   RemoveExpensesPayload,
 } from '@/types'
+import { Buffer } from 'node:buffer'
 import path from 'node:path'
 import { STORAGE_PATHS } from '@/config/constants'
 import { mapExpenseToDTO } from '@/mappers'
@@ -256,7 +257,7 @@ function resolveExpenseFiles({
       }
     }
 
-    if (!file.filename)
+    if (file.filename === undefined || file.filename === null)
       return undefined
 
     return {

@@ -127,13 +127,12 @@ async function executeAction({
     }
     case 'order-mark-removed': {
       await OrderRepository.removeById(orderId, { removedBy: userId, session })
-      return
+      break
     }
     case 'pay-order':
       // Pay flow is not fully implemented yet; keep as a no-op action slot.
-      return
+      break
     default:
-      return
   }
 }
 

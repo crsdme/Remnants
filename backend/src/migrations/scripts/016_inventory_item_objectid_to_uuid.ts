@@ -1,3 +1,4 @@
+import type { Document } from 'mongodb'
 import type { Migration } from '../types'
 import { v4 as uuidv4 } from 'uuid'
 
@@ -33,7 +34,7 @@ export const migration016InventoryItemObjectIds: Migration = {
       }
 
       await items.deleteOne({ _id })
-      await items.insertOne({ ...rest, _id: uuidv4() })
+      await items.insertOne({ ...rest, _id: uuidv4() } as Document)
       converted += 1
     }
 

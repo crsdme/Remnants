@@ -1,4 +1,4 @@
-import type { AggregateResult, UserAccessScopesDTO, UserPopulatedDTO } from '@remnant/shared'
+import type { AggregateResult, UserPopulatedDTO } from '@remnant/shared'
 import type { FilterQuery, PipelineStage } from 'mongoose'
 import type {
   CreateUsersRepoPayload,
@@ -142,7 +142,7 @@ export async function findOne(query: FilterQuery<UserDB>) {
   return mapRoleIdToRole(user) as (UserPopulatedDB & { password: string }) | null
 }
 
-function mapRoleIdToRole(user: Record<string, any> | null) {
+function mapRoleIdToRole(user: Record<string, unknown> | null) {
   if (user == null)
     return null
 

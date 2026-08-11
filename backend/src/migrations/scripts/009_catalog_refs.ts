@@ -43,6 +43,7 @@ export const migration009CatalogRefs: Migration = {
 
     if (docs.length) {
       const ops = docs.map((doc) => {
+        // eslint-disable-next-line ts/no-unsafe-assignment
         const products = Array.isArray(doc.products)
           ? doc.products.map((p: Record<string, unknown>) => {
               const { quantity, unitsPerScan, ...rest } = p
@@ -56,6 +57,7 @@ export const migration009CatalogRefs: Migration = {
         return {
           updateOne: {
             filter: { _id: doc._id },
+            // eslint-disable-next-line ts/no-unsafe-assignment
             update: { $set: { products } },
           },
         }

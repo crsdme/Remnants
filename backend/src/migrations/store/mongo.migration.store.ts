@@ -1,5 +1,5 @@
-import type { MigrationStore } from '../types'
 import type { Db } from 'mongodb'
+import type { MigrationStore } from '../types'
 
 const COLLECTION = '_migrations'
 

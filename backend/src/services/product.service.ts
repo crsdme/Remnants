@@ -305,7 +305,7 @@ export async function edit({ payload, uploadedImages, user }: { payload: EditPro
     toAuditSnapshot(oldProduct, { omit: PRODUCT_AUDIT_OMIT }),
     toAuditSnapshot(newProduct, { omit: PRODUCT_AUDIT_OMIT }),
   )
-  const difference = (Array.isArray(differenceRaw) ? {} : differenceRaw) as Record<string, unknown>
+  const difference = Array.isArray(differenceRaw) ? {} : differenceRaw
 
   for (const site of syncSitesId) {
     await SyncEntryService.syncProductEdit({
@@ -443,7 +443,7 @@ export async function importHandler({ file }: { file: Express.Multer.File }): Pr
   }))
 
   const productsForEdit = parsedProducts.filter(product => product._id !== undefined)
-  const productsForCreate = parsedProducts.filter(product => !product._id)
+  const productsForCreate = parsedProducts.filter(product => product._id === undefined)
 
   if (productsForEdit.length > 0) {
     const bulkProducts = productsForEdit.map(product => ({
@@ -480,7 +480,7 @@ export async function importHandler({ file }: { file: Express.Multer.File }): Pr
         barcodes,
       } = product
 
-      if (currencyId === null || purchaseCurrencyId === null || unitId === null || productPropertiesGroupId === null) {
+      if (currencyId === undefined || purchaseCurrencyId === undefined || unitId === undefined || productPropertiesGroupId === undefined) {
         throw new HttpError(
           400,
           'Product import row is missing required currency, purchase currency, unit or property group',

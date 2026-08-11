@@ -823,7 +823,7 @@ export async function findById(id: string) {
 export async function removeById(id: string, options?: { removedBy?: string, session?: ClientSession }) {
   return OrderModel.findOneAndUpdate(
     { _id: id },
-    { $set: { removed: true, ...(options?.removedBy ? { removedBy: options.removedBy } : {}) } },
+    { $set: { removed: true, ...(options?.removedBy !== undefined ? { removedBy: options.removedBy } : {}) } },
     { new: true, runValidators: true, session: options?.session },
   ).exec()
 }

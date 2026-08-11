@@ -1,7 +1,7 @@
-import type { Migration } from '../types'
 import type { Document } from 'mongodb'
-import { backfillSeq, renameFields } from '../helpers'
+import type { Migration } from '../types'
 import { v4 as uuidv4 } from 'uuid'
+import { backfillSeq, renameFields } from '../helpers'
 
 /**
  * Users: role → roleId, seq backfill.

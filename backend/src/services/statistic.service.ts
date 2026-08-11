@@ -12,15 +12,15 @@ import type {
 import { toMinorType } from '@remnant/shared'
 import * as ExpenseService from '@/services/expense.service'
 import * as OrderPaymentService from '@/services/order-payment.service'
-import * as OrderService from '@/services/order.service'
 import * as OrderStatusService from '@/services/order-status.service'
+import * as OrderService from '@/services/order.service'
 import * as UserService from '@/services/user.service'
 import {
   parseGetExpenses,
   parseGetOrderItems,
   parseGetOrderPayments,
-  parseGetOrderStatuses,
   parseGetOrders,
+  parseGetOrderStatuses,
 } from '@/types'
 import { fromMinor, toMinor } from '@/utils/money'
 
@@ -53,7 +53,7 @@ function addMajor(map: MoneyMap, currency: CurrencySnippet, majorAmount: number)
 
   const minorDelta = toMinor(majorAmount, currency.scale)
   const existing = map[currency.id]
-  if (!existing) {
+  if (existing === undefined) {
     map[currency.id] = { currency: toCurrencySnippet(currency), minor: minorDelta }
     return
   }
@@ -76,7 +76,7 @@ function diffMoneyMaps(income: MoneyMap, expense: MoneyMap): MoneyMap {
     result[id] = { currency: row.currency, minor: row.minor }
   }
   for (const [id, row] of Object.entries(expense)) {
-    if (!result[id]) {
+    if (result[id] === undefined) {
       result[id] = { currency: row.currency, minor: -row.minor }
     }
     else {
@@ -107,7 +107,7 @@ function eachDayKeys(from?: Date, to?: Date): string[] {
   // Cap series length to avoid huge responses
   const maxDays = 366
   let guard = 0
-  while (cursor <= end && guard < maxDays) {
+  while (cursor.getTime() <= end.getTime() && guard < maxDays) {
     keys.push(dayKey(cursor))
     cursor.setDate(cursor.getDate() + 1)
     guard += 1
@@ -142,7 +142,7 @@ export async function get({
   payload: GetOrderStatisticPayload
   user: AuthUser
 }): Promise<GetStatisticResponse> {
-  const { date, cashregister = [], cashregisterAccount = [] } = payload.filters || {}
+  const { date, cashregister = [], cashregisterAccount = [] } = payload.filters ?? {}
   const hasProfitPermission = await UserService.checkPermission('order.profit', user.id)
 
   const [
@@ -228,7 +228,7 @@ export async function get({
 
   const paymentsByDate = paymentsByDateRaw.filter((payment) => {
     const statusId = orderStatusByOrderId.get(payment.order)
-    if (!statusId || !countedStatusIds.has(statusId))
+    if (statusId === undefined || !countedStatusIds.has(statusId))
       return false
     return matchesCashFilters(payment, cashregister, cashregisterAccount)
   })
@@ -279,15 +279,15 @@ export async function get({
     else
       unpaidCount += 1
 
-    const totals = orderItemTotals[order.id] || {}
-    const paid = orderPaidMap[order.id] || {}
+    const totals = orderItemTotals[order.id] ?? {}
+    const paid = orderPaidMap[order.id] ?? {}
     const currencyIds = new Set([...Object.keys(totals), ...Object.keys(paid)])
 
     for (const currencyId of currencyIds) {
       const due = totals[currencyId]?.minor ?? 0
       const got = paid[currencyId]?.minor ?? 0
       const currency = totals[currencyId]?.currency ?? paid[currencyId]?.currency
-      if (!currency)
+      if (currency === undefined)
         continue
 
       const paidPart = Math.min(got, due)
@@ -319,7 +319,7 @@ export async function get({
 
     for (const category of expense.categories) {
       const categoryId = category.id
-      if (!expenseCategories[categoryId]) {
+      if (expenseCategories[categoryId] === undefined) {
         expenseCategories[categoryId] = {
           category: { id: category.id, names: category.names },
           count: 0,
@@ -343,7 +343,7 @@ export async function get({
 
   for (const item of orderItems) {
     const productId = item.product.id
-    if (!productsMap[productId]) {
+    if (productsMap[productId] === undefined) {
       productsMap[productId] = {
         product: { id: item.product.id, names: item.product.names },
         quantity: 0,
@@ -402,7 +402,7 @@ export async function get({
     if (!order?.createdAt)
       continue
     const key = dayKey(order.createdAt)
-    if (!seriesMaps[key])
+    if (seriesMaps[key] === undefined)
       continue
     addMajor(
       seriesMaps[key].turnover,
@@ -413,14 +413,14 @@ export async function get({
 
   for (const payment of paymentsByDate) {
     const key = dayKey(payment.paymentDate)
-    if (!seriesMaps[key])
+    if (seriesMaps[key] === undefined)
       continue
     addMajor(seriesMaps[key].income, payment.currency, Number(payment.amount) || 0)
   }
 
   for (const expense of expenses) {
     const key = dayKey(expense.createdAt)
-    if (!seriesMaps[key])
+    if (seriesMaps[key] === undefined)
       continue
     addMajor(seriesMaps[key].expenses, expense.currency, Number(expense.amount) || 0)
   }

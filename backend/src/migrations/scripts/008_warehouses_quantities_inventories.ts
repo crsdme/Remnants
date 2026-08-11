@@ -48,7 +48,7 @@ export const migration008WarehousesQuantitiesInventories: Migration = {
           filter: { _id: doc._id },
           update: {
             $set: {
-              categoryIds: doc.category ? [doc.category] : [],
+              categoryIds: doc.category !== undefined ? [doc.category] : [],
             },
             $unset: { category: 1 },
           },
