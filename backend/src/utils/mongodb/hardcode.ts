@@ -37,15 +37,18 @@ const CONFIGS = {
       NATURAL_COLOR: '962ff5ac-4e16-4648-8ef4-bb6b41e865c2',
       BLONDE: '2a570cec-761c-4fa3-8a80-aa6cbd33cf14',
       BALAYAGE: '62d60f2e-86ed-40ee-9eda-cddd42e934e4',
+      EXTREAMELY: '5d656b42-1247-4418-9bb9-0bd94941ed40',
     },
     segments: {
       STANDART: '0f996011-f608-4391-9ce2-ac01bd02e816',
       PREMIUM: '67e9683e-678e-462b-9453-89428335f135',
       LUX: 'fffc12d6-7d26-48d3-a073-bc0647c33259',
+      INDIA: 'bfa03c0a-f19e-4665-8a64-2c28faf5bded',
     },
     propertyGroups: {
       raw: 'f676759b-2e39-4644-b3cb-b2ae71afda25',
       dyed: '9142095d-18be-48bb-91a1-083127eb781b',
+      services: '1c3bbf0a-3d82-4e44-bb65-22653c093497',
     },
     hairTypes: {
       VIRGIN: 'b930fb75-61a6-41c0-88de-0c69082b7f06',
@@ -53,7 +56,7 @@ const CONFIGS = {
       GRAY: '91dcfe98-6192-492f-98de-1ff22bdff01a',
       BROWN: '44307e30-0fb8-4ab1-af56-6d8d724dd204',
       CURLY: '822ec142-d144-44fb-ba96-582cff8757b3',
-      GOLD: '',
+      GOLD: '328add53-06d2-43c1-9c03-9498eee7fde3',
       SLAVIC: '7f6d9a15-9f9f-4ddc-a815-dfaf613a0901',
       ALBINO: '8a379f9e-4a84-4d8c-8108-b35188be2fe1',
       RED: '89b60d3c-2f97-4f94-8305-00d749fdf134',
@@ -106,6 +109,10 @@ const CONFIGS = {
       '7c03598f-3974-4ecb-a556-12f7cb03c3b8': 965,
       '1d341b4a-714e-4779-b6cd-3b085786be3a': 1160,
       'e6946264-f2c5-4651-9160-f1b034b25883': 960,
+      '622c506f-476a-4825-9bdd-c06031e8a82c': 375,
+      'e10a34a9-a81c-4ed5-b4eb-e296758f3211': 931,
+      '1e4c799e-9597-4844-ab56-bd78571842c9': 870,
+      '8aa5b465-78ef-4557-938c-ece7bc427f36': 1214,
     },
     propertyIds: {
       LENGTH: 'efcc3c51-a146-4975-bc5b-196745f76891',
@@ -124,15 +131,18 @@ const CONFIGS = {
       NATURAL_COLOR: '962ff5ac-4e16-4648-8ef4-bb6b41e865c2',
       BLONDE: '2a570cec-761c-4fa3-8a80-aa6cbd33cf14',
       BALAYAGE: '62d60f2e-86ed-40ee-9eda-cddd42e934e4',
+      EXTREAMELY: '5d656b42-1247-4418-9bb9-0bd94941ed40',
     },
     segments: {
       STANDART: '0f996011-f608-4391-9ce2-ac01bd02e816',
       PREMIUM: '67e9683e-678e-462b-9453-89428335f135',
       LUX: 'fffc12d6-7d26-48d3-a073-bc0647c33259',
+      INDIA: 'bfa03c0a-f19e-4665-8a64-2c28faf5bded',
     },
     propertyGroups: {
       raw: 'f676759b-2e39-4644-b3cb-b2ae71afda25',
       dyed: '9142095d-18be-48bb-91a1-083127eb781b',
+      services: '1c3bbf0a-3d82-4e44-bb65-22653c093497',
     },
     hairTypes: {
       VIRGIN: 'b930fb75-61a6-41c0-88de-0c69082b7f06',
@@ -195,15 +205,18 @@ const CONFIGS = {
       NATURAL_COLOR: '962ff5ac-4e16-4648-8ef4-bb6b41e865c2',
       BLONDE: '2a570cec-761c-4fa3-8a80-aa6cbd33cf14',
       BALAYAGE: '62d60f2e-86ed-40ee-9eda-cddd42e934e4',
+      EXTREAMELY: '5d656b42-1247-4418-9bb9-0bd94941ed40',
     },
     segments: {
       STANDART: '',
       PREMIUM: '',
       LUX: '',
+      INDIA: 'bfa03c0a-f19e-4665-8a64-2c28faf5bded',
     },
     propertyGroups: {
       raw: '',
       dyed: '',
+      services: '',
     },
     hairTypes: {
       VIRGIN: '9f49b061-4c93-40a1-bd9e-c1cfaa0a465d',

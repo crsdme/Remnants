@@ -440,63 +440,48 @@ export async function listItems({ payload }: { payload: GetOrderItemsRepoPayload
               let: { productId: '$productId' },
               pipeline: [
                 { $match: { $expr: { $eq: ['$_id', '$$productId'] } } },
-                { $unwind: { path: '$productProperties', preserveNullAndEmptyArrays: true } },
                 {
                   $lookup: {
                     from: 'product-properties',
                     localField: 'productProperties._id',
                     foreignField: '_id',
-                    as: 'productProperties.data',
-                  },
-                },
-                {
-                  $lookup: {
-                    from: 'product-property-options',
-                    localField: 'productProperties.value',
-                    foreignField: '_id',
-                    as: 'productProperties.options',
-                  },
-                },
-                {
-                  $lookup: {
-                    from: 'product-property-options',
-                    let: { valueArr: '$productProperties.value' },
-                    pipeline: [
-                      {
-                        $match: {
-                          $expr: {
-                            $in: [
-                              '$_id',
-                              {
-                                $cond: [
-                                  { $isArray: ['$$valueArr'] },
-                                  '$$valueArr',
-                                  [{ $ifNull: ['$$valueArr', null] }],
-                                ],
-                              },
-                            ],
-                          },
-                        },
-                      },
-                    ],
-                    as: 'productProperties.options',
-                  },
-                },
-                {
-                  $group: {
-                    _id: '$_id',
-                    doc: { $first: '$$ROOT' },
-                    productProperties: { $push: '$productProperties' },
+                    as: 'productPropertiesData',
                   },
                 },
                 {
                   $addFields: {
-                    'doc.productProperties': '$productProperties',
+                    productPropertyOptionIds: {
+                      $reduce: {
+                        input: { $ifNull: ['$productProperties', []] },
+                        initialValue: [],
+                        in: {
+                          $setUnion: [
+                            '$$value',
+                            {
+                              $filter: {
+                                input: {
+                                  $cond: [
+                                    { $isArray: '$$this.value' },
+                                    '$$this.value',
+                                    [{ $ifNull: ['$$this.value', null] }],
+                                  ],
+                                },
+                                as: 'optionId',
+                                cond: { $ne: ['$$optionId', null] },
+                              },
+                            },
+                          ],
+                        },
+                      },
+                    },
                   },
                 },
                 {
-                  $replaceRoot: {
-                    newRoot: '$doc',
+                  $lookup: {
+                    from: 'product-property-options',
+                    localField: 'productPropertyOptionIds',
+                    foreignField: '_id',
+                    as: 'productPropertyOptions',
                   },
                 },
                 {
@@ -563,54 +548,88 @@ export async function listItems({ payload }: { payload: GetOrderItemsRepoPayload
                     productPropertiesGroup: { $arrayElemAt: ['$productPropertiesGroup', 0] },
                     productProperties: {
                       $map: {
-                        input: '$productProperties',
+                        input: { $ifNull: ['$productProperties', []] },
                         as: 'prop',
                         in: {
-                          $mergeObjects: [
-                            '$$prop',
-                            {
+                          $let: {
+                            vars: {
+                              propData: {
+                                $arrayElemAt: [
+                                  {
+                                    $filter: {
+                                      input: '$productPropertiesData',
+                                      as: 'data',
+                                      cond: { $eq: ['$$data._id', '$$prop._id'] },
+                                    },
+                                  },
+                                  0,
+                                ],
+                              },
+                              propValueIds: {
+                                $filter: {
+                                  input: {
+                                    $cond: [
+                                      { $isArray: '$$prop.value' },
+                                      '$$prop.value',
+                                      [{ $ifNull: ['$$prop.value', null] }],
+                                    ],
+                                  },
+                                  as: 'valueId',
+                                  cond: { $ne: ['$$valueId', null] },
+                                },
+                              },
+                            },
+                            in: {
                               id: '$$prop._id',
-                              data: { $arrayElemAt: ['$$prop.data', 0] },
+                              value: '$$prop.value',
+                              data: {
+                                names: '$$propData.names',
+                                symbols: '$$propData.symbols',
+                                type: '$$propData.type',
+                                isRequired: '$$propData.isRequired',
+                                showInTable: '$$propData.showInTable',
+                                showInStatistics: '$$propData.showInStatistics',
+                              },
                               options: {
                                 $map: {
-                                  input: '$$prop.options',
+                                  input: {
+                                    $filter: {
+                                      input: '$productPropertyOptions',
+                                      as: 'option',
+                                      cond: { $in: ['$$option._id', '$$propValueIds'] },
+                                    },
+                                  },
                                   as: 'option',
                                   in: {
-                                    $mergeObjects: [
-                                      '$$option',
-                                      {
-                                        id: '$$option._id',
-                                        names: '$$option.names',
-                                        color: '$$option.color',
-                                      },
-                                    ],
+                                    id: '$$option._id',
+                                    names: '$$option.names',
+                                    color: '$$option.color',
                                   },
                                 },
                               },
                             },
-                          ],
+                          },
                         },
                       },
                     },
                     categories: {
                       $map: {
-                        input: '$categories',
+                        input: { $ifNull: ['$categories', []] },
                         as: 'prop',
                         in: {
-                          $mergeObjects: [
-                            '$$prop',
-                            {
-                              id: '$$prop._id',
-                            },
-                          ],
+                          id: '$$prop._id',
+                          names: '$$prop.names',
                         },
                       },
                     },
                     barcodes: {
                       $map: {
-                        input: '$barcodes',
+                        input: { $ifNull: ['$barcodes', []] },
                         as: 'barcode',
-                        in: { $mergeObjects: ['$$barcode', { id: '$$barcode._id', code: '$$barcode.code' }] },
+                        in: {
+                          id: '$$barcode._id',
+                          code: '$$barcode.code',
+                        },
                       },
                     },
                   },
@@ -784,9 +803,12 @@ export async function updateById({ id, payload, session }: { id: string, payload
 }
 
 export async function updateOneItem({ payload, session }: { payload: EditOrderItemRepoPayload, session?: ClientSession }) {
+  // Never $set _id/id — legacy order-items still use ObjectId-string ids and uuidValidator rejects them.
+  const { id, _id: _ignored, ...update } = payload as EditOrderItemRepoPayload & { _id?: string }
+
   return OrderItemModel.findOneAndUpdate(
-    { _id: payload.id },
-    { $set: payload as unknown as Record<string, unknown> },
+    { _id: id },
+    { $set: update as unknown as Record<string, unknown> },
     { new: true, runValidators: true, session },
   ).exec()
 }

@@ -17,6 +17,7 @@ import { migration015OrderStatusIsDisplayed } from './scripts/015_order_status_i
 import { migration016InventoryItemObjectIds } from './scripts/016_inventory_item_objectid_to_uuid'
 import { migration017InventoryDropAwaitingReceived } from './scripts/017_inventory_drop_awaiting_received'
 import { migration018OrderStatusIncludeInStatistics } from './scripts/018_order_status_include_in_statistics'
+import { migration019OrderItemObjectIds } from './scripts/019_order_item_objectid_to_uuid'
 
 export const migrations: Migration[] = [
   migration001CurrencyPaymentEpsilon,
@@ -37,4 +38,5 @@ export const migrations: Migration[] = [
   migration016InventoryItemObjectIds,
   migration017InventoryDropAwaitingReceived,
   migration018OrderStatusIncludeInStatistics,
+  migration019OrderItemObjectIds,
 ]

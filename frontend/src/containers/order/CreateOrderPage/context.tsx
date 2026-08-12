@@ -370,6 +370,9 @@ export function CreateOrderProvider({ children }: { children: ReactNode }) {
         id: item.product,
         names: item.names ?? {},
         quantity: item.lineQuantity,
+        productPropertiesGroup: item.productPropertiesGroup
+          ? { id: item.productPropertiesGroup.id, names: item.productPropertiesGroup.names }
+          : undefined,
         productProperties: item.productProperties ?? [],
         currency: item.selectedCurrencyId,
         price: item.price,

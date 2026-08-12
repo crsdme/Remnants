@@ -342,6 +342,10 @@ export const printDraftInvoiceOrderSchema = z.object({
     id: idSchema,
     names: languageStringSchema,
     quantity: z.number(),
+    productPropertiesGroup: z.object({
+      id: idSchema,
+      names: languageStringSchema.optional(),
+    }).optional(),
     productProperties: z.array(z.object({
       id: idSchema,
       names: languageStringSchema.optional(),

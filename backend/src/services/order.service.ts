@@ -30,7 +30,7 @@ import type {
 import type { MoneyLike } from '@/utils/order-payment-status'
 import { Buffer } from 'node:buffer'
 import path from 'node:path'
-import { toMinorType } from '@remnant/shared'
+import { createWarehouseTransactionLogsResponseSchema, toMinorType } from '@remnant/shared'
 import mongoose from 'mongoose'
 import PDFDocument from 'pdfkit'
 import { v4 as uuidv4 } from 'uuid'
@@ -630,7 +630,7 @@ export async function printInvoice({ payload }: { payload: PrintInvoiceOrderPayl
     size,
   }
 
-  const { propertyIds, hairTypes, colorCategories, segments, invoiceAddition } = getHardcodeData()
+  const { propertyIds, hairTypes, colorCategories, segments, invoiceAddition, propertyGroups } = getHardcodeData()
 
   const order = await OrderRepository.findOne({ payload: { seq } })
 
@@ -769,7 +769,28 @@ export async function printInvoice({ payload }: { payload: PrintInvoiceOrderPayl
 
   function getProductPrice(lengthCm: number, type: string[], segmentIds: string[], colorCategoryIds: string[]): number | null {
     const segmentTables: Record<string, { min: number, max: number, price: number }[]> = {
+      [segments.INDIA]: [
+        { min: 30, max: 34, price: 900 },
+        { min: 35, max: 39, price: 950 },
+        { min: 40, max: 44, price: 1000 },
+        { min: 45, max: 49, price: 1050 },
+        { min: 50, max: 54, price: 1100 },
+        { min: 55, max: 59, price: 1150 },
+        { min: 60, max: 64, price: 1200 },
+        { min: 65, max: 69, price: 1250 },
+        { min: 70, max: 74, price: 1300 },
+        { min: 75, max: 79, price: 1350 },
+        { min: 80, max: 84, price: 1400 },
+        { min: 85, max: 89, price: 1450 },
+        { min: 90, max: 94, price: 1500 },
+        { min: 95, max: 99, price: 1550 },
+        { min: 100, max: 104, price: 1600 },
+      ],
       [segments.STANDART]: [
+        { min: 30, max: 34, price: 1200 },
+        { min: 35, max: 39, price: 1250 },
+        { min: 40, max: 44, price: 1300 },
+        { min: 45, max: 49, price: 1350 },
         { min: 50, max: 54, price: 1400 },
         { min: 55, max: 59, price: 1450 },
         { min: 60, max: 64, price: 1500 },
@@ -778,8 +799,15 @@ export async function printInvoice({ payload }: { payload: PrintInvoiceOrderPayl
         { min: 75, max: 79, price: 1650 },
         { min: 80, max: 84, price: 1700 },
         { min: 85, max: 89, price: 1750 },
+        { min: 90, max: 94, price: 1800 },
+        { min: 95, max: 99, price: 1850 },
+        { min: 100, max: 104, price: 1900 },
       ],
       [segments.PREMIUM]: [
+        { min: 30, max: 34, price: 1500 },
+        { min: 35, max: 39, price: 1550 },
+        { min: 40, max: 44, price: 1600 },
+        { min: 45, max: 49, price: 1650 },
         { min: 50, max: 54, price: 1700 },
         { min: 55, max: 59, price: 1750 },
         { min: 60, max: 64, price: 1800 },
@@ -788,8 +816,15 @@ export async function printInvoice({ payload }: { payload: PrintInvoiceOrderPayl
         { min: 75, max: 79, price: 1950 },
         { min: 80, max: 84, price: 2000 },
         { min: 85, max: 89, price: 2050 },
+        { min: 90, max: 94, price: 2100 },
+        { min: 95, max: 99, price: 2150 },
+        { min: 100, max: 104, price: 2200 },
       ],
       [segments.LUX]: [
+        { min: 30, max: 34, price: 1600 },
+        { min: 35, max: 39, price: 1700 },
+        { min: 40, max: 44, price: 1800 },
+        { min: 45, max: 49, price: 1900 },
         { min: 50, max: 54, price: 2000 },
         { min: 55, max: 59, price: 2100 },
         { min: 60, max: 64, price: 2200 },
@@ -798,10 +833,15 @@ export async function printInvoice({ payload }: { payload: PrintInvoiceOrderPayl
         { min: 75, max: 79, price: 2500 },
         { min: 80, max: 84, price: 2600 },
         { min: 85, max: 89, price: 2700 },
+        { min: 90, max: 94, price: 2800 },
+        { min: 95, max: 99, price: 2900 },
+        { min: 100, max: 104, price: 3000 },
       ],
     }
 
     let table = [
+      { min: 30, max: 34, price: 800 },
+      { min: 35, max: 39, price: 850 },
       { min: 40, max: 44, price: 900 },
       { min: 45, max: 49, price: 950 },
       { min: 50, max: 54, price: 1000 },
@@ -831,6 +871,8 @@ export async function printInvoice({ payload }: { payload: PrintInvoiceOrderPayl
         colorCategoryIds.includes(colorCategories.BLONDE)
         || colorCategoryIds.includes(colorCategories.PLATIN)
         || colorCategoryIds.includes(colorCategories.OMBRE)
+        || colorCategoryIds.includes(colorCategories.BALAYAGE)
+        || colorCategoryIds.includes(colorCategories.EXTREAMELY)
       ) {
         surcharge = 100
       }
@@ -913,6 +955,7 @@ export async function printInvoice({ payload }: { payload: PrintInvoiceOrderPayl
     if (item === null)
       return null
 
+    const isService = item.product.productPropertiesGroup?.id === propertyGroups.services
     const type = item.product.productProperties.find(property => property.id === propertyIds.HAIR_TYPE)
     const weight = item.product.productProperties.find(property => property.id === propertyIds.WEIGHT)
     const length = item.product.productProperties.find(property => property.id === propertyIds.LENGTH)
@@ -924,29 +967,41 @@ export async function printInvoice({ payload }: { payload: PrintInvoiceOrderPayl
     const discount = discountAmount > 0 ? discountAmount * item.quantity : item.discountPercent > 0 ? item.discountPercent : 0
     const discountType = discountAmount > 0 ? 'amount' : item.discountPercent > 0 ? 'percent' : 'none'
 
-    if (!type || !weight || !length)
+    if (!isService && (!weight || !length))
       return null
+
+    let typeOptions: { id: string, names: Record<string, string> }[] = []
+
+    if (type !== undefined && type.options.length > 0)
+      typeOptions = type.options
 
     return {
       name: item.product.names[language] ?? '',
-      length: length.value as number,
-      weight: weight.value as number,
-      type: type.options.map(option => option.names[language] ?? '').join(', '),
+      length: (length?.value as number) ?? 0,
+      weight: (weight?.value as number) ?? 0,
+      type: typeOptions.map(option => option.names[language] ?? '').join(', '),
       segment,
       colorCategory: colorCategory?.options.map(option => option.names[language] ?? '').join(', '),
-      price: getProductPrice(
-        length.value as number,
-        type.options.map(option => option.id),
-        segmentOptions?.options.map(option => option.id) ?? [],
-        colorCategory?.options.map(option => option.id) ?? [],
-      ),
+      price: isService
+        ? null
+        : getProductPrice(
+            length!.value as number,
+            typeOptions.map(option => option.id),
+            segmentOptions?.options.map(option => option.id) ?? [],
+            colorCategory?.options.map(option => option.id) ?? [],
+          ),
       quantity: item.quantity,
       total: price * item.quantity,
       currency: item.currency,
       discount,
       discountType,
+      isService,
     }
-  }).filter(p => p !== null).sort((a, b) => a.length - b.length)
+  }).filter(p => p !== null).sort((a, b) => {
+    if (a.isService !== b.isService)
+      return a.isService ? 1 : -1
+    return a.length - b.length
+  })
 
   doc.fontSize(10)
 
@@ -963,15 +1018,15 @@ export async function printInvoice({ payload }: { payload: PrintInvoiceOrderPayl
       },
       {
         ...tableColumns.length,
-        value: `${item.length} cm`,
+        value: item.isService ? '' : `${item.length} cm`,
       },
       {
         ...tableColumns.weight,
-        value: `${item.weight} g`,
+        value: item.isService ? '' : `${item.weight} g`,
       },
       {
         ...tableColumns.type,
-        value: `${item.type !== '' ? item.type : item.colorCategory}`,
+        value: `${item.type !== '' ? item.type : item.colorCategory ?? ''}`,
       },
       {
         ...tableColumns.segment,
@@ -979,7 +1034,7 @@ export async function printInvoice({ payload }: { payload: PrintInvoiceOrderPayl
       },
       {
         ...tableColumns.price,
-        value: `${item.price}`,
+        value: `${item.price ?? ''}`,
         underline: item.price != null
           && item.weight > 0
           && Math.abs((item.total / item.quantity) * 1000 / item.weight - item.price) > 5,
@@ -1068,7 +1123,7 @@ export async function printDraftInvoice({ payload }: { payload: PrintDraftInvoic
     size,
   }
 
-  const { propertyIds, hairTypes, colorCategories, segments } = getHardcodeData()
+  const { propertyIds, hairTypes, colorCategories, segments, propertyGroups } = getHardcodeData()
 
   const hasDiscount = items.some(item => item.discountAmount > 0 || item.discountPercent > 0)
 
@@ -1194,7 +1249,28 @@ export async function printDraftInvoice({ payload }: { payload: PrintDraftInvoic
 
   function getProductPrice(lengthCm: number, type: string[], segmentIds: string[], colorCategoryIds: string[]): number | null {
     const segmentTables: Record<string, { min: number, max: number, price: number }[]> = {
+      [segments.INDIA]: [
+        { min: 30, max: 34, price: 900 },
+        { min: 35, max: 39, price: 950 },
+        { min: 40, max: 44, price: 1000 },
+        { min: 45, max: 49, price: 1050 },
+        { min: 50, max: 54, price: 1100 },
+        { min: 55, max: 59, price: 1150 },
+        { min: 60, max: 64, price: 1200 },
+        { min: 65, max: 69, price: 1250 },
+        { min: 70, max: 74, price: 1300 },
+        { min: 75, max: 79, price: 1350 },
+        { min: 80, max: 84, price: 1400 },
+        { min: 85, max: 89, price: 1450 },
+        { min: 90, max: 94, price: 1500 },
+        { min: 95, max: 99, price: 1550 },
+        { min: 100, max: 104, price: 1600 },
+      ],
       [segments.STANDART]: [
+        { min: 30, max: 34, price: 1200 },
+        { min: 35, max: 39, price: 1250 },
+        { min: 40, max: 44, price: 1300 },
+        { min: 45, max: 49, price: 1350 },
         { min: 50, max: 54, price: 1400 },
         { min: 55, max: 59, price: 1450 },
         { min: 60, max: 64, price: 1500 },
@@ -1203,8 +1279,15 @@ export async function printDraftInvoice({ payload }: { payload: PrintDraftInvoic
         { min: 75, max: 79, price: 1650 },
         { min: 80, max: 84, price: 1700 },
         { min: 85, max: 89, price: 1750 },
+        { min: 90, max: 94, price: 1800 },
+        { min: 95, max: 99, price: 1850 },
+        { min: 100, max: 104, price: 1900 },
       ],
       [segments.PREMIUM]: [
+        { min: 30, max: 34, price: 1500 },
+        { min: 35, max: 39, price: 1550 },
+        { min: 40, max: 44, price: 1600 },
+        { min: 45, max: 49, price: 1650 },
         { min: 50, max: 54, price: 1700 },
         { min: 55, max: 59, price: 1750 },
         { min: 60, max: 64, price: 1800 },
@@ -1213,8 +1296,15 @@ export async function printDraftInvoice({ payload }: { payload: PrintDraftInvoic
         { min: 75, max: 79, price: 1950 },
         { min: 80, max: 84, price: 2000 },
         { min: 85, max: 89, price: 2050 },
+        { min: 90, max: 94, price: 2100 },
+        { min: 95, max: 99, price: 2150 },
+        { min: 100, max: 104, price: 2200 },
       ],
       [segments.LUX]: [
+        { min: 30, max: 34, price: 1600 },
+        { min: 35, max: 39, price: 1700 },
+        { min: 40, max: 44, price: 1800 },
+        { min: 45, max: 49, price: 1900 },
         { min: 50, max: 54, price: 2000 },
         { min: 55, max: 59, price: 2100 },
         { min: 60, max: 64, price: 2200 },
@@ -1223,10 +1313,15 @@ export async function printDraftInvoice({ payload }: { payload: PrintDraftInvoic
         { min: 75, max: 79, price: 2500 },
         { min: 80, max: 84, price: 2600 },
         { min: 85, max: 89, price: 2700 },
+        { min: 90, max: 94, price: 2800 },
+        { min: 95, max: 99, price: 2900 },
+        { min: 100, max: 104, price: 3000 },
       ],
     }
 
     let table = [
+      { min: 30, max: 34, price: 800 },
+      { min: 35, max: 39, price: 850 },
       { min: 40, max: 44, price: 900 },
       { min: 45, max: 49, price: 950 },
       { min: 50, max: 54, price: 1000 },
@@ -1256,6 +1351,8 @@ export async function printDraftInvoice({ payload }: { payload: PrintDraftInvoic
         colorCategoryIds.includes(colorCategories.BLONDE)
         || colorCategoryIds.includes(colorCategories.PLATIN)
         || colorCategoryIds.includes(colorCategories.OMBRE)
+        || colorCategoryIds.includes(colorCategories.BALAYAGE)
+        || colorCategoryIds.includes(colorCategories.EXTREAMELY)
       ) {
         surcharge = 100
       }
@@ -1338,6 +1435,7 @@ export async function printDraftInvoice({ payload }: { payload: PrintDraftInvoic
     if (item === null)
       return null
 
+    const isService = item.productPropertiesGroup?.id === propertyGroups.services
     const type = item.productProperties.find(property => property.id === propertyIds.HAIR_TYPE)
     const weight = item.productProperties.find(property => property.id === propertyIds.WEIGHT)
     const length = item.productProperties.find(property => property.id === propertyIds.LENGTH)
@@ -1347,29 +1445,36 @@ export async function printDraftInvoice({ payload }: { payload: PrintDraftInvoic
     const discount = item.discountAmount > 0 ? item.discountAmount * item.quantity : item.discountPercent > 0 ? item.discountPercent : 0
     const discountType = item.discountAmount > 0 ? 'amount' : item.discountPercent > 0 ? 'percent' : 'none'
 
-    if (weight === undefined || length === undefined)
+    if (!isService && (weight === undefined || length === undefined))
       return null
 
     return {
       name: item.names[language] ?? '',
-      length: length.value as number,
-      weight: weight.value as number,
+      length: (length?.value as number) ?? 0,
+      weight: (weight?.value as number) ?? 0,
       type: type?.options.map(option => option.names[language] ?? '').join(', '),
       segment,
       colorCategory: colorCategory?.options.map(option => option.names[language] ?? '').join(', '),
-      price: getProductPrice(
-        length.value as number,
-        type?.options.map(option => option.id) ?? [],
-        segmentOptions?.options.map(option => option.id) ?? [],
-        colorCategory?.options.map(option => option.id) ?? [],
-      ),
+      price: isService
+        ? null
+        : getProductPrice(
+            length!.value as number,
+            type?.options.map(option => option.id) ?? [],
+            segmentOptions?.options.map(option => option.id) ?? [],
+            colorCategory?.options.map(option => option.id) ?? [],
+          ),
       quantity: item.quantity,
       total: item.price * item.quantity,
       currency: item.currency,
       discount,
       discountType,
+      isService,
     }
-  }).filter(p => p !== null).sort((a, b) => a.length - b.length)
+  }).filter(p => p !== null).sort((a, b) => {
+    if (a.isService !== b.isService)
+      return a.isService ? 1 : -1
+    return a.length - b.length
+  })
 
   doc.fontSize(10)
 
@@ -1386,11 +1491,11 @@ export async function printDraftInvoice({ payload }: { payload: PrintDraftInvoic
       },
       {
         ...tableColumns.length,
-        value: `${item.length} cm`,
+        value: item.isService ? '' : `${item.length} cm`,
       },
       {
         ...tableColumns.weight,
-        value: `${item.weight} g`,
+        value: item.isService ? '' : `${item.weight} g`,
       },
       {
         ...tableColumns.type,
@@ -1402,7 +1507,7 @@ export async function printDraftInvoice({ payload }: { payload: PrintDraftInvoic
       },
       {
         ...tableColumns.price,
-        value: `${item.price}`,
+        value: `${item.price ?? ''}`,
         underline: item.price != null
           && item.weight > 0
           && Math.abs((item.total / item.quantity) * 1000 / item.weight - item.price) > 5,
@@ -1757,47 +1862,21 @@ async function applyItemsDiff(params: {
         purchaseCurrency: product.purchaseCurrencyId,
       })
 
-      const { product: _oldProduct, currency: _oldCurrency, purchaseCurrency: _oldPurchaseCurrency, ...oldItemObj } = oldItem
-      const newItemObj = {
-        ...oldItemObj,
-        productId: newItem.product,
-        quantity: newItem.quantity,
-        minorBasePrice: toMinor(newItem.basePrice, currency.scale),
-        minorManualPrice: toMinor(newItem.manualPrice ?? 0, currency.scale) ?? undefined,
-        minorDiscountAmount: toMinor(newItem.discountAmount ?? 0, currency.scale) ?? undefined,
-        discountPercent: newItem.discountPercent ?? undefined,
-        minorPrice: toMinor(newItem.price, currency.scale),
-        currencyId: newItem.currency,
-        minorPurchasePrice: product.minorPurchasePrice,
-        purchaseCurrencyId: product.purchaseCurrencyId,
-        minorProfit: toMinorType(profit),
-        exchangeRate,
-      }
-
-      // TEMPORARY FIX
-      // const diff = getDifferenceDeep(oldItemObj, newItemObj)
-      // console.log(JSON.stringify(diff, null, 2))
-
-      // if ('_id' in diff || 'order' in diff || 'createdBy' in diff) {
-      //   delete diff._id
-      //   delete diff.order
-      //   delete diff.createdBy
-      // }
-
-      // if (Object.keys(diff).length > 0 && oldItem._id !== undefined) {
-      //   await OrderRepository.updateOneItem({
-      //     payload: {
-      //       id: oldItem._id,
-      //       ...diff,
-      //     },
-      //     session,
-      //   })
-      // }
-
       await OrderRepository.updateOneItem({
         payload: {
-          id: oldItem._id,
-          ...newItemObj,
+          id: oldItem._id.toString(),
+          productId: newItem.product,
+          quantity: newItem.quantity,
+          minorBasePrice: toMinor(newItem.basePrice, currency.scale),
+          minorManualPrice: toMinor(newItem.manualPrice ?? 0, currency.scale) ?? undefined,
+          minorDiscountAmount: toMinor(newItem.discountAmount ?? 0, currency.scale) ?? undefined,
+          discountPercent: newItem.discountPercent ?? undefined,
+          minorPrice: toMinor(newItem.price, currency.scale),
+          currencyId: newItem.currency,
+          minorPurchasePrice: product.minorPurchasePrice,
+          purchaseCurrencyId: product.purchaseCurrencyId,
+          minorProfit: toMinorType(profit),
+          exchangeRate,
         },
         session,
       })

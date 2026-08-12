@@ -142,7 +142,7 @@ export async function printInvoice(
     })
 
     res.setHeader('Content-Type', 'application/pdf')
-    res.setHeader('Content-Disposition', `inline; filename=order-invoice-${req.validated.query.seq}.pdf`)
+    res.setHeader('Content-Disposition', `inline; filename=${req.validated.query.seq + 1000}.pdf`)
 
     doc.pipe(res)
     doc.end()
