@@ -756,12 +756,12 @@ async function print55x40(payload: {
   const { propertyIds, hairTypes, providerPrice, propertyGroups }
     = getHardcodeData()
 
-  // const isDyed = payload.barcodes.some(
-  //   (barcode: any) =>
-  //     barcode.products[0]?.productPropertiesGroup?.id?.toString()
-  //     === propertyGroups.dyed,
-  // )
-  const isDyed = true
+  const isDyed = payload.barcodes.some(
+    (barcode: any) =>
+      barcode.products[0]?.productPropertiesGroup?.id?.toString()
+      === propertyGroups.dyed,
+  )
+  // const isDyed = true
   //  REPLACED
 
   if (isDyed)
@@ -1207,7 +1207,7 @@ async function print55x40Dyed(payload: {
     let segment = 'Standard'
     let type: string[] = ['Raw']
     let suffix = ''
-    let colorCategory: string = 'Natural Color'
+    let colorCategory: string = ''
     // REPLACED
 
     for (const property of product.productProperties || []) {
