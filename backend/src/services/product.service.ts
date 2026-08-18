@@ -633,6 +633,8 @@ export async function exportHandler({ payload, user }: { payload: ExportProducts
     }),
   ])
 
+  console.log(categories.items.length)
+
   const workbook = new ExcelJS.Workbook()
   const hiddenSheet = workbook.addWorksheet('hidden')
   hiddenSheet.state = 'veryHidden'

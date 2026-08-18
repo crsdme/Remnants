@@ -43,6 +43,7 @@ export async function list(payload: GetCategoriesRepoPayload): Promise<GetCatego
   const {
     current = 1,
     pageSize = 10,
+    full = false,
   } = payload.pagination
 
   const {
@@ -95,8 +96,12 @@ export async function list(payload: GetCategoriesRepoPayload): Promise<GetCatego
     {
       $facet: {
         items: [
-          { $skip: (current - 1) * pageSize },
-          { $limit: pageSize },
+          ...(full
+            ? []
+            : [
+                { $skip: (current - 1) * pageSize },
+                { $limit: pageSize },
+              ]),
         ],
         count: [
           { $count: 'count' },

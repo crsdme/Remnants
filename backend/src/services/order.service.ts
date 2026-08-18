@@ -904,21 +904,21 @@ export async function printInvoice({ payload }: { payload: PrintInvoiceOrderPayl
 
       if (type.includes(hairTypes.SLAVIC)) {
         table = [
-          { min: 40, max: 44, price: 3600 },
-          { min: 45, max: 49, price: 3700 },
-          { min: 50, max: 54, price: 4800 },
-          { min: 55, max: 59, price: 4900 },
-          { min: 60, max: 64, price: 4000 },
-          { min: 65, max: 69, price: 4100 },
-          { min: 70, max: 74, price: 4200 },
-          { min: 75, max: 79, price: 4300 },
-          { min: 80, max: 84, price: 4400 },
-          { min: 85, max: 89, price: 4500 },
+          { min: 40, max: 44, price: 2600 },
+          { min: 45, max: 49, price: 2800 },
+          { min: 50, max: 54, price: 3000 },
+          { min: 55, max: 59, price: 3200 },
+          { min: 60, max: 64, price: 3400 },
+          { min: 65, max: 69, price: 3600 },
+          { min: 70, max: 74, price: 3800 },
+          { min: 75, max: 79, price: 4000 },
+          { min: 80, max: 84, price: 4200 },
+          { min: 85, max: 89, price: 4400 },
           { min: 90, max: 94, price: 4600 },
-          { min: 95, max: 99, price: 4700 },
-          { min: 100, max: 104, price: 4800 },
-          { min: 105, max: 109, price: 4900 },
-          { min: 110, max: 114, price: 5000 },
+          { min: 95, max: 99, price: 4800 },
+          { min: 100, max: 104, price: 5000 },
+          { min: 105, max: 109, price: 5200 },
+          { min: 110, max: 114, price: 5400 },
         ]
         multiply = 1
       }
@@ -1384,21 +1384,21 @@ export async function printDraftInvoice({ payload }: { payload: PrintDraftInvoic
 
       if (type.includes(hairTypes.SLAVIC)) {
         table = [
-          { min: 40, max: 44, price: 3600 },
-          { min: 45, max: 49, price: 3700 },
-          { min: 50, max: 54, price: 4800 },
-          { min: 55, max: 59, price: 4900 },
-          { min: 60, max: 64, price: 4000 },
-          { min: 65, max: 69, price: 4100 },
-          { min: 70, max: 74, price: 4200 },
-          { min: 75, max: 79, price: 4300 },
-          { min: 80, max: 84, price: 4400 },
-          { min: 85, max: 89, price: 4500 },
+          { min: 40, max: 44, price: 2600 },
+          { min: 45, max: 49, price: 2800 },
+          { min: 50, max: 54, price: 3000 },
+          { min: 55, max: 59, price: 3200 },
+          { min: 60, max: 64, price: 3400 },
+          { min: 65, max: 69, price: 3600 },
+          { min: 70, max: 74, price: 3800 },
+          { min: 75, max: 79, price: 4000 },
+          { min: 80, max: 84, price: 4200 },
+          { min: 85, max: 89, price: 4400 },
           { min: 90, max: 94, price: 4600 },
-          { min: 95, max: 99, price: 4700 },
-          { min: 100, max: 104, price: 4800 },
-          { min: 105, max: 109, price: 4900 },
-          { min: 110, max: 114, price: 5000 },
+          { min: 95, max: 99, price: 4800 },
+          { min: 100, max: 104, price: 5000 },
+          { min: 105, max: 109, price: 5200 },
+          { min: 110, max: 114, price: 5400 },
         ]
         multiply = 1
       }
