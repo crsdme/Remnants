@@ -212,6 +212,22 @@ export function AsyncSelectNew<T>({
     void fetchMenu(debouncedSearch || '')
   }, [open, debouncedSearch, fetchMenu])
 
+  // Drop stale menu when loader changes (cascading filters: cashregister → account → currency)
+  useEffect(() => {
+    setMenuOptionIds([])
+    cacheRef.current.clear()
+    setCacheTick(t => t + 1)
+  }, [loadOptions])
+
+  // Prefetch options so selectFirstOption can run without opening the menu
+  useEffect(() => {
+    if (!selectFirstOption || open)
+      return
+    if (selectedIds.length > 0)
+      return
+    void fetchMenu('')
+  }, [selectFirstOption, open, selectedIds.length, fetchMenu])
+
   // LIFECYCLE 5
 
   useEffect(() => {
@@ -250,14 +266,10 @@ export function AsyncSelectNew<T>({
     return selectedIds.map(id => map.get(id)).filter(isDefined)
   }, [selectedIds, cacheTick])
 
-  // LIFECYCLE 7
+  // LIFECYCLE 7 — auto-select first option when empty (works with RHF controlled fields)
 
   useEffect(() => {
     if (!selectFirstOption)
-      return
-    if (controlled)
-      return
-    if (!open)
       return
     if (selectedIds.length > 0)
       return
@@ -266,7 +278,7 @@ export function AsyncSelectNew<T>({
     const firstId = menuOptionIds[0]
     setSelectedSafe([firstId])
     onChange?.(multi ? [firstId] : firstId)
-  }, [selectFirstOption, controlled, open, selectedIds.length, menuOptionIds, onChange, multi])
+  }, [selectFirstOption, selectedIds.length, menuOptionIds, onChange, multi, setSelectedSafe])
 
   const triggerButton = (
     <Button

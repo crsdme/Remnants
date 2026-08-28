@@ -21,7 +21,7 @@ export function DataTable() {
     informationForm,
     isLoading,
     clientForm,
-    createClient,
+    submitClientForm,
     editOrder,
     createPayment,
     getBarcode,
@@ -31,6 +31,7 @@ export function DataTable() {
     openPaymentModal,
     removePayment,
     openClientModal,
+    openClientEditModal,
   } = useEditOrderContext()
 
   const items = useWatch({ control: informationForm.control, name: 'items' }) || []
@@ -46,7 +47,7 @@ export function DataTable() {
   }
 
   const onSubmitClient = (value: any) => {
-    createClient(value)
+    submitClientForm(value)
   }
 
   const onSubmitPayment = (value: any) => {
@@ -155,6 +156,7 @@ export function DataTable() {
           value={clientId || undefined}
           onChange={id => informationForm.setValue('client', id || '', { shouldDirty: true })}
           onCreate={openClientModal}
+          onEdit={openClientEditModal}
           disabled={isLoading}
           titlePrefix="edit-order"
         />

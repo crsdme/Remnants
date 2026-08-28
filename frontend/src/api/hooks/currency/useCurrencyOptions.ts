@@ -27,7 +27,7 @@ export function useCurrencyOptions({ defaultFilters }: { defaultFilters?: GetCur
 
       return data?.data?.items ?? EMPTY_ITEMS
     },
-    [queryClient],
+    [queryClient, defaultFilters],
   )
 }
 // import type { getCurrenciesParams } from '@/api/types'

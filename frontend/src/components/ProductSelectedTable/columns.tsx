@@ -286,12 +286,12 @@ export function useColumns(
     }
 
     function profitColumns() {
-      if (!isProfit)
+      if (!isProfit || !hasPermission(permissions, 'order.profit'))
         return []
 
       return [
         columnHelper.accessor(
-          row => `${row.profit} ${row.selectedCurrencyId || ''}`,
+          row => (row.selectedPrice ?? row.price ?? 0) - (row.purchasePrice ?? 0),
           {
             id: 'profit',
             size: 150,
@@ -300,29 +300,55 @@ export function useColumns(
               filterable: true,
               filterType: 'number',
               sortable: true,
+              defaultVisible: true,
             },
             header: () => t('component.productTable.table.profit'),
+            cell: ({ row, getValue }) => {
+              const item = row.original
+              const currency = currencies.find(c => c.id === item.selectedCurrencyId)
+              const symbol = currency?.symbols?.[language] ?? ''
+              const scale = currency?.scale ?? 2
+              const unitProfit = Number(getValue()) || 0
+
+              return (
+                <p>
+                  {`${formatMinor(toMinor(unitProfit, scale), scale)} ${symbol}`}
+                </p>
+              )
+            },
             footer: ({ table }) => {
               const { rows } = table.getRowModel()
+              const currencyById = currencies.reduce((acc: Record<string, { symbol: string, scale: number }>, currency) => {
+                acc[currency.id] = {
+                  symbol: currency.symbols?.[language] || currency.id,
+                  scale: currency.scale ?? 0,
+                }
+                return acc
+              }, {})
 
-              const totalsByCurrency = rows.reduce((acc: Record<string, number>, r: Row<any>) => {
+              const totalsByCurrencyId = rows.reduce((acc: Record<string, number>, r: Row<any>) => {
                 const p = r.original
-                const symbol = p?.selectedCurrencyId || p?.currency?.symbols?.[language]
+                const currencyId = p?.selectedCurrencyId
 
-                if (!symbol)
+                if (!currencyId)
                   return acc
 
-                const rowTotal = (p.lineQuantity ?? 0) * (p.profit ?? 0)
+                const scale = currencyById[currencyId]?.scale ?? 2
+                const unitProfit = (p.selectedPrice ?? p.price ?? 0) - (p.purchasePrice ?? 0)
+                const rowTotalMinor = (p.lineQuantity ?? 0) * toMinor(unitProfit, scale)
 
-                acc[symbol] = (acc[symbol] ?? 0) + rowTotal
+                acc[currencyId] = (acc[currencyId] ?? 0) + rowTotalMinor
                 return acc
               }, {} as Record<string, number>)
 
-              const badges = Object.entries(totalsByCurrency).map(([symbol, sum]) => (
-                <Badge key={symbol}>
-                  {`${Number(sum).toString()} ${symbol}`}
-                </Badge>
-              ))
+              const badges = Object.entries(totalsByCurrencyId).map(([currencyId, sumMinor]) => {
+                const { symbol, scale } = currencyById[currencyId] || { symbol: currencyId, scale: 2 }
+                return (
+                  <Badge key={currencyId}>
+                    {`${formatMinor(sumMinor, scale)} ${symbol}`}
+                  </Badge>
+                )
+              })
 
               return badges.length
                 ? <div className="flex flex-wrap gap-2">{badges}</div>

@@ -31,6 +31,7 @@ export function DataTable() {
     removePayment,
     printDraftInvoice,
     openClientModal,
+    openClientEditModal,
   } = useCreateOrderContext()
 
   const items = useWatch({ control: informationForm.control, name: 'items' }) || []
@@ -144,6 +145,7 @@ export function DataTable() {
           value={clientId || undefined}
           onChange={id => informationForm.setValue('client', id || '', { shouldDirty: true })}
           onCreate={openClientModal}
+          onEdit={openClientEditModal}
           disabled={isLoading}
           titlePrefix="create-order"
         />
@@ -154,6 +156,7 @@ export function DataTable() {
           changeProduct={updateProduct}
           isLoading={isLoading}
           titlePrefix="create-order"
+          isProfit
         />
         <InformationForm />
         <OrderFilesSection

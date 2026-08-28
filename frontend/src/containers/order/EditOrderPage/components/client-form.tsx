@@ -30,17 +30,17 @@ import { useEditOrderContext } from '../context'
 
 export function ClientForm({ form, onSubmit }: { form: any, onSubmit: (payments: any) => void }) {
   const { t } = useTranslation()
-  const { isClientModalOpen, closeClientModal } = useEditOrderContext()
+  const { isClientModalOpen, isClientEdit, closeClientModal } = useEditOrderContext()
 
   return (
     <Sheet open={isClientModalOpen} onOpenChange={closeClientModal}>
       <SheetContent className="sm:max-w-xl w-full overflow-y-auto" side="right">
         <SheetHeader>
           <SheetTitle>
-            {t(`page.edit-order.form.title.client`)}
+            {t(`page.edit-order.form.title.${isClientEdit ? 'client-edit' : 'client'}`)}
           </SheetTitle>
           <SheetDescription>
-            {t(`page.edit-order.form.description.client`)}
+            {t(`page.edit-order.form.description.${isClientEdit ? 'client-edit' : 'client'}`)}
           </SheetDescription>
         </SheetHeader>
         <div className="w-full px-4">

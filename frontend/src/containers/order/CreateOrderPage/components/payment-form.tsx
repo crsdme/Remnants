@@ -1,4 +1,4 @@
-import { useCallback } from 'react'
+import { useMemo } from 'react'
 import { useWatch } from 'react-hook-form'
 import { useCashregisterAccountOptions, useCashregisterOptions, useCurrencyOptions } from '@/api/hooks'
 import { DatePicker } from '@/components'
@@ -52,24 +52,18 @@ export function FullForm() {
   const selectedCashregister = useWatch({ control: paymentForm.control, name: 'cashregister' })
   const selectedAccount = useWatch({ control: paymentForm.control, name: 'cashregisterAccount' })
 
-  const loadCashregisterOptions = useCashregisterOptions()
-  const loadCashregisterAccountOptions = useCallback(
-    useCashregisterAccountOptions({
-      defaultFilters: {
-        cashregister: selectedCashregister ? [selectedCashregister] : [],
-      },
-    }),
+  const accountFilters = useMemo(
+    () => ({ cashregister: selectedCashregister ? [selectedCashregister] : [] }),
     [selectedCashregister],
   )
-
-  const loadCurrencyOptions = useCallback(
-    useCurrencyOptions({
-      defaultFilters: {
-        cashregisterAccount: selectedAccount ? [selectedAccount] : [],
-      },
-    }),
+  const currencyFilters = useMemo(
+    () => ({ cashregisterAccount: selectedAccount ? [selectedAccount] : [] }),
     [selectedAccount],
   )
+
+  const loadCashregisterOptions = useCashregisterOptions()
+  const loadCashregisterAccountOptions = useCashregisterAccountOptions({ defaultFilters: accountFilters })
+  const loadCurrencyOptions = useCurrencyOptions({ defaultFilters: currencyFilters })
 
   return (
     <div className="flex flex-col gap-4 flex-1">
@@ -113,6 +107,7 @@ export function FullForm() {
                   <FormLabel>{t('page.create-order.form.cashregister-account')}</FormLabel>
                   <FormControl>
                     <AsyncSelectNew
+                      key={selectedCashregister || 'no-cashregister'}
                       {...field}
                       loadOptions={loadCashregisterAccountOptions}
                       renderOption={e => e.names[language]}
@@ -156,6 +151,7 @@ export function FullForm() {
                     name="currency"
                     render={({ field: currencyField }) => (
                       <AsyncSelectNew
+                        key={selectedAccount || 'no-account'}
                         {...currencyField}
                         loadOptions={loadCurrencyOptions}
                         renderOption={e => e.symbols[language]}

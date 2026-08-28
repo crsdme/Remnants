@@ -27,7 +27,7 @@ export function useCashregisterAccountOptions({ defaultFilters }: { defaultFilte
 
       return response?.data?.data?.items ?? EMPTY_ITEMS
     },
-    [queryClient],
+    [queryClient, defaultFilters],
   )
 }
 

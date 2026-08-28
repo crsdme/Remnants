@@ -1,8 +1,9 @@
 import type { ClientDTO } from '@remnant/shared'
 import type { ReactNode } from 'react'
-import { Globe, Hash, Mail, MapPin, MessageSquare, Phone, Plus, Search, Share2, User, X } from 'lucide-react'
+import { Globe, Hash, Mail, MapPin, MessageSquare, Pencil, Phone, Plus, Search, Share2, User, X } from 'lucide-react'
 import { useState } from 'react'
 import { useClientQuery } from '@/api/hooks'
+import { PermissionGate } from '@/components'
 import {
   Button,
   Input,
@@ -18,6 +19,7 @@ interface OrderClientSectionProps {
   value?: string
   onChange: (clientId: string | undefined) => void
   onCreate?: () => void
+  onEdit?: (client: ClientDTO) => void
   disabled?: boolean
   titlePrefix: 'create-order' | 'edit-order' | 'view-order'
 }
@@ -116,6 +118,7 @@ export function OrderClientSection({
   value,
   onChange,
   onCreate,
+  onEdit,
   disabled,
   titlePrefix,
 }: OrderClientSectionProps) {
@@ -160,6 +163,11 @@ export function OrderClientSection({
     onCreate?.()
   }
 
+  const handleEdit = () => {
+    if (selectedClient)
+      onEdit?.(selectedClient)
+  }
+
   return (
     <div className="space-y-3 rounded-lg border bg-card p-4">
       <div className="flex items-center gap-2">
@@ -167,16 +175,33 @@ export function OrderClientSection({
         <p className="text-lg font-bold">{t(`page.${titlePrefix}.form.client`)}</p>
         <Separator className="flex-1" />
         {!disabled && value && (
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            className="h-auto shrink-0 gap-1 px-0 text-muted-foreground"
-            onClick={handleChange}
-          >
-            <X className="size-3.5" />
-            {t(`page.${titlePrefix}.form.client-change`)}
-          </Button>
+          <div className="flex shrink-0 items-center gap-3">
+            {onEdit && (
+              <PermissionGate permission="client.edit">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="h-auto gap-1 px-0 text-muted-foreground"
+                  onClick={handleEdit}
+                  disabled={!selectedClient}
+                >
+                  <Pencil className="size-3.5" />
+                  {t(`page.${titlePrefix}.form.client-edit`)}
+                </Button>
+              </PermissionGate>
+            )}
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="h-auto gap-1 px-0 text-muted-foreground"
+              onClick={handleChange}
+            >
+              <X className="size-3.5" />
+              {t(`page.${titlePrefix}.form.client-change`)}
+            </Button>
+          </div>
         )}
       </div>
 

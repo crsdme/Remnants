@@ -71,7 +71,7 @@ export async function list(
   applyScopeIdsToQuery(query, options.cashregisterIds, 'cashregisterId')
   applyScopeIdsToQuery(query, options.cashregisterAccountIds, 'cashregisterAccountId')
 
-  const sorters = buildSortQuery(payload.sorters, { seq: 1 })
+  const sorters = buildSortQuery(payload.sorters, { seq: -1 })
 
   const pipeline: PipelineStage[] = [
     {

@@ -975,6 +975,10 @@ export async function printInvoice({ payload }: { payload: PrintInvoiceOrderPayl
     if (type !== undefined && type.options.length > 0)
       typeOptions = type.options
 
+    if (typeOptions.some(option => option.id === '9163dd30-79d6-4301-891e-33940266a8d7')) {
+      typeOptions = typeOptions.filter(option => option.id !== '9163dd30-79d6-4301-891e-33940266a8d7')
+    }
+
     return {
       name: item.product.names[language] ?? '',
       length: (length?.value as number) ?? 0,

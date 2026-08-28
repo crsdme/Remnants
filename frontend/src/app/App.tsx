@@ -14,12 +14,12 @@ export default function App() {
 
   if (!authContenxt.state.isAuthChecked) {
     return (
-      <div className="flex min-h-svh flex-col items-center justify-center gap-6 bg-muted p-6 md:p-10">
-        <div className="flex items-center justify-center w-full max-w-sm gap-3">
-          <div className="flex h-10 w-10 items-center justify-center">
-            <LogoIcon />
+      <div className="flex min-h-svh items-center justify-center bg-background">
+        <div className="flex items-center gap-3">
+          <div className="flex size-9 items-center justify-center rounded-md bg-sidebar-primary">
+            <LogoIcon className="size-5" />
           </div>
-          <p className="flex items-center gap-2 self-center font-medium text-2xl">Remnant</p>
+          <span className="text-lg font-semibold tracking-tight">Remnant</span>
         </div>
       </div>
     )

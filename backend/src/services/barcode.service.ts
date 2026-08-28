@@ -361,6 +361,7 @@ const PROVIDER_E_SUFFIX_CATEGORY_ID = [
   '1d341b4a-714e-4779-b6cd-3b085786be3a',
   'e6946264-f2c5-4651-9160-f1b034b25883',
   'c2734e3c-9196-40b1-b05e-d3208d178eca',
+  'a51b202e-29a2-4529-843c-3f00a1cec5c6',
 ]
 
 function getProviderBarcodeSuffix(
@@ -436,8 +437,12 @@ function extractProductPrintFields(
           : []
         for (const value of values) {
           const label = hairTypeLabels[value]
-          if (label)
+          if (label) {
             type.push(label)
+          }
+          else {
+            type.push('Raw')
+          }
         }
         break
       }

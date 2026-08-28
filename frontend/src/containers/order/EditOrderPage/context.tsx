@@ -1,4 +1,4 @@
-import type { EditOrderRequest, OrderPaymentDTOPopulated, ProductPopulatedDTO } from '@remnant/shared'
+import type { ClientDTO, EditOrderRequest, OrderPaymentDTOPopulated, ProductPopulatedDTO } from '@remnant/shared'
 
 import type { Dispatch, ReactNode, SetStateAction } from 'react'
 import type { Resolver, UseFormReturn } from 'react-hook-form'
@@ -18,6 +18,7 @@ import {
   useCashregisterAccountQuery,
   useCashregisterQuery,
   useClientCreate,
+  useClientEdit,
   useCurrencyQuery,
   useOrderDetailQuery,
   useOrderEdit,
@@ -29,6 +30,7 @@ const EditOrderContext = createContext<EditOrderContextType | undefined>(undefin
 
 export function EditOrderProvider({ children }: { children: ReactNode }) {
   const [isClientModalOpen, setIsClientModalOpen] = useState(false)
+  const [editingClientId, setEditingClientId] = useState<string>()
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false)
   const [payments, setPayments] = useState<DraftOrderPayment[]>([])
   const [files, setFiles] = useState<UploadedFile[]>([])
@@ -88,25 +90,25 @@ export function EditOrderProvider({ children }: { children: ReactNode }) {
 
   const clientForm = useForm<ClientFormValues>({
     resolver: zodResolver(clientFormSchema) as Resolver<ClientFormValues>,
-    defaultValues: {
-      name: undefined,
-      middleName: undefined,
-      lastName: undefined,
-      country: undefined,
-      phones: [],
-      emails: [],
-      comment: undefined,
-    },
+    defaultValues: getClientFormValues(),
   })
 
   const queryClient = useQueryClient()
 
   const closeClientModal = () => {
     setIsClientModalOpen(false)
+    setEditingClientId(undefined)
   }
 
   const openClientModal = () => {
-    clientForm.reset()
+    setEditingClientId(undefined)
+    clientForm.reset(getClientFormValues())
+    setIsClientModalOpen(true)
+  }
+
+  const openClientEditModal = (client: ClientDTO) => {
+    setEditingClientId(client.id)
+    clientForm.reset(getClientFormValues(client))
     setIsClientModalOpen(true)
   }
 
@@ -140,9 +142,9 @@ export function EditOrderProvider({ children }: { children: ReactNode }) {
 
   const mutateCreateClient = useClientCreate({
     options: {
-      onSuccess: ({ data }: { data: any }) => {
+      onSuccess: ({ data }) => {
         closeClientModal()
-        informationForm.setValue('client', data?.client?.id || '')
+        informationForm.setValue('client', data.data.id, { shouldDirty: true, shouldValidate: true })
         void queryClient.invalidateQueries({ queryKey: ['clients'] })
         toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description || ''}` })
       },
@@ -154,7 +156,22 @@ export function EditOrderProvider({ children }: { children: ReactNode }) {
     },
   })
 
-  const isLoading = mutateEditOrder.isPending || mutateCreateClient.isPending
+  const mutateEditClient = useClientEdit({
+    options: {
+      onSuccess: ({ data }) => {
+        closeClientModal()
+        void queryClient.invalidateQueries({ queryKey: ['clients'] })
+        toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description || ''}` })
+      },
+      onError: ({ response }) => {
+        closeClientModal()
+        const error = response.data.error
+        toast.error(t(`error.title.${error.code}`), { description: `${t(`error.description.${error.code}`)} ${error.description || ''}` })
+      },
+    },
+  })
+
+  const isLoading = mutateEditOrder.isPending || mutateCreateClient.isPending || mutateEditClient.isPending
 
   useEffect(() => {
     if (!order)
@@ -244,7 +261,11 @@ export function EditOrderProvider({ children }: { children: ReactNode }) {
     setPayments(prev => prev.filter(p => String(p.id) !== paymentId))
   }
 
-  const createClient = (params: ClientFormValues) => {
+  const submitClientForm = (params: ClientFormValues) => {
+    if (editingClientId) {
+      mutateEditClient.mutate({ id: editingClientId, ...params })
+      return
+    }
     mutateCreateClient.mutate(params)
   }
 
@@ -321,9 +342,12 @@ export function EditOrderProvider({ children }: { children: ReactNode }) {
     return barcode[0]?.products
   }
 
+  const isClientEdit = Boolean(editingClientId)
+
   const value: EditOrderContextType = useMemo(
     () => ({
       isClientModalOpen,
+      isClientEdit,
       isPaymentModalOpen,
       isLoading,
       paymentForm,
@@ -334,16 +358,17 @@ export function EditOrderProvider({ children }: { children: ReactNode }) {
       clientForm,
       permissions,
       openClientModal,
+      openClientEditModal,
       closeClientModal,
       openPaymentModal,
       closePaymentModal,
       createPayment,
       removePayment,
-      createClient,
+      submitClientForm,
       editOrder,
       getBarcode,
     }),
-    [isClientModalOpen, isPaymentModalOpen, isLoading, paymentForm, informationForm, clientForm, payments, files, permissions],
+    [isClientModalOpen, isClientEdit, isPaymentModalOpen, isLoading, paymentForm, informationForm, clientForm, payments, files, permissions, editingClientId],
   )
 
   return <EditOrderContext.Provider value={value}>{children}</EditOrderContext.Provider>
@@ -450,8 +475,22 @@ function createClientFormSchema(t: (key: string) => string) {
 
 type ClientFormValues = z.infer<ReturnType<typeof createClientFormSchema>>
 
+function getClientFormValues(client?: ClientDTO): ClientFormValues {
+  return {
+    name: client?.name ?? '',
+    middleName: client?.middleName ?? '',
+    lastName: client?.lastName ?? '',
+    country: client?.country ?? '',
+    phones: client?.phones ?? [],
+    emails: client?.emails ?? [],
+    socials: client?.socials ?? [],
+    comment: client?.comment ?? '',
+  }
+}
+
 interface EditOrderContextType {
   isClientModalOpen: boolean
+  isClientEdit: boolean
   isPaymentModalOpen: boolean
   isLoading: boolean
   paymentForm: UseFormReturn<PaymentFormValues>
@@ -459,6 +498,7 @@ interface EditOrderContextType {
   clientForm: UseFormReturn<ClientFormValues>
   permissions: string[]
   openClientModal: () => void
+  openClientEditModal: (client: ClientDTO) => void
   closeClientModal: () => void
   openPaymentModal: () => void
   closePaymentModal: () => void
@@ -466,7 +506,7 @@ interface EditOrderContextType {
   files: UploadedFile[]
   setFiles: Dispatch<SetStateAction<UploadedFile[]>>
   removePayment: (id: string) => void
-  createClient: (params: ClientFormValues) => void
+  submitClientForm: (params: ClientFormValues) => void
   editOrder: (params: InformationFormValues) => void
   createPayment: (params: PaymentFormValues) => void
   getBarcode: (code: string) => Promise<ProductPopulatedDTO[] & { unitsPerScan: number }[]>

@@ -27,12 +27,11 @@ export async function list(
   } = payload.filters
 
   const query = buildQuery({
-    filters: { _id: ids, names, active, cashregister, createdAt, updatedAt },
+    filters: { _id: ids, names, active, createdAt, updatedAt },
     rules: {
       _id: { type: 'array' },
       names: { type: 'string', langAware: true },
       active: { type: 'array' },
-      cashregister: { type: 'array' },
       createdAt: { type: 'dateRange' },
       updatedAt: { type: 'dateRange' },
     },

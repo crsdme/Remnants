@@ -29,21 +29,21 @@ import { useCreateOrderContext } from '../context'
 
 export function ClientForm() {
   const { t } = useLocale()
-  const { isClientModalOpen, closeClientModal, clientForm, createClient } = useCreateOrderContext()
+  const { isClientModalOpen, isClientEdit, closeClientModal, clientForm, submitClientForm } = useCreateOrderContext()
 
   return (
     <Sheet open={isClientModalOpen} onOpenChange={closeClientModal}>
       <SheetContent className="sm:max-w-xl w-full overflow-y-auto" side="right">
         <SheetHeader>
           <SheetTitle>
-            {t(`page.create-order.form.title.client`)}
+            {t(`page.create-order.form.title.${isClientEdit ? 'client-edit' : 'client'}`)}
           </SheetTitle>
           <SheetDescription>
-            {t(`page.create-order.form.description.client`)}
+            {t(`page.create-order.form.description.${isClientEdit ? 'client-edit' : 'client'}`)}
           </SheetDescription>
         </SheetHeader>
         <div className="w-full px-4">
-          <FullForm form={clientForm} onSubmit={(e) => { void clientForm.handleSubmit(v => createClient(v))(e) }} />
+          <FullForm form={clientForm} onSubmit={(e) => { void clientForm.handleSubmit(v => submitClientForm(v))(e) }} />
         </div>
       </SheetContent>
     </Sheet>
