@@ -1452,11 +1452,20 @@ export async function printDraftInvoice({ payload }: { payload: PrintDraftInvoic
     if (!isService && (weight === undefined || length === undefined))
       return null
 
+    let typeOptions: { id: string, names: Record<string, string> }[] = []
+
+    if (type !== undefined && type.options.length > 0)
+      typeOptions = type.options
+
+    if (type?.options.some(option => option.id === '9163dd30-79d6-4301-891e-33940266a8d7')) {
+      typeOptions = typeOptions.filter(option => option.id !== '9163dd30-79d6-4301-891e-33940266a8d7')
+    }
+
     return {
       name: item.names[language] ?? '',
       length: (length?.value as number) ?? 0,
       weight: (weight?.value as number) ?? 0,
-      type: type?.options.map(option => option.names[language] ?? '').join(', '),
+      type: typeOptions.map(option => option.names[language] ?? '').join(', '),
       segment,
       colorCategory: colorCategory?.options.map(option => option.names[language] ?? '').join(', '),
       price: isService
