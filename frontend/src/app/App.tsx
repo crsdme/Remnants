@@ -62,6 +62,10 @@ export default function App() {
                 element={<ProtectedRoute children={<Pages.ProductsPage />} permissions={['product.page']} />}
               />
               <Route
+                path="/catalog/sync"
+                element={<ProtectedRoute children={<Pages.SiteSyncPage />} permissions={['site.sync']} />}
+              />
+              <Route
                 path="/product-properties-groups"
                 element={<ProtectedRoute children={<Pages.ProductPropertiesGroupsPage />} permissions={['productPropertyGroup.page']} />}
               />

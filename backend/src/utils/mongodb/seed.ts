@@ -1244,7 +1244,7 @@ async function createProducts(productProperties: {
 
   const bigProducts = []
 
-  for (let i = 0; i < 100; i++) {
+  for (let i = 0; i < 1; i++) {
     bigProducts.push(...products)
   }
 

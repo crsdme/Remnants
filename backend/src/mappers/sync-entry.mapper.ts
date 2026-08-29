@@ -6,7 +6,7 @@ export function mapSyncEntryToDTO(syncEntry: SyncEntryDB): SyncEntryDTO {
     sourceType: syncEntry.sourceType,
     sourceId: syncEntry.sourceId,
     siteId: syncEntry.siteId,
-    externalId: syncEntry.externalId,
+    externalIds: syncEntry.externalIds ?? [],
     status: syncEntry.status,
     syncedAt: syncEntry.syncedAt,
     lastError: syncEntry.lastError,

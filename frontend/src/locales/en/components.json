@@ -88,6 +88,7 @@
   "component.sidemenu.label.tasks": "Tasks",
   "component.sidemenu.label.catalog": "Catalog",
   "component.sidemenu.label.products": "Products",
+  "component.sidemenu.label.siteSync": "Site sync",
   "component.sidemenu.label.categories": "Categories",
   "component.sidemenu.label.productProperties": "Product Properties",
   "component.sidemenu.label.productPropertiesGroups": "Product Properties Groups",

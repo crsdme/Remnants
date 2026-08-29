@@ -4,8 +4,8 @@ import { cn } from '@/utils/lib'
 
 const NAV_ITEMS = [
   { to: '/settings', end: true, key: 'catalog' },
-  { to: '/settings/delivery', key: 'delivery' },
-  { to: '/settings/diagnostics', key: 'diagnostics' },
+  { to: '/settings/delivery', end: false, key: 'delivery' },
+  { to: '/settings/diagnostics', end: false, key: 'diagnostics' },
 ] as const
 
 export function SettingsNav() {

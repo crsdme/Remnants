@@ -624,6 +624,15 @@
   "response.title.SITE_PRODUCTS_SYNCED": "Товары выгружены",
   "response.description.SITE_PRODUCTS_SYNCED": "Выгружено {{synced}} из {{total}} товаров (ошибок: {{failed}})",
 
+  "response.title.SITE_SYNC_MAPPING_FETCHED": "Связи загружены",
+  "response.description.SITE_SYNC_MAPPING_FETCHED": "Связи с сайтом загружены",
+
+  "response.title.SITE_SYNC_MAPPING_SAVED": "Связь сохранена",
+  "response.description.SITE_SYNC_MAPPING_SAVED": "Связь с сайтом сохранена",
+
+  "response.title.SITE_SYNC_SITE_ITEMS_FETCHED": "Каталог сайта загружен",
+  "response.description.SITE_SYNC_SITE_ITEMS_FETCHED": "Элементы каталога сайта загружены",
+
   "error.title.SITE_NOT_FOUND": "Сайт не найден",
   "error.description.SITE_NOT_FOUND": "Такого сайта нет",
 
@@ -632,6 +641,15 @@
 
   "error.title.SITE_SYNC_NOT_CONFIGURED": "Сайт не настроен",
   "error.description.SITE_SYNC_NOT_CONFIGURED": "Укажите URL и ключ сайта",
+
+  "error.title.SITE_MODULE_OUTDATED": "Модуль на сайте устарел",
+  "error.description.SITE_MODULE_OUTDATED": "Программа новее модуля на сайте. Скопируйте актуальный модуль из integrations/opencart.remnant в магазин и обновите модификации",
+
+  "error.title.SITE_LANGUAGES_NOT_MAPPED": "Языки не связаны",
+  "error.description.SITE_LANGUAGES_NOT_MAPPED": "На странице синхронизации откройте вкладку «Языки», свяжите каждый язык программы с языком на сайте, затем выгрузите снова",
+
+  "error.title.SITE_SYNC_FAILED": "Не удалось связаться с сайтом",
+  "error.description.SITE_SYNC_FAILED": "Проверьте URL, ключ и что модуль Remnant включён",
 
   "response.title.SUPPLIERS_FETCHED": "Поставщики получены",
   "response.description.SUPPLIERS_FETCHED": "Список поставщиков успешно получен",

@@ -613,6 +613,31 @@ export async function listIds(): Promise<string[]> {
   return docs.map(doc => doc._id)
 }
 
+export async function listIdNames(payload: {
+  current: number
+  pageSize: number
+  full?: boolean
+  names?: string
+}): Promise<{ items: Array<{ _id: string, names: unknown }>, total: number }> {
+  const query: Record<string, unknown> = { removed: { $ne: true } }
+  const names = payload.names?.trim()
+  if (names) {
+    const escaped = names.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+    query.$or = [
+      { 'names.ru': { $regex: escaped, $options: 'i' } },
+      { 'names.en': { $regex: escaped, $options: 'i' } },
+    ]
+  }
+
+  const total = await ProductModel.countDocuments(query)
+  const find = ProductModel.find(query).select({ names: 1 }).sort({ seq: 1 })
+  if (payload.full !== true)
+    find.skip((payload.current - 1) * payload.pageSize).limit(payload.pageSize)
+
+  const items = await find.lean().exec()
+  return { items: items as Array<{ _id: string, names: unknown }>, total }
+}
+
 export async function findById(id: string, session?: ClientSession) {
   return ProductModel.findById(id, null, { session }).lean<ProductDB>().exec()
 }

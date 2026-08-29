@@ -130,6 +130,15 @@ export async function findByIds(ids: string[]) {
   return CategoryModel.find({ _id: { $in: ids } }).exec()
 }
 
+export async function listIdNames(): Promise<Array<{ _id: string, names: unknown }>> {
+  const docs = await CategoryModel.find({ removed: { $ne: true } })
+    .select({ names: 1 })
+    .sort({ seq: 1, priority: 1 })
+    .lean()
+    .exec()
+  return docs as Array<{ _id: string, names: unknown }>
+}
+
 export async function updateById(id: string, payload: EditCategoriesRepoPayload) {
   return CategoryModel.findOneAndUpdate(
     { _id: id },

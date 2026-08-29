@@ -13,7 +13,6 @@ import {
   useSiteCreate,
   useSiteEdit,
   useSiteRemove,
-  useSiteSyncProducts,
 } from '@/api/hooks'
 import { useLocale } from '@/utils/hooks'
 
@@ -21,14 +20,12 @@ interface SiteContextType {
   selectedSite: SiteDTO | undefined
   isModalOpen: boolean
   isLoading: boolean
-  isSyncing: boolean
   isEdit: boolean
   form: UseFormReturn<SiteFormValues>
   openModal: (site?: SiteDTO) => void
   closeModal: () => void
   submitSiteForm: (params: SiteFormValues) => void
   removeSite: (params: { ids: string[] }) => void
-  syncSiteProducts: () => void
 }
 
 const SiteContext = createContext<SiteContextType | undefined>(undefined)
@@ -40,6 +37,7 @@ interface SiteFormValues {
   priority: number
   active: boolean
   warehouseIds: string[]
+  currencyId?: string
 }
 
 export function SiteProvider({ children }: { children: ReactNode }) {
@@ -121,55 +119,32 @@ export function SiteProvider({ children }: { children: ReactNode }) {
     useMutateRemoveSite.mutate(params)
   }
 
-  const useMutateSyncSiteProducts = useSiteSyncProducts({
-    options: {
-      onSuccess: ({ data }) => {
-        toast.success(t(`response.title.${data.code}`), {
-          description: t(`response.description.${data.code}`, {
-            total: data.data.total,
-            synced: data.data.synced,
-            failed: data.data.failed,
-          }),
-        })
-      },
-      onError: ({ response }) => {
-        const error = response.data.error
-        toast.error(t(`error.title.${error.code}`), { description: `${t(`error.description.${error.code}`)} ${error.description || ''}` })
-      },
-    },
-  })
-
-  const syncSiteProducts = () => {
-    if (!selectedSite)
-      return
-    useMutateSyncSiteProducts.mutate({ id: selectedSite.id })
-  }
-
   const submitSiteForm = (params: SiteFormValues) => {
+    const payload = {
+      ...params,
+      currencyId: params.currencyId || null,
+    }
     if (!selectedSite || !isEdit)
-      return useMutateCreateSite.mutate(params)
+      return useMutateCreateSite.mutate(payload)
 
-    return useMutateEditSite.mutate({ ...params, id: selectedSite.id })
+    return useMutateEditSite.mutate({ ...payload, id: selectedSite.id })
   }
 
   const isLoading = useMutateCreateSite.isPending || useMutateEditSite.isPending || useMutateRemoveSite.isPending
-  const isSyncing = useMutateSyncSiteProducts.isPending
 
   const value: SiteContextType = useMemo(
     () => ({
       selectedSite,
       isModalOpen,
       isLoading,
-      isSyncing,
       isEdit,
       form,
       openModal,
       closeModal,
       submitSiteForm,
       removeSite,
-      syncSiteProducts,
     }),
-    [selectedSite, isModalOpen, isLoading, isSyncing, isEdit, form],
+    [selectedSite, isModalOpen, isLoading, isEdit, form],
   )
 
   return <SiteContext.Provider value={value}>{children}</SiteContext.Provider>
@@ -194,6 +169,7 @@ function createSiteFormSchema(t: (key: string, options?: Record<string, unknown>
     priority: z.number().optional().default(0),
     active: z.boolean().optional().default(true),
     warehouseIds: z.array(z.string()).optional().default([]),
+    currencyId: z.string().uuid().optional().or(z.literal('')),
   })
 }
 
@@ -206,6 +182,7 @@ function getSiteFormValues(site?: SiteDTO): SiteFormValues {
       priority: 0,
       active: true,
       warehouseIds: [],
+      currencyId: '',
     }
   }
   return {
@@ -215,5 +192,6 @@ function getSiteFormValues(site?: SiteDTO): SiteFormValues {
     priority: site.priority,
     active: site.active,
     warehouseIds: [...site.warehouseIds],
+    currencyId: site.currencyId ?? '',
   }
 }

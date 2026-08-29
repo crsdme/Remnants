@@ -1,9 +1,11 @@
 export class SiteSyncError extends Error {
   readonly status?: number
+  readonly outdated: boolean
 
-  constructor(message: string, __status?: number) {
+  constructor(message: string, status?: number, outdated = false) {
     super(message)
     this.name = 'SiteSyncError'
-    this.status = __status
+    this.status = status
+    this.outdated = outdated
   }
 }

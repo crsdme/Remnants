@@ -62,6 +62,7 @@ export async function list(
         active: 1,
         priority: 1,
         warehouseIds: { $ifNull: ['$warehouseIds', []] },
+        currencyId: 1,
         createdAt: 1,
         updatedAt: 1,
       },

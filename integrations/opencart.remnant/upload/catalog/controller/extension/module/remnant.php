@@ -2,6 +2,12 @@
 
 class ControllerExtensionModuleRemnant extends Controller
 {
+    /**
+     * Bump together with REQUIRED_SITE_MODULE_PROTOCOL in the Remnant backend
+     * when the shop module API changes.
+     */
+    public const PROTOCOL = 2;
+
     public function index()
     {
         $this->ping();
@@ -13,7 +19,10 @@ class ControllerExtensionModuleRemnant extends Controller
             return;
         }
 
-        $this->json(['ok' => true]);
+        $this->json([
+            'ok' => true,
+            'data' => ['version' => self::PROTOCOL],
+        ]);
     }
 
     public function categories()
@@ -26,6 +35,49 @@ class ControllerExtensionModuleRemnant extends Controller
         $this->json([
             'ok' => true,
             'data' => $this->model_extension_module_remnant->getCategories(),
+        ]);
+    }
+
+    public function products()
+    {
+        if (!$this->authorize()) {
+            return;
+        }
+
+        $q = isset($this->request->get['q']) ? trim((string) $this->request->get['q']) : '';
+        $ids = isset($this->request->get['ids']) ? (string) $this->request->get['ids'] : '';
+        $limit = isset($this->request->get['limit']) ? (int) $this->request->get['limit'] : 50;
+
+        $this->load->model('extension/module/remnant');
+        $this->json([
+            'ok' => true,
+            'data' => $this->model_extension_module_remnant->searchProducts($q, $ids, $limit),
+        ]);
+    }
+
+    public function attributes()
+    {
+        if (!$this->authorize()) {
+            return;
+        }
+
+        $this->load->model('extension/module/remnant');
+        $this->json([
+            'ok' => true,
+            'data' => $this->model_extension_module_remnant->getAttributes(),
+        ]);
+    }
+
+    public function languages()
+    {
+        if (!$this->authorize()) {
+            return;
+        }
+
+        $this->load->model('extension/module/remnant');
+        $this->json([
+            'ok' => true,
+            'data' => $this->model_extension_module_remnant->getLanguages(),
         ]);
     }
 
@@ -104,6 +156,50 @@ class ControllerExtensionModuleRemnant extends Controller
         $this->json(['ok' => true]);
     }
 
+    public function linkProduct()
+    {
+        if (!$this->authorize()) {
+            return;
+        }
+
+        $payload = $this->body();
+        if ($payload === null) {
+            return $this->json(['ok' => false, 'error' => 'invalid_json'], 400);
+        }
+
+        $remnantId = isset($payload['remnantId']) ? (string) $payload['remnantId'] : '';
+        $productId = isset($payload['productId']) ? (int) $payload['productId'] : 0;
+
+        if ($remnantId === '' || $productId <= 0) {
+            return $this->json(['ok' => false, 'error' => 'remnantId and productId are required'], 400);
+        }
+
+        $this->load->model('extension/module/remnant');
+        $this->model_extension_module_remnant->upsertLink($productId, $remnantId);
+        $this->json(['ok' => true, 'data' => ['productId' => $productId]]);
+    }
+
+    public function unlinkProduct()
+    {
+        if (!$this->authorize()) {
+            return;
+        }
+
+        $payload = $this->body();
+        if ($payload === null) {
+            return $this->json(['ok' => false, 'error' => 'invalid_json'], 400);
+        }
+
+        $remnantId = isset($payload['remnantId']) ? (string) $payload['remnantId'] : '';
+        if ($remnantId === '') {
+            return $this->json(['ok' => false, 'error' => 'remnantId is required'], 400);
+        }
+
+        $this->load->model('extension/module/remnant');
+        $this->model_extension_module_remnant->unlinkProduct($remnantId);
+        $this->json(['ok' => true]);
+    }
+
     private function authorize()
     {
         $this->load->model('extension/module/remnant');
@@ -138,6 +234,10 @@ class ControllerExtensionModuleRemnant extends Controller
 
         if ($status !== 200) {
             $this->response->addHeader($this->request->server['SERVER_PROTOCOL'] . ' ' . $status);
+        }
+
+        if (is_array($data) && !isset($data['version'])) {
+            $data['version'] = self::PROTOCOL;
         }
 
         $this->response->setOutput(json_encode($data, JSON_UNESCAPED_UNICODE));

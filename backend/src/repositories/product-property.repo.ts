@@ -108,6 +108,15 @@ export async function findById(id: string) {
   return ProductPropertyModel.findById(id).lean<ProductPropertyDB>().exec()
 }
 
+export async function listIdNames(): Promise<Array<{ _id: string, names: unknown }>> {
+  const docs = await ProductPropertyModel.find({ removed: { $ne: true } })
+    .select({ names: 1 })
+    .sort({ priority: 1 })
+    .lean()
+    .exec()
+  return docs as Array<{ _id: string, names: unknown }>
+}
+
 export async function removeById(id: string) {
   return ProductPropertyModel.findOneAndUpdate(
     { _id: id },

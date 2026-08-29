@@ -6,10 +6,12 @@ import {
   ArrowUp,
   ChevronsUpDown,
   Copy,
+  Link2,
   Pencil,
   Trash,
 } from 'lucide-react'
 import { useMemo } from 'react'
+import { useNavigate } from 'react-router-dom'
 
 import { TableActionDropdown } from '@/components'
 import { Badge, Button } from '@/components/ui'
@@ -23,6 +25,7 @@ const columnHelper = createColumnHelper<SiteDTO>()
 export function useColumns() {
   const { t, language } = useLocale()
   const { isLoading, openModal, removeSite } = useSiteContext()
+  const navigate = useNavigate()
 
   const columns = useMemo(() => {
     function sortHeader(column: Column<SiteDTO, unknown>, label: string) {
@@ -56,9 +59,19 @@ export function useColumns() {
           const actions = [
             {
               permission: 'site.copy',
-              onClick: async () => navigator.clipboard.writeText(item.id),
+              onClick: async () => {
+                await navigator.clipboard.writeText(item.id)
+              },
               label: t('table.copy'),
               icon: <Copy className="h-4 w-4" />,
+            },
+            {
+              permission: 'site.sync',
+              onClick: async () => {
+                await navigate(`/catalog/sync?siteId=${item.id}`)
+              },
+              label: t('page.sites.table.sync'),
+              icon: <Link2 className="h-4 w-4" />,
             },
             {
               permission: 'site.edit',
@@ -160,6 +173,6 @@ export function useColumns() {
       }),
       actionColumn(),
     ]
-  }, [language, isLoading, openModal, removeSite, t])
+  }, [language, isLoading, openModal, removeSite, navigate, t])
   return columns
 }

@@ -45,9 +45,10 @@ export const NAV_MENU_ITEMS = [
   {
     id: 'catalog',
     icon: 'Package',
-    permissions: ['product.page', 'attribute.page', 'attributeGroup.page', 'barcode.page', 'category.page'],
+    permissions: ['product.page', 'attribute.page', 'attributeGroup.page', 'barcode.page', 'category.page', 'site.sync'],
     items: [
       { id: 'products', url: '/products', permissions: ['product.page'] },
+      { id: 'siteSync', url: '/catalog/sync', permissions: ['site.sync'] },
       { id: 'categories', url: '/categories', permissions: ['category.page'] },
       { id: 'productPropertiesGroups', url: '/product-properties-groups', permissions: ['productPropertyGroup.page'] },
       { id: 'productProperties', url: '/product-properties', permissions: ['productProperty.page'] },

@@ -1,4 +1,4 @@
-import type { SiteAdapter, SiteContext, SiteProductPayload } from './types'
+import type { SiteAdapter, SiteContext, SiteNamedEntity, SiteProductListQuery, SiteProductPayload } from './types'
 import { siteRequest } from './client'
 
 function requireProductId(data: { productId?: number } | undefined): { productId: number } {
@@ -6,6 +6,21 @@ function requireProductId(data: { productId?: number } | undefined): { productId
   if (typeof productId !== 'number' || !Number.isFinite(productId))
     throw new Error('Site did not return productId')
   return { productId }
+}
+
+function asNamedList(data: unknown): SiteNamedEntity[] {
+  if (!Array.isArray(data))
+    return []
+  return data.filter((item): item is SiteNamedEntity => {
+    return item != null
+      && typeof item === 'object'
+      && typeof (item as SiteNamedEntity).id === 'number'
+      && ((item as SiteNamedEntity).names == null || typeof (item as SiteNamedEntity).names === 'object')
+  }).map(item => ({
+    id: item.id,
+    names: item.names ?? {},
+    ...(typeof item.parentId === 'number' ? { parentId: item.parentId } : {}),
+  }))
 }
 
 export const remnantAdapter: SiteAdapter = {
@@ -20,6 +35,42 @@ export const remnantAdapter: SiteAdapter = {
       method: 'GET',
     })
     return Array.isArray(data) ? data : []
+  },
+
+  async listProducts(ctx: SiteContext, query: SiteProductListQuery = {}) {
+    const extra: Record<string, string> = {}
+    if (query.query != null && query.query !== '')
+      extra.q = query.query
+    if (query.ids != null && query.ids.length > 0)
+      extra.ids = query.ids.join(',')
+    if (query.limit != null)
+      extra.limit = String(query.limit)
+
+    const data = await siteRequest<SiteNamedEntity[]>({
+      ctx,
+      action: 'products',
+      method: 'GET',
+      query: extra,
+    })
+    return asNamedList(data)
+  },
+
+  async listAttributes(ctx: SiteContext) {
+    const data = await siteRequest<SiteNamedEntity[]>({
+      ctx,
+      action: 'attributes',
+      method: 'GET',
+    })
+    return asNamedList(data)
+  },
+
+  async listLanguages(ctx: SiteContext) {
+    const data = await siteRequest<SiteNamedEntity[]>({
+      ctx,
+      action: 'languages',
+      method: 'GET',
+    })
+    return asNamedList(data)
   },
 
   async createProduct(ctx: SiteContext, payload: SiteProductPayload) {
@@ -46,6 +97,24 @@ export const remnantAdapter: SiteAdapter = {
     await siteRequest({
       ctx,
       action: 'editQuantity',
+      method: 'POST',
+      body: payload,
+    })
+  },
+
+  async linkProduct(ctx: SiteContext, payload: { remnantId: string, productId: number }) {
+    await siteRequest({
+      ctx,
+      action: 'linkProduct',
+      method: 'POST',
+      body: payload,
+    })
+  },
+
+  async unlinkProduct(ctx: SiteContext, payload: { remnantId: string }) {
+    await siteRequest({
+      ctx,
+      action: 'unlinkProduct',
       method: 'POST',
       body: payload,
     })

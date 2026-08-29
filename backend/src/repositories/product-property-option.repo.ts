@@ -95,6 +95,13 @@ export async function findById(id: string) {
   return ProductPropertyOptionModel.findById(id).lean<ProductPropertyOptionDB>().exec()
 }
 
+export async function findByIds(ids: string[]): Promise<ProductPropertyOptionDB[]> {
+  if (ids.length === 0)
+    return []
+  const docs = await ProductPropertyOptionModel.find({ _id: { $in: ids } }).lean().exec()
+  return docs as ProductPropertyOptionDB[]
+}
+
 export async function removeById(id: string) {
   return ProductPropertyOptionModel.findOneAndUpdate(
     { _id: id },

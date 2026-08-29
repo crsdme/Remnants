@@ -47,6 +47,12 @@ const SiteSchema: Schema = new Schema(
       ref: 'warehouse',
       default: [],
     }],
+    currencyId: {
+      type: String,
+      ref: 'Currency',
+      default: null,
+      validate: uuidValidator,
+    },
     removed: {
       type: Boolean,
       default: false,

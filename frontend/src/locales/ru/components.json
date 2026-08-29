@@ -80,6 +80,7 @@
   "component.sidemenu.label.tasks": "Задачи",
   "component.sidemenu.label.catalog": "Каталог",
   "component.sidemenu.label.products": "Товары",
+  "component.sidemenu.label.siteSync": "Синхронизация сайта",
   "component.sidemenu.label.categories": "Категории",
   "component.sidemenu.label.productProperties": "Свойства товаров",
   "component.sidemenu.label.productPropertiesGroups": "Группы свойств товаров",

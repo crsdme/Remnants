@@ -20,6 +20,8 @@ import { migration018OrderStatusIncludeInStatistics } from './scripts/018_order_
 import { migration019OrderItemObjectIds } from './scripts/019_order_item_objectid_to_uuid'
 import { migration020InventorySeqCounterSync } from './scripts/020_inventory_seq_counter_sync'
 import { migration021SyncEntrySiteLinkUnique } from './scripts/021_sync_entry_site_link_unique'
+import { migration022SyncEntryExternalIds } from './scripts/022_sync_entry_external_ids'
+import { migration023DropSyncEntryExternalId } from './scripts/023_drop_sync_entry_external_id'
 
 export const migrations: Migration[] = [
   migration001CurrencyPaymentEpsilon,
@@ -43,4 +45,6 @@ export const migrations: Migration[] = [
   migration019OrderItemObjectIds,
   migration020InventorySeqCounterSync,
   migration021SyncEntrySiteLinkUnique,
+  migration022SyncEntryExternalIds,
+  migration023DropSyncEntryExternalId,
 ]

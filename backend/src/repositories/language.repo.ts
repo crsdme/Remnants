@@ -73,6 +73,23 @@ export async function list(payload: GetLanguagesRepoPayload): Promise<GetLanguag
   return { items, total, page: current, pageSize }
 }
 
+export async function listIdNames(): Promise<Array<{ _id: string, code: string, names: Record<string, string> }>> {
+  const docs = await LanguageModel.find({ removed: { $ne: true }, active: true })
+    .select({ name: 1, code: 1 })
+    .sort({ priority: 1, seq: 1 })
+    .lean()
+    .exec()
+
+  return docs.map(doc => ({
+    _id: String(doc._id),
+    code: doc.code,
+    names: {
+      ru: `${doc.name} (${doc.code})`,
+      en: `${doc.name} (${doc.code})`,
+    },
+  }))
+}
+
 export async function createOne(payload: CreateLanguagesRepoPayload) {
   return LanguageModel.create(payload)
 }

@@ -127,6 +127,8 @@
 
   "title.page.sites": "Сайты - Remnant",
   "description.page.sites": "Управление сайтами в Remnant",
+  "title.page.sites.sync": "Синхронизация сайта - Remnant",
+  "description.page.sites.sync": "Связи товаров, категорий, атрибутов и языков с сайтом",
 
   "title.page.procurement.create": "Создать закупку - Remnant",
   "description.page.procurement.create": "Создать закупку в Remnant"

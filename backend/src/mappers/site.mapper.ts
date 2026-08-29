@@ -10,6 +10,7 @@ export function mapSiteToDTO(site: SiteDB): SiteDTO {
     priority: site.priority,
     active: site.active,
     warehouseIds: site.warehouseIds ?? [],
+    currencyId: site.currencyId ?? undefined,
     createdAt: site.createdAt,
     updatedAt: site.updatedAt,
   }

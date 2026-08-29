@@ -5,8 +5,14 @@ import type {
   EditSiteResponse,
   GetSitesRequest,
   GetSitesResponse,
+  GetSiteSyncMappingRequest,
+  GetSiteSyncMappingResponse,
+  GetSiteSyncSiteItemsRequest,
+  GetSiteSyncSiteItemsResponse,
   RemoveSitesRequest,
   RemoveSitesResponse,
+  SaveSiteSyncMappingRequest,
+  SaveSiteSyncMappingResponse,
   SyncSiteProductsRequest,
   SyncSiteProductsResponse,
 } from '@remnant/shared'
@@ -30,4 +36,24 @@ export async function removeSite(params: RemoveSitesRequest) {
 
 export async function syncSiteProducts(params: SyncSiteProductsRequest) {
   return api.post<SyncSiteProductsResponse>('sites/sync-products', params, { timeout: 0 })
+}
+
+export async function getSiteSyncMapping(params: GetSiteSyncMappingRequest) {
+  return api.get<GetSiteSyncMappingResponse>('sites/sync-mapping', { params })
+}
+
+export async function getSiteSyncSiteItems(params: GetSiteSyncSiteItemsRequest) {
+  const ids = params.ids
+  return api.get<GetSiteSyncSiteItemsResponse>('sites/sync-site-items', {
+    params: {
+      id: params.id,
+      sourceType: params.sourceType,
+      query: params.query,
+      ids: Array.isArray(ids) ? ids.join(',') : ids,
+    },
+  })
+}
+
+export async function saveSiteSyncMapping(params: SaveSiteSyncMappingRequest) {
+  return api.post<SaveSiteSyncMappingResponse>('sites/sync-mapping', params)
 }

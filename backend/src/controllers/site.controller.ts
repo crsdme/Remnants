@@ -1,6 +1,15 @@
 import type { NextFunction, Response } from 'express'
 import type { ValidatedAuthedRequest, ValidatedRequest } from '@/types'
-import type { CreateSitePayload, EditSitePayload, GetSitesPayload, RemoveSitesPayload, SyncSiteProductsPayload } from '@/types/'
+import type {
+  CreateSitePayload,
+  EditSitePayload,
+  GetSitesPayload,
+  GetSiteSyncMappingPayload,
+  GetSiteSyncSiteItemsPayload,
+  RemoveSitesPayload,
+  SaveSiteSyncMappingPayload,
+  SyncSiteProductsPayload,
+} from '@/types/'
 import * as SiteService from '@/services/site.service'
 
 export async function get(
@@ -79,6 +88,57 @@ export async function syncProducts(
 ) {
   try {
     const serviceResponse = await SiteService.syncProducts({
+      payload: req.validated.body,
+    })
+
+    res.status(200).json(serviceResponse)
+  }
+  catch (err) {
+    next(err)
+  }
+}
+
+export async function getSyncMapping(
+  req: ValidatedAuthedRequest<GetSiteSyncMappingPayload, never>,
+  res: Response,
+  next: NextFunction,
+) {
+  try {
+    const serviceResponse = await SiteService.getSyncMapping({
+      payload: req.validated.query,
+    })
+
+    res.status(200).json(serviceResponse)
+  }
+  catch (err) {
+    next(err)
+  }
+}
+
+export async function getSyncSiteItems(
+  req: ValidatedAuthedRequest<GetSiteSyncSiteItemsPayload, never>,
+  res: Response,
+  next: NextFunction,
+) {
+  try {
+    const serviceResponse = await SiteService.getSyncSiteItems({
+      payload: req.validated.query,
+    })
+
+    res.status(200).json(serviceResponse)
+  }
+  catch (err) {
+    next(err)
+  }
+}
+
+export async function saveSyncMapping(
+  req: ValidatedRequest<SaveSiteSyncMappingPayload, never>,
+  res: Response,
+  next: NextFunction,
+) {
+  try {
+    const serviceResponse = await SiteService.saveSyncMapping({
       payload: req.validated.body,
     })
 

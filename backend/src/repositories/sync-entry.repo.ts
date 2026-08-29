@@ -20,19 +20,19 @@ export async function list(payload: GetSyncEntriesRepoPayload): Promise<GetSyncE
     sourceType,
     sourceId,
     siteId,
-    externalId,
+    externalIds,
     createdAt,
     updatedAt,
   } = payload.filters
 
   const query = buildQuery({
-    filters: { sourceType, sourceId, siteId, externalId, createdAt, updatedAt },
+    filters: { sourceType, sourceId, siteId, externalIds, createdAt, updatedAt },
     rules: {
       _id: { type: 'array' },
       sourceType: { type: 'exact' },
       sourceId: { type: 'exact' },
       siteId: { type: 'exact' },
-      externalId: { type: 'exact' },
+      externalIds: { type: 'exact' },
       createdAt: { type: 'dateRange' },
       updatedAt: { type: 'dateRange' },
     },
@@ -54,7 +54,7 @@ export async function list(payload: GetSyncEntriesRepoPayload): Promise<GetSyncE
         sourceType: 1,
         sourceId: 1,
         siteId: 1,
-        externalId: 1,
+        externalIds: { $ifNull: ['$externalIds', []] },
         status: 1,
         syncedAt: 1,
         lastError: 1,
@@ -95,11 +95,17 @@ export async function findLinks(siteId: string, sourceType: string, sourceIds: s
   return SyncEntryModel.find({ siteId, sourceType, sourceId: { $in: sourceIds } }).exec()
 }
 
+export async function findLinksByType(siteId: string, sourceType: string) {
+  return SyncEntryModel.find({ siteId, sourceType }).exec()
+}
+
+export type SyncEntrySourceType = 'product' | 'category' | 'attribute' | 'language'
+
 export async function upsertLink(payload: {
   siteId: string
-  sourceType: 'product' | 'category'
+  sourceType: SyncEntrySourceType
   sourceId: string
-  externalId?: string | null
+  externalIds?: string[]
   status: 'pending' | 'synced' | 'error'
   lastError?: string | null
   syncedAt?: Date | null
@@ -108,8 +114,8 @@ export async function upsertLink(payload: {
     status: payload.status,
   }
 
-  if (payload.externalId !== undefined)
-    $set.externalId = payload.externalId
+  if (payload.externalIds !== undefined)
+    $set.externalIds = payload.externalIds.filter(id => id !== '')
   if (payload.lastError !== undefined)
     $set.lastError = payload.lastError
   if (payload.syncedAt !== undefined)

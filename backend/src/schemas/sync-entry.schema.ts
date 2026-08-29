@@ -1,12 +1,14 @@
 import { dateRangeSchema, idSchema, paginationSchema, responseItemSchema, responseListSchema, responseSchema, sorterParamsSchema } from '@remnant/shared'
 import { z } from 'zod'
 
+const syncSourceTypeSchema = z.enum(['product', 'category', 'attribute', 'language'])
+
 export const syncEntryDBSchema = z.object({
   _id: idSchema,
-  sourceType: z.enum(['product', 'category']),
+  sourceType: syncSourceTypeSchema,
   sourceId: idSchema,
   siteId: idSchema,
-  externalId: z.string().nullable().optional(),
+  externalIds: z.array(z.string()).optional().default([]),
   status: z.enum(['pending', 'synced', 'error']),
   syncedAt: z.coerce.date().optional(),
   lastError: z.string().nullable().optional(),
@@ -16,10 +18,10 @@ export const syncEntryDBSchema = z.object({
 
 export const syncEntrySchema = z.object({
   id: idSchema,
-  sourceType: z.enum(['product', 'category']),
+  sourceType: syncSourceTypeSchema,
   sourceId: idSchema,
   siteId: idSchema,
-  externalId: z.string().nullable().optional(),
+  externalIds: z.array(z.string()).optional().default([]),
   status: z.enum(['pending', 'synced', 'error']),
   syncedAt: z.date().optional(),
   lastError: z.string().nullable().optional(),
@@ -32,7 +34,7 @@ export const getSyncEntriesSchema = z.object({
     sourceType: z.string(),
     sourceId: idSchema,
     siteId: idSchema,
-    externalId: z.string(),
+    externalIds: z.string(),
     createdAt: dateRangeSchema.optional(),
     updatedAt: dateRangeSchema.optional(),
   }),
@@ -46,7 +48,7 @@ export const createSyncEntrySchema = z.object({
   sourceType: z.string(),
   sourceId: idSchema,
   siteId: idSchema,
-  externalId: z.string(),
+  externalIds: z.array(z.string()),
   status: z.string(),
   syncedAt: z.date(),
   lastError: z.string(),
@@ -57,7 +59,7 @@ export const editSyncEntrySchema = z.object({
   sourceType: z.string(),
   sourceId: idSchema,
   siteId: idSchema,
-  externalId: z.string(),
+  externalIds: z.array(z.string()),
   status: z.string(),
   syncedAt: z.date(),
   lastError: z.string(),
@@ -72,7 +74,7 @@ export const countSyncEntriesSchema = z.object({
     sourceType: z.string(),
     sourceId: idSchema,
     siteId: idSchema,
-    externalId: z.string(),
+    externalIds: z.string(),
     createdAt: dateRangeSchema.optional(),
     updatedAt: dateRangeSchema.optional(),
   }),

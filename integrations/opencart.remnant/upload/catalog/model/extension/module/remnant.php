@@ -28,7 +28,18 @@ class ModelExtensionModuleRemnant extends Model
 
     public function matchLanguageId($code, $languageMap)
     {
-        $code = strtolower(trim($code));
+        $raw = trim((string) $code);
+        if ($raw !== '' && ctype_digit($raw)) {
+            $id = (int) $raw;
+            foreach ($languageMap as $mappedId) {
+                if ((int) $mappedId === $id) {
+                    return $id;
+                }
+            }
+            return null;
+        }
+
+        $code = strtolower($raw);
         if (isset($languageMap[$code])) {
             return $languageMap[$code];
         }
@@ -70,7 +81,155 @@ class ModelExtensionModuleRemnant extends Model
             $grouped[$id]['names'][$code] = $row['name'];
         }
 
-        return array_values($grouped);
+        return $this->withObjectNames(array_values($grouped));
+    }
+
+    private function withObjectNames(array $items)
+    {
+        foreach ($items as &$item) {
+            $item['names'] = (object) (isset($item['names']) ? $item['names'] : []);
+        }
+        unset($item);
+
+        return $items;
+    }
+
+    private function getNamedRows($sql)
+    {
+        $languageMap = $this->getLanguageMap();
+        $idToCode = [];
+        foreach ($languageMap as $code => $id) {
+            if (strpos($code, '-') === false) {
+                $idToCode[$id] = $code;
+            }
+        }
+
+        $query = $this->db->query($sql);
+        $grouped = [];
+
+        foreach ($query->rows as $row) {
+            $id = (int) $row['id'];
+            if (!isset($grouped[$id])) {
+                $grouped[$id] = [
+                    'id' => $id,
+                    'names' => [],
+                ];
+            }
+
+            if (!isset($row['name']) || $row['name'] === null) {
+                continue;
+            }
+
+            $code = isset($idToCode[(int) $row['language_id']]) ? $idToCode[(int) $row['language_id']] : (string) $row['language_id'];
+            $grouped[$id]['names'][$code] = $row['name'];
+        }
+
+        return $this->withObjectNames(array_values($grouped));
+    }
+
+    public function searchProducts($q, $ids, $limit)
+    {
+        $limit = (int) $limit;
+        if ($limit <= 0 || $limit > 100) {
+            $limit = 50;
+        }
+
+        $idList = [];
+        if ($ids !== '') {
+            foreach (explode(',', $ids) as $id) {
+                $id = (int) trim($id);
+                if ($id > 0) {
+                    $idList[] = $id;
+                }
+            }
+            $idList = array_values(array_unique($idList));
+        }
+
+        if ($idList) {
+            $idSql = implode(',', $idList);
+            return $this->getNamedRows(
+                "SELECT p.product_id AS id, pd.language_id, pd.name
+                 FROM `" . DB_PREFIX . "product` p
+                 LEFT JOIN `" . DB_PREFIX . "product_description` pd ON (p.product_id = pd.product_id)
+                 WHERE p.product_id IN (" . $idSql . ")
+                 ORDER BY p.product_id"
+            );
+        }
+
+        $where = '';
+        if ($q !== '') {
+            $escaped = $this->db->escape($q);
+            if (ctype_digit($q)) {
+                $where = "WHERE (p.product_id = " . (int) $q . " OR pd.name LIKE '%" . $escaped . "%')";
+            } else {
+                $where = "WHERE pd.name LIKE '%" . $escaped . "%'";
+            }
+        }
+
+        $idQuery = $this->db->query("
+            SELECT DISTINCT p.product_id AS id
+            FROM `" . DB_PREFIX . "product` p
+            LEFT JOIN `" . DB_PREFIX . "product_description` pd ON (p.product_id = pd.product_id)
+            " . $where . "
+            ORDER BY p.product_id
+            LIMIT " . $limit . "
+        ");
+
+        $productIds = [];
+        foreach ($idQuery->rows as $row) {
+            $productIds[] = (int) $row['id'];
+        }
+
+        if (!$productIds) {
+            return [];
+        }
+
+        return $this->getNamedRows(
+            "SELECT p.product_id AS id, pd.language_id, pd.name
+             FROM `" . DB_PREFIX . "product` p
+             LEFT JOIN `" . DB_PREFIX . "product_description` pd ON (p.product_id = pd.product_id)
+             WHERE p.product_id IN (" . implode(',', $productIds) . ")
+             ORDER BY p.product_id"
+        );
+    }
+
+    public function getProducts()
+    {
+        return $this->searchProducts('', '', 50);
+    }
+
+    public function getAttributes()
+    {
+        return $this->getNamedRows(
+            "SELECT a.attribute_id AS id, ad.language_id, ad.name
+             FROM `" . DB_PREFIX . "attribute` a
+             LEFT JOIN `" . DB_PREFIX . "attribute_description` ad ON (a.attribute_id = ad.attribute_id)
+             ORDER BY a.sort_order, a.attribute_id"
+        );
+    }
+
+    public function getLanguages()
+    {
+        $query = $this->db->query("
+            SELECT language_id, name, code
+            FROM `" . DB_PREFIX . "language`
+            WHERE status = '1'
+            ORDER BY sort_order, language_id
+        ");
+
+        $items = [];
+        foreach ($query->rows as $row) {
+            $label = $row['name'] . ' (' . $row['code'] . ')';
+            $items[] = [
+                'id' => (int) $row['language_id'],
+                'names' => [
+                    'ru' => $label,
+                    'en' => $label,
+                ],
+            ];
+        }
+
+        return $this->withObjectNames($items);
     }
 
     public function findProductId($remnantId)
@@ -96,6 +255,18 @@ class ModelExtensionModuleRemnant extends Model
             ON DUPLICATE KEY UPDATE
                 `product_id` = VALUES(`product_id`),
                 `remnant_id` = VALUES(`remnant_id`)
+        ");
+    }
+
+    public function unlinkProduct($remnantId)
+    {
+        if ($remnantId === '') {
+            return;
+        }
+
+        $this->db->query("
+            DELETE FROM `" . DB_PREFIX . "remnant_product`
+            WHERE remnant_id = '" . $this->db->escape($remnantId) . "'
         ");
     }
 
@@ -153,6 +324,7 @@ class ModelExtensionModuleRemnant extends Model
         $this->writeDescriptions($productId, isset($data['names']) ? $data['names'] : []);
         $this->writeSeo($productId, isset($data['seo']) ? $data['seo'] : [], isset($data['names']) ? $data['names'] : []);
         $this->replaceCategories($productId, isset($data['categoryIds']) ? $data['categoryIds'] : []);
+        $this->replaceAttributes($productId, isset($data['attributes']) ? $data['attributes'] : []);
         $this->replaceImages($productId, isset($data['images']) ? $data['images'] : []);
         $this->ensureStore($productId);
         $this->upsertLink($productId, $remnantId);
@@ -196,6 +368,10 @@ class ModelExtensionModuleRemnant extends Model
 
         if (isset($data['categoryIds']) && is_array($data['categoryIds'])) {
             $this->replaceCategories($productId, $data['categoryIds']);
+        }
+
+        if (isset($data['attributes']) && is_array($data['attributes'])) {
+            $this->replaceAttributes($productId, $data['attributes']);
         }
 
         if (isset($data['images']) && is_array($data['images'])) {
@@ -354,6 +530,81 @@ class ModelExtensionModuleRemnant extends Model
                     category_id = '" . $id . "'
             ");
         }
+    }
+
+    private function replaceAttributes($productId, $attributes)
+    {
+        $this->db->query("DELETE FROM `" . DB_PREFIX . "product_attribute` WHERE product_id = '" . (int) $productId . "'");
+
+        if (!is_array($attributes) || !$attributes) {
+            return;
+        }
+
+        $languageMap = $this->getLanguageMap();
+        $allLanguageIds = [];
+        foreach ($languageMap as $code => $id) {
+            if (strpos($code, '-') === false) {
+                $allLanguageIds[(int) $id] = true;
+            }
+        }
+        if (!$allLanguageIds && $languageMap) {
+            $allLanguageIds[(int) reset($languageMap)] = true;
+        }
+
+        $seen = [];
+        foreach ($attributes as $attribute) {
+            if (!is_array($attribute)) {
+                continue;
+            }
+
+            $attributeId = isset($attribute['attributeId']) ? (int) $attribute['attributeId'] : 0;
+            if ($attributeId <= 0 || isset($seen[$attributeId])) {
+                continue;
+            }
+            $seen[$attributeId] = true;
+
+            $texts = $this->attributeTexts($attribute, $languageMap, $allLanguageIds);
+            foreach ($texts as $languageId => $text) {
+                if ($text === '') {
+                    continue;
+                }
+
+                $this->db->query("
+                    INSERT INTO `" . DB_PREFIX . "product_attribute`
+                    SET product_id = '" . (int) $productId . "',
+                        attribute_id = '" . $attributeId . "',
+                        language_id = '" . (int) $languageId . "',
+                        text = '" . $this->db->escape($text) . "'
+                ");
+            }
+        }
+    }
+
+    private function attributeTexts($attribute, $languageMap, $allLanguageIds)
+    {
+        $raw = isset($attribute['text']) ? $attribute['text'] : '';
+        $texts = [];
+
+        if (is_array($raw)) {
+            foreach ($raw as $code => $text) {
+                $languageId = $this->matchLanguageId($code, $languageMap);
+                if (!$languageId || $text === null || $text === '') {
+                    continue;
+                }
+                $texts[(int) $languageId] = (string) $text;
+            }
+            return $texts;
+        }
+
+        $text = trim((string) $raw);
+        if ($text === '') {
+            return [];
+        }
+
+        foreach (array_keys($allLanguageIds) as $languageId) {
+            $texts[(int) $languageId] = $text;
+        }
+        return $texts;
     }
 
     private function replaceImages($productId, $images)

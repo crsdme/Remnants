@@ -127,6 +127,8 @@
 
   "title.page.sites": "Sites - Remnant",
   "description.page.sites": "Manage sites in Remnant",
+  "title.page.sites.sync": "Site sync - Remnant",
+  "description.page.sites.sync": "Map products, categories, attributes and languages with the site",
 
   "title.page.procurement.create": "Create Procurement - Remnant",
   "description.page.procurement.create": "Create procurement in Remnant"

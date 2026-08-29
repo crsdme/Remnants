@@ -192,6 +192,8 @@ export * from './site/useSiteEdit'
 export * from './site/useSiteOptions'
 export * from './site/useSiteQuery'
 export * from './site/useSiteRemove'
+export * from './site/useSiteSyncMappingQuery'
+export * from './site/useSiteSyncMappingSave'
 export * from './site/useSiteSyncProducts'
 
 // Statistics Management

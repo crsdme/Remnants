@@ -9,6 +9,7 @@ export const siteDBSchema = z.object({
   priority: z.number(),
   active: z.boolean(),
   warehouseIds: z.array(idSchema),
+  currencyId: idSchema.nullable().optional(),
   removed: z.boolean().default(false),
   createdAt: z.coerce.date(),
   updatedAt: z.coerce.date(),

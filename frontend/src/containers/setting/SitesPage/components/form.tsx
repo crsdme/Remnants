@@ -1,16 +1,6 @@
-import { useLanguageQuery, useWarehouseOptions } from '@/api/hooks'
-import { PermissionGate } from '@/components'
+import { useCurrencySelectOptions, useLanguageQuery, useWarehouseOptions } from '@/api/hooks'
 import { AsyncSelectNew } from '@/components/AsyncSelectNew'
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
   Button,
   Checkbox,
   Form,
@@ -27,7 +17,7 @@ import { useSiteContext } from '../context'
 
 export function SiteForm() {
   const { t, language } = useLocale()
-  const { isLoading, isSyncing, isEdit, form, closeModal, submitSiteForm, syncSiteProducts } = useSiteContext()
+  const { isLoading, form, closeModal, submitSiteForm } = useSiteContext()
 
   const { languages = [] } = useLanguageQuery(
     { pagination: { full: true } },
@@ -35,6 +25,7 @@ export function SiteForm() {
   )
 
   const loadWarehouseOptions = useWarehouseOptions()
+  const { loadSearchOptions: loadCurrencySearch, loadSelectedOptions: loadCurrencySelected } = useCurrencySelectOptions()
 
   return (
     <Form {...form}>
@@ -65,7 +56,7 @@ export function SiteForm() {
                     className="w-full"
                     {...field}
                     value={field.value || ''}
-                    disabled={isLoading || isSyncing}
+                    disabled={isLoading}
                   />
                 </FormControl>
                 <FormMessage />
@@ -127,6 +118,36 @@ export function SiteForm() {
 
         <FormField
           control={form.control}
+          name="currencyId"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>{t('page.sites.form.currency')}</FormLabel>
+              <FormDescription className="text-xs text-muted-foreground">
+                {t('page.sites.form.currency.description')}
+              </FormDescription>
+              <FormControl>
+                <AsyncSelectNew
+                  {...field}
+                  loadOptions={async ({ query = '', selectedValue } = {}) => {
+                    if (selectedValue && selectedValue.length > 0)
+                      return loadCurrencySelected(selectedValue)
+                    return loadCurrencySearch(query)
+                  }}
+                  renderOption={e => e.names[language]}
+                  getDisplayValue={e => e.names[language]}
+                  getOptionValue={e => e.id}
+                  disabled={isLoading}
+                  clearable
+                  searchable
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
           name="priority"
           render={({ field }) => (
             <FormItem>
@@ -161,7 +182,7 @@ export function SiteForm() {
                   <Checkbox
                     checked={field.value}
                     onCheckedChange={field.onChange}
-                    disabled={isLoading || isSyncing}
+                    disabled={isLoading}
                   />
                 </FormControl>
               </FormItem>
@@ -169,53 +190,16 @@ export function SiteForm() {
           />
         </div>
 
-        {isEdit && (
-          <PermissionGate permission="site.sync">
-            <div className="flex items-center justify-between rounded-md border p-4 mb-2">
-              <div className="space-y-1 pr-4">
-                <p className="text-sm font-medium">{t('page.sites.form.syncProducts')}</p>
-                <p className="text-xs text-muted-foreground">
-                  {t('page.sites.form.syncProducts.description')}
-                </p>
-              </div>
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button type="button" variant="outline" disabled={isLoading || isSyncing} loading={isSyncing}>
-                    {t('page.sites.form.syncProducts.button')}
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>{t('page.sites.form.syncProducts.confirmTitle')}</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      {t('page.sites.form.syncProducts.confirmDescription')}
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel disabled={isSyncing}>{t('button.cancel')}</AlertDialogCancel>
-                    <AlertDialogAction
-                      disabled={isSyncing}
-                      onClick={() => syncSiteProducts()}
-                    >
-                      {t('page.sites.form.syncProducts.button')}
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
-            </div>
-          </PermissionGate>
-        )}
-
         <div className="flex gap-2">
           <Button
             type="button"
             variant="secondary"
             onClick={() => closeModal()}
-            disabled={isLoading || isSyncing}
+            disabled={isLoading}
           >
             {t('button.cancel')}
           </Button>
-          <Button type="submit" disabled={isLoading || isSyncing} loading={isLoading}>
+          <Button type="submit" disabled={isLoading} loading={isLoading}>
             {t('button.submit')}
           </Button>
         </div>
