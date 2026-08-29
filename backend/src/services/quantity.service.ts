@@ -18,8 +18,10 @@ import { mapQuantityToDTO } from '@/mappers/'
 import * as ProductRepository from '@/repositories/products.repo'
 import * as QuantityRepository from '@/repositories/quantity.repo'
 import * as ProductStockStatusService from '@/services/product-stock-status.service'
+import * as SyncEntryService from '@/services/sync-entry.service'
 import * as WarehouseTransactionLogService from '@/services/warehouse-transaction-log.service'
 import { HttpError } from '@/utils/'
+import logger from '@/utils/logger'
 
 export async function get({ payload }: { payload: GetQuantitiesPayload }): Promise<GetQuantitiesResponse> {
   const { items, total, page, pageSize } = await QuantityRepository.list(payload)
@@ -66,6 +68,8 @@ export async function create({ payload, session }: { payload: CreateQuantityPayl
     warehouseId,
     session,
   })
+
+  await pushQuantityToSites(productId, warehouseId, session)
 
   return {
     status: 'success',
@@ -149,6 +153,8 @@ export async function count({ payload, session }: { payload: CountQuantitiesPayl
     })
   }
 
+  await pushQuantityToSites(productId, warehouseId, session)
+
   return {
     status: 'success',
     code: 'QUANTITY_COUNTED',
@@ -177,6 +183,8 @@ export async function edit({ payload, session }: { payload: EditQuantityPayload,
     session,
   })
 
+  await pushQuantityToSites(payload.productId, payload.warehouseId, session)
+
   return {
     status: 'success',
     code: 'QUANTITY_EDITED',
@@ -197,5 +205,14 @@ export async function remove({ payload }: { payload: RemoveQuantityPayload }): P
     status: 'success',
     code: 'QUANTITIES_REMOVED',
     message: 'Quantities removed',
+  }
+}
+
+async function pushQuantityToSites(productId: string, warehouseId: string, session?: ClientSession) {
+  try {
+    await SyncEntryService.syncProductQuantityForWarehouse({ productId, warehouseId, session })
+  }
+  catch (error) {
+    logger.error(error)
   }
 }

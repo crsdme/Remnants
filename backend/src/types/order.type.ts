@@ -1,12 +1,15 @@
 import type {
   createOrderItemSchema,
   createOrderSchema,
+  createOrderShipmentSchema,
   editOrderSchema,
   getOrderDetailsSchema,
   printDraftInvoiceOrderSchema,
   printInvoiceOrderSchema,
   printOrderLabelOrderSchema,
+  printOrderShipmentLabelSchema,
   removeOrdersSchema,
+  syncOrderShipmentsSchema,
 } from '@remnant/shared'
 import type { ClientSession } from 'mongoose'
 import type { z } from 'zod'
@@ -68,6 +71,12 @@ export type PrintInvoiceOrderPayload = z.output<typeof printInvoiceOrderSchema>
 export type PrintDraftInvoiceOrderPayload = z.output<typeof printDraftInvoiceOrderSchema>
 
 export type PrintOrderLabelOrderPayload = z.output<typeof printOrderLabelOrderSchema>
+
+export type CreateOrderShipmentPayload = z.output<typeof createOrderShipmentSchema>
+
+export type PrintOrderShipmentLabelPayload = z.output<typeof printOrderShipmentLabelSchema>
+
+export type SyncOrderShipmentsPayload = z.output<typeof syncOrderShipmentsSchema>
 
 export interface PayOrderPayload { id: string }
 

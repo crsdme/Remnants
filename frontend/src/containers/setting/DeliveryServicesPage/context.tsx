@@ -3,9 +3,11 @@ import type { ReactNode } from 'react'
 import type { Resolver, UseFormReturn } from 'react-hook-form'
 
 import { zodResolver } from '@hookform/resolvers/zod'
+import { DELIVERY_SERVICE_API_KEY_MASK } from '@remnant/shared'
 import { useQueryClient } from '@tanstack/react-query'
 import { createContext, useContext, useMemo, useState } from 'react'
 import { useForm } from 'react-hook-form'
+import { isValidPhoneNumber, parsePhoneNumber } from 'react-phone-number-input'
 import { toast } from 'sonner'
 import { z } from 'zod'
 
@@ -30,11 +32,18 @@ interface DeliveryServiceContextType {
 
 const DeliveryServiceContext = createContext<DeliveryServiceContextType | undefined>(undefined)
 
-interface DeliveryServiceFormValues {
+export interface DeliveryServiceFormValues {
   names: Record<string, string>
   color: string
   priority: number
   type: 'novaposhta' | 'selfpickup'
+  active: boolean
+  apiKey: string
+  phone: string
+  senderCityId: string
+  senderCityName: string
+  senderOfficeId: string
+  senderOfficeName: string
 }
 
 export function DeliveryServiceProvider({ children }: { children: ReactNode }) {
@@ -116,10 +125,12 @@ export function DeliveryServiceProvider({ children }: { children: ReactNode }) {
   }
 
   const submitDeliveryServiceForm = (params: DeliveryServiceFormValues) => {
-    if (!selectedDeliveryService || !isEdit)
-      return useMutateCreateDeliveryService.mutate(params)
+    const payload = toDeliveryServiceRequest(params)
 
-    return useMutateEditDeliveryService.mutate({ ...params, id: selectedDeliveryService.id })
+    if (!selectedDeliveryService || !isEdit)
+      return useMutateCreateDeliveryService.mutate(payload)
+
+    return useMutateEditDeliveryService.mutate({ ...payload, id: selectedDeliveryService.id })
   }
 
   const isLoading = useMutateCreateDeliveryService.isPending || useMutateEditDeliveryService.isPending || useMutateRemoveDeliveryService.isPending
@@ -157,6 +168,29 @@ function createDeliveryServiceFormSchema(t: (key: string, options?: Record<strin
     color: z.string().optional(),
     priority: z.number().default(0),
     type: z.enum(['novaposhta', 'selfpickup']),
+    active: z.boolean(),
+    apiKey: z.string().optional().default(''),
+    phone: z.string().optional().default(''),
+    senderCityId: z.string().optional().default(''),
+    senderCityName: z.string().optional().default(''),
+    senderOfficeId: z.string().optional().default(''),
+    senderOfficeName: z.string().optional().default(''),
+  }).superRefine((data, ctx) => {
+    if (data.type !== 'novaposhta')
+      return
+
+    if (!data.apiKey?.trim()) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: t('form.errors.required'), path: ['apiKey'] })
+    }
+    if (!data.phone?.trim() || !isValidPhoneNumber(data.phone)) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: t('form.errors.invalid_phone'), path: ['phone'] })
+    }
+    if (!data.senderCityId?.trim()) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: t('form.errors.required'), path: ['senderCityId'] })
+    }
+    if (!data.senderOfficeId?.trim()) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: t('form.errors.required'), path: ['senderOfficeId'] })
+    }
   })
 }
 
@@ -167,12 +201,72 @@ function getDeliveryServiceFormValues(deliveryService?: DeliveryServiceDTO): Del
       color: '#ffffff',
       priority: 0,
       type: 'novaposhta',
+      active: true,
+      apiKey: '',
+      phone: '',
+      senderCityId: '',
+      senderCityName: '',
+      senderOfficeId: '',
+      senderOfficeName: '',
     }
   }
+
+  const credentials = deliveryService.credentials?.type === 'novaposhta'
+    ? deliveryService.credentials
+    : undefined
+
   return {
     names: { ...deliveryService.names },
     color: deliveryService.color ?? '#ffffff',
     priority: deliveryService.priority,
     type: deliveryService.type,
+    active: deliveryService.active ?? true,
+    apiKey: credentials?.hasApiKey ? DELIVERY_SERVICE_API_KEY_MASK : '',
+    phone: toE164Phone(credentials?.phone ?? ''),
+    senderCityId: credentials?.sender.city.id ?? '',
+    senderCityName: credentials?.sender.city.name ?? '',
+    senderOfficeId: credentials?.sender.office.id ?? '',
+    senderOfficeName: credentials?.sender.office.name ?? '',
   }
+}
+
+function toDeliveryServiceRequest(params: DeliveryServiceFormValues) {
+  if (params.type === 'selfpickup') {
+    return {
+      names: params.names,
+      color: params.color,
+      priority: params.priority,
+      type: params.type,
+      active: params.active,
+      credentials: { type: 'selfpickup' as const },
+    }
+  }
+
+  return {
+    names: params.names,
+    color: params.color,
+    priority: params.priority,
+    type: params.type,
+    active: params.active,
+    credentials: {
+      type: 'novaposhta' as const,
+      apiKey: params.apiKey,
+      // Nova Poshta expects digits like 380XXXXXXXXX
+      phone: params.phone.replace(/\D/g, ''),
+      sender: {
+        city: { id: params.senderCityId, name: params.senderCityName },
+        office: { id: params.senderOfficeId, name: params.senderOfficeName },
+      },
+    },
+  }
+}
+
+function toE164Phone(phone: string): string {
+  const raw = phone.trim()
+  if (!raw)
+    return ''
+
+  const withPlus = raw.startsWith('+') ? raw : `+${raw.replace(/\D/g, '')}`
+  const parsed = parsePhoneNumber(withPlus)
+  return parsed?.number ?? withPlus
 }

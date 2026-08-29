@@ -12,8 +12,10 @@ import { buildQuery, unwrapAggregate } from '@/utils'
 export async function list(payload: GetSettingsRepoPayload): Promise<GetSettingsRepoResult> {
   const {
     current,
-    pageSize,
+    pageSize: requestedPageSize,
+    full,
   } = payload.pagination
+  const pageSize = full === true ? Math.max(requestedPageSize, 1000) : requestedPageSize
 
   const {
     key,
@@ -28,6 +30,7 @@ export async function list(payload: GetSettingsRepoPayload): Promise<GetSettings
       scope: { type: 'string' },
       isPublic: { type: 'exact' },
     },
+    removed: false,
   })
 
   const pipeline: PipelineStage[] = [
@@ -39,6 +42,7 @@ export async function list(payload: GetSettingsRepoPayload): Promise<GetSettings
         _id: 0,
         id: '$_id',
         key: 1,
+        value: 1,
         scope: 1,
         isPublic: 1,
         description: 1,
@@ -79,6 +83,10 @@ export async function updateById(id: string, payload: EditSettingRepoPayload) {
 
 export async function findById(id: string) {
   return SettingModel.findById(id).exec()
+}
+
+export async function findByKey(key: string) {
+  return SettingModel.findOne({ key }).exec()
 }
 
 export async function removeById(id: string) {

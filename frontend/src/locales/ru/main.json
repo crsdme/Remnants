@@ -29,6 +29,7 @@
   "table.view": "Просмотр",
   "table.export": "Экспортировать",
   "table.printInvoice": "Печатать счет",
+  "table.printTtn": "Печать ТТН",
   "table.quantityLogs": "Логи количества",
   "table.auditLogs": "Логи изменений",
   "table.printLabel": "Печатать этикетку",
@@ -59,6 +60,7 @@
   "form.errors.required.product": "Товар не найден",
   "form.errors.min_length": "Минимальная длина {{count}} символов",
   "form.errors.max_length": "Максимальная длина {{count}} символов",
+  "form.errors.invalid_phone": "Некорректный номер телефона",
 
   "form.success.productAdded": "Товар добавлен",
 

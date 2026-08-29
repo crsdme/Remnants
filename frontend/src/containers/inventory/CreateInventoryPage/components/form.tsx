@@ -103,9 +103,6 @@ export function CreateInventoryForm() {
         className="w-full space-y-4"
         onSubmit={(e) => {
           e.preventDefault()
-          if (!isDraftReady)
-            return
-          void form.handleSubmit(() => setConfirmOpen(true), onError)(e)
         }}
       >
         <div className="space-y-3 rounded-lg border bg-card p-4">
@@ -266,6 +263,10 @@ export function CreateInventoryForm() {
                       onChange={e => setSearch(e.target.value)}
                       placeholder={t('page.create-inventory.search.placeholder')}
                       className="sm:max-w-xs"
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter')
+                          e.preventDefault()
+                      }}
                     />
                   </div>
 
@@ -305,7 +306,14 @@ export function CreateInventoryForm() {
                 </Button>
               )
             : (
-                <Button type="submit" disabled={isLoading} loading={isLoading}>
+                <Button
+                  type="button"
+                  disabled={isLoading}
+                  loading={isLoading}
+                  onClick={() => {
+                    void form.handleSubmit(() => setConfirmOpen(true), onError)()
+                  }}
+                >
                   {t('button.submit')}
                 </Button>
               )}

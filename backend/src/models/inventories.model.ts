@@ -100,12 +100,27 @@ InventorySchema.set('toJSON', {
 
 InventorySchema.pre('save', async function (this: InventoryDoc, next) {
   if (this.isNew) {
+    const Model = this.constructor as typeof InventoryModel
+    const maxDoc = await Model.findOne().sort({ seq: -1 }).select({ seq: 1 }).lean()
+    const maxSeq = typeof maxDoc?.seq === 'number' ? maxDoc.seq : 0
+
     const counter = await CounterModel.findByIdAndUpdate(
       'inventory',
       { $inc: { seq: 1 } },
       { new: true, upsert: true },
     )
-    this.seq = counter.seq
+
+    if (counter.seq <= maxSeq) {
+      const synced = await CounterModel.findByIdAndUpdate(
+        'inventory',
+        { $set: { seq: maxSeq + 1 } },
+        { new: true },
+      )
+      this.seq = synced?.seq ?? maxSeq + 1
+    }
+    else {
+      this.seq = counter.seq
+    }
   }
   next()
 })

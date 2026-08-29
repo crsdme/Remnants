@@ -384,7 +384,7 @@ export const USER_ROLE_PERMISSIONS = [
   {
     group: 'site',
     dependencies: ['language.read'],
-    permissions: ['site.page', 'site.read', 'site.remove', 'site.create', 'site.edit', 'site.auditLogs'],
+    permissions: ['site.page', 'site.read', 'site.remove', 'site.create', 'site.edit', 'site.sync', 'site.auditLogs'],
   },
   {
     group: 'settings',

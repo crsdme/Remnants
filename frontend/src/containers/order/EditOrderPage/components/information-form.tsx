@@ -9,10 +9,11 @@ import {
   FormLabel,
   FormMessage,
   Separator,
-  Textarea,
 } from '@/components/ui'
 import { hasPermission } from '@/utils/helpers'
 import { useLocale } from '@/utils/hooks'
+import { OrderCommentSection } from '../../components/OrderCommentSection'
+import { OrderDeliverySection } from '../../components/OrderDeliverySection'
 import { ORDER_INFORMATION_FORM_ID } from '../../components/OrderSidebar'
 import { useEditOrderContext } from '../context'
 
@@ -144,24 +145,9 @@ export function InformationForm({ form, onSubmit }: { form: any, onSubmit: (paym
             />
           </div>
 
-          <FormField
-            control={form.control}
-            name="comment"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>{t('page.edit-order.form.comment')}</FormLabel>
-                <FormControl>
-                  <Textarea
-                    placeholder={t('page.edit-order.form.comment')}
-                    className="w-full"
-                    {...field}
-                    disabled={isLoading}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          <OrderCommentSection form={form} disabled={isLoading} />
+
+          <OrderDeliverySection form={form} disabled={isLoading} />
         </form>
       </Form>
     </div>

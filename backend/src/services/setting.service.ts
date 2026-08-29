@@ -13,6 +13,16 @@ import { mapSettingToDTO } from '@/mappers/'
 import * as SettingRepo from '@/repositories/setting.repo'
 import { HttpError } from '@/utils/'
 
+function toSettingValue(value: unknown): string {
+  if (value == null)
+    return ''
+  if (typeof value === 'string')
+    return value
+  if (typeof value === 'boolean' || typeof value === 'number')
+    return String(value)
+  return JSON.stringify(value)
+}
+
 export async function get({ payload }: { payload: GetSettingsRepoPayload }): Promise<GetSettingsResponse> {
   const { items, total, page, pageSize } = await SettingRepo.list(payload)
 
@@ -43,7 +53,25 @@ export async function create({ payload }: { payload: CreateSettingRepoPayload })
 }
 
 export async function edit({ payload }: { payload: EditSettingRepoPayload }): Promise<EditSettingResponse> {
-  const setting = await SettingRepo.updateById(payload.id, payload)
+  const nextValue = toSettingValue(payload.value)
+  const existing = payload.id != null && payload.id !== ''
+    ? await SettingRepo.findById(payload.id)
+    : await SettingRepo.findByKey(payload.key)
+
+  const setting = existing
+    ? await SettingRepo.updateById(String(existing._id), {
+        key: payload.key,
+        value: nextValue,
+        ...(payload.isPublic !== undefined ? { isPublic: payload.isPublic } : {}),
+        ...(payload.scope !== undefined ? { scope: payload.scope } : {}),
+      })
+    : await SettingRepo.createOne({
+        key: payload.key,
+        value: nextValue,
+        scope: payload.scope ?? 'delivery',
+        isPublic: payload.isPublic ?? true,
+        description: payload.key,
+      })
 
   if (!setting)
     throw new HttpError(400, 'Setting not edited', 'SETTING_NOT_EDITED')

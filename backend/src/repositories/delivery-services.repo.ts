@@ -1,13 +1,13 @@
-import type { AggregateResult, DeliveryServiceDTO } from '@remnant/shared'
 import type { PipelineStage } from 'mongoose'
 import type {
   CreateDeliveryServicesRepoPayload,
+  DeliveryServiceDB,
   EditDeliveryServicesRepoPayload,
   GetDeliveryServicesRepoPayload,
   GetDeliveryServicesRepoResult,
 } from '@/types/'
 import { DeliveryServiceModel } from '@/models'
-import { applyScopeIdsToQuery, buildQuery, buildSortQuery, unwrapAggregate } from '@/utils'
+import { applyScopeIdsToQuery, buildQuery, buildSortQuery } from '@/utils'
 
 export async function list(
   payload: GetDeliveryServicesRepoPayload,
@@ -22,17 +22,19 @@ export async function list(
     names,
     language,
     color,
+    type,
     priority,
     createdAt,
     updatedAt,
   } = payload.filters
 
   const query = buildQuery({
-    filters: { names, color, priority, createdAt, updatedAt },
+    filters: { names, color, type, priority, createdAt, updatedAt },
     rules: {
       _id: { type: 'array' },
       names: { type: 'string', langAware: true },
       color: { type: 'string' },
+      type: { type: 'exact' },
       priority: { type: 'exact' },
       createdAt: { type: 'dateRange' },
       updatedAt: { type: 'dateRange' },
@@ -52,20 +54,6 @@ export async function list(
       $sort: sorters,
     },
     {
-      $project: {
-        _id: 0,
-        id: '$_id',
-        seq: 1,
-        names: 1,
-        color: 1,
-        type: 1,
-        priority: 1,
-        active: 1,
-        createdAt: 1,
-        updatedAt: 1,
-      },
-    },
-    {
       $facet: {
         items: [
           { $skip: (current - 1) * pageSize },
@@ -78,19 +66,34 @@ export async function list(
     },
   ]
 
-  const raw = await DeliveryServiceModel.aggregate<AggregateResult<DeliveryServiceDTO>>(pipeline).exec()
-  const { items, total } = unwrapAggregate(raw)
+  const raw = await DeliveryServiceModel.aggregate<{
+    items: DeliveryServiceDB[]
+    count: Array<{ count: number }>
+  }>(pipeline).exec()
+
+  const facet = raw[0]
+  const items = facet?.items ?? []
+  const total = facet?.count[0]?.count ?? 0
 
   return { items, total, page: current, pageSize }
+}
+
+export async function findById(id: string) {
+  return DeliveryServiceModel.findOne({ _id: id, removed: false }).lean().exec()
 }
 
 export async function createOne(payload: CreateDeliveryServicesRepoPayload) {
   return DeliveryServiceModel.create(payload)
 }
 
-export async function updateById(id: string, payload: EditDeliveryServicesRepoPayload) {
+export async function updateById(
+  id: string,
+  payload: EditDeliveryServicesRepoPayload & {
+    credentials?: CreateDeliveryServicesRepoPayload['credentials']
+  },
+) {
   return DeliveryServiceModel.findOneAndUpdate(
-    { _id: id },
+    { _id: id, removed: false },
     { $set: payload as unknown as Record<string, unknown> },
     { new: true, runValidators: true },
   ).exec()

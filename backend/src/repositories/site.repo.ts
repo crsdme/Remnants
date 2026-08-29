@@ -100,6 +100,24 @@ export async function findById(id: string) {
   return SiteModel.findById(id).exec()
 }
 
+export async function listActive() {
+  return SiteModel.find({ active: true, removed: { $ne: true } }).exec()
+}
+
+export async function listActiveByIds(ids: string[]) {
+  if (ids.length === 0)
+    return []
+  return SiteModel.find({ _id: { $in: ids }, active: true, removed: { $ne: true } }).exec()
+}
+
+export async function listActiveByWarehouseId(warehouseId: string) {
+  return SiteModel.find({
+    active: true,
+    removed: { $ne: true },
+    warehouseIds: warehouseId,
+  }).exec()
+}
+
 export async function removeById(id: string) {
   return SiteModel.findOneAndUpdate(
     { _id: id },

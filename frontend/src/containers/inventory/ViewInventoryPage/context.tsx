@@ -57,7 +57,14 @@ export function ViewInventoryProvider({ children }: { children: ReactNode }) {
     },
   )
 
-  const inventory = inventories[0]
+  // Newest first — avoids opening an older duplicate when seqs collide.
+  const inventory = useMemo(() => {
+    if (inventories.length === 0)
+      return undefined
+    return [...inventories].sort(
+      (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+    )[0]
+  }, [inventories])
 
   const {
     data: inventoryItemsResponse,

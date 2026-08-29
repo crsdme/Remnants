@@ -1,6 +1,3 @@
-import type {
-  DeliveryServiceDTO,
-} from '@remnant/shared'
 import type { z } from 'zod'
 import type { deliveryServiceDBSchema } from '../schemas'
 import {
@@ -33,7 +30,12 @@ export function parseRemoveDeliveryServices(x: unknown): RemoveDeliveryServicesP
 }
 
 export type GetDeliveryServicesRepoPayload = GetDeliveryServicesPayload
-export interface GetDeliveryServicesRepoResult { items: DeliveryServiceDTO[], total: number, page: number, pageSize: number }
+export interface GetDeliveryServicesRepoResult {
+  items: DeliveryServiceDB[]
+  total: number
+  page: number
+  pageSize: number
+}
 
 export type CreateDeliveryServicesRepoPayload = CreateDeliveryServicesPayload
 

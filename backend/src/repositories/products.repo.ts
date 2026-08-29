@@ -608,6 +608,11 @@ export async function findByIds(payload: { ids: string[] }) {
   return ProductModel.find({ _id: { $in: payload.ids } }).lean<ProductDB[]>().exec()
 }
 
+export async function listIds(): Promise<string[]> {
+  const docs = await ProductModel.find({ removed: { $ne: true } }).select({ _id: 1 }).lean().exec()
+  return docs.map(doc => doc._id)
+}
+
 export async function findById(id: string, session?: ClientSession) {
   return ProductModel.findById(id, null, { session }).lean<ProductDB>().exec()
 }

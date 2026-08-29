@@ -15,6 +15,15 @@ describe('delivery service API', () => {
         priority: 1,
         color: '#000000',
         type: 'novaposhta',
+        credentials: {
+          type: 'novaposhta',
+          apiKey: 'test-api-key-123456',
+          phone: '380671112233',
+          sender: {
+            city: { id: 'city-ref', name: 'Kyiv' },
+            office: { id: 'office-ref', name: 'Warehouse 1' },
+          },
+        },
       })
       const deliveryServiceResponseParsed = parseResponse(createDeliveryServiceResponseSchema, deliveryServiceResponse)
 
@@ -35,6 +44,16 @@ describe('delivery service API', () => {
         type: 'novaposhta',
         active: true,
       })
+      expect(found?.credentials).toMatchObject({
+        type: 'novaposhta',
+        phone: '380671112233',
+        hasApiKey: true,
+        sender: {
+          city: { id: 'city-ref', name: 'Kyiv' },
+          office: { id: 'office-ref', name: 'Warehouse 1' },
+        },
+      })
+      expect(found?.credentials?.type === 'novaposhta' && found.credentials.apiKey).not.toBe('test-api-key-123456')
     })
   })
 })

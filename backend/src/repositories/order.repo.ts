@@ -1,4 +1,4 @@
-import type { AggregateResult } from '@remnant/shared'
+import type { AggregateResult, OrderDeliveryDTO } from '@remnant/shared'
 import type { ClientSession, PipelineStage } from 'mongoose'
 import type {
   CreateOrderItemRepoPayload,
@@ -309,11 +309,12 @@ export async function list({
               orderSource: { id: '$orderSource._id', names: 1, type: 1, color: 1, priority: 1 },
               orderStatus: { id: '$orderStatus._id', names: 1, type: 1, color: 1, isLocked: 1, priority: 1 },
               warehouse: { id: '$warehouse._id', names: 1, priority: 1 },
-              totals: 1,
-              orderPayments: 1,
-              profit: 1,
+              totals: { $ifNull: ['$totals', []] },
+              orderPayments: { $ifNull: ['$orderPayments', []] },
+              profit: { $ifNull: ['$profit', []] },
               orderPaymentStatus: 1,
               comment: 1,
+              delivery: 1,
               files: { $ifNull: ['$files', []] },
               createdAt: 1,
               updatedAt: 1,
@@ -365,6 +366,7 @@ export async function listItems({ payload }: { payload: GetOrderItemsRepoPayload
     minorManualPrice: 1,
     minorBasePrice: 1,
     currency: { id: '$currency._id', names: '$currency.names', symbols: '$currency.symbols', scale: '$currency.scale', paymentEpsilon: '$currency.paymentEpsilon' },
+    purchaseCurrency: { id: '$purchaseCurrency._id', names: '$purchaseCurrency.names', symbols: '$purchaseCurrency.symbols', scale: '$purchaseCurrency.scale' },
     minorPrice: 1,
     minorDiscountAmount: 1,
     discountPercent: 1,
@@ -388,6 +390,7 @@ export async function listItems({ payload }: { payload: GetOrderItemsRepoPayload
     exchangeRate: 1,
     order: 1,
     currency: { id: '$currency._id', names: '$currency.names', symbols: '$currency.symbols', scale: '$currency.scale' },
+    purchaseCurrency: { id: '$purchaseCurrency._id', names: '$purchaseCurrency.names', symbols: '$purchaseCurrency.symbols', scale: '$purchaseCurrency.scale' },
     barcodes: { id: 1, code: 1 },
     categories: { id: 1, names: 1 },
     unit: { id: '$unit._id', names: '$unit.names', symbols: '$unit.symbols' },
@@ -403,14 +406,10 @@ export async function listItems({ payload }: { payload: GetOrderItemsRepoPayload
 
   if (payload.hasProfitPermission === true) {
     projection.minorProfit = 1
-    projection.exchangeRate = 1
     projection.minorPurchasePrice = 1
-    projection.purchaseCurrency = { id: '$purchaseCurrency._id', names: '$purchaseCurrency.names', symbols: '$purchaseCurrency.symbols', scale: '$purchaseCurrency.scale' }
 
     productProjection.minorProfit = 1
-    productProjection.exchangeRate = 1
     productProjection.minorPurchasePrice = 1
-    productProjection.purchaseCurrency = { id: '$purchaseCurrency._id', names: '$purchaseCurrency.names', symbols: '$purchaseCurrency.symbols', scale: '$purchaseCurrency.scale' }
   }
 
   const pipeline: PipelineStage[] = [
@@ -543,7 +542,12 @@ export async function listItems({ payload }: { payload: GetOrderItemsRepoPayload
                 {
                   $addFields: {
                     currency: { $arrayElemAt: ['$currency', 0] },
-                    purchaseCurrency: { $arrayElemAt: ['$purchaseCurrency', 0] },
+                    purchaseCurrency: {
+                      $ifNull: [
+                        { $arrayElemAt: ['$purchaseCurrency', 0] },
+                        { $arrayElemAt: ['$currency', 0] },
+                      ],
+                    },
                     unit: { $arrayElemAt: ['$unit', 0] },
                     productPropertiesGroup: { $arrayElemAt: ['$productPropertiesGroup', 0] },
                     productProperties: {
@@ -655,7 +659,12 @@ export async function listItems({ payload }: { payload: GetOrderItemsRepoPayload
                 $first: '$product',
               },
               currency: { $arrayElemAt: ['$currency', 0] },
-              purchaseCurrency: { $arrayElemAt: ['$purchaseCurrency', 0] },
+              purchaseCurrency: {
+                $ifNull: [
+                  { $arrayElemAt: ['$purchaseCurrency', 0] },
+                  { $arrayElemAt: ['$currency', 0] },
+                ],
+              },
             },
           },
           {
@@ -864,4 +873,31 @@ export async function patchById({
     { $set: payload },
     { new: true, runValidators: true, session },
   ).exec()
+}
+
+export async function listForTracking(options: { staleBefore?: Date } = {}) {
+  const query: Record<string, unknown> = {
+    'removed': { $ne: true },
+    'delivery.shipment.trackingNumber': { $exists: true, $nin: [null, ''] },
+  }
+
+  if (options.staleBefore != null) {
+    query.$or = [
+      { 'delivery.shipment.lastSyncedAt': { $exists: false } },
+      { 'delivery.shipment.lastSyncedAt': null },
+      { 'delivery.shipment.lastSyncedAt': { $lt: options.staleBefore } },
+    ]
+  }
+
+  return OrderModel.find(query).select({
+    _id: 1,
+    deliveryServiceId: 1,
+    orderStatusId: 1,
+    delivery: 1,
+  }).lean<{
+    _id: string
+    deliveryServiceId: string
+    orderStatusId: string
+    delivery?: OrderDeliveryDTO
+  }[]>().exec()
 }

@@ -111,6 +111,15 @@ export function AsyncSelectNew<T>({
     setSelectedIds(toIdArray(next))
   }, [])
 
+  // Keep latest callbacks in refs so fetch/select effects stay stable across re-renders
+  // (parents often pass inline getOptionValue / onChange / loadOptions with new identity).
+  const loadOptionsRef = useRef(loadOptions)
+  const getOptionValueRef = useRef(getOptionValue)
+  const onChangeRef = useRef(onChange)
+  loadOptionsRef.current = loadOptions
+  getOptionValueRef.current = getOptionValue
+  onChangeRef.current = onChange
+
   // LIFECYCLE 1
   useEffect(() => {
     const el = triggerRef.current
@@ -144,7 +153,7 @@ export function AsyncSelectNew<T>({
     const map = cacheRef.current
     let changed = false
     for (const opt of list) {
-      const id = getOptionValue(opt)
+      const id = getOptionValueRef.current(opt)
       const prev = map.get(id)
       if (prev !== opt) {
         map.set(id, opt)
@@ -153,33 +162,33 @@ export function AsyncSelectNew<T>({
     }
     if (changed)
       setCacheTick(t => t + 1)
-  }, [getOptionValue])
+  }, [])
 
   const selectId = useCallback((id: string) => {
     const exists = selectedIds.includes(id)
     if (multi) {
       const next = exists ? selectedIds.filter(v => v !== id) : [...selectedIds, id]
       setSelectedSafe(next)
-      onChange?.(next)
+      onChangeRef.current?.(next)
       return
     }
     if (clearable && exists) {
       setSelectedSafe([])
-      onChange?.('')
+      onChangeRef.current?.('')
       return
     }
     setSelectedSafe([id])
-    onChange?.(id)
+    onChangeRef.current?.(id)
     setOpen(false)
-  }, [multi, clearable, selectedIds, onChange, setSelectedSafe])
+  }, [multi, clearable, selectedIds, setSelectedSafe])
 
   const removeTag = useCallback((id: string) => {
     if (!multi)
       return
     const next = selectedIds.filter(v => v !== id)
     setSelectedSafe(next)
-    onChange?.(next)
-  }, [multi, selectedIds, onChange])
+    onChangeRef.current?.(next)
+  }, [multi, selectedIds, setSelectedSafe])
 
   // LIFECYCLE 4
 
@@ -188,11 +197,11 @@ export function AsyncSelectNew<T>({
     setLoading(true)
     setError(null)
     try {
-      const result = await loadOptions({ query: q })
+      const result = await loadOptionsRef.current({ query: q })
       if (rid !== requestIdRef.current)
         return
       mergeIntoCache(result)
-      setMenuOptionIds(result.map(getOptionValue))
+      setMenuOptionIds(result.map(opt => getOptionValueRef.current(opt)))
     }
     catch (e) {
       if (rid !== requestIdRef.current)
@@ -204,7 +213,7 @@ export function AsyncSelectNew<T>({
       if (rid === requestIdRef.current)
         setLoading(false)
     }
-  }, [loadOptions, mergeIntoCache, getOptionValue])
+  }, [mergeIntoCache])
 
   useEffect(() => {
     if (!open)
@@ -212,19 +221,15 @@ export function AsyncSelectNew<T>({
     void fetchMenu(debouncedSearch || '')
   }, [open, debouncedSearch, fetchMenu])
 
-  // Drop stale menu when loader changes (cascading filters: cashregister → account → currency)
-  useEffect(() => {
-    setMenuOptionIds([])
-    cacheRef.current.clear()
-    setCacheTick(t => t + 1)
-  }, [loadOptions])
-
-  // Prefetch options so selectFirstOption can run without opening the menu
+  // Prefetch for selectFirstOption. Do not depend on loadOptions identity —
+  // parents (e.g. Products form) often pass a new inline function every render.
+  // Clear menu when empty so cascading filters cannot auto-select a stale option.
   useEffect(() => {
     if (!selectFirstOption || open)
       return
     if (selectedIds.length > 0)
       return
+    setMenuOptionIds(prev => (prev.length === 0 ? prev : []))
     void fetchMenu('')
   }, [selectFirstOption, open, selectedIds.length, fetchMenu])
 
@@ -240,7 +245,7 @@ export function AsyncSelectNew<T>({
     let cancelled = false
     const hydrate = async () => {
       try {
-        const res = await loadOptions({ selectedValue: missing })
+        const res = await loadOptionsRef.current({ selectedValue: missing })
         if (!cancelled)
           mergeIntoCache(res)
       }
@@ -252,7 +257,7 @@ export function AsyncSelectNew<T>({
     return () => {
       cancelled = true
     }
-  }, [selectedIds, loadOptions, mergeIntoCache])
+  }, [selectedIds, mergeIntoCache])
 
   // LIFECYCLE 6
 
@@ -277,8 +282,8 @@ export function AsyncSelectNew<T>({
       return
     const firstId = menuOptionIds[0]
     setSelectedSafe([firstId])
-    onChange?.(multi ? [firstId] : firstId)
-  }, [selectFirstOption, selectedIds.length, menuOptionIds, onChange, multi, setSelectedSafe])
+    onChangeRef.current?.(multi ? [firstId] : firstId)
+  }, [selectFirstOption, selectedIds.length, menuOptionIds, multi, setSelectedSafe])
 
   const triggerButton = (
     <Button
@@ -310,15 +315,19 @@ export function AsyncSelectNew<T>({
 
   return (
     <>
-      <Popover open={open} onOpenChange={setOpen}>
+      <Popover modal open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
           {isForm ? <FormControl>{triggerButton}</FormControl> : triggerButton}
         </PopoverTrigger>
 
         {isForm && <FormMessage />}
 
-        <PopoverContent style={{ width: popoverWidth }} className={cn('p-0', className)}>
-          <Command shouldFilter={false}>
+        <PopoverContent
+          style={{ width: popoverWidth }}
+          className={cn('p-0 overflow-hidden', className)}
+          onWheel={e => e.stopPropagation()}
+        >
+          <Command shouldFilter={false} className="h-auto">
             {searchable && (
               <div className="relative w-full">
                 <CommandInput
@@ -335,7 +344,7 @@ export function AsyncSelectNew<T>({
               </div>
             )}
 
-            <CommandList className="w-full">
+            <CommandList className="w-full min-h-0 overscroll-contain">
               {error && <div className="p-4 text-destructive text-center">{error}</div>}
               {loading && menuOptions.length === 0 && (loadingSkeleton || <DefaultLoadingSkeleton />)}
               {!loading && !error && menuOptions.length === 0 && (notFound || <CommandEmpty>{t('component.asyncSelect.noResultsMessage')}</CommandEmpty>)}

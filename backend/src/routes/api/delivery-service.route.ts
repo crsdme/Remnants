@@ -4,12 +4,19 @@ import {
   createDeliveryServiceSchema,
   editDeliveryServiceResponseSchema,
   editDeliveryServiceSchema,
+  getDeliveryCapabilitiesResponseSchema,
+  getDeliveryCapabilitiesSchema,
+  getDeliveryLocationsResponseSchema,
+  getDeliveryLocationsSchema,
   getDeliveryServicesResponseSchema,
   getDeliveryServicesSchema,
+  lookupDeliveryShipmentResponseSchema,
+  lookupDeliveryShipmentSchema,
   removeDeliveryServicesResponseSchema,
   removeDeliveryServicesSchema,
 } from '@remnant/shared'
 import { Router } from 'express'
+import * as DeliveryCarrierController from '@/controllers/delivery-carrier.controller'
 import * as DeliveryServiceController from '@/controllers/delivery-service.controller'
 import { checkPermissions, validateBodyRequest, validateQueryRequest, validateResponse } from '@/middleware'
 
@@ -44,6 +51,28 @@ router.post(
   checkPermissions('delivery-service.remove'),
   validateResponse(removeDeliveryServicesResponseSchema),
   DeliveryServiceController.remove as RequestHandler,
+)
+
+router.get(
+  '/capabilities/get',
+  validateQueryRequest(getDeliveryCapabilitiesSchema),
+  validateResponse(getDeliveryCapabilitiesResponseSchema),
+  DeliveryCarrierController.getCapabilities as RequestHandler,
+)
+
+router.post(
+  '/locations/get',
+  validateBodyRequest(getDeliveryLocationsSchema),
+  validateResponse(getDeliveryLocationsResponseSchema),
+  DeliveryCarrierController.getLocations as RequestHandler,
+)
+
+router.post(
+  '/shipment/lookup',
+  validateBodyRequest(lookupDeliveryShipmentSchema),
+  checkPermissions('order.page'),
+  validateResponse(lookupDeliveryShipmentResponseSchema),
+  DeliveryCarrierController.lookupShipment as RequestHandler,
 )
 
 export default router

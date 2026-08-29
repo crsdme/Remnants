@@ -62,9 +62,12 @@ function QuantityInput({
         const parsed = Number(localValue)
         onCommit(Number.isFinite(parsed) ? parsed : 0)
       }}
+      inputMode="numeric"
       onKeyDown={(e) => {
-        if (e.key === 'Enter')
+        if (e.key === 'Enter') {
+          e.preventDefault()
           e.currentTarget.blur()
+        }
       }}
     />
   )

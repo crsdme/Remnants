@@ -16,6 +16,13 @@ export function useBarcodeScanned(
 
   useEffect(() => {
     const handleKeydown = (event: KeyboardEvent) => {
+      const target = event.target
+      if (target instanceof HTMLElement) {
+        const tag = target.tagName
+        if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || target.isContentEditable)
+          return
+      }
+
       const currentTime = Date.now()
 
       if (!/^\d$/.test(event.key))

@@ -46,10 +46,10 @@ import {
   parseGetProductPropertyGroups,
   parseGetProductPropertyOptions,
   parseGetProductsRepo,
-  parseGetSites,
   parseGetUnits,
 } from '@/types/'
 import { buildAuditChanges, getDifferenceDeep, HttpError, toAuditSnapshot } from '@/utils'
+import logger from '@/utils/logger'
 import { toMinor } from '@/utils/money'
 import {
   extractLangMap,
@@ -153,19 +153,8 @@ export async function create({ payload, uploadedImages, user }: { payload: Creat
     })),
   })
 
-  let syncSitesId = syncSites
-
-  if (isAutoSyncEnabled) {
-    const { items } = await SiteRepository.list(parseGetSites({ pagination: { full: true } }))
-    syncSitesId = items.map(site => site.id)
-  }
-
-  for (const site of syncSitesId) {
-    await SyncEntryService.syncProductCreate({
-      siteId: site,
-      productId: createdProduct._id.toString(),
-    })
-  }
+  const syncSiteIds = await resolveSyncSiteIds(isAutoSyncEnabled, syncSites)
+  await pushProductToSites('create', createdProduct._id.toString(), syncSiteIds)
 
   if (generateBarcode) {
     await BarcodeService.create({
@@ -294,26 +283,14 @@ export async function edit({ payload, uploadedImages, user }: { payload: EditPro
   if (!updatedProduct)
     throw new HttpError(400, 'Product not edited', 'PRODUCT_NOT_EDITED')
 
-  let syncSitesId = syncSites
-
-  if (isAutoSyncEnabled) {
-    const { items } = await SiteRepository.list(parseGetSites({ pagination: { current: 1, pageSize: 1000 } }))
-    syncSitesId = items.map(site => site.id)
-  }
-
   const differenceRaw = getDifferenceDeep(
     toAuditSnapshot(oldProduct, { omit: PRODUCT_AUDIT_OMIT }),
     toAuditSnapshot(newProduct, { omit: PRODUCT_AUDIT_OMIT }),
   )
   const difference = Array.isArray(differenceRaw) ? {} : differenceRaw
 
-  for (const site of syncSitesId) {
-    await SyncEntryService.syncProductEdit({
-      siteId: site,
-      productId: updatedProduct._id.toString(),
-      difference,
-    })
-  }
+  const syncSiteIds = await resolveSyncSiteIds(isAutoSyncEnabled, syncSites)
+  await pushProductToSites('edit', updatedProduct._id.toString(), syncSiteIds, difference)
 
   const changes = buildAuditChanges(oldProduct, newProduct, { omit: PRODUCT_AUDIT_OMIT })
   if (changes.length > 0) {
@@ -808,5 +785,42 @@ export async function downloadTemplate({ user }: { user: AuthUser }): Promise<Do
     code: 'PRODUCTS_DOWNLOADED',
     message: 'Products downloaded',
     buffer: Buffer.from(exportHandlerResponse.buffer),
+  }
+}
+
+async function resolveSyncSiteIds(
+  isAutoSyncEnabled: boolean | undefined,
+  syncSites: string[] | undefined,
+): Promise<string[]> {
+  if (isAutoSyncEnabled) {
+    const sites = await SiteRepository.listActive()
+    return sites.map(site => site._id)
+  }
+
+  const ids = [...new Set(syncSites ?? [])]
+  if (ids.length === 0)
+    return []
+
+  const sites = await SiteRepository.listActiveByIds(ids)
+  return sites.map(site => site._id)
+}
+
+async function pushProductToSites(
+  kind: 'create' | 'edit',
+  productId: string,
+  siteIds: string[],
+  difference: Record<string, unknown> = {},
+) {
+  for (const siteId of siteIds) {
+    try {
+      if (kind === 'create') {
+        await SyncEntryService.syncProductCreate({ siteId, productId })
+        continue
+      }
+      await SyncEntryService.syncProductEdit({ siteId, productId, difference })
+    }
+    catch (error) {
+      logger.error(error)
+    }
   }
 }

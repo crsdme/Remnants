@@ -1,3 +1,4 @@
+import { DELIVERY_CURRENCY_SETTING_KEY, DELIVERY_STATUS_MAP_SETTING_KEY, DELIVERY_TRACKING_INTERVAL_DEFAULT, DELIVERY_TRACKING_INTERVAL_SETTING_KEY, PHONE_DEFAULT_COUNTRY_FALLBACK, PHONE_DEFAULT_COUNTRY_SETTING_KEY } from '@remnant/shared'
 import { connectDB } from '../../config/db'
 import * as AutomationService from '../../services/automation.service'
 import * as CashregisterAccountService from '../../services/cashregister-account.service'
@@ -16,6 +17,7 @@ import * as ProductPropertyOptionService from '../../services/product-property-o
 import * as ProductPropertyService from '../../services/product-property.service'
 import * as ProductStockStatusService from '../../services/product-stock-status.service'
 import * as ProductService from '../../services/product.service'
+import * as SettingService from '../../services/setting.service'
 import * as SiteService from '../../services/site.service'
 import * as UnitService from '../../services/unit.service'
 import * as UserRoleService from '../../services/user-role.service'
@@ -41,14 +43,14 @@ async function seedData() {
     await clearDB()
 
     await createLanguages()
-    await createCurrencies()
+    const currencies = await createCurrencies()
     await createUnits()
     await createCategories()
     const productProperties = await createProductProperties()
     await createProducts(productProperties)
     const deliveryServices = await createDeliveryServices()
     await createOrderSources()
-    const statuses = await createOrderStatuses()
+    const statuses = await createOrderStatuses(currencies.uah.id)
     await createProductStockStatuses()
     await createCashregisters()
     const warehouses = await createWarehouses()
@@ -127,7 +129,7 @@ async function createCurrencies() {
     },
   })
 
-  await CurrencyService.create({
+  const { data: uah } = await CurrencyService.create({
     payload: {
       names: {
         en: 'Hryvnia',
@@ -158,6 +160,18 @@ async function createCurrencies() {
       active: true,
     },
   })
+
+  await SettingService.create({
+    payload: {
+      key: PHONE_DEFAULT_COUNTRY_SETTING_KEY,
+      value: PHONE_DEFAULT_COUNTRY_FALLBACK,
+      scope: 'ui',
+      isPublic: true,
+      description: 'Default country code for phone inputs',
+    },
+  })
+
+  return { uah }
 }
 
 async function createUnits() {
@@ -1264,6 +1278,16 @@ async function createDeliveryServices() {
       },
       priority: 2,
       type: 'novaposhta',
+      active: true,
+      credentials: {
+        type: 'novaposhta',
+        apiKey: 'seed-novaposhta-api-key',
+        phone: '380000000000',
+        sender: {
+          city: { id: 'seed-city', name: 'Kyiv' },
+          office: { id: 'seed-office', name: 'Warehouse 1' },
+        },
+      },
     },
   })
 
@@ -1275,6 +1299,10 @@ async function createDeliveryServices() {
       },
       priority: 1,
       type: 'selfpickup',
+      active: true,
+      credentials: {
+        type: 'selfpickup',
+      },
     },
   })
 
@@ -1303,46 +1331,153 @@ async function createOrderSources() {
   })
 }
 
-async function createOrderStatuses() {
-  const { data: inProgress } = await OrderStatusService.create({
-    payload: {
-      names: {
-        en: 'In Progress',
-        ru: 'В работе',
+async function createOrderStatuses(npCurrencyId: string) {
+  async function createStatus(params: {
+    en: string
+    ru: string
+    color: string
+    priority: number
+    isSelectable: boolean
+    isDisplayed: boolean
+    includeInStatistics: boolean
+    isLocked: boolean
+  }) {
+    const { data } = await OrderStatusService.create({
+      payload: {
+        names: { en: params.en, ru: params.ru },
+        color: params.color,
+        priority: params.priority,
+        isSelectable: params.isSelectable,
+        isDisplayed: params.isDisplayed,
+        includeInStatistics: params.includeInStatistics,
+        isLocked: params.isLocked,
       },
-      priority: 2,
-      isSelectable: true,
-      isDisplayed: true,
-      includeInStatistics: true,
-      isLocked: false,
+    })
+    return data
+  }
+
+  const inProgress = await createStatus({
+    en: 'In Progress',
+    ru: 'В работе',
+    color: '#3b82f6',
+    priority: 1,
+    isSelectable: true,
+    isDisplayed: true,
+    includeInStatistics: true,
+    isLocked: false,
+  })
+
+  const awaitingShipment = await createStatus({
+    en: 'Awaiting shipment',
+    ru: 'Ожидает отправки',
+    color: '#eab308',
+    priority: 2,
+    isSelectable: true,
+    isDisplayed: true,
+    includeInStatistics: true,
+    isLocked: false,
+  })
+
+  const inTransit = await createStatus({
+    en: 'In transit',
+    ru: 'В пути',
+    color: '#f97316',
+    priority: 3,
+    isSelectable: true,
+    isDisplayed: true,
+    includeInStatistics: true,
+    isLocked: false,
+  })
+
+  const atOffice = await createStatus({
+    en: 'At the warehouse',
+    ru: 'В отделении',
+    color: '#8b5cf6',
+    priority: 4,
+    isSelectable: true,
+    isDisplayed: true,
+    includeInStatistics: true,
+    isLocked: false,
+  })
+
+  const money = await createStatus({
+    en: 'Money / COD',
+    ru: 'Деньги',
+    color: '#22c55e',
+    priority: 5,
+    isSelectable: true,
+    isDisplayed: true,
+    includeInStatistics: true,
+    isLocked: false,
+  })
+
+  const completed = await createStatus({
+    en: 'Completed',
+    ru: 'Завершен',
+    color: '#16a34a',
+    priority: 6,
+    isSelectable: false,
+    isDisplayed: true,
+    includeInStatistics: true,
+    isLocked: true,
+  })
+
+  const returned = await createStatus({
+    en: 'Returned',
+    ru: 'Возврат',
+    color: '#ef4444',
+    priority: 7,
+    isSelectable: true,
+    isDisplayed: true,
+    includeInStatistics: true,
+    isLocked: false,
+  })
+
+  const removed = await createStatus({
+    en: 'Removed',
+    ru: 'Удалён',
+    color: '#6b7280',
+    priority: 8,
+    isSelectable: false,
+    isDisplayed: true,
+    includeInStatistics: false,
+    isLocked: true,
+  })
+
+  await SettingService.create({
+    payload: {
+      key: DELIVERY_STATUS_MAP_SETTING_KEY,
+      value: JSON.stringify({
+        awaiting_shipment: awaitingShipment.id,
+        in_transit: inTransit.id,
+        at_office: atOffice.id,
+        money: money.id,
+        completed: completed.id,
+        returned: returned.id,
+      }),
+      scope: 'delivery',
+      isPublic: true,
+      description: 'Nova Poshta tracking groups to order statuses',
     },
   })
 
-  const { data: completed } = await OrderStatusService.create({
+  await SettingService.create({
     payload: {
-      names: {
-        en: 'Completed',
-        ru: 'Завершен',
-      },
-      isLocked: true,
-      priority: 4,
-      isSelectable: false,
-      isDisplayed: true,
-      includeInStatistics: true,
+      key: DELIVERY_CURRENCY_SETTING_KEY,
+      value: npCurrencyId,
+      scope: 'delivery',
+      isPublic: true,
+      description: 'Currency used for Nova Poshta declared value',
     },
   })
 
-  const { data: removed } = await OrderStatusService.create({
+  await SettingService.create({
     payload: {
-      names: {
-        en: 'Removed',
-        ru: 'Удалён',
-      },
-      isLocked: true,
-      priority: 5,
-      isSelectable: false,
-      isDisplayed: true,
-      includeInStatistics: false,
+      key: DELIVERY_TRACKING_INTERVAL_SETTING_KEY,
+      value: DELIVERY_TRACKING_INTERVAL_DEFAULT,
+      scope: 'delivery',
+      isPublic: true,
+      description: 'How often Nova Poshta tracking may refresh (e.g. 5m, 1h, 1d)',
     },
   })
 

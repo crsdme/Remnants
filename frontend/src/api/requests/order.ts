@@ -1,6 +1,8 @@
 import type {
   CreateOrderRequest,
   CreateOrderResponse,
+  CreateOrderShipmentRequest,
+  CreateOrderShipmentResponse,
   EditOrderRequest,
   EditOrderResponse,
   GetOrderDetailsRequest,
@@ -11,8 +13,11 @@ import type {
   GetOrdersResponse,
   PrintDraftInvoiceOrderRequest,
   PrintDraftInvoiceOrderResponse,
+  PrintOrderShipmentLabelRequest,
   RemoveOrdersRequest,
   RemoveOrdersResponse,
+  SyncOrderShipmentsRequest,
+  SyncOrderShipmentsResponse,
 } from '@remnant/shared'
 import { api } from '@/api/instance'
 
@@ -50,4 +55,16 @@ export async function removeOrder(params: RemoveOrdersRequest) {
 
 export async function printDraftInvoice(params: PrintDraftInvoiceOrderRequest) {
   return api.post<PrintDraftInvoiceOrderResponse>('orders/print/draft-invoice', { ...params }, { responseType: 'blob' })
+}
+
+export async function printOrderShipmentLabel(params: PrintOrderShipmentLabelRequest) {
+  return api.get<Blob>('orders/shipment/print-label', { params, responseType: 'blob' })
+}
+
+export async function createOrderShipment(params: CreateOrderShipmentRequest) {
+  return api.post<CreateOrderShipmentResponse>('orders/shipment/create', params)
+}
+
+export async function syncOrderShipments(params: SyncOrderShipmentsRequest = {}) {
+  return api.post<SyncOrderShipmentsResponse>('orders/shipment/sync', params)
 }

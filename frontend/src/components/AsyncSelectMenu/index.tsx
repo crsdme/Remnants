@@ -519,7 +519,7 @@ export function AsyncSelectMenu<T>({
 
   return (
     <>
-      <Popover open={open} onOpenChange={handleOpenChange}>
+      <Popover modal open={open} onOpenChange={handleOpenChange}>
         <PopoverTrigger asChild>
           {isForm ? <FormControl>{triggerButton}</FormControl> : triggerButton}
         </PopoverTrigger>
@@ -528,9 +528,10 @@ export function AsyncSelectMenu<T>({
 
         <PopoverContent
           style={{ width: popoverWidth }}
-          className={cn('p-0', className)}
+          className={cn('p-0 overflow-hidden', className)}
+          onWheel={e => e.stopPropagation()}
         >
-          <Command shouldFilter={false}>
+          <Command shouldFilter={false} className="h-auto">
             {searchable && (
               <div className="relative w-full">
                 <CommandInput
@@ -548,7 +549,7 @@ export function AsyncSelectMenu<T>({
               </div>
             )}
 
-            <CommandList className="w-full">
+            <CommandList className="w-full min-h-0 overscroll-contain">
               {error && (
                 <div className="p-4 text-destructive text-center">
                   {error}

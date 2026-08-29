@@ -45,7 +45,10 @@ export function SettingProvider({ children }: { children: ReactNode }) {
     return useMutateEditSetting.mutate({ id: '', key: params.key, value: params.value })
   }
 
-  const { settings } = useSettingQuery({}, { options: { placeholderData: prevData => prevData } })
+  const { settings } = useSettingQuery(
+    { pagination: { full: true } },
+    { options: { placeholderData: prevData => prevData } },
+  )
 
   const getSetting = (key: string) => {
     return settings.find(setting => setting.key === key)

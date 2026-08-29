@@ -3,26 +3,26 @@ import { z } from 'zod'
 
 export const syncEntryDBSchema = z.object({
   _id: idSchema,
-  sourceType: z.string(),
+  sourceType: z.enum(['product', 'category']),
   sourceId: idSchema,
   siteId: idSchema,
-  externalId: z.string(),
+  externalId: z.string().nullable().optional(),
   status: z.enum(['pending', 'synced', 'error']),
-  syncedAt: z.coerce.date(),
-  lastError: z.string(),
+  syncedAt: z.coerce.date().optional(),
+  lastError: z.string().nullable().optional(),
   createdAt: z.coerce.date(),
   updatedAt: z.coerce.date(),
 })
 
 export const syncEntrySchema = z.object({
   id: idSchema,
-  sourceType: z.string(),
+  sourceType: z.enum(['product', 'category']),
   sourceId: idSchema,
   siteId: idSchema,
-  externalId: z.string(),
+  externalId: z.string().nullable().optional(),
   status: z.enum(['pending', 'synced', 'error']),
-  syncedAt: z.date(),
-  lastError: z.string(),
+  syncedAt: z.date().optional(),
+  lastError: z.string().nullable().optional(),
   createdAt: z.date(),
   updatedAt: z.date(),
 })
@@ -92,7 +92,6 @@ export const syncProductEditSchema = z.object({
 export const syncProductQuantitySchema = z.object({
   siteId: idSchema,
   productId: idSchema,
-  quantity: z.number(),
 })
 
 export const getSyncEntriesResponseSchema = responseListSchema(syncEntrySchema)

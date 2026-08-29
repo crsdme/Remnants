@@ -22,6 +22,7 @@ import { backendUrl } from '@/utils/constants'
 import { formatDate } from '@/utils/helpers'
 import { hasPermission } from '@/utils/helpers/permission'
 import { useLocale } from '@/utils/hooks'
+import { usePrintOrderTtn } from '../../components/usePrintOrderTtn'
 import { useOrderContext } from '../context'
 
 const sortIcons = { asc: ArrowUp, desc: ArrowDown }
@@ -42,6 +43,7 @@ export function useColumns() {
   const { isLoading, removeOrder, currencies } = useOrderContext()
   const { permissions } = useAuthContext()
   const navigate = useNavigate()
+  const { printTtn } = usePrintOrderTtn()
 
   const columns = useMemo(() => {
     function sortHeader(column: Column<OrderDTOPopulated>, label: string) {
@@ -126,6 +128,20 @@ export function useColumns() {
               icon: <Printer className="h-4 w-4" />,
             },
           ] as any[]
+
+          if (item.deliveryService?.type === 'novaposhta') {
+            actions.push({
+              permission: 'order.edit',
+              onClick: async () => {
+                await printTtn({
+                  orderId: item.id,
+                  trackingNumber: item.delivery?.shipment?.trackingNumber,
+                })
+              },
+              label: t('table.printTtn'),
+              icon: <Printer className="h-4 w-4" />,
+            })
+          }
 
           if (!item.orderStatus.isLocked || hasPermission(permissions, ['order.editLocked', 'order.removeLocked'])) {
             actions.push({
@@ -364,6 +380,6 @@ export function useColumns() {
       }),
       actionColumn(),
     ]
-  }, [language, currencies, isLoading, navigate, permissions, removeOrder, t])
+  }, [language, currencies, isLoading, navigate, permissions, printTtn, removeOrder, t])
   return columns
 }

@@ -1,3 +1,5 @@
+import type { ClientSession } from 'mongoose'
+import type { SiteContext, SiteProductPayload } from '@/integrations/site'
 import type {
   CreateSyncEntryPayload,
   CreateSyncEntryResponse,
@@ -14,10 +16,73 @@ import type {
   SyncProductQuantityPayload,
   SyncProductQuantityResponse,
 } from '@/types/'
-
+import slugify from 'slugify'
+import { STORAGE_URLS } from '@/config/constants'
+import { remnantAdapter } from '@/integrations/site'
 import { mapSyncEntryToDTO } from '@/mappers/'
+import * as CategoryRepo from '@/repositories/categories.repo'
+import * as CurrencyRepo from '@/repositories/currencies.repo'
+import * as ProductRepo from '@/repositories/products.repo'
+import * as QuantityRepo from '@/repositories/quantity.repo'
+import * as SiteRepo from '@/repositories/site.repo'
 import * as SyncEntryRepo from '@/repositories/sync-entry.repo'
 import { HttpError } from '@/utils/httpError'
+import logger from '@/utils/logger'
+import { fromMinor } from '@/utils/money'
+
+const RELEVANT_PRODUCT_FIELDS = ['names', 'minorPrice', 'currencyId', 'images', 'categoryIds'] as const
+
+function ok(code: string, message: string) {
+  return {
+    status: 'success' as const,
+    code,
+    message,
+  }
+}
+
+function languageRecord(value: unknown): Record<string, string> {
+  if (value instanceof Map) {
+    const record: Record<string, string> = {}
+    for (const [key, name] of value.entries()) {
+      if (typeof key === 'string' && typeof name === 'string')
+        record[key] = name
+    }
+    return record
+  }
+  if (value != null && typeof value === 'object')
+    return { ...(value as Record<string, string>) }
+  return {}
+}
+
+function toSiteContext(site: { url?: string, key?: string }): SiteContext | null {
+  const url = site.url?.trim() ?? ''
+  const key = site.key?.trim() ?? ''
+  if (url === '' || key === '')
+    return null
+  return { url, key }
+}
+
+function toSeo(names: Record<string, string>): Record<string, string> {
+  const seo: Record<string, string> = {}
+  for (const [code, name] of Object.entries(names)) {
+    if (name)
+      seo[code] = slugify(name, { lower: true, strict: true, locale: code })
+  }
+  return seo
+}
+
+function hasRelevantDifference(difference: Record<string, unknown>): boolean {
+  return RELEVANT_PRODUCT_FIELDS.some(key => Object.prototype.hasOwnProperty.call(difference, key))
+}
+
+function namesOverlap(a: Record<string, string>, b: Record<string, string>): boolean {
+  for (const [code, name] of Object.entries(a)) {
+    const other = b[code]
+    if (name && other && name.trim().toLowerCase() === other.trim().toLowerCase())
+      return true
+  }
+  return false
+}
 
 export async function get(payload: GetSyncEntriesPayload): Promise<GetSyncEntriesResponse> {
   const { items, total, page, pageSize } = await SyncEntryRepo.list(payload)
@@ -78,553 +143,284 @@ export async function remove(payload: RemoveSyncEntriesPayload): Promise<RemoveS
 }
 
 export async function syncProductCreate(payload: SyncProductCreatePayload): Promise<SyncProductCreateResponse> {
-  console.log(payload)
-  // const { siteId, productId } = payload
+  const { siteId, productId } = payload
+  const site = await SiteRepo.findById(siteId)
 
-  // const site = await SiteModel.findOne({ _id: siteId })
+  if (site == null || site.removed === true || site.active !== true)
+    return ok('SITE_SKIPPED', 'Site is missing or inactive')
 
-  // if (!site) {
-  //   throw new HttpError(400, 'Site not found', 'SITE_NOT_FOUND')
-  // }
-
-  // const syncEntry = await SyncEntryModel.findOne({ sourceType: 'product', sourceId: productId, siteId })
-
-  // if (!syncEntry) {
-  //   await SyncEntryModel.create({ sourceType: 'product', sourceId: productId, siteId, status: 'pending' })
-  // }
-
-  // const { data: { items: [product] } } = await ProductService.get({
-  //   filters: { ids: [productId] },
-  // })
-
-  // const weightProperty = product.productProperties.find(property => property.id === '7c3e2c1b-f2bf-4639-baf2-7b1101fa7bf2')
-  // const lengthProperty = product.productProperties.find(property => property.id === 'efcc3c51-a146-4975-bc5b-196745f76891')
-  // const typeProperty = product.productProperties.find(property => property.id === '25144e64-5c4c-47fd-842d-c0a2393f972e')
-
-  // const isCurly = (typeProperty?.value || []).includes('822ec142-d144-44fb-ba96-582cff8757b3')
-  // const isVirgin = (typeProperty?.value || []).includes('b930fb75-61a6-41c0-88de-0c69082b7f06')
-  // const isSilky = (typeProperty?.value || []).includes('aeb36d06-1a12-4319-9313-51abcbed38fb')
-
-  // const categories = getCategoryIds(`${isVirgin ? 'Virgin' : isSilky ? 'Silky' : 'RawHair'}${isCurly ? '.Curly' : ''}.${getProductCategory(lengthProperty?.value || 0)}`)
-
-  // const syncProduct = {
-  //   model: `REMNANT NEW PRODUCT`,
-  //   external_id: productId,
-  //   price: product.price,
-  //   translations: [
-  //     {
-  //       name: product.names.ru,
-  //       url: slugify(product.names.ru || '', { lower: true }),
-  //       language_code: 'ru-ru',
-  //     },
-  //     {
-  //       name: product.names.en,
-  //       url: slugify(product.names.en || '', { lower: true }),
-  //       language_code: 'uk-ua',
-  //     },
-  //     {
-  //       name: product.names.en,
-  //       url: slugify(product.names.en || '', { lower: true }),
-  //       language_code: 'en',
-  //     },
-  //     {
-  //       name: product.names.en,
-  //       url: slugify(product.names.en || '', { lower: true }),
-  //       language_code: 'it',
-  //     },
-  //     {
-  //       name: product.names.en,
-  //       url: slugify(product.names.en || '', { lower: true }),
-  //       language_code: 'pl',
-  //     },
-  //   ],
-  //   categories,
-  //   images: product.images.map(image => ({
-  //     image: `${STORAGE_URLS.productImages}/${image.filename}`,
-  //     name: image.filename || '',
-  //   })),
-  //   attributes: [
-  //     {
-  //       attribute_id: 77,
-  //       product_attribute_description: [
-  //         {
-  //           text: `${weightProperty?.value} g`,
-  //           language_code: 'ru-ru',
-  //         },
-  //         {
-  //           text: `${weightProperty?.value} g`,
-  //           language_code: 'uk-ua',
-  //         },
-  //         {
-  //           text: `${weightProperty?.value} g`,
-  //           language_code: 'en',
-  //         },
-  //         {
-  //           text: `${weightProperty?.value} g`,
-  //           language_code: 'it',
-  //         },
-  //         {
-  //           text: `${weightProperty?.value} g`,
-  //           language_code: 'pl',
-  //         },
-  //       ],
-  //     },
-  //     {
-  //       attribute_id: 78,
-  //       product_attribute_description: [
-  //         {
-  //           text: `${lengthProperty?.value} cm`,
-  //           language_code: 'ru-ru',
-  //         },
-  //         {
-  //           text: `${lengthProperty?.value} cm`,
-  //           language_code: 'uk-ua',
-  //         },
-  //         {
-  //           text: `${lengthProperty?.value} cm`,
-  //           language_code: 'en',
-  //         },
-  //         {
-  //           text: `${lengthProperty?.value} cm`,
-  //           language_code: 'it',
-  //         },
-  //         {
-  //           text: `${lengthProperty?.value} cm`,
-  //           language_code: 'pl',
-  //         },
-  //       ],
-  //     },
-  //     ...(isCurly
-  //       ? [{
-  //         attribute_id: 79,
-  //         product_attribute_description: [
-  //           {
-  //             text: `Curly`,
-  //             language_code: 'ru-ru',
-  //           },
-  //           {
-  //             text: `Curly`,
-  //             language_code: 'uk-ua',
-  //           },
-  //           {
-  //             text: `Curly`,
-  //             language_code: 'en',
-  //           },
-  //           {
-  //             text: `Riccia`,
-  //             language_code: 'it',
-  //           },
-  //           {
-  //             text: `Kręcony`,
-  //             language_code: 'pl',
-  //           },
-  //         ],
-  //       }]
-  //       : []),
-  //   ],
-  //   // special: {
-  //   //   price: product.price,
-  //   // },
-  // }
-
-  // const apiUrl = buildUrl(
-  //   site.url,
-  //   '/index.php',
-  //   {
-  //     route: 'extension/remnant/remnant/createProduct',
-  //     key: process.env.REMNANT_API_KEY || '',
-  //   },
-  // )
-
-  // try {
-  //   const response = await axios.post(apiUrl, syncProduct, { headers: { 'Content-Type': 'application/json' } })
-
-  //   await SyncEntryModel.updateOne({ sourceType: 'product', sourceId: productId, siteId }, {
-  //     status: 'synced',
-  //     syncedAt: new Date(),
-  //     externalId: response.data.product_id,
-  //     lastError: null,
-  //   })
-  // }
-  // catch (error) {
-  //   await SyncEntryModel.updateOne({ sourceType: 'product', sourceId: product.id, siteId }, {
-  //     status: 'error',
-  //     lastError: (error || '').toString(),
-  //   })
-  // }
-
-  return {
-    status: 'success',
-    code: 'SYNC_ENTRY_CREATED',
-    message: 'Sync entry created',
+  const ctx = toSiteContext(site)
+  if (ctx == null) {
+    await markLink({
+      siteId,
+      sourceType: 'product',
+      sourceId: productId,
+      status: 'error',
+      lastError: 'Site url or key is empty',
+    })
+    return ok('SITE_SKIPPED', 'Site url or key is empty')
   }
+
+  await markLink({
+    siteId,
+    sourceType: 'product',
+    sourceId: productId,
+    status: 'pending',
+    lastError: null,
+  })
+
+  try {
+    const body = await buildProductPayload(siteId, productId, site.warehouseIds ?? [])
+    const result = await remnantAdapter.createProduct(ctx, body)
+    await markLink({
+      siteId,
+      sourceType: 'product',
+      sourceId: productId,
+      status: 'synced',
+      externalId: String(result.productId),
+      lastError: null,
+      syncedAt: new Date(),
+    })
+  }
+  catch (error) {
+    const message = error instanceof Error ? error.message : String(error)
+    logger.error(`syncProductCreate failed site=${siteId} product=${productId}: ${message}`)
+    await markLink({
+      siteId,
+      sourceType: 'product',
+      sourceId: productId,
+      status: 'error',
+      lastError: message,
+    })
+  }
+
+  return ok('SYNC_ENTRY_CREATED', 'Sync entry created')
 }
 
 export async function syncProductEdit(payload: SyncProductEditPayload): Promise<SyncProductEditResponse> {
-  console.log(payload)
-  // const { siteId, productId, difference } = payload
+  const { siteId, productId, difference } = payload
+  const link = await SyncEntryRepo.findLink(siteId, 'product', productId)
 
-  // if (!difference || Object.keys(difference).length === 0)
-  //   return { status: 'success', code: 'NO_CHANGES', message: 'No changes to sync' }
+  if (link == null)
+    return syncProductCreate({ siteId, productId })
 
-  // const site = await SiteModel.findOne({ _id: siteId })
+  if (!hasRelevantDifference(difference))
+    return ok('NO_CHANGES', 'No changes to sync')
 
-  // if (!site)
-  //   throw new HttpError(400, 'Site not found', 'SITE_NOT_FOUND')
+  const site = await SiteRepo.findById(siteId)
+  if (site == null || site.removed === true || site.active !== true)
+    return ok('SITE_SKIPPED', 'Site is missing or inactive')
 
-  // const syncEntry = await SyncEntryModel.findOne({ sourceType: 'product', sourceId: productId, siteId })
+  const ctx = toSiteContext(site)
+  if (ctx == null) {
+    await markLink({
+      siteId,
+      sourceType: 'product',
+      sourceId: productId,
+      status: 'error',
+      lastError: 'Site url or key is empty',
+    })
+    return ok('SITE_SKIPPED', 'Site url or key is empty')
+  }
 
-  // if (!syncEntry) {
-  //   throw new HttpError(400, 'Sync entry not found', 'SYNC_ENTRY_NOT_FOUND')
-  // }
+  try {
+    const body = await buildProductPayload(siteId, productId, site.warehouseIds ?? [])
+    const result = await remnantAdapter.editProduct(ctx, body)
+    await markLink({
+      siteId,
+      sourceType: 'product',
+      sourceId: productId,
+      status: 'synced',
+      externalId: String(result.productId),
+      lastError: null,
+      syncedAt: new Date(),
+    })
+  }
+  catch (error) {
+    const message = error instanceof Error ? error.message : String(error)
+    logger.error(`syncProductEdit failed site=${siteId} product=${productId}: ${message}`)
+    await markLink({
+      siteId,
+      sourceType: 'product',
+      sourceId: productId,
+      status: 'error',
+      lastError: message,
+    })
+  }
 
-  // const { data: { items: [product] } } = await ProductService.get({
-  //   filters: { ids: [productId] },
-  // })
+  return ok('SYNC_ENTRY_EDITED', 'Sync entry edited')
+}
 
-  // const syncProduct: Record<string, any> = {
-  //   external_id: productId,
-  // }
+export async function syncProductQuantity(
+  payload: SyncProductQuantityPayload,
+  session?: ClientSession,
+): Promise<SyncProductQuantityResponse> {
+  const { siteId, productId } = payload
+  const site = await SiteRepo.findById(siteId)
 
-  // if (difference.price) {
-  //   syncProduct.price = difference.price
-  // }
+  if (site == null || site.removed === true || site.active !== true)
+    return ok('SITE_SKIPPED', 'Site is missing or inactive')
 
-  // if (difference.names) {
-  //   syncProduct.translations = [
-  //     {
-  //       name: difference.names.ru ?? product.names.ru,
-  //       url: slugify((difference.names.ru ?? product.names.ru) || '', { lower: true }),
-  //       language_code: 'ru-ru',
-  //     },
-  //     {
-  //       name: difference.names.en ?? product.names.en,
-  //       url: slugify((difference.names.en ?? product.names.en) || '', { lower: true }),
-  //       language_code: 'uk-ua',
-  //     },
-  //     {
-  //       name: difference.names.en ?? product.names.en,
-  //       url: slugify((difference.names.en ?? product.names.en) || '', { lower: true }),
-  //       language_code: 'en',
-  //     },
-  //     {
-  //       name: difference.names.en ?? product.names.en,
-  //       url: slugify((difference.names.en ?? product.names.en) || '', { lower: true }),
-  //       language_code: 'it',
-  //     },
-  //     {
-  //       name: difference.names.en ?? product.names.en,
-  //       url: slugify((difference.names.en ?? product.names.en) || '', { lower: true }),
-  //       language_code: 'pl',
-  //     },
-  //   ]
-  // }
+  const link = await SyncEntryRepo.findLink(siteId, 'product', productId)
+  if (link == null)
+    return ok('SYNC_ENTRY_NOT_FOUND', 'Product is not linked to this site')
 
-  // if (difference.images) {
-  //   syncProduct.images = difference.images.map((image: any) => ({
-  //     image: `${STORAGE_URLS.productImages}/${image.filename}`,
-  //     name: image.filename || '',
-  //   }))
-  // }
+  const warehouseIds = site.warehouseIds ?? []
+  if (warehouseIds.length === 0)
+    return ok('SITE_SKIPPED', 'Site has no warehouses')
 
-  // if (difference.productProperties) {
-  //   const weightProperty = difference.productProperties.find((p: any) => p._id === '7c3e2c1b-f2bf-4639-baf2-7b1101fa7bf2')
-  //   const lengthProperty = difference.productProperties.find((p: any) => p._id === 'efcc3c51-a146-4975-bc5b-196745f76891')
-  //   const typeProperty = difference.productProperties.find((p: any) => p._id === '25144e64-5c4c-47fd-842d-c0a2393f972e')
+  const ctx = toSiteContext(site)
+  if (ctx == null)
+    return ok('SITE_SKIPPED', 'Site url or key is empty')
 
-  //   const isCurly = (typeProperty?.value || []).includes('822ec142-d144-44fb-ba96-582cff8757b3')
-  //   const isVirgin = (typeProperty?.value || []).includes('b930fb75-61a6-41c0-88de-0c69082b7f06')
-  //   const isSilky = (typeProperty?.value || []).includes('aeb36d06-1a12-4319-9313-51abcbed38fb')
+  const quantity = await QuantityRepo.sumCountByProductAndWarehouses(productId, warehouseIds, session)
 
-  //   if (lengthProperty || isCurly || isVirgin || isSilky) {
-  //     const categories = getCategoryIds(`${isVirgin ? 'Virgin' : isSilky ? 'Silky' : 'RawHair'}${isCurly ? '.Curly' : ''}.${getProductCategory(lengthProperty?.value || 0)}`)
-  //     syncProduct.categories = categories
-  //   }
+  try {
+    await remnantAdapter.editQuantity(ctx, { remnantId: productId, quantity })
+    await markLink({
+      siteId,
+      sourceType: 'product',
+      sourceId: productId,
+      status: 'synced',
+      lastError: null,
+      syncedAt: new Date(),
+    })
+  }
+  catch (error) {
+    const message = error instanceof Error ? error.message : String(error)
+    logger.error(`syncProductQuantity failed site=${siteId} product=${productId}: ${message}`)
+    await markLink({
+      siteId,
+      sourceType: 'product',
+      sourceId: productId,
+      status: 'error',
+      lastError: message,
+    })
+  }
 
-  //   syncProduct.attributes = []
-  //   if (weightProperty) {
-  //     syncProduct.attributes.push({
-  //       attribute_id: 77,
-  //       product_attribute_description: [
-  //         {
-  //           text: `${weightProperty.value} g`,
-  //           language_code: 'ru-ru',
-  //         },
-  //         {
-  //           text: `${weightProperty.value} g`,
-  //           language_code: 'uk-ua',
-  //         },
-  //         {
-  //           text: `${weightProperty.value} g`,
-  //           language_code: 'pl',
-  //         },
-  //         {
-  //           text: `${weightProperty.value} g`,
-  //           language_code: 'en',
-  //         },
-  //         {
-  //           text: `${weightProperty.value} g`,
-  //           language_code: 'it',
-  //         },
-  //       ],
-  //     })
-  //   }
-  //   if (lengthProperty) {
-  //     syncProduct.attributes.push({
-  //       attribute_id: 78,
-  //       product_attribute_description: [
-  //         {
-  //           text: `${lengthProperty.value} cm`,
-  //           language_code: 'ru-ru',
-  //         },
-  //         {
-  //           text: `${lengthProperty.value} cm`,
-  //           language_code: 'uk-ua',
-  //         },
-  //         {
-  //           text: `${lengthProperty.value} cm`,
-  //           language_code: 'pl',
-  //         },
-  //         {
-  //           text: `${lengthProperty.value} cm`,
-  //           language_code: 'en',
-  //         },
-  //         {
-  //           text: `${lengthProperty.value} cm`,
-  //           language_code: 'it',
-  //         },
-  //       ],
-  //     })
-  //   }
-  //   if (isCurly) {
-  //     syncProduct.attributes.push({
-  //       attribute_id: 79,
-  //       product_attribute_description: [
-  //         {
-  //           text: `Curly`,
-  //           language_code: 'ru-ru',
-  //         },
-  //         {
-  //           text: `Curly`,
-  //           language_code: 'uk-ua',
-  //         },
-  //         {
-  //           text: `Curly`,
-  //           language_code: 'en',
-  //         },
-  //         {
-  //           text: `Riccia`,
-  //           language_code: 'it',
-  //         },
-  //         {
-  //           text: `Kręcony`,
-  //           language_code: 'pl',
-  //         },
-  //       ],
-  //     })
-  //   }
-  // }
+  return ok('SYNC_ENTRY_QUANTITY_EDITED', 'Sync entry quantity edited')
+}
 
-  // if (Object.keys(syncProduct).length === 0)
-  //   return { status: 'success', code: 'NO_RELEVANT_CHANGES', message: 'No relevant fields to sync' }
+export async function syncProductQuantityForWarehouse(payload: {
+  productId: string
+  warehouseId: string
+  session?: ClientSession
+}): Promise<void> {
+  const sites = await SiteRepo.listActiveByWarehouseId(payload.warehouseId)
 
-  // const apiUrl = buildUrl(
-  //   site.url,
-  //   '/index.php',
-  //   {
-  //     route: 'extension/remnant/remnant/editProduct',
-  //     key: process.env.REMNANT_API_KEY || '',
-  //   },
-  // )
-
-  // try {
-  //   const response = await axios.post(apiUrl, syncProduct, { headers: { 'Content-Type': 'application/json' } })
-
-  //   await SyncEntryModel.updateOne({ sourceType: 'product', sourceId: productId, siteId }, {
-  //     status: 'synced',
-  //     syncedAt: new Date(),
-  //     externalId: response.data.product_id,
-  //     lastError: null,
-  //   })
-  // }
-  // catch (error) {
-  //   await SyncEntryModel.updateOne({ sourceType: 'product', sourceId: product.id, siteId }, {
-  //     status: 'error',
-  //     lastError: (error || '').toString(),
-  //   })
-  // }
-
-  return {
-    status: 'success',
-    code: 'SYNC_ENTRY_EDITED',
-    message: 'Sync entry edited',
+  for (const site of sites) {
+    try {
+      await syncProductQuantity({
+        siteId: site._id,
+        productId: payload.productId,
+      }, payload.session)
+    }
+    catch (error) {
+      const message = error instanceof Error ? error.message : String(error)
+      logger.error(`syncProductQuantityForWarehouse failed site=${site._id} product=${payload.productId}: ${message}`)
+    }
   }
 }
 
-export async function syncProductQuantity(payload: SyncProductQuantityPayload): Promise<SyncProductQuantityResponse> {
-  console.log(payload)
-  // const { siteId, productId } = payload
+async function markLink(payload: {
+  siteId: string
+  sourceType: 'product' | 'category'
+  sourceId: string
+  status: 'pending' | 'synced' | 'error'
+  externalId?: string | null
+  lastError?: string | null
+  syncedAt?: Date | null
+}) {
+  await SyncEntryRepo.upsertLink(payload)
+}
 
-  // const site = await SiteModel.findOne({ _id: siteId })
+async function buildProductPayload(
+  siteId: string,
+  productId: string,
+  warehouseIds: string[],
+): Promise<SiteProductPayload> {
+  const product = await ProductRepo.findById(productId)
+  if (product == null)
+    throw new Error('Product not found')
 
-  // if (!site)
-  //   throw new HttpError(400, 'Site not found', 'SITE_NOT_FOUND')
-
-  // const syncEntry = await SyncEntryModel.findOne({ sourceType: 'product', sourceId: productId, siteId })
-
-  // if (!syncEntry)
-  //   throw new HttpError(400, 'Sync entry not found', 'SYNC_ENTRY_NOT_FOUND')
-
-  // const quantities = await QuantityModel.find({ product: productId, warehouse: { $in: site.warehouseIds } })
-
-  // if (quantities.length === 0)
-  //   throw new HttpError(400, 'Quantity not found', 'QUANTITY_NOT_FOUND')
-
-  // const quantity = quantities.reduce((acc, quantity) => acc + quantity.count, 0)
-
-  // const syncProduct: Record<string, any> = {
-  //   external_id: productId,
-  //   quantity,
-  // }
-
-  // const apiUrl = buildUrl(
-  //   site.url,
-  //   '/index.php',
-  //   {
-  //     route: 'extension/remnant/remnant/editProductQuantity',
-  //     key: process.env.REMNANT_API_KEY || '',
-  //   },
-  // )
-
-  // try {
-  //   const response = await axios.post(apiUrl, syncProduct, { headers: { 'Content-Type': 'application/json' } })
-
-  //   await SyncEntryModel.updateOne({ sourceType: 'product', sourceId: productId, siteId }, {
-  //     status: 'synced',
-  //     syncedAt: new Date(),
-  //     externalId: response.data.product_id,
-  //     lastError: null,
-  //   })
-  // }
-  // catch (error) {
-  //   await SyncEntryModel.updateOne({ sourceType: 'product', sourceId: productId, siteId }, {
-  //     status: 'error',
-  //     lastError: (error || '').toString(),
-  //   })
-  // }
+  const currency = await CurrencyRepo.findOne({ _id: product.currencyId })
+  const scale = currency?.scale ?? 2
+  const names = languageRecord(product.names)
+  const categoryIds = await resolveSiteCategoryIds(siteId, product.categoryIds ?? [])
+  const quantity = await QuantityRepo.sumCountByProductAndWarehouses(productId, warehouseIds)
 
   return {
-    status: 'success',
-    code: 'SYNC_ENTRY_QUANTITY_EDITED',
-    message: 'Sync entry quantity edited',
+    remnantId: productId,
+    names,
+    price: Number.parseFloat(fromMinor(product.minorPrice, scale)),
+    quantity,
+    categoryIds,
+    images: (product.images ?? []).map(image => ({
+      url: `${STORAGE_URLS.productImages}/${image.filename}`,
+      name: image.name || image.filename,
+    })),
+    seo: toSeo(names),
   }
 }
 
-// function getProductCategory(lengthCm: number): string | null {
-//   const table = [
-//     { min: 40, max: 44, category: '40-44' },
-//     { min: 45, max: 49, category: '45-49' },
-//     { min: 50, max: 54, category: '50-54' },
-//     { min: 55, max: 59, category: '55-59' },
-//     { min: 60, max: 64, category: '60-64' },
-//     { min: 65, max: 69, category: '65-69' },
-//     { min: 70, max: 74, category: '70-74' },
-//     { min: 75, max: 79, category: '75-79' },
-//     { min: 80, max: 84, category: '80-84' },
-//     { min: 85, max: 89, category: '85-89' },
-//     { min: 90, max: 94, category: '90-94' },
-//     { min: 95, max: 99, category: '95-99' },
-//   ]
+async function resolveSiteCategoryIds(siteId: string, categoryIds: string[]): Promise<number[]> {
+  if (categoryIds.length === 0)
+    return []
 
-//   for (const row of table) {
-//     if (lengthCm >= row.min && lengthCm <= row.max) {
-//       return row.category
-//     }
-//   }
-//   return null
-// }
+  let links = await SyncEntryRepo.findLinks(siteId, 'category', categoryIds)
+  const mapped = new Set(
+    links
+      .filter(link => typeof link.externalId === 'string' && link.externalId !== '')
+      .map(link => link.sourceId),
+  )
+  const missing = categoryIds.filter(id => !mapped.has(id))
 
-// const categoriesIds = {
-//   'Silky': 222,
-//   'Silky.50-54': 229,
-//   'Silky.55-59': 238,
-//   'Silky.60-64': 239,
-//   'Silky.65-69': 240,
-//   'Silky.70-74': 241,
-//   'Silky.75-79': 242,
-//   'Silky.80-84': 243,
-//   'Silky.85-89': 244,
-//   'Silky.90-94': 245,
-//   'Silky.95-99': 246,
-//   'Silky.Curly': 226,
-//   'Silky.Curly.50-54': 277,
-//   'Silky.Curly.55-59': 278,
-//   'Silky.Curly.60-64': 279,
-//   'Silky.Curly.65-69': 280,
-//   'Silky.Curly.70-74': 281,
-//   'Silky.Curly.75-79': 282,
-//   'Silky.Curly.80-84': 283,
-//   'Silky.Curly.85-89': 284,
-//   'Silky.Curly.90-94': 285,
-//   'Silky.Curly.95-99': 286,
+  if (missing.length > 0) {
+    await matchCategoriesByName(siteId, missing)
+    links = await SyncEntryRepo.findLinks(siteId, 'category', categoryIds)
+  }
 
-//   'Virgin': 223,
-//   'Virgin.50-54': 247,
-//   'Virgin.55-59': 248,
-//   'Virgin.60-64': 249,
-//   'Virgin.65-69': 250,
-//   'Virgin.70-74': 251,
-//   'Virgin.75-79': 252,
-//   'Virgin.80-84': 253,
-//   'Virgin.85-89': 254,
-//   'Virgin.90-94': 255,
-//   'Virgin.95-99': 256,
-//   'Virgin.Curly': 225,
-//   'Virgin.Curly.50-54': 257,
-//   'Virgin.Curly.55-59': 258,
-//   'Virgin.Curly.60-64': 259,
-//   'Virgin.Curly.65-69': 260,
-//   'Virgin.Curly.70-74': 261,
-//   'Virgin.Curly.75-79': 262,
-//   'Virgin.Curly.80-84': 263,
-//   'Virgin.Curly.85-89': 264,
-//   'Virgin.Curly.90-94': 265,
-//   'Virgin.Curly.95-99': 266,
+  const bySource = new Map(links.map(link => [link.sourceId, link.externalId]))
+  const ids: number[] = []
 
-//   'RawHair': 72,
-//   'RawHair.50-54': 227,
-//   'RawHair.55-59': 228,
-//   'RawHair.60-64': 230,
-//   'RawHair.65-69': 231,
-//   'RawHair.70-74': 232,
-//   'RawHair.75-79': 233,
-//   'RawHair.80-84': 234,
-//   'RawHair.85-89': 235,
-//   'RawHair.90-94': 236,
-//   'RawHair.95-99': 237,
-//   'RawHair.Curly': 224,
-//   'RawHair.Curly.50-54': 267,
-//   'RawHair.Curly.55-59': 268,
-//   'RawHair.Curly.60-64': 269,
-//   'RawHair.Curly.65-69': 270,
-//   'RawHair.Curly.70-74': 271,
-//   'RawHair.Curly.75-79': 272,
-//   'RawHair.Curly.80-84': 273,
-//   'RawHair.Curly.85-89': 274,
-//   'RawHair.Curly.90-94': 275,
-//   'RawHair.Curly.95-99': 276,
-// }
+  for (const categoryId of categoryIds) {
+    const externalId = bySource.get(categoryId)
+    const numeric = externalId != null && externalId !== '' ? Number(externalId) : Number.NaN
+    if (Number.isFinite(numeric) && numeric > 0) {
+      ids.push(numeric)
+      continue
+    }
+    logger.warn(`Category ${categoryId} is not mapped for site ${siteId}`)
+  }
 
-// function getCategoryIds(path: string) {
-//   const parts = path.split('.')
-//   const ids = []
+  return ids
+}
 
-//   for (let i = 0; i < parts.length; i++) {
-//     const key = parts.slice(0, i + 1).join('.')
-//     if (categoriesIds[key as keyof typeof categoriesIds]) {
-//       ids.push(categoriesIds[key as keyof typeof categoriesIds])
-//     }
-//   }
+async function matchCategoriesByName(siteId: string, categoryIds: string[]): Promise<void> {
+  const site = await SiteRepo.findById(siteId)
+  const ctx = site != null ? toSiteContext(site) : null
+  if (ctx == null)
+    return
 
-//   return [221, ...ids]
-// }
+  const [siteCategories, crmCategories] = await Promise.all([
+    remnantAdapter.listCategories(ctx),
+    CategoryRepo.findByIds(categoryIds),
+  ])
+
+  for (const category of crmCategories) {
+    const names = languageRecord(category.names)
+    const match = siteCategories.find(siteCategory => namesOverlap(names, siteCategory.names))
+    if (match == null)
+      continue
+
+    await markLink({
+      siteId,
+      sourceType: 'category',
+      sourceId: category._id,
+      status: 'synced',
+      externalId: String(match.id),
+      lastError: null,
+      syncedAt: new Date(),
+    })
+  }
+}

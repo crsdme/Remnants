@@ -23,6 +23,7 @@ import {
   usePrintDraftInvoice,
 } from '@/api/hooks'
 import { useLocale } from '@/utils/hooks'
+import { emptyOrderDeliveryFormValues, formValuesToOrderDelivery, orderDeliveryFormSchema } from '../components/orderDeliveryForm'
 
 interface DraftOrderPayment {
   id: string
@@ -89,6 +90,7 @@ function createInformationFormSchema(t: (key: string) => string) {
     client: z.string().optional(),
     items: z.array(createOrderLineItemSchema()).min(1, { message: t('form.errors.required') }),
     comment: z.string().optional(),
+    delivery: orderDeliveryFormSchema(t),
   }).superRefine((data) => {
     if (data.items.length === 0)
       toast.error(t('form.errors.required.products'))
@@ -196,6 +198,7 @@ export function CreateOrderProvider({ children }: { children: ReactNode }) {
       client: '',
       items: [],
       comment: '',
+      delivery: emptyOrderDeliveryFormValues(),
     },
   })
 
@@ -368,6 +371,7 @@ export function CreateOrderProvider({ children }: { children: ReactNode }) {
       deliveryService: params.deliveryService,
       client: params.client,
       comment: params.comment,
+      delivery: formValuesToOrderDelivery(params.delivery),
       items,
       orderPayments,
       files: files.map(file => ({

@@ -24,7 +24,7 @@ const SyncEntrySchema: Schema = new Schema(
     siteId: {
       type: String,
       ref: 'site',
-      default: [],
+      required: true,
     },
     externalId: {
       type: String,
@@ -55,6 +55,7 @@ SyncEntrySchema.set('toJSON', {
 })
 
 SyncEntrySchema.index({ sourceType: 1, sourceId: 1 })
+SyncEntrySchema.index({ siteId: 1, sourceType: 1, sourceId: 1 }, { unique: true })
 SyncEntrySchema.index({ siteId: 1 })
 SyncEntrySchema.index({ externalId: 1 })
 SyncEntrySchema.index({ status: 1 })

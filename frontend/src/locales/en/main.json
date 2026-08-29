@@ -29,6 +29,7 @@
   "table.view": "View",
   "table.export": "Export",
   "table.printInvoice": "Print Invoice",
+  "table.printTtn": "Print waybill",
   "table.quantityLogs": "Quantity Logs",
   "table.auditLogs": "Audit Logs",
   "table.printLabel": "Print Label",
@@ -59,6 +60,7 @@
   "form.errors.required.product": "Product not found",
   "form.errors.min_length": "Minimum length {{count}} characters",
   "form.errors.max_length": "Maximum length {{count}} characters",
+  "form.errors.invalid_phone": "Invalid phone number",
 
   "form.success.productAdded": "Product added",
 

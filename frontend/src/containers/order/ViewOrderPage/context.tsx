@@ -12,6 +12,7 @@ import { toast } from 'sonner'
 import { z } from 'zod'
 import { useOrderDetailQuery } from '@/api/hooks'
 import { useLocale } from '@/utils/hooks'
+import { emptyOrderDeliveryFormValues, orderDeliveryFormSchema, orderDeliveryToFormValues } from '../components/orderDeliveryForm'
 
 function createPaymentFormSchema(t: (key: string) => string) {
   return z.object({
@@ -69,6 +70,7 @@ function createInformationFormSchema(t: (key: string) => string) {
     client: z.string().optional(),
     items: z.array(createOrderLineItemSchema()).min(1, { message: t('form.errors.required') }),
     comment: z.string().optional(),
+    delivery: orderDeliveryFormSchema(t),
   }).superRefine((data) => {
     if (data.items.length === 0)
       toast.error(t('form.errors.required.products'))
@@ -149,6 +151,7 @@ export function ViewOrderProvider({ children }: { children: ReactNode }) {
       client: '',
       items: [],
       comment: '',
+      delivery: emptyOrderDeliveryFormValues(),
     },
   })
 
@@ -193,6 +196,7 @@ export function ViewOrderProvider({ children }: { children: ReactNode }) {
         currency: item.currency,
       })),
       comment: order.comment,
+      delivery: orderDeliveryToFormValues(order.delivery, order.deliveryService.type),
     })
 
     // eslint-disable-next-line react-hooks-extra/no-direct-set-state-in-use-effect -- TEMPORARY FIX

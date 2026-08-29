@@ -71,7 +71,7 @@ export async function list(payload: GetCategoriesRepoPayload): Promise<GetCatego
     language,
   })
 
-  const sorters = buildSortQuery(payload.sorters, { level: 1, priority: 1 })
+  const sorters = buildSortQuery(payload.sorters, { seq: 1, priority: -1, createdAt: -1 })
 
   const pipeline: PipelineStage[] = [
     {
@@ -122,6 +122,12 @@ export async function list(payload: GetCategoriesRepoPayload): Promise<GetCatego
 
 export async function createOne(payload: CreateCategoriesRepoPayload) {
   return CategoryModel.create(payload)
+}
+
+export async function findByIds(ids: string[]) {
+  if (ids.length === 0)
+    return []
+  return CategoryModel.find({ _id: { $in: ids } }).exec()
 }
 
 export async function updateById(id: string, payload: EditCategoriesRepoPayload) {

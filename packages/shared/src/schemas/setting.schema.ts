@@ -1,6 +1,9 @@
 import { z } from 'zod'
 import { idSchema, paginationSchema, responseItemSchema, responseListSchema, responseSchema } from './common'
 
+export const PHONE_DEFAULT_COUNTRY_SETTING_KEY = 'ui.phone.defaultCountry'
+export const PHONE_DEFAULT_COUNTRY_FALLBACK = 'UA'
+
 export const settingSchema = z.object({
   id: idSchema,
   key: z.string().trim(),
@@ -17,7 +20,7 @@ export const getSettingsSchema = z.object({
   filters: z.object({
     key: z.string().trim().optional(),
     scope: z.string().trim().optional(),
-    isPublic: z.boolean().optional().default(false),
+    isPublic: z.boolean().optional(),
     description: z.string().trim().optional(),
   }).optional().default({}),
   pagination: paginationSchema.optional().default({}),
@@ -26,10 +29,10 @@ export const getSettingsSchema = z.object({
 export type GetSettingsRequest = z.input<typeof getSettingsSchema>
 
 export const editSettingSchema = z.object({
-  id: idSchema,
+  id: z.preprocess(val => (val === '' ? undefined : val), idSchema.optional()),
   key: z.string().trim(),
   value: z.any().optional().default(null),
-  isPublic: z.boolean().optional().default(false),
+  isPublic: z.boolean().optional(),
   scope: z.string().trim().optional(),
 })
 

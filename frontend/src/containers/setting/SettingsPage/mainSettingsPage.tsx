@@ -1,89 +1,79 @@
-import { toast } from 'sonner'
-import { useTestStart } from '@/api/hooks/test/useTestStart'
-import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Switch } from '@/components/ui'
+import { PHONE_DEFAULT_COUNTRY_FALLBACK, PHONE_DEFAULT_COUNTRY_SETTING_KEY } from '@remnant/shared'
+import { CountrySelect } from '@/components/CountrySelect'
+import { Card, CardContent, CardHeader, CardTitle, Switch } from '@/components/ui'
+import { ISO_COUNTRY_CODES } from '@/utils/constants'
 import { useLocale } from '@/utils/hooks'
+import { SettingRow } from './components/setting-row'
 import { useSettingContext } from './context'
 
-export function MainSettingsPage() {
-  const { t } = useLocale()
-  const { editSetting, isLoading, getSetting } = useSettingContext()
+type CountryCode = (typeof ISO_COUNTRY_CODES)[number]
 
-  const { mutate: startTest } = useTestStart({
-    options: {
-      onSuccess: () => {
-        toast.success(t('page.settings.main.startTestSuccess'))
-      },
-    },
-  })
+function parseCountryCode(value: string | undefined): CountryCode {
+  const code = value?.trim().toUpperCase()
+  if (code != null && (ISO_COUNTRY_CODES as readonly string[]).includes(code))
+    return code as CountryCode
+  return PHONE_DEFAULT_COUNTRY_FALLBACK
+}
+
+export function MainSettingsPage() {
+  const { t, language } = useLocale()
+  const { editSetting, isLoading, getSetting } = useSettingContext()
 
   return (
     <div className="flex flex-col gap-4 w-full">
       <Card className="w-full">
         <CardHeader>
-          <CardTitle className="text-2xl font-bold">{t('page.settings.main.card.title')}</CardTitle>
-          <CardDescription className="text-sm text-muted-foreground">{t('page.settings.main.card.description')}</CardDescription>
+          <CardTitle className="text-xl font-semibold">{t('page.settings.catalog.title')}</CardTitle>
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
-          <div className="flex justify-between">
-            <div>
-              <p className="text-sm">{t('page.settings.main.isPropertyGroupRequired.label')}</p>
-              <p className="text-sm text-muted-foreground ">{t('page.settings.main.isPropertyGroupRequired.description')}</p>
-            </div>
+          <SettingRow
+            label={t('page.settings.main.isPropertyGroupRequired.label')}
+            hint={t('page.settings.main.isPropertyGroupRequired.description')}
+          >
             <Switch
               disabled={isLoading}
               onCheckedChange={value => editSetting({ key: 'productForm:isPropertyGroupRequired', value })}
               checked={getSetting('productForm:isPropertyGroupRequired')?.value === 'true'}
             />
-          </div>
+          </SettingRow>
 
-          <div className="flex justify-between">
-            <div>
-              <p className="text-sm">{t('page.settings.main.isCategoryRequired.label')}</p>
-              <p className="text-sm text-muted-foreground ">{t('page.settings.main.isCategoryRequired.description')}</p>
-            </div>
+          <SettingRow
+            label={t('page.settings.main.isCategoryRequired.label')}
+            hint={t('page.settings.main.isCategoryRequired.description')}
+          >
             <Switch
               disabled={isLoading}
               onCheckedChange={value => editSetting({ key: 'productForm:isCategoryRequired', value })}
               checked={getSetting('productForm:isCategoryRequired')?.value === 'true'}
             />
-          </div>
+          </SettingRow>
         </CardContent>
       </Card>
 
       <Card className="w-full">
         <CardHeader>
-          <CardTitle className="text-2xl font-bold">{t('page.settings.main.card.title')}</CardTitle>
-          <CardDescription className="text-sm text-muted-foreground">{t('page.settings.main.card.description')}</CardDescription>
+          <CardTitle className="text-xl font-semibold">{t('page.settings.interface.title')}</CardTitle>
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
-          <div className="flex justify-between">
-            <div>
-              <p className="text-sm">{t('page.settings.main.isPropertyGroupRequired.label')}</p>
-              <p className="text-sm text-muted-foreground ">{t('page.settings.main.isPropertyGroupRequired.description')}</p>
+          <SettingRow
+            label={t('page.settings.interface.phoneCountry.label')}
+            hint={t('page.settings.interface.phoneCountry.description')}
+          >
+            <div className="w-56">
+              <CountrySelect
+                locale={language}
+                disabled={isLoading}
+                preferred={['UA', 'US', 'PL', 'DE', 'GB']}
+                value={parseCountryCode(getSetting(PHONE_DEFAULT_COUNTRY_SETTING_KEY)?.value)}
+                onChange={(value) => {
+                  editSetting({
+                    key: PHONE_DEFAULT_COUNTRY_SETTING_KEY,
+                    value: value ?? PHONE_DEFAULT_COUNTRY_FALLBACK,
+                  })
+                }}
+              />
             </div>
-            <Button onClick={() => startTest({ key: 'createProducts' })}>{t('page.settings.main.createProducts')}</Button>
-          </div>
-          <div className="flex justify-between">
-            <div>
-              <p className="text-sm">{t('page.settings.main.isPropertyGroupRequired.label')}</p>
-              <p className="text-sm text-muted-foreground ">{t('page.settings.main.isPropertyGroupRequired.description')}</p>
-            </div>
-            <Button onClick={() => startTest({ key: 'createTelegramProducts' })}>{t('page.settings.main.createTelegramProducts')}</Button>
-          </div>
-          <div className="flex justify-between">
-            <div>
-              <p className="text-sm">{t('page.settings.main.isPropertyGroupRequired.label')}</p>
-              <p className="text-sm text-muted-foreground ">{t('page.settings.main.isPropertyGroupRequired.description')}</p>
-            </div>
-            <Button onClick={() => startTest({ key: 'quantityProducts' })}>{t('page.settings.main.quantityProducts')}</Button>
-          </div>
-          <div className="flex justify-between">
-            <div>
-              <p className="text-sm">{t('page.settings.main.addProductCategories.label')}</p>
-              <p className="text-sm text-muted-foreground ">{t('page.settings.main.addProductCategories.description')}</p>
-            </div>
-            <Button onClick={() => startTest({ key: 'addProductCategories' })}>{t('page.settings.main.addProductCategories')}</Button>
-          </div>
+          </SettingRow>
         </CardContent>
       </Card>
     </div>

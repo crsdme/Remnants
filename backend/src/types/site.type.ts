@@ -8,6 +8,7 @@ import {
   editSiteSchema,
   getSitesSchema,
   removeSitesSchema,
+  syncSiteProductsSchema,
 } from '@remnant/shared'
 
 export type SiteDB = z.infer<typeof siteDBSchema>
@@ -30,6 +31,11 @@ export function parseEditSite(x: unknown): EditSitePayload {
 export type RemoveSitesPayload = z.output<typeof removeSitesSchema>
 export function parseRemoveSites(x: unknown): RemoveSitesPayload {
   return removeSitesSchema.parse(x)
+}
+
+export type SyncSiteProductsPayload = z.output<typeof syncSiteProductsSchema>
+export function parseSyncSiteProducts(x: unknown): SyncSiteProductsPayload {
+  return syncSiteProductsSchema.parse(x)
 }
 
 export type GetSitesRepoPayload = GetSitesPayload

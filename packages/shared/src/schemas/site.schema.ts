@@ -77,3 +77,20 @@ export type EditSiteResponse = z.output<typeof editSiteResponseSchema>
 
 export const removeSitesResponseSchema = responseSchema
 export type RemoveSitesResponse = z.output<typeof removeSitesResponseSchema>
+
+export const syncSiteProductsSchema = z.object({
+  id: idSchema,
+})
+
+export type SyncSiteProductsRequest = z.input<typeof syncSiteProductsSchema>
+
+export const syncSiteProductsResultSchema = z.object({
+  total: z.number(),
+  synced: z.number(),
+  failed: z.number(),
+})
+
+export type SyncSiteProductsResultDTO = z.output<typeof syncSiteProductsResultSchema>
+
+export const syncSiteProductsResponseSchema = responseItemSchema(syncSiteProductsResultSchema)
+export type SyncSiteProductsResponse = z.output<typeof syncSiteProductsResponseSchema>

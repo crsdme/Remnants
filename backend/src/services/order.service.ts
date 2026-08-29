@@ -1,21 +1,26 @@
 import type {
   AuthUser,
   CreateOrderResponse,
+  CreateOrderShipmentResponse,
+  DeliveryStatusMap,
   EditOrderResponse,
   GetOrderDetailsResponse,
   GetOrderItemsResponse,
   GetOrderPaymentsResponse,
   GetOrdersResponse,
+  OrderDeliveryDTO,
   PayOrderResponse,
   PipeableDocument,
   PrintDraftInvoiceOrderResponse,
   PrintInvoiceOrderResponse,
   PrintOrderLabelOrderResponse,
   RemoveOrdersResponse,
+  SyncOrderShipmentsResponse,
 } from '@remnant/shared'
 import type { ClientSession } from 'mongoose'
 import type {
   CreateOrderPayload,
+  CreateOrderShipmentPayload,
   EditOrderPayload,
   GetOrderDetailsPayload,
   GetOrderItemsPayload,
@@ -25,21 +30,27 @@ import type {
   PrintDraftInvoiceOrderPayload,
   PrintInvoiceOrderPayload,
   PrintOrderLabelOrderPayload,
+  PrintOrderShipmentLabelPayload,
   RemoveOrdersPayload,
+  SyncOrderShipmentsPayload,
 } from '@/types'
 import type { MoneyLike } from '@/utils/order-payment-status'
 import { Buffer } from 'node:buffer'
 import path from 'node:path'
-import { createWarehouseTransactionLogsResponseSchema, toMinorType } from '@remnant/shared'
+import { DELIVERY_STATUS_MAP_SETTING_KEY, DELIVERY_TRACKING_INTERVAL_SETTING_KEY, deliveryServiceCredentialsSchema, deliveryStatusMapSchema, orderDeliverySchema, parseDeliveryTrackingIntervalMs, toMinorType } from '@remnant/shared'
 import mongoose from 'mongoose'
 import PDFDocument from 'pdfkit'
 import { v4 as uuidv4 } from 'uuid'
 import { STORAGE_PATHS } from '@/config/constants'
+import { getDeliveryCarrierAdapter } from '@/integrations/delivery'
 import { mapOrderItemPopulatedToDTO, mapOrderPaymentRepoToDTO, mapOrderPopulatedToDTO } from '@/mappers'
+import { OrderStatusModel } from '@/models'
 import * as CurrencyRepo from '@/repositories/currencies.repo'
+import * as DeliveryServicesRepo from '@/repositories/delivery-services.repo'
 import * as OrderPaymentRepository from '@/repositories/order-payment.repo'
 import * as OrderRepository from '@/repositories/order.repo'
 import * as ProductsRepository from '@/repositories/products.repo'
+import * as SettingRepo from '@/repositories/setting.repo'
 import * as UserAccessRepo from '@/repositories/user-access.repo'
 import * as AutomationService from '@/services/automation.service'
 import * as ExchangeRateService from '@/services/currency.service'
@@ -301,6 +312,7 @@ export async function create({
       orderPaymentIds: createdOrderPayments.map(p => p.id),
       clientId: payload.client,
       comment: payload.comment,
+      delivery: payload.delivery,
       files: resolvedFiles,
       items: payload.items.map(item => ({
         productId: item.product,
@@ -472,6 +484,8 @@ export async function edit({
         currencies,
       )
 
+      const existingOrder = await OrderRepository.findById(id)
+
       const order = await OrderRepository.updateById({
         id,
         payload: {
@@ -482,6 +496,7 @@ export async function edit({
           orderPaymentIds: activePaymentIds,
           clientId: payload.client,
           comment: payload.comment,
+          delivery: mergeDeliveryShipment(payload.delivery, existingOrder?.delivery),
           files: resolvedFiles,
           items: payload.items.map(item => ({
             productId: item.product,
@@ -1665,6 +1680,325 @@ export async function printOrderLabel({ payload }: { payload: PrintOrderLabelOrd
     code: 'ORDER_LABEL_PRINTED',
     message: 'Order label printed',
     doc: doc as unknown as PipeableDocument,
+  }
+}
+
+function parseOrderDelivery(value: unknown): OrderDeliveryDTO {
+  const parsed = orderDeliverySchema.safeParse(value)
+  if (!parsed.success) {
+    throw new HttpError(400, 'Recipient and destination are required', 'DELIVERY_DETAILS_REQUIRED')
+  }
+  return parsed.data
+}
+
+function mergeDeliveryShipment(
+  incoming: OrderDeliveryDTO | undefined,
+  existing: unknown,
+): OrderDeliveryDTO | undefined {
+  if (incoming == null)
+    return incoming
+
+  const existingDelivery = orderDeliverySchema.safeParse(existing)
+  const existingShipment = existingDelivery.success ? existingDelivery.data.shipment : undefined
+  const incomingShipment = incoming.shipment
+  if (existingShipment == null || incomingShipment == null)
+    return incoming
+
+  const existingTracking = existingShipment.trackingNumber
+  const incomingTracking = incomingShipment.trackingNumber
+  if (existingTracking == null || existingTracking === '' || incomingTracking == null || incomingTracking === '')
+    return incoming
+  if (incomingTracking !== existingTracking)
+    return incoming
+
+  return {
+    ...incoming,
+    shipment: {
+      ...existingShipment,
+      ...incomingShipment,
+      providerRefs: {
+        ...existingShipment.providerRefs,
+        ...incomingShipment.providerRefs,
+      },
+    },
+  }
+}
+
+function assertShipmentReady(delivery: OrderDeliveryDTO) {
+  const name = delivery.recipient?.name?.trim()
+  const phone = delivery.recipient?.phone
+  if (name == null || name === '' || phone == null || phone === '') {
+    throw new HttpError(400, 'Recipient is required', 'DELIVERY_DETAILS_REQUIRED')
+  }
+  const cityId = delivery.destination?.city?.id
+  const pointId = delivery.destination?.point?.id
+  if (cityId == null || cityId === '' || pointId == null || pointId === '') {
+    throw new HttpError(400, 'Destination is required', 'DELIVERY_DETAILS_REQUIRED')
+  }
+  if (delivery.method === 'pickup' || delivery.destination?.kind === 'pickup') {
+    throw new HttpError(400, 'Shipment is not supported for this delivery method', 'SHIPMENT_NOT_SUPPORTED')
+  }
+}
+
+export async function createShipment({
+  payload,
+  user,
+}: {
+  payload: CreateOrderShipmentPayload
+  user: AuthUser
+}): Promise<CreateOrderShipmentResponse> {
+  const { data: { items: [order] } } = await get({
+    payload: parseGetOrders({ filters: { ids: [payload.id] }, pagination: { full: true } }),
+    user,
+  })
+
+  if (order == null)
+    throw new HttpError(404, 'Order not found', 'ORDER_NOT_FOUND')
+
+  const existingTracking = order.delivery?.shipment?.trackingNumber
+  if (existingTracking != null && existingTracking !== '') {
+    throw new HttpError(400, 'Shipment already exists', 'SHIPMENT_ALREADY_EXISTS')
+  }
+
+  const delivery = parseOrderDelivery(payload.delivery ?? order.delivery)
+  assertShipmentReady(delivery)
+
+  const service = await DeliveryServicesRepo.findById(order.deliveryService.id)
+  if (!service)
+    throw new HttpError(404, 'Delivery service not found', 'DELIVERY_SERVICE_NOT_FOUND')
+
+  const credentialsParsed = deliveryServiceCredentialsSchema.safeParse(service.credentials)
+  const credentials = credentialsParsed.success ? credentialsParsed.data : undefined
+
+  const adapter = getDeliveryCarrierAdapter(service.type)
+  if (adapter.createShipment == null) {
+    throw new HttpError(400, 'Shipment is not supported for this delivery service', 'SHIPMENT_NOT_SUPPORTED')
+  }
+
+  const shipment = await adapter.createShipment(
+    { credentials },
+    { delivery, orderSeq: order.seq },
+  )
+
+  const nextDelivery: OrderDeliveryDTO = {
+    ...delivery,
+    shipment: {
+      ...delivery.shipment,
+      trackingNumber: shipment.trackingNumber,
+      providerRefs: shipment.providerRefs,
+      createdAt: shipment.createdAt,
+    },
+  }
+
+  const updated = await OrderRepository.patchById({
+    id: order.id,
+    payload: { delivery: nextDelivery },
+  })
+
+  if (!updated)
+    throw new HttpError(400, 'Order not edited', 'ORDER_NOT_EDITED')
+
+  return {
+    status: 'success',
+    code: 'ORDER_SHIPMENT_CREATED',
+    message: 'Order shipment created',
+    data: nextDelivery,
+  }
+}
+
+export async function printShipmentLabel({
+  payload,
+  user,
+}: {
+  payload: PrintOrderShipmentLabelPayload
+  user: AuthUser
+}): Promise<{ buffer: Buffer, filename: string }> {
+  const { data: { items: [order] } } = await get({
+    payload: parseGetOrders({ filters: { ids: [payload.id] }, pagination: { full: true } }),
+    user,
+  })
+
+  if (order == null)
+    throw new HttpError(404, 'Order not found', 'ORDER_NOT_FOUND')
+
+  const trackingNumber = order.delivery?.shipment?.trackingNumber?.trim()
+  if (trackingNumber == null || trackingNumber === '') {
+    throw new HttpError(400, 'Shipment has not been created', 'SHIPMENT_NOT_CREATED')
+  }
+
+  const service = await DeliveryServicesRepo.findById(order.deliveryService.id)
+  if (!service)
+    throw new HttpError(404, 'Delivery service not found', 'DELIVERY_SERVICE_NOT_FOUND')
+
+  const credentialsParsed = deliveryServiceCredentialsSchema.safeParse(service.credentials)
+  const credentials = credentialsParsed.success ? credentialsParsed.data : undefined
+
+  const adapter = getDeliveryCarrierAdapter(service.type)
+  if (adapter.getLabel == null) {
+    throw new HttpError(400, 'Label print is not supported for this delivery service', 'SHIPMENT_NOT_SUPPORTED')
+  }
+
+  const buffer = Buffer.from(await adapter.getLabel({ credentials }, trackingNumber))
+
+  return {
+    buffer,
+    filename: `ttn-${trackingNumber}.pdf`,
+  }
+}
+
+function parseDeliveryStatusMap(raw: string | undefined): DeliveryStatusMap {
+  if (raw == null || raw === '')
+    return {}
+  try {
+    const parsed: unknown = JSON.parse(raw)
+    const result = deliveryStatusMapSchema.safeParse(parsed)
+    return result.success ? result.data : {}
+  }
+  catch {
+    return {}
+  }
+}
+
+export async function syncShipments({
+  payload,
+  user,
+}: {
+  payload: SyncOrderShipmentsPayload
+  user: AuthUser
+}): Promise<SyncOrderShipmentsResponse> {
+  const [intervalSetting, statusMapSetting, lockedStatuses] = await Promise.all([
+    SettingRepo.findByKey(DELIVERY_TRACKING_INTERVAL_SETTING_KEY),
+    SettingRepo.findByKey(DELIVERY_STATUS_MAP_SETTING_KEY),
+    OrderStatusModel.find({ isLocked: true, removed: false }).select({ _id: 1 }).lean<{ _id: string }[]>().exec(),
+  ])
+
+  const trackingIntervalMs = parseDeliveryTrackingIntervalMs(intervalSetting?.value)
+  const staleBefore = payload.force === true
+    ? undefined
+    : new Date(Date.now() - trackingIntervalMs)
+
+  const rawOrders = await OrderRepository.listForTracking({ staleBefore })
+
+  const statusMap = parseDeliveryStatusMap(statusMapSetting?.value)
+  const skipTrackingIds = new Set<string>()
+  if (statusMap.completed != null && statusMap.completed !== '')
+    skipTrackingIds.add(statusMap.completed)
+  if (statusMap.returned != null && statusMap.returned !== '')
+    skipTrackingIds.add(statusMap.returned)
+
+  const lockedStatusIds = new Set(lockedStatuses.map(status => String(status._id)))
+  const orders = rawOrders.filter(order => !skipTrackingIds.has(order.orderStatusId))
+
+  const byService = new Map<string, typeof orders>()
+  for (const order of orders) {
+    const serviceId = order.deliveryServiceId
+    if (serviceId == null || serviceId === '')
+      continue
+    const group = byService.get(serviceId) ?? []
+    group.push(order)
+    byService.set(serviceId, group)
+  }
+
+  let checked = 0
+  let updated = 0
+  let statusChanged = 0
+  const syncedAt = new Date()
+
+  for (const [serviceId, serviceOrders] of byService) {
+    const service = await DeliveryServicesRepo.findById(serviceId)
+    if (service == null)
+      continue
+
+    const credentialsParsed = deliveryServiceCredentialsSchema.safeParse(service.credentials)
+    const credentials = credentialsParsed.success ? credentialsParsed.data : undefined
+    const adapter = getDeliveryCarrierAdapter(service.type)
+    if (adapter.trackShipments == null)
+      continue
+
+    const inputs = serviceOrders.flatMap((order) => {
+      const trackingNumber = order.delivery?.shipment?.trackingNumber?.trim()
+      if (trackingNumber == null || trackingNumber === '')
+        return []
+      const phone = order.delivery?.recipient?.phone?.trim()
+      return [{
+        trackingNumber,
+        phone: phone != null && phone !== '' ? phone : undefined,
+      }]
+    })
+
+    if (inputs.length === 0)
+      continue
+
+    let tracked
+    try {
+      tracked = await adapter.trackShipments({ credentials }, inputs)
+    }
+    catch {
+      continue
+    }
+
+    const byTracking = new Map(tracked.map(item => [item.trackingNumber, item]))
+
+    for (const order of serviceOrders) {
+      const trackingNumber = order.delivery?.shipment?.trackingNumber?.trim()
+      if (trackingNumber == null || trackingNumber === '')
+        continue
+
+      checked += 1
+      const deliveryParsed = orderDeliverySchema.safeParse(order.delivery)
+      const delivery = deliveryParsed.success ? deliveryParsed.data : order.delivery
+      const trackedItem = byTracking.get(trackingNumber)
+      const nextDelivery = {
+        ...delivery,
+        shipment: {
+          ...delivery?.shipment,
+          trackingNumber,
+          carrierStatusCode: trackedItem?.carrierStatusCode ?? delivery?.shipment?.carrierStatusCode,
+          carrierStatusText: trackedItem?.carrierStatusText ?? delivery?.shipment?.carrierStatusText,
+          lastSyncedAt: syncedAt,
+        },
+      }
+
+      const mappedStatusId = trackedItem != null ? statusMap[trackedItem.group] : undefined
+      const canChangeStatus = mappedStatusId != null
+        && mappedStatusId !== ''
+        && mappedStatusId !== order.orderStatusId
+        && !lockedStatusIds.has(order.orderStatusId)
+
+      const patchPayload: Record<string, unknown> = { delivery: nextDelivery }
+      if (canChangeStatus)
+        patchPayload.orderStatusId = mappedStatusId
+
+      const saved = await OrderRepository.patchById({
+        id: String(order._id),
+        payload: patchPayload,
+      })
+      if (saved == null)
+        continue
+
+      updated += 1
+      if (canChangeStatus) {
+        statusChanged += 1
+        await AutomationService.run({
+          payload: {
+            type: 'order-updated',
+            entityId: String(order._id),
+            user: user.id,
+          },
+        })
+      }
+    }
+  }
+
+  return {
+    status: 'success',
+    code: 'ORDER_SHIPMENTS_SYNCED',
+    message: 'Order shipments synced',
+    data: {
+      checked,
+      updated,
+      statusChanged,
+    },
   }
 }
 

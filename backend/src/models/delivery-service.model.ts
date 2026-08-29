@@ -45,6 +45,10 @@ const DeliveryServiceSchema: Schema = new Schema(
       type: Boolean,
       default: true,
     },
+    credentials: {
+      type: Schema.Types.Mixed,
+      default: undefined,
+    },
     removed: {
       type: Boolean,
       default: false,
@@ -65,5 +69,6 @@ DeliveryServiceSchema.set('toJSON', {
 
 DeliveryServiceSchema.index({ removed: 1, active: 1 })
 DeliveryServiceSchema.index({ priority: 1 })
+DeliveryServiceSchema.index({ type: 1, removed: 1 })
 
 export const DeliveryServiceModel = mongoose.model<DeliveryServiceDoc>('delivery-service', DeliveryServiceSchema)

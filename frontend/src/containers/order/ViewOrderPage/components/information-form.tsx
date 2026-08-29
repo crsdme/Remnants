@@ -11,9 +11,10 @@ import {
   FormLabel,
   FormMessage,
   Separator,
-  Textarea,
 } from '@/components/ui'
 import { useLocale } from '@/utils/hooks'
+import { OrderCommentSection } from '../../components/OrderCommentSection'
+import { OrderDeliverySection } from '../../components/OrderDeliverySection'
 import { ORDER_INFORMATION_FORM_ID } from '../../components/OrderSidebar'
 import { useViewOrderContext } from '../context'
 
@@ -145,24 +146,9 @@ export function InformationForm({ form, onSubmit }: { form: UseFormReturn<any>, 
             />
           </div>
 
-          <FormField
-            control={form.control}
-            name="comment"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>{t('page.view-order.form.comment')}</FormLabel>
-                <FormControl>
-                  <Textarea
-                    placeholder={t('page.view-order.form.comment')}
-                    className="w-full"
-                    {...field}
-                    disabled={isLoading || disabled}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          <OrderCommentSection form={form} disabled={isLoading || disabled} />
+
+          <OrderDeliverySection form={form} disabled={isLoading || disabled} />
         </form>
       </Form>
     </div>

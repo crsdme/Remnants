@@ -1,6 +1,6 @@
 import type { NextFunction, Response } from 'express'
 import type { ValidatedAuthedRequest, ValidatedRequest } from '@/types'
-import type { CreateSitePayload, EditSitePayload, GetSitesPayload, RemoveSitesPayload } from '@/types/'
+import type { CreateSitePayload, EditSitePayload, GetSitesPayload, RemoveSitesPayload, SyncSiteProductsPayload } from '@/types/'
 import * as SiteService from '@/services/site.service'
 
 export async function get(
@@ -62,6 +62,23 @@ export async function remove(
 ) {
   try {
     const serviceResponse = await SiteService.remove({
+      payload: req.validated.body,
+    })
+
+    res.status(200).json(serviceResponse)
+  }
+  catch (err) {
+    next(err)
+  }
+}
+
+export async function syncProducts(
+  req: ValidatedRequest<SyncSiteProductsPayload, never>,
+  res: Response,
+  next: NextFunction,
+) {
+  try {
+    const serviceResponse = await SiteService.syncProducts({
       payload: req.validated.body,
     })
 

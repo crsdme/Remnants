@@ -3,8 +3,14 @@ import type {
   CreateDeliveryServiceResponse,
   EditDeliveryServiceRequest,
   EditDeliveryServiceResponse,
+  GetDeliveryCapabilitiesRequest,
+  GetDeliveryCapabilitiesResponse,
+  GetDeliveryLocationsRequest,
+  GetDeliveryLocationsResponse,
   GetDeliveryServicesRequest,
   GetDeliveryServicesResponse,
+  LookupDeliveryShipmentRequest,
+  LookupDeliveryShipmentResponse,
   RemoveDeliveryServicesRequest,
   RemoveDeliveryServicesResponse,
 } from '@remnant/shared'
@@ -24,4 +30,16 @@ export async function editDeliveryService(params: EditDeliveryServiceRequest) {
 
 export async function removeDeliveryService(params: RemoveDeliveryServicesRequest) {
   return api.post<RemoveDeliveryServicesResponse>('delivery-services/remove', params)
+}
+
+export async function getDeliveryCapabilities(params: GetDeliveryCapabilitiesRequest) {
+  return api.get<GetDeliveryCapabilitiesResponse>('delivery-services/capabilities/get', { params })
+}
+
+export async function getDeliveryLocations(params: GetDeliveryLocationsRequest) {
+  return api.post<GetDeliveryLocationsResponse>('delivery-services/locations/get', params)
+}
+
+export async function lookupDeliveryShipment(params: LookupDeliveryShipmentRequest) {
+  return api.post<LookupDeliveryShipmentResponse>('delivery-services/shipment/lookup', params)
 }

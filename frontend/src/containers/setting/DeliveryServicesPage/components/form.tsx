@@ -1,3 +1,4 @@
+import { useWatch } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 
 import { useLanguageQuery } from '@/api/hooks'
@@ -16,12 +17,24 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
+  Switch,
 } from '@/components/ui'
 import { useDeliveryServiceContext } from '../context'
+import { NovaPoshtaCredentialsFields } from './NovaPoshtaCredentialsFields'
+
+function clearNovaPoshtaFields(setValue: ReturnType<typeof useDeliveryServiceContext>['form']['setValue']) {
+  setValue('apiKey', '')
+  setValue('phone', '')
+  setValue('senderCityId', '')
+  setValue('senderCityName', '')
+  setValue('senderOfficeId', '')
+  setValue('senderOfficeName', '')
+}
 
 export function DeliveryServiceForm() {
   const { t } = useTranslation()
   const { isLoading, form, closeModal, submitDeliveryServiceForm } = useDeliveryServiceContext()
+  const type = useWatch({ control: form.control, name: 'type' })
 
   const { languages = [] } = useLanguageQuery(
     { pagination: { full: true } },
@@ -99,9 +112,12 @@ export function DeliveryServiceForm() {
               </FormLabel>
 
               <Select
-                onValueChange={field.onChange}
+                value={field.value}
+                onValueChange={(value) => {
+                  field.onChange(value)
+                  clearNovaPoshtaFields(form.setValue)
+                }}
                 disabled={isLoading}
-                {...field}
               >
                 <FormControl>
                   <SelectTrigger className="w-full">
@@ -118,6 +134,25 @@ export function DeliveryServiceForm() {
                 </SelectContent>
               </Select>
               <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        {type === 'novaposhta' ? <NovaPoshtaCredentialsFields /> : null}
+
+        <FormField
+          control={form.control}
+          name="active"
+          render={({ field }) => (
+            <FormItem className="flex flex-row items-center justify-between rounded-md border p-4">
+              <FormLabel>{t('page.delivery-services.form.active')}</FormLabel>
+              <FormControl>
+                <Switch
+                  checked={field.value}
+                  onCheckedChange={field.onChange}
+                  disabled={isLoading}
+                />
+              </FormControl>
             </FormItem>
           )}
         />

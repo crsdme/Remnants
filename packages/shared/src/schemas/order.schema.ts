@@ -1,6 +1,7 @@
 import type { PipeableDocument } from '..'
 import { z } from 'zod'
-import { dateRangeSchema, idSchema, idSchemaOptional, languageCodeSchema, languageStringSchema, numberFromStringSchema, paginationSchema, responseListSchema, responseSchema, sorterParamsSchema } from './common'
+import { dateRangeSchema, idSchema, idSchemaOptional, languageCodeSchema, languageStringSchema, numberFromStringSchema, paginationSchema, responseItemSchema, responseListSchema, responseSchema, sorterParamsSchema } from './common'
+import { deliveryCarrierTypeSchema, orderDeliveryFieldSchema, orderDeliverySchema } from './delivery-carrier.schema'
 import { orderPaymentDTOPopulatedSchema } from './order-payment.schema'
 
 const orderFileSchema = z.object({
@@ -42,6 +43,7 @@ export const orderSchema = z.object({
     total: numberFromStringSchema,
   })),
   comment: z.string(),
+  delivery: orderDeliverySchema.optional(),
   files: z.array(orderFileSchema).optional().default([]),
   profit: z.array(z.object({
     currency: idSchema,
@@ -88,6 +90,8 @@ export const orderDTOPopulatedSchema = orderSchema.omit({
     id: idSchema,
     names: languageStringSchema,
     priority: numberFromStringSchema,
+    type: deliveryCarrierTypeSchema.optional(),
+    color: z.string().optional(),
   }),
   orderSource: z.object({
     id: idSchema,
@@ -107,6 +111,7 @@ export const orderDTOPopulatedSchema = orderSchema.omit({
     paymentDate: z.coerce.date(),
     comment: z.string().optional(),
   })),
+  delivery: orderDeliverySchema.optional(),
 })
 
 export type OrderDTOPopulated = z.infer<typeof orderDTOPopulatedSchema>
@@ -274,6 +279,7 @@ export const createOrderSchema = z.object({
   }).optional()),
   client: idSchemaOptional,
   comment: z.string().optional(),
+  delivery: orderDeliveryFieldSchema,
   files: z.array(orderFileInputSchema).optional().default([]),
   uploadedFilesIds: uploadedFilesIdsSchema,
   items: z.array(z.object({
@@ -307,6 +313,7 @@ export const editOrderSchema = z.object({
   }).optional()),
   client: idSchemaOptional,
   comment: z.string().optional(),
+  delivery: orderDeliveryFieldSchema,
   files: z.array(orderFileInputSchema).optional().default([]),
   uploadedFilesIds: uploadedFilesIdsSchema,
   items: z.array(z.object({
@@ -379,6 +386,17 @@ export const printOrderLabelOrderSchema = z.object({
   language: languageCodeSchema.optional().default('en'),
 })
 
+export const createOrderShipmentSchema = z.object({
+  id: idSchema,
+  delivery: orderDeliverySchema.optional(),
+})
+export type CreateOrderShipmentRequest = z.input<typeof createOrderShipmentSchema>
+
+export const printOrderShipmentLabelSchema = z.object({
+  id: idSchema,
+})
+export type PrintOrderShipmentLabelRequest = z.input<typeof printOrderShipmentLabelSchema>
+
 export const getOrderDetailsSchema = z.object({
   seq: numberFromStringSchema,
 })
@@ -414,6 +432,9 @@ export type PrintDraftInvoiceOrderResponse = z.infer<typeof printDraftInvoiceOrd
 export const printOrderLabelOrderResponseSchema = responseSchema
 export type PrintOrderLabelOrderResponse = z.infer<typeof printOrderLabelOrderResponseSchema> & { doc: PipeableDocument }
 
+export const createOrderShipmentResponseSchema = responseItemSchema(orderDeliverySchema)
+export type CreateOrderShipmentResponse = z.infer<typeof createOrderShipmentResponseSchema>
+
 export const getOrderDetailsResponseSchema = responseSchema.extend({
   data: z.object({
     order: orderDTOPopulatedSchema,
@@ -422,3 +443,17 @@ export const getOrderDetailsResponseSchema = responseSchema.extend({
   }),
 })
 export type GetOrderDetailsResponse = z.infer<typeof getOrderDetailsResponseSchema>
+
+export const syncOrderShipmentsSchema = z.object({
+  force: z.boolean().optional().default(false),
+})
+export type SyncOrderShipmentsRequest = z.input<typeof syncOrderShipmentsSchema>
+
+export const syncOrderShipmentsResponseSchema = responseSchema.extend({
+  data: z.object({
+    checked: z.number(),
+    updated: z.number(),
+    statusChanged: z.number(),
+  }),
+})
+export type SyncOrderShipmentsResponse = z.infer<typeof syncOrderShipmentsResponseSchema>

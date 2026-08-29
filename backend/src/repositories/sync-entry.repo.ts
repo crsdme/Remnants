@@ -51,10 +51,13 @@ export async function list(payload: GetSyncEntriesRepoPayload): Promise<GetSyncE
       $project: {
         _id: 0,
         id: '$_id',
-        names: 1,
-        symbols: 1,
-        priority: 1,
-        active: 1,
+        sourceType: 1,
+        sourceId: 1,
+        siteId: 1,
+        externalId: 1,
+        status: 1,
+        syncedAt: 1,
+        lastError: 1,
         createdAt: 1,
         updatedAt: 1,
       },
@@ -80,6 +83,54 @@ export async function list(payload: GetSyncEntriesRepoPayload): Promise<GetSyncE
 
 export async function createOne(payload: CreateSyncEntryRepoPayload) {
   return SyncEntryModel.create(payload)
+}
+
+export async function findLink(siteId: string, sourceType: string, sourceId: string) {
+  return SyncEntryModel.findOne({ siteId, sourceType, sourceId }).exec()
+}
+
+export async function findLinks(siteId: string, sourceType: string, sourceIds: string[]) {
+  if (sourceIds.length === 0)
+    return []
+  return SyncEntryModel.find({ siteId, sourceType, sourceId: { $in: sourceIds } }).exec()
+}
+
+export async function upsertLink(payload: {
+  siteId: string
+  sourceType: 'product' | 'category'
+  sourceId: string
+  externalId?: string | null
+  status: 'pending' | 'synced' | 'error'
+  lastError?: string | null
+  syncedAt?: Date | null
+}) {
+  const $set: Record<string, unknown> = {
+    status: payload.status,
+  }
+
+  if (payload.externalId !== undefined)
+    $set.externalId = payload.externalId
+  if (payload.lastError !== undefined)
+    $set.lastError = payload.lastError
+  if (payload.syncedAt !== undefined)
+    $set.syncedAt = payload.syncedAt
+
+  return SyncEntryModel.findOneAndUpdate(
+    {
+      siteId: payload.siteId,
+      sourceType: payload.sourceType,
+      sourceId: payload.sourceId,
+    },
+    {
+      $set,
+      $setOnInsert: {
+        siteId: payload.siteId,
+        sourceType: payload.sourceType,
+        sourceId: payload.sourceId,
+      },
+    },
+    { new: true, upsert: true, runValidators: true },
+  ).exec()
 }
 
 export async function updateById(id: string, payload: EditSyncEntryRepoPayload) {

@@ -103,6 +103,27 @@ export async function findByProductWarehouse({
   return QuantityModel.findOne({ productId, warehouseId }).session(session ?? null).exec()
 }
 
+export async function sumCountByProductAndWarehouses(
+  productId: string,
+  warehouseIds: string[],
+  session?: ClientSession,
+): Promise<number> {
+  if (warehouseIds.length === 0)
+    return 0
+
+  const pipeline: PipelineStage[] = [
+    { $match: { productId, warehouseId: { $in: warehouseIds } } },
+    { $group: { _id: null, total: { $sum: '$count' } } },
+  ]
+
+  const aggregate = QuantityModel.aggregate<{ total: number }>(pipeline)
+  if (session)
+    aggregate.session(session)
+
+  const [row] = await aggregate.exec()
+  return row?.total ?? 0
+}
+
 export async function listProductWarehousePairs(session?: ClientSession) {
   return QuantityModel
     .find({})

@@ -56,7 +56,7 @@ interface CreateInventoryContextType {
   onError: (formErrors: FieldErrors<CreateInventoryFormValues>) => void
   startInventory: () => void
   saveComment: (comment: string) => void
-  saveItemQuantity: (productId: string, receivedQuantity: number) => void
+  saveItemQuantity: (productId: string, receivedQuantity: number, itemHint?: InventoryItemDTO) => void
   handleBarcodeScan: (barcode: string) => Promise<void>
   submitInventoryForm: () => void
   isItemsLoading: boolean
@@ -108,7 +108,8 @@ export function CreateInventoryProvider({ children }: { children: ReactNode }) {
     },
   )
 
-  const inventory = inventories[0]
+  // Prefer draft when seq collides with an older confirmed inventory.
+  const inventory = inventories.find(item => item.status === 'draft') ?? inventories[0]
 
   const {
     data: inventoryItemsResponse,
@@ -314,11 +315,12 @@ export function CreateInventoryProvider({ children }: { children: ReactNode }) {
     )
   }, [queryClient])
 
-  const applyOptimisticQuantity = useCallback((productId: string, receivedQuantity: number) => {
+  const applyOptimisticQuantity = useCallback((productId: string, receivedQuantity: number, itemHint?: InventoryItemDTO) => {
     const previousItem = queryClient
       .getQueriesData<AxiosResponse<GetInventoryItemsResponse>>({ queryKey: ['inventories', 'get', 'items'] })
       .flatMap(([, response]) => response?.data?.data?.items ?? [])
       .find(item => item.productId === productId)
+      ?? itemHint
 
     const optimisticItem = {
       ...(previousItem ?? {}),
@@ -342,12 +344,27 @@ export function CreateInventoryProvider({ children }: { children: ReactNode }) {
   const createMutation = useInventoryCreate({
     options: {
       onSuccess: ({ data }) => {
+        const created = data.data
         creatingRef.current = false
         setIsCreatingDraft(false)
-        setInventoryId(data.data.id)
-        inventoryIdRef.current = data.data.id
+        setInventoryId(created.id)
+        inventoryIdRef.current = created.id
+        queryClient.setQueryData(
+          ['inventories', 'get', { filters: { seq: String(created.seq) } }],
+          {
+            data: {
+              status: 'success',
+              code: 'INVENTORIES_FETCHED',
+              message: 'Inventories fetched',
+              data: {
+                items: [created],
+                pagination: { page: 1, pageSize: 10, total: 1 },
+              },
+            },
+          },
+        )
         void queryClient.invalidateQueries({ queryKey: ['inventories'] })
-        void navigate(`/inventories/edit/${data.data.seq}`, { replace: true })
+        void navigate(`/inventories/edit/${created.seq}`, { replace: true })
       },
       onError: ({ response }) => {
         creatingRef.current = false
@@ -461,14 +478,14 @@ export function CreateInventoryProvider({ children }: { children: ReactNode }) {
     }
   }, 350)
 
-  const saveItemQuantity = useCallback((productId: string, receivedQuantity: number) => {
+  const saveItemQuantity = useCallback((productId: string, receivedQuantity: number, itemHint?: InventoryItemDTO) => {
     const currentInventoryId = inventoryIdRef.current
     if (!currentInventoryId)
       return
 
     setIsSaving(true)
     setFocusedProductId(productId)
-    applyOptimisticQuantity(productId, receivedQuantity)
+    applyOptimisticQuantity(productId, receivedQuantity, itemHint)
     pendingQuantitiesRef.current.set(productId, receivedQuantity)
     flushPendingUpserts()
   }, [applyOptimisticQuantity, flushPendingUpserts])

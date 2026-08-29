@@ -8,6 +8,8 @@ import {
   getSitesSchema,
   removeSitesResponseSchema,
   removeSitesSchema,
+  syncSiteProductsResponseSchema,
+  syncSiteProductsSchema,
 } from '@remnant/shared'
 import { Router } from 'express'
 import * as SiteController from '@/controllers/site.controller'
@@ -44,6 +46,14 @@ router.post(
   checkPermissions('site.remove'),
   validateResponse(removeSitesResponseSchema),
   SiteController.remove as RequestHandler,
+)
+
+router.post(
+  '/sync-products',
+  validateBodyRequest(syncSiteProductsSchema),
+  checkPermissions('site.sync'),
+  validateResponse(syncSiteProductsResponseSchema),
+  SiteController.syncProducts as RequestHandler,
 )
 
 export default router

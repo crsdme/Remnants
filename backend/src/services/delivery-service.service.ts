@@ -1,21 +1,49 @@
 import type {
   AuthUser,
   CreateDeliveryServiceResponse,
+  DeliveryServiceCredentials,
   EditDeliveryServiceResponse,
   GetDeliveryServicesResponse,
   RemoveDeliveryServicesResponse,
 } from '@remnant/shared'
 import type {
   CreateDeliveryServicesPayload,
+  DeliveryServiceDB,
   EditDeliveryServicesPayload,
   GetDeliveryServicesPayload,
   RemoveDeliveryServicesPayload,
 } from '@/types/delivery-service.type'
-import { mapDeliveryServiceToDTO } from '@/mappers/'
+import { DELIVERY_SERVICE_API_KEY_MASK } from '@remnant/shared'
+import { mapDeliveryServiceToDTO } from '@/mappers/delivery-services.mapper'
 import { DeliveryServiceModel } from '@/models/'
 import * as DeliveryServicesRepo from '@/repositories/delivery-services.repo'
 import * as UserAccessRepo from '@/repositories/user-access.repo'
 import { getScopeIdsForUser, HttpError } from '@/utils/'
+
+function isMaskedApiKey(apiKey: string): boolean {
+  return apiKey.length === 0 || apiKey === DELIVERY_SERVICE_API_KEY_MASK
+}
+
+function mergeCredentials(params: {
+  type: EditDeliveryServicesPayload['type']
+  existing?: DeliveryServiceDB['credentials']
+  incoming: DeliveryServiceCredentials
+}): DeliveryServiceCredentials {
+  const { type, existing, incoming } = params
+
+  if (type === 'selfpickup' || incoming.type === 'selfpickup')
+    return { type: 'selfpickup' }
+
+  const existingKey = existing?.type === 'novaposhta' ? existing.apiKey : ''
+  const apiKey = isMaskedApiKey(incoming.apiKey) ? existingKey : incoming.apiKey
+
+  return {
+    type: 'novaposhta',
+    apiKey,
+    phone: incoming.phone,
+    sender: incoming.sender,
+  }
+}
 
 export async function get({
   payload,
@@ -34,7 +62,7 @@ export async function get({
     code: 'DELIVERY_SERVICES_FETCHED',
     message: 'Delivery services fetched',
     data: {
-      items,
+      items: items.map(mapDeliveryServiceToDTO),
       pagination: {
         page,
         pageSize,
@@ -45,6 +73,12 @@ export async function get({
 }
 
 export async function create({ payload }: { payload: CreateDeliveryServicesPayload }): Promise<CreateDeliveryServiceResponse> {
+  if (payload.type === 'novaposhta' && payload.credentials.type === 'novaposhta') {
+    if (isMaskedApiKey(payload.credentials.apiKey)) {
+      throw new HttpError(400, 'Nova Poshta API key is required', 'NOVA_POSHTA_API_KEY_REQUIRED')
+    }
+  }
+
   const deliveryService = await DeliveryServicesRepo.createOne(payload)
 
   return {
@@ -58,7 +92,25 @@ export async function create({ payload }: { payload: CreateDeliveryServicesPaylo
 export async function edit({ payload }: { payload: EditDeliveryServicesPayload }): Promise<EditDeliveryServiceResponse> {
   const { id } = payload
 
-  const deliveryService = await DeliveryServiceModel.findOneAndUpdate({ _id: id }, payload)
+  const existing = await DeliveryServicesRepo.findById(id)
+  if (!existing) {
+    throw new HttpError(400, 'Delivery service not found', 'DELIVERY_SERVICE_NOT_FOUND')
+  }
+
+  const credentials = mergeCredentials({
+    type: payload.type,
+    existing: existing.credentials,
+    incoming: payload.credentials,
+  })
+
+  if (payload.type === 'novaposhta' && credentials.type === 'novaposhta' && !credentials.apiKey) {
+    throw new HttpError(400, 'Nova Poshta API key is required', 'NOVA_POSHTA_API_KEY_REQUIRED')
+  }
+
+  const deliveryService = await DeliveryServicesRepo.updateById(id, {
+    ...payload,
+    credentials,
+  })
 
   if (!deliveryService) {
     throw new HttpError(400, 'Delivery service not edited', 'DELIVERY_SERVICE_NOT_EDITED')

@@ -150,6 +150,10 @@
   "component.asyncSelect.noResultsMessage": "Ничего не найдено",
   "component.asyncSelect.placeholder": "Выберите",
 
+  "component.phoneInput.searchCountry": "Поиск страны...",
+  "component.phoneInput.noCountry": "Страна не найдена.",
+  "component.phoneInput.placeholder": "Введите номер телефона",
+
   "component.fileUploadDnd.upload": "Загрузить файл",
   "component.fileUploadDnd.noFilesUploaded": "Файлы не загружены",
   "component.fileUploadDnd.dropOrSelect": "Перетащите файлы или",

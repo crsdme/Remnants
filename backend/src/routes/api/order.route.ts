@@ -2,6 +2,8 @@ import type { RequestHandler } from 'express'
 import {
   createOrderResponseSchema,
   createOrderSchema,
+  createOrderShipmentResponseSchema,
+  createOrderShipmentSchema,
   editOrderResponseSchema,
   editOrderSchema,
   getOrderDetailsResponseSchema,
@@ -13,8 +15,11 @@ import {
   printDraftInvoiceOrderSchema,
   printInvoiceOrderSchema,
   printOrderLabelOrderSchema,
+  printOrderShipmentLabelSchema,
   removeOrdersResponseSchema,
   removeOrdersSchema,
+  syncOrderShipmentsResponseSchema,
+  syncOrderShipmentsSchema,
 } from '@remnant/shared'
 import { Router } from 'express'
 import * as OrderController from '@/controllers/order.controller'
@@ -108,5 +113,28 @@ router.get(
   validateQueryRequest(printOrderLabelOrderSchema),
   checkPermissions('order.print.order-label'),
   OrderController.printOrderLabel as RequestHandler,
+)
+
+router.post(
+  '/shipment/create',
+  validateBodyRequest(createOrderShipmentSchema),
+  checkPermissions('order.edit'),
+  validateResponse(createOrderShipmentResponseSchema),
+  OrderController.createShipment as RequestHandler,
+)
+
+router.get(
+  '/shipment/print-label',
+  validateQueryRequest(printOrderShipmentLabelSchema),
+  checkPermissions('order.edit'),
+  OrderController.printShipmentLabel as RequestHandler,
+)
+
+router.post(
+  '/shipment/sync',
+  validateBodyRequest(syncOrderShipmentsSchema),
+  checkPermissions('order.page'),
+  validateResponse(syncOrderShipmentsResponseSchema),
+  OrderController.syncShipments as RequestHandler,
 )
 export default router

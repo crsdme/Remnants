@@ -1,6 +1,7 @@
 import type { NextFunction, Response } from 'express'
 import type {
   CreateOrderPayload,
+  CreateOrderShipmentPayload,
   EditOrderPayload,
   GetOrderDetailsPayload,
   GetOrderItemsPayload,
@@ -8,7 +9,9 @@ import type {
   PrintDraftInvoiceOrderPayload,
   PrintInvoiceOrderPayload,
   PrintOrderLabelOrderPayload,
+  PrintOrderShipmentLabelPayload,
   RemoveOrdersPayload,
+  SyncOrderShipmentsPayload,
   ValidatedAuthedRequest,
   ValidatedRequest,
 } from '@/types'
@@ -186,6 +189,62 @@ export async function printOrderLabel(
     res.setHeader('Content-Disposition', `inline; filename=order-label-${req.validated.query.seq}.pdf`)
     doc.pipe(res)
     doc.end()
+  }
+  catch (err) {
+    next(err)
+  }
+}
+
+export async function createShipment(
+  req: ValidatedAuthedRequest<never, CreateOrderShipmentPayload>,
+  res: Response,
+  next: NextFunction,
+) {
+  try {
+    const serviceResponse = await OrderService.createShipment({
+      payload: req.validated.body,
+      user: req.user,
+    })
+
+    res.status(200).json(serviceResponse)
+  }
+  catch (err) {
+    next(err)
+  }
+}
+
+export async function printShipmentLabel(
+  req: ValidatedAuthedRequest<PrintOrderShipmentLabelPayload, never>,
+  res: Response,
+  next: NextFunction,
+) {
+  try {
+    const { buffer, filename } = await OrderService.printShipmentLabel({
+      payload: req.validated.query,
+      user: req.user,
+    })
+
+    res.setHeader('Content-Type', 'application/pdf')
+    res.setHeader('Content-Disposition', `inline; filename=${filename}`)
+    res.send(buffer)
+  }
+  catch (err) {
+    next(err)
+  }
+}
+
+export async function syncShipments(
+  req: ValidatedAuthedRequest<never, SyncOrderShipmentsPayload>,
+  res: Response,
+  next: NextFunction,
+) {
+  try {
+    const serviceResponse = await OrderService.syncShipments({
+      payload: req.validated.body,
+      user: req.user,
+    })
+
+    res.status(200).json(serviceResponse)
   }
   catch (err) {
     next(err)

@@ -1,14 +1,17 @@
 import type { CurrencyDTO } from '@remnant/shared'
 import type { ReactNode } from 'react'
 
+import { DELIVERY_TRACKING_INTERVAL_SETTING_KEY, parseDeliveryTrackingIntervalMs } from '@remnant/shared'
 import { useQueryClient } from '@tanstack/react-query'
-import { createContext, useContext, useMemo } from 'react'
+import { createContext, useContext, useEffect, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 
 import {
   useCurrencyQuery,
   useOrderRemove,
+  useOrderShipmentsSync,
+  useSettingValue,
 } from '@/api/hooks'
 
 interface OrderContextType {
@@ -42,6 +45,26 @@ export function OrderProvider({ children }: { children: ReactNode }) {
       },
     },
   })
+
+  const trackingIntervalRaw = useSettingValue(DELIVERY_TRACKING_INTERVAL_SETTING_KEY)
+  const trackingIntervalMs = parseDeliveryTrackingIntervalMs(trackingIntervalRaw)
+
+  const { mutate: syncShipments } = useOrderShipmentsSync({
+    options: {
+      onSuccess: () => {
+        void queryClient.invalidateQueries({ queryKey: ['orders'] })
+        void queryClient.invalidateQueries({ queryKey: ['order-statuses'] })
+      },
+    },
+  })
+
+  useEffect(() => {
+    syncShipments({})
+    const timer = window.setInterval(() => {
+      syncShipments({})
+    }, trackingIntervalMs)
+    return () => window.clearInterval(timer)
+  }, [syncShipments, trackingIntervalMs])
 
   const removeOrder = (params: { ids: string[] }) => {
     useMutateRemoveOrder.mutate(params)

@@ -28,6 +28,10 @@
   "component.asyncSelect.noResultsMessage": "No results found",
   "component.asyncSelect.placeholder": "Select",
 
+  "component.phoneInput.searchCountry": "Search country...",
+  "component.phoneInput.noCountry": "No country found.",
+  "component.phoneInput.placeholder": "Enter phone number",
+
   "component.batchEdit.button": "Batch Edit",
   "component.batchEdit.title": "Batch Edit",
   "component.batchEdit.description": "Select parameters to edit in bulk",

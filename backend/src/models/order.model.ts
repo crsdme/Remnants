@@ -56,6 +56,10 @@ const OrderSchema: Schema = new Schema(
       type: String,
       default: '',
     },
+    delivery: {
+      type: Schema.Types.Mixed,
+      default: undefined,
+    },
     files: [{
       _id: false,
       path: {

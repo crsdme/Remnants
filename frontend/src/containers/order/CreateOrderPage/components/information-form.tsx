@@ -9,9 +9,10 @@ import {
   FormLabel,
   FormMessage,
   Separator,
-  Textarea,
 } from '@/components/ui'
 import { useLocale } from '@/utils/hooks'
+import { OrderCommentSection } from '../../components/OrderCommentSection'
+import { OrderDeliverySection } from '../../components/OrderDeliverySection'
 import { ORDER_INFORMATION_FORM_ID } from '../../components/OrderSidebar'
 import { useCreateOrderContext } from '../context'
 
@@ -147,24 +148,9 @@ export function InformationForm() {
             />
           </div>
 
-          <FormField
-            control={informationForm.control}
-            name="comment"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>{t('page.create-order.form.comment')}</FormLabel>
-                <FormControl>
-                  <Textarea
-                    placeholder={t('page.create-order.form.comment')}
-                    className="w-full"
-                    {...field}
-                    disabled={isLoading}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          <OrderCommentSection form={informationForm} disabled={isLoading} />
+
+          <OrderDeliverySection form={informationForm} disabled={isLoading} />
         </form>
       </Form>
     </div>

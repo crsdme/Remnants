@@ -2,6 +2,48 @@
   "error.title.undefined": "Неизвестная ошибка",
   "error.description.undefined": "Произошла неизвестная ошибка",
 
+  "error.title.NOVA_POSHTA_API_KEY_REQUIRED": "Нет ключа API Новой Почты",
+  "error.description.NOVA_POSHTA_API_KEY_REQUIRED": "Сохраните настоящий API-ключ в службе доставки. Тестовый ключ из seed не ищет города и не печатает",
+
+  "error.title.NOVA_POSHTA_CITY_REQUIRED": "Нужен город",
+  "error.description.NOVA_POSHTA_CITY_REQUIRED": "Выберите город из списка Новой Почты, затем отделение",
+
+  "error.title.NOVA_POSHTA_API_ERROR": "Ошибка Новой Почты",
+  "error.description.NOVA_POSHTA_API_ERROR": "Новая Почта отклонила запрос",
+
+  "error.title.NOVA_POSHTA_REQUEST_FAILED": "Новая Почта недоступна",
+  "error.description.NOVA_POSHTA_REQUEST_FAILED": "Не удалось связаться с Новой Почтой. Попробуйте позже",
+
+  "error.title.NOVA_POSHTA_SENDER_NOT_FOUND": "Отправитель Новой Почты не найден",
+  "error.description.NOVA_POSHTA_SENDER_NOT_FOUND": "Проверьте ключ API и кабинет отправителя в настройках",
+
+  "error.title.NOVA_POSHTA_RECIPIENT_FAILED": "Не удалось создать получателя",
+  "error.description.NOVA_POSHTA_RECIPIENT_FAILED": "Проверьте имя и телефон получателя",
+
+  "error.title.NOVA_POSHTA_SHIPMENT_FAILED": "Не удалось создать ТТН",
+  "error.description.NOVA_POSHTA_SHIPMENT_FAILED": "Новая Почта не вернула номер накладной",
+
+  "error.title.NOVA_POSHTA_LABEL_FAILED": "Не удалось напечатать этикетку",
+  "error.description.NOVA_POSHTA_LABEL_FAILED": "Новая Почта не вернула PDF-стикер",
+
+  "error.title.DELIVERY_DETAILS_REQUIRED": "Не заполнена доставка",
+  "error.description.DELIVERY_DETAILS_REQUIRED": "Укажите получателя, город и отделение перед созданием ТТН",
+
+  "error.title.SHIPMENT_NOT_SUPPORTED": "ТТН недоступна",
+  "error.description.SHIPMENT_NOT_SUPPORTED": "Эта служба доставки не поддерживает создание накладной",
+
+  "error.title.SHIPMENT_ALREADY_EXISTS": "ТТН уже создана",
+  "error.description.SHIPMENT_ALREADY_EXISTS": "У этого заказа уже есть номер накладной",
+
+  "error.title.SHIPMENT_NOT_CREATED": "ТТН ещё нет",
+  "error.description.SHIPMENT_NOT_CREATED": "Сначала создайте ТТН, затем печатайте этикетку",
+
+  "error.title.SHIPMENT_NOT_FOUND": "ТТН не найдена",
+  "error.description.SHIPMENT_NOT_FOUND": "Новая Почта не знает документ с этим номером",
+
+  "response.title.DELIVERY_SHIPMENT_LOOKED_UP": "Данные ТТН подставлены",
+  "response.description.DELIVERY_SHIPMENT_LOOKED_UP": "Получатель и посылка заполнены из Новой Почты",
+
   "response.title.LANGUAGES_FETCHED": "Языки получены",
   "response.description.LANGUAGES_FETCHED": "Список языков успешно получен",
 
@@ -441,6 +483,27 @@
   "response.title.ORDER_EDITED": "Заказ обновлен",
   "response.description.ORDER_EDITED": "Заказ был обновлен",
 
+  "response.title.ORDER_SHIPMENT_CREATED": "ТТН создана",
+  "response.description.ORDER_SHIPMENT_CREATED": "Номер накладной Новой Почты сохранён",
+
+  "response.title.ORDER_SHIPMENTS_SYNCED": "Трекинг обновлён",
+  "response.description.ORDER_SHIPMENTS_SYNCED": "Статусы Новой Почты синхронизированы",
+
+  "response.title.SETTINGS_FETCHED": "Настройки загружены",
+  "response.description.SETTINGS_FETCHED": "Настройки успешно получены",
+
+  "response.title.SETTING_CREATED": "Настройка сохранена",
+  "response.description.SETTING_CREATED": "Настройка создана",
+
+  "response.title.SETTING_EDITED": "Настройка сохранена",
+  "response.description.SETTING_EDITED": "Настройка обновлена",
+
+  "response.title.SETTINGS_REMOVED": "Настройки удалены",
+  "response.description.SETTINGS_REMOVED": "Настройки были удалены",
+
+  "error.title.SETTING_NOT_EDITED": "Настройка не сохранена",
+  "error.description.SETTING_NOT_EDITED": "Не удалось обновить настройку",
+
   "response.title.ORDERS_NOT_REMOVED": "Заказы не удалены",
   "response.description.ORDERS_NOT_REMOVED": "Не удалось удалить выбранные заказы",
 
@@ -557,6 +620,18 @@
 
   "response.title.SITES_FETCHED": "Сайты получены",
   "response.description.SITES_FETCHED": "Список сайтов успешно получен",
+
+  "response.title.SITE_PRODUCTS_SYNCED": "Товары выгружены",
+  "response.description.SITE_PRODUCTS_SYNCED": "Выгружено {{synced}} из {{total}} товаров (ошибок: {{failed}})",
+
+  "error.title.SITE_NOT_FOUND": "Сайт не найден",
+  "error.description.SITE_NOT_FOUND": "Такого сайта нет",
+
+  "error.title.SITE_INACTIVE": "Сайт выключен",
+  "error.description.SITE_INACTIVE": "Включите сайт перед выгрузкой товаров",
+
+  "error.title.SITE_SYNC_NOT_CONFIGURED": "Сайт не настроен",
+  "error.description.SITE_SYNC_NOT_CONFIGURED": "Укажите URL и ключ сайта",
 
   "response.title.SUPPLIERS_FETCHED": "Поставщики получены",
   "response.description.SUPPLIERS_FETCHED": "Список поставщиков успешно получен",

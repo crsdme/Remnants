@@ -1,4 +1,4 @@
-import { idSchema, idSchemaOptional, languageStringSchema, minorSchema, numberFromStringSchema } from '@remnant/shared'
+import { deliveryCarrierTypeSchema, idSchema, idSchemaOptional, languageStringSchema, minorSchema, numberFromStringSchema, orderDeliverySchema } from '@remnant/shared'
 
 import { z } from 'zod'
 import { productDBPopulatedSchema } from './product.schema'
@@ -22,6 +22,7 @@ export const orderDBSchema = z.object({
   orderPaymentStatus: z.enum(['paid', 'unpaid', 'partially_paid', 'overpaid']),
   clientId: idSchema,
   comment: z.string(),
+  delivery: orderDeliverySchema.optional(),
   files: z.array(z.object({
     path: z.string(),
     filename: z.string(),
@@ -71,6 +72,8 @@ export const orderDBPopulatedSchema = z.object({
     id: idSchema,
     names: languageStringSchema,
     priority: numberFromStringSchema,
+    type: deliveryCarrierTypeSchema.optional(),
+    color: z.string().optional(),
   }),
   orderSource: z.object({
     id: idSchema,
@@ -118,6 +121,7 @@ export const orderDBPopulatedSchema = z.object({
     comment: z.string().optional(),
   }).nullable().optional(),
   comment: z.string(),
+  delivery: orderDeliverySchema.optional(),
   files: z.array(z.object({
     path: z.string(),
     filename: z.string(),
@@ -142,8 +146,8 @@ export const orderItemDBPopulatedSchema = z.object({
   minorManualPrice: minorSchema.optional(),
   minorBasePrice: minorSchema,
   minorPrice: minorSchema,
-  minorPurchasePrice: minorSchema,
-  minorProfit: minorSchema,
+  minorPurchasePrice: minorSchema.optional(),
+  minorProfit: minorSchema.optional(),
   minorDiscountAmount: minorSchema,
   discountPercent: numberFromStringSchema,
   exchangeRate: numberFromStringSchema,
@@ -159,7 +163,7 @@ export const orderItemDBPopulatedSchema = z.object({
     names: languageStringSchema,
     symbols: languageStringSchema,
     scale: numberFromStringSchema,
-  }),
+  }).optional(),
   removedBy: idSchema,
   createdBy: idSchema,
   removed: z.boolean().default(false),
@@ -176,6 +180,7 @@ export const createOrderRepoSchema = z.object({
   orderPaymentIds: z.array(idSchema),
   clientId: idSchemaOptional,
   comment: z.string().optional(),
+  delivery: orderDeliverySchema.optional(),
   files: z.array(z.object({
     path: z.string(),
     filename: z.string(),
@@ -221,6 +226,7 @@ export const editOrderRepoSchema = z.object({
   orderPaymentIds: z.array(idSchema),
   clientId: idSchemaOptional,
   comment: z.string().optional(),
+  delivery: orderDeliverySchema.optional(),
   files: z.array(z.object({
     path: z.string(),
     filename: z.string(),

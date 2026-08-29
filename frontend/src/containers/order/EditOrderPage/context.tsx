@@ -25,6 +25,7 @@ import {
 } from '@/api/hooks'
 import { useAuthContext } from '@/contexts/AuthContext'
 import { hasPermission } from '@/utils/helpers'
+import { emptyOrderDeliveryFormValues, formValuesToOrderDelivery, orderDeliveryFormSchema, orderDeliveryToFormValues } from '../components/orderDeliveryForm'
 
 const EditOrderContext = createContext<EditOrderContextType | undefined>(undefined)
 
@@ -83,6 +84,7 @@ export function EditOrderProvider({ children }: { children: ReactNode }) {
       client: undefined,
       items: [],
       comment: undefined,
+      delivery: emptyOrderDeliveryFormValues(),
     },
   })
 
@@ -204,6 +206,7 @@ export function EditOrderProvider({ children }: { children: ReactNode }) {
         currency: item.currency,
       })),
       comment: order.comment,
+      delivery: orderDeliveryToFormValues(order.delivery, order.deliveryService.type),
     })
 
     const normalizedPayments: DraftOrderPayment[] = (defaultPayments as unknown as OrderPaymentDTOPopulated[]).map((p: any) => ({
@@ -308,6 +311,7 @@ export function EditOrderProvider({ children }: { children: ReactNode }) {
       deliveryService: params.deliveryService,
       client: params.client,
       comment: params.comment,
+      delivery: formValuesToOrderDelivery(params.delivery),
       items: mappedItems,
       orderPayments,
       files: files.map(file => ({
@@ -449,6 +453,7 @@ function createInformationFormSchema(t: (key: string) => string) {
     client: z.string().optional(),
     items: z.array(createOrderLineItemSchema()).min(1, { message: t('form.errors.required') }),
     comment: z.string().optional(),
+    delivery: orderDeliveryFormSchema(t),
   }).superRefine((data) => {
     if (data.items.length === 0)
       toast.error(t('form.errors.required.products'))

@@ -147,6 +147,14 @@ export function useColumns() {
     return [
       selectColumn(),
       expanderColumn(),
+      columnHelper.accessor('seq', {
+        id: 'seq',
+        meta: {
+          title: t('page.categories.table.seq'),
+        },
+        header: '#',
+        cell: ({ getValue }) => getValue().toString(),
+      }),
       columnHelper.accessor('names', {
         id: 'names',
         size: 150,

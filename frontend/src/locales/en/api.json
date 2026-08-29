@@ -2,6 +2,48 @@
   "error.title.undefined": "Undefined error",
   "error.description.undefined": "An undefined error occurred",
 
+  "error.title.NOVA_POSHTA_API_KEY_REQUIRED": "Nova Poshta API key is missing",
+  "error.description.NOVA_POSHTA_API_KEY_REQUIRED": "Save a real API key on the delivery service. The seed placeholder key cannot search cities or print labels",
+
+  "error.title.NOVA_POSHTA_CITY_REQUIRED": "City is required",
+  "error.description.NOVA_POSHTA_CITY_REQUIRED": "Choose a city from the Nova Poshta list, then pick a warehouse",
+
+  "error.title.NOVA_POSHTA_API_ERROR": "Nova Poshta error",
+  "error.description.NOVA_POSHTA_API_ERROR": "Nova Poshta rejected the request",
+
+  "error.title.NOVA_POSHTA_REQUEST_FAILED": "Nova Poshta is unavailable",
+  "error.description.NOVA_POSHTA_REQUEST_FAILED": "Could not reach Nova Poshta. Try again later",
+
+  "error.title.NOVA_POSHTA_SENDER_NOT_FOUND": "Nova Poshta sender not found",
+  "error.description.NOVA_POSHTA_SENDER_NOT_FOUND": "Check the API key and sender account in Settings",
+
+  "error.title.NOVA_POSHTA_RECIPIENT_FAILED": "Could not create recipient",
+  "error.description.NOVA_POSHTA_RECIPIENT_FAILED": "Check the recipient name and phone number",
+
+  "error.title.NOVA_POSHTA_SHIPMENT_FAILED": "Could not create waybill",
+  "error.description.NOVA_POSHTA_SHIPMENT_FAILED": "Nova Poshta did not return a tracking number",
+
+  "error.title.NOVA_POSHTA_LABEL_FAILED": "Could not print the label",
+  "error.description.NOVA_POSHTA_LABEL_FAILED": "Nova Poshta did not return a PDF sticker",
+
+  "error.title.DELIVERY_DETAILS_REQUIRED": "Delivery details are incomplete",
+  "error.description.DELIVERY_DETAILS_REQUIRED": "Fill in recipient, city and warehouse before creating a waybill",
+
+  "error.title.SHIPMENT_NOT_SUPPORTED": "Waybill is not available",
+  "error.description.SHIPMENT_NOT_SUPPORTED": "This delivery service does not support creating a waybill",
+
+  "error.title.SHIPMENT_ALREADY_EXISTS": "Waybill already exists",
+  "error.description.SHIPMENT_ALREADY_EXISTS": "This order already has a tracking number",
+
+  "error.title.SHIPMENT_NOT_CREATED": "Waybill is missing",
+  "error.description.SHIPMENT_NOT_CREATED": "Create a waybill before printing the label",
+
+  "error.title.SHIPMENT_NOT_FOUND": "Waybill not found",
+  "error.description.SHIPMENT_NOT_FOUND": "Nova Poshta has no document with this number",
+
+  "response.title.DELIVERY_SHIPMENT_LOOKED_UP": "Waybill details loaded",
+  "response.description.DELIVERY_SHIPMENT_LOOKED_UP": "Recipient and parcel fields were filled from Nova Poshta",
+
   "response.title.LANGUAGES_FETCHED": "Languages fetched",
   "response.description.LANGUAGES_FETCHED": "Languages list successfully fetched",
 
@@ -441,6 +483,27 @@
   "response.title.ORDER_EDITED": "Order edited",
   "response.description.ORDER_EDITED": "Order has been updated",
 
+  "response.title.ORDER_SHIPMENT_CREATED": "Waybill created",
+  "response.description.ORDER_SHIPMENT_CREATED": "Nova Poshta tracking number has been saved",
+
+  "response.title.ORDER_SHIPMENTS_SYNCED": "Tracking updated",
+  "response.description.ORDER_SHIPMENTS_SYNCED": "Nova Poshta statuses have been synced",
+
+  "response.title.SETTINGS_FETCHED": "Settings loaded",
+  "response.description.SETTINGS_FETCHED": "Settings have been loaded",
+
+  "response.title.SETTING_CREATED": "Setting saved",
+  "response.description.SETTING_CREATED": "The setting has been created",
+
+  "response.title.SETTING_EDITED": "Setting saved",
+  "response.description.SETTING_EDITED": "The setting has been updated",
+
+  "response.title.SETTINGS_REMOVED": "Settings removed",
+  "response.description.SETTINGS_REMOVED": "The settings have been removed",
+
+  "error.title.SETTING_NOT_EDITED": "Setting was not saved",
+  "error.description.SETTING_NOT_EDITED": "Could not update the setting",
+
   "response.title.ORDERS_NOT_REMOVED": "Order not removed",
   "response.description.ORDERS_NOT_REMOVED": "Unable to remove selected order",
 
@@ -557,6 +620,18 @@
 
   "response.title.SITES_FETCHED": "Sites fetched",
   "response.description.SITES_FETCHED": "Sites list successfully fetched",
+
+  "response.title.SITE_PRODUCTS_SYNCED": "Products uploaded",
+  "response.description.SITE_PRODUCTS_SYNCED": "Uploaded {{synced}} of {{total}} products ({{failed}} failed)",
+
+  "error.title.SITE_NOT_FOUND": "Site not found",
+  "error.description.SITE_NOT_FOUND": "This site does not exist",
+
+  "error.title.SITE_INACTIVE": "Site is inactive",
+  "error.description.SITE_INACTIVE": "Enable the site before uploading products",
+
+  "error.title.SITE_SYNC_NOT_CONFIGURED": "Site is not configured",
+  "error.description.SITE_SYNC_NOT_CONFIGURED": "Fill in the site URL and API key",
 
   "response.title.SUPPLIERS_FETCHED": "Suppliers fetched",
   "response.description.SUPPLIERS_FETCHED": "Suppliers list successfully fetched",
