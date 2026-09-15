@@ -1,5 +1,12 @@
 import { z } from 'zod'
-import { dateRangeSchema, idSchema, idSchemaOptional, languageStringSchema, numberFromStringSchema, paginationSchema, responseItemSchema, responseListSchema, responseSchema, sorterParamsSchema } from './common'
+import { booleanArraySchema, dateRangeSchema, idSchema, idSchemaOptional, languageStringSchema, numberFromStringSchema, paginationSchema, responseItemSchema, responseListSchema, responseSchema, sorterParamsSchema } from './common'
+
+export const moneyTransactionRoleSchema = z.enum(['from', 'to'])
+
+export const moneyTransactionActorSchema = z.object({
+  id: z.string(),
+  name: z.string().trim(),
+}).nullable()
 
 export const moneyTransactionSchema = z.object({
   id: idSchema,
@@ -11,6 +18,8 @@ export const moneyTransactionSchema = z.object({
     names: languageStringSchema,
   }),
   amount: z.number(),
+  balanceBefore: z.number().nullable(),
+  balanceAfter: z.number().nullable(),
   currency: z.object({
     id: idSchema,
     names: languageStringSchema,
@@ -25,9 +34,16 @@ export const moneyTransactionSchema = z.object({
   description: z.string().trim().optional(),
   sourceModel: z.string().trim(),
   confirmed: z.boolean(),
+  cancelled: z.boolean(),
+  awaitingReceive: z.boolean(),
+  role: moneyTransactionRoleSchema.nullable().optional(),
+  transferId: idSchemaOptional,
   sourceId: idSchemaOptional,
-  createdBy: idSchemaOptional,
-  removedBy: idSchemaOptional,
+  createdBy: moneyTransactionActorSchema,
+  confirmedBy: moneyTransactionActorSchema,
+  cancelledBy: moneyTransactionActorSchema,
+  confirmedAt: z.coerce.date().nullable().optional(),
+  cancelledAt: z.coerce.date().nullable().optional(),
   createdAt: z.coerce.date(),
   updatedAt: z.coerce.date(),
 })
@@ -44,6 +60,7 @@ export const getMoneyTransactionsSchema = z.object({
     description: z.string().trim().optional(),
     sourceModel: z.string().trim().optional(),
     sourceId: idSchemaOptional,
+    confirmed: booleanArraySchema.optional(),
     createdAt: dateRangeSchema.optional(),
     updatedAt: dateRangeSchema.optional(),
   }).optional().default({}),
@@ -53,6 +70,7 @@ export const getMoneyTransactionsSchema = z.object({
     accountId: sorterParamsSchema.optional(),
     sourceModel: sorterParamsSchema.optional(),
     sourceId: sorterParamsSchema.optional(),
+    confirmed: sorterParamsSchema.optional(),
     updatedAt: sorterParamsSchema.optional(),
     createdAt: sorterParamsSchema.optional(),
   }).optional().default({}),
@@ -88,6 +106,7 @@ export const createMoneyTransactionTransferSchema = z.object({
   accountTo: idSchema,
   cashregisterFrom: idSchema,
   cashregisterTo: idSchema,
+  requiresReceiving: z.boolean().optional(),
 })
 
 export type CreateMoneyTransactionRequest = z.input<typeof createMoneyTransactionSchema>
@@ -120,6 +139,27 @@ export const createMoneyTransactionTransferResponseSchema = responseSchema.exten
   }),
 })
 export type CreateMoneyTransactionTransferResponse = z.output<typeof createMoneyTransactionTransferResponseSchema>
+
+export const receiveMoneyTransactionSchema = z.object({
+  transferId: idSchema,
+})
+export type ReceiveMoneyTransactionRequest = z.input<typeof receiveMoneyTransactionSchema>
+
+export const receiveMoneyTransactionResponseSchema = responseItemSchema(moneyTransactionSchema)
+export type ReceiveMoneyTransactionResponse = z.output<typeof receiveMoneyTransactionResponseSchema>
+
+export const cancelMoneyTransactionSchema = z.object({
+  transferId: idSchema,
+})
+export type CancelMoneyTransactionRequest = z.input<typeof cancelMoneyTransactionSchema>
+
+export const cancelMoneyTransactionResponseSchema = responseSchema.extend({
+  data: z.object({
+    transferOut: moneyTransactionSchema.nullable(),
+    transferIn: moneyTransactionSchema,
+  }),
+})
+export type CancelMoneyTransactionResponse = z.output<typeof cancelMoneyTransactionResponseSchema>
 
 export const removeMoneyTransactionsResponseSchema = responseSchema
 export type RemoveMoneyTransactionsResponse = z.output<typeof removeMoneyTransactionsResponseSchema>

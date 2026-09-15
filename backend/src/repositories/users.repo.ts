@@ -15,10 +15,10 @@ import * as UserAccessRepo from '@/repositories/user-access.repo'
 import { buildQuery, buildSortQuery, HttpError, unwrapAggregate } from '@/utils'
 
 const emptyAccessProjection = {
-  warehouseIds: emptyUserAccessScopes.warehouseIds,
+  warehouses: emptyUserAccessScopes.warehouses,
+  cashregisters: emptyUserAccessScopes.cashregisters,
   siteIds: emptyUserAccessScopes.siteIds,
   expenseCategoryIds: emptyUserAccessScopes.expenseCategoryIds,
-  cashregisterIds: emptyUserAccessScopes.cashregisterIds,
   cashregisterAccountIds: emptyUserAccessScopes.cashregisterAccountIds,
   deliveryServiceIds: emptyUserAccessScopes.deliveryServiceIds,
   orderSourceIds: emptyUserAccessScopes.orderSourceIds,
@@ -76,10 +76,10 @@ export async function list(payload: GetUsersRepoPayload): Promise<GetUsersRepoRe
           $let: {
             vars: { doc: { $arrayElemAt: ['$accessDocs', 0] } },
             in: {
-              warehouseIds: { $ifNull: ['$$doc.warehouseIds', emptyAccessProjection.warehouseIds] },
+              warehouses: { $ifNull: ['$$doc.warehouses', emptyAccessProjection.warehouses] },
+              cashregisters: { $ifNull: ['$$doc.cashregisters', emptyAccessProjection.cashregisters] },
               siteIds: { $ifNull: ['$$doc.siteIds', emptyAccessProjection.siteIds] },
               expenseCategoryIds: { $ifNull: ['$$doc.expenseCategoryIds', emptyAccessProjection.expenseCategoryIds] },
-              cashregisterIds: { $ifNull: ['$$doc.cashregisterIds', emptyAccessProjection.cashregisterIds] },
               cashregisterAccountIds: { $ifNull: ['$$doc.cashregisterAccountIds', emptyAccessProjection.cashregisterAccountIds] },
               deliveryServiceIds: { $ifNull: ['$$doc.deliveryServiceIds', emptyAccessProjection.deliveryServiceIds] },
               orderSourceIds: { $ifNull: ['$$doc.orderSourceIds', emptyAccessProjection.orderSourceIds] },

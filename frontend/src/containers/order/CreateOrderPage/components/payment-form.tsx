@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useCallback, useMemo } from 'react'
 import { useWatch } from 'react-hook-form'
 import { useCashregisterAccountOptions, useCashregisterOptions, useCurrencyOptions } from '@/api/hooks'
 import { DatePicker } from '@/components'
@@ -19,7 +19,7 @@ import {
   SheetTitle,
   Textarea,
 } from '@/components/ui'
-import { useLocale } from '@/utils/hooks'
+import { useAccountIdsWithCapability, useEntityIdsWithCapability, useLocale } from '@/utils/hooks'
 import { useCreateOrderContext } from '../context'
 
 export function PaymentForm() {
@@ -52,9 +52,13 @@ export function FullForm() {
   const selectedCashregister = useWatch({ control: paymentForm.control, name: 'cashregister' })
   const selectedAccount = useWatch({ control: paymentForm.control, name: 'cashregisterAccount' })
 
+  const sellAccountIds = useAccountIdsWithCapability('sell')
   const accountFilters = useMemo(
-    () => ({ cashregister: selectedCashregister ? [selectedCashregister] : [] }),
-    [selectedCashregister],
+    () => ({
+      cashregister: selectedCashregister ? [selectedCashregister] : [],
+      ...(sellAccountIds != null ? { ids: sellAccountIds } : {}),
+    }),
+    [selectedCashregister, sellAccountIds],
   )
   const currencyFilters = useMemo(
     () => ({ cashregisterAccount: selectedAccount ? [selectedAccount] : [] }),
@@ -62,6 +66,17 @@ export function FullForm() {
   )
 
   const loadCashregisterOptions = useCashregisterOptions()
+  const sellCashregisterIds = useEntityIdsWithCapability('cashregisters', 'sell')
+  const loadSellCashregisterOptions = useCallback(
+    async (params?: { query?: string, selectedValue?: string[] }) => {
+      const options = await loadCashregisterOptions(params)
+      if (sellCashregisterIds == null)
+        return options
+      const allowed = new Set(sellCashregisterIds)
+      return options.filter(option => allowed.has(option.id))
+    },
+    [loadCashregisterOptions, sellCashregisterIds],
+  )
   const loadCashregisterAccountOptions = useCashregisterAccountOptions({ defaultFilters: accountFilters })
   const loadCurrencyOptions = useCurrencyOptions({ defaultFilters: currencyFilters })
 
@@ -79,7 +94,7 @@ export function FullForm() {
                   <FormControl>
                     <AsyncSelectNew
                       {...field}
-                      loadOptions={loadCashregisterOptions}
+                      loadOptions={loadSellCashregisterOptions}
                       renderOption={e => e.names[language]}
                       getDisplayValue={e => e.names[language]}
                       getOptionValue={e => e.id}

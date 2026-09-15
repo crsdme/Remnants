@@ -1,4 +1,5 @@
 import type { WarehouseDTO } from '@remnant/shared'
+import { useCallback } from 'react'
 import { useFieldArray, useWatch } from 'react-hook-form'
 import { useNavigate } from 'react-router-dom'
 import { useWarehouseOptions } from '@/api/hooks'
@@ -21,7 +22,7 @@ import {
   Separator,
   Switch,
 } from '@/components/ui'
-import { useLocale } from '@/utils/hooks'
+import { useEntityIdsWithCapability, useLocale } from '@/utils/hooks'
 import { useWarehouseTransactionContext } from '../context'
 
 export function WarehouseTransactionForm() {
@@ -88,6 +89,18 @@ export function WarehouseTransactionForm() {
   // })
 
   const loadWarehouseOptions = useWarehouseOptions()
+  const transferFromIds = useEntityIdsWithCapability('warehouses', 'transfer')
+
+  const loadFromWarehouseOptions = useCallback(
+    async (params?: { query?: string, selectedValue?: string[] }) => {
+      const options = await loadWarehouseOptions(params)
+      if (transferFromIds == null)
+        return options
+      const allowed = new Set(transferFromIds)
+      return options.filter(option => allowed.has(option.id))
+    },
+    [loadWarehouseOptions, transferFromIds],
+  )
 
   return (
     <Form {...form}>
@@ -167,7 +180,7 @@ export function WarehouseTransactionForm() {
                   <FormControl>
                     <AsyncSelectNew
                       {...field}
-                      loadOptions={loadWarehouseOptions}
+                      loadOptions={loadFromWarehouseOptions}
                       renderOption={e => e.names[language]}
                       getDisplayValue={e => e.names[language]}
                       getOptionValue={e => e.id}

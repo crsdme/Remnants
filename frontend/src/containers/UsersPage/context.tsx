@@ -4,6 +4,7 @@ import type { ReactNode } from 'react'
 
 import type { Resolver, UseFormReturn } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
+import { deriveCashregisterAccountIds } from '@remnant/shared'
 
 import { useQueryClient } from '@tanstack/react-query'
 import { createContext, useContext, useMemo, useState } from 'react'
@@ -15,6 +16,7 @@ import {
   useUserEdit,
   useUserRemove,
 } from '@/api/hooks/'
+import { useAuthContext } from '@/contexts/AuthContext'
 import { useLocale } from '@/utils/hooks'
 
 interface UserContextType {
@@ -71,6 +73,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
   }
 
   const queryClient = useQueryClient()
+  const { user: currentUser, refresh } = useAuthContext()
 
   const useMutateCreateUser = useUserCreate({
     options: {
@@ -92,6 +95,8 @@ export function UserProvider({ children }: { children: ReactNode }) {
       onSuccess: ({ data }) => {
         closeModal()
         void queryClient.invalidateQueries({ queryKey: ['users'] })
+        if (selectedUser?.id && currentUser?.id === selectedUser.id)
+          void refresh()
         toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description || ''}` })
       },
       onError: ({ response }) => {
@@ -116,13 +121,18 @@ export function UserProvider({ children }: { children: ReactNode }) {
   })
 
   const submitUserForm = (params: UserFormValues) => {
+    const payload = {
+      ...params,
+      access: sanitizeAccess(params.access),
+    }
+
     if (!isEdit)
-      return useMutateCreateUser.mutate(params)
+      return useMutateCreateUser.mutate(payload)
 
     if (!selectedUser)
       return
 
-    return useMutateEditUser.mutate({ ...params, id: selectedUser.id })
+    return useMutateEditUser.mutate({ ...payload, id: selectedUser.id })
   }
 
   const removeUsers = (params: { ids: string[] }) => {
@@ -160,6 +170,17 @@ export function useUserContext(): UserContextType {
 
 function createUserFormSchema(t: (key: string, options?: Record<string, unknown>) => string) {
   const idsSchema = z.array(z.string().uuid()).default([])
+  const warehouseAccessEntrySchema = z.object({
+    id: z.string().uuid(),
+    capabilities: z.array(z.string()).default([]),
+  })
+  const cashregisterAccessEntrySchema = z.object({
+    id: z.string().uuid(),
+    accounts: z.array(z.object({
+      id: z.string().uuid(),
+      capabilities: z.array(z.string()).default([]),
+    })).default([]),
+  })
 
   return z.object({
     name: z.string({ required_error: t('form.errors.required') }).min(5, { message: t('form.errors.min_length', { count: 5 }) }).trim(),
@@ -168,25 +189,42 @@ function createUserFormSchema(t: (key: string, options?: Record<string, unknown>
     roleId: z.string({ required_error: t('form.errors.required') }).min(1, { message: t('form.errors.required') }).trim(),
     active: z.boolean().default(true),
     access: z.object({
-      warehouseIds: idsSchema,
+      warehouses: z.array(warehouseAccessEntrySchema).default([]),
+      cashregisters: z.array(cashregisterAccessEntrySchema).default([]),
       siteIds: idsSchema,
       expenseCategoryIds: idsSchema,
-      cashregisterIds: idsSchema,
       cashregisterAccountIds: idsSchema,
       deliveryServiceIds: idsSchema,
       orderSourceIds: idsSchema,
       orderStatusIds: idsSchema,
     }).default({
-      warehouseIds: [],
+      warehouses: [],
+      cashregisters: [],
       siteIds: [],
       expenseCategoryIds: [],
-      cashregisterIds: [],
       cashregisterAccountIds: [],
       deliveryServiceIds: [],
       orderSourceIds: [],
       orderStatusIds: [],
     }),
   })
+}
+
+function sanitizeAccess(access: UserAccessScopesDTO): UserAccessScopesDTO {
+  const warehouses = access.warehouses.filter(entry => entry.capabilities.length > 0)
+  const cashregisters = access.cashregisters
+    .map(entry => ({
+      ...entry,
+      accounts: entry.accounts.filter(account => account.capabilities.length > 0),
+    }))
+    .filter(entry => entry.accounts.length > 0)
+
+  return {
+    ...access,
+    warehouses,
+    cashregisters,
+    cashregisterAccountIds: deriveCashregisterAccountIds(cashregisters),
+  }
 }
 
 function getUserFormValues(user?: UserPopulatedDTO): UserFormValues {
@@ -198,10 +236,10 @@ function getUserFormValues(user?: UserPopulatedDTO): UserFormValues {
       active: true,
       roleId: '',
       access: {
-        warehouseIds: [],
+        warehouses: [],
+        cashregisters: [],
         siteIds: [],
         expenseCategoryIds: [],
-        cashregisterIds: [],
         cashregisterAccountIds: [],
         deliveryServiceIds: [],
         orderSourceIds: [],
@@ -216,10 +254,10 @@ function getUserFormValues(user?: UserPopulatedDTO): UserFormValues {
     active: user.active,
     roleId: user.role?.id ?? '',
     access: {
-      warehouseIds: user.access?.warehouseIds ?? [],
+      warehouses: user.access?.warehouses ?? [],
+      cashregisters: user.access?.cashregisters ?? [],
       siteIds: user.access?.siteIds ?? [],
       expenseCategoryIds: user.access?.expenseCategoryIds ?? [],
-      cashregisterIds: user.access?.cashregisterIds ?? [],
       cashregisterAccountIds: user.access?.cashregisterAccountIds ?? [],
       deliveryServiceIds: user.access?.deliveryServiceIds ?? [],
       orderSourceIds: user.access?.orderSourceIds ?? [],

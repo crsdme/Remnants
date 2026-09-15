@@ -14,11 +14,11 @@ import type {
 import { mapWarehouseToDTO } from '@/mappers/'
 import * as UserAccessRepo from '@/repositories/user-access.repo'
 import * as WarehouseRepo from '@/repositories/warehouse.repo'
-import { getScopeIdsForUser, HttpError } from '@/utils'
+import { getEntityIdsForUser, HttpError } from '@/utils'
 
 export async function get({ payload, user }: { payload: GetWarehousesPayload, user: AuthUser }): Promise<GetWarehousesResponse> {
   const access = await UserAccessRepo.getScopesByUserId(user.id)
-  const scopeIds = getScopeIdsForUser(access, 'warehouseIds', user)
+  const scopeIds = getEntityIdsForUser(access, 'warehouses', user)
 
   const { items, total, page, pageSize } = await WarehouseRepo.list(payload, { scopeIds })
 

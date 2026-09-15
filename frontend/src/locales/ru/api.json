@@ -528,6 +528,30 @@
   "response.title.MONEY_TRANSACTIONS_FETCHED": "Транзакции денег получены",
   "response.description.MONEY_TRANSACTIONS_FETCHED": "Список транзакций денег успешно получен",
 
+  "response.title.MONEY_TRANSACTION_RECEIVED": "Перевод принят",
+  "response.description.MONEY_TRANSACTION_RECEIVED": "Входящий перевод подтверждён",
+
+  "response.title.MONEY_TRANSACTION_CANCELLED": "Перевод отменён",
+  "response.description.MONEY_TRANSACTION_CANCELLED": "Входящий перевод отменён, деньги вернулись в исходную кассу",
+
+  "error.title.MONEY_TRANSACTION_NOT_FOUND": "Перевод не найден",
+  "error.description.MONEY_TRANSACTION_NOT_FOUND": "Не удалось найти перевод",
+
+  "error.title.MONEY_TRANSACTION_NOT_TRANSFER": "Это не перевод",
+  "error.description.MONEY_TRANSACTION_NOT_TRANSFER": "Принять можно только перевод",
+
+  "error.title.MONEY_TRANSACTION_ALREADY_RECEIVED": "Уже принят",
+  "error.description.MONEY_TRANSACTION_ALREADY_RECEIVED": "Этот перевод уже подтверждён",
+
+  "error.title.MONEY_TRANSACTION_ALREADY_CANCELLED": "Уже отменён",
+  "error.description.MONEY_TRANSACTION_ALREADY_CANCELLED": "Этот перевод уже отменён",
+
+  "error.title.MONEY_TRANSACTION_NOT_RECEIVED": "Перевод не принят",
+  "error.description.MONEY_TRANSACTION_NOT_RECEIVED": "Не удалось подтвердить входящий перевод",
+
+  "error.title.MONEY_TRANSACTION_NOT_CANCELLED": "Перевод не отменён",
+  "error.description.MONEY_TRANSACTION_NOT_CANCELLED": "Не удалось отменить входящий перевод",
+
   "response.title.CLIENTS_FETCHED": "Клиенты получены",
   "response.description.CLIENTS_FETCHED": "Список клиентов успешно получен",
 

@@ -25,7 +25,7 @@ import * as WarehouseTransactionRepo from '@/repositories/warehouse-transaction.
 import * as BarcodeService from '@/services/barcode.service'
 import * as QuantityService from '@/services/quantity.service'
 import { parseGetBarcodes, parseGetWarehouseTransactions, parseGetWarehouseTransactionsItems } from '@/types/'
-import { getScopeIdsForUser } from '@/utils'
+import { assertEntityCapability, assertEntityInAccess, getEntityIdsForUser } from '@/utils'
 import { HttpError } from '@/utils/httpError'
 
 export async function get({
@@ -36,7 +36,7 @@ export async function get({
   user: AuthUser
 }): Promise<GetWarehouseTransactionsResponse> {
   const access = await UserAccessRepo.getScopesByUserId(user.id)
-  const warehouseIds = getScopeIdsForUser(access, 'warehouseIds', user)
+  const warehouseIds = getEntityIdsForUser(access, 'warehouses', user)
 
   const { items, total, page, pageSize } = await WarehouseTransactionRepo.list(payload, { warehouseIds })
 
@@ -230,6 +230,10 @@ type PayloadByType<T extends CreateWarehouseTransactionPayload['type']>
 async function inWarehauseTransaction({ payload, user }: { payload: PayloadByType<'in'>, user: AuthUser }): Promise<CreateWarehouseTransactionResponse> {
   const { type, toWarehouseId, comment, products } = payload
 
+  const access = await UserAccessRepo.getScopesByUserId(user.id)
+  const isAdmin = user.permissions.includes('other.admin')
+  assertEntityInAccess(access, 'warehouses', toWarehouseId, { isAdmin })
+
   const warehouseTransaction = await WarehouseTransactionRepo.createOne({
     type,
     toWarehouseId,
@@ -270,6 +274,10 @@ async function inWarehauseTransaction({ payload, user }: { payload: PayloadByTyp
 async function outWarehauseTransaction({ payload, user }: { payload: PayloadByType<'out'>, user: AuthUser }): Promise<CreateWarehouseTransactionResponse> {
   const { type, fromWarehouseId, comment, products } = payload
 
+  const access = await UserAccessRepo.getScopesByUserId(user.id)
+  const isAdmin = user.permissions.includes('other.admin')
+  assertEntityCapability(access, 'warehouses', fromWarehouseId, 'transfer', { isAdmin })
+
   const warehouseTransaction = await WarehouseTransactionRepo.createOne({
     type,
     fromWarehouseId,
@@ -308,6 +316,11 @@ async function outWarehauseTransaction({ payload, user }: { payload: PayloadByTy
 
 async function transferWarehauseTransaction({ payload, user }: { payload: PayloadByType<'transfer'>, user: AuthUser }): Promise<CreateWarehouseTransactionResponse> {
   const { type, fromWarehouseId, toWarehouseId, requiresReceiving, comment, products } = payload
+
+  const access = await UserAccessRepo.getScopesByUserId(user.id)
+  const isAdmin = user.permissions.includes('other.admin')
+  assertEntityCapability(access, 'warehouses', fromWarehouseId, 'transfer', { isAdmin })
+  assertEntityInAccess(access, 'warehouses', toWarehouseId, { isAdmin })
 
   const warehouseTransaction = await WarehouseTransactionRepo.createOne({
     type,
@@ -366,6 +379,14 @@ async function transferWarehauseTransaction({ payload, user }: { payload: Payloa
 export async function receive({ payload, user }: { payload: ReceiveWarehouseTransactionPayload, user: AuthUser }): Promise<ReceiveWarehouseTransactionResponse> {
   const { id, products } = payload
   const acceptedBy = user.id
+
+  const existing = await WarehouseTransactionRepo.findById(id)
+  if (existing === null)
+    throw new HttpError(404, 'Warehouse transaction not found', 'WAREHOUSE_TRANSACTION_NOT_FOUND')
+
+  const access = await UserAccessRepo.getScopesByUserId(user.id)
+  const isAdmin = user.permissions.includes('other.admin')
+  assertEntityCapability(access, 'warehouses', existing.toWarehouseId, 'receive', { isAdmin })
 
   const warehouseTransaction = await WarehouseTransactionRepo.updateById(id, {
     status: 'received',

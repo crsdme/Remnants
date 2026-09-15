@@ -1,6 +1,7 @@
-import type { LoginRequest, SettingDTO, UserDTO } from '@remnant/shared'
+import type { LoginRequest, SettingDTO, UserAccessScopesDTO, UserDTO } from '@remnant/shared'
 import type { Dispatch, ReactNode } from 'react'
 
+import { emptyUserAccessScopes } from '@remnant/shared'
 import { createContext, useContext, useEffect, useMemo, useReducer, useState } from 'react'
 
 import { useTranslation } from 'react-i18next'
@@ -14,12 +15,13 @@ interface AuthState {
   user?: UserDTO
 }
 
-export type AuthUser = UserDTO & { settings: SettingDTO[], permissions: string[] }
+export type AuthUser = UserDTO & { settings: SettingDTO[], permissions: string[], access: UserAccessScopesDTO }
 
 interface AuthContextType {
   state: AuthState
   user: AuthUser | null
   permissions: string[]
+  access: UserAccessScopesDTO
   dispatch: Dispatch<{ type: 'LOGIN' | 'REFRESH' | 'LOGOUT' }>
   login: (credentials: LoginRequest) => void
   logout: () => void
@@ -58,6 +60,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     isAuthChecked: false,
   })
   const [permissions, setPermissions] = useState<string[]>([])
+  const [access, setAccess] = useState<UserAccessScopesDTO>({ ...emptyUserAccessScopes })
 
   const { t } = useTranslation()
 
@@ -74,9 +77,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const useMutateAuthLogin = useAuthLogin({
     options: {
       onSuccess: ({ data }) => {
-        setUser({ ...data.user, settings: [], permissions: [] } as unknown as AuthUser)
-        // TEMPORARY FIX
+        const nextAccess = data.user.access ?? { ...emptyUserAccessScopes }
+        setUser({
+          ...data.user,
+          settings: data.user.settings ?? [],
+          permissions: data.user.permissions,
+          access: nextAccess,
+        } as AuthUser)
         setPermissions(data.user.permissions)
+        setAccess(nextAccess)
         localStorage.setItem('settings', JSON.stringify(data.user.settings))
         dispatch({ type: 'LOGIN' })
       },
@@ -90,6 +99,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const useMutateAuthLogout = useAuthLogout({
     options: {
       onSuccess: () => {
+        setAccess({ ...emptyUserAccessScopes })
+        setPermissions([])
         dispatch({ type: 'LOGOUT' })
       },
     },
@@ -105,6 +116,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       .then(async ({ status, data }) => {
         if (status === 'success') {
           setPermissions(data.data.permissions)
+          setAccess(data.data.access ?? { ...emptyUserAccessScopes })
+          setUser(prev => prev
+            ? {
+                ...prev,
+                permissions: data.data.permissions,
+                access: data.data.access ?? { ...emptyUserAccessScopes },
+              }
+            : prev)
           dispatch({ type: 'REFRESH' })
           return
         }
@@ -146,12 +165,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       state,
       user,
       permissions,
+      access,
       dispatch,
       login,
       logout,
       refresh,
     }),
-    [state, dispatch, login, logout, refresh, permissions, user],
+    [state, dispatch, login, logout, refresh, permissions, access, user],
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

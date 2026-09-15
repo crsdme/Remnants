@@ -4,7 +4,7 @@ import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import Layout from '@/components/Layout'
 import { LogoIcon } from '@/components/ui'
 import { useAuthContext } from '@/contexts'
-import { usePermission } from '@/utils/hooks/usePermission/usePermission'
+import { usePermission } from '@/utils/hooks/'
 
 import * as Pages from '../containers'
 
@@ -85,6 +85,14 @@ export default function App() {
               <Route
                 path="/users/roles"
                 element={<ProtectedRoute children={<Pages.UserRolesPage />} permissions={['userRole.page']} />}
+              />
+              <Route
+                path="/profile"
+                element={<ProtectedRoute children={<Pages.ProfilePage />} permissions={['userProfile.page', 'userProfile.read']} />}
+              />
+              <Route
+                path="/profile/:userId"
+                element={<ProtectedRoute children={<Pages.ProfilePage />} permissions={['userProfile.page', 'userProfile.read']} />}
               />
 
               <Route

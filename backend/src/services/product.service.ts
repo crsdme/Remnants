@@ -27,6 +27,7 @@ import ExcelJS from 'exceljs'
 import { v4 as uuidv4 } from 'uuid'
 import { STORAGE_PATHS, STORAGE_URLS } from '@/config/constants'
 import { mapProductPopulatedRepoToDTO } from '@/mappers'
+import * as UserAccessRepo from '@/repositories/user-access.repo'
 import * as CategoryRepository from '@/repositories/categories.repo'
 import * as CurrencyRepository from '@/repositories/currencies.repo'
 import * as LanguageRepository from '@/repositories/language.repo'
@@ -48,7 +49,7 @@ import {
   parseGetProductsRepo,
   parseGetUnits,
 } from '@/types/'
-import { buildAuditChanges, getDifferenceDeep, HttpError, toAuditSnapshot } from '@/utils'
+import { buildAuditChanges, getEntityIdsWithCapabilityForUser, getDifferenceDeep, HttpError, toAuditSnapshot } from '@/utils'
 import logger from '@/utils/logger'
 import { toMinor } from '@/utils/money'
 import {
@@ -67,12 +68,36 @@ export async function get({ payload, user }: { payload: GetProductsPayload, user
   const hasPurchasePricePermission = await UserService.checkPermission('product.purchasePrice', user?.id)
   const { items, total, page, pageSize } = await ProductRepository.list({ ...payload, hasPurchasePricePermission })
 
+  // Products themselves are never scoped by warehouse access.
+  // Only stock counts are masked when the user lacks viewStock on a warehouse.
+  let viewStockWarehouseIds: string[] | null = null
+  if (user && !user.permissions.includes('other.admin')) {
+    const access = await UserAccessRepo.getScopesByUserId(user.id)
+    viewStockWarehouseIds = getEntityIdsWithCapabilityForUser(access, 'warehouses', 'viewStock', user)
+  }
+
+  const mappedItems = items.map((item) => {
+    const dto = mapProductPopulatedRepoToDTO(item)
+    if (viewStockWarehouseIds == null)
+      return dto
+
+    const allowed = new Set(viewStockWarehouseIds)
+    return {
+      ...dto,
+      warehouseStock: dto.warehouseStock.map(stock => (
+        allowed.has(stock.warehouseId)
+          ? stock
+          : { ...stock, count: 0, stockStatus: null }
+      )),
+    }
+  })
+
   return {
     status: 'success',
     code: 'PRODUCTS_FETCHED',
     message: 'Products fetched',
     data: {
-      items: items.map(mapProductPopulatedRepoToDTO),
+      items: mappedItems,
       pagination: {
         page,
         pageSize,

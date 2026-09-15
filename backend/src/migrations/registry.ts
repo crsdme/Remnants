@@ -22,6 +22,9 @@ import { migration020InventorySeqCounterSync } from './scripts/020_inventory_seq
 import { migration021SyncEntrySiteLinkUnique } from './scripts/021_sync_entry_site_link_unique'
 import { migration022SyncEntryExternalIds } from './scripts/022_sync_entry_external_ids'
 import { migration023DropSyncEntryExternalId } from './scripts/023_drop_sync_entry_external_id'
+import { migration024UserAccessCapabilities } from './scripts/024_user_access_capabilities'
+import { migration025CashregisterAccountCapabilities } from './scripts/025_cashregister_account_capabilities'
+import { migration026MoneyTransactionConfirmed } from './scripts/026_money_transaction_confirmed'
 
 export const migrations: Migration[] = [
   migration001CurrencyPaymentEpsilon,
@@ -47,4 +50,7 @@ export const migrations: Migration[] = [
   migration021SyncEntrySiteLinkUnique,
   migration022SyncEntryExternalIds,
   migration023DropSyncEntryExternalId,
+  migration024UserAccessCapabilities,
+  migration025CashregisterAccountCapabilities,
+  migration026MoneyTransactionConfirmed,
 ]

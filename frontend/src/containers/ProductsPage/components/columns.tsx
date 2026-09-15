@@ -21,7 +21,7 @@ import { useAuthContext } from '@/contexts'
 import { backendUrl } from '@/utils/constants'
 import { formatDate } from '@/utils/helpers'
 import { hasPermission } from '@/utils/helpers/permission'
-import { useLocale } from '@/utils/hooks'
+import { useEntityCapability, useLocale } from '@/utils/hooks'
 import { useProductContext } from '../context'
 
 const sortIcons = { asc: ArrowUp, desc: ArrowDown }
@@ -37,6 +37,8 @@ export function useColumns({ filters }: { filters: { selectedWarehouse: string }
     removeProduct,
   } = useProductContext()
   const { permissions } = useAuthContext()
+  const canViewStock = useEntityCapability('warehouses', filters.selectedWarehouse, 'viewStock')
+  const canViewHistory = useEntityCapability('warehouses', filters.selectedWarehouse, 'viewHistory')
 
   const { productProperties } = useProductPropertyQuery(
     { filters: { active: [true], language, showInTable: true }, pagination: { full: true } },
@@ -117,12 +119,14 @@ export function useColumns({ filters }: { filters: { selectedWarehouse: string }
               label: t('table.copy'),
               icon: <Copy className="h-4 w-4" />,
             },
-            {
-              permission: 'product.quantity-logs',
-              onClick: () => openLogsModal('quantity', item.id),
-              label: t('table.quantityLogs'),
-              icon: <PackageIcon className="h-4 w-4" />,
-            },
+            ...(canViewHistory
+              ? [{
+                  permission: 'product.quantity-logs',
+                  onClick: () => openLogsModal('quantity', item.id),
+                  label: t('table.quantityLogs'),
+                  icon: <PackageIcon className="h-4 w-4" />,
+                }]
+              : []),
             {
               permission: 'product.audit-logs',
               onClick: () => openLogsModal('audit', item.id),
@@ -300,6 +304,9 @@ export function useColumns({ filters }: { filters: { selectedWarehouse: string }
         },
         header: ({ column }) => sortHeader(column, t('page.products.table.quantity')),
         cell: ({ row }) => {
+          if (!canViewStock) {
+            return <span className="text-muted-foreground">—</span>
+          }
           const quantity = row.original.warehouseStock.find(q => q.warehouseId === filters.selectedWarehouse)
           const unit = row.original.unit.symbols[language] ?? ''
           return quantity ? `${quantity.count} ${unit}` : `0 ${unit}`
@@ -314,6 +321,9 @@ export function useColumns({ filters }: { filters: { selectedWarehouse: string }
         },
         header: t('page.products.table.stockStatus'),
         cell: ({ row }) => {
+          if (!canViewStock) {
+            return <span className="text-muted-foreground">—</span>
+          }
           const stockStatus = row.original.warehouseStock.find(q => q.warehouseId === filters.selectedWarehouse)?.stockStatus
           if (!stockStatus)
             return <span className="text-muted-foreground">—</span>
@@ -421,6 +431,6 @@ export function useColumns({ filters }: { filters: { selectedWarehouse: string }
       }),
       actionColumn(),
     ]
-  }, [language, filters.selectedWarehouse, isLoading, openModal, openLogsModal, removeProduct, productProperties, permissions, t])
+  }, [canViewHistory, canViewStock, language, filters.selectedWarehouse, isLoading, openModal, openLogsModal, removeProduct, productProperties, permissions, t])
   return columns
 }

@@ -24,6 +24,7 @@
   "table.yesno.false": "Нет",
   "table.print": "Печатать {{size}}",
   "table.receive": "Принять",
+  "table.cancelTransfer": "Отменить перевод",
   "table.mismatch": "Несоответствие",
   "table.match": "Соответствие",
   "table.view": "Просмотр",

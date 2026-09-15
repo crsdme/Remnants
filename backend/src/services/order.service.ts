@@ -59,7 +59,7 @@ import * as OrderPaymentService from '@/services/order-payment.service'
 import * as QuantityService from '@/services/quantity.service'
 import * as UserService from '@/services/user.service'
 import { parseGetCurrency, parseGetOrderItems, parseGetOrderPayments, parseGetOrders } from '@/types/'
-import { drawHr, getHardcodeData, getScopeIdsForUser, HttpError } from '@/utils'
+import { assertAccountCapability, assertEntityCapability, drawHr, getEntityIdsForUser, getHardcodeData, getScopeIdsForUser, HttpError } from '@/utils'
 import { fromMinor, toMinor } from '@/utils/money'
 import {
   buildCalculationCurrency,
@@ -83,7 +83,7 @@ export async function get({ payload, user }: { payload: GetOrdersPayload, user: 
       hasProfitPermission,
     },
     options: {
-      warehouseIds: getScopeIdsForUser(access, 'warehouseIds', user),
+      warehouseIds: getEntityIdsForUser(access, 'warehouses', user),
       deliveryServiceIds: getScopeIdsForUser(access, 'deliveryServiceIds', user),
       orderSourceIds: getScopeIdsForUser(access, 'orderSourceIds', user),
       orderStatusIds: getScopeIdsForUser(access, 'orderStatusIds', user),
@@ -196,11 +196,17 @@ export async function create({
     uploadedFiles,
   })
 
+  const access = await UserAccessRepo.getScopesByUserId(user.id)
+  const isAdmin = user.permissions.includes('other.admin')
+  assertEntityCapability(access, 'warehouses', payload.warehouse, 'sell', { isAdmin })
+
   const { items: currencies } = await CurrencyRepo.list(parseGetCurrency({ filters: { active: [true] } }))
 
   for (const payment of payload.orderPayments) {
     if (!payment)
       continue
+
+    assertAccountCapability(access, payment.cashregisterAccount, 'sell', { isAdmin })
 
     const { data: orderPayment } = await OrderPaymentService.create({
       payload: {
@@ -917,6 +923,46 @@ export async function printInvoice({ payload }: { payload: PrintInvoiceOrderPayl
         ]
       }
 
+      if (type.includes(hairTypes.GOLD)) {
+        table = [
+          { min: 40, max: 44, price: 4600 },
+          { min: 45, max: 49, price: 4800 },
+          { min: 50, max: 54, price: 5000 },
+          { min: 55, max: 59, price: 5200 },
+          { min: 60, max: 64, price: 5400 },
+          { min: 65, max: 69, price: 5600 },
+          { min: 70, max: 74, price: 5800 },
+          { min: 75, max: 79, price: 6000 },
+          { min: 80, max: 84, price: 6200 },
+          { min: 85, max: 89, price: 6400 },
+          { min: 90, max: 94, price: 6600 },
+          { min: 95, max: 99, price: 6800 },
+          { min: 100, max: 104, price: 7000 },
+          { min: 105, max: 109, price: 7200 },
+          { min: 110, max: 114, price: 7400 },
+        ]
+      }
+
+      if (type.includes(hairTypes.RED)) {
+        table = [
+          { min: 40, max: 44, price: 2600 },
+          { min: 45, max: 49, price: 2800 },
+          { min: 50, max: 54, price: 3000 },
+          { min: 55, max: 59, price: 3200 },
+          { min: 60, max: 64, price: 3400 },
+          { min: 65, max: 69, price: 3600 },
+          { min: 70, max: 74, price: 3800 },
+          { min: 75, max: 79, price: 4000 },
+          { min: 80, max: 84, price: 4200 },
+          { min: 85, max: 89, price: 4400 },
+          { min: 90, max: 94, price: 4600 },
+          { min: 95, max: 99, price: 4800 },
+          { min: 100, max: 104, price: 5000 },
+          { min: 105, max: 109, price: 5200 },
+          { min: 110, max: 114, price: 5400 },
+        ]
+      }
+
       if (type.includes(hairTypes.SLAVIC)) {
         table = [
           { min: 40, max: 44, price: 2600 },
@@ -1401,6 +1447,46 @@ export async function printDraftInvoice({ payload }: { payload: PrintDraftInvoic
         ]
       }
 
+      if (type.includes(hairTypes.GOLD)) {
+        table = [
+          { min: 40, max: 44, price: 4600 },
+          { min: 45, max: 49, price: 4800 },
+          { min: 50, max: 54, price: 5000 },
+          { min: 55, max: 59, price: 5200 },
+          { min: 60, max: 64, price: 5400 },
+          { min: 65, max: 69, price: 5600 },
+          { min: 70, max: 74, price: 5800 },
+          { min: 75, max: 79, price: 6000 },
+          { min: 80, max: 84, price: 6200 },
+          { min: 85, max: 89, price: 6400 },
+          { min: 90, max: 94, price: 6600 },
+          { min: 95, max: 99, price: 6800 },
+          { min: 100, max: 104, price: 7000 },
+          { min: 105, max: 109, price: 7200 },
+          { min: 110, max: 114, price: 7400 },
+        ]
+      }
+
+      if (type.includes(hairTypes.RED)) {
+        table = [
+          { min: 40, max: 44, price: 2600 },
+          { min: 45, max: 49, price: 2800 },
+          { min: 50, max: 54, price: 3000 },
+          { min: 55, max: 59, price: 3200 },
+          { min: 60, max: 64, price: 3400 },
+          { min: 65, max: 69, price: 3600 },
+          { min: 70, max: 74, price: 3800 },
+          { min: 75, max: 79, price: 4000 },
+          { min: 80, max: 84, price: 4200 },
+          { min: 85, max: 89, price: 4400 },
+          { min: 90, max: 94, price: 4600 },
+          { min: 95, max: 99, price: 4800 },
+          { min: 100, max: 104, price: 5000 },
+          { min: 105, max: 109, price: 5200 },
+          { min: 110, max: 114, price: 5400 },
+        ]
+      }
+
       if (type.includes(hairTypes.SLAVIC)) {
         table = [
           { min: 40, max: 44, price: 2600 },
@@ -1487,7 +1573,7 @@ export async function printDraftInvoice({ payload }: { payload: PrintDraftInvoic
         ? null
         : getProductPrice(
             length!.value as number,
-            type?.options.map(option => option.id) ?? [],
+            typeOptions.map(option => option.id),
             segmentOptions?.options.map(option => option.id) ?? [],
             colorCategory?.options.map(option => option.id) ?? [],
           ),
@@ -1527,7 +1613,7 @@ export async function printDraftInvoice({ payload }: { payload: PrintDraftInvoic
       },
       {
         ...tableColumns.type,
-        value: `${item.type !== undefined ? item.type : item.colorCategory !== undefined ? item.colorCategory : ''}`,
+        value: `${item.type !== '' ? item.type : item.colorCategory ?? ''}`,
       },
       {
         ...tableColumns.segment,

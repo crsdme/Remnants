@@ -1,10 +1,34 @@
-import type { CreateMoneyTransactionRequest, GetMoneyTransactionsRequest } from '@remnant/shared'
+import type {
+  CancelMoneyTransactionRequest,
+  CreateMoneyTransactionRequest,
+  CreateMoneyTransactionTransferRequest,
+  GetMoneyTransactionsRequest,
+  ReceiveMoneyTransactionRequest,
+} from '@remnant/shared'
 import request from 'supertest'
 import app from '@/index'
 import { MoneyTransactionModel } from '../../src/models/money-transaction.model'
 
 export async function create(params: CreateMoneyTransactionRequest): Promise<unknown> {
-  const response = await request(app).post('/api/money-transactions/create').send(params)
+  const response = await request(app).post('/api/money-transactions/create-transaction').send(params)
+
+  return response.body
+}
+
+export async function createTransfer(params: CreateMoneyTransactionTransferRequest): Promise<unknown> {
+  const response = await request(app).post('/api/money-transactions/create-transfer').send(params)
+
+  return response.body
+}
+
+export async function receive(params: ReceiveMoneyTransactionRequest): Promise<unknown> {
+  const response = await request(app).post('/api/money-transactions/receive').send(params)
+
+  return response.body
+}
+
+export async function cancel(params: CancelMoneyTransactionRequest): Promise<unknown> {
+  const response = await request(app).post('/api/money-transactions/cancel').send(params)
 
   return response.body
 }

@@ -326,12 +326,34 @@ export const USER_ROLE_PERMISSIONS = [
   {
     group: 'moneyTransaction',
     dependencies: ['language.read', 'cashregister.read'],
-    permissions: ['moneyTransaction.page', 'moneyTransaction.read', 'moneyTransaction.remove', 'moneyTransaction.create', 'moneyTransaction.edit', 'moneyTransaction.export'],
+    permissions: [
+      'moneyTransaction.page',
+      'moneyTransaction.read',
+      'moneyTransaction.remove',
+      'moneyTransaction.create',
+      'moneyTransaction.transfer',
+      'moneyTransaction.receive',
+      'moneyTransaction.cancel',
+      'moneyTransaction.edit',
+      'moneyTransaction.export',
+    ],
   },
   {
     group: 'user',
     dependencies: ['language.read', 'userRole.read'],
     permissions: ['user.page', 'user.read', 'user.remove', 'user.create', 'user.edit', 'user.auditLogs'],
+  },
+  {
+    group: 'userProfile',
+    dependencies: ['currency.read'],
+    permissions: [
+      'userProfile.page',
+      'userProfile.read',
+      'userProfile.readAll',
+      'userProfile.edit',
+      'workShift.start',
+      'workShift.edit',
+    ],
   },
   {
     group: 'userRole',

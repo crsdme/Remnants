@@ -34,14 +34,14 @@ export function ActionBar() {
                 {t('page.users.button.create')}
               </Button>
             </SheetTrigger>
-            <SheetContent className="sm:max-w-xl w-full overflow-y-auto" side="right">
+            <SheetContent className="sm:max-w-xl w-full max-w-full overflow-y-auto overflow-x-hidden" side="right">
               <SheetHeader>
                 <SheetTitle>{t(`page.users.form.title.${isEdit ? 'edit' : 'create'}`)}</SheetTitle>
                 <SheetDescription>
                   {t(`page.users.form.description.${isEdit ? 'edit' : 'create'}`)}
                 </SheetDescription>
               </SheetHeader>
-              <div className="w-full pb-4 px-4">
+              <div className="w-full min-w-0 max-w-full pb-4 px-4">
                 <UserForm />
               </div>
             </SheetContent>

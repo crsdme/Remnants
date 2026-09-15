@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useCallback, useMemo } from 'react'
 
 import { useWatch } from 'react-hook-form'
 import { useCashregisterAccountOptions, useCashregisterOptions, useCurrencyOptions, useExpenseCategoryOptions } from '@/api/hooks'
@@ -15,7 +15,7 @@ import {
   Input,
   Textarea,
 } from '@/components/ui'
-import { useLocale } from '@/utils/hooks'
+import { useAccountIdsWithCapability, useEntityIdsWithCapability, useLocale } from '@/utils/hooks'
 import { useExpenseContext } from '../context'
 
 export function ExpenseForm() {
@@ -25,9 +25,14 @@ export function ExpenseForm() {
   const selectedCashregister = useWatch({ control: form.control, name: 'cashregister' })
   const selectedAccount = useWatch({ control: form.control, name: 'cashregisterAccount' })
 
+  const expenseAccountIds = useAccountIdsWithCapability('viewExpenses')
+  const expenseCashregisterIds = useEntityIdsWithCapability('cashregisters', 'viewExpenses')
   const accountFilters = useMemo(
-    () => ({ cashregister: selectedCashregister ? [selectedCashregister] : [] }),
-    [selectedCashregister],
+    () => ({
+      cashregister: selectedCashregister ? [selectedCashregister] : [],
+      ...(expenseAccountIds != null ? { ids: expenseAccountIds } : {}),
+    }),
+    [expenseAccountIds, selectedCashregister],
   )
   const currencyFilters = useMemo(
     () => ({ cashregisterAccount: selectedAccount ? [selectedAccount] : [] }),
@@ -35,6 +40,16 @@ export function ExpenseForm() {
   )
 
   const loadCashregisterOptions = useCashregisterOptions()
+  const loadExpenseCashregisterOptions = useCallback(
+    async (params?: { query?: string, selectedValue?: string[] }) => {
+      const options = await loadCashregisterOptions(params)
+      if (expenseCashregisterIds == null)
+        return options
+      const allowed = new Set(expenseCashregisterIds)
+      return options.filter(option => allowed.has(option.id))
+    },
+    [expenseCashregisterIds, loadCashregisterOptions],
+  )
   const loadExpenseCategoryOptions = useExpenseCategoryOptions()
   const loadCashregisterAccountOptions = useCashregisterAccountOptions({ defaultFilters: accountFilters })
   const loadCurrencyOptions = useCurrencyOptions({ defaultFilters: currencyFilters })
@@ -58,7 +73,7 @@ export function ExpenseForm() {
                 <FormControl>
                   <AsyncSelectNew
                     {...field}
-                    loadOptions={loadCashregisterOptions}
+                    loadOptions={loadExpenseCashregisterOptions}
                     renderOption={e => e.names[language]}
                     getDisplayValue={e => e.names[language]}
                     getOptionValue={e => e.id}

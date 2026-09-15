@@ -9,9 +9,12 @@ import type {
   GetWarehouseTransactionLogsRepoResult,
 } from '@/types/'
 import { WarehouseTransactionLogModel } from '@/models'
-import { buildQuery, buildSortQuery, unwrapAggregate } from '@/utils'
+import { applyScopeIdsToQuery, buildQuery, buildSortQuery, unwrapAggregate } from '@/utils'
 
-export async function list(payload: GetWarehouseTransactionLogsPayload): Promise<GetWarehouseTransactionLogsRepoResult> {
+export async function list(
+  payload: GetWarehouseTransactionLogsPayload,
+  options: { warehouseIds?: string[] | null } = {},
+): Promise<GetWarehouseTransactionLogsRepoResult> {
   const {
     current,
     pageSize,
@@ -41,6 +44,8 @@ export async function list(payload: GetWarehouseTransactionLogsPayload): Promise
     },
     removed: false,
   })
+
+  applyScopeIdsToQuery(query, options.warehouseIds, 'warehouseId')
 
   const sorters = buildSortQuery(payload.sorters, { createdAt: -1 })
 

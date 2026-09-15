@@ -1,5 +1,5 @@
 import { MoreHorizontal } from 'lucide-react'
-import { Fragment, useState } from 'react'
+import { Fragment, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import {
@@ -20,25 +20,37 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
+import { useAuthContext } from '@/contexts'
+import { hasPermission } from '@/utils/helpers/permission'
 import { cn } from '@/utils/lib'
-import { PermissionGate } from '../PermissionGate'
 
 interface Action {
-  permission: string
+  permission: string | string[]
   onClick?: () => void | Promise<void>
   label: string
   icon?: React.ReactNode
   isDestructive?: boolean
   isConfirm?: boolean
+  confirmTitle?: string
+  confirmDescription?: string
+  confirmLabel?: string
   type?: 'button' | 'link'
   link?: string
+  /** Open link in the same tab (default for in-app routes). */
+  openInNewTab?: boolean
 }
 
 export function TableActionDropdown({ actions }: { actions?: Action[] }) {
   const [confirmAction, setConfirmAction] = useState<Action | null>(null)
   const { t } = useTranslation()
+  const { permissions } = useAuthContext()
 
-  if (!actions)
+  const visibleActions = useMemo(
+    () => (actions ?? []).filter(action => hasPermission(permissions, action.permission)),
+    [actions, permissions],
+  )
+
+  if (visibleActions.length === 0)
     return null
 
   const handleConfirm = async () => {
@@ -65,16 +77,14 @@ export function TableActionDropdown({ actions }: { actions?: Action[] }) {
         </DropdownMenuTrigger>
 
         <DropdownMenuContent align="end">
-          {actions.map(action => (
-            <Fragment key={`${action.permission}-${action.label}`}>
-              <PermissionGate permission={action.permission}>
-                {action.isDestructive && <DropdownMenuSeparator />}
+          {visibleActions.map(action => (
+            <Fragment key={`${Array.isArray(action.permission) ? action.permission.join('|') : action.permission}-${action.label}`}>
+              {action.isDestructive && <DropdownMenuSeparator />}
 
-                <MenuItem
-                  action={action}
-                  onRequestConfirm={() => setConfirmAction(action)}
-                />
-              </PermissionGate>
+              <MenuItem
+                action={action}
+                onRequestConfirm={() => setConfirmAction(action)}
+              />
             </Fragment>
           ))}
         </DropdownMenuContent>
@@ -90,10 +100,16 @@ export function TableActionDropdown({ actions }: { actions?: Action[] }) {
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>
-              {t('component.tableActionDropdown.deleteTitle')}
+              {confirmAction?.confirmTitle
+                ?? (confirmAction?.isDestructive
+                  ? t('component.tableActionDropdown.deleteTitle')
+                  : t('component.tableActionDropdown.confirmTitle'))}
             </AlertDialogTitle>
             <AlertDialogDescription>
-              {t('component.tableActionDropdown.deleteDescription')}
+              {confirmAction?.confirmDescription
+                ?? (confirmAction?.isDestructive
+                  ? t('component.tableActionDropdown.deleteDescription')
+                  : t('component.tableActionDropdown.confirmDescription'))}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -104,10 +120,14 @@ export function TableActionDropdown({ actions }: { actions?: Action[] }) {
             <AlertDialogAction
               onClick={() => void handleConfirm()}
               className={cn(
-                'bg-destructive text-white hover:bg-destructive/70 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40',
+                confirmAction?.isDestructive
+                && 'bg-destructive text-white hover:bg-destructive/70 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40',
               )}
             >
-              {t('component.tableActionDropdown.delete')}
+              {confirmAction?.confirmLabel
+                ?? (confirmAction?.isDestructive
+                  ? t('component.tableActionDropdown.delete')
+                  : t('component.tableActionDropdown.confirm'))}
             </AlertDialogAction>
           </AlertDialogFooter>
 
@@ -139,7 +159,12 @@ function MenuItem({
     if (action.type === 'link') {
       return (
         <DropdownMenuItem asChild className={className}>
-          <Link to={action.link || ''} target="_blank" onClick={() => void action.onClick?.()}>
+          <Link
+            to={action.link || ''}
+            target={action.openInNewTab ? '_blank' : undefined}
+            rel={action.openInNewTab ? 'noopener noreferrer' : undefined}
+            onClick={() => void action.onClick?.()}
+          >
             {Content}
           </Link>
         </DropdownMenuItem>

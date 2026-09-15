@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import { idSchema } from './common'
+import { userAccessScopesSchema } from './user-access.schema'
 
 export const loginSchema = z.object({
   login: z.string(),
@@ -33,6 +34,7 @@ export const loginResponseSchema = z.object({
     login: z.string(),
     name: z.string(),
     permissions: z.array(z.string()),
+    access: userAccessScopesSchema,
     settings: z.array(z.object({
       key: z.string(),
       value: z.string(),
@@ -51,4 +53,5 @@ export const logoutResponseSchema = z.object({
 export const refreshResponseSchema = z.object({
   status: z.literal('success'),
   permissions: z.array(z.string()),
+  access: userAccessScopesSchema,
 })

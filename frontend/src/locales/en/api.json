@@ -528,6 +528,30 @@
   "response.title.MONEY_TRANSACTIONS_FETCHED": "Money transactions fetched",
   "response.description.MONEY_TRANSACTIONS_FETCHED": "Money transactions list successfully fetched",
 
+  "response.title.MONEY_TRANSACTION_RECEIVED": "Money transfer received",
+  "response.description.MONEY_TRANSACTION_RECEIVED": "Incoming transfer has been confirmed",
+
+  "response.title.MONEY_TRANSACTION_CANCELLED": "Money transfer cancelled",
+  "response.description.MONEY_TRANSACTION_CANCELLED": "Incoming transfer has been cancelled and funds returned to the source",
+
+  "error.title.MONEY_TRANSACTION_NOT_FOUND": "Money transfer not found",
+  "error.description.MONEY_TRANSACTION_NOT_FOUND": "The transfer could not be found",
+
+  "error.title.MONEY_TRANSACTION_NOT_TRANSFER": "Not a transfer",
+  "error.description.MONEY_TRANSACTION_NOT_TRANSFER": "Only transfers can be received",
+
+  "error.title.MONEY_TRANSACTION_ALREADY_RECEIVED": "Already received",
+  "error.description.MONEY_TRANSACTION_ALREADY_RECEIVED": "This transfer has already been confirmed",
+
+  "error.title.MONEY_TRANSACTION_ALREADY_CANCELLED": "Already cancelled",
+  "error.description.MONEY_TRANSACTION_ALREADY_CANCELLED": "This transfer has already been cancelled",
+
+  "error.title.MONEY_TRANSACTION_NOT_RECEIVED": "Transfer not received",
+  "error.description.MONEY_TRANSACTION_NOT_RECEIVED": "Unable to confirm the incoming transfer",
+
+  "error.title.MONEY_TRANSACTION_NOT_CANCELLED": "Transfer not cancelled",
+  "error.description.MONEY_TRANSACTION_NOT_CANCELLED": "Unable to cancel the incoming transfer",
+
   "response.title.CLIENTS_FETCHED": "Clients fetched",
   "response.description.CLIENTS_FETCHED": "Clients list successfully fetched",
 

@@ -72,7 +72,7 @@ export async function refresh(
       return
     }
 
-    const { accessToken, permissions } = await AuthService.refresh({ refreshToken })
+    const { accessToken, permissions, access } = await AuthService.refresh({ refreshToken })
 
     res.cookie('accessToken', accessToken, {
       httpOnly: true,
@@ -82,7 +82,7 @@ export async function refresh(
       path: '/',
     })
 
-    res.status(200).json({ status: 'success', permissions })
+    res.status(200).json({ status: 'success', permissions, access })
   }
   catch (err) {
     next(err)

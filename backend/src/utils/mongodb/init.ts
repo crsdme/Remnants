@@ -23,8 +23,8 @@ async function initializeApp() {
       name: 'Admin',
       login: 'admin',
       access: {
-        warehouseIds: [],
-        cashregisterIds: [],
+        warehouses: [],
+        cashregisters: [],
         siteIds: [],
         expenseCategoryIds: [],
         cashregisterAccountIds: [],

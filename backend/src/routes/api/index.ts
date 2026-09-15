@@ -33,8 +33,11 @@ import statisticRoutes from './statistic.route'
 import supplierRoutes from './supplier.route'
 import testRoutes from './test.route'
 import unitRoutes from './unit.route'
+import payrollEntryRoutes from './payroll-entry.route'
+import userProfileRoutes from './user-profile.route'
 import userRoleRoutes from './user-role.route'
 import userRoutes from './user.route'
+import workShiftRoutes from './work-shift.route'
 import warehouseTransactionLogsRoutes from './warehouse-transaction-log.route'
 import warehouseTransactionRoutes from './warehouse-transaction.route'
 import warehouseRoutes from './warehouse.route'
@@ -50,6 +53,9 @@ router.use('/currencies', currencyRoutes)
 router.use('/languages', languageRoutes)
 router.use('/units', unitRoutes)
 router.use('/users', userRoutes)
+router.use('/user-profiles', userProfileRoutes)
+router.use('/work-shifts', workShiftRoutes)
+router.use('/payroll-entries', payrollEntryRoutes)
 router.use('/categories', categoryRoutes)
 router.use('/user-roles', userRoleRoutes)
 router.use('/products', productRoutes)

@@ -24,6 +24,7 @@
   "table.yesno.false": "No",
   "table.print": "Print {{size}}",
   "table.receive": "Receive",
+  "table.cancelTransfer": "Cancel transfer",
   "table.mismatch": "Mismatch",
   "table.match": "Match",
   "table.view": "View",

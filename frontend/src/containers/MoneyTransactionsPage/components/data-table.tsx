@@ -1,4 +1,4 @@
-import { flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table'
+import { flexRender, getCoreRowModel, getExpandedRowModel, useReactTable } from '@tanstack/react-table'
 import { Fragment, useState } from 'react'
 
 import { useMoneyTransactionQuery } from '@/api/hooks'
@@ -8,12 +8,14 @@ import { useListQueryState, useLocale } from '@/utils/hooks'
 
 import { useColumns } from './columns'
 import { DataTableFilters } from './data-table-filters'
+import { MoneyTransactionExpandedRow } from './expanded-row'
 
 export function DataTable() {
   const { t } = useLocale()
 
   const [columnVisibility, setColumnVisibility] = useState({})
   const [rowSelection, setRowSelection] = useState({})
+  const [expanded, setExpanded] = useState({})
 
   const {
     pagination,
@@ -35,15 +37,19 @@ export function DataTable() {
     data: moneyTransactions,
     columns,
     getCoreRowModel: getCoreRowModel(),
+    getExpandedRowModel: getExpandedRowModel(),
+    getRowCanExpand: () => true,
     onColumnVisibilityChange: setColumnVisibility,
     onRowSelectionChange: setRowSelection,
     onSortingChange: setSorting,
+    onExpandedChange: setExpanded,
     manualSorting: true,
     enableSortingRemoval: true,
     state: {
       sorting,
       columnVisibility,
       rowSelection,
+      expanded,
       pagination: {
         pageIndex: pagination.current - 1,
         pageSize: pagination.pageSize,
@@ -100,6 +106,12 @@ export function DataTable() {
               </TableCell>
             ))}
           </TableRow>
+          {row.getIsExpanded() && (
+            <MoneyTransactionExpandedRow
+              item={row.original}
+              columnsLength={row.getVisibleCells().length}
+            />
+          )}
         </Fragment>
       ))
     }

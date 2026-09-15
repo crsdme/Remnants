@@ -2,6 +2,7 @@ import type { StatisticMoneyDTO, StatisticsDTO } from '@remnant/shared'
 import type { ChartConfig } from '@/components/ui/chart'
 import type { SupportedLanguage } from '@/utils/constants'
 import { Area, AreaChart, CartesianGrid, XAxis } from 'recharts'
+import { useCallback } from 'react'
 import { useCashregisterAccountOptions, useCashregisterOptions } from '@/api/hooks'
 import { PermissionGate } from '@/components'
 import { DateRangePicker } from '@/components/'
@@ -33,7 +34,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui'
-import { useLocale } from '@/utils/hooks'
+import { useAccountIdsWithCapability, useEntityIdsWithCapability, useLocale } from '@/utils/hooks'
 import { useOrderStatisticContext } from '../context'
 
 function formatMoneyList(
@@ -79,8 +80,23 @@ export function DataTable() {
   const { language, t } = useLocale()
   const { isLoading, isFetching, form, onSubmit, statistics } = useOrderStatisticContext()
 
-  const loadCashregisterOptions = useCashregisterOptions({})
-  const loadCashregisterAccountOptions = useCashregisterAccountOptions({})
+  const statisticCashregisterIds = useEntityIdsWithCapability('cashregisters', 'viewStatistic')
+  const statisticAccountIds = useAccountIdsWithCapability('viewStatistic')
+  const loadCashregisterOptions = useCashregisterOptions()
+  const loadCashregisterAccountOptions = useCashregisterAccountOptions({
+    defaultFilters: statisticAccountIds != null ? { ids: statisticAccountIds } : undefined,
+  })
+
+  const loadStatisticCashregisterOptions = useCallback(
+    async (params?: { query?: string, selectedValue?: string[] }) => {
+      const options = await loadCashregisterOptions(params)
+      if (statisticCashregisterIds == null)
+        return options
+      const allowed = new Set(statisticCashregisterIds)
+      return options.filter(option => allowed.has(option.id))
+    },
+    [loadCashregisterOptions, statisticCashregisterIds],
+  )
 
   return (
     <>
@@ -99,7 +115,7 @@ export function DataTable() {
                   <FormControl>
                     <AsyncSelectNew
                       {...field}
-                      loadOptions={loadCashregisterOptions}
+                      loadOptions={loadStatisticCashregisterOptions}
                       renderOption={e => e.names[language]}
                       getDisplayValue={e => e.names[language]}
                       getOptionValue={e => e.id}

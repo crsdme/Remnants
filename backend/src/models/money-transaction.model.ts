@@ -80,6 +80,41 @@ const MoneyTransactionSchema: Schema = new Schema(
       type: Boolean,
       default: false,
     },
+    confirmedBy: {
+      type: String,
+      default: null,
+      ref: 'User',
+    },
+    confirmedAt: {
+      type: Date,
+      default: null,
+    },
+    createdBy: {
+      type: String,
+      default: null,
+      ref: 'User',
+    },
+    cancelled: {
+      type: Boolean,
+      default: false,
+    },
+    cancelledBy: {
+      type: String,
+      default: null,
+      ref: 'User',
+    },
+    cancelledAt: {
+      type: Date,
+      default: null,
+    },
+    minorBalanceBefore: {
+      type: Number,
+      default: null,
+    },
+    minorBalanceAfter: {
+      type: Number,
+      default: null,
+    },
   },
   { timestamps: true },
 )
@@ -111,6 +146,7 @@ MoneyTransactionSchema.index({ accountId: 1, createdAt: -1 })
 MoneyTransactionSchema.index({ sourceModel: 1, sourceId: 1 })
 MoneyTransactionSchema.index({ type: 1, createdAt: -1 })
 MoneyTransactionSchema.index({ transferId: 1 })
+MoneyTransactionSchema.index({ transferId: 1, role: 1 })
 MoneyTransactionSchema.index({ seq: 1 })
 MoneyTransactionSchema.index({ createdAt: -1 })
 

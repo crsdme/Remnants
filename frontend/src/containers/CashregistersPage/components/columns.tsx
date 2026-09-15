@@ -168,7 +168,7 @@ export function useColumns() {
         },
         header: t('page.cashregisters.table.balance'),
         cell: ({ row }) => {
-          const accounts = row.original.accounts || []
+          const accounts = (row.original.accounts || []).filter(account => (account.currencies || []).length > 0)
           if (accounts.length === 0)
             return <Badge variant="outline">{t('page.cashregisters.table.balance.empty')}</Badge>
 

@@ -62,7 +62,19 @@ export async function list(
         pipeline: [
           {
             $match: {
-              $expr: { $eq: ['$accountId', '$$accountId'] },
+              $expr: {
+                $and: [
+                  { $eq: ['$accountId', '$$accountId'] },
+                  { $ne: ['$cancelled', true] },
+                  {
+                    $or: [
+                      { $ne: ['$$CURRENT.type', 'transfer'] },
+                      { $ne: ['$direction', 'in'] },
+                      { $eq: ['$confirmed', true] },
+                    ],
+                  },
+                ],
+              },
             },
           },
           {

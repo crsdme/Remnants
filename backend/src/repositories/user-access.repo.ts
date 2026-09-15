@@ -1,20 +1,12 @@
 import type { UserAccessScopesDTO } from '@remnant/shared'
 import type { UserAccessDB } from '@/types'
+import { normalizeUserAccessScopes } from '@remnant/shared'
 import { mapUserAccessToScopes } from '@/mappers/users.mapper'
 import { UserAccessModel } from '@/models/user-access.model'
 import { HttpError } from '@/utils/httpError'
 
 function normalizeScopes(access?: Partial<UserAccessScopesDTO>): UserAccessScopesDTO {
-  return {
-    warehouseIds: access?.warehouseIds ?? [],
-    siteIds: access?.siteIds ?? [],
-    expenseCategoryIds: access?.expenseCategoryIds ?? [],
-    cashregisterIds: access?.cashregisterIds ?? [],
-    cashregisterAccountIds: access?.cashregisterAccountIds ?? [],
-    deliveryServiceIds: access?.deliveryServiceIds ?? [],
-    orderSourceIds: access?.orderSourceIds ?? [],
-    orderStatusIds: access?.orderStatusIds ?? [],
-  }
+  return normalizeUserAccessScopes(access)
 }
 
 export async function findByUserId(userId: string): Promise<UserAccessDB | null> {

@@ -26,27 +26,33 @@ export function ActionBar() {
         <p className="text-muted-foreground">{t('page.money-transactions.description')}</p>
       </div>
       <div className="flex items-center flex-wrap gap-2">
-        <PermissionGate permission={['cashregister-account.create']}>
-          <Sheet open={isModalOpen} onOpenChange={() => closeModal()}>
+        <Sheet
+          open={isModalOpen}
+          onOpenChange={(open) => {
+            if (!open)
+              closeModal()
+          }}
+        >
+          <PermissionGate permission={['moneyTransaction.create', 'moneyTransaction.transfer']}>
             <SheetTrigger asChild>
               <Button onClick={() => openModal()} disabled={isLoading}>
                 <Plus />
                 {t('page.money-transactions.button.create')}
               </Button>
             </SheetTrigger>
-            <SheetContent className="sm:max-w-xl w-full overflow-y-auto" side="right">
-              <SheetHeader>
-                <SheetTitle>{t(`page.money-transactions.form.title.${isEdit ? 'edit' : 'create'}`)}</SheetTitle>
-                <SheetDescription>
-                  {t(`page.money-transactions.form.description.${isEdit ? 'edit' : 'create'}`)}
-                </SheetDescription>
-              </SheetHeader>
-              <div className="w-full pb-4 px-4">
-                <MoneyTransactionForm />
-              </div>
-            </SheetContent>
-          </Sheet>
-        </PermissionGate>
+          </PermissionGate>
+          <SheetContent className="sm:max-w-xl w-full overflow-y-auto" side="right">
+            <SheetHeader>
+              <SheetTitle>{t(`page.money-transactions.form.title.${isEdit ? 'edit' : 'create'}`)}</SheetTitle>
+              <SheetDescription>
+                {t(`page.money-transactions.form.description.${isEdit ? 'edit' : 'create'}`)}
+              </SheetDescription>
+            </SheetHeader>
+            <div className="w-full pb-4 px-4">
+              <MoneyTransactionForm />
+            </div>
+          </SheetContent>
+        </Sheet>
       </div>
     </div>
   )

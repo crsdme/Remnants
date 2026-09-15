@@ -1,13 +1,10 @@
 import {
-  useCashregisterAccountOptions,
-  useCashregisterOptions,
   useDeliveryServiceOptions,
   useExpenseCategoryOptions,
   useOrderSourceOptions,
   useOrderStatusOptions,
   useSiteOptions,
   useUserRoleOptions,
-  useWarehouseOptions,
 } from '@/api/hooks'
 import { AsyncSelectNew } from '@/components/AsyncSelectNew'
 import {
@@ -24,17 +21,15 @@ import {
 } from '@/components/ui'
 import { useLocale } from '@/utils/hooks'
 import { useUserContext } from '../context'
+import { CashregisterAccessField, WarehouseAccessField } from './entity-access-field'
 
 export function UserForm() {
   const { t, language } = useLocale()
   const { isLoading, form, closeModal, submitUserForm } = useUserContext()
 
   const loadUserRolesOptions = useUserRoleOptions()
-  const loadWarehouseOptions = useWarehouseOptions()
   const loadSiteOptions = useSiteOptions()
   const loadExpenseCategoryOptions = useExpenseCategoryOptions()
-  const loadCashregisterOptions = useCashregisterOptions()
-  const loadCashregisterAccountOptions = useCashregisterAccountOptions()
   const loadDeliveryServiceOptions = useDeliveryServiceOptions()
   const loadOrderSourceOptions = useOrderSourceOptions()
   const loadOrderStatusOptions = useOrderStatusOptions()
@@ -42,7 +37,7 @@ export function UserForm() {
   return (
     <Form {...form}>
       <form
-        className="w-full space-y-1"
+        className="w-full min-w-0 max-w-full space-y-1"
         onSubmit={(e) => { void form.handleSubmit(submitUserForm)(e) }}
       >
         <FormField
@@ -144,20 +139,15 @@ export function UserForm() {
 
         <FormField
           control={form.control}
-          name="access.warehouseIds"
+          name="access.warehouses"
           render={({ field }) => (
             <FormItem>
               <FormLabel>{t('page.users.form.access.warehouses')}</FormLabel>
               <FormControl>
-                <AsyncSelectNew
-                  {...field}
-                  loadOptions={loadWarehouseOptions}
-                  renderOption={e => e.names[language]}
-                  getDisplayValue={e => e.names[language]}
-                  getOptionValue={e => e.id}
+                <WarehouseAccessField
+                  value={field.value ?? []}
+                  onChange={field.onChange}
                   disabled={isLoading}
-                  clearable
-                  multi
                 />
               </FormControl>
               <FormMessage />
@@ -218,43 +208,15 @@ export function UserForm() {
 
         <FormField
           control={form.control}
-          name="access.cashregisterIds"
+          name="access.cashregisters"
           render={({ field }) => (
             <FormItem>
               <FormLabel>{t('page.users.form.access.cashregisters')}</FormLabel>
               <FormControl>
-                <AsyncSelectNew
-                  {...field}
-                  loadOptions={loadCashregisterOptions}
-                  renderOption={e => e.names[language]}
-                  getDisplayValue={e => e.names[language]}
-                  getOptionValue={e => e.id}
+                <CashregisterAccessField
+                  value={field.value ?? []}
+                  onChange={field.onChange}
                   disabled={isLoading}
-                  clearable
-                  multi
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="access.cashregisterAccountIds"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>{t('page.users.form.access.cashregisterAccounts')}</FormLabel>
-              <FormControl>
-                <AsyncSelectNew
-                  {...field}
-                  loadOptions={loadCashregisterAccountOptions}
-                  renderOption={e => e.names[language]}
-                  getDisplayValue={e => e.names[language]}
-                  getOptionValue={e => e.id}
-                  disabled={isLoading}
-                  clearable
-                  multi
                 />
               </FormControl>
               <FormMessage />

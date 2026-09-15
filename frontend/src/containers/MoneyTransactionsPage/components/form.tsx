@@ -1,3 +1,4 @@
+import type { MoneyTransactionTab } from '../context'
 import { useCallback, useMemo } from 'react'
 import { useWatch } from 'react-hook-form'
 import {
@@ -21,41 +22,54 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
+  Switch,
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
   Textarea,
 } from '@/components/ui'
-import { useLocale } from '@/utils/hooks'
+import { useAccountIdsWithCapability, useEntityAccessIds, useEntityIdsWithCapability, useLocale } from '@/utils/hooks'
 import { useMoneyTransactionContext } from '../context'
 
 export function MoneyTransactionForm() {
   const { t } = useLocale()
-  const { selectedTab, setSelectedTab, addForm, accountForm } = useMoneyTransactionContext()
+  const { selectedTab, setSelectedTab, addForm, accountForm, cashregisterForm, availableTabs } = useMoneyTransactionContext()
 
   const onTabChange = (value: string) => {
-    setSelectedTab(value)
+    setSelectedTab(value as MoneyTransactionTab)
     addForm.reset()
     accountForm.reset()
+    cashregisterForm.reset()
   }
+
+  if (availableTabs.length === 0)
+    return null
 
   return (
     <Tabs value={selectedTab} onValueChange={onTabChange}>
-      <TabsList className="w-full mb-4">
-        <TabsTrigger value="add">{t('page.money-transactions.form.tabs.add')}</TabsTrigger>
-        <TabsTrigger value="account">{t('page.money-transactions.form.tabs.account')}</TabsTrigger>
-        <TabsTrigger value="cashregister">{t('page.money-transactions.form.tabs.cashregister')}</TabsTrigger>
-      </TabsList>
-      <TabsContent value="add">
-        <AddForm />
-      </TabsContent>
-      <TabsContent value="account">
-        <AccountForm />
-      </TabsContent>
-      <TabsContent value="cashregister">
-        <CashregisterForm />
-      </TabsContent>
+      {availableTabs.length > 1 && (
+        <TabsList className="mb-4 grid w-full" style={{ gridTemplateColumns: `repeat(${availableTabs.length}, minmax(0, 1fr))` }}>
+          {availableTabs.map(tab => (
+            <TabsTrigger key={tab} value={tab}>{t(`page.money-transactions.form.tabs.${tab}`)}</TabsTrigger>
+          ))}
+        </TabsList>
+      )}
+      {availableTabs.includes('add') && (
+        <TabsContent value="add">
+          <AddForm />
+        </TabsContent>
+      )}
+      {availableTabs.includes('account') && (
+        <TabsContent value="account">
+          <AccountForm />
+        </TabsContent>
+      )}
+      {availableTabs.includes('cashregister') && (
+        <TabsContent value="cashregister">
+          <CashregisterForm />
+        </TabsContent>
+      )}
     </Tabs>
   )
 }
@@ -63,6 +77,13 @@ export function MoneyTransactionForm() {
 function AddForm() {
   const { t, language } = useLocale()
   const { isLoading, addForm, closeModal, submitMoneyTransactionForm } = useMoneyTransactionContext()
+  const selectedDirection = useWatch({
+    control: addForm.control,
+    name: 'direction',
+  })
+  const neededCapability = selectedDirection === 'out' ? 'transfer' : 'receive'
+  const cashregisterIds = useEntityIdsWithCapability('cashregisters', neededCapability)
+  const allowedAccountIds = useAccountIdsWithCapability(neededCapability)
 
   const selectedCashregister = useWatch({
     control: addForm.control,
@@ -81,10 +102,13 @@ function AddForm() {
     defaultFilters: { active: [true], language },
   })
 
-  const accountIds = useMemo(
-    () => cashregisters.find(cashregister => cashregister.id === selectedCashregister)?.accounts.map(account => account.id),
-    [cashregisters, selectedCashregister],
-  )
+  const accountIds = useMemo(() => {
+    const ids = cashregisters.find(cashregister => cashregister.id === selectedCashregister)?.accounts.map(account => account.id) ?? []
+    if (allowedAccountIds == null)
+      return ids
+    const allowed = new Set(allowedAccountIds)
+    return ids.filter(id => allowed.has(id))
+  }, [cashregisters, allowedAccountIds, selectedCashregister])
 
   const { loadSearchOptions: loadAccountSearch, loadSelectedOptions: loadAccountSelected } = useCashregisterAccountSelectOptions({
     defaultFilters: { ids: accountIds },
@@ -93,6 +117,17 @@ function AddForm() {
   const { loadSearchOptions: loadCurrencySearch, loadSelectedOptions: loadCurrencySelected } = useCurrencySelectOptions({
     defaultFilters: { language },
   })
+
+  const loadCashregisterOptions = useCallback(
+    async (query: string) => {
+      const cashregisterList = await loadCashregisterSearch(query)
+      if (cashregisterIds == null)
+        return cashregisterList
+      const allowed = new Set(cashregisterIds)
+      return cashregisterList.filter(cashregister => allowed.has(cashregister.id))
+    },
+    [loadCashregisterSearch, cashregisterIds],
+  )
 
   const loadAccountOptions = useCallback(
     async (query: string) => {
@@ -121,9 +156,45 @@ function AddForm() {
   return (
     <Form {...addForm}>
       <form
-        className="w-full space-y-1"
+        className="w-full space-y-3"
         onSubmit={(e) => { void addForm.handleSubmit(v => submitMoneyTransactionForm(v))(e) }}
       >
+
+        <FormField
+          control={addForm.control}
+          name="direction"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>
+                <p>
+                  {t('page.money-transactions.form.direction')}
+                  <span className="text-destructive ml-1">*</span>
+                </p>
+              </FormLabel>
+              <Select
+                value={field.value}
+                onValueChange={(value) => {
+                  field.onChange(value)
+                  addForm.setValue('cashregister', '')
+                  addForm.setValue('account', '')
+                  addForm.setValue('currency', '')
+                }}
+                disabled={isLoading}
+              >
+                <FormControl>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder={t('page.money-transactions.form.direction')} />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  <SelectItem value="in">{t('page.money-transactions.form.direction.in')}</SelectItem>
+                  <SelectItem value="out">{t('page.money-transactions.form.direction.out')}</SelectItem>
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
         <FormField
           control={addForm.control}
@@ -137,7 +208,7 @@ function AddForm() {
                 </p>
               </FormLabel>
               <AsyncSelectMenu
-                loadSearchOptions={loadCashregisterSearch}
+                loadSearchOptions={loadCashregisterOptions}
                 loadSelectedOptions={loadCashregisterSelected}
                 field={field}
                 value={field.value}
@@ -205,12 +276,12 @@ function AddForm() {
                   <span className="text-destructive ml-1">*</span>
                 </p>
               </FormLabel>
-              <div className="flex items-center gap-2">
+              <div className="flex min-w-0 items-center gap-2">
                 <FormControl>
                   <Input
                     type="number"
                     placeholder={t('page.money-transactions.form.amount')}
-                    className="w-full"
+                    className="min-w-0 flex-1"
                     {...field}
                     disabled={isLoading}
                     onChange={e => field.onChange(Number(e.target.value))}
@@ -232,43 +303,11 @@ function AddForm() {
                       triggerClassName="w-[80px]"
                       placeholder="..."
                       disabled={isLoading || !selectedCashregisterAccount}
-                      searchable
                       clearable
                     />
                   )}
                 />
               </div>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={addForm.control}
-          name="direction"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>
-                <p>
-                  {t('page.money-transactions.form.direction')}
-                  <span className="text-destructive ml-1">*</span>
-                </p>
-              </FormLabel>
-              <Select
-                onValueChange={field.onChange}
-                disabled={isLoading}
-                {...field}
-              >
-                <FormControl>
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="..." />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  <SelectItem value="in">{t('page.money-transactions.form.direction.in')}</SelectItem>
-                  <SelectItem value="out">{t('page.money-transactions.form.direction.out')}</SelectItem>
-                </SelectContent>
-              </Select>
               <FormMessage />
             </FormItem>
           )}
@@ -311,6 +350,8 @@ function AddForm() {
 function AccountForm() {
   const { t, language } = useLocale()
   const { isLoading, accountForm, closeModal, submitMoneyTransactionForm } = useMoneyTransactionContext()
+  const transferFromIds = useEntityIdsWithCapability('cashregisters', 'transfer')
+  const transferAccountIds = useAccountIdsWithCapability('transfer')
   const selectedCashregister = useWatch({
     control: accountForm.control,
     name: 'cashregister',
@@ -332,39 +373,67 @@ function AccountForm() {
     defaultFilters: { active: [true], language },
   })
 
-  const accountIds = useMemo(
-    () => cashregisters.find(cashregister => cashregister.id === selectedCashregister)?.accounts.map(account => account.id),
+  const registerAccounts = useMemo(
+    () => cashregisters.find(cashregister => cashregister.id === selectedCashregister)?.accounts.map(account => account.id) ?? [],
     [cashregisters, selectedCashregister],
   )
 
-  const { loadSearchOptions: loadAccountSearch, loadSelectedOptions: loadAccountSelected } = useCashregisterAccountSelectOptions({
-    defaultFilters: { ids: accountIds },
+  const accountIdsFrom = useMemo(() => {
+    if (transferAccountIds == null)
+      return registerAccounts
+    const allowed = new Set(transferAccountIds)
+    return registerAccounts.filter(id => allowed.has(id))
+  }, [registerAccounts, transferAccountIds])
+
+  const accountIdsTo = useMemo(() => {
+    return registerAccounts.filter(id => id !== selectedAccountFrom)
+  }, [registerAccounts, selectedAccountFrom])
+
+  const { loadSearchOptions: loadAccountFromSearch, loadSelectedOptions: loadAccountSelected } = useCashregisterAccountSelectOptions({
+    defaultFilters: { ids: accountIdsFrom },
+  })
+
+  const { loadSearchOptions: loadAccountToSearch } = useCashregisterAccountSelectOptions({
+    defaultFilters: { ids: accountIdsTo },
   })
 
   const { loadSearchOptions: loadCurrencySearch, loadSelectedOptions: loadCurrencySelected } = useCurrencySelectOptions({
     defaultFilters: { language },
   })
 
+  const loadCashregisterOptions = useCallback(
+    async (query: string) => {
+      const cashregisterList = await loadCashregisterSearch(query)
+      if (transferFromIds == null)
+        return cashregisterList
+      const allowed = new Set(transferFromIds)
+      return cashregisterList.filter(cashregister => allowed.has(cashregister.id))
+    },
+    [loadCashregisterSearch, transferFromIds],
+  )
+
   const loadAccountOptions = useCallback(
     async (query: string) => {
-      if (!selectedCashregister || !accountIds?.length)
+      if (!selectedCashregister || !accountIdsFrom.length)
         return []
 
-      return loadAccountSearch(query)
+      return loadAccountFromSearch(query)
     },
-    [accountIds, loadAccountSearch, selectedCashregister],
+    [accountIdsFrom, loadAccountFromSearch, selectedCashregister],
   )
 
   const loadAccountToOptions = useCallback(
     async (query: string) => {
-      const excludeId = selectedAccountFrom
-      const accounts = await loadAccountOptions(query)
+      if (!selectedCashregister || !accountIdsTo.length)
+        return []
 
+      const accounts = await loadAccountToSearch(query)
+      const excludeId = selectedAccountFrom
       return excludeId
         ? accounts.filter(account => account.id !== excludeId)
         : accounts
     },
-    [loadAccountOptions, selectedAccountFrom],
+    [accountIdsTo, loadAccountToSearch, selectedAccountFrom, selectedCashregister],
   )
 
   const loadCurrencyOptions = useCallback(
@@ -389,7 +458,7 @@ function AccountForm() {
   return (
     <Form {...accountForm}>
       <form
-        className="w-full space-y-1"
+        className="w-full space-y-3"
         onSubmit={(e) => { void accountForm.handleSubmit(v => submitMoneyTransactionForm(v))(e) }}
       >
 
@@ -405,7 +474,7 @@ function AccountForm() {
                 </p>
               </FormLabel>
               <AsyncSelectMenu
-                loadSearchOptions={loadCashregisterSearch}
+                loadSearchOptions={loadCashregisterOptions}
                 loadSelectedOptions={loadCashregisterSelected}
                 field={field}
                 value={field.value}
@@ -429,12 +498,12 @@ function AccountForm() {
           )}
         />
 
-        <div className="flex gap-2 w-full">
+        <div className="grid grid-cols-1 gap-2 w-full">
           <FormField
             control={accountForm.control}
             name="accountFrom"
             render={({ field }) => (
-              <FormItem className="grow">
+              <FormItem>
                 <FormLabel>
                   <p>
                     {t('page.money-transactions.form.cashregister-account-from')}
@@ -463,7 +532,7 @@ function AccountForm() {
             control={accountForm.control}
             name="accountTo"
             render={({ field }) => (
-              <FormItem className="grow">
+              <FormItem>
                 <FormLabel>
                   <p>
                     {t('page.money-transactions.form.cashregister-account-to')}
@@ -501,12 +570,12 @@ function AccountForm() {
                   <span className="text-destructive ml-1">*</span>
                 </p>
               </FormLabel>
-              <div className="flex items-center gap-2">
+              <div className="flex min-w-0 items-center gap-2">
                 <FormControl>
                   <Input
                     type="number"
                     placeholder={t('page.money-transactions.form.amount')}
-                    className="w-full"
+                    className="min-w-0 flex-1"
                     {...field}
                     disabled={isLoading}
                     onChange={e => field.onChange(Number(e.target.value))}
@@ -525,10 +594,9 @@ function AccountForm() {
                       renderOption={currency => currency.symbols[language]}
                       getDisplayValue={currency => currency.symbols[language]}
                       getOptionValue={currency => currency.id}
-                      triggerClassName="w-[80px]"
+                      triggerClassName="w-20 min-w-20 max-w-20 shrink-0 overflow-hidden px-2"
                       placeholder="..."
                       disabled={isLoading || !selectedAccountTo}
-                      searchable
                       clearable
                     />
                   )}
@@ -576,6 +644,9 @@ function AccountForm() {
 function CashregisterForm() {
   const { t, language } = useLocale()
   const { isLoading, cashregisterForm, closeModal, submitMoneyTransactionForm } = useMoneyTransactionContext()
+  const transferFromIds = useEntityIdsWithCapability('cashregisters', 'transfer')
+  const destCashregisterIds = useEntityAccessIds('cashregisters')
+  const transferAccountIds = useAccountIdsWithCapability('transfer')
   const cashregisterFrom = useWatch({
     control: cashregisterForm.control,
     name: 'cashregisterFrom',
@@ -601,15 +672,17 @@ function CashregisterForm() {
     defaultFilters: { active: [true], language },
   })
 
-  const accountIdsFrom = useMemo(
-    () => cashregisters.find(cashregister => cashregister.id === cashregisterFrom)?.accounts.map(account => account.id),
-    [cashregisters, cashregisterFrom],
-  )
+  const accountIdsFrom = useMemo(() => {
+    const ids = cashregisters.find(cashregister => cashregister.id === cashregisterFrom)?.accounts.map(account => account.id) ?? []
+    if (transferAccountIds == null)
+      return ids
+    const allowed = new Set(transferAccountIds)
+    return ids.filter(id => allowed.has(id))
+  }, [cashregisters, cashregisterFrom, transferAccountIds])
 
-  const accountIdsTo = useMemo(
-    () => cashregisters.find(cashregister => cashregister.id === cashregisterTo)?.accounts.map(account => account.id),
-    [cashregisters, cashregisterTo],
-  )
+  const accountIdsTo = useMemo(() => {
+    return cashregisters.find(cashregister => cashregister.id === cashregisterTo)?.accounts.map(account => account.id) ?? []
+  }, [cashregisters, cashregisterTo])
 
   const { loadSearchOptions: loadAccountFromSearch, loadSelectedOptions: loadAccountFromSelected } = useCashregisterAccountSelectOptions({
     defaultFilters: { ids: accountIdsFrom },
@@ -623,16 +696,30 @@ function CashregisterForm() {
     defaultFilters: { language },
   })
 
+  const loadCashregisterFromOptions = useCallback(
+    async (query: string) => {
+      const cashregisterList = await loadCashregisterSearch(query)
+      if (transferFromIds == null)
+        return cashregisterList
+      const allowed = new Set(transferFromIds)
+      return cashregisterList.filter(cashregister => allowed.has(cashregister.id))
+    },
+    [loadCashregisterSearch, transferFromIds],
+  )
+
   const loadCashregisterToOptions = useCallback(
     async (query: string) => {
       const excludeId = cashregisterFrom
       const cashregisterList = await loadCashregisterSearch(query)
+      const filtered = destCashregisterIds == null
+        ? cashregisterList
+        : cashregisterList.filter(cashregister => destCashregisterIds.includes(cashregister.id))
 
       return excludeId
-        ? cashregisterList.filter(cashregister => cashregister.id !== excludeId)
-        : cashregisterList
+        ? filtered.filter(cashregister => cashregister.id !== excludeId)
+        : filtered
     },
-    [cashregisterFrom, loadCashregisterSearch],
+    [cashregisterFrom, destCashregisterIds, loadCashregisterSearch],
   )
 
   const loadAccountFromOptions = useCallback(
@@ -681,16 +768,16 @@ function CashregisterForm() {
   return (
     <Form {...cashregisterForm}>
       <form
-        className="w-full space-y-1"
+        className="w-full space-y-3"
         onSubmit={(e) => { void cashregisterForm.handleSubmit(v => submitMoneyTransactionForm(v))(e) }}
       >
 
-        <div className="flex gap-2 w-full">
+        <div className="grid grid-cols-1 gap-2 w-full">
           <FormField
             control={cashregisterForm.control}
             name="cashregisterFrom"
             render={({ field }) => (
-              <FormItem className="grow">
+              <FormItem>
                 <FormLabel>
                   <p>
                     {t('page.money-transactions.form.cashregister-from')}
@@ -698,7 +785,7 @@ function CashregisterForm() {
                   </p>
                 </FormLabel>
                 <AsyncSelectMenu
-                  loadSearchOptions={loadCashregisterSearch}
+                  loadSearchOptions={loadCashregisterFromOptions}
                   loadSelectedOptions={loadCashregisterSelected}
                   field={field}
                   value={field.value}
@@ -726,7 +813,7 @@ function CashregisterForm() {
             control={cashregisterForm.control}
             name="cashregisterTo"
             render={({ field }) => (
-              <FormItem className="grow">
+              <FormItem>
                 <FormLabel>
                   <p>
                     {t('page.money-transactions.form.cashregister-to')}
@@ -753,12 +840,12 @@ function CashregisterForm() {
           />
         </div>
 
-        <div className="flex gap-2 w-full">
+        <div className="grid grid-cols-1 gap-2 w-full">
           <FormField
             control={cashregisterForm.control}
             name="accountFrom"
             render={({ field }) => (
-              <FormItem className="grow">
+              <FormItem>
                 <FormLabel>
                   <p>
                     {t('page.money-transactions.form.cashregister-account-from')}
@@ -787,7 +874,7 @@ function CashregisterForm() {
             control={cashregisterForm.control}
             name="accountTo"
             render={({ field }) => (
-              <FormItem className="grow">
+              <FormItem>
                 <FormLabel>
                   <p>
                     {t('page.money-transactions.form.cashregister-account-to')}
@@ -825,12 +912,12 @@ function CashregisterForm() {
                   <span className="text-destructive ml-1">*</span>
                 </p>
               </FormLabel>
-              <div className="flex items-center gap-2">
+              <div className="flex min-w-0 items-center gap-2">
                 <FormControl>
                   <Input
                     type="number"
                     placeholder={t('page.money-transactions.form.amount')}
-                    className="w-full"
+                    className="min-w-0 flex-1"
                     {...field}
                     disabled={isLoading}
                     onChange={e => field.onChange(Number(e.target.value))}
@@ -849,15 +936,35 @@ function CashregisterForm() {
                       renderOption={currency => currency.symbols[language]}
                       getDisplayValue={currency => currency.symbols[language]}
                       getOptionValue={currency => currency.id}
-                      triggerClassName="w-[80px]"
+                      triggerClassName="w-20 min-w-20 max-w-20 shrink-0 overflow-hidden px-2"
                       placeholder="..."
                       disabled={isLoading || !accountTo}
-                      searchable
                       clearable
                     />
                   )}
                 />
               </div>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={cashregisterForm.control}
+          name="requiresReceiving"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>
+                <p>
+                  {t('page.money-transactions.form.requiresReceiving')}
+                </p>
+              </FormLabel>
+              <FormControl>
+                <Switch
+                  checked={field.value ?? true}
+                  onCheckedChange={field.onChange}
+                />
+              </FormControl>
               <FormMessage />
             </FormItem>
           )}

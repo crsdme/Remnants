@@ -400,6 +400,7 @@ function getColorCategoryLabels(colorCategories: ReturnType<typeof getHardcodeDa
     [colorCategories.OMBRE]: 'Ombre',
     [colorCategories.PLATIN]: 'Platin',
     [colorCategories.BLONDE]: 'Blonde',
+    [colorCategories.EXTREAMELY]: 'Extremely',
   }
 }
 
@@ -408,13 +409,14 @@ function extractProductPrintFields(
   language: LanguageCode,
   hardcode: ReturnType<typeof getHardcodeData>,
 ) {
-  const { propertyIds, hairTypes, colorCategories } = hardcode
+  const { propertyIds, hairTypes, colorCategories, segments } = hardcode
   const hairTypeLabels = getHairTypeLabels(hairTypes)
   const colorCategoryLabels = getColorCategoryLabels(colorCategories)
 
   let length = ''
   let weight = ''
   let segment = 'Standard'
+  let isIndia = false
   let colorCategory = ''
   const type: string[] = []
   const info: string[] = []
@@ -437,19 +439,21 @@ function extractProductPrintFields(
           : []
         for (const value of values) {
           const label = hairTypeLabels[value]
-          if (label) {
+          if (label)
             type.push(label)
-          }
-          else {
-            type.push('Raw')
-          }
         }
         break
       }
 
-      case propertyIds.SEGMENT:
-        segment = prop.options.map(option => option.names[language] ?? '').join(', ') || segment
+      case propertyIds.SEGMENT: {
+        const optionIds = prop.options.map(option => option.id)
+        isIndia = Boolean(segments.INDIA) && optionIds.includes(segments.INDIA)
+        if (isIndia)
+          segment = ''
+        else
+          segment = prop.options.map(option => option.names[language] ?? '').join(', ') || segment
         break
+      }
 
       case propertyIds.COLOR_CATEGORY: {
         const value = typeof prop.value === 'string'
@@ -482,7 +486,12 @@ function extractProductPrintFields(
     }
   }
 
-  const bigCode = ((product.names?.[language] ?? '').split('#')[1] ?? '0000').trim()
+  if (type.length === 0)
+    type.push('Raw')
+
+  let bigCode = ((product.names?.[language] ?? '').split('#')[1] ?? '0000').trim()
+  if (isIndia)
+    bigCode = `${bigCode}I`
   const lenWgt = [length, weight].filter(Boolean).join(', ')
 
   return { length, weight, lenWgt, type, segment, colorCategory, bigCode, info }

@@ -1,5 +1,6 @@
 import type { Column } from '@tanstack/react-table'
 import type { WarehouseTransactionTableRow } from '../context'
+import { entityHasCapability } from '@remnant/shared'
 import { createColumnHelper } from '@tanstack/react-table'
 import {
   ArrowDown,
@@ -14,7 +15,9 @@ import { useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { TableActionDropdown } from '@/components'
 import { Badge, Button } from '@/components/ui'
+import { useAuthContext } from '@/contexts/AuthContext'
 import { formatDate } from '@/utils/helpers'
+import { hasPermission } from '@/utils/helpers/permission'
 import { useLocale } from '@/utils/hooks'
 import { useWarehouseTransactionContext } from '../context'
 
@@ -26,8 +29,18 @@ export function useColumns() {
   const { t, language } = useLocale()
   const navigate = useNavigate()
   const { isLoading, removeWarehouseTransaction } = useWarehouseTransactionContext()
+  const { access, permissions } = useAuthContext()
+  const isAdmin = hasPermission(permissions, 'other.admin')
 
   const columns = useMemo(() => {
+    const canReceiveOnWarehouse = (warehouseId?: string | null) => {
+      if (!warehouseId)
+        return false
+      if (isAdmin)
+        return true
+      return entityHasCapability(access.warehouses, warehouseId, 'receive')
+    }
+
     function sortHeader(column: Column<WarehouseTransactionTableRow, unknown>, label: string) {
       const sorted = column.getIsSorted()
       const Icon = sorted ? sortIcons[sorted] : ChevronsUpDown
@@ -55,6 +68,11 @@ export function useColumns() {
         enableHiding: false,
         cell: ({ row }) => {
           const item = row.original
+          const toWarehouseId = typeof item.toWarehouse === 'string'
+            ? item.toWarehouse
+            : item.toWarehouse?.id
+          const canReceive = item.status === 'awaiting'
+            && canReceiveOnWarehouse(toWarehouseId)
 
           const actions = [
             {
@@ -63,7 +81,7 @@ export function useColumns() {
               label: t('table.copy'),
               icon: <Copy className="h-4 w-4" />,
             },
-            ...(item.status === 'awaiting'
+            ...(canReceive
               ? [{
                   permission: 'warehouseTransaction.receive',
                   onClick: () => void navigate(`/warehouse-transactions/receive/${item.seq}`),
@@ -197,6 +215,6 @@ export function useColumns() {
       }),
       actionColumn(),
     ]
-  }, [language, isLoading, language, removeWarehouseTransaction, t])
+  }, [access.warehouses, isAdmin, isLoading, language, navigate, removeWarehouseTransaction, t])
   return columns
 }

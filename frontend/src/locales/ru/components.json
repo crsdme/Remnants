@@ -129,6 +129,7 @@
   "component.sidemenu.label.automations": "Автоматизация",
   "component.sidemenu.label.logs": "Логи",
   "component.sidemenu.label.documents": "Документы",
+  "component.sidemenu.label.profile": "Профиль",
   "component.sidemenu.label.logout": "Выйти",
   "component.sidemenu.label.userRoles": "Роли пользователей",
   "component.sidemenu.label.expenseCategories": "Категории расходов",

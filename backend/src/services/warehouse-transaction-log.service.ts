@@ -1,4 +1,5 @@
 import type {
+  AuthUser,
   CreateWarehouseTransactionLogsResponse,
   GetWarehouseTransactionLogsResponse,
 } from '@remnant/shared'
@@ -7,10 +8,21 @@ import type {
   CreateWarehouseTransactionLogsPayload,
   GetWarehouseTransactionLogsPayload,
 } from '@/types/'
+import * as UserAccessRepo from '@/repositories/user-access.repo'
 import * as WarehouseTransactionLogRepo from '@/repositories/warehouse-transaction-log.repo'
+import { getEntityIdsWithCapabilityForUser } from '@/utils'
 
-export async function get({ payload }: { payload: GetWarehouseTransactionLogsPayload }): Promise<GetWarehouseTransactionLogsResponse> {
-  const { items, total, page, pageSize } = await WarehouseTransactionLogRepo.list(payload)
+export async function get({
+  payload,
+  user,
+}: {
+  payload: GetWarehouseTransactionLogsPayload
+  user: AuthUser
+}): Promise<GetWarehouseTransactionLogsResponse> {
+  const access = await UserAccessRepo.getScopesByUserId(user.id)
+  const warehouseIds = getEntityIdsWithCapabilityForUser(access, 'warehouses', 'viewHistory', user)
+
+  const { items, total, page, pageSize } = await WarehouseTransactionLogRepo.list(payload, { warehouseIds })
 
   return {
     status: 'success',

@@ -1,30 +1,22 @@
 import type { UserAccessScopesDTO, UserDTO } from '@remnant/shared'
 import type { UserAccessDB, UserDB } from '@/types'
+import { emptyUserAccessScopes, normalizeUserAccessScopes } from '@remnant/shared'
 
 export function mapUserAccessToScopes(access?: UserAccessDB | null): UserAccessScopesDTO {
   if (access == null) {
-    return {
-      warehouseIds: [],
-      siteIds: [],
-      expenseCategoryIds: [],
-      cashregisterIds: [],
-      cashregisterAccountIds: [],
-      deliveryServiceIds: [],
-      orderSourceIds: [],
-      orderStatusIds: [],
-    }
+    return { ...emptyUserAccessScopes }
   }
 
-  return {
-    warehouseIds: access.warehouseIds ?? [],
+  return normalizeUserAccessScopes({
+    warehouses: access.warehouses ?? [],
+    cashregisters: access.cashregisters ?? [],
     siteIds: access.siteIds ?? [],
     expenseCategoryIds: access.expenseCategoryIds ?? [],
-    cashregisterIds: access.cashregisterIds ?? [],
     cashregisterAccountIds: access.cashregisterAccountIds ?? [],
     deliveryServiceIds: access.deliveryServiceIds ?? [],
     orderSourceIds: access.orderSourceIds ?? [],
     orderStatusIds: access.orderStatusIds ?? [],
-  }
+  })
 }
 
 export function mapUserToDTO(user: UserDB, access?: UserAccessDB | null): UserDTO {

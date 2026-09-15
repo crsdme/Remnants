@@ -4,7 +4,7 @@ import type { UseFormReturn } from 'react-hook-form'
 
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useQueryClient } from '@tanstack/react-query'
-import { createContext, useContext, useMemo, useState } from 'react'
+import { createContext, useCallback, useContext, useMemo, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
@@ -12,8 +12,14 @@ import { toast } from 'sonner'
 import { z } from 'zod'
 import {
   useMoneyTransactionCreate,
+  useMoneyTransferCancel,
   useMoneyTransferCreate,
+  useMoneyTransferReceive,
 } from '@/api/hooks'
+import { usePermission } from '@/utils/hooks'
+
+export const MONEY_TRANSACTION_TABS = ['add', 'account', 'cashregister'] as const
+export type MoneyTransactionTab = (typeof MONEY_TRANSACTION_TABS)[number]
 
 interface MoneyTransactionContextType {
   selectedMoneyTransaction: MoneyTransactionDTO | undefined
@@ -23,11 +29,14 @@ interface MoneyTransactionContextType {
   addForm: UseFormReturn<any>
   accountForm: UseFormReturn<any>
   cashregisterForm: UseFormReturn<any>
-  selectedTab: string | undefined
+  selectedTab: MoneyTransactionTab | undefined
+  availableTabs: MoneyTransactionTab[]
   openModal: (moneyTransaction?: MoneyTransactionDTO) => void
   closeModal: () => void
   submitMoneyTransactionForm: (params: any) => void
-  setSelectedTab: (tab: string) => void
+  receiveMoneyTransfer: (transferId: string) => void
+  cancelMoneyTransfer: (transferId: string) => void
+  setSelectedTab: (tab: MoneyTransactionTab) => void
 }
 
 const MoneyTransactionContext = createContext<MoneyTransactionContextType | undefined>(undefined)
@@ -36,10 +45,22 @@ export function MoneyTransactionProvider({ children }: { children: ReactNode }) 
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [isEdit, setIsEdit] = useState(false)
-  const [selectedTab, setSelectedTab] = useState<string | undefined>(undefined)
+  const [selectedTab, setSelectedTab] = useState<MoneyTransactionTab | undefined>(undefined)
   const [selectedMoneyTransaction, setSelectedMoneyTransaction] = useState<MoneyTransactionDTO | undefined>(undefined)
 
   const { t } = useTranslation()
+  const canCreate = usePermission('moneyTransaction.create')
+  const canTransfer = usePermission('moneyTransaction.transfer')
+  const availableTabs = useMemo(() => {
+    const tabs: MoneyTransactionTab[] = []
+    if (canCreate)
+      tabs.push('add')
+    if (canTransfer) {
+      tabs.push('account')
+      tabs.push('cashregister')
+    }
+    return tabs
+  }, [canCreate, canTransfer])
 
   const addFormSchema = useMemo(() =>
     z.object({
@@ -56,7 +77,7 @@ export function MoneyTransactionProvider({ children }: { children: ReactNode }) 
     defaultValues: {
       cashregister: '',
       account: '',
-      direction: 'in',
+      direction: 'in' as const,
       currency: '',
       amount: 0,
       description: '',
@@ -94,6 +115,7 @@ export function MoneyTransactionProvider({ children }: { children: ReactNode }) 
       currency: z.string({ required_error: t('form.errors.required') }).min(1, t('form.errors.required')),
       amount: z.number({ required_error: t('form.errors.required') }).min(1, t('form.errors.required')),
       description: z.string().optional(),
+      requiresReceiving: z.boolean().optional(),
     }), [t])
 
   const cashregisterForm = useForm({
@@ -106,6 +128,7 @@ export function MoneyTransactionProvider({ children }: { children: ReactNode }) 
       currency: '',
       amount: 0,
       description: '',
+      requiresReceiving: true,
     },
   })
 
@@ -121,12 +144,14 @@ export function MoneyTransactionProvider({ children }: { children: ReactNode }) 
     addForm.reset()
     accountForm.reset()
     cashregisterForm.reset()
+    setSelectedTab(undefined)
   }
 
   const openModal = (moneyTransaction: MoneyTransactionDTO | undefined) => {
     setIsModalOpen(true)
     setIsEdit(!!moneyTransaction)
     setSelectedMoneyTransaction(moneyTransaction ?? undefined)
+    setSelectedTab(availableTabs[0])
   }
 
   const useMutateCreateMoneyTransaction = useMoneyTransactionCreate({
@@ -161,12 +186,40 @@ export function MoneyTransactionProvider({ children }: { children: ReactNode }) 
     },
   })
 
+  const useMutateReceiveMoneyTransfer = useMoneyTransferReceive({
+    options: {
+      onSuccess: ({ data }) => {
+        void queryClient.invalidateQueries({ queryKey: ['money-transactions'] })
+        void queryClient.invalidateQueries({ queryKey: ['cashregisters'] })
+        toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description || ''}` })
+      },
+      onError: ({ response }) => {
+        const error = response.data.error
+        toast.error(t(`error.title.${error.code}`), { description: `${t(`error.description.${error.code}`)} ${error.description || ''}` })
+      },
+    },
+  })
+
+  const useMutateCancelMoneyTransfer = useMoneyTransferCancel({
+    options: {
+      onSuccess: ({ data }) => {
+        void queryClient.invalidateQueries({ queryKey: ['money-transactions'] })
+        void queryClient.invalidateQueries({ queryKey: ['cashregisters'] })
+        toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description || ''}` })
+      },
+      onError: ({ response }) => {
+        const error = response.data.error
+        toast.error(t(`error.title.${error.code}`), { description: `${t(`error.description.${error.code}`)} ${error.description || ''}` })
+      },
+    },
+  })
+
   const submitMoneyTransactionForm = (params: any) => {
     setIsLoading(true)
 
     if (selectedTab === 'add') {
       return useMutateCreateMoneyTransaction.mutate({
-        type: 'income',
+        type: params.direction === 'out' ? 'expense' : 'income',
         direction: params.direction,
         accountId: params.account,
         cashregisterId: params.cashregister,
@@ -202,9 +255,18 @@ export function MoneyTransactionProvider({ children }: { children: ReactNode }) 
         amount: params.amount,
         sourceModel: 'manual',
         description: params.description,
+        requiresReceiving: params.requiresReceiving,
       })
     }
   }
+
+  const receiveMoneyTransfer = useCallback((transferId: string) => {
+    useMutateReceiveMoneyTransfer.mutate({ transferId })
+  }, [useMutateReceiveMoneyTransfer])
+
+  const cancelMoneyTransfer = useCallback((transferId: string) => {
+    useMutateCancelMoneyTransfer.mutate({ transferId })
+  }, [useMutateCancelMoneyTransfer])
 
   const value: MoneyTransactionContextType = useMemo(
     () => ({
@@ -216,12 +278,15 @@ export function MoneyTransactionProvider({ children }: { children: ReactNode }) 
       accountForm,
       cashregisterForm,
       selectedTab,
+      availableTabs,
       openModal,
       closeModal,
       submitMoneyTransactionForm,
+      receiveMoneyTransfer,
+      cancelMoneyTransfer,
       setSelectedTab,
     }),
-    [selectedMoneyTransaction, isModalOpen, isLoading, isEdit, addForm, accountForm, selectedTab, setSelectedTab],
+    [selectedMoneyTransaction, isModalOpen, isLoading, isEdit, addForm, accountForm, cashregisterForm, selectedTab, availableTabs, receiveMoneyTransfer, cancelMoneyTransfer],
   )
 
   return <MoneyTransactionContext.Provider value={value}>{children}</MoneyTransactionContext.Provider>

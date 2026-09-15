@@ -1,4 +1,5 @@
 import { ClipboardList } from 'lucide-react'
+import { useCallback } from 'react'
 import { useDeliveryServiceOptions, useOrderSourceOptions, useOrderStatusOptions, useWarehouseOptions } from '@/api/hooks'
 import { AsyncSelectNew } from '@/components/AsyncSelectNew'
 import {
@@ -10,7 +11,7 @@ import {
   FormMessage,
   Separator,
 } from '@/components/ui'
-import { useLocale } from '@/utils/hooks'
+import { useEntityIdsWithCapability, useLocale } from '@/utils/hooks'
 import { OrderCommentSection } from '../../components/OrderCommentSection'
 import { OrderDeliverySection } from '../../components/OrderDeliverySection'
 import { ORDER_INFORMATION_FORM_ID } from '../../components/OrderSidebar'
@@ -21,6 +22,17 @@ export function InformationForm() {
   const { isLoading, informationForm, createOrder } = useCreateOrderContext()
 
   const loadWarehouseOptions = useWarehouseOptions()
+  const sellWarehouseIds = useEntityIdsWithCapability('warehouses', 'sell')
+  const loadSellWarehouseOptions = useCallback(
+    async (params?: { query?: string, selectedValue?: string[] }) => {
+      const options = await loadWarehouseOptions(params)
+      if (sellWarehouseIds == null)
+        return options
+      const allowed = new Set(sellWarehouseIds)
+      return options.filter(option => allowed.has(option.id))
+    },
+    [loadWarehouseOptions, sellWarehouseIds],
+  )
   const loadOrderSourceOptions = useOrderSourceOptions()
   const loadOrderStatusOptions = useOrderStatusOptions({ defaultFilters: { isSelectable: true } })
   const loadDeliveryServiceOptions = useDeliveryServiceOptions()
@@ -53,7 +65,7 @@ export function InformationForm() {
                   <FormControl>
                     <AsyncSelectNew
                       {...field}
-                      loadOptions={loadWarehouseOptions}
+                      loadOptions={loadSellWarehouseOptions}
                       renderOption={e => e.names[language]}
                       getDisplayValue={e => e.names[language]}
                       getOptionValue={e => e.id}

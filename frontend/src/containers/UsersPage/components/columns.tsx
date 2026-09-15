@@ -10,8 +10,10 @@ import {
   Copy,
   Pencil,
   Trash,
+  UserRound,
 } from 'lucide-react'
 import { useMemo } from 'react'
+import { Link } from 'react-router-dom'
 import { TableActionDropdown } from '@/components'
 import { Badge, Button } from '@/components/ui'
 
@@ -57,6 +59,13 @@ export function useColumns() {
           const item = row.original
 
           const actions = [
+            {
+              permission: ['userProfile.read', 'userProfile.readAll', 'userProfile.edit', 'other.admin'],
+              type: 'link' as const,
+              link: `/profile/${item.id}`,
+              label: t('page.users.table.profile'),
+              icon: <UserRound className="h-4 w-4" />,
+            },
             {
               permission: 'user.copy',
               onClick: async () => navigator.clipboard.writeText(item.id),
@@ -104,6 +113,14 @@ export function useColumns() {
           defaultVisible: true,
         },
         header: ({ column }) => sortHeader(column, t('page.users.table.name')),
+        cell: ({ row }) => (
+          <Link
+            to={`/profile/${row.original.id}`}
+            className="font-medium text-primary hover:underline"
+          >
+            {row.original.name}
+          </Link>
+        ),
       }),
       columnHelper.accessor('login', {
         id: 'login',

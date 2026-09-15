@@ -1,10 +1,14 @@
 import type {
+  CancelMoneyTransactionRequest,
+  CancelMoneyTransactionResponse,
   CreateMoneyTransactionRequest,
   CreateMoneyTransactionResponse,
   CreateMoneyTransactionTransferRequest,
   CreateMoneyTransactionTransferResponse,
   GetMoneyTransactionsRequest,
   GetMoneyTransactionsResponse,
+  ReceiveMoneyTransactionRequest,
+  ReceiveMoneyTransactionResponse,
 } from '@remnant/shared'
 import { api } from '@/api/instance'
 
@@ -18,4 +22,12 @@ export async function createMoneyTransaction(params: CreateMoneyTransactionReque
 
 export async function createMoneyTransfer(params: CreateMoneyTransactionTransferRequest) {
   return api.post<CreateMoneyTransactionTransferResponse>('money-transactions/create-transfer', { ...params })
+}
+
+export async function receiveMoneyTransfer(params: ReceiveMoneyTransactionRequest) {
+  return api.post<ReceiveMoneyTransactionResponse>('money-transactions/receive', { ...params })
+}
+
+export async function cancelMoneyTransfer(params: CancelMoneyTransactionRequest) {
+  return api.post<CancelMoneyTransactionResponse>('money-transactions/cancel', { ...params })
 }

@@ -11,10 +11,11 @@ import type {
   GetCashregistersPayload,
   RemoveCashregistersPayload,
 } from '@/types'
+import { accountHasCapability } from '@remnant/shared'
 import { mapCashregisterToDTO } from '@/mappers/'
 import * as cashregisterRepo from '@/repositories/cashregisters.repo'
 import * as UserAccessRepo from '@/repositories/user-access.repo'
-import { getScopeIdsForUser, HttpError } from '@/utils/'
+import { getEntityIdsForUser, HttpError } from '@/utils/'
 
 export async function get({
   payload,
@@ -24,16 +25,37 @@ export async function get({
   user: AuthUser
 }): Promise<GetCashregistersResponse> {
   const access = await UserAccessRepo.getScopesByUserId(user.id)
-  const scopeIds = getScopeIdsForUser(access, 'cashregisterIds', user)
+  const scopeIds = getEntityIdsForUser(access, 'cashregisters', user)
+  const isAdmin = user.permissions.includes('other.admin')
 
   const { items, total, page, pageSize } = await cashregisterRepo.list(payload, { scopeIds })
+
+  const maskedItems = items.map((item) => {
+    if (isAdmin)
+      return item
+
+    return {
+      ...item,
+      accounts: item.accounts
+        .filter((account) => {
+          const entry = access.cashregisters.find(cr => cr.id === item.id)
+          return entry?.accounts.some(a => a.id === account.id) ?? false
+        })
+        .map(account => ({
+          ...account,
+          currencies: accountHasCapability(access.cashregisters, account.id, 'viewBalance')
+            ? account.currencies
+            : [],
+        })),
+    }
+  })
 
   return {
     status: 'success',
     code: 'CASHREGISTERS_FETCHED',
     message: 'Cashregisters fetched',
     data: {
-      items,
+      items: maskedItems,
       pagination: { page, pageSize, total },
     },
   }

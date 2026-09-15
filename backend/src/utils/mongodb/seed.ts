@@ -1561,67 +1561,75 @@ async function createProductStockStatuses() {
 async function createCashregisters() {
   const { data: { items: currencies } } = await CurrencyService.get({ payload: parseGetCurrency({}) })
 
-  const cashAccount = await CashregisterAccountService.create({
-    payload: {
-      names: {
-        en: 'Cash',
-        ru: 'Наличные',
-      },
-      active: true,
-      priority: 1,
-      currencyIds: [currencies[0].id],
-    },
-  })
+  const registers = [
+    { en: 'Cash Register 1', ru: 'Касса 1', priority: 1 },
+    { en: 'Cash Register 2', ru: 'Касса 2', priority: 2 },
+    { en: 'Cash Register 3', ru: 'Касса 3', priority: 3 },
+  ]
 
-  const cardAccount = await CashregisterAccountService.create({
-    payload: {
-      names: {
-        en: 'Card',
-        ru: 'Карта',
-      },
-      active: true,
-      priority: 1,
-      currencyIds: [currencies[0].id, currencies[1].id],
-    },
-  })
+  for (const [index, register] of registers.entries()) {
+    const n = index + 1
 
-  await CashregisterService.create({
-    payload: {
-      names: {
-        en: 'Cash Register',
-        ru: 'Касса',
+    const cashAccount = await CashregisterAccountService.create({
+      payload: {
+        names: {
+          en: `Cash ${n}`,
+          ru: `Наличные ${n}`,
+        },
+        active: true,
+        priority: 1,
+        currencyIds: [currencies[0].id],
       },
-      active: true,
-      priority: 1,
-      accountIds: [cashAccount.data.id, cardAccount.data.id],
-    },
-  })
+    })
+
+    const cardAccount = await CashregisterAccountService.create({
+      payload: {
+        names: {
+          en: `Card ${n}`,
+          ru: `Карта ${n}`,
+        },
+        active: true,
+        priority: 2,
+        currencyIds: [currencies[0].id, currencies[1].id],
+      },
+    })
+
+    await CashregisterService.create({
+      payload: {
+        names: {
+          en: register.en,
+          ru: register.ru,
+        },
+        active: true,
+        priority: register.priority,
+        accountIds: [cashAccount.data.id, cardAccount.data.id],
+      },
+    })
+  }
 }
 
 async function createWarehouses() {
-  const { data: warehouse1 } = await WarehouseService.create({
-    payload: {
-      names: {
-        en: 'Warehouse 1',
-        ru: 'Склад 1',
-      },
-      priority: 1,
-      active: true,
-    },
-  })
+  const warehouses = await Promise.all(
+    [1, 2, 3, 4].map(n =>
+      WarehouseService.create({
+        payload: {
+          names: {
+            en: `Warehouse ${n}`,
+            ru: `Склад ${n}`,
+          },
+          priority: n,
+          active: true,
+        },
+      }),
+    ),
+  )
 
-  const { data: warehouse2 } = await WarehouseService.create({
-    payload: {
-      names: {
-        en: 'Warehouse 2',
-        ru: 'Склад 2',
-      },
-      priority: 2,
-      active: true,
-    },
-  })
-
-  return { warehouse1, warehouse2 }
+  return {
+    warehouse1: warehouses[0].data,
+    warehouse2: warehouses[1].data,
+    warehouse3: warehouses[2].data,
+    warehouse4: warehouses[3].data,
+  }
 }
 
 async function createUserRoles() {
@@ -1692,6 +1700,9 @@ async function createUserRoles() {
       'deliveryService.read',
       'expenseCategory.read',
       'site.read',
+      'userProfile.page',
+      'userProfile.read',
+      'workShift.start',
     ],
   })
 
@@ -1699,8 +1710,8 @@ async function createUserRoles() {
     name: 'Admin',
     login: 'admin',
     access: {
-      warehouseIds: [],
-      cashregisterIds: [],
+      warehouses: [],
+      cashregisters: [],
       siteIds: [],
       expenseCategoryIds: [],
       cashregisterAccountIds: [],
@@ -1718,8 +1729,8 @@ async function createUserRoles() {
     login: 'manager',
     password: 'manager',
     access: {
-      warehouseIds: [],
-      cashregisterIds: [],
+      warehouses: [],
+      cashregisters: [],
       siteIds: [],
       expenseCategoryIds: [],
       cashregisterAccountIds: [],

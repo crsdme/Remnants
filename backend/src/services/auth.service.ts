@@ -1,8 +1,10 @@
 import type { LoginResponse, RefreshResponse } from '@remnant/shared'
 import type { LoginPayload, RefreshPayload, TokenPayload } from '@/types'
+import { emptyUserAccessScopes } from '@remnant/shared'
 import bcrypt from 'bcrypt'
 import dotenv from 'dotenv'
 import jwt from 'jsonwebtoken'
+import * as UserAccessRepo from '@/repositories/user-access.repo'
 import * as UserRepository from '@/repositories/users.repo'
 import * as SettingsService from '@/services/setting.service'
 import { HttpError } from '@/utils/'
@@ -36,6 +38,8 @@ export async function login(payload: LoginPayload): Promise<LoginResponse> {
     throw new HttpError(400, 'Invalid password', 'INVALID_CREDENTIALS')
   }
 
+  const access = await UserAccessRepo.getScopesByUserId(user._id)
+
   const accessToken = generateAccessToken({
     id: user._id,
     login: user.login,
@@ -61,6 +65,7 @@ export async function login(payload: LoginPayload): Promise<LoginResponse> {
       login: user.login,
       name: user.name,
       permissions: user.role.permissions,
+      access,
       settings: mappedSettings,
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
@@ -71,14 +76,23 @@ export async function login(payload: LoginPayload): Promise<LoginResponse> {
 export async function refresh(payload: RefreshPayload): Promise<RefreshResponse> {
   const userData = jwt.verify(payload.refreshToken, JWT_SECRET) as TokenPayload
 
+  const user = await UserRepository.findById(userData.id)
+  if (!user) {
+    throw new HttpError(403, 'User not found', 'INVALID_CREDENTIALS')
+  }
+
+  const permissions = userData.permissions ?? []
+  const access = await UserAccessRepo.getScopesByUserId(userData.id)
+
   const accessToken = generateAccessToken({
     id: userData.id,
     login: userData.login,
-    permissions: userData.permissions,
+    permissions,
   })
 
   return {
     accessToken,
-    permissions: userData.permissions ?? [],
+    permissions,
+    access: access ?? emptyUserAccessScopes,
   }
 }

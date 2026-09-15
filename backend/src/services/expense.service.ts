@@ -19,7 +19,7 @@ import * as CurrencyRepo from '@/repositories/currencies.repo'
 import * as ExpenseRepo from '@/repositories/expense.repo'
 import * as UserAccessRepo from '@/repositories/user-access.repo'
 import * as MoneyTransactionService from '@/services/money-transaction.service'
-import { getScopeIdsForUser, HttpError } from '@/utils/'
+import { getAccountIdsWithCapabilityForUser, getEntityIdsWithCapabilityForUser, getScopeIdsForUser, HttpError } from '@/utils/'
 import { fromMinor, toMinor } from '@/utils/money'
 
 export async function get({
@@ -33,8 +33,8 @@ export async function get({
 
   const { items, total, page, pageSize } = await ExpenseRepo.list(payload, {
     categoryIds: getScopeIdsForUser(access, 'expenseCategoryIds', user),
-    cashregisterIds: getScopeIdsForUser(access, 'cashregisterIds', user),
-    cashregisterAccountIds: getScopeIdsForUser(access, 'cashregisterAccountIds', user),
+    cashregisterIds: getEntityIdsWithCapabilityForUser(access, 'cashregisters', 'viewExpenses', user),
+    cashregisterAccountIds: getAccountIdsWithCapabilityForUser(access, 'viewExpenses', user),
   })
 
   return {

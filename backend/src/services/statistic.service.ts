@@ -10,6 +10,7 @@ import type {
   StatisticsDTO,
 } from '@remnant/shared'
 import { toMinorType } from '@remnant/shared'
+import * as UserAccessRepo from '@/repositories/user-access.repo'
 import * as ExpenseService from '@/services/expense.service'
 import * as OrderPaymentService from '@/services/order-payment.service'
 import * as OrderStatusService from '@/services/order-status.service'
@@ -22,6 +23,7 @@ import {
   parseGetOrders,
   parseGetOrderStatuses,
 } from '@/types'
+import { getAccountIdsWithCapabilityForUser, getEntityIdsWithCapabilityForUser } from '@/utils'
 import { fromMinor, toMinor } from '@/utils/money'
 
 type CurrencySnippet = StatisticMoneyDTO['currency']
@@ -117,12 +119,13 @@ function eachDayKeys(from?: Date, to?: Date): string[] {
 
 function matchesCashFilters(
   payment: { cashregister?: { id: string }, cashregisterAccount?: { id: string } },
-  cashregisterIds: string[],
-  cashregisterAccountIds: string[],
+  cashregisterIds: string[] | null,
+  cashregisterAccountIds: string[] | null,
 ) {
-  if (cashregisterIds.length > 0 && !cashregisterIds.includes(payment.cashregister?.id ?? ''))
+  // null = unrestricted (admin); [] = no access
+  if (cashregisterIds != null && !cashregisterIds.includes(payment.cashregister?.id ?? ''))
     return false
-  if (cashregisterAccountIds.length > 0 && !cashregisterAccountIds.includes(payment.cashregisterAccount?.id ?? ''))
+  if (cashregisterAccountIds != null && !cashregisterAccountIds.includes(payment.cashregisterAccount?.id ?? ''))
     return false
   return true
 }
@@ -142,8 +145,22 @@ export async function get({
   payload: GetOrderStatisticPayload
   user: AuthUser
 }): Promise<GetStatisticResponse> {
-  const { date, cashregister = [], cashregisterAccount = [] } = payload.filters ?? {}
+  const { date, cashregister: requestedCashregisters = [], cashregisterAccount = [] } = payload.filters ?? {}
   const hasProfitPermission = await UserService.checkPermission('order.profit', user.id)
+
+  const access = await UserAccessRepo.getScopesByUserId(user.id)
+  const allowedCashregisters = getEntityIdsWithCapabilityForUser(access, 'cashregisters', 'viewStatistic', user)
+  const allowedAccounts = getAccountIdsWithCapabilityForUser(access, 'viewStatistic', user)
+  const cashregister: string[] | null = allowedCashregisters == null
+    ? (requestedCashregisters.length > 0 ? requestedCashregisters : null)
+    : requestedCashregisters.length > 0
+      ? requestedCashregisters.filter(id => allowedCashregisters.includes(id))
+      : allowedCashregisters
+  const scopedAccounts: string[] | null = allowedAccounts == null
+    ? (cashregisterAccount.length > 0 ? cashregisterAccount : null)
+    : cashregisterAccount.length > 0
+      ? cashregisterAccount.filter(id => allowedAccounts.includes(id))
+      : allowedAccounts
 
   const [
     { data: { items: statuses } },
@@ -230,11 +247,11 @@ export async function get({
     const statusId = orderStatusByOrderId.get(payment.order)
     if (statusId === undefined || !countedStatusIds.has(statusId))
       return false
-    return matchesCashFilters(payment, cashregister, cashregisterAccount)
+    return matchesCashFilters(payment, cashregister, scopedAccounts)
   })
 
   const expenses = expensesRaw.filter(e =>
-    matchesCashFilters(e, cashregister, cashregisterAccount),
+    matchesCashFilters(e, cashregister, scopedAccounts),
   )
 
   const turnoverMap: MoneyMap = {}

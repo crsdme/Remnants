@@ -1,7 +1,35 @@
-import type { AuthUser, UserAccessScopeKey, UserAccessScopesDTO } from '@remnant/shared'
+import type {
+  AuthUser,
+  CashregisterCapability,
+  EntityAccessKind,
+  UserAccessIdScopeKey,
+  UserAccessScopesDTO,
+  WarehouseCapability,
+} from '@remnant/shared'
 import type { MongoQuery } from '@/utils/queryBuilder'
-import { emptyUserAccessScopes } from '@remnant/shared'
+import {
+  accountHasCapability as accountHasCapabilityShared,
+  emptyUserAccessScopes,
+  entityHasCapability,
+  getAccountIdsWithCapability as getAccountIdsWithCapShared,
+  getCashregisterIdsWithAccountCapability as getCashregisterIdsWithAccountCapShared,
+  getEntityAccessIds,
+  getEntityIdsWithCapability as getIdsWithCapFromEntries,
+} from '@remnant/shared'
 import { HttpError } from '@/utils/httpError'
+
+type EntityCapability = CashregisterCapability | WarehouseCapability
+type AccountCapability = CashregisterCapability
+
+function isAdminUser(user: Pick<AuthUser, 'permissions'> | { isAdmin?: boolean } | undefined): boolean {
+  if (!user)
+    return false
+  if ('isAdmin' in user && user.isAdmin)
+    return true
+  if ('permissions' in user && Array.isArray(user.permissions))
+    return user.permissions.includes('other.admin')
+  return false
+}
 
 /**
  * Empty array = no access.
@@ -10,7 +38,7 @@ import { HttpError } from '@/utils/httpError'
  */
 export function hasScopeAccess(
   access: UserAccessScopesDTO | null | undefined,
-  scope: UserAccessScopeKey,
+  scope: UserAccessIdScopeKey,
   resourceId: string | null | undefined,
   options: { isAdmin?: boolean } = {},
 ): boolean {
@@ -26,7 +54,7 @@ export function hasScopeAccess(
 
 export function assertScopeAccess(
   access: UserAccessScopesDTO | null | undefined,
-  scope: UserAccessScopeKey,
+  scope: UserAccessIdScopeKey,
   resourceId: string | null | undefined,
   options: { isAdmin?: boolean } = {},
 ): void {
@@ -37,7 +65,7 @@ export function assertScopeAccess(
 
 export function getScopeIds(
   access: UserAccessScopesDTO | null | undefined,
-  scope: UserAccessScopeKey,
+  scope: UserAccessIdScopeKey,
   options: { isAdmin?: boolean } = {},
 ): string[] | null {
   if (options.isAdmin)
@@ -48,7 +76,7 @@ export function getScopeIds(
 
 export function getScopeIdsForUser(
   access: UserAccessScopesDTO | null | undefined,
-  scope: UserAccessScopeKey,
+  scope: UserAccessIdScopeKey,
   user: Pick<AuthUser, 'permissions'>,
 ): string[] | null {
   return getScopeIds(access, scope, {
@@ -56,10 +84,150 @@ export function getScopeIdsForUser(
   })
 }
 
+export function getEntityIds(
+  access: UserAccessScopesDTO | null | undefined,
+  kind: EntityAccessKind,
+  options: { isAdmin?: boolean } = {},
+): string[] | null {
+  if (options.isAdmin)
+    return null
+
+  return getEntityAccessIds(access?.[kind])
+}
+
+export function getEntityIdsForUser(
+  access: UserAccessScopesDTO | null | undefined,
+  kind: EntityAccessKind,
+  user: Pick<AuthUser, 'permissions'>,
+): string[] | null {
+  return getEntityIds(access, kind, {
+    isAdmin: isAdminUser(user),
+  })
+}
+
+export function hasEntityCapability(
+  access: UserAccessScopesDTO | null | undefined,
+  kind: EntityAccessKind,
+  entityId: string | null | undefined,
+  capability: EntityCapability,
+  options: { isAdmin?: boolean } = {},
+): boolean {
+  if (options.isAdmin)
+    return true
+
+  if (kind === 'cashregisters') {
+    return getCashregisterIdsWithAccountCapShared(access?.cashregisters, capability).includes(entityId ?? '')
+  }
+
+  return entityHasCapability(access?.[kind], entityId, capability)
+}
+
+export function assertEntityCapability(
+  access: UserAccessScopesDTO | null | undefined,
+  kind: EntityAccessKind,
+  entityId: string | null | undefined,
+  capability: EntityCapability,
+  options: { isAdmin?: boolean } = {},
+): void {
+  if (!hasEntityCapability(access, kind, entityId, capability, options)) {
+    throw new HttpError(403, 'Access to resource denied', 'SCOPE_DENIED')
+  }
+}
+
+export function getEntityIdsWithCapability(
+  access: UserAccessScopesDTO | null | undefined,
+  kind: EntityAccessKind,
+  capability: EntityCapability,
+  options: { isAdmin?: boolean } = {},
+): string[] | null {
+  if (options.isAdmin)
+    return null
+
+  if (kind === 'cashregisters') {
+    return getCashregisterIdsWithAccountCapShared(access?.cashregisters, capability)
+  }
+
+  return getIdsWithCapFromEntries(access?.[kind], capability)
+}
+
+export function getEntityIdsWithCapabilityForUser(
+  access: UserAccessScopesDTO | null | undefined,
+  kind: EntityAccessKind,
+  capability: EntityCapability,
+  user: Pick<AuthUser, 'permissions'>,
+): string[] | null {
+  return getEntityIdsWithCapability(access, kind, capability, {
+    isAdmin: isAdminUser(user),
+  })
+}
+
+export function hasAccountCapability(
+  access: UserAccessScopesDTO | null | undefined,
+  accountId: string | null | undefined,
+  capability: AccountCapability,
+  options: { isAdmin?: boolean } = {},
+): boolean {
+  if (options.isAdmin)
+    return true
+
+  return accountHasCapabilityShared(access?.cashregisters, accountId, capability)
+}
+
+export function assertAccountCapability(
+  access: UserAccessScopesDTO | null | undefined,
+  accountId: string | null | undefined,
+  capability: AccountCapability,
+  options: { isAdmin?: boolean } = {},
+): void {
+  if (!hasAccountCapability(access, accountId, capability, options)) {
+    throw new HttpError(403, 'Access to resource denied', 'SCOPE_DENIED')
+  }
+}
+
+export function getAccountIdsWithCapability(
+  access: UserAccessScopesDTO | null | undefined,
+  capability: AccountCapability,
+  options: { isAdmin?: boolean } = {},
+): string[] | null {
+  if (options.isAdmin)
+    return null
+
+  return getAccountIdsWithCapShared(access?.cashregisters, capability)
+}
+
+export function getAccountIdsWithCapabilityForUser(
+  access: UserAccessScopesDTO | null | undefined,
+  capability: AccountCapability,
+  user: Pick<AuthUser, 'permissions'>,
+): string[] | null {
+  return getAccountIdsWithCapability(access, capability, {
+    isAdmin: isAdminUser(user),
+  })
+}
+
+export function assertEntityInAccess(
+  access: UserAccessScopesDTO | null | undefined,
+  kind: EntityAccessKind,
+  entityId: string | null | undefined,
+  options: { isAdmin?: boolean } = {},
+): void {
+  if (options.isAdmin)
+    return
+
+  if (entityId == null || entityId === '') {
+    throw new HttpError(403, 'Access to resource denied', 'SCOPE_DENIED')
+  }
+
+  const ids = getEntityAccessIds(access?.[kind])
+  if (!ids.includes(entityId)) {
+    throw new HttpError(403, 'Access to resource denied', 'SCOPE_DENIED')
+  }
+}
+
 /** Returns Mongo `$in` filter, or `undefined` when admin (no restriction). */
 export function getScopeMongoFilter(
   access: UserAccessScopesDTO | null | undefined,
-  scope: UserAccessScopeKey,
+  scope: UserAccessIdScopeKey,
   options: { isAdmin?: boolean } = {},
 ): { $in: string[] } | undefined {
   const ids = getScopeIds(access, scope, options)
@@ -133,7 +301,7 @@ function getExistingInFilter(value: unknown): string[] | null {
 
 export function filterIdsByScope(
   access: UserAccessScopesDTO | null | undefined,
-  scope: UserAccessScopeKey,
+  scope: UserAccessIdScopeKey,
   resourceIds: string[],
   options: { isAdmin?: boolean } = {},
 ): string[] {

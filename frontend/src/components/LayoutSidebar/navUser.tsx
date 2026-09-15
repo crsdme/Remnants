@@ -1,4 +1,5 @@
-import { ChevronsUpDown, LogOut } from 'lucide-react'
+import { ChevronsUpDown, LogOut, UserRound } from 'lucide-react'
+import { Link } from 'react-router-dom'
 
 import {
   Avatar,
@@ -64,6 +65,14 @@ export function NavUser({ user }: { user: any }) {
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
+            {authContext.permissions?.some(p => p === 'userProfile.page' || p === 'userProfile.read' || p === 'other.admin') && (
+              <DropdownMenuItem asChild>
+                <Link to="/profile">
+                  <UserRound />
+                  {t('component.sidemenu.label.profile')}
+                </Link>
+              </DropdownMenuItem>
+            )}
             <DropdownMenuItem onClick={() => authContext.logout()}>
               <LogOut />
               {t('component.sidemenu.label.logout')}
