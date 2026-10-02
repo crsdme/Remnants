@@ -72,7 +72,7 @@ export function DataTable() {
             ? <span className="text-muted-foreground">{t('page.balances.detail.empty')}</span>
             : (currentBalance?.totalBalances ?? []).map((row) => {
                 const currency = currencies.find(item => item.id === row.currencyId)
-                const symbol = currency?.symbols?.[language as 'en' | 'ru'] ?? currency?.symbols?.en ?? ''
+                const symbol = currency?.symbols?.[language] ?? currency?.symbols?.en ?? ''
                 return (
                   <div key={row.currencyId} className="font-medium">
                     {fromMinor(Number(row.minorAmount) || 0, currency?.scale ?? 2)}

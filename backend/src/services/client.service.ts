@@ -1,4 +1,5 @@
 import type {
+  AuthUser,
   CreateClientResponse,
   EditClientResponse,
   GetClientsResponse,
@@ -6,7 +7,6 @@ import type {
   RemoveClientsResponse,
 } from '@remnant/shared'
 import type {
-  AuthUser,
   CreateClientPayload,
   EditClientPayload,
   GetClientsPayload,
@@ -101,8 +101,10 @@ export async function pay({
     throw new HttpError(400, 'Currency not found', 'CURRENCY_NOT_FOUND')
 
   if (payload.amount !== undefined) {
-    if (!payload.cashregister || !payload.account)
+    if (payload.cashregister == null || payload.cashregister === ''
+      || payload.account == null || payload.account === '') {
       throw new HttpError(400, 'Cashregister and account are required', 'CLIENT_PAYMENT_ACCOUNT_REQUIRED')
+    }
 
     await MoneyTransactionService.createTransaction({
       payload: {

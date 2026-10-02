@@ -17,7 +17,7 @@ export interface IndexSpec {
 export async function ensureIndexes(
   collection: Collection<Document>,
   indexes: IndexSpec[],
-  log: (message: string) => void,
+  log: (__message: string) => void,
 ): Promise<void> {
   for (const index of indexes) {
     await collection.createIndex(index.key, index.options)
@@ -54,7 +54,7 @@ export function toMinorSafe(amount: unknown, scale: number): number | null {
 export async function renameFields(
   collection: Collection<Document>,
   renames: Record<string, string>,
-  log: (message: string) => void,
+  log: (__message: string) => void,
 ): Promise<void> {
   for (const [from, to] of Object.entries(renames)) {
     const renamed = await collection.updateMany(
@@ -75,7 +75,7 @@ export async function setDefaultWhereMissing(
   collection: Collection<Document>,
   field: string,
   value: unknown,
-  log: (message: string) => void,
+  log: (__message: string) => void,
 ): Promise<void> {
   const result = await collection.updateMany(
     { [field]: { $exists: false } },
@@ -101,7 +101,7 @@ export async function convertMoneyFields(
   collection: Collection<Document>,
   scales: CurrencyScaleMap,
   fields: MoneyFieldSpec[],
-  log: (message: string) => void,
+  log: (__message: string) => void,
   batchSize = 500,
 ): Promise<void> {
   const orFilter = fields.map(f => ({
@@ -179,7 +179,7 @@ export async function backfillSeq(
   db: Db,
   collectionName: string,
   counterId: string,
-  log: (message: string) => void,
+  log: (__message: string) => void,
 ): Promise<void> {
   const collection = db.collection(collectionName)
   const docs = await collection

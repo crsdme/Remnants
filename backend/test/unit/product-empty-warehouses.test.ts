@@ -4,6 +4,7 @@ import { describe, expect, it, vi } from 'vitest'
 import * as ProductRepository from '@/repositories/products.repo'
 import * as UserAccessRepo from '@/repositories/user-access.repo'
 import * as ProductService from '@/services/product.service'
+import { toMinor } from '@/utils/money'
 
 vi.mock('@/repositories/user-access.repo', () => ({
   getScopesByUserId: vi.fn(),
@@ -43,7 +44,7 @@ describe('product get with empty warehouse access', () => {
         _id: 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
         seq: 1,
         names: { en: 'Product', ru: 'Товар' },
-        minorPrice: 100,
+        minorPrice: toMinor(100, 2),
         currency: {
           id: 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb',
           names: { en: 'USD', ru: 'USD' },
@@ -63,9 +64,7 @@ describe('product get with empty warehouse access', () => {
         },
         categories: [],
         productProperties: [],
-        barcodeIds: [],
-        quantityIds: [],
-        active: true,
+        barcodes: [],
         createdAt: new Date(),
         updatedAt: new Date(),
       }],
@@ -82,9 +81,12 @@ describe('product get with empty warehouse access', () => {
 
     const response = await ProductService.get({
       payload: {
-        filters: {},
-        pagination: { current: 1, pageSize: 20 },
-      } as any,
+        filters: {
+          language: 'en',
+        },
+        pagination: { current: 1, pageSize: 20, full: true },
+        sorters: {},
+      },
       user,
     })
 

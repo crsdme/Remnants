@@ -52,7 +52,7 @@ export const migration025CashregisterAccountCapabilities: Migration = {
       const nextCashregisters = rawCashregisters
         .map((entry) => {
           const cashregisterId = typeof entry.id === 'string' ? entry.id : null
-          if (!cashregisterId)
+          if (cashregisterId == null || cashregisterId === '')
             return null
 
           const existingAccounts = Array.isArray(entry.accounts)

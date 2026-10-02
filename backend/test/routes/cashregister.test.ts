@@ -1,13 +1,13 @@
-import { parseResponse } from 'test/helpers/parse-response'
-import { createCashregisterAccountResponseSchema, createCashregisterResponseSchema, createCurrencyResponseSchema, getCashregistersResponseSchema } from '@remnant/shared'
-import { afterEach, describe, expect, it } from 'vitest'
-import * as CashregisterAccountFactory from '../factories/cashregister-account.factory'
-import * as CashregisterFactory from '../factories/cashregister.factory'
-import * as CurrencyFactory from '../factories/currency.factory'
+// import { parseResponse } from 'test/helpers/parse-response'
+// import { createCashregisterAccountResponseSchema, createCashregisterResponseSchema, createCurrencyResponseSchema, getCashregistersResponseSchema } from '@remnant/shared'
+import { afterEach, describe, it } from 'vitest'
+// import * as CashregisterAccountFactory from '../factories/cashregister-account.factory'
+// import * as CashregisterFactory from '../factories/cashregister.factory'
+// import * as CurrencyFactory from '../factories/currency.factory'
 
 describe('cashregister API', () => {
   afterEach(async () => {
-    await CashregisterFactory.removeAll()
+    // await CashregisterFactory.removeAll()
   })
 
   describe('Get Cashregisters', () => {

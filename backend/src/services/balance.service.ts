@@ -9,7 +9,6 @@ import type {
 import type {
   CreateBalancesPayload,
   GetBalancesPayload,
-  GetCurrentBalancePayload,
   RemoveBalancesPayload,
 } from '@/types'
 import { mapBalanceComputed, mapBalanceToDTO } from '@/mappers/balance.mapper'
@@ -390,13 +389,7 @@ export async function get({ payload }: { payload: GetBalancesPayload }): Promise
   }
 }
 
-export async function getCurrent({
-  payload: _payload,
-  user: _user,
-}: {
-  payload: GetCurrentBalancePayload
-  user: AuthUser
-}): Promise<GetCurrentBalanceResponse> {
+export async function getCurrent(): Promise<GetCurrentBalanceResponse> {
   const data = await computeCompanyBalance()
 
   return {

@@ -32,10 +32,7 @@ export async function getCurrent(
   next: NextFunction,
 ) {
   try {
-    const serviceResponse = await BalanceService.getCurrent({
-      payload: req.validated.query,
-      user: req.user,
-    })
+    const serviceResponse = await BalanceService.getCurrent()
 
     res.status(200).json(serviceResponse)
   }

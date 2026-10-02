@@ -44,8 +44,10 @@ export const migration019OrderItemObjectIds: Migration = {
     let converted = 0
 
     for (const doc of legacy) {
-      const { _id, ...rest } = doc
-      await items.deleteOne({ _id })
+      const rest: Document = { ...doc }
+      delete rest._id
+      // eslint-disable-next-line ts/no-unsafe-assignment -- Mongo Document._id is any
+      await items.deleteOne({ _id: doc._id })
       await items.insertOne({ ...rest, _id: uuidv4() } as Document)
       converted += 1
     }

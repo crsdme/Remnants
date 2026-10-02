@@ -103,16 +103,20 @@ async function getPartySettlements(
     MoneyTransactionRepo.sumActiveMinorsBySource(kind === 'supplier' ? 'procurement' : 'order', documentIds),
     PaymentApplicationRepo.sumActiveMinorsByDocumentIds(documentIds),
   ])
-  const documentPartyId = new Map(documents.map(item => [
-    String(item._id),
-    String(kind === 'supplier' ? item.supplierId : item.clientId),
-  ]))
+  const documentPartyId = new Map(documents.map((item) => {
+    const partyId = kind === 'supplier'
+      ? String((item as { supplierId: string }).supplierId)
+      : String((item as { clientId: string }).clientId)
+    return [String(item._id), partyId] as const
+  }))
   const openIds = new Set(
     documents
       .filter((item) => {
-        if (kind === 'supplier')
-          return item.paymentStatus !== 'paid' && item.status !== 'cancelled'
-        return item.orderPaymentStatus !== 'paid'
+        if (kind === 'supplier') {
+          const row = item as { paymentStatus?: string, status?: string }
+          return row.paymentStatus !== 'paid' && row.status !== 'cancelled'
+        }
+        return (item as { orderPaymentStatus?: string }).orderPaymentStatus !== 'paid'
       })
       .map(item => String(item._id)),
   )
@@ -123,7 +127,9 @@ async function getPartySettlements(
   const allocatedMinors = new Map<string, Map<string, number>>()
 
   for (const row of openItems) {
-    const partyId = kind === 'supplier' ? String(row.supplierId) : String(row.clientId)
+    const partyId = kind === 'supplier'
+      ? String((row as { supplierId: string }).supplierId)
+      : String((row as { clientId: string }).clientId)
     addMinor(debtMinors, partyId, String(row.currencyId), Number(row.minorAmount) || 0)
   }
 

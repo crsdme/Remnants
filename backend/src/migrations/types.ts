@@ -7,16 +7,16 @@ export interface MigrationRecord {
 export interface MigrationStore {
   ensureReady: () => Promise<void>
   listApplied: () => Promise<MigrationRecord[]>
-  markApplied: (id: string, name: string) => Promise<void>
+  markApplied: (__id: string, __name: string) => Promise<void>
 }
 
 export interface MigrationContext {
   db: import('mongodb').Db
-  log: (message: string) => void
+  log: (__message: string) => void
 }
 
 export interface Migration {
   id: string
   name: string
-  up: (ctx: MigrationContext) => Promise<void>
+  up: (__ctx: MigrationContext) => Promise<void>
 }

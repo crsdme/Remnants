@@ -193,7 +193,7 @@ export async function syncProduct({ payload }: { payload: SyncSiteProductPayload
   if (link?.status !== 'synced') {
     throw new HttpError(
       502,
-      link?.lastError || 'Product sync failed',
+      link?.lastError != null && link.lastError !== '' ? link.lastError : 'Product sync failed',
       'SITE_SYNC_FAILED',
     )
   }

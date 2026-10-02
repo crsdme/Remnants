@@ -33,7 +33,7 @@ export function weightedMinorUnitCost(
 export async function weightedMinorUnitCostInCurrency(
   layers: Array<{ quantity: number, minorUnitCost: number, currencyId: string }>,
   saleCurrencyId: string,
-  convert: (amount: number, fromCurrencyId: string, toCurrencyId: string) => Promise<number>,
+  convert: (__amount: number, __fromCurrencyId: string, __toCurrencyId: string) => Promise<number>,
 ): Promise<number | null> {
   const totalQty = layers.reduce((sum, layer) => sum + layer.quantity, 0)
   if (totalQty <= 0)

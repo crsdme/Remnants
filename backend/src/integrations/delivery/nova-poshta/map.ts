@@ -25,11 +25,15 @@ interface NpWarehouse {
   TypeOfWarehouse?: string
 }
 
+function isNonEmpty(value: string | null | undefined): value is string {
+  return value != null && value !== ''
+}
+
 export function mapNpCity(raw: NpCity): DeliveryLocationDTO | null {
-  if (!raw.Ref || !raw.Description)
+  if (!isNonEmpty(raw.Ref) || !isNonEmpty(raw.Description))
     return null
 
-  const area = raw.AreaDescription ? `, ${raw.AreaDescription}` : ''
+  const area = isNonEmpty(raw.AreaDescription) ? `, ${raw.AreaDescription}` : ''
   return {
     id: raw.Ref,
     kind: 'city',
@@ -38,19 +42,21 @@ export function mapNpCity(raw: NpCity): DeliveryLocationDTO | null {
 }
 
 export function mapNpSettlementAddress(raw: NpSettlementAddress): DeliveryLocationDTO | null {
-  const id = raw.DeliveryCity || raw.Ref
-  if (!id)
+  const id = isNonEmpty(raw.DeliveryCity) ? raw.DeliveryCity : raw.Ref
+  if (!isNonEmpty(id))
     return null
 
   return {
     id,
     kind: 'city',
-    name: raw.Present || raw.MainDescription || id,
+    name: isNonEmpty(raw.Present)
+      ? raw.Present
+      : isNonEmpty(raw.MainDescription) ? raw.MainDescription : id,
   }
 }
 
 export function mapNpWarehouse(raw: NpWarehouse, kind: 'office' | 'parcel_locker'): DeliveryLocationDTO | null {
-  if (!raw.Ref || !raw.Description)
+  if (!isNonEmpty(raw.Ref) || !isNonEmpty(raw.Description))
     return null
 
   return {
@@ -62,8 +68,8 @@ export function mapNpWarehouse(raw: NpWarehouse, kind: 'office' | 'parcel_locker
 }
 
 export function isParcelLocker(raw: NpWarehouse): boolean {
-  const category = (raw.CategoryOfWarehouse || '').toLowerCase()
-  const description = (raw.Description || '').toLowerCase()
+  const category = (raw.CategoryOfWarehouse ?? '').toLowerCase()
+  const description = (raw.Description ?? '').toLowerCase()
   return category.includes('postomat')
     || category.includes('поштомат')
     || description.includes('поштомат')

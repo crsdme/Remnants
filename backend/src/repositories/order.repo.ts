@@ -821,7 +821,9 @@ export async function updateById({ id, payload, session }: { id: string, payload
 
 export async function updateOneItem({ payload, session }: { payload: EditOrderItemRepoPayload, session?: ClientSession }) {
   // Never $set _id/id — legacy order-items still use ObjectId-string ids and uuidValidator rejects them.
-  const { id, _id: _ignored, ...update } = payload as EditOrderItemRepoPayload & { _id?: string }
+  const { id, ...rest } = payload as EditOrderItemRepoPayload & { _id?: string }
+  const update = { ...rest }
+  delete update._id
 
   return OrderItemModel.findOneAndUpdate(
     { _id: id },

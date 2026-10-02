@@ -14,6 +14,9 @@ export function mapClientToDTO(client: ClientDB): ClientDTO {
     socials: client.socials,
     country: client.country,
     comment: client.comment,
+    debts: [],
+    payments: [],
+    balances: [],
     createdAt: client.createdAt,
     updatedAt: client.updatedAt,
   }

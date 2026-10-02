@@ -12,10 +12,10 @@ export const migration030OrderPaymentApplications: Migration = {
     const orders = db.collection('orders')
     const orderPayments = db.collection('order-payments')
 
-    const payments = await orderPayments.find({ removed: { $ne: true } } as Filter<Document>).toArray()
+    const payments = await orderPayments.find({ removed: { $ne: true } } as unknown as Filter<Document>).toArray()
     const orderIds = [...new Set(payments.map(row => String(row.orderId ?? '')).filter(Boolean))]
     const orderDocs = orderIds.length > 0
-      ? await orders.find({ _id: { $in: orderIds } } as Filter<Document>, { projection: { _id: 1, clientId: 1 } }).toArray()
+      ? await orders.find({ _id: { $in: orderIds } } as unknown as Filter<Document>, { projection: { _id: 1, clientId: 1 } }).toArray()
       : []
     const clientByOrder = new Map(orderDocs.map(row => [String(row._id), String(row.clientId ?? '')]))
 
@@ -44,7 +44,7 @@ export const migration030OrderPaymentApplications: Migration = {
           direction: 'in',
           cancelled: { $ne: true },
           _id: { $nin: [...usedTxIds] },
-        } as Filter<Document>)
+        } as unknown as Filter<Document>)
         moneyTransactionId = match ? String(match._id) : null
       }
 
@@ -77,12 +77,12 @@ export const migration030OrderPaymentApplications: Migration = {
 
     const retargetOrders = await orders.find({
       clientId: { $exists: true, $nin: [null, ''] },
-    } as Filter<Document>, { projection: { _id: 1, clientId: 1 } }).toArray()
+    } as unknown as Filter<Document>, { projection: { _id: 1, clientId: 1 } }).toArray()
 
     let retargeted = 0
     for (const order of retargetOrders) {
       const result = await txs.updateMany(
-        { sourceModel: 'order', sourceId: String(order._id) } as Filter<Document>,
+        { sourceModel: 'order', sourceId: String(order._id) } as unknown as Filter<Document>,
         { $set: { sourceModel: 'client', sourceId: String(order.clientId) } },
       )
       retargeted += result.modifiedCount

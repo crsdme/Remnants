@@ -33,8 +33,8 @@ import * as UserAccessRepo from '@/repositories/user-access.repo'
 import * as WarehouseTransactionRepo from '@/repositories/warehouse-transaction.repo'
 import * as BarcodeService from '@/services/barcode.service'
 import * as MoneyTransactionService from '@/services/money-transaction.service'
-import * as StockLedger from '@/services/stock-ledger.service'
 import * as Settlement from '@/services/settlement.service'
+import * as StockLedger from '@/services/stock-ledger.service'
 import { parseGetBarcodes } from '@/types/'
 import { assertEntityInAccess, HttpError } from '@/utils/'
 import { toMinor } from '@/utils/money'
@@ -247,8 +247,10 @@ export async function pay({ payload, user }: { payload: PayProcurementPayload, u
   await Settlement.allocateCreditToProcurement(payload.procurementId, payload.currency)
 
   if (payload.amount !== undefined) {
-    if (!payload.cashregister || !payload.account)
+    if (payload.cashregister == null || payload.cashregister === ''
+      || payload.account == null || payload.account === '') {
       throw new HttpError(400, 'Cashregister and account are required', 'PROCUREMENT_PAYMENT_ACCOUNT_REQUIRED')
+    }
 
     await MoneyTransactionService.createTransaction({
       payload: {
@@ -327,8 +329,10 @@ export async function paySupplier({
     throw new HttpError(400, 'Currency not found', 'CURRENCY_NOT_FOUND')
 
   if (payload.amount !== undefined) {
-    if (!payload.cashregister || !payload.account)
+    if (payload.cashregister == null || payload.cashregister === ''
+      || payload.account == null || payload.account === '') {
       throw new HttpError(400, 'Cashregister and account are required', 'PROCUREMENT_PAYMENT_ACCOUNT_REQUIRED')
+    }
 
     await MoneyTransactionService.createTransaction({
       payload: {
