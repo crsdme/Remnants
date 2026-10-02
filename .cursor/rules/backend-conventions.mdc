@@ -1,56 +1,53 @@
 ---
-description: Remnants backend — нейминг типов, роуты, слои, Zod shared vs backend.
+description: Remnants backend — naming, routes, layers, Zod, tests, transactions.
 globs: backend/**/*.ts
 alwaysApply: false
 ---
 
-# Backend — соглашения
+# Backend conventions
 
-## Нейминг файлов и символов
+## References
 
-- **Файлы** сущности — единственное число: `product.service.ts`, `order-status.route.ts`.
-- **Типы/функции** — часто множественное: `GetProductsPayload`, `parseGetProductStockStatuses`.
+- Simple: `unit.route` → controller → service → mapper → repo
+- Scoped: `expense-category.*` (`UserAccessRepo` + `getScopeIdsForUser`)
+- Tx: `expense.service` create/edit/remove (`withTransaction`)
+- TRY NOT TO copy: `order.service`, `statistic.service`, `site.service`
 
-## Типы по слоям
+## Naming
 
-| Суффикс | Смысл |
-|---------|--------|
-| `*Query` | `z.input` схемы (сырой вход до coerce) — если нужен |
-| `*Payload` | `z.output` схемы (после parse) — основной вход service/controller |
-| `*Response` | ответ API с DTO (`ResponseList` / `ResponseItem` / …) |
-| `*RepoPayload` | вход repository |
-| `*RepoResult` | выход repository |
-| `*DB` | документ/форма в БД (`z.infer` DB-схемы) |
-| `*DTO` | клиентский DTO из `@remnant/shared` |
+- Files singular: `product.service.ts`, `order-status.route.ts`
+- Types often plural: `GetProductsPayload`, `parseGetProductStockStatuses`
+- Parsers: `parseCreateX(x) => createXSchema.parse(x)`
 
-Пример: `GetProductStockStatusesPayload`, `GetProductStockStatusesRepoResult`, `ProductStockStatusDB`.
+Type suffixes: `*Query` (z.input) · `*Payload` (z.output, service input) · `*Response` · `*RepoPayload` / `*RepoResult` · `*DB` · `*DTO` (from `@remnant/shared`)
 
-Парсеры рядом с типами: `parseCreateX(x) => createXSchema.parse(x)`.
+## Routes
 
-## Роуты
+`api/<entity>/<method>` — typically `GET /get`, `POST /create|edit|remove`
 
-Паттерн: `api/<entity>/<method>`
+Order: `upload?` → validate → `checkPermissions` → `validateResponse` → controller
 
-Типичные методы: `GET /get`, `POST /create`, `POST /edit`, `POST /remove`.
+- Mutating routes: always `checkPermissions`
+- Controllers: no perm checks; pass `req.user` only when service needs scope/self ACL
 
-В роуте: `validateQueryRequest` / `validateBodyRequest` → `checkPermissions('entity.action')` → `validateResponse` → controller.
+## Layer ownership
 
-## Ответственность слоёв
+- **route:** wire path, Zod, perms, upload — no business logic
+- **controller:** `req.validated` (+ user/files) → one service call → JSON — no mappers, no domain ifs
+- **service:** rules, orchestration, `Response*`; call mappers; may decorate DTO after map
+- **mapper:** pure DB ↔ DTO only (`_id`→`id`, Maps, money boundary)
+- **repository:** DB only; optional `session?: DbSession`; no `Response*`
+- **utils:** shared pure helpers — grep before adding
 
-- **controller** — только `req.validated` → service → `res.json`; без бизнес-логики.
-- **service** — правила, оркестрация, формирование `Response*`.
-- **repository** — запросы к Mongo; без HTTP и без сборки API-ответа.
-- **mapper** — только преобразование DB ↔ DTO.
+## Guards / transactions
 
-## Zod: shared vs backend
+- NEVER re-validate Zod shape in service
+- Prefer one null-check after `updateById`/`removeById` for missing primary entity
+- DO null-check related lookups you use (e.g. currency for `scale`)
+- Multi-write → `withTransaction` + pass `session`; single-doc CRUD → no session
+- External I/O (files, HTTP) outside the transaction
 
-- Контракт API (request/response/DTO) — в `packages/shared`.
-- `backend/src/schemas` — DB-схемы и сервер-only валидация; **не дублировать** API-схемы без нужды.
-- Импорт контракта: `from '@remnant/shared'`.
+## Zod / tests
 
-## Тесты
-
-- Route/API: `backend/test/routes/<entity>.test.ts`
-- Factories: `backend/test/factories/<entity>.factory.ts`
-- Unit: `backend/test/unit/`
-- Новый CRUD — покрыть route-тест (happy path + validation/permissions по аналогии с соседними).
+- API schemas: `packages/shared`. DB/server-only: `backend/src/schemas`. Import: `from '@remnant/shared'`
+- Tests: `test/routes/<entity>.test.ts` + `test/factories/<entity>.factory.ts`; unit in `test/unit/`

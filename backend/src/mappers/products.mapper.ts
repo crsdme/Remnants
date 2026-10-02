@@ -35,7 +35,7 @@ export function mapProductPopulatedRepoToDTO(product: ProductDBPopulated): Produ
           },
         }
       : {}),
-    images: images.map(image => ({
+    images: (images ?? []).map(image => ({
       id: path.parse(image.filename).name,
       path: `${STORAGE_URLS.productImages}/${image.filename}`,
       filename: image.filename,

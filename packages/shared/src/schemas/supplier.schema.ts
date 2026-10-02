@@ -1,8 +1,20 @@
 import { z } from 'zod'
-import { dateRangeSchema, idSchema, paginationSchema, responseItemSchema, responseListSchema, responseSchema, sorterParamsSchema } from './common'
+import { dateRangeSchema, idSchema, languageStringSchema, numberFromStringSchema, paginationSchema, responseItemSchema, responseListSchema, responseSchema, sorterParamsSchema } from './common'
+
+export const supplierBalanceSchema = z.object({
+  currency: z.object({
+    id: idSchema,
+    names: languageStringSchema,
+    symbols: languageStringSchema,
+    scale: z.number().optional(),
+  }),
+  amount: z.number(),
+})
+export type SupplierBalanceDTO = z.output<typeof supplierBalanceSchema>
 
 export const supplierSchema = z.object({
   id: idSchema,
+  seq: z.number().optional().default(0),
   name: z.string(),
   emails: z.array(z.string().email()),
   phones: z.array(z.string().min(7)),
@@ -12,6 +24,9 @@ export const supplierSchema = z.object({
   })),
   comment: z.string().optional(),
   removed: z.boolean().optional().default(false),
+  debts: z.array(supplierBalanceSchema).optional().default([]),
+  payments: z.array(supplierBalanceSchema).optional().default([]),
+  balances: z.array(supplierBalanceSchema).optional().default([]),
   createdAt: z.coerce.date(),
   updatedAt: z.coerce.date(),
 })
@@ -21,6 +36,7 @@ export type SupplierDTO = z.output<typeof supplierSchema>
 export const getSuppliersSchema = z.object({
   filters: z.object({
     ids: z.array(idSchema).optional(),
+    seq: z.array(numberFromStringSchema).optional(),
     search: z.string().trim().optional(),
     emails: z.array(z.string()).optional(),
     phones: z.array(z.string()).optional(),
@@ -28,6 +44,7 @@ export const getSuppliersSchema = z.object({
     updatedAt: dateRangeSchema.optional(),
   }).optional().default({}),
   sorters: z.object({
+    seq: sorterParamsSchema.optional(),
     updatedAt: sorterParamsSchema.optional(),
     createdAt: sorterParamsSchema.optional(),
   }).optional().default({}),

@@ -6,6 +6,7 @@ import type {
   GetOrderDetailsPayload,
   GetOrderItemsPayload,
   GetOrdersPayload,
+  PayOrderPayload,
   PrintDraftInvoiceOrderPayload,
   PrintInvoiceOrderPayload,
   PrintOrderLabelOrderPayload,
@@ -240,6 +241,24 @@ export async function syncShipments(
 ) {
   try {
     const serviceResponse = await OrderService.syncShipments({
+      payload: req.validated.body,
+      user: req.user,
+    })
+
+    res.status(200).json(serviceResponse)
+  }
+  catch (err) {
+    next(err)
+  }
+}
+
+export async function pay(
+  req: ValidatedAuthedRequest<never, PayOrderPayload>,
+  res: Response,
+  next: NextFunction,
+) {
+  try {
+    const serviceResponse = await OrderService.payOrder({
       payload: req.validated.body,
       user: req.user,
     })

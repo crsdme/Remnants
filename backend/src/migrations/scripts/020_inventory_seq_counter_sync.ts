@@ -1,3 +1,4 @@
+import type { Document, Filter } from 'mongodb'
 import type { Migration } from '../types'
 
 /**
@@ -41,13 +42,13 @@ export const migration020InventorySeqCounterSync: Migration = {
 
       for (const doc of sorted.slice(1)) {
         nextSeq += 1
-        await inventories.updateOne({ _id: doc.id }, { $set: { seq: nextSeq } })
+        await inventories.updateOne({ _id: doc.id } as unknown as Filter<Document>, { $set: { seq: nextSeq } })
         log(`  renumbered ${doc.id}: ${dupe._id} → ${nextSeq}`)
       }
     }
 
     await counters.updateOne(
-      { _id: 'inventory' },
+      { _id: 'inventory' } as unknown as Filter<Document>,
       { $set: { seq: nextSeq } },
       { upsert: true },
     )

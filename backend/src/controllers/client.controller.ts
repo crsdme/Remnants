@@ -1,5 +1,5 @@
 import type { NextFunction, Response } from 'express'
-import type { CreateClientPayload, EditClientPayload, GetClientsPayload, RemoveClientsPayload, ValidatedRequest } from '@/types'
+import type { CreateClientPayload, EditClientPayload, GetClientsPayload, PayClientPayload, RemoveClientsPayload, ValidatedAuthedRequest, ValidatedRequest } from '@/types'
 import * as ClientService from '@/services/client.service'
 
 export async function get(
@@ -61,6 +61,24 @@ export async function remove(
   try {
     const serviceResponse = await ClientService.remove({
       payload: req.validated.body,
+    })
+
+    res.status(200).json(serviceResponse)
+  }
+  catch (err) {
+    next(err)
+  }
+}
+
+export async function pay(
+  req: ValidatedAuthedRequest<never, PayClientPayload>,
+  res: Response,
+  next: NextFunction,
+) {
+  try {
+    const serviceResponse = await ClientService.pay({
+      payload: req.validated.body,
+      user: req.user,
     })
 
     res.status(200).json(serviceResponse)

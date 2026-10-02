@@ -1,6 +1,6 @@
-import { flexRender, getCoreRowModel, getExpandedRowModel, useReactTable } from '@tanstack/react-table'
+import { flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table'
 
-import { Fragment, useState } from 'react'
+import { Fragment, useMemo, useState } from 'react'
 import { useProcurementQuery } from '@/api/hooks'
 import { ColumnVisibilityMenu, TablePagination } from '@/components'
 import { Skeleton, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui'
@@ -19,31 +19,30 @@ export function DataTable() {
     setSorting,
     filters,
     sorters,
-  } = useListQueryState({})
+  } = useListQueryState()
 
   const columns = useColumns()
 
-  const { procurementsCount, isLoading, isFetching } = useProcurementQuery(
-    { pagination, filters, sorters },
-    { options: { placeholderData: prevData => prevData } },
+  const queryParams = useMemo(
+    () => ({ pagination, filters, sorters }),
+    [pagination, filters, sorters],
   )
 
+  const { procurements, procurementsCount, isLoading, isFetching } = useProcurementQuery(queryParams)
+
   const table = useReactTable({
-    data: [],
+    data: procurements,
     columns,
     getCoreRowModel: getCoreRowModel(),
-    getExpandedRowModel: getExpandedRowModel(),
     onColumnVisibilityChange: setColumnVisibility,
     onSortingChange: setSorting,
     manualSorting: true,
+    manualPagination: true,
+    autoResetPageIndex: false,
     enableSortingRemoval: true,
     state: {
       sorting,
       columnVisibility,
-      pagination: {
-        pageIndex: pagination.current - 1,
-        pageSize: pagination.pageSize,
-      },
     },
   })
 
@@ -120,7 +119,7 @@ export function DataTable() {
     <>
       <div className="w-full flex justify-between items-start max-md:flex-col gap-2 py-2">
         <div className="flex gap-2">
-          <ColumnVisibilityMenu table={table} tableId="cashregister-account" />
+          <ColumnVisibilityMenu table={table} tableId="procurements" />
         </div>
       </div>
       <div className="border rounded-sm">

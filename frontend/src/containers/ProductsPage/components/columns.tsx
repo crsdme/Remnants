@@ -7,6 +7,7 @@ import {
   ChevronsUpDown,
   Copy,
   History,
+  Layers,
   PackageIcon,
   Pencil,
   Trash,
@@ -125,6 +126,11 @@ export function useColumns({ filters }: { filters: { selectedWarehouse: string }
                   onClick: () => openLogsModal('quantity', item.id),
                   label: t('table.quantityLogs'),
                   icon: <PackageIcon className="h-4 w-4" />,
+                }, {
+                  permission: 'product.quantity-logs',
+                  onClick: () => openLogsModal('lots', item.id),
+                  label: t('table.stockLots'),
+                  icon: <Layers className="h-4 w-4" />,
                 }]
               : []),
             {

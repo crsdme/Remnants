@@ -106,7 +106,7 @@ function parseNpDay(value?: string): string | undefined {
 function firstNonEmpty(...values: Array<string | null | undefined>): string | undefined {
   for (const value of values) {
     const next = optionalTrim(value)
-    if (next)
+    if (next !== undefined)
       return next
   }
   return undefined

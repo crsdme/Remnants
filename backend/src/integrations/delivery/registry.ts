@@ -11,7 +11,7 @@ const adapters: Record<DeliveryCarrierType, DeliveryCarrierAdapter> = {
 
 export function getDeliveryCarrierAdapter(type: DeliveryCarrierType): DeliveryCarrierAdapter {
   const adapter = adapters[type]
-  if (!adapter) {
+  if (adapter === undefined) {
     throw new HttpError(400, 'Unsupported delivery carrier', 'CARRIER_NOT_SUPPORTED')
   }
   return adapter

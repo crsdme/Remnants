@@ -11,8 +11,9 @@ import { useNavigate } from 'react-router-dom'
 
 import { toast } from 'sonner'
 import { z } from 'zod'
-import { useWarehouseTransactionCreate } from '@/api/hooks'
+import { useCurrencyQuery, useWarehouseTransactionCreate } from '@/api/hooks'
 import { useAuthContext } from '@/contexts/'
+import { toMinor } from '@/utils/helpers'
 
 export type WarehouseTransactionTableRow = Omit<WarehouseTransactionDTO, 'fromWarehouse' | 'toWarehouse'> & {
   fromWarehouse?: string | { id?: string, names?: Partial<Record<'ru' | 'en', string>> } | null
@@ -41,6 +42,10 @@ interface WarehouseTransactionFormValues {
     id: string
     lineQuantity: number
     receivedQuantity: number
+    inboundPrice?: number
+    inboundCurrencyId?: string
+    purchasePrice?: number
+    purchaseCurrency?: { id: string, scale: number }
   }[]
 }
 
@@ -52,6 +57,7 @@ export function WarehouseTransactionProvider({ children }: { children: ReactNode
   const navigate = useNavigate()
   const formSchema = useMemo(() => createWarehouseTransactionFormSchema(t), [t])
 
+  const { currencies = [] } = useCurrencyQuery({ pagination: { full: true } })
   const form = useForm<WarehouseTransactionFormValues>({
     resolver: zodResolver(formSchema) as Resolver<WarehouseTransactionFormValues>,
     defaultValues: getWarehouseTransactionFormValues(),
@@ -77,10 +83,21 @@ export function WarehouseTransactionProvider({ children }: { children: ReactNode
   const submitWarehouseTransactionForm = async (params: WarehouseTransactionFormValues) => {
     setIsLoading(true)
 
-    const productsForEditOrCreate = params.products.map(p => ({
-      id: p.id,
-      quantity: p.lineQuantity,
-    }))
+    const productsForEditOrCreate = params.products.map((p) => {
+      const currencyId = p.inboundCurrencyId ?? p.purchaseCurrency?.id
+      const currency = currencies.find(item => item.id === currencyId)
+      const scale = currency?.scale ?? p.purchaseCurrency?.scale ?? 2
+      return {
+        id: p.id,
+        quantity: p.lineQuantity,
+        ...(params.type === 'in'
+          ? {
+              minorPurchasePrice: toMinor(Number(p.inboundPrice ?? p.purchasePrice ?? 0), scale),
+              purchaseCurrencyId: currencyId,
+            }
+          : {}),
+      }
+    })
 
     const createdBy = user?.id
     if (!createdBy) {

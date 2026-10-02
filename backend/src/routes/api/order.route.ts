@@ -12,6 +12,8 @@ import {
   getOrderItemsSchema,
   getOrdersResponseSchema,
   getOrdersSchema,
+  payOrderResponseSchema,
+  payOrderSchema,
   printDraftInvoiceOrderSchema,
   printInvoiceOrderSchema,
   printOrderLabelOrderSchema,
@@ -92,6 +94,14 @@ router.post(
   checkPermissions('order.remove'),
   validateResponse(removeOrdersResponseSchema),
   OrderController.remove as RequestHandler,
+)
+
+router.post(
+  '/pay',
+  validateBodyRequest(payOrderSchema),
+  checkPermissions('order.edit'),
+  validateResponse(payOrderResponseSchema),
+  OrderController.pay as RequestHandler,
 )
 
 router.get(

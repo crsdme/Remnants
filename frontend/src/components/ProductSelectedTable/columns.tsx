@@ -30,10 +30,12 @@ interface ProductSelectedTableProps {
   includeTotal: boolean
   isProfit: boolean
   isQuantity: boolean
+  isInboundCost: boolean
   removable: boolean
 }
 const columnHelper = createColumnHelper<ProductPopulatedDTO & {
   lineQuantity?: number
+  alreadyReceived?: number
   profit?: number
   selectedCurrencyId?: string
   manualPrice?: number
@@ -41,6 +43,8 @@ const columnHelper = createColumnHelper<ProductPopulatedDTO & {
   basePrice?: number
   discountPercent?: number
   discountAmount?: number
+  inboundPrice?: number
+  inboundCurrencyId?: string
 }>()
 
 export function useColumns(
@@ -50,6 +54,7 @@ export function useColumns(
     isSelectedPrice,
     isDiscount,
     isQuantity,
+    isInboundCost,
     disabled,
     handleChange,
     includeTotal,
@@ -113,7 +118,7 @@ export function useColumns(
         },
         header: () => property.names[language],
         cell: ({ row }: { row: Row<ProductPopulatedDTO> }) => {
-          const productProperty = row.original.productProperties.find(p => p.id === property.id)
+          const productProperty = row.original.productProperties?.find(p => p.id === property.id)
 
           if (!productProperty)
             return null
@@ -384,8 +389,44 @@ export function useColumns(
       })]
     }
 
-    function receiveQuantityColumn() {
+    function alreadyReceivedColumn() {
       if (!isReceiving)
+        return []
+
+      return [columnHelper.display({
+        id: 'alreadyReceived',
+        meta: {
+          title: t('component.productTable.table.alreadyReceived'),
+          defaultVisible: true,
+        },
+        header: () => t('component.productTable.table.alreadyReceived'),
+        cell: ({ row }: { row: Row<any> }) => {
+          const product = row.original
+          if (product.alreadyReceived == null)
+            return '—'
+          const alreadyReceived = Number(product.alreadyReceived) || 0
+          const ordered = Number(product.lineQuantity) || 0
+          const unit = product.unit?.symbols?.[language] ?? product.unit?.symbols?.en ?? product.unit?.names?.[language] ?? ''
+          const hasMismatch = alreadyReceived !== ordered
+          return (
+            <div className="flex items-center justify-end gap-2 pr-3">
+              {disabled && (
+                <Badge variant={hasMismatch ? 'destructive' : 'success'}>
+                  {hasMismatch ? <X className="size-3" /> : <Check className="size-3" />}
+                </Badge>
+              )}
+              <p className="tabular-nums whitespace-nowrap">
+                {alreadyReceived}
+                {unit ? ` ${unit}` : ''}
+              </p>
+            </div>
+          )
+        },
+      })]
+    }
+
+    function receiveQuantityColumn() {
+      if (!isReceiving || disabled)
         return []
 
       return [columnHelper.display({
@@ -400,7 +441,11 @@ export function useColumns(
         header: () => t('component.productTable.table.receivedQuantity'),
         cell: ({ row }: { row: Row<any> }) => {
           const product = row.original
-          const hasMismatch = product.receivedQuantity !== product.lineQuantity
+          const alreadyReceived = Number(product.alreadyReceived) || 0
+          const remaining = Math.max(0, (product.lineQuantity ?? 0) - alreadyReceived)
+          const expected = product.alreadyReceived != null ? remaining : product.lineQuantity
+          const currentReceived = Number(product.receivedQuantity) || 0
+          const hasMismatch = currentReceived !== expected
 
           return (
             <div className="flex items-center gap-2">
@@ -412,8 +457,8 @@ export function useColumns(
                 <Button
                   variant="outline"
                   size="icon"
-                  onClick={() => handleChange({ productId: product.product, field: 'receivedQuantity', value: product.receivedQuantity - 1 })}
-                  disabled={isLoading || disabled}
+                  onClick={() => handleChange({ productId: product.product ?? product.id, field: 'receivedQuantity', value: currentReceived - 1 })}
+                  disabled={isLoading || disabled || currentReceived <= 0}
                 >
                   <Minus className="h-4 w-4" />
                 </Button>
@@ -433,7 +478,7 @@ export function useColumns(
                   <EditableCell
                     product={product}
                     onChange={value => handleChange({
-                      productId: product.product,
+                      productId: product.product ?? product.id,
                       field: 'receivedQuantity',
                       value,
                     })}
@@ -442,18 +487,69 @@ export function useColumns(
                     disabled={isLoading || disabled}
                   />
                   <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                    <p>{product.unit.symbols[language]}</p>
+                    <p>{product.unit?.symbols?.[language]}</p>
                   </div>
                 </div>
                 <Button
                   variant="outline"
                   size="icon"
-                  onClick={() => handleChange({ productId: product.product, field: 'receivedQuantity', value: product.receivedQuantity + 1 })}
+                  onClick={() => handleChange({ productId: product.product ?? product.id, field: 'receivedQuantity', value: currentReceived + 1 })}
                   disabled={isLoading || disabled}
                 >
                   <Plus className="h-4 w-4" />
                 </Button>
               </div>
+            </div>
+          )
+        },
+      })]
+    }
+
+    function inboundCostColumn() {
+      if (!isInboundCost)
+        return []
+
+      return [columnHelper.display({
+        id: 'inboundPrice',
+        meta: {
+          title: t('page.warehouse-transactions.form.inboundPrice'),
+          filterable: false,
+          sortable: false,
+          defaultVisible: true,
+        },
+        header: () => t('page.warehouse-transactions.form.inboundPrice'),
+        cell: ({ row }) => {
+          const product = row.original as ProductPopulatedDTO & { inboundPrice?: number, inboundCurrencyId?: string }
+          return (
+            <div className="flex gap-2">
+              <EditableCell
+                product={{ ...product, inboundPrice: product.inboundPrice ?? product.purchasePrice ?? 0 }}
+                onChange={value => handleChange({
+                  productId: product.id,
+                  field: 'inboundPrice',
+                  value,
+                })}
+                field="inboundPrice"
+                className="w-20 pr-2"
+                disabled={isLoading || disabled}
+              />
+              <AsyncSelectMenu
+                loadSearchOptions={loadSearchOptions}
+                loadSelectedOptions={loadSelectedOptions}
+                value={product.inboundCurrencyId ?? product.purchaseCurrency?.id}
+                renderOption={e => `${e.symbols[language]}`}
+                getDisplayValue={e => `${e.symbols[language]}`}
+                getOptionValue={e => e.id}
+                disabled={isLoading || disabled}
+                onChange={val => handleChange({
+                  productId: product.id,
+                  field: 'inboundCurrencyId',
+                  value: val,
+                })}
+                triggerClassName="w-15"
+                placeholder="..."
+                isForm={false}
+              />
             </div>
           )
         },
@@ -641,13 +737,13 @@ export function useColumns(
         id: 'lineQuantity',
         size: 150,
         meta: {
-          title: t('component.productTable.table.selectedQuantity'),
+          title: t(isReceiving ? 'component.productTable.table.orderedQuantity' : 'component.productTable.table.selectedQuantity'),
           filterable: true,
           filterType: 'number',
           sortable: true,
           defaultVisible: true,
         },
-        header: () => t('component.productTable.table.selectedQuantity'),
+        header: () => t(isReceiving ? 'component.productTable.table.orderedQuantity' : 'component.productTable.table.selectedQuantity'),
         footer: ({ table }) => {
           const { rows } = table.getRowModel()
 
@@ -702,7 +798,7 @@ export function useColumns(
                   disabled={isLoading || isReceiving || disabled}
                 />
                 <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                  <p>{item.unit.symbols[language]}</p>
+                  <p>{item.unit?.symbols?.[language]}</p>
                 </div>
               </div>
               {!isReceiving && (
@@ -730,7 +826,7 @@ export function useColumns(
           defaultVisible: true,
         },
         cell: ({ row }) => {
-          const images = row.original.images.map((image, index) => ({
+          const images = (row.original.images ?? []).map((image, index) => ({
             id: index.toString(),
             src: image.path,
             alt: image.name,
@@ -750,7 +846,7 @@ export function useColumns(
         },
         header: () => t('component.productTable.table.names'),
       }),
-      columnHelper.accessor(row => `${row.price} ${row.currency.symbols[language]}`, {
+      columnHelper.accessor(row => `${row.price ?? ''} ${row.currency?.symbols?.[language] ?? ''}`.trim(), {
         id: 'price',
         size: 150,
         meta: {
@@ -764,7 +860,7 @@ export function useColumns(
       }),
       ...purchasePriceColumn(),
       ...profitColumns(),
-      columnHelper.accessor(row => `${row.unit.names[language]}`, {
+      columnHelper.accessor(row => row.unit?.names?.[language] ?? '', {
         id: 'unit',
         size: 150,
         meta: {
@@ -788,11 +884,11 @@ export function useColumns(
         header: () => t('component.productTable.table.categories'),
         cell: ({ row }) => (
           <div className="flex flex-wrap gap-2">
-            {row.original.categories.map(category => <Badge key={category.id}>{category.names[language]}</Badge>)}
+            {(row.original.categories ?? []).map(category => <Badge key={category.id}>{category.names[language]}</Badge>)}
           </div>
         ),
       }),
-      columnHelper.accessor(row => `${row.productPropertiesGroup.names[language]}`, {
+      columnHelper.accessor(row => row.productPropertiesGroup?.names?.[language] ?? '', {
         id: 'productPropertyGroup',
         size: 150,
         meta: {
@@ -828,11 +924,13 @@ export function useColumns(
       }),
       ...discountColumns(),
       ...selectedPriceColumn(),
+      ...inboundCostColumn(),
       ...quantityColumn(),
+      ...alreadyReceivedColumn(),
       ...receiveQuantityColumn(),
       ...includeTotalColumn(),
       actionColumn(),
     ]
-  }, [language, productProperties, currencies, t, permissions, isProfit, isDiscount, isSelectedPrice, isReceiving, includeTotal, isLoading, disabled, handleChange, loadSearchOptions, loadSelectedOptions, removeProduct])
+  }, [language, productProperties, currencies, t, permissions, isProfit, isDiscount, isSelectedPrice, isInboundCost, isReceiving, includeTotal, isLoading, disabled, handleChange, loadSearchOptions, loadSelectedOptions, removeProduct])
   return columns
 }

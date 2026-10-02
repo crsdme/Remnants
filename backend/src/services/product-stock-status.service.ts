@@ -15,7 +15,8 @@ import type {
 } from '@/types'
 import { mapProductStockStatusToDTO } from '@/mappers'
 import * as ProductStockStatusRepo from '@/repositories/product-stock-status.repo'
-import * as QuantityRepo from '@/repositories/quantity.repo'
+import * as StockLotRepo from '@/repositories/stock-lot.repo'
+import * as StockMoveRepo from '@/repositories/stock-move.repo'
 import { HttpError } from '@/utils/'
 
 const DAY_MS = 24 * 60 * 60 * 1000
@@ -87,6 +88,77 @@ function buildContext(quantity: {
   }
 }
 
+function buildContextFromStock(stock: {
+  count: number
+  lastSaleAt?: Date | null
+  lastMoveAt?: Date | null
+}): StockStatusContext {
+  return buildContext({
+    count: stock.count,
+    lastSaleAt: stock.lastSaleAt,
+    updatedAt: stock.lastMoveAt ?? undefined,
+    createdAt: stock.lastMoveAt ?? undefined,
+  })
+}
+
+export async function listActiveStatuses(): Promise<ProductStockStatusDTO[]> {
+  return (await ProductStockStatusRepo.listActive()).map(mapProductStockStatusToDTO)
+}
+
+export async function decorateWarehouseStock(
+  stocks: Array<{
+    warehouseId: string
+    count: number
+    lastSaleAt?: Date | null
+    lastMoveAt?: Date | null
+  }>,
+  preloadedStatuses?: ProductStockStatusDTO[],
+): Promise<Array<{
+  warehouseId: string
+  count: number
+  stockStatus: ProductStockStatusDTO | null
+}>> {
+  if (stocks.length === 0)
+    return []
+
+  const statuses = preloadedStatuses ?? (await ProductStockStatusRepo.listActive()).map(mapProductStockStatusToDTO)
+  return stocks.map(stock => ({
+    warehouseId: stock.warehouseId,
+    count: stock.count,
+    stockStatus: pickMatchingStatus(statuses, buildContextFromStock(stock)),
+  }))
+}
+
+export async function listProductIdsMatchingStatus({
+  warehouseId,
+  stockStatusId,
+}: {
+  warehouseId: string
+  stockStatusId: string
+}): Promise<string[]> {
+  const [rows, lastSales, lastMoves, statusDocs] = await Promise.all([
+    StockLotRepo.listRemainingByWarehouse(warehouseId),
+    StockMoveRepo.listLastCustomerSaleAtByWarehouse(warehouseId),
+    StockMoveRepo.listLastMoveAtByWarehouse(warehouseId),
+    ProductStockStatusRepo.listActive(),
+  ])
+
+  const statuses = statusDocs.map(mapProductStockStatusToDTO)
+  const lastSaleByProduct = new Map(lastSales.map(row => [row.productId, row.lastSaleAt]))
+  const lastMoveByProduct = new Map(lastMoves.map(row => [row.productId, row.lastMoveAt]))
+
+  return rows
+    .filter((row) => {
+      const matched = pickMatchingStatus(statuses, buildContextFromStock({
+        count: row.count,
+        lastSaleAt: lastSaleByProduct.get(row.productId) ?? null,
+        lastMoveAt: lastMoveByProduct.get(row.productId) ?? null,
+      }))
+      return matched?.id === stockStatusId
+    })
+    .map(row => row.productId)
+}
+
 export async function recomputeForProductWarehouse({
   productId,
   warehouseId,
@@ -96,33 +168,25 @@ export async function recomputeForProductWarehouse({
   warehouseId: string
   session?: ClientSession
 }): Promise<ProductStockStatusDTO | null> {
-  const quantity = await QuantityRepo.findByProductWarehouse({ productId, warehouseId, session })
-  if (!quantity)
-    return null
-
-  const statuses = await ProductStockStatusRepo.listActive()
-  const matched = pickMatchingStatus(statuses.map(mapProductStockStatusToDTO), buildContext(quantity))
-  const stockStatusId = matched?.id ?? null
-
-  if (quantity.stockStatusId !== stockStatusId) {
-    await QuantityRepo.updateStockStatusId({
-      id: quantity._id,
-      stockStatusId,
-      session,
-    })
-  }
-
-  return matched
+  const qty = await StockLotRepo.sumRemaining({ productId, warehouseId, session })
+  const lastSale = await StockMoveRepo.findLastCustomerMove({ productId, warehouseId, session })
+  const lastMove = await StockMoveRepo.findLastWarehouseMove({ productId, warehouseId, session })
+  const statuses = (await ProductStockStatusRepo.listActive()).map(mapProductStockStatusToDTO)
+  return pickMatchingStatus(statuses, buildContextFromStock({
+    count: qty,
+    lastSaleAt: lastSale?.createdAt ?? null,
+    lastMoveAt: lastMove?.createdAt ?? null,
+  }))
 }
 
 export async function recomputeAll(options: { session?: ClientSession } = {}): Promise<number> {
-  const quantities = await QuantityRepo.listProductWarehousePairs(options.session)
+  const pairs = await StockLotRepo.listProductWarehousePairs(options.session)
   let updated = 0
 
-  for (const quantity of quantities) {
+  for (const pair of pairs) {
     await recomputeForProductWarehouse({
-      productId: quantity.productId,
-      warehouseId: quantity.warehouseId,
+      productId: pair.productId,
+      warehouseId: pair.warehouseId,
       session: options.session,
     })
     updated += 1

@@ -12,7 +12,6 @@ import type {
 import { toMinorType } from '@remnant/shared'
 import * as UserAccessRepo from '@/repositories/user-access.repo'
 import * as ExpenseService from '@/services/expense.service'
-import * as OrderPaymentService from '@/services/order-payment.service'
 import * as OrderStatusService from '@/services/order-status.service'
 import * as OrderService from '@/services/order.service'
 import * as UserService from '@/services/user.service'
@@ -176,7 +175,7 @@ export async function get({
       payload: parseGetOrders({ filters: { createdAt: date, removed: false }, pagination: { full: true } }),
       user,
     }),
-    OrderPaymentService.get({
+    OrderService.getOrderPayments({
       payload: parseGetOrderPayments({ filters: { paymentDate: date }, pagination: { full: true } }),
     }),
     ExpenseService.get({
@@ -217,7 +216,7 @@ export async function get({
             payload: parseGetOrderItems({ filters: { order: orderIds }, pagination: { full: true } }),
             user,
           }),
-          OrderPaymentService.get({
+          OrderService.getOrderPayments({
             payload: parseGetOrderPayments({ filters: { order: orderIds }, pagination: { full: true } }),
           }),
         ])

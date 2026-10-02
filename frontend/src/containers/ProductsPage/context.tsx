@@ -45,7 +45,7 @@ interface ProductContextType {
   form: UseFormReturn<ProductFormValues>
   images: UploadedFile[]
   selectedGroup: string | null
-  selectedProductLogs: { type: 'quantity' | 'audit', id: string } | null
+  selectedProductLogs: { type: 'quantity' | 'audit' | 'lots', id: string } | null
   isEdit: boolean
   listQueryState: UseListQueryStateReturn<{ search: string, selectedWarehouse: string }>
   getPropertiesDefaultValues: (selectedGroup: string, productPropertiesGroups: ProductPropertyGroupPopulatedDTO[]) => Record<string, any>
@@ -53,7 +53,7 @@ interface ProductContextType {
   setImages: Dispatch<SetStateAction<UploadedFile[]>>
   openModal: (product?: ProductPopulatedDTO) => void
   closeModal: () => void
-  openLogsModal: (type: 'quantity' | 'audit', id: string) => void
+  openLogsModal: (type: 'quantity' | 'audit' | 'lots', id: string) => void
   closeLogsModal: () => void
   submitProductForm: (params: ProductFormValues) => void
   batchProduct: (params: any) => void
@@ -85,7 +85,7 @@ export interface ProductFormValues {
 export function ProductProvider({ children }: { children: ReactNode }) {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [isLogsModalOpen, setIsLogsModalOpen] = useState(false)
-  const [selectedProductLogs, setSelectedProductLogs] = useState<{ type: 'quantity' | 'audit', id: string } | null>(null)
+  const [selectedProductLogs, setSelectedProductLogs] = useState<{ type: 'quantity' | 'audit' | 'lots', id: string } | null>(null)
   const [isEdit, setIsEdit] = useState(false)
   const [selectedProduct, setSelectedProduct] = useState<ProductPopulatedDTO | null>(null)
   const [images, setImages] = useState<UploadedFile[]>([])
@@ -158,7 +158,7 @@ export function ProductProvider({ children }: { children: ReactNode }) {
     form.reset(getProductFormDefaults(product, { currencies, units, productPropertyGroups }))
   }
 
-  const openLogsModal = (type: 'quantity' | 'audit', id: string) => {
+  const openLogsModal = (type: 'quantity' | 'audit' | 'lots', id: string) => {
     setIsLogsModalOpen(true)
     setSelectedProductLogs({ type, id })
   }

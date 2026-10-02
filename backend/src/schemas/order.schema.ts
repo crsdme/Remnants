@@ -10,7 +10,6 @@ export const orderDBSchema = z.object({
   deliveryServiceId: idSchema,
   orderSourceId: idSchema,
   orderStatusId: idSchema,
-  orderPaymentIds: z.array(idSchema),
   totals: z.array(z.object({
     currency: idSchema,
     total: minorSchema,
@@ -177,7 +176,6 @@ export const createOrderRepoSchema = z.object({
   deliveryServiceId: idSchema,
   orderSourceId: idSchema,
   orderStatusId: idSchema,
-  orderPaymentIds: z.array(idSchema),
   clientId: idSchemaOptional,
   comment: z.string().optional(),
   delivery: orderDeliverySchema.optional(),
@@ -223,7 +221,6 @@ export const editOrderRepoSchema = z.object({
   deliveryServiceId: idSchema,
   orderSourceId: idSchema,
   orderStatusId: idSchema,
-  orderPaymentIds: z.array(idSchema),
   clientId: idSchemaOptional,
   comment: z.string().optional(),
   delivery: orderDeliverySchema.optional(),
@@ -243,7 +240,7 @@ export const editOrderRepoSchema = z.object({
     discountAmount: z.number().optional(),
     discountPercent: z.number().optional(),
   })),
-  orderPaymentStatus: z.enum(['paid', 'unpaid', 'partially_paid', 'overpaid']),
+  orderPaymentStatus: z.enum(['paid', 'unpaid', 'partially_paid', 'overpaid']).optional(),
 })
 
 export const printInvoiceOrderRepoSchema = z.object({

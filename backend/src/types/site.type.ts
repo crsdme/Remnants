@@ -11,6 +11,7 @@ import {
   getSiteSyncSiteItemsSchema,
   removeSitesSchema,
   saveSiteSyncMappingSchema,
+  syncSiteProductSchema,
   syncSiteProductsSchema,
 } from '@remnant/shared'
 
@@ -39,6 +40,11 @@ export function parseRemoveSites(x: unknown): RemoveSitesPayload {
 export type SyncSiteProductsPayload = z.output<typeof syncSiteProductsSchema>
 export function parseSyncSiteProducts(x: unknown): SyncSiteProductsPayload {
   return syncSiteProductsSchema.parse(x)
+}
+
+export type SyncSiteProductPayload = z.output<typeof syncSiteProductSchema>
+export function parseSyncSiteProduct(x: unknown): SyncSiteProductPayload {
+  return syncSiteProductSchema.parse(x)
 }
 
 export type GetSiteSyncMappingPayload = z.output<typeof getSiteSyncMappingSchema>

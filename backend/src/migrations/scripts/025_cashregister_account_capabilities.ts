@@ -1,7 +1,7 @@
 import type { Migration } from '../types'
 import { CASHREGISTER_CAPABILITIES } from '@remnant/shared'
 
-type LegacyCashregisterEntry = {
+interface LegacyCashregisterEntry {
   id?: string
   capabilities?: string[]
   accounts?: Array<{ id?: string, capabilities?: string[] }>
@@ -57,16 +57,16 @@ export const migration025CashregisterAccountCapabilities: Migration = {
 
           const existingAccounts = Array.isArray(entry.accounts)
             ? entry.accounts
-              .filter((account): account is { id: string, capabilities: string[] } =>
-                typeof account?.id === 'string'
-                && Array.isArray(account.capabilities)
-                && account.capabilities.length > 0)
-              .map(account => ({
-                id: account.id,
-                capabilities: account.capabilities.filter((cap): cap is typeof CASHREGISTER_CAPABILITIES[number] =>
-                  (CASHREGISTER_CAPABILITIES as readonly string[]).includes(cap)),
-              }))
-              .filter(account => account.capabilities.length > 0)
+                .filter((account): account is { id: string, capabilities: string[] } =>
+                  typeof account?.id === 'string'
+                  && Array.isArray(account.capabilities)
+                  && account.capabilities.length > 0)
+                .map(account => ({
+                  id: account.id,
+                  capabilities: account.capabilities.filter((cap): cap is typeof CASHREGISTER_CAPABILITIES[number] =>
+                    (CASHREGISTER_CAPABILITIES as readonly string[]).includes(cap)),
+                }))
+                .filter(account => account.capabilities.length > 0)
             : []
 
           if (existingAccounts.length > 0) {

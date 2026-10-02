@@ -11,9 +11,9 @@ export async function findByUserIds(userIds: string[]) {
 
 export async function list(filters: { userId?: string, userIds?: string[] }) {
   const query: Record<string, unknown> = { removed: false }
-  if (filters.userId)
+  if (filters.userId !== undefined)
     query.userId = filters.userId
-  if (filters.userIds?.length)
+  if (filters.userIds !== undefined && filters.userIds.length > 0)
     query.userId = { $in: filters.userIds }
   return UserProfileModel.find(query).exec()
 }

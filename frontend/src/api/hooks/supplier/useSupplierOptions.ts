@@ -13,7 +13,7 @@ export function useSupplierOptions({ defaultFilters }: { defaultFilters?: GetSup
       const params: GetSuppliersRequest = {
         pagination: { full: true },
         filters: {
-          ...(selectedValue ? { ids: selectedValue } : { names: query }),
+          ...(selectedValue ? { ids: selectedValue } : { search: query }),
           ...defaultFilters,
         },
       }
@@ -21,7 +21,7 @@ export function useSupplierOptions({ defaultFilters }: { defaultFilters?: GetSup
       const { data } = await queryClient.fetchQuery({
         queryKey: ['suppliers', 'get', params],
         queryFn: async () => getSuppliers(params),
-        staleTime: 60000,
+        staleTime: 0,
       })
 
       return data?.data?.items ?? EMPTY_ITEMS

@@ -1,6 +1,10 @@
 import type { AuthUser, UserAccessScopesDTO } from '@remnant/shared'
 import { describe, expect, it, vi } from 'vitest'
 
+import * as ProductRepository from '@/repositories/products.repo'
+import * as UserAccessRepo from '@/repositories/user-access.repo'
+import * as ProductService from '@/services/product.service'
+
 vi.mock('@/repositories/user-access.repo', () => ({
   getScopesByUserId: vi.fn(),
 }))
@@ -13,9 +17,12 @@ vi.mock('@/services/user.service', () => ({
   checkPermission: vi.fn().mockResolvedValue(false),
 }))
 
-import * as UserAccessRepo from '@/repositories/user-access.repo'
-import * as ProductRepository from '@/repositories/products.repo'
-import * as ProductService from '@/services/product.service'
+vi.mock('@/services/product-stock-status.service', () => ({
+  listActiveStatuses: vi.fn().mockResolvedValue([]),
+  decorateWarehouseStock: vi.fn(async (stocks: Array<{ warehouseId: string, count: number, stockStatus?: unknown }>) =>
+    stocks.map(stock => ({ warehouseId: stock.warehouseId, count: stock.count, stockStatus: stock.stockStatus ?? null })),
+  ),
+}))
 
 describe('product get with empty warehouse access', () => {
   it('returns products when user has no warehouses', async () => {
@@ -61,7 +68,7 @@ describe('product get with empty warehouse access', () => {
         active: true,
         createdAt: new Date(),
         updatedAt: new Date(),
-      }] as any,
+      }],
       total: 1,
       page: 1,
       pageSize: 20,

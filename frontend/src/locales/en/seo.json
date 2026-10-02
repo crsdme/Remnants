@@ -64,6 +64,10 @@
 
   "title.page.warehouse-transactions": "Warehouse Transactions - Remnant",
   "description.page.warehouse-transactions": "Manage warehouse transactions in Remnant",
+  "title.page.warehouse-transaction-receive": "Receive Warehouse Transaction - Remnant",
+  "description.page.warehouse-transaction-receive": "Receive warehouse transaction in Remnant",
+  "title.page.warehouse-transaction-view": "View Warehouse Transaction - Remnant",
+  "description.page.warehouse-transaction-view": "View warehouse transaction in Remnant",
 
   "title.page.order-statuses": "Order Statuses - Remnant",
   "description.page.order-statuses": "Manage order statuses in Remnant",
@@ -134,5 +138,15 @@
   "description.page.sites.sync": "Map products, categories, attributes and languages with the site",
 
   "title.page.procurement.create": "Create Procurement - Remnant",
-  "description.page.procurement.create": "Create procurement in Remnant"
+  "description.page.procurement.create": "Create procurement in Remnant",
+  "title.page.procurement.accept": "Receive Procurement - Remnant",
+  "description.page.procurement.accept": "Receive procurement in Remnant",
+  "title.page.procurement.view": "View Procurement - Remnant",
+  "description.page.procurement.view": "View procurement in Remnant",
+  "title.page.procurement.edit": "Edit Procurement - Remnant",
+  "description.page.procurement.edit": "Edit draft procurement in Remnant",
+  "title.page.supplier.view": "Supplier - Remnant",
+  "description.page.supplier.view": "Supplier debt and payments in Remnant",
+  "title.page.client.view": "Client - Remnant",
+  "description.page.client.view": "Client debt and payments in Remnant"
 }

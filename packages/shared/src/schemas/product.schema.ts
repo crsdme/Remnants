@@ -90,7 +90,7 @@ export const productSchemaPopulated = z.object({
       names: languageStringSchema,
       showInTable: z.boolean(),
       isRequired: z.boolean(),
-      symbols: languageStringSchema,
+      symbols: languageStringSchema.optional(),
     }),
   })),
   warehouseStock: z.array(z.object({

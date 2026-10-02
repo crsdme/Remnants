@@ -17,10 +17,11 @@ import expenseRoutes from './expense.route'
 import inventoriesRoutes from './inventories.route'
 import languageRoutes from './language.route'
 import moneyTransactionRoutes from './money-transaction.route'
-import orderPaymentRoutes from './order-payment.route'
 import orderSourceRoutes from './order-source.route'
 import orderStatusRoutes from './order-status.route'
 import orderRoutes from './order.route'
+import paymentApplicationRoutes from './payment-application.route'
+import payrollEntryRoutes from './payroll-entry.route'
 import procurementRoutes from './procurement.route'
 import productPropertyGroupRoutes from './product-property-group.route'
 import productPropertyOptionRoutes from './product-property-option.route'
@@ -30,17 +31,17 @@ import productRoutes from './product.route'
 import settingRoutes from './setting.route'
 import siteRoutes from './site.route'
 import statisticRoutes from './statistic.route'
+import stockLotRoutes from './stock-lot.route'
+import stockMoveRoutes from './stock-move.route'
 import supplierRoutes from './supplier.route'
 import testRoutes from './test.route'
 import unitRoutes from './unit.route'
-import payrollEntryRoutes from './payroll-entry.route'
 import userProfileRoutes from './user-profile.route'
 import userRoleRoutes from './user-role.route'
 import userRoutes from './user.route'
-import workShiftRoutes from './work-shift.route'
-import warehouseTransactionLogsRoutes from './warehouse-transaction-log.route'
 import warehouseTransactionRoutes from './warehouse-transaction.route'
 import warehouseRoutes from './warehouse.route'
+import workShiftRoutes from './work-shift.route'
 
 const router = Router()
 const authenticateJWT = authMiddleware()
@@ -72,11 +73,13 @@ router.use('/product-stock-statuses', productStockStatusRoutes)
 router.use('/order-sources', orderSourceRoutes)
 router.use('/delivery-services', deliveryServiceRoutes)
 router.use('/settings', settingRoutes)
-router.use('/order-payments', orderPaymentRoutes)
 router.use('/clients', clientRoutes)
 router.use('/suppliers', supplierRoutes)
 router.use('/orders', orderRoutes)
+router.use('/payment-applications', paymentApplicationRoutes)
 router.use('/warehouse-transactions', warehouseTransactionRoutes)
+router.use('/stock-lots', stockLotRoutes)
+router.use('/stock-moves', stockMoveRoutes)
 router.use('/test', testRoutes)
 router.use('/automations', automationRoutes)
 router.use('/expenses', expenseRoutes)
@@ -85,6 +88,5 @@ router.use('/inventories', inventoriesRoutes)
 router.use('/statistics', statisticRoutes)
 router.use('/audit-logs', auditLogsRoutes)
 router.use('/procurements', procurementRoutes)
-router.use('/warehouse-transactions-logs', warehouseTransactionLogsRoutes)
 router.use('/balance', balanceRoutes)
 export default router

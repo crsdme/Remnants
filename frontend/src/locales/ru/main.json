@@ -17,6 +17,7 @@
   "table.test": "Просмотр деталей",
   "table.noResults": "Результаты не найдены",
   "table.seq": "#",
+  "table.actions": "Действия",
   "table.addOption": "Добавить опцию",
   "table.active.true": "Активный",
   "table.active.false": "Неактивный",
@@ -32,10 +33,14 @@
   "table.printInvoice": "Печатать счет",
   "table.printTtn": "Печать ТТН",
   "table.quantityLogs": "Логи количества",
+  "table.stockLots": "Партии",
   "table.auditLogs": "Логи изменений",
   "table.printLabel": "Печатать этикетку",
   "table.pay": "Оплатить",
+  "table.confirm": "Подтвердить",
+  "table.unconfirm": "Снять подтверждение",
   "table.accept": "Принять",
+  "table.cancel-payment": "Отменить оплату",
 
   "order-status.all": "Все",
 
@@ -49,6 +54,7 @@
 
   "button.cancel": "Отмена",
   "button.submit": "Сохранить",
+  "button.save": "Сохранить",
   "button.import": "Импортировать",
   "button.back": "Назад",
   "button.generate": "Сгенерировать",

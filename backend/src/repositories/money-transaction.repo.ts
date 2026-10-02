@@ -7,6 +7,7 @@ import type {
   MoneyTransactionPopulated,
 } from '@/types/'
 import { MoneyTransactionModel } from '@/models'
+import * as ProcurementRepo from '@/repositories/procurement.repo'
 import { applyScopeIdsToQuery, buildQuery, buildSortQuery, unwrapAggregate } from '@/utils'
 
 function projectUser(field: string) {
@@ -182,6 +183,7 @@ export async function list({
   const {
     current,
     pageSize,
+    full = false,
   } = payload.pagination
 
   const {
@@ -191,6 +193,7 @@ export async function list({
     description,
     sourceModel,
     sourceId,
+    supplierId,
     confirmed,
     createdAt,
     updatedAt,
@@ -222,6 +225,15 @@ export async function list({
     removed: false,
   })
 
+  if (supplierId !== undefined) {
+    const procurements = await ProcurementRepo.listIdsBySupplierIds([supplierId])
+    const procurementIds = procurements.map(item => String(item._id))
+    query.$or = [
+      { sourceModel: 'supplier', sourceId: supplierId },
+      { sourceModel: 'procurement', sourceId: { $in: procurementIds } },
+    ]
+  }
+
   applyScopeIdsToQuery(query, options.cashregisterIds, 'cashregisterId')
   applyScopeIdsToQuery(query, options.cashregisterAccountIds, 'accountId')
 
@@ -237,10 +249,12 @@ export async function list({
     ...populateStages,
     {
       $facet: {
-        items: [
-          { $skip: (current - 1) * pageSize },
-          { $limit: pageSize },
-        ],
+        items: full
+          ? []
+          : [
+              { $skip: (current - 1) * pageSize },
+              { $limit: pageSize },
+            ],
         count: [
           { $count: 'count' },
         ],
@@ -251,7 +265,7 @@ export async function list({
   const raw = await MoneyTransactionModel.aggregate<AggregateResult<MoneyTransactionPopulated>>(pipeline).exec()
   const { items, total } = unwrapAggregate(raw)
 
-  return { items, total, page: current, pageSize }
+  return { items, total, page: current, pageSize: full ? Math.max(total, pageSize) : pageSize }
 }
 
 export async function getById({
@@ -274,6 +288,50 @@ export async function getById({
 
   const [doc] = await aggregate.exec()
   return doc ?? null
+}
+
+export async function sumMinorByCashregisterCurrency() {
+  return MoneyTransactionModel.aggregate<{
+    cashregisterId: string
+    currencyId: string
+    minorAmount: number
+  }>([
+    {
+      $match: {
+        cancelled: { $ne: true },
+        $or: [
+          { type: { $ne: 'transfer' } },
+          { direction: { $ne: 'in' } },
+          { confirmed: true },
+        ],
+      },
+    },
+    {
+      $group: {
+        _id: {
+          cashregisterId: '$cashregisterId',
+          currencyId: '$currencyId',
+        },
+        minorAmount: {
+          $sum: {
+            $cond: [
+              { $eq: ['$direction', 'in'] },
+              '$minorAmount',
+              { $multiply: ['$minorAmount', -1] },
+            ],
+          },
+        },
+      },
+    },
+    {
+      $project: {
+        _id: 0,
+        cashregisterId: '$_id.cashregisterId',
+        currencyId: '$_id.currencyId',
+        minorAmount: 1,
+      },
+    },
+  ]).exec()
 }
 
 export async function getAccountCurrencyMinorBalance({
@@ -380,8 +438,12 @@ export async function updateById({
     cancelled?: boolean
     cancelledBy?: string | null
     cancelledAt?: Date | null
+    minorAmount?: number
     minorBalanceBefore?: number | null
     minorBalanceAfter?: number | null
+    sourceModel?: string
+    sourceId?: string | null
+    transferId?: string | null
   }
   session?: ClientSession
 }) {
@@ -390,4 +452,87 @@ export async function updateById({
     { $set: payload },
     { new: true, session },
   ).lean().exec()
+}
+
+export async function sumActiveMinorsBySource(sourceModel: string, sourceIds: string[]) {
+  if (sourceIds.length === 0)
+    return []
+
+  return MoneyTransactionModel.aggregate<Array<{
+    sourceId: string
+    currencyId: string
+    minorAmount: number
+  }>[number]>([
+    {
+      $match: {
+        sourceModel,
+        sourceId: { $in: sourceIds },
+        cancelled: { $ne: true },
+      },
+    },
+    {
+      $group: {
+        _id: { sourceId: '$sourceId', currencyId: '$currencyId' },
+        minorAmount: { $sum: '$minorAmount' },
+      },
+    },
+    {
+      $project: {
+        _id: 0,
+        sourceId: '$_id.sourceId',
+        currencyId: '$_id.currencyId',
+        minorAmount: 1,
+      },
+    },
+  ]).exec()
+}
+
+export async function listActiveBySource(sourceModel: string, sourceIds: string[]): Promise<Array<{
+  _id: string
+  type: 'income' | 'cancelled' | 'expense' | 'transfer' | 'refund' | 'investment' | 'purchase' | 'procurement'
+  direction: 'in' | 'out'
+  currencyId: string
+  minorAmount: number
+  accountId: string
+  cashregisterId: string
+  description: string
+  transferId: string | null
+  confirmed: boolean
+  confirmedBy: string | null
+  confirmedAt: Date | null
+  createdBy: string | null
+  minorBalanceBefore: number | null
+  minorBalanceAfter: number | null
+}>> {
+  if (sourceIds.length === 0)
+    return []
+
+  const rows = await MoneyTransactionModel.find({
+    sourceModel,
+    sourceId: { $in: sourceIds },
+    cancelled: { $ne: true },
+  }).sort({ createdAt: 1 }).lean().exec()
+
+  return rows.map((row) => {
+    const doc = row as Record<string, unknown>
+    return {
+      _id: String(doc._id ?? ''),
+      type: doc.type === 'income' || doc.type === 'cancelled' || doc.type === 'expense' || doc.type === 'transfer' || doc.type === 'refund' || doc.type === 'investment' || doc.type === 'purchase' || doc.type === 'procurement'
+        ? doc.type
+        : 'procurement',
+      direction: doc.direction === 'in' ? 'in' : 'out',
+      currencyId: String(doc.currencyId ?? ''),
+      minorAmount: Number(doc.minorAmount) || 0,
+      accountId: String(doc.accountId ?? ''),
+      cashregisterId: String(doc.cashregisterId ?? ''),
+      description: typeof doc.description === 'string' ? doc.description : '',
+      transferId: typeof doc.transferId === 'string' && doc.transferId.length > 0 ? doc.transferId : null,
+      confirmed: doc.confirmed !== false,
+      confirmedBy: typeof doc.confirmedBy === 'string' ? doc.confirmedBy : null,
+      confirmedAt: doc.confirmedAt instanceof Date ? doc.confirmedAt : null,
+      createdBy: typeof doc.createdBy === 'string' ? doc.createdBy : null,
+      minorBalanceBefore: typeof doc.minorBalanceBefore === 'number' ? doc.minorBalanceBefore : null,
+      minorBalanceAfter: typeof doc.minorBalanceAfter === 'number' ? doc.minorBalanceAfter : null,
+    }
+  })
 }

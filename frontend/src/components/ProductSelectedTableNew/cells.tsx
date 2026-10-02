@@ -71,7 +71,7 @@ export function EditableQuantityCell({ isReceiving, changeQuantity, item, isLoad
             field="selectedQuantity"
           />
           <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-            <p>{item.unit.symbols[language]}</p>
+            <p>{item.unit?.symbols?.[language] ?? item.unit?.symbols?.en ?? ''}</p>
           </div>
         </div>
         {!isReceiving && (
@@ -106,7 +106,7 @@ export function EditableQuantityCell({ isReceiving, changeQuantity, item, isLoad
                 onChange={event => handleChange(item.id, 'receivedQuantity', Number.parseInt(event.target.value))}
               />
               <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                <p>{item.unit.symbols[language]}</p>
+                <p>{item.unit?.symbols?.[language] ?? item.unit?.symbols?.en ?? ''}</p>
               </div>
             </div>
             <Button

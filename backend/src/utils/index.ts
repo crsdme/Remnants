@@ -1,5 +1,6 @@
 export * from './automation'
 export * from './buildUrl'
+export * from './db'
 export * from './getDiff'
 export * from './httpError'
 export * from './logger'

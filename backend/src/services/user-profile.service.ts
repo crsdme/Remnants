@@ -13,8 +13,8 @@ import type {
 import { mapPayrollEntryToDTO, mapUserProfileToDTO, mapWorkShiftToDTO } from '@/mappers'
 import * as PayrollEntryRepo from '@/repositories/payroll-entry.repo'
 import * as UserProfileRepo from '@/repositories/user-profile.repo'
-import * as WorkShiftRepo from '@/repositories/work-shift.repo'
 import * as UsersRepo from '@/repositories/users.repo'
+import * as WorkShiftRepo from '@/repositories/work-shift.repo'
 import { HttpError } from '@/utils/'
 import { monthRange } from './payroll.utils'
 
@@ -97,7 +97,7 @@ export async function edit({
     throw new HttpError(404, 'User not found', 'USER_NOT_FOUND')
 
   const profile = await UserProfileRepo.upsertByUserId(payload.userId, payload)
-  if (!profile)
+  if (profile === undefined)
     throw new HttpError(500, 'Failed to save profile', 'PROFILE_SAVE_FAILED')
 
   return {
@@ -175,7 +175,7 @@ export async function summary({
         id: targetUser._id,
         name: targetUser.name,
         login: targetUser.login,
-        role: roleId
+        role: roleId !== undefined
           ? {
               id: roleId,
               names: roleNames,

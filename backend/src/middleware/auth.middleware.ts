@@ -40,10 +40,8 @@ export function refreshJWT(req: Request, res: Response, next: NextFunction) {
 
 export function fakeAuthenticateJWT(req: Request, _res: Response, next: NextFunction) {
   req.user = {
-    id: 'test-user-id',
+    id: '00000000-0000-4000-8000-000000000001',
     login: 'test-user-login',
-    // name: 'test-user-name',
-    // role: 'test-user-role',
     permissions: ['test-permission', 'other.admin'],
   }
   next()

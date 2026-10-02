@@ -194,7 +194,7 @@ async function maybeAccrueCalendarPeriod(params: {
   actorId: string
 }) {
   const periodDays = params.profile.salary.periodDays
-  if (!periodDays)
+  if (periodDays === undefined || periodDays < 1)
     return
 
   const anchor = params.profile.salary.periodAnchor ?? 'hiredAt'
@@ -248,7 +248,7 @@ async function maybeAccrueWorkedShiftsPeriod(params: {
   shiftId: string
 }) {
   const periodShifts = params.profile.salary.periodShifts
-  if (!periodShifts || periodShifts < 1)
+  if (periodShifts === undefined || periodShifts < 1)
     return
 
   // Find last period salary entry to know where counter starts
@@ -361,7 +361,7 @@ export async function finish({
   payload: FinishWorkShiftPayload
   user: { id: string, permissions?: string[] }
 }): Promise<FinishWorkShiftResponse> {
-  let shift = payload.id
+  let shift = payload.id !== undefined
     ? await WorkShiftRepo.findById(payload.id)
     : null
 
@@ -548,11 +548,11 @@ export async function unplan({
 }): Promise<UnplanWorkShiftResponse> {
   assertCanEditShift(user)
 
-  let shift = payload.id
+  let shift = payload.id !== undefined
     ? await WorkShiftRepo.findById(payload.id)
     : null
 
-  if (!shift && payload.userId && payload.workDate)
+  if (shift === undefined && payload.userId !== undefined && payload.workDate !== undefined)
     shift = await WorkShiftRepo.findByUserAndDate(payload.userId, payload.workDate)
 
   if (!shift)

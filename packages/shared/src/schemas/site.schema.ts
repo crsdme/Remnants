@@ -101,6 +101,13 @@ export type SyncSiteProductsResultDTO = z.output<typeof syncSiteProductsResultSc
 export const syncSiteProductsResponseSchema = responseItemSchema(syncSiteProductsResultSchema)
 export type SyncSiteProductsResponse = z.output<typeof syncSiteProductsResponseSchema>
 
+export const syncSiteProductSchema = z.object({
+  id: idSchema,
+  productId: idSchema,
+})
+
+export type SyncSiteProductRequest = z.input<typeof syncSiteProductSchema>
+
 function toSyncNames(value: unknown): Record<string, string> {
   const source = value instanceof Map ? Object.fromEntries(value.entries()) : value
   if (source == null || typeof source !== 'object' || Array.isArray(source))
@@ -136,6 +143,7 @@ export const getSiteSyncMappingSchema = z.object({
   id: idSchema,
   sourceType: siteSyncSourceTypeSchema,
   names: z.string().trim().optional(),
+  includeSite: z.coerce.boolean().optional().default(false),
   pagination: paginationSchema.optional().default({}),
 })
 
@@ -164,6 +172,9 @@ export type SaveSiteSyncMappingRequest = z.input<typeof saveSiteSyncMappingSchem
 
 export const saveSiteSyncMappingResponseSchema = responseItemSchema(siteSyncLinkSchema)
 export type SaveSiteSyncMappingResponse = z.output<typeof saveSiteSyncMappingResponseSchema>
+
+export const syncSiteProductResponseSchema = responseItemSchema(siteSyncLinkSchema)
+export type SyncSiteProductResponse = z.output<typeof syncSiteProductResponseSchema>
 
 export const getSiteSyncSiteItemsSchema = z.object({
   id: idSchema,

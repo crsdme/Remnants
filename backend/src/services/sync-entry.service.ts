@@ -26,8 +26,8 @@ import * as CurrencyRepo from '@/repositories/currencies.repo'
 import * as LanguageRepo from '@/repositories/language.repo'
 import * as ProductPropertyOptionRepo from '@/repositories/product-property-option.repo'
 import * as ProductRepo from '@/repositories/products.repo'
-import * as QuantityRepo from '@/repositories/quantity.repo'
 import * as SiteRepo from '@/repositories/site.repo'
+import * as StockLotRepo from '@/repositories/stock-lot.repo'
 import * as SyncEntryRepo from '@/repositories/sync-entry.repo'
 import { HttpError } from '@/utils/httpError'
 import { languageRecord } from '@/utils/language-record'
@@ -274,7 +274,7 @@ export async function syncProductQuantity(
   if (ctx == null)
     return ok('SITE_SKIPPED', 'Site url or key is empty')
 
-  const quantity = await QuantityRepo.sumCountByProductAndWarehouses(productId, warehouseIds, session)
+  const quantity = await StockLotRepo.sumRemainingByWarehouses(productId, warehouseIds, session)
 
   try {
     await remnantAdapter.editQuantity(ctx, { remnantId: productId, quantity })
@@ -352,7 +352,7 @@ async function buildProductPayload(
   const names = remapNames(languageMap, languageRecord(product.names))
   const categoryIds = await resolveSiteCategoryIds(siteId, product.categoryIds ?? [])
   const attributes = await resolveSiteAttributes(siteId, product.productProperties ?? [], languageMap)
-  const quantity = await QuantityRepo.sumCountByProductAndWarehouses(productId, warehouseIds)
+  const quantity = await StockLotRepo.sumRemainingByWarehouses(productId, warehouseIds)
   const price = await convertProductPrice(product.minorPrice, product.currencyId, siteCurrencyId)
 
   return {

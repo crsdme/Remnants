@@ -8,6 +8,7 @@ import {
   Check,
   ChevronsUpDown,
   Copy,
+  Eye,
   Trash,
 } from 'lucide-react'
 import { useMemo } from 'react'
@@ -81,6 +82,12 @@ export function useColumns() {
               label: t('table.copy'),
               icon: <Copy className="h-4 w-4" />,
             },
+            {
+              permission: 'warehouseTransaction.page',
+              onClick: () => void navigate(`/warehouse-transactions/view/${item.seq}`),
+              label: t('table.view'),
+              icon: <Eye className="h-4 w-4" />,
+            },
             ...(canReceive
               ? [{
                   permission: 'warehouseTransaction.receive',
@@ -144,10 +151,13 @@ export function useColumns() {
         header: () => t('page.warehouse-transactions.table.fromWarehouse'),
         cell: ({ row }) => {
           const fw = row.original.fromWarehouse
-          const label = typeof fw === 'object' && fw !== null
-            ? (fw.names?.[language] ?? t('page.warehouse-transactions.table.empty'))
-            : t('page.warehouse-transactions.table.empty')
-          return <Badge variant="outline">{label}</Badge>
+          if (typeof fw === 'object' && fw !== null) {
+            return <Badge variant="outline">{fw.names?.[language] ?? t('page.warehouse-transactions.table.empty')}</Badge>
+          }
+          if (row.original.sourceModel === 'procurement') {
+            return <Badge variant="outline">{t('page.warehouse-transactions.table.fromProcurement')}</Badge>
+          }
+          return <Badge variant="outline">{t('page.warehouse-transactions.table.empty')}</Badge>
         },
       }),
       columnHelper.display({
@@ -179,6 +189,7 @@ export function useColumns() {
             draft: 'default',
             confirmed: 'success',
             cancelled: 'destructive',
+            awaiting: 'warning',
             received: 'success',
           }
           return <Badge variant={badgeType[row.original.status as keyof typeof badgeType] as 'default' | 'destructive' | 'outline' | 'secondary' | 'success' | 'warning' | undefined}>{t(`page.warehouse-transactions.table.status.${row.original.status.toLowerCase()}`)}</Badge>

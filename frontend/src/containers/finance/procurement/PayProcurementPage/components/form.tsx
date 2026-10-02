@@ -137,15 +137,19 @@ export function PayProcurementForm() {
                         <span className="text-destructive ml-1">*</span>
                       </p>
                     </FormLabel>
-                    <div className="flex items-center gap-2">
+                    <div className="grid w-full grid-cols-[minmax(0,1fr)_5.5rem] items-center gap-2">
                       <FormControl>
                         <Input
                           type="number"
+                          min={0}
+                          step="0.01"
                           placeholder={t('page.money-transactions.form.amount')}
                           className="w-full"
-                          {...field}
+                          name={field.name}
+                          value={field.value || ''}
                           disabled={isLoading}
-                          onChange={e => field.onChange(Number(e.target.value))}
+                          onBlur={field.onBlur}
+                          onChange={e => field.onChange(e.target.value === '' ? 0 : Number(e.target.value))}
                         />
                       </FormControl>
                       <FormField
@@ -155,13 +159,11 @@ export function PayProcurementForm() {
                           <Select
                             onValueChange={currencyField.onChange}
                             disabled={isLoading || !selectedCashregisterAccount}
-                            {...currencyField}
+                            value={currencyField.value || undefined}
                           >
-                            <FormControl>
-                              <SelectTrigger className="w-[80px]">
-                                <SelectValue placeholder="..." />
-                              </SelectTrigger>
-                            </FormControl>
+                            <SelectTrigger className="w-full">
+                              <SelectValue placeholder="..." />
+                            </SelectTrigger>
                             <SelectContent>
                               {currencies.map(currency => (
                                 <SelectItem key={currency.id} value={currency.id}>

@@ -79,6 +79,10 @@ export default function App() {
                 element={<ProtectedRoute children={<Pages.ClientsPage />} permissions={['client.page']} />}
               />
               <Route
+                path="/clients/view/:seq"
+                element={<ProtectedRoute children={<Pages.ViewClientPage />} permissions={['client.page']} />}
+              />
+              <Route
                 path="/users"
                 element={(<ProtectedRoute children={<Pages.UsersPage />} permissions={['user.page']} />)}
               />
@@ -125,6 +129,10 @@ export default function App() {
                 element={<ProtectedRoute children={<Pages.SuppliersPage />} permissions={['supplier.page']} />}
               />
               <Route
+                path="/suppliers/view/:seq"
+                element={<ProtectedRoute children={<Pages.ViewSupplierPage />} permissions={['supplier.page']} />}
+              />
+              <Route
                 path="/procurements"
                 element={<ProtectedRoute children={<Pages.ProcurementsPage />} permissions={['procurement.page']} />}
               />
@@ -136,6 +144,14 @@ export default function App() {
               <Route
                 path="/procurements/create"
                 element={<ProtectedRoute children={<Pages.CreateProcurementPage />} permissions={['procurement.page']} />}
+              />
+              <Route
+                path="/procurements/edit/:seq"
+                element={<ProtectedRoute children={<Pages.CreateProcurementPage />} permissions={['procurement.page']} />}
+              />
+              <Route
+                path="/procurements/view/:seq"
+                element={<ProtectedRoute children={<Pages.ViewProcurementPage />} permissions={['procurement.page']} />}
               />
 
               <Route
@@ -212,6 +228,10 @@ export default function App() {
               <Route
                 path="/warehouse-transactions/receive/:seq"
                 element={<ProtectedRoute children={<Pages.WarehouseTransactionReceivePage />} permissions={['warehouseTransaction.receive']} />}
+              />
+              <Route
+                path="/warehouse-transactions/view/:seq"
+                element={<ProtectedRoute children={<Pages.WarehouseTransactionViewPage />} permissions={['warehouseTransaction.page']} />}
               />
               <Route
                 path="/barcodes"

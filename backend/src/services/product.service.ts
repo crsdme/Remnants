@@ -27,7 +27,6 @@ import ExcelJS from 'exceljs'
 import { v4 as uuidv4 } from 'uuid'
 import { STORAGE_PATHS, STORAGE_URLS } from '@/config/constants'
 import { mapProductPopulatedRepoToDTO } from '@/mappers'
-import * as UserAccessRepo from '@/repositories/user-access.repo'
 import * as CategoryRepository from '@/repositories/categories.repo'
 import * as CurrencyRepository from '@/repositories/currencies.repo'
 import * as LanguageRepository from '@/repositories/language.repo'
@@ -36,8 +35,10 @@ import * as ProductPropertyOptionRepository from '@/repositories/product-propert
 import * as ProductRepository from '@/repositories/products.repo'
 import * as SiteRepository from '@/repositories/site.repo'
 import * as UnitRepository from '@/repositories/unit.repo'
+import * as UserAccessRepo from '@/repositories/user-access.repo'
 import * as AuditLogsService from '@/services/audit-logs.service'
 import * as BarcodeService from '@/services/barcode.service'
+import * as ProductStockStatusService from '@/services/product-stock-status.service'
 import * as SyncEntryService from '@/services/sync-entry.service'
 import * as UserService from '@/services/user.service'
 import {
@@ -49,7 +50,7 @@ import {
   parseGetProductsRepo,
   parseGetUnits,
 } from '@/types/'
-import { buildAuditChanges, getEntityIdsWithCapabilityForUser, getDifferenceDeep, HttpError, toAuditSnapshot } from '@/utils'
+import { buildAuditChanges, getDifferenceDeep, getEntityIdsWithCapabilityForUser, HttpError, toAuditSnapshot } from '@/utils'
 import logger from '@/utils/logger'
 import { toMinor } from '@/utils/money'
 import {
@@ -76,8 +77,11 @@ export async function get({ payload, user }: { payload: GetProductsPayload, user
     viewStockWarehouseIds = getEntityIdsWithCapabilityForUser(access, 'warehouses', 'viewStock', user)
   }
 
-  const mappedItems = items.map((item) => {
-    const dto = mapProductPopulatedRepoToDTO(item)
+  const statuses = await ProductStockStatusService.listActiveStatuses()
+
+  const mappedItems = await Promise.all(items.map(async (item) => {
+    const warehouseStock = await ProductStockStatusService.decorateWarehouseStock(item.warehouseStock ?? [], statuses)
+    const dto = mapProductPopulatedRepoToDTO({ ...item, warehouseStock })
     if (viewStockWarehouseIds == null)
       return dto
 
@@ -90,7 +94,7 @@ export async function get({ payload, user }: { payload: GetProductsPayload, user
           : { ...stock, count: 0, stockStatus: null }
       )),
     }
-  })
+  }))
 
   return {
     status: 'success',

@@ -17,7 +17,8 @@ import type {
   OrderItemDBPopulated,
   OrderPaymentDBPopulated,
 } from '@/types'
-import { OrderItemModel, OrderModel, OrderPaymentModel } from '@/models'
+import { OrderItemModel, OrderModel, PaymentApplicationModel } from '@/models'
+import { warehouseStockFromLotsAddFields, warehouseStockFromLotsLookup } from '@/repositories/stock-lot.repo'
 import { applyScopeIdsToQuery, buildQuery, buildSortQuery, unwrapAggregate } from '@/utils'
 
 export async function list({
@@ -45,7 +46,6 @@ export async function list({
     deliveryService,
     orderSource,
     orderStatus,
-    orderPayments,
     client,
     comment,
     createdBy,
@@ -64,7 +64,6 @@ export async function list({
       deliveryService,
       orderSource,
       orderStatus,
-      orderPayments,
       client,
       comment,
       createdBy,
@@ -81,7 +80,6 @@ export async function list({
       deliveryService: { type: 'string', field: 'deliveryServiceId' },
       orderSource: { type: 'string', field: 'orderSourceId' },
       orderStatus: { type: 'array', field: 'orderStatusId' },
-      orderPayments: { type: 'array', field: 'orderPaymentIds' },
       client: { type: 'string', field: 'clientId' },
       comment: { type: 'string' },
       createdBy: { type: 'string' },
@@ -206,10 +204,20 @@ export async function list({
           },
           {
             $lookup: {
-              from: 'order-payments',
-              let: { paymentIds: { $ifNull: ['$orderPaymentIds', []] } },
+              from: 'payment-applications',
+              let: { oid: '$_id' },
               pipeline: [
-                { $match: { $expr: { $in: ['$_id', '$$paymentIds'] } } },
+                {
+                  $match: {
+                    $expr: {
+                      $and: [
+                        { $eq: ['$documentId', '$$oid'] },
+                        { $eq: ['$documentType', 'order'] },
+                        { $ne: ['$cancelled', true] },
+                      ],
+                    },
+                  },
+                },
                 {
                   $lookup: {
                     from: 'currencies',
@@ -224,7 +232,7 @@ export async function list({
                     id: '$_id',
                     minorAmount: 1,
                     scale: { $ifNull: [{ $arrayElemAt: ['$currency.scale', 0] }, 2] },
-                    paymentDate: 1,
+                    paymentDate: '$createdAt',
                     comment: { $ifNull: ['$comment', ''] },
                   },
                 },
@@ -515,14 +523,8 @@ export async function listItems({ payload }: { payload: GetOrderItemsRepoPayload
                     as: 'categories',
                   },
                 },
-                {
-                  $lookup: {
-                    from: 'quantities',
-                    localField: 'quantityIds',
-                    foreignField: '_id',
-                    as: 'warehouseStock',
-                  },
-                },
+                warehouseStockFromLotsLookup(),
+                warehouseStockFromLotsAddFields(),
                 {
                   $lookup: {
                     from: 'product-property-groups',
@@ -693,28 +695,30 @@ export async function listPayments({ payload }: { payload: GetOrderPaymentsRepoP
 
   const {
     order,
+    paymentDate,
   } = payload.filters
 
   const query = buildQuery({
     filters: {
-      orderId: order,
-      removed: [false],
+      documentType: 'order',
+      documentId: order,
+      createdAt: paymentDate,
+      cancelled: false,
     },
     rules: {
-      orderId: { type: 'array' },
-      removed: { type: 'array' },
+      documentType: { type: 'exact' },
+      documentId: { type: 'array' },
+      createdAt: { type: 'dateRange' },
+      cancelled: { type: 'exact' },
     },
+    removed: false,
   })
 
-  const sorters = buildSortQuery(payload.sorters, { seq: -1 })
+  const sorters = buildSortQuery(payload.sorters, { createdAt: -1 })
 
   const pipeline: PipelineStage[] = [
-    {
-      $match: query,
-    },
-    {
-      $sort: sorters,
-    },
+    { $match: query },
+    { $sort: sorters },
     {
       $facet: {
         items: [
@@ -726,24 +730,8 @@ export async function listPayments({ payload }: { payload: GetOrderPaymentsRepoP
               ]),
           {
             $lookup: {
-              from: 'cashregisters',
-              localField: 'cashregisterId',
-              foreignField: '_id',
-              as: 'cashregister',
-            },
-          },
-          {
-            $lookup: {
-              from: 'cashregister-accounts',
-              localField: 'cashregisterAccountId',
-              foreignField: '_id',
-              as: 'cashregisterAccount',
-            },
-          },
-          {
-            $lookup: {
-              from: 'moneytransactions',
-              localField: 'transactionId',
+              from: 'money-transactions',
+              localField: 'moneyTransactionId',
               foreignField: '_id',
               as: 'transaction',
             },
@@ -758,25 +746,45 @@ export async function listPayments({ payload }: { payload: GetOrderPaymentsRepoP
           },
           {
             $addFields: {
-              cashregister: { $arrayElemAt: ['$cashregister', 0] },
-              cashregisterAccount: { $arrayElemAt: ['$cashregisterAccount', 0] },
               transaction: { $arrayElemAt: ['$transaction', 0] },
               currency: { $arrayElemAt: ['$currency', 0] },
             },
           },
           {
+            $lookup: {
+              from: 'cashregisters',
+              localField: 'transaction.cashregisterId',
+              foreignField: '_id',
+              as: 'cashregister',
+            },
+          },
+          {
+            $lookup: {
+              from: 'cashregister-accounts',
+              localField: 'transaction.accountId',
+              foreignField: '_id',
+              as: 'cashregisterAccount',
+            },
+          },
+          {
+            $addFields: {
+              cashregister: { $arrayElemAt: ['$cashregister', 0] },
+              cashregisterAccount: { $arrayElemAt: ['$cashregisterAccount', 0] },
+            },
+          },
+          {
             $project: {
               _id: 1,
-              orderId: 1,
+              orderId: '$documentId',
               cashregister: { id: '$cashregister._id', names: '$cashregister.names' },
               cashregisterAccount: { id: '$cashregisterAccount._id', names: '$cashregisterAccount.names' },
-              currency: { id: '$currency._id', names: '$currency.names', symbols: '$currency.symbols', scale: '$currency.scale' },
+              currency: { id: '$currency._id', names: '$currency.names', symbols: '$currency.symbols', scale: { $ifNull: ['$currency.scale', 2] } },
               minorAmount: 1,
-              paymentDate: 1,
-              transactionId: 1,
+              paymentDate: '$createdAt',
+              transactionId: '$moneyTransactionId',
               comment: 1,
               createdBy: 1,
-              removedBy: 1,
+              removedBy: '$cancelledBy',
               createdAt: 1,
               updatedAt: 1,
             },
@@ -789,7 +797,7 @@ export async function listPayments({ payload }: { payload: GetOrderPaymentsRepoP
     },
   ]
 
-  const raw = await OrderPaymentModel.aggregate<AggregateResult<OrderPaymentDBPopulated>>(pipeline).exec()
+  const raw = await PaymentApplicationModel.aggregate<AggregateResult<OrderPaymentDBPopulated>>(pipeline).exec()
   const { items, total } = unwrapAggregate(raw)
 
   return { items, total, page: current, pageSize }
@@ -849,6 +857,163 @@ export async function findOne({ payload, session }: { payload: FindOneOrderRepoP
 
 export async function findById(id: string) {
   return OrderModel.findById(id).exec()
+}
+
+export async function listIdsByClientIds(clientIds: string[]) {
+  if (clientIds.length === 0)
+    return []
+
+  return OrderModel.find({
+    clientId: { $in: clientIds },
+    removed: { $ne: true },
+  }).select({ _id: 1, clientId: 1, orderPaymentStatus: 1 }).sort({ createdAt: 1 }).lean().exec()
+}
+
+export async function sumItemMinorsByOrderIds(orderIds: string[]) {
+  if (orderIds.length === 0)
+    return []
+
+  return OrderItemModel.aggregate<Array<{
+    orderId: string
+    currencyId: string
+    minorAmount: number
+  }>[number]>([
+    {
+      $match: {
+        orderId: { $in: orderIds },
+        removed: { $ne: true },
+      },
+    },
+    {
+      $group: {
+        _id: {
+          orderId: '$orderId',
+          currencyId: '$currencyId',
+        },
+        minorAmount: {
+          $sum: {
+            $multiply: [
+              { $ifNull: ['$minorPrice', 0] },
+              { $ifNull: ['$quantity', 0] },
+            ],
+          },
+        },
+      },
+    },
+    {
+      $project: {
+        _id: 0,
+        orderId: '$_id.orderId',
+        currencyId: '$_id.currencyId',
+        minorAmount: 1,
+      },
+    },
+  ]).exec()
+}
+
+export async function sumOpenItemMinorsByOrder() {
+  return OrderModel.aggregate<{
+    orderId: string
+    clientId: string | null
+    currencyId: string
+    minorAmount: number
+  }>([
+    {
+      $match: {
+        removed: { $ne: true },
+        orderPaymentStatus: { $ne: 'paid' },
+      },
+    },
+    {
+      $lookup: {
+        from: 'order-items',
+        localField: '_id',
+        foreignField: 'orderId',
+        as: 'items',
+      },
+    },
+    { $unwind: '$items' },
+    { $match: { 'items.removed': { $ne: true } } },
+    {
+      $group: {
+        _id: {
+          orderId: '$_id',
+          clientId: '$clientId',
+          currencyId: '$items.currencyId',
+        },
+        minorAmount: {
+          $sum: {
+            $multiply: [
+              { $ifNull: ['$items.minorPrice', 0] },
+              { $ifNull: ['$items.quantity', 0] },
+            ],
+          },
+        },
+      },
+    },
+    {
+      $project: {
+        _id: 0,
+        orderId: '$_id.orderId',
+        clientId: '$_id.clientId',
+        currencyId: '$_id.currencyId',
+        minorAmount: 1,
+      },
+    },
+  ]).exec()
+}
+
+export async function sumOpenItemMinorsByClient(clientIds: string[]) {
+  if (clientIds.length === 0)
+    return []
+
+  return OrderModel.aggregate<Array<{
+    clientId: string
+    currencyId: string
+    minorAmount: number
+  }>[number]>([
+    {
+      $match: {
+        clientId: { $in: clientIds },
+        removed: { $ne: true },
+        orderPaymentStatus: { $ne: 'paid' },
+      },
+    },
+    {
+      $lookup: {
+        from: 'order-items',
+        localField: '_id',
+        foreignField: 'orderId',
+        as: 'items',
+      },
+    },
+    { $unwind: '$items' },
+    { $match: { 'items.removed': { $ne: true } } },
+    {
+      $group: {
+        _id: {
+          clientId: '$clientId',
+          currencyId: '$items.currencyId',
+        },
+        minorAmount: {
+          $sum: {
+            $multiply: [
+              { $ifNull: ['$items.minorPrice', 0] },
+              { $ifNull: ['$items.quantity', 0] },
+            ],
+          },
+        },
+      },
+    },
+    {
+      $project: {
+        _id: 0,
+        clientId: '$_id.clientId',
+        currencyId: '$_id.currencyId',
+        minorAmount: 1,
+      },
+    },
+  ]).exec()
 }
 
 export async function removeById(id: string, options?: { removedBy?: string, session?: ClientSession }) {

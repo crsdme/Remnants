@@ -64,6 +64,10 @@
 
   "title.page.warehouse-transactions": "Транзакции складов - Remnant",
   "description.page.warehouse-transactions": "Управление транзакциями складов в Remnant",
+  "title.page.warehouse-transaction-receive": "Приёмка транзакции склада - Remnant",
+  "description.page.warehouse-transaction-receive": "Приёмка транзакции склада в Remnant",
+  "title.page.warehouse-transaction-view": "Просмотр транзакции склада - Remnant",
+  "description.page.warehouse-transaction-view": "Просмотр транзакции склада в Remnant",
 
   "title.page.order-statuses": "Статусы заказов - Remnant",
   "description.page.order-statuses": "Управление статусами заказов в Remnant",
@@ -134,5 +138,15 @@
   "description.page.sites.sync": "Связи товаров, категорий, атрибутов и языков с сайтом",
 
   "title.page.procurement.create": "Создать закупку - Remnant",
-  "description.page.procurement.create": "Создать закупку в Remnant"
+  "description.page.procurement.create": "Создать закупку в Remnant",
+  "title.page.procurement.accept": "Принять закупку - Remnant",
+  "description.page.procurement.accept": "Принять закупку в Remnant",
+  "title.page.procurement.view": "Просмотр закупки - Remnant",
+  "description.page.procurement.view": "Просмотр закупки в Remnant",
+  "title.page.procurement.edit": "Редактирование закупки - Remnant",
+  "description.page.procurement.edit": "Редактирование черновика закупки в Remnant",
+  "title.page.supplier.view": "Поставщик - Remnant",
+  "description.page.supplier.view": "Долг и оплаты поставщика в Remnant",
+  "title.page.client.view": "Клиент - Remnant",
+  "description.page.client.view": "Долг и оплаты клиента в Remnant"
 }

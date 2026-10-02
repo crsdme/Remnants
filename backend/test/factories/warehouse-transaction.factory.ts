@@ -1,4 +1,4 @@
-import type { CreateWarehouseTransactionRequest, EditWarehouseTransactionRequest, GetWarehouseTransactionsRequest, RemoveWarehouseTransactionsRequest } from '@remnant/shared'
+import type { CreateWarehouseTransactionRequest, EditWarehouseTransactionRequest, GetWarehouseTransactionsRequest, ReceiveWarehouseTransactionRequest, RemoveWarehouseTransactionsRequest } from '@remnant/shared'
 import request from 'supertest'
 import app from '@/index'
 import { WarehouseTransactionModel } from '@/models/warehouse-transaction.model'
@@ -32,6 +32,12 @@ export async function edit(params: EditWarehouseTransactionRequest): Promise<unk
 
 export async function remove(params: RemoveWarehouseTransactionsRequest): Promise<unknown> {
   const response = await request(app).post('/api/warehouse-transactions/remove').send(params)
+
+  return response.body
+}
+
+export async function receive(params: ReceiveWarehouseTransactionRequest): Promise<unknown> {
+  const response = await request(app).post('/api/warehouse-transactions/receive').send(params)
 
   return response.body
 }

@@ -1,6 +1,5 @@
 export { remnantAdapter } from './adapter'
 export { SiteSyncError } from './errors'
-export { REQUIRED_SITE_MODULE_PROTOCOL } from './version'
 export type {
   SiteAdapter,
   SiteCategory,
@@ -10,3 +9,4 @@ export type {
   SiteProductImage,
   SiteProductPayload,
 } from './types'
+export { REQUIRED_SITE_MODULE_PROTOCOL } from './version'

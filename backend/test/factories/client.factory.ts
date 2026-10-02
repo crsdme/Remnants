@@ -2,6 +2,7 @@ import type {
   CreateClientRequest,
   EditClientRequest,
   GetClientsRequest,
+  PayClientRequest,
   RemoveClientsRequest,
 } from '@remnant/shared'
 import request from 'supertest'
@@ -37,6 +38,12 @@ export async function edit(params: EditClientRequest): Promise<unknown> {
 
 export async function remove(params: RemoveClientsRequest): Promise<unknown> {
   const response = await request(app).post('/api/clients/remove').send(params)
+
+  return response.body
+}
+
+export async function pay(params: PayClientRequest): Promise<unknown> {
+  const response = await request(app).post('/api/clients/pay').send(params)
 
   return response.body
 }

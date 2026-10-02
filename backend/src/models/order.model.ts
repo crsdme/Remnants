@@ -38,11 +38,6 @@ const OrderSchema: Schema = new Schema(
       ref: 'orderStatus',
       required: true,
     },
-    orderPaymentIds: [{
-      type: String,
-      ref: 'orderPayment',
-      required: true,
-    }],
     orderPaymentStatus: {
       type: String,
       enum: ['paid', 'unpaid', 'partially_paid', 'overpaid'],

@@ -128,6 +128,13 @@ export async function findOne(payload: FilterQuery<CurrencyDB>) {
   return CurrencyModel.findOne(payload).exec()
 }
 
+export async function findByIds(ids: string[]) {
+  if (ids.length === 0)
+    return []
+
+  return CurrencyModel.find({ _id: { $in: ids } }).exec()
+}
+
 export async function removeById(id: string) {
   return CashregisterModel.findOneAndUpdate(
     { _id: id },

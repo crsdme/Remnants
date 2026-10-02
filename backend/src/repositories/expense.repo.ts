@@ -7,6 +7,7 @@ import type {
   GetExpensesRepoPayload,
   GetExpensesRepoResult,
 } from '@/types/'
+import type { DbSession } from '@/utils'
 import { ExpenseModel } from '@/models'
 import { applyScopeIdsToQuery, buildQuery, buildSortQuery, unwrapAggregate } from '@/utils'
 
@@ -192,26 +193,27 @@ export async function list(
   return { items, total, page: current, pageSize }
 }
 
-export async function createOne(payload: CreateExpensesRepoPayload) {
-  return ExpenseModel.create(payload)
+export async function createOne(payload: CreateExpensesRepoPayload, session?: DbSession) {
+  const [doc] = await ExpenseModel.create([payload], { session })
+  return doc
 }
 
-export async function updateById(id: string, payload: EditExpensesRepoPayload) {
+export async function updateById(id: string, payload: EditExpensesRepoPayload, session?: DbSession) {
   return ExpenseModel.findOneAndUpdate(
     { _id: id },
     { $set: payload as unknown as Record<string, unknown> },
-    { new: true, runValidators: true },
+    { new: true, runValidators: true, session },
   ).exec()
 }
 
-export async function findById(id: string) {
-  return ExpenseModel.findById(id).exec()
+export async function findById(id: string, session?: DbSession) {
+  return ExpenseModel.findById(id).session(session ?? null).exec()
 }
 
-export async function removeById(id: string) {
+export async function removeById(id: string, session?: DbSession) {
   return ExpenseModel.findOneAndUpdate(
     { _id: id },
     { $set: { removed: true } },
-    { new: true, runValidators: true },
+    { new: true, runValidators: true, session },
   ).exec()
 }

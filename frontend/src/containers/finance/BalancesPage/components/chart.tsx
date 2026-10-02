@@ -16,6 +16,7 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from '@/components/ui'
+import { fromMinor } from '@/utils/helpers'
 import { useLocale } from '@/utils/hooks'
 import { useBalanceContext } from '../context'
 
@@ -26,10 +27,11 @@ export function ChartAreaInteractive() {
   const { balances, currencies } = useBalanceContext()
 
   const dataForChart = React.useMemo(() => {
-    return balances.map((snap: any) => {
+    const rows = balances.map((snap: any) => {
       const row: Record<string, any> = { createdAt: snap.createdAt }
-      for (const t of snap.totalBalances ?? []) {
-        row[t.currencyId] = t.amount ?? 0
+      for (const total of snap.totalBalances ?? []) {
+        const currency = currencies.find((c: any) => c.id === total.currencyId)
+        row[total.currencyId] = Number(fromMinor(Number(total.minorAmount) || 0, currency?.scale ?? 2))
       }
 
       for (const c of currencies ?? []) {
@@ -38,6 +40,8 @@ export function ChartAreaInteractive() {
       }
       return row
     })
+    // list comes newest-first; chart should read left→right as oldest→newest
+    return [...rows].reverse()
   }, [balances, currencies])
 
   const chartConfig: ChartConfig = React.useMemo(() => {

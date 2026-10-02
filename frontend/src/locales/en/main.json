@@ -17,6 +17,7 @@
   "table.test": "View Details",
   "table.noResults": "No results found",
   "table.seq": "#",
+  "table.actions": "Actions",
   "table.addOption": "Add Option",
   "table.active.true": "Active",
   "table.active.false": "Inactive",
@@ -32,10 +33,14 @@
   "table.printInvoice": "Print Invoice",
   "table.printTtn": "Print waybill",
   "table.quantityLogs": "Quantity Logs",
+  "table.stockLots": "Lots",
   "table.auditLogs": "Audit Logs",
   "table.printLabel": "Print Label",
   "table.pay": "Pay",
+  "table.confirm": "Confirm",
+  "table.unconfirm": "Withdraw confirm",
   "table.accept": "Accept",
+  "table.cancel-payment": "Cancel payment",
 
   "order-status.all": "All",
 
@@ -49,6 +54,7 @@
 
   "button.cancel": "Cancel",
   "button.submit": "Submit",
+  "button.save": "Save",
   "button.import": "Import",
   "button.back": "Back",
   "button.generate": "Generate",

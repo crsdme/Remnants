@@ -20,6 +20,7 @@ interface ProductSelectedTableProps {
   isSelectedPrice?: boolean
   isDiscount?: boolean
   isQuantity?: boolean
+  isInboundCost?: boolean
   disabled?: boolean
   isLoading?: boolean
   className?: string
@@ -43,6 +44,7 @@ export function ProductSelectedTable(
     isSelectedPrice = false,
     isDiscount = false,
     isQuantity = false,
+    isInboundCost = false,
     disabled = false,
     includeTotal = false,
     includeFooterTotal = false,
@@ -76,6 +78,7 @@ export function ProductSelectedTable(
     isReceiving,
     isSelectedPrice,
     isQuantity,
+    isInboundCost,
     disabled,
     handleChange,
     isDiscount,

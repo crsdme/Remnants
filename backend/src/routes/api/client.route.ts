@@ -6,6 +6,8 @@ import {
   editClientSchema,
   getClientsResponseSchema,
   getClientsSchema,
+  payClientResponseSchema,
+  payClientSchema,
   removeClientsResponseSchema,
   removeClientsSchema,
 } from '@remnant/shared'
@@ -44,6 +46,14 @@ router.post(
   checkPermissions('client.remove'),
   validateResponse(removeClientsResponseSchema),
   ClientController.remove as RequestHandler,
+)
+
+router.post(
+  '/pay',
+  validateBodyRequest(payClientSchema),
+  checkPermissions('client.edit'),
+  validateResponse(payClientResponseSchema),
+  ClientController.pay as RequestHandler,
 )
 
 export default router

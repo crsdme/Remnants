@@ -5,6 +5,7 @@ import type {
   EditInventoryResponse,
   GetInventoriesResponse,
   GetInventoryItemsResponse,
+  InventoryItemDTO,
   RemoveInventoriesResponse,
   ScanBarcodeToDraftInventoryResponse,
   UpsertInventoryItemResponse,
@@ -26,9 +27,12 @@ import ExcelJS from 'exceljs'
 import { v4 as uuidv4 } from 'uuid'
 import { mapInventoryToDTO } from '@/mappers'
 import * as InventoryRepo from '@/repositories/inventory.repo'
+import * as StockLotRepo from '@/repositories/stock-lot.repo'
+import * as StockMoveRepo from '@/repositories/stock-move.repo'
 import * as BarcodeService from '@/services/barcode.service'
+import * as ProductStockStatusService from '@/services/product-stock-status.service'
 import * as ProductService from '@/services/product.service'
-import * as QuantityService from '@/services/quantity.service'
+import * as StockLedger from '@/services/stock-ledger.service'
 import {
   parseGetBarcodes,
   parseGetInventoryItems,
@@ -57,13 +61,14 @@ export async function get({ payload }: { payload: GetInventoriesPayload }): Prom
 
 export async function getItems({ payload }: { payload: GetInventoryItemsPayload }): Promise<GetInventoryItemsResponse> {
   const { items, total, page, pageSize } = await InventoryRepo.listItems({ payload })
+  const decoratedItems = await decorateInventoryItemStockStatus(items, payload.filters.inventoryId)
 
   return {
     status: 'success',
     code: 'INVENTORY_ITEMS_FETCHED',
     message: 'Inventory items fetched',
     data: {
-      items,
+      items: decoratedItems,
       pagination: {
         page,
         pageSize,
@@ -264,17 +269,42 @@ export async function confirm({ payload, user }: { payload: ConfirmInventoryPayl
       })
     }
 
-    await QuantityService.count({
-      payload: {
-        productId: item.productId,
-        warehouseId: inventory.warehouseId,
-        count,
-        mode: 'set',
-        userId: user.id,
-        refType: 'inventory',
-        refId: payload.id,
-      },
+    const onHand = await StockLedger.onHand({
+      productId: item.productId,
+      warehouseId: inventory.warehouseId,
     })
+    const delta = count - onHand
+
+    if (delta > 0) {
+      await StockLedger.post({
+        payload: {
+          fromKind: 'adjustment',
+          toKind: 'warehouse',
+          toWarehouseId: inventory.warehouseId,
+          productId: item.productId,
+          quantity: delta,
+          documentType: 'inventory',
+          documentId: payload.id,
+          documentItemId: item._id,
+          userId: user.id,
+        },
+      })
+    }
+    else if (delta < 0) {
+      await StockLedger.post({
+        payload: {
+          fromKind: 'warehouse',
+          fromWarehouseId: inventory.warehouseId,
+          toKind: 'adjustment',
+          productId: item.productId,
+          quantity: -delta,
+          documentType: 'inventory',
+          documentId: payload.id,
+          documentItemId: item._id,
+          userId: user.id,
+        },
+      })
+    }
   }
 
   const updated = await InventoryRepo.updateById({
@@ -439,4 +469,47 @@ export async function exportExcel({ payload }: { payload: ExportInventoryPayload
     buffer: Buffer.from(buffer),
     filename: `inventory-${inventoryDto.seq}.xlsx`,
   }
+}
+
+async function decorateInventoryItemStockStatus(items: InventoryItemDTO[], inventoryId?: string) {
+  if (inventoryId === undefined || items.length === 0)
+    return items
+
+  const inventory = await InventoryRepo.findById(inventoryId)
+  if (inventory === null)
+    return items
+
+  const warehouseId = inventory.warehouseId
+  const [remaining, lastSales, lastMoves, statuses] = await Promise.all([
+    StockLotRepo.listRemainingByWarehouse(warehouseId),
+    StockMoveRepo.listLastCustomerSaleAtByWarehouse(warehouseId),
+    StockMoveRepo.listLastMoveAtByWarehouse(warehouseId),
+    ProductStockStatusService.listActiveStatuses(),
+  ])
+
+  const countByProduct = new Map(remaining.map(row => [row.productId, row.count]))
+  const lastSaleByProduct = new Map(lastSales.map(row => [row.productId, row.lastSaleAt]))
+  const lastMoveByProduct = new Map(lastMoves.map(row => [row.productId, row.lastMoveAt]))
+  const decorated = await ProductStockStatusService.decorateWarehouseStock(
+    items.map(item => ({
+      warehouseId,
+      count: countByProduct.get(item.productId) ?? 0,
+      lastSaleAt: lastSaleByProduct.get(item.productId) ?? null,
+      lastMoveAt: lastMoveByProduct.get(item.productId) ?? null,
+    })),
+    statuses,
+  )
+
+  return items.map((item, index) => {
+    if (!item.product)
+      return item
+
+    return {
+      ...item,
+      product: {
+        ...item.product,
+        stockStatus: decorated[index]?.stockStatus ?? null,
+      },
+    }
+  })
 }

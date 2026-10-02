@@ -27,6 +27,8 @@ interface ProductSelectedTableProps<TData extends BaseProductRow> {
 
   includeFooterTotal?: boolean
   footerTotalSlot?: React.ReactNode
+  tableId?: string
+  showHeader?: boolean
 }
 
 export function ProductSelectedTableNew<TData extends BaseProductRow>({
@@ -39,6 +41,8 @@ export function ProductSelectedTableNew<TData extends BaseProductRow>({
   includeFooterTotal = false,
   footerTotalSlot,
   disabled = false,
+  tableId = 'selected-products-component',
+  showHeader = true,
 }: ProductSelectedTableProps<TData>) {
   const { t } = useTranslation()
 
@@ -172,18 +176,22 @@ export function ProductSelectedTableNew<TData extends BaseProductRow>({
   return (
     <div className={cn('', className)}>
       <div className="flex justify-between items-center max-md:flex-col gap-2 py-2">
-        <h3 className="text-lg font-medium flex items-center gap-2">
-          <Package className="size-5" />
-          <p className="text-lg font-medium">
-            {t('component.productTable.table.selectedProducts', {
-              count: products.reduce((acc, product) => acc + product.quantity, 0),
-            })}
-          </p>
-        </h3>
+        {showHeader
+          ? (
+              <h3 className="text-lg font-medium flex items-center gap-2">
+                <Package className="size-5" />
+                <p className="text-lg font-medium">
+                  {t('component.productTable.table.selectedProducts', {
+                    count: products.reduce((acc, product) => acc + product.quantity, 0),
+                  })}
+                </p>
+              </h3>
+            )
+          : <div />}
 
         <ColumnVisibilityMenu
           table={table}
-          tableId="selected-products-component"
+          tableId={tableId}
           className="min-w-[100%] sm:min-w-[100px]"
         />
       </div>

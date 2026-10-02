@@ -103,6 +103,8 @@ export const productDBPopulatedSchema = z.object({
   warehouseStock: z.array(z.object({
     warehouseId: idSchema,
     count: z.number(),
+    lastSaleAt: z.coerce.date().nullable().optional(),
+    lastMoveAt: z.coerce.date().nullable().optional(),
     stockStatus: z.object({
       id: idSchema,
       names: languageStringSchema,

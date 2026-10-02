@@ -3,6 +3,7 @@ import type { WarehouseTransactionDB, WarehouseTransactionItemDB } from '@/types
 import mongoose, { Schema } from 'mongoose'
 import { v4 as uuidv4 } from 'uuid'
 import { CounterModel } from '@/models/'
+import { uuidValidator } from '@/utils/'
 
 type WarehouseTransactionDoc = HydratedDocument<WarehouseTransactionDB>
 
@@ -34,6 +35,15 @@ const WarehouseTransactionSchema: Schema = new Schema(
     requiresReceiving: {
       type: Boolean,
       default: true,
+    },
+    sourceModel: {
+      type: String,
+      enum: ['procurement', null],
+      default: null,
+    },
+    sourceId: {
+      type: String,
+      default: null,
     },
     status: {
       type: String,
@@ -78,6 +88,11 @@ const WarehouseTransactionSchema: Schema = new Schema(
 type WarehouseTransactionItemDoc = HydratedDocument<WarehouseTransactionItemDB>
 
 const WarehouseTransactionItemSchema: Schema = new Schema({
+  _id: {
+    type: String,
+    default: uuidv4,
+    validate: uuidValidator,
+  },
   transactionId: {
     type: String,
     required: true,
@@ -96,6 +111,15 @@ const WarehouseTransactionItemSchema: Schema = new Schema({
   receivedQuantity: {
     type: Number,
     default: 0,
+  },
+  minorPurchasePrice: {
+    type: Number,
+    default: 0,
+  },
+  purchaseCurrencyId: {
+    type: String,
+    default: null,
+    ref: 'Currency',
   },
 })
 
@@ -127,6 +151,7 @@ WarehouseTransactionSchema.index({ fromWarehouseId: 1 })
 WarehouseTransactionSchema.index({ toWarehouseId: 1 })
 WarehouseTransactionSchema.index({ createdAt: -1 })
 WarehouseTransactionSchema.index({ seq: 1 })
+WarehouseTransactionSchema.index({ sourceModel: 1, sourceId: 1 })
 
 WarehouseTransactionItemSchema.index({ transactionId: 1 })
 WarehouseTransactionItemSchema.index({ productId: 1 })

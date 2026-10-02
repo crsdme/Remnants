@@ -1,10 +1,10 @@
 import type { SiteSyncItemDTO, SiteSyncSourceType } from '@remnant/shared'
 import { useQueryClient } from '@tanstack/react-query'
-import { Unlink } from 'lucide-react'
+import { Plus, Unlink } from 'lucide-react'
 import { useCallback, useMemo, useState } from 'react'
 import { toast } from 'sonner'
 
-import { useSiteSyncMappingQuery, useSiteSyncMappingSave } from '@/api/hooks'
+import { useSiteSyncMappingQuery, useSiteSyncMappingSave, useSiteSyncProduct } from '@/api/hooks'
 import { getSiteSyncSiteItems } from '@/api/requests'
 import { TablePagination } from '@/components'
 import { AsyncSelectNew } from '@/components/AsyncSelectNew'
@@ -96,6 +96,7 @@ export function MappingTab({
   const queryClient = useQueryClient()
   const [search, setSearch] = useState('')
   const [pagination, setPagination] = useState({ current: 1, pageSize: 20 })
+  const [loaded, setLoaded] = useState(false)
   const debouncedSearch = useDebounceValue(search, 300)
   const isProduct = sourceType === 'product'
   const isCategory = sourceType === 'category'
@@ -103,13 +104,18 @@ export function MappingTab({
   const params = {
     id: siteId,
     sourceType,
+    includeSite: true,
     names: isProduct ? debouncedSearch || undefined : undefined,
     pagination: isProduct
       ? pagination
       : { current: 1, pageSize: 100, full: true },
   }
 
-  const { crmItems, siteItems, links, total, isLoading, isFetching, isError, errorCode } = useSiteSyncMappingQuery(params)
+  const { crmItems, siteItems, links, total, isLoading, isFetching, isError, errorCode } = useSiteSyncMappingQuery(params, {
+    options: {
+      enabled: loaded,
+    },
+  })
 
   const siteById = useMemo(() => new Map(siteItems.map(item => [item.id, item])), [siteItems])
 
@@ -132,14 +138,43 @@ export function MappingTab({
     },
   })
 
+  const createOnSite = useSiteSyncProduct({
+    options: {
+      onSuccess: ({ data }) => {
+        void queryClient.invalidateQueries({ queryKey: ['sites', 'sync-mapping'] })
+        toast.success(t(`response.title.${data.code}`), {
+          description: t(`response.description.${data.code}`),
+        })
+      },
+      onError: ({ response }) => {
+        const error = response.data.error
+        toast.error(t(`error.title.${error.code}`), {
+          description: `${t(`error.description.${error.code}`)} ${error.description || ''}`,
+        })
+      },
+    },
+  })
+
   const loadSiteOptions = useCallback(
     async ({ query = '', selectedValue }: { query?: string, selectedValue?: string[] } = {}) => {
       if (isProduct) {
+        if (selectedValue && selectedValue.length > 0) {
+          const fromMapping = siteItems.filter(item => selectedValue.includes(item.id))
+          if (fromMapping.length === selectedValue.length)
+            return fromMapping
+
+          const response = await getSiteSyncSiteItems({
+            id: siteId,
+            sourceType: 'product',
+            ids: selectedValue,
+          })
+          return response.data.data.items
+        }
+
         const response = await getSiteSyncSiteItems({
           id: siteId,
           sourceType: 'product',
-          query: selectedValue && selectedValue.length > 0 ? undefined : query,
-          ids: selectedValue && selectedValue.length > 0 ? selectedValue : undefined,
+          query,
         })
         return response.data.data.items
       }
@@ -172,20 +207,55 @@ export function MappingTab({
     })
   }
 
+  const onCreateOnSite = (productId: string) => {
+    createOnSite.mutate({ id: siteId, productId })
+  }
+
+  const rowBusy = saveMapping.isPending || createOnSite.isPending
+  const catalogLoading = loaded && (isLoading || isFetching)
+
+  if (!loaded) {
+    return (
+      <div className={compact ? 'space-y-3' : 'space-y-3 mt-4'}>
+        <p className="text-sm text-muted-foreground">{t(`page.sites.sync.hint.${sourceType}`)}</p>
+        <Button type="button" variant="outline" onClick={() => setLoaded(true)}>
+          {t('page.sites.sync.loadSite')}
+        </Button>
+      </div>
+    )
+  }
+
   if (isError) {
     const titleKey = errorCode ? `error.title.${errorCode}` : 'page.sites.sync.loadError'
     const descriptionKey = errorCode ? `error.description.${errorCode}` : 'page.sites.sync.loadError'
     return (
-      <div className="text-sm text-destructive mt-4 space-y-1">
-        <p>{t(titleKey)}</p>
-        {errorCode && <p className="text-muted-foreground">{t(descriptionKey)}</p>}
+      <div className="text-sm text-destructive mt-4 space-y-3">
+        <div className="space-y-1">
+          <p>{t(titleKey)}</p>
+          {errorCode && <p className="text-muted-foreground">{t(descriptionKey)}</p>}
+        </div>
+        <Button type="button" variant="outline" size="sm" onClick={() => void queryClient.invalidateQueries({ queryKey: ['sites', 'sync-mapping'] })}>
+          {t('page.sites.sync.loadSite.reload')}
+        </Button>
       </div>
     )
   }
 
   return (
     <div className={compact ? 'space-y-3' : 'space-y-3 mt-4'}>
-      <p className="text-sm text-muted-foreground">{t(`page.sites.sync.hint.${sourceType}`)}</p>
+      <div className="flex flex-wrap items-center gap-3 justify-between">
+        <p className="text-sm text-muted-foreground">{t(`page.sites.sync.hint.${sourceType}`)}</p>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          loading={catalogLoading}
+          disabled={catalogLoading}
+          onClick={() => void queryClient.invalidateQueries({ queryKey: ['sites', 'sync-mapping'] })}
+        >
+          {t('page.sites.sync.loadSite.reload')}
+        </Button>
+      </div>
 
       {isProduct && (
         <Input
@@ -203,7 +273,7 @@ export function MappingTab({
         <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] gap-4 px-3 py-2 text-sm font-medium text-muted-foreground">
           <span>{t('page.sites.sync.column.program')}</span>
           <span>{t('page.sites.sync.column.site')}</span>
-          <span className="w-9" />
+          <span className={isProduct ? 'w-20' : 'w-9'} />
         </div>
 
         {(isLoading || isFetching) && crmItems.length === 0
@@ -212,7 +282,7 @@ export function MappingTab({
               <div key={index} className="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] gap-4 px-3 py-3">
                 <Skeleton className="h-9 w-full" />
                 <Skeleton className="h-9 w-full" />
-                <Skeleton className="h-9 w-9" />
+                <Skeleton className={isProduct ? 'h-9 w-20' : 'h-9 w-9'} />
               </div>
             ))
           : crmItems.map(item => (
@@ -223,16 +293,20 @@ export function MappingTab({
                 value={linkBySource.get(item.id) ?? []}
                 multi={isCategory}
                 showPath={isCategory}
+                showCreate={isProduct}
                 siteById={siteById}
-                disabled={saveMapping.isPending}
+                disabled={rowBusy || catalogLoading}
+                creating={createOnSite.isPending && createOnSite.variables?.productId === item.id}
                 placeholder={t('page.sites.sync.select')}
                 unlinkLabel={t('page.sites.sync.unlink')}
+                createLabel={t('page.sites.sync.createOnSite')}
                 loadOptions={loadSiteOptions}
                 onChange={value => onChange(item.id, value)}
+                onCreate={() => onCreateOnSite(item.id)}
               />
             ))}
 
-        {!isLoading && crmItems.length === 0 && (
+        {!isLoading && !isFetching && crmItems.length === 0 && (
           <p className="px-3 py-6 text-sm text-center text-muted-foreground">{t('table.noResults')}</p>
         )}
       </div>
@@ -255,24 +329,32 @@ function MappingRow({
   value,
   multi,
   showPath,
+  showCreate,
   siteById,
   disabled,
+  creating,
   placeholder,
   unlinkLabel,
+  createLabel,
   loadOptions,
   onChange,
+  onCreate,
 }: {
   item: SiteSyncItemDTO
   language: string
   value: string[]
   multi: boolean
   showPath: boolean
+  showCreate: boolean
   siteById: Map<string, SiteSyncItemDTO>
   disabled: boolean
+  creating: boolean
   placeholder: string
   unlinkLabel: string
+  createLabel: string
   loadOptions: (params?: { query?: string, selectedValue?: string[] }) => Promise<SiteSyncItemDTO[]>
   onChange: (value: string | string[]) => void
+  onCreate: () => void
 }) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] gap-3 px-3 py-3 items-center">
@@ -303,17 +385,33 @@ function MappingRow({
         getOptionValue={option => option.id}
         onChange={onChange}
       />
-      <Button
-        type="button"
-        variant="ghost"
-        size="icon"
-        disabled={disabled || value.length === 0}
-        title={unlinkLabel}
-        aria-label={unlinkLabel}
-        onClick={() => onChange(multi ? [] : '')}
-      >
-        <Unlink className="h-4 w-4" />
-      </Button>
+      <div className="flex items-center gap-1">
+        {showCreate && value.length === 0 && (
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            disabled={disabled}
+            loading={creating}
+            title={createLabel}
+            aria-label={createLabel}
+            onClick={onCreate}
+          >
+            <Plus className="h-4 w-4" />
+          </Button>
+        )}
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          disabled={disabled || value.length === 0}
+          title={unlinkLabel}
+          aria-label={unlinkLabel}
+          onClick={() => onChange(multi ? [] : '')}
+        >
+          <Unlink className="h-4 w-4" />
+        </Button>
+      </div>
     </div>
   )
 }

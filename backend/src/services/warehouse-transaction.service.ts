@@ -20,10 +20,13 @@ import type {
   ScanBarcodeToDraftPayload,
 } from '@/types/'
 import { mapWarehouseTransactionItemRepoToDTO } from '@/mappers/warehouse-transaction.mapper'
+import * as ProcurementRepo from '@/repositories/procurement.repo'
+import * as ProductsRepository from '@/repositories/products.repo'
 import * as UserAccessRepo from '@/repositories/user-access.repo'
 import * as WarehouseTransactionRepo from '@/repositories/warehouse-transaction.repo'
 import * as BarcodeService from '@/services/barcode.service'
-import * as QuantityService from '@/services/quantity.service'
+import * as ProcurementService from '@/services/procurement.service'
+import * as StockLedger from '@/services/stock-ledger.service'
 import { parseGetBarcodes, parseGetWarehouseTransactions, parseGetWarehouseTransactionsItems } from '@/types/'
 import { assertEntityCapability, assertEntityInAccess, getEntityIdsForUser } from '@/utils'
 import { HttpError } from '@/utils/httpError'
@@ -146,73 +149,25 @@ export async function remove({ payload, user }: { payload: RemoveWarehouseTransa
   for (const id of payload.ids) {
     const warehouseTransaction = await WarehouseTransactionRepo.findById(id)
 
-    const { items: warehouseTransactionItems } = await WarehouseTransactionRepo.listItems(parseGetWarehouseTransactionsItems(
-      { filters: { transactionId: id }, pagination: { full: true } },
-    ))
-
     if (warehouseTransaction === null)
       throw new HttpError(404, 'Warehouse transaction not found', 'WAREHOUSE_TRANSACTION_NOT_FOUND')
 
-    switch (warehouseTransaction.type) {
-      case 'in':
-        for (const item of warehouseTransactionItems) {
-          await QuantityService.count({
-            payload: {
-              mode: 'dec',
-              productId: item.productId,
-              warehouseId: warehouseTransaction.toWarehouseId ?? '',
-              count: item.quantity,
-              userId: user.id,
-              refType: 'warehouse-transaction',
-              refId: id,
-            },
-          })
-        }
-        break
-      case 'out':
-        for (const item of warehouseTransactionItems) {
-          await QuantityService.count({
-            payload: {
-              mode: 'inc',
-              productId: item.productId,
-              warehouseId: warehouseTransaction.fromWarehouseId ?? '',
-              count: item.quantity,
-              userId: user.id,
-              refType: 'warehouse-transaction',
-              refId: id,
-            },
-          })
-        }
-        break
-      case 'transfer':
-        for (const item of warehouseTransactionItems) {
-          await QuantityService.count({
-            payload: {
-              mode: 'inc',
-              productId: item.productId,
-              warehouseId: warehouseTransaction.fromWarehouseId ?? '',
-              count: item.quantity,
-              userId: user.id,
-              refType: 'warehouse-transaction',
-              refId: id,
-            },
-          })
-          if (warehouseTransaction.status === 'received') {
-            await QuantityService.count({
-              payload: {
-                mode: 'dec',
-                productId: item.productId,
-                warehouseId: warehouseTransaction.toWarehouseId ?? '',
-                count: item.quantity,
-                userId: user.id,
-                refType: 'warehouse-transaction',
-                refId: id,
-              },
-            })
-          }
-        }
-        break
+    if (warehouseTransaction.sourceModel === 'procurement' && typeof warehouseTransaction.sourceId === 'string') {
+      const inboundItems = await WarehouseTransactionRepo.listItemsByTransactionId(id)
+      await ProcurementService.reverseInboundReceipt({
+        procurementId: warehouseTransaction.sourceId,
+        products: inboundItems.map(item => ({
+          productId: String(item.productId),
+          receivedQuantity: Number(item.receivedQuantity) || 0,
+        })),
+      })
     }
+
+    await StockLedger.cancel({
+      documentType: 'warehouse-transaction',
+      documentId: id,
+      userId: user.id,
+    })
 
     await WarehouseTransactionRepo.removeById(id, user.id)
   }
@@ -240,7 +195,7 @@ async function inWarehauseTransaction({ payload, user }: { payload: PayloadByTyp
     comment,
     createdBy: user.id,
     status: 'confirmed',
-    products,
+    requiresReceiving: false,
   })
 
   const mappedProducts = products.map(product => ({
@@ -249,17 +204,33 @@ async function inWarehauseTransaction({ payload, user }: { payload: PayloadByTyp
     quantity: product.quantity,
   }))
 
-  for (const product of mappedProducts) {
-    await WarehouseTransactionRepo.createItems(mappedProducts)
-    await QuantityService.count({
+  await WarehouseTransactionRepo.createItems(mappedProducts)
+
+  for (const product of products) {
+    const productDoc = await ProductsRepository.findById(product.id)
+    const lineCost = product.minorPurchasePrice !== undefined && typeof product.purchaseCurrencyId === 'string'
+      ? {
+          minorUnitCost: product.minorPurchasePrice,
+          currencyId: product.purchaseCurrencyId,
+        }
+      : productDoc
+        ? {
+            minorUnitCost: productDoc.minorPurchasePrice,
+            currencyId: productDoc.purchaseCurrencyId,
+          }
+        : undefined
+
+    await StockLedger.post({
       payload: {
-        mode: 'inc',
+        fromKind: 'adjustment',
+        toKind: 'warehouse',
+        toWarehouseId,
+        productId: product.id,
+        quantity: product.quantity,
+        documentType: 'warehouse-transaction',
+        documentId: warehouseTransaction._id,
         userId: user.id,
-        refType: 'warehouse',
-        refId: warehouseTransaction._id.toString(),
-        productId: product.productId,
-        warehouseId: toWarehouseId,
-        count: product.quantity,
+        inboundCost: lineCost,
       },
     })
   }
@@ -284,7 +255,7 @@ async function outWarehauseTransaction({ payload, user }: { payload: PayloadByTy
     comment,
     createdBy: user.id,
     status: 'confirmed',
-    products,
+    requiresReceiving: false,
   })
 
   const mappedProducts = products.map(product => ({
@@ -293,16 +264,19 @@ async function outWarehauseTransaction({ payload, user }: { payload: PayloadByTy
     quantity: product.quantity,
   }))
 
+  await WarehouseTransactionRepo.createItems(mappedProducts)
+
   for (const product of mappedProducts) {
-    await QuantityService.count({
+    await StockLedger.post({
       payload: {
-        mode: 'dec',
-        userId: user.id,
+        fromKind: 'warehouse',
+        fromWarehouseId,
+        toKind: 'adjustment',
         productId: product.productId,
-        warehouseId: fromWarehouseId,
-        count: product.quantity,
-        refType: 'warehouse',
-        refId: warehouseTransaction._id.toString(),
+        quantity: product.quantity,
+        documentType: 'warehouse-transaction',
+        documentId: warehouseTransaction._id,
+        userId: user.id,
       },
     })
   }
@@ -327,7 +301,6 @@ async function transferWarehauseTransaction({ payload, user }: { payload: Payloa
     fromWarehouseId,
     toWarehouseId,
     requiresReceiving,
-    products,
     comment,
     createdBy: user.id,
     status: requiresReceiving ? 'awaiting' : 'confirmed',
@@ -340,28 +313,32 @@ async function transferWarehauseTransaction({ payload, user }: { payload: Payloa
   }))
 
   for (const product of mappedProducts) {
-    await QuantityService.count({
-      payload: {
-        mode: 'dec',
-        productId: product.productId,
-        warehouseId: fromWarehouseId,
-        count: product.quantity,
-        userId: user.id,
-        refType: 'warehouse',
-        refId: warehouseTransaction._id.toString(),
-      },
-    })
-
-    if (!requiresReceiving) {
-      await QuantityService.count({
+    if (requiresReceiving) {
+      await StockLedger.post({
         payload: {
-          mode: 'inc',
+          fromKind: 'warehouse',
+          fromWarehouseId,
+          toKind: 'transit',
           productId: product.productId,
-          warehouseId: toWarehouseId,
-          count: product.quantity,
+          quantity: product.quantity,
+          documentType: 'warehouse-transaction',
+          documentId: warehouseTransaction._id,
           userId: user.id,
-          refType: 'warehouse',
-          refId: warehouseTransaction._id.toString(),
+        },
+      })
+    }
+    else {
+      await StockLedger.post({
+        payload: {
+          fromKind: 'warehouse',
+          fromWarehouseId,
+          toKind: 'warehouse',
+          toWarehouseId,
+          productId: product.productId,
+          quantity: product.quantity,
+          documentType: 'warehouse-transaction',
+          documentId: warehouseTransaction._id,
+          userId: user.id,
         },
       })
     }
@@ -384,8 +361,21 @@ export async function receive({ payload, user }: { payload: ReceiveWarehouseTran
   if (existing === null)
     throw new HttpError(404, 'Warehouse transaction not found', 'WAREHOUSE_TRANSACTION_NOT_FOUND')
 
+  if (existing.status !== 'awaiting')
+    throw new HttpError(400, 'Warehouse transaction is not awaiting receipt', 'WAREHOUSE_TRANSACTION_NOT_AWAITING')
+
   const access = await UserAccessRepo.getScopesByUserId(user.id)
   const isAdmin = user.permissions.includes('other.admin')
+
+  if (existing.type === 'in' && existing.sourceModel === 'procurement' && typeof existing.sourceId === 'string') {
+    const inboundWarehouseId = payload.toWarehouseId ?? existing.toWarehouseId
+    if (typeof inboundWarehouseId !== 'string')
+      throw new HttpError(400, 'Inbound warehouse is required', 'WAREHOUSE_TRANSACTION_WAREHOUSE_REQUIRED')
+
+    assertEntityCapability(access, 'warehouses', inboundWarehouseId, 'receive', { isAdmin })
+    return receiveProcurementInbound({ existing, products, toWarehouseId: inboundWarehouseId, userId: acceptedBy })
+  }
+
   assertEntityCapability(access, 'warehouses', existing.toWarehouseId, 'receive', { isAdmin })
 
   const warehouseTransaction = await WarehouseTransactionRepo.updateById(id, {
@@ -407,15 +397,19 @@ export async function receive({ payload, user }: { payload: ReceiveWarehouseTran
 
   if (warehouseTransaction.toWarehouseId !== undefined) {
     for (const product of mappedProducts) {
-      await QuantityService.count({
+      if (product.receivedQuantity <= 0)
+        continue
+
+      await StockLedger.post({
         payload: {
-          mode: 'inc',
+          fromKind: 'transit',
+          toKind: 'warehouse',
+          toWarehouseId: warehouseTransaction.toWarehouseId,
           productId: product.productId,
-          warehouseId: warehouseTransaction.toWarehouseId,
-          count: product.receivedQuantity,
+          quantity: product.receivedQuantity,
+          documentType: 'warehouse-transaction',
+          documentId: id,
           userId: user.id,
-          refType: 'warehouse-transaction',
-          refId: id,
         },
       })
     }
@@ -432,6 +426,84 @@ export async function receive({ payload, user }: { payload: ReceiveWarehouseTran
       },
     })
   }
+
+  return {
+    status: 'success',
+    code: 'WAREHOUSE_TRANSACTION_RECEIVED',
+    message: 'Warehouse transaction received',
+  }
+}
+
+async function receiveProcurementInbound({
+  existing,
+  products,
+  toWarehouseId,
+  userId,
+}: {
+  existing: NonNullable<Awaited<ReturnType<typeof WarehouseTransactionRepo.findById>>>
+  products: ReceiveWarehouseTransactionPayload['products']
+  toWarehouseId: string
+  userId: string
+}): Promise<ReceiveWarehouseTransactionResponse> {
+  const id = String(existing._id)
+
+  const wtItems = await WarehouseTransactionRepo.listItemsByTransactionId(id)
+  const alreadyPosted = wtItems.some(item => (Number(item.receivedQuantity) || 0) > 0)
+  if (alreadyPosted && typeof existing.toWarehouseId === 'string' && existing.toWarehouseId !== toWarehouseId)
+    throw new HttpError(400, 'Warehouse cannot be changed after receipt', 'WAREHOUSE_TRANSACTION_WAREHOUSE_LOCKED')
+
+  if (existing.toWarehouseId !== toWarehouseId) {
+    await WarehouseTransactionRepo.updateById(id, { toWarehouseId })
+    if (typeof existing.sourceId === 'string')
+      await ProcurementRepo.updateById(existing.sourceId, { warehouseId: toWarehouseId })
+  }
+
+  const wtByProduct = new Map(wtItems.map(item => [String(item.productId), item]))
+  const received: Array<{ productId: string, receivedQuantity: number }> = []
+
+  for (const product of products) {
+    if (product.receivedQuantity <= 0)
+      continue
+
+    const wtItem = wtByProduct.get(product.id)
+    if (!wtItem)
+      throw new HttpError(400, 'Warehouse transaction item not found', 'WAREHOUSE_TRANSACTION_ITEM_NOT_FOUND')
+
+    const alreadyReceived = Number(wtItem.receivedQuantity) || 0
+
+    await StockLedger.receiveFromSupplier({
+      payload: {
+        toWarehouseId,
+        productId: product.id,
+        quantity: product.receivedQuantity,
+        documentType: 'warehouse-transaction',
+        documentId: id,
+        documentItemId: String(wtItem._id),
+        userId,
+        inboundCost: {
+          minorUnitCost: Number(wtItem.minorPurchasePrice) || 0,
+          currencyId: String(wtItem.purchaseCurrencyId),
+        },
+      },
+    })
+
+    await WarehouseTransactionRepo.updateItem({
+      payload: { receivedQuantity: alreadyReceived + product.receivedQuantity },
+      query: { transactionId: id, productId: product.id },
+    })
+
+    received.push({ productId: product.id, receivedQuantity: product.receivedQuantity })
+  }
+
+  if (typeof existing.sourceId === 'string')
+    await ProcurementService.applyInboundReceipt({ procurementId: existing.sourceId, products: received })
+
+  await WarehouseTransactionRepo.updateById(id, {
+    status: 'received',
+    acceptedBy: userId,
+    acceptedAt: new Date(),
+    accepted: true,
+  })
 
   return {
     status: 'success',

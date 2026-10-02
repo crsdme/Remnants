@@ -19,7 +19,13 @@ import * as CurrencyRepo from '@/repositories/currencies.repo'
 import * as ExpenseRepo from '@/repositories/expense.repo'
 import * as UserAccessRepo from '@/repositories/user-access.repo'
 import * as MoneyTransactionService from '@/services/money-transaction.service'
-import { getAccountIdsWithCapabilityForUser, getEntityIdsWithCapabilityForUser, getScopeIdsForUser, HttpError } from '@/utils/'
+import {
+  getAccountIdsWithCapabilityForUser,
+  getEntityIdsWithCapabilityForUser,
+  getScopeIdsForUser,
+  HttpError,
+  withTransaction,
+} from '@/utils/'
 import { fromMinor, toMinor } from '@/utils/money'
 
 export async function get({
@@ -70,31 +76,33 @@ export async function create({
     uploadedFiles,
   })
 
-  const expense = await ExpenseRepo.createOne({
-    minorAmount: toMinor(payload.amount, currency.scale),
-    currencyId: payload.currency,
-    cashregisterId: payload.cashregister,
-    cashregisterAccountId: payload.cashregisterAccount,
-    categoryIds: payload.categories,
-    sourceModel: 'manual',
-    type: payload.type,
-    comment: payload.comment,
-    files: resolvedFiles,
-    // createdBy: payload.createdBy,
-  })
-
-  await MoneyTransactionService.createTransaction({
-    payload: {
-      type: 'expense',
-      direction: 'out',
-      accountId: payload.cashregisterAccount,
-      cashregisterId: payload.cashregister,
-      sourceModel: 'expense',
-      sourceId: expense._id.toString(),
+  await withTransaction(async (session) => {
+    const expense = await ExpenseRepo.createOne({
+      minorAmount: toMinor(payload.amount, currency.scale),
       currencyId: payload.currency,
-      amount: payload.amount,
-      description: `Expense ${expense._id.toString()}`,
-    },
+      cashregisterId: payload.cashregister,
+      cashregisterAccountId: payload.cashregisterAccount,
+      categoryIds: payload.categories,
+      sourceModel: 'manual',
+      type: payload.type,
+      comment: payload.comment,
+      files: resolvedFiles,
+    }, session)
+
+    await MoneyTransactionService.createTransaction({
+      payload: {
+        type: 'expense',
+        direction: 'out',
+        accountId: payload.cashregisterAccount,
+        cashregisterId: payload.cashregister,
+        sourceModel: 'expense',
+        sourceId: expense._id.toString(),
+        currencyId: payload.currency,
+        amount: payload.amount,
+        description: `Expense ${expense._id.toString()}`,
+      },
+      session,
+    })
   })
 
   return {
@@ -113,61 +121,64 @@ export async function edit({
 }): Promise<EditExpenseResponse> {
   const { id } = payload
 
-  const oldExpense = await ExpenseRepo.findById(id)
-
-  if (oldExpense === null)
-    throw new HttpError(400, 'Expense not edited', 'EXPENSE_NOT_EDITED')
-
-  const currency = await CurrencyRepo.findOne({ _id: payload.currency })
-
-  const oldCurrency = await CurrencyRepo.findOne({ _id: oldExpense.currencyId })
-
-  if (currency === null || oldCurrency === null)
-    throw new HttpError(400, 'Currency not found', 'CURRENCY_NOT_FOUND')
-
   const resolvedFiles = resolveExpenseFiles({
     files: payload.files ?? [],
     uploadedFilesIds: payload.uploadedFilesIds,
     uploadedFiles,
   })
 
-  await MoneyTransactionService.createTransaction({
-    payload: {
-      type: 'expense',
-      direction: 'in',
-      accountId: oldExpense.cashregisterAccountId,
-      cashregisterId: oldExpense.cashregisterId,
-      sourceModel: 'expense',
-      sourceId: id,
-      currencyId: oldExpense.currencyId,
-      amount: Number.parseFloat(fromMinor(oldExpense.minorAmount, oldCurrency.scale)),
-      description: `Expense edited ${id}`,
-    },
-  })
+  await withTransaction(async (session) => {
+    const oldExpense = await ExpenseRepo.findById(id, session)
 
-  await MoneyTransactionService.createTransaction({
-    payload: {
-      type: 'expense',
-      direction: 'out',
-      accountId: payload.cashregisterAccount,
-      cashregisterId: payload.cashregister,
-      sourceModel: 'expense',
-      sourceId: id,
+    if (oldExpense === null)
+      throw new HttpError(400, 'Expense not edited', 'EXPENSE_NOT_EDITED')
+
+    const currency = await CurrencyRepo.findOne({ _id: payload.currency })
+    const oldCurrency = await CurrencyRepo.findOne({ _id: oldExpense.currencyId })
+
+    if (currency === null || oldCurrency === null)
+      throw new HttpError(400, 'Currency not found', 'CURRENCY_NOT_FOUND')
+
+    await MoneyTransactionService.createTransaction({
+      payload: {
+        type: 'expense',
+        direction: 'in',
+        accountId: oldExpense.cashregisterAccountId,
+        cashregisterId: oldExpense.cashregisterId,
+        sourceModel: 'expense',
+        sourceId: id,
+        currencyId: oldExpense.currencyId,
+        amount: Number.parseFloat(fromMinor(oldExpense.minorAmount, oldCurrency.scale)),
+        description: `Expense edited ${id}`,
+      },
+      session,
+    })
+
+    await MoneyTransactionService.createTransaction({
+      payload: {
+        type: 'expense',
+        direction: 'out',
+        accountId: payload.cashregisterAccount,
+        cashregisterId: payload.cashregister,
+        sourceModel: 'expense',
+        sourceId: id,
+        currencyId: payload.currency,
+        amount: payload.amount,
+        description: `Expense ${id}`,
+      },
+      session,
+    })
+
+    await ExpenseRepo.updateById(id, {
+      minorAmount: toMinor(payload.amount, currency.scale),
       currencyId: payload.currency,
-      amount: payload.amount,
-      description: `Expense ${id}`,
-    },
-  })
-
-  await ExpenseRepo.updateById(id, {
-    minorAmount: toMinor(payload.amount, currency.scale),
-    currencyId: payload.currency,
-    cashregisterId: payload.cashregister,
-    cashregisterAccountId: payload.cashregisterAccount,
-    categoryIds: payload.categories,
-    type: payload.type,
-    comment: payload.comment,
-    files: resolvedFiles,
+      cashregisterId: payload.cashregister,
+      cashregisterAccountId: payload.cashregisterAccount,
+      categoryIds: payload.categories,
+      type: payload.type,
+      comment: payload.comment,
+      files: resolvedFiles,
+    }, session)
   })
 
   return {
@@ -178,32 +189,34 @@ export async function edit({
 }
 
 export async function remove({ payload }: { payload: RemoveExpensesPayload }): Promise<RemoveExpensesResponse> {
-  const { ids } = payload
+  for (const id of payload.ids) {
+    await withTransaction(async (session) => {
+      const expense = await ExpenseRepo.findById(id, session)
 
-  for (const id of ids) {
-    const expense = await ExpenseRepo.findById(id)
-    await ExpenseRepo.removeById(id)
+      if (expense === null)
+        throw new HttpError(400, 'Expense not removed', 'EXPENSE_NOT_REMOVED')
 
-    if (expense === null)
-      throw new HttpError(400, 'Expense not removed', 'EXPENSE_NOT_REMOVED')
+      const currency = await CurrencyRepo.findOne({ _id: expense.currencyId })
 
-    const currency = await CurrencyRepo.findOne({ _id: expense.currencyId })
+      if (currency === null)
+        throw new HttpError(400, 'Currency not found', 'CURRENCY_NOT_FOUND')
 
-    if (currency === null)
-      throw new HttpError(400, 'Currency not found', 'CURRENCY_NOT_FOUND')
+      await ExpenseRepo.removeById(id, session)
 
-    await MoneyTransactionService.createTransaction({
-      payload: {
-        type: 'expense',
-        direction: 'in',
-        accountId: expense.cashregisterAccountId,
-        cashregisterId: expense.cashregisterId,
-        sourceModel: 'expense',
-        sourceId: expense._id.toString(),
-        currencyId: expense.currencyId,
-        amount: Number.parseFloat(fromMinor(expense.minorAmount, currency.scale)),
-        description: `Expense removed ${expense._id.toString()}`,
-      },
+      await MoneyTransactionService.createTransaction({
+        payload: {
+          type: 'expense',
+          direction: 'in',
+          accountId: expense.cashregisterAccountId,
+          cashregisterId: expense.cashregisterId,
+          sourceModel: 'expense',
+          sourceId: expense._id.toString(),
+          currencyId: expense.currencyId,
+          amount: Number.parseFloat(fromMinor(expense.minorAmount, currency.scale)),
+          description: `Expense removed ${expense._id.toString()}`,
+        },
+        session,
+      })
     })
   }
 

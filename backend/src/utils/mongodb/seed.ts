@@ -1610,7 +1610,7 @@ async function createCashregisters() {
 
 async function createWarehouses() {
   const warehouses = await Promise.all(
-    [1, 2, 3, 4].map(n =>
+    [1, 2, 3, 4].map(async n =>
       WarehouseService.create({
         payload: {
           names: {

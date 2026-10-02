@@ -7,6 +7,7 @@ import type {
   GetSiteSyncSiteItemsResponse,
   RemoveSitesResponse,
   SaveSiteSyncMappingResponse,
+  SyncSiteProductResponse,
   SyncSiteProductsResponse,
 } from '@remnant/shared'
 import type { SiteContext } from '@/integrations/site'
@@ -18,6 +19,7 @@ import type {
   GetSiteSyncSiteItemsPayload,
   RemoveSitesPayload,
   SaveSiteSyncMappingPayload,
+  SyncSiteProductPayload,
   SyncSiteProductsPayload,
 } from '@/types/'
 import { remnantAdapter, SiteSyncError } from '@/integrations/site'
@@ -149,6 +151,64 @@ export async function syncProducts({ payload }: { payload: SyncSiteProductsPaylo
   }
 }
 
+export async function syncProduct({ payload }: { payload: SyncSiteProductPayload }): Promise<SyncSiteProductResponse> {
+  const site = await SiteRepo.findById(payload.id)
+
+  if (site == null || site.removed === true)
+    throw new HttpError(404, 'Site not found', 'SITE_NOT_FOUND')
+
+  if (site.active !== true)
+    throw new HttpError(400, 'Site is inactive', 'SITE_INACTIVE')
+
+  if ((site.url ?? '').trim() === '' || (site.key ?? '').trim() === '')
+    throw new HttpError(400, 'Site url or key is empty', 'SITE_SYNC_NOT_CONFIGURED')
+
+  const ctx = toSiteContext(site)
+  if (ctx == null)
+    throw new HttpError(400, 'Site url or key is empty', 'SITE_SYNC_NOT_CONFIGURED')
+
+  await remnantAdapter.ping(ctx).catch((error: unknown) => throwSiteCatalogError(error))
+  await assertLanguagesMapped(site._id)
+
+  const existing = await SyncEntryRepo.findLink(site._id, 'product', payload.productId)
+  const existingIds = linkExternalIds(existing)
+  if (existingIds.length > 0 && existing?.status === 'synced') {
+    return {
+      status: 'success',
+      code: 'SITE_PRODUCT_SYNCED',
+      message: 'Site product already synced',
+      data: {
+        sourceId: payload.productId,
+        externalIds: existingIds,
+      },
+    }
+  }
+
+  await SyncEntryService.syncProductCreate({
+    siteId: site._id,
+    productId: payload.productId,
+  })
+
+  const link = await SyncEntryRepo.findLink(site._id, 'product', payload.productId)
+  if (link?.status !== 'synced') {
+    throw new HttpError(
+      502,
+      link?.lastError || 'Product sync failed',
+      'SITE_SYNC_FAILED',
+    )
+  }
+
+  return {
+    status: 'success',
+    code: 'SITE_PRODUCT_SYNCED',
+    message: 'Site product synced',
+    data: {
+      sourceId: payload.productId,
+      externalIds: linkExternalIds(link),
+    },
+  }
+}
+
 function toSiteContext(site: { url?: string, key?: string }): SiteContext | null {
   const url = site.url?.trim() ?? ''
   const key = site.key?.trim() ?? ''
@@ -178,13 +238,13 @@ async function requireConfiguredSite(id: string) {
 }
 
 export async function getSyncMapping({ payload }: { payload: GetSiteSyncMappingPayload }): Promise<GetSiteSyncMappingResponse> {
-  const { site, ctx } = await requireConfiguredSite(payload.id)
+  const includeSite = payload.includeSite === true
+  const site = await SiteRepo.findById(payload.id)
+  if (site == null || site.removed === true)
+    throw new HttpError(404, 'Site not found', 'SITE_NOT_FOUND')
+
   const { current, pageSize, full } = payload.pagination
   const sourceType = payload.sourceType
-
-  const siteItemsRaw = sourceType === 'product'
-    ? []
-    : await listSiteItems(ctx, sourceType).catch((error: unknown) => throwSiteCatalogError(error))
 
   const [crm, links] = await Promise.all([
     listCrmItems(sourceType, {
@@ -195,6 +255,23 @@ export async function getSyncMapping({ payload }: { payload: GetSiteSyncMappingP
     }),
     SyncEntryRepo.findLinksByType(site._id, sourceType),
   ])
+
+  let siteItemsRaw: Array<{ id: number | string, names?: unknown, parentId?: number | string | null }> = []
+
+  if (includeSite) {
+    const ctx = toSiteContext(site)
+    if (ctx == null)
+      throw new HttpError(400, 'Site url or key is empty', 'SITE_SYNC_NOT_CONFIGURED')
+
+    await remnantAdapter.ping(ctx).catch((error: unknown) => throwSiteCatalogError(error))
+
+    const crmIds = new Set(crm.items.map(item => String(item.id)))
+    const pageLinks = links.filter(link => crmIds.has(link.sourceId))
+
+    siteItemsRaw = sourceType === 'product'
+      ? await listLinkedSiteProducts(ctx, pageLinks).catch((error: unknown) => throwSiteCatalogError(error))
+      : await listSiteItems(ctx, sourceType).catch((error: unknown) => throwSiteCatalogError(error))
+  }
 
   return {
     status: 'success',
@@ -323,6 +400,20 @@ async function listSiteItems(ctx: SiteContext, sourceType: GetSiteSyncMappingPay
   if (sourceType === 'language')
     return remnantAdapter.listLanguages(ctx)
   return remnantAdapter.listAttributes(ctx)
+}
+
+async function listLinkedSiteProducts(
+  ctx: SiteContext,
+  links: Array<{ externalIds?: string[] | null }>,
+) {
+  const ids = [...new Set(links.flatMap(link => linkExternalIds(link)))]
+  if (ids.length === 0)
+    return []
+
+  return remnantAdapter.listProducts(ctx, {
+    ids,
+    limit: Math.min(Math.max(ids.length, 1), 100),
+  })
 }
 
 function toSyncSiteItem(item: { id: number | string, names?: unknown, parentId?: number | string | null }) {

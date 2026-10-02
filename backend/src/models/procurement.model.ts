@@ -1,17 +1,19 @@
-import type { ProcurementDTO, ProcurementItemDTO } from '@remnant/shared'
 import type { HydratedDocument } from 'mongoose'
+import type { ProcurementDB, ProcurementItemDB } from '@/types/'
 import mongoose, { Schema } from 'mongoose'
 import { v4 as uuidv4 } from 'uuid'
 import { CounterModel } from '@/models/'
+import { uuidValidator } from '@/utils/'
 
-type ProcurementDoc = HydratedDocument<ProcurementDTO>
-type ProcurementItemDoc = HydratedDocument<ProcurementItemDTO>
+type ProcurementDoc = HydratedDocument<ProcurementDB>
+type ProcurementItemDoc = HydratedDocument<ProcurementItemDB>
 
 const ProcurementSchema: Schema = new Schema(
   {
     _id: {
       type: String,
       default: uuidv4,
+      validate: uuidValidator,
     },
     seq: {
       type: Number,
@@ -19,8 +21,13 @@ const ProcurementSchema: Schema = new Schema(
     },
     supplierId: {
       type: String,
-      ref: 'Supplier',
+      ref: 'supplier',
       required: true,
+    },
+    warehouseId: {
+      type: String,
+      ref: 'Warehouse',
+      default: null,
     },
     status: {
       type: String,
@@ -47,6 +54,10 @@ const ProcurementSchema: Schema = new Schema(
       ref: 'User',
       required: true,
     },
+    removed: {
+      type: Boolean,
+      default: false,
+    },
     removedBy: {
       type: String,
       ref: 'User',
@@ -61,6 +72,11 @@ const ProcurementSchema: Schema = new Schema(
 )
 
 const ProcurementItemSchema: Schema = new Schema({
+  _id: {
+    type: String,
+    default: uuidv4,
+    validate: uuidValidator,
+  },
   procurementId: {
     type: String,
     required: true,
@@ -80,9 +96,13 @@ const ProcurementItemSchema: Schema = new Schema({
     type: Number,
     default: 0,
   },
-  purchasePrice: {
+  minorPurchasePrice: {
     type: Number,
     required: true,
+    default: 0,
+  },
+  purchasePrice: {
+    type: Number,
   },
   purchaseCurrencyId: {
     type: String,

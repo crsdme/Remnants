@@ -13,10 +13,12 @@ export async function list(payload: GetClientsRepoPayload): Promise<GetClientsRe
   const {
     current = 1,
     pageSize = 10,
+    full = false,
   } = payload.pagination
 
   const {
     ids,
+    seq,
     search,
     emails,
     phones,
@@ -27,9 +29,10 @@ export async function list(payload: GetClientsRepoPayload): Promise<GetClientsRe
   } = payload.filters
 
   const query = buildQuery({
-    filters: { _id: ids, emails, phones, addresses, country, createdAt, updatedAt },
+    filters: { _id: ids, seq, emails, phones, addresses, country, createdAt, updatedAt },
     rules: {
       _id: { type: 'array' },
+      seq: { type: 'array' },
       search: { type: 'string' },
       emails: { type: 'array' },
       phones: { type: 'array' },
@@ -90,8 +93,12 @@ export async function list(payload: GetClientsRepoPayload): Promise<GetClientsRe
     {
       $facet: {
         items: [
-          { $skip: (current - 1) * pageSize },
-          { $limit: pageSize },
+          ...(full
+            ? []
+            : [
+                { $skip: (current - 1) * pageSize },
+                { $limit: pageSize },
+              ]),
         ],
         count: [
           { $count: 'count' },
@@ -116,6 +123,10 @@ export async function updateById(id: string, payload: EditClientsRepoPayload) {
     { $set: payload as unknown as Record<string, unknown> },
     { new: true, runValidators: true },
   ).exec()
+}
+
+export async function findById(id: string) {
+  return ClientModel.findById(id).exec()
 }
 
 export async function removeById(id: string) {

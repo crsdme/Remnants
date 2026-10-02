@@ -7,7 +7,7 @@ import { useQueryClient } from '@tanstack/react-query'
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useLocation, useNavigate, useParams } from 'react-router-dom'
 
 import { toast } from 'sonner'
 import { z } from 'zod'
@@ -17,11 +17,13 @@ import { useAuthContext } from '@/contexts/'
 export type WarehouseTransactionTableRow = Omit<WarehouseTransactionDTO, 'fromWarehouse' | 'toWarehouse'> & {
   fromWarehouse?: string | { id?: string, names?: Partial<Record<'ru' | 'en', string>> } | null
   toWarehouse?: string | { id?: string, names?: Partial<Record<'ru' | 'en', string>> } | null
-  items?: Array<{ quantity: number, product: { id: string } & Record<string, unknown> }>
+  items?: Array<{ quantity: number, receivedQuantity?: number, product: { id: string } & Record<string, unknown> }>
 }
 
 interface WarehouseTransactionContextType {
   isLoading: boolean
+  isViewMode: boolean
+  warehouseTransaction: WarehouseTransactionDTO | null
   form: UseFormReturn<WarehouseTransactionFormValues>
   onError: (formErrors: FieldErrors<WarehouseTransactionFormValues>) => void
   submitWarehouseTransactionForm: (params: WarehouseTransactionFormValues) => void
@@ -38,6 +40,7 @@ interface WarehouseTransactionFormValues {
   products: {
     id: string
     lineQuantity: number
+    alreadyReceived: number
     receivedQuantity: number
   }[]
 }
@@ -48,6 +51,8 @@ export function WarehouseTransactionProvider({ children }: { children: ReactNode
   const { t } = useTranslation()
   const { seq = '' } = useParams()
   const navigate = useNavigate()
+  const { pathname } = useLocation()
+  const isViewMode = pathname.includes('/warehouse-transactions/view/')
 
   const formSchema = useMemo(() => createWarehouseTransactionFormSchema(t), [t])
 
@@ -69,50 +74,70 @@ export function WarehouseTransactionProvider({ children }: { children: ReactNode
         void queryClient.invalidateQueries({ queryKey: ['warehouse-transactions'] })
         void queryClient.invalidateQueries({ queryKey: ['warehouses'] })
         void queryClient.invalidateQueries({ queryKey: ['products'] })
+        void queryClient.invalidateQueries({ queryKey: ['procurements'] })
         toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description || ''}` })
+        setIsLoading(false)
+        void navigate('/warehouse-transactions')
       },
       onError: ({ response }) => {
-        const error = response.data.error
-        toast.error(t(`error.title.${error.code}`), { description: `${t(`error.description.${error.code}`)} ${error.description || ''}` })
+        setIsLoading(false)
+        const error = response?.data?.error
+        const code = typeof error === 'object' && error !== null ? error.code : 'undefined'
+        const description = typeof error === 'object' && error !== null ? (error.description || '') : ''
+        toast.error(t(`error.title.${code}`), { description: `${t(`error.description.${code}`)} ${description}` })
       },
     },
   })
 
   const submitWarehouseTransactionForm = useCallback(async (params: WarehouseTransactionFormValues) => {
-    setIsLoading(true)
-
-    const productsForEditOrCreate = params.products.map(p => ({
-      id: p.id,
-      quantity: p.lineQuantity,
-      receivedQuantity: p.receivedQuantity,
-    }))
-
-    const createdBy = user?.id
-    if (!createdBy || !warehouseTransaction) {
-      setIsLoading(false)
+    if (isViewMode) {
       return
     }
 
-    void useMutateReceiveWarehouseTransaction.mutate({
-      id: warehouseTransaction.id,
-      products: productsForEditOrCreate,
-    })
+    const createdBy = user?.id
+    if (!createdBy) {
+      toast.error(t('form.errors.required'))
+      return
+    }
 
-    setIsLoading(false)
-    void navigate('/warehouse-transactions')
-  }, [warehouseTransaction, user?.id, useMutateReceiveWarehouseTransaction, navigate])
+    if (!warehouseTransaction) {
+      toast.error(t('form.errors.required'))
+      return
+    }
+
+    setIsLoading(true)
+
+    useMutateReceiveWarehouseTransaction.mutate({
+      id: warehouseTransaction.id,
+      ...(params.type === 'in' && params.toWarehouse ? { toWarehouseId: params.toWarehouse } : {}),
+      products: params.products.map(p => ({
+        id: p.id,
+        quantity: p.lineQuantity,
+        receivedQuantity: p.receivedQuantity ?? 0,
+      })),
+    })
+  }, [isViewMode, warehouseTransaction, user?.id, t, useMutateReceiveWarehouseTransaction])
 
   const onError = useCallback((formErrors: FieldErrors<WarehouseTransactionFormValues>) => {
-    if (formErrors.products) {
-      toast.error(String(formErrors.products.message ?? ''))
-    }
-  }, [])
+    const messages = Object.values(formErrors)
+      .flatMap((error) => {
+        if (!error)
+          return []
+        if ('message' in error && error.message)
+          return [String(error.message)]
+        return Object.values(error as Record<string, { message?: string }>)
+          .map(item => item?.message)
+          .filter((message): message is string => Boolean(message))
+      })
+
+    toast.error(messages[0] ?? t('form.errors.required'))
+  }, [t])
 
   useEffect(() => {
     if (!warehouseTransaction)
       return
 
-    if (warehouseTransaction.status !== 'awaiting') {
+    if (!isViewMode && warehouseTransaction.status !== 'awaiting') {
       void navigate('/warehouse-transactions')
       return
     }
@@ -123,24 +148,33 @@ export function WarehouseTransactionProvider({ children }: { children: ReactNode
       toWarehouse: warehouseTransaction?.toWarehouse?.id ?? '',
       requiresReceiving: warehouseTransaction.requiresReceiving,
       comment: warehouseTransaction.comment,
-      products: warehouseTransactionItems.map(item => ({
-        ...item.product,
-        id: item.productId,
-        product: item.productId,
-        lineQuantity: item.quantity,
-        receivedQuantity: 0,
-      })),
+      products: warehouseTransactionItems.map((item) => {
+        const ordered = item.quantity
+        const alreadyReceived = item.receivedQuantity ?? 0
+        const remaining = Math.max(0, ordered - alreadyReceived)
+        const productId = item.productId || item.product?.id
+        return {
+          ...item.product,
+          id: productId,
+          product: productId,
+          lineQuantity: ordered,
+          alreadyReceived,
+          receivedQuantity: isViewMode ? alreadyReceived : remaining,
+        }
+      }),
     })
-  }, [warehouseTransaction, warehouseTransactionItems, navigate, form])
+  }, [warehouseTransaction, warehouseTransactionItems, navigate, form, isViewMode])
 
   const value: WarehouseTransactionContextType = useMemo(
     () => ({
       isLoading,
+      isViewMode,
+      warehouseTransaction,
       form,
       onError,
       submitWarehouseTransactionForm,
     }),
-    [isLoading, form, onError, submitWarehouseTransactionForm],
+    [isLoading, isViewMode, warehouseTransaction, form, onError, submitWarehouseTransactionForm],
   )
 
   return <WarehouseTransactionContext.Provider value={value}>{children}</WarehouseTransactionContext.Provider>
@@ -160,22 +194,19 @@ function createWarehouseTransactionFormSchema(t: (key: string, options?: Record<
     type: z.enum(['in', 'out', 'transfer'], {
       required_error: t('form.errors.required'),
     }),
-    fromWarehouse: z.string({
-      required_error: t('form.errors.required'),
-    }),
-    toWarehouse: z.string({
-      required_error: t('form.errors.required'),
-    }),
+    fromWarehouse: z.string().optional().default(''),
+    toWarehouse: z.string().optional().default(''),
     requiresReceiving: z.boolean().optional(),
-    comment: z.string().optional(),
+    comment: z.string().nullish(),
     products: z.array(z.object({
-      id: z.string({
+      id: z.string().uuid({
+        message: t('form.errors.required'),
+      }),
+      lineQuantity: z.coerce.number({
         required_error: t('form.errors.required'),
       }),
-      lineQuantity: z.number({
-        required_error: t('form.errors.required'),
-      }),
-      receivedQuantity: z.number().optional(),
+      alreadyReceived: z.coerce.number().optional(),
+      receivedQuantity: z.coerce.number().min(0).optional(),
     })).min(1, { message: t('form.errors.required.products') }),
   }).superRefine((data, ctx) => {
     if (data.type === 'out' && (!data.fromWarehouse || data.fromWarehouse.length === 0)) {
@@ -234,10 +265,15 @@ function getWarehouseTransactionFormValues(warehouseTransaction?: WarehouseTrans
       : warehouseTransaction.toWarehouse?.id ?? '',
     requiresReceiving: warehouseTransaction.requiresReceiving,
     comment: warehouseTransaction.comment,
-    products: warehouseTransaction.items?.map(item => ({
-      id: item.product.id,
-      lineQuantity: item.quantity,
-      receivedQuantity: 0,
-    })) ?? [],
+    products: warehouseTransaction.items?.map((item) => {
+      const ordered = item.quantity
+      const alreadyReceived = item.receivedQuantity ?? 0
+      return {
+        id: item.product.id,
+        lineQuantity: ordered,
+        alreadyReceived,
+        receivedQuantity: alreadyReceived,
+      }
+    }) ?? [],
   }
 }

@@ -3,9 +3,9 @@ import {
   editUserProfileResponseSchema,
   editUserProfileSchema,
   getUserProfileResponseSchema,
+  getUserProfileSchema,
   getUserProfilesResponseSchema,
   getUserProfilesSchema,
-  getUserProfileSchema,
   getUserProfileSummaryResponseSchema,
   getUserProfileSummarySchema,
 } from '@remnant/shared'

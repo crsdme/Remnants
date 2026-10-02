@@ -1,50 +1,37 @@
 ---
-description: Remnants — деньги (minor), i18n, permissions, чеклист новой сущности.
+description: Remnants — money minor, i18n, permissions, new-entity checklist.
 alwaysApply: true
 ---
 
-# Домен и фронт
+# Domain and frontend
 
-## Деньги — только minor
+## Money — minor only
 
-Суммы в **минорных единицах** (копейки/центы), целое число / `Minor`, не float.
-
-- Поля: `minorPrice`, `minorAmount`, `minorPurchasePrice`, …
-- Схемы: `minorSchema` / `toMinorType` из `@remnant/shared`.
-- Валюта всегда через `currencyId` (UUID-строка), не код в поле суммы.
+Amounts are integer minor units (`minorPrice`, `minorAmount`, …). Schemas: `minorSchema` / `toMinorType` from `@remnant/shared`. Currency via `currencyId` (UUID), never a float price field.
 
 ```ts
 // ✅ minorPrice: 1999, currencyId: '…-uuid-…'
 // ❌ price: 19.99
 ```
 
-## Локализация сущностей
+## Names / UI strings
 
-Мультиязычные названия — объект/Map по языкам (`names`, `LanguageString`), не одно поле `name`.
+- Multilingual Entity names: `names` / `LanguageString` map (`languageStringSchema`), not a single `name`
+- UI copy: keys in **both** `locales/en` and `locales/ru` — never hardcode in JSX
 
-- Схема: `languageStringSchema` (`ru` / `en`, …).
-- В Mongoose часто `Map` of `String` с проверкой `SUPPORTED_LANGUAGES`.
+## Permissions
 
-## UI-строки (frontend)
+- Route: `checkPermissions('entity.action')` (e.g. `order.edit`)
+- UI: `PermissionGate` / `usePermission` with the **same** string
+- Middleware order / scopes: see `layer-boundaries`
 
-Новый текст интерфейса — ключи сразу в **`locales/en`** и **`locales/ru`**. Не хардкодить пользовательские строки в JSX.
+## New entity checklist
 
-## Права доступа
+1. `packages/shared` — request/response/DTO Zod + export  
+2. Backend: model → schemas → types → mappers → repos → services → controllers → routes (+ `routes/api/index`)  
+3. Route perms; UUID `_id`  
+4. `test/factories` + `test/routes/<entity>.test.ts`  
+5. Frontend: requests + hooks + container + `App.tsx` route  
+6. Locales en/ru + `PermissionGate` on actions  
 
-- Бэк: `checkPermissions('entity.action')` в роуте  
-  (пример: `product-stock-status.create`, `order.edit`).
-- Фронт: `PermissionGate` / `usePermission` с теми же строками прав.
-- Новое действие CRUD — добавить permission на бэке и обернуть UI на фронте.
-
-## Чеклист новой сущности
-
-1. `packages/shared` — request/response/DTO Zod + экспорт.
-2. Backend: `models` → `schemas` (DB) → `types` → `mappers` → `repositories` → `services` → `controllers` → `routes/api` + регистрация в `routes/api/index`.
-3. Permissions в роуте; UUID `_id`, без ObjectId.
-4. Тест: factory + `test/routes/<entity>.test.ts`.
-5. Frontend: `api/requests` + `api/hooks/<entity>` + `containers/…` + route в `App.tsx`.
-6. Locales `en`/`ru`; `PermissionGate` на кнопках create/edit/remove.
-
-## Не коммитить
-
-`.env`, секреты, `logs/`, `node_modules/`, `.tsbuildinfo`, артефакты сборки.
+Do not commit: `.env`, secrets, `logs/`, `node_modules/`, `.tsbuildinfo`, build artifacts.

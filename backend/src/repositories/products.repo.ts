@@ -9,8 +9,10 @@ import type {
   ProductDB,
   ProductDBPopulated,
 } from '@/types'
-import { ProductModel, QuantityModel } from '@/models'
+import { ProductModel } from '@/models'
 import * as CurrencyRepo from '@/repositories/currencies.repo'
+import { warehouseStockFromLotsAddFields, warehouseStockFromLotsLookup } from '@/repositories/stock-lot.repo'
+import * as ProductStockStatusService from '@/services/product-stock-status.service'
 import { buildQuery, buildSortQuery, unwrapAggregate } from '@/utils'
 import { toMinor } from '@/utils/money'
 
@@ -65,10 +67,10 @@ export async function list(payload: GetProductsRepoPayload): Promise<GetProducts
 
   let scopedIds = ids
   if (stockStatusId !== undefined && selectedWarehouse !== undefined) {
-    const matchedProductIds = await QuantityModel.distinct('productId', {
+    const matchedProductIds = await ProductStockStatusService.listProductIdsMatchingStatus({
       warehouseId: selectedWarehouse,
       stockStatusId,
-    }).exec()
+    })
 
     if (scopedIds !== undefined && scopedIds.length > 0) {
       const scopedSet = new Set(scopedIds)
@@ -193,52 +195,8 @@ export async function list(payload: GetProductsRepoPayload): Promise<GetProducts
             },
           },
 
-          {
-            $lookup: {
-              from: 'quantities',
-              let: { quantityIds: '$quantityIds' },
-              pipeline: [
-                {
-                  $match: {
-                    $expr: {
-                      $in: ['$_id', { $ifNull: ['$$quantityIds', []] }],
-                    },
-                  },
-                },
-                {
-                  $lookup: {
-                    from: 'product-stock-statuses',
-                    localField: 'stockStatusId',
-                    foreignField: '_id',
-                    as: '_stockStatus',
-                  },
-                },
-                {
-                  $project: {
-                    warehouseId: 1,
-                    count: 1,
-                    stockStatus: {
-                      $cond: [
-                        { $gt: [{ $size: '$_stockStatus' }, 0] },
-                        {
-                          $let: {
-                            vars: { s: { $arrayElemAt: ['$_stockStatus', 0] } },
-                            in: {
-                              id: '$$s._id',
-                              names: '$$s.names',
-                              color: '$$s.color',
-                            },
-                          },
-                        },
-                        null,
-                      ],
-                    },
-                  },
-                },
-              ],
-              as: 'warehouseStock',
-            },
-          },
+          warehouseStockFromLotsLookup(),
+          warehouseStockFromLotsAddFields(),
 
           {
             $lookup: {
@@ -468,7 +426,8 @@ export async function list(payload: GetProductsRepoPayload): Promise<GetProducts
                   in: {
                     warehouseId: '$$stock.warehouseId',
                     count: '$$stock.count',
-                    stockStatus: '$$stock.stockStatus',
+                    lastSaleAt: '$$stock.lastSaleAt',
+                    lastMoveAt: '$$stock.lastMoveAt',
                   },
                 },
               },
@@ -621,7 +580,7 @@ export async function listIdNames(payload: {
 }): Promise<{ items: Array<{ _id: string, names: unknown }>, total: number }> {
   const query: Record<string, unknown> = { removed: { $ne: true } }
   const names = payload.names?.trim()
-  if (names) {
+  if (names !== undefined) {
     const escaped = names.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
     query.$or = [
       { 'names.ru': { $regex: escaped, $options: 'i' } },
@@ -811,52 +770,8 @@ export function productPopulatedStages({
       },
     },
 
-    {
-      $lookup: {
-        from: 'quantities',
-        let: { quantityIds: '$quantityIds' },
-        pipeline: [
-          {
-            $match: {
-              $expr: {
-                $in: ['$_id', { $ifNull: ['$$quantityIds', []] }],
-              },
-            },
-          },
-          {
-            $lookup: {
-              from: 'product-stock-statuses',
-              localField: 'stockStatusId',
-              foreignField: '_id',
-              as: '_stockStatus',
-            },
-          },
-          {
-            $project: {
-              warehouseId: 1,
-              count: 1,
-              stockStatus: {
-                $cond: [
-                  { $gt: [{ $size: '$_stockStatus' }, 0] },
-                  {
-                    $let: {
-                      vars: { s: { $arrayElemAt: ['$_stockStatus', 0] } },
-                      in: {
-                        id: '$$s._id',
-                        names: '$$s.names',
-                        color: '$$s.color',
-                      },
-                    },
-                  },
-                  null,
-                ],
-              },
-            },
-          },
-        ],
-        as: 'warehouseStock',
-      },
-    },
+    warehouseStockFromLotsLookup(),
+    warehouseStockFromLotsAddFields(),
 
     {
       $lookup: {
@@ -1026,7 +941,8 @@ export function productPopulatedStages({
       warehouseStock: {
         count: 1,
         warehouseId: 1,
-        stockStatus: 1,
+        lastSaleAt: 1,
+        lastMoveAt: 1,
       },
       images: 1,
       productProperties: {

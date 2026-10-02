@@ -60,6 +60,7 @@ export function PayProcurementProvider({ children }: { children: ReactNode }) {
     options: {
       onSuccess: ({ data }) => {
         void queryClient.invalidateQueries({ queryKey: ['procurements'] })
+        void queryClient.invalidateQueries({ queryKey: ['suppliers'] })
         void queryClient.invalidateQueries({ queryKey: ['products'] })
         toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.message}` })
       },

@@ -2,10 +2,10 @@ import type { Document, Filter } from 'mongodb'
 import type { Migration } from '../types'
 import { validate as isUuid, v4 as uuidv4 } from 'uuid'
 
-const OBJECT_ID_HEX = /^[a-fA-F0-9]{24}$/
+const OBJECT_ID_HEX = /^[a-f0-9]{24}$/i
 
 function isLegacyObjectId(_id: unknown): boolean {
-  if (_id != null && typeof _id === 'object' && 'toHexString' in (_id as object))
+  if (_id != null && typeof _id === 'object' && 'toHexString' in (_id))
     return true
   if (typeof _id === 'string')
     return OBJECT_ID_HEX.test(_id) && !isUuid(_id)

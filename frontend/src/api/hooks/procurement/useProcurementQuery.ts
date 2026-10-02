@@ -1,6 +1,6 @@
 import type { GetProcurementsRequest } from '@remnant/shared'
 
-import { useQuery } from '@tanstack/react-query'
+import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { getProcurements } from '@/api/requests'
 
 const EMPTY_ITEMS: never[] = []
@@ -10,6 +10,7 @@ export function useProcurementQuery(params: GetProcurementsRequest, settings?: Q
     queryKey: ['procurements', 'get', params],
     queryFn: async () => getProcurements(params),
     staleTime: 60000,
+    placeholderData: keepPreviousData,
     ...settings?.options,
   })
 

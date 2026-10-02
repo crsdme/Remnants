@@ -75,6 +75,7 @@ export function SupplierProvider({ children }: { children: ReactNode }) {
       onSuccess: ({ data }) => {
         closeModal()
         void queryClient.invalidateQueries({ queryKey: ['suppliers'] })
+        void queryClient.invalidateQueries({ queryKey: ['procurements'] })
         toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description || ''}` })
       },
       onError: ({ response }) => {
@@ -90,6 +91,7 @@ export function SupplierProvider({ children }: { children: ReactNode }) {
       onSuccess: ({ data }) => {
         closeModal()
         void queryClient.invalidateQueries({ queryKey: ['suppliers'] })
+        void queryClient.invalidateQueries({ queryKey: ['procurements'] })
         toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description || ''}` })
       },
       onError: ({ response }) => {
@@ -104,6 +106,7 @@ export function SupplierProvider({ children }: { children: ReactNode }) {
     options: {
       onSuccess: ({ data }) => {
         void queryClient.invalidateQueries({ queryKey: ['suppliers'] })
+        void queryClient.invalidateQueries({ queryKey: ['procurements'] })
         toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description || ''}` })
       },
       onError: ({ response }) => {

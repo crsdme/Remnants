@@ -7,6 +7,7 @@ import {
   createClientSchema,
   editClientSchema,
   getClientsSchema,
+  payClientSchema,
   removeClientsSchema,
 } from '@remnant/shared'
 
@@ -30,6 +31,11 @@ export function parseEditClient(x: unknown): EditClientPayload {
 export type RemoveClientsPayload = z.output<typeof removeClientsSchema>
 export function parseRemoveClients(x: unknown): RemoveClientsPayload {
   return removeClientsSchema.parse(x)
+}
+
+export type PayClientPayload = z.output<typeof payClientSchema>
+export function parsePayClient(x: unknown): PayClientPayload {
+  return payClientSchema.parse(x)
 }
 
 export type GetClientsRepoPayload = GetClientsPayload

@@ -5,6 +5,8 @@ import type {
   EditClientResponse,
   GetClientsRequest,
   GetClientsResponse,
+  PayClientRequest,
+  PayClientResponse,
   RemoveClientsRequest,
   RemoveClientsResponse,
 } from '@remnant/shared'
@@ -24,4 +26,8 @@ export async function editClient(params: EditClientRequest) {
 
 export async function removeClient(params: RemoveClientsRequest) {
   return api.post<RemoveClientsResponse>('clients/remove', params)
+}
+
+export async function payClient(params: PayClientRequest) {
+  return api.post<PayClientResponse>('clients/pay', params)
 }

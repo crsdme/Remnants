@@ -1,5 +1,4 @@
 import type {
-  createOrderItemSchema,
   createOrderSchema,
   createOrderShipmentSchema,
   editOrderSchema,
@@ -23,7 +22,7 @@ import type {
   orderItemDBPopulatedSchema,
   orderItemDBSchema,
 } from '@/schemas'
-import { getOrderItemsSchema, getOrdersSchema } from '@remnant/shared'
+import { getOrderItemsSchema, getOrdersSchema, payOrderSchema } from '@remnant/shared'
 
 export type OrderDB = z.infer<typeof orderDBSchema>
 
@@ -45,8 +44,6 @@ export function parseGetOrderItems(x: unknown): GetOrderItemsPayload {
 export type GetOrderDetailsPayload = z.output<typeof getOrderDetailsSchema>
 
 export type CreateOrderPayload = z.output<typeof createOrderSchema>
-
-export type CreateOrderItemPayload = z.output<typeof createOrderItemSchema>
 
 export type EditOrderPayload = z.output<typeof editOrderSchema>
 
@@ -78,6 +75,9 @@ export type PrintOrderShipmentLabelPayload = z.output<typeof printOrderShipmentL
 
 export type SyncOrderShipmentsPayload = z.output<typeof syncOrderShipmentsSchema>
 
-export interface PayOrderPayload { id: string }
+export type PayOrderPayload = z.output<typeof payOrderSchema>
+export function parsePayOrder(x: unknown): PayOrderPayload {
+  return payOrderSchema.parse(x)
+}
 
 export interface FindOneOrderRepoPayload { id?: string, seq?: number }

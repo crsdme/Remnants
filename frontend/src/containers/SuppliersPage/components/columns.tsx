@@ -6,10 +6,12 @@ import {
   ArrowUp,
   ChevronsUpDown,
   Copy,
+  CreditCard,
   Pencil,
   Trash,
 } from 'lucide-react'
 import { useMemo } from 'react'
+import { useNavigate } from 'react-router-dom'
 
 import { TableActionDropdown } from '@/components'
 import { Badge, Button, Checkbox } from '@/components/ui'
@@ -25,6 +27,7 @@ const columnHelper = createColumnHelper<SupplierDTO>()
 export function useColumns() {
   const { t, language } = useLocale()
   const { isLoading, openModal, removeSupplier } = useSupplierContext()
+  const navigate = useNavigate()
 
   const columns = useMemo(() => {
     function sortHeader(column: Column<SupplierDTO, unknown>, label: string) {
@@ -95,6 +98,12 @@ export function useColumns() {
               icon: <Copy className="h-4 w-4" />,
             },
             {
+              permission: 'supplier.page',
+              onClick: () => void navigate(`/suppliers/view/${item.seq}`),
+              label: t('page.suppliers.table.pay'),
+              icon: <CreditCard className="h-4 w-4" />,
+            },
+            {
               permission: 'supplier.edit',
               onClick: () => openModal(item),
               label: t('table.edit'),
@@ -130,6 +139,54 @@ export function useColumns() {
           defaultVisible: true,
         },
         header: ({ column }) => sortHeader(column, t('page.suppliers.table.name')),
+      }),
+      columnHelper.display({
+        id: 'debt',
+        size: 140,
+        meta: {
+          title: t('page.suppliers.table.debt'),
+          defaultVisible: true,
+        },
+        header: t('page.suppliers.table.debt'),
+        cell: ({ row }) => {
+          const remaining = (row.original.debts ?? []).filter(item => item.amount > 0)
+          if (remaining.length === 0)
+            return <span className="text-muted-foreground">0</span>
+
+          return (
+            <div className="flex flex-col gap-1">
+              {remaining.map(item => (
+                <Badge key={item.currency.id} variant="destructive">
+                  {`${item.amount} ${item.currency.symbols[language] || ''}`.trim()}
+                </Badge>
+              ))}
+            </div>
+          )
+        },
+      }),
+      columnHelper.display({
+        id: 'balance',
+        size: 160,
+        meta: {
+          title: t('page.suppliers.table.credit'),
+          defaultVisible: true,
+        },
+        header: t('page.suppliers.table.credit'),
+        cell: ({ row }) => {
+          const credits = (row.original.balances ?? []).filter(item => item.amount < 0)
+          if (credits.length === 0)
+            return <span className="text-muted-foreground">0</span>
+
+          return (
+            <div className="flex flex-col gap-1">
+              {credits.map(item => (
+                <Badge key={item.currency.id} variant="success">
+                  {`${Math.abs(item.amount)} ${item.currency.symbols[language] || ''}`.trim()}
+                </Badge>
+              ))}
+            </div>
+          )
+        },
       }),
       columnHelper.accessor('phones', {
         id: 'phones',
@@ -223,7 +280,7 @@ export function useColumns() {
       }),
       actionColumn(),
     ]
-  }, [isLoading, language, openModal, removeSupplier, t])
+  }, [isLoading, language, navigate, openModal, removeSupplier, t])
 
   return columns
 }

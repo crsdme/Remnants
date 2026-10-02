@@ -13,6 +13,8 @@ import type {
   RemoveSitesResponse,
   SaveSiteSyncMappingRequest,
   SaveSiteSyncMappingResponse,
+  SyncSiteProductRequest,
+  SyncSiteProductResponse,
   SyncSiteProductsRequest,
   SyncSiteProductsResponse,
 } from '@remnant/shared'
@@ -36,6 +38,10 @@ export async function removeSite(params: RemoveSitesRequest) {
 
 export async function syncSiteProducts(params: SyncSiteProductsRequest) {
   return api.post<SyncSiteProductsResponse>('sites/sync-products', params, { timeout: 0 })
+}
+
+export async function syncSiteProduct(params: SyncSiteProductRequest) {
+  return api.post<SyncSiteProductResponse>('sites/sync-product', params, { timeout: 0 })
 }
 
 export async function getSiteSyncMapping(params: GetSiteSyncMappingRequest) {

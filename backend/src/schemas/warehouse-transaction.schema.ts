@@ -9,6 +9,8 @@ export const warehouseTransactionDBSchema = z.object({
   fromWarehouseId: idSchemaOptional,
   toWarehouseId: idSchemaOptional,
   requiresReceiving: z.boolean().optional().default(true),
+  sourceModel: z.string().optional().nullable(),
+  sourceId: idSchemaOptional,
   status: z.string(),
   accepted: z.boolean().optional().default(false),
   acceptedBy: idSchemaOptional,
@@ -44,7 +46,10 @@ export const warehouseTransactionItemDBSchema = z.object({
   transactionId: idSchema,
   productId: idSchema,
   quantity: z.number(),
-  price: z.number(),
+  receivedQuantity: z.number().optional().default(0),
+  minorPurchasePrice: z.number().optional(),
+  purchaseCurrencyId: idSchemaOptional,
+  price: z.number().optional(),
 })
 
 export const warehouseTransactionItemDBPopulatedSchema = warehouseTransactionItemDBSchema.extend({
@@ -53,6 +58,7 @@ export const warehouseTransactionItemDBPopulatedSchema = warehouseTransactionIte
 
 export const editWarehouseTransactionRepoSchema = z.object({
   comment: z.string().trim().optional(),
+  toWarehouseId: idSchemaOptional,
   accepted: z.boolean().optional(),
   acceptedBy: idSchemaOptional,
   acceptedAt: z.date().optional(),
@@ -68,4 +74,6 @@ export const createWarehouseTransactionItemsRepoSchema = z.object({
   productId: idSchema,
   quantity: z.number(),
   receivedQuantity: z.number().optional(),
+  minorPurchasePrice: z.number().optional(),
+  purchaseCurrencyId: idSchemaOptional,
 })

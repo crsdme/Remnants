@@ -1,5 +1,6 @@
 import type { UserAccessScopesDTO } from '@remnant/shared'
 import { describe, expect, it } from 'vitest'
+import { HttpError } from '@/utils/httpError'
 import {
   assertAccountCapability,
   assertEntityCapability,
@@ -10,7 +11,6 @@ import {
   hasAccountCapability,
   hasEntityCapability,
 } from '@/utils/scope'
-import { HttpError } from '@/utils/httpError'
 
 const CR_A = '33333333-3333-3333-3333-333333333333'
 const CR_B = '44444444-4444-4444-4444-444444444444'

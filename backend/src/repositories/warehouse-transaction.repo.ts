@@ -14,6 +14,7 @@ import type {
   WarehouseTransactionItemDBPopulated,
 } from '@/types/'
 import { WarehouseTransactionItemModel, WarehouseTransactionModel } from '@/models'
+import { warehouseStockFromLotsAddFields, warehouseStockFromLotsLookup } from '@/repositories/stock-lot.repo'
 import { applyScopeIdsToAnyOfFields, buildQuery, buildSortQuery, unwrapAggregate } from '@/utils'
 
 export async function list(
@@ -28,19 +29,26 @@ export async function list(
   const {
     seq,
     id,
+    type,
+    sourceModel,
+    sourceId,
     createdAt,
     updatedAt,
   } = payload.filters
 
   const query = buildQuery({
-    filters: { seq, _id: id, createdAt, updatedAt },
+    filters: { seq, _id: id, type, sourceModel, sourceId, createdAt, updatedAt },
     rules: {
       seq: { type: 'number' },
       _id: { type: 'exact' },
+      type: { type: 'string' },
+      sourceModel: { type: 'string' },
+      sourceId: { type: 'string' },
       createdAt: { type: 'dateRange' },
       updatedAt: { type: 'dateRange' },
     },
   })
+  query.removed = { $ne: true }
 
   applyScopeIdsToAnyOfFields(query, options.warehouseIds, ['fromWarehouseId', 'toWarehouseId'])
 
@@ -106,6 +114,8 @@ export async function list(
           },
         },
         requiresReceiving: { $ifNull: ['$requiresReceiving', true] },
+        sourceModel: 1,
+        sourceId: 1,
         status: 1,
         accepted: { $ifNull: ['$accepted', false] },
         acceptedBy: 1,
@@ -140,6 +150,7 @@ export async function listItems(payload: GetWarehouseTransactionsItemsRepoPayloa
   const {
     current,
     pageSize,
+    full,
   } = payload.pagination
 
   const {
@@ -228,10 +239,12 @@ export async function listItems(payload: GetWarehouseTransactionsItemsRepoPayloa
               newRoot: '$doc',
             },
           },
+          warehouseStockFromLotsLookup(),
+          warehouseStockFromLotsAddFields(),
           {
             $lookup: {
               from: 'currencies',
-              localField: 'currency',
+              localField: 'currencyId',
               foreignField: '_id',
               as: 'currency',
             },
@@ -239,7 +252,7 @@ export async function listItems(payload: GetWarehouseTransactionsItemsRepoPayloa
           {
             $lookup: {
               from: 'currencies',
-              localField: 'purchaseCurrency',
+              localField: 'purchaseCurrencyId',
               foreignField: '_id',
               as: 'purchaseCurrency',
             },
@@ -247,7 +260,7 @@ export async function listItems(payload: GetWarehouseTransactionsItemsRepoPayloa
           {
             $lookup: {
               from: 'units',
-              localField: 'unit',
+              localField: 'unitId',
               foreignField: '_id',
               as: 'unit',
             },
@@ -255,23 +268,15 @@ export async function listItems(payload: GetWarehouseTransactionsItemsRepoPayloa
           {
             $lookup: {
               from: 'categories',
-              localField: 'categories',
+              localField: 'categoryIds',
               foreignField: '_id',
               as: 'categories',
             },
           },
           {
             $lookup: {
-              from: 'quantities',
-              localField: 'quantity',
-              foreignField: '_id',
-              as: 'quantity',
-            },
-          },
-          {
-            $lookup: {
               from: 'product-property-groups',
-              localField: 'productPropertiesGroup',
+              localField: 'productPropertiesGroupId',
               foreignField: '_id',
               as: 'productPropertiesGroup',
             },
@@ -279,7 +284,7 @@ export async function listItems(payload: GetWarehouseTransactionsItemsRepoPayloa
           {
             $lookup: {
               from: 'barcodes',
-              localField: 'barcodes',
+              localField: 'barcodeIds',
               foreignField: '_id',
               as: 'barcodes',
             },
@@ -300,7 +305,7 @@ export async function listItems(payload: GetWarehouseTransactionsItemsRepoPayloa
                       {
                         id: '$$prop._id',
                         data: { $arrayElemAt: ['$$prop.data', 0] },
-                        optionData: {
+                        options: {
                           $map: {
                             input: '$$prop.optionData',
                             as: 'option',
@@ -350,16 +355,38 @@ export async function listItems(payload: GetWarehouseTransactionsItemsRepoPayloa
               seq: 1,
               names: 1,
               minorPrice: 1,
-              currency: { id: '$currency._id', names: 1, symbols: 1, scale: '$currency.scale' },
+              currency: {
+                id: '$currency._id',
+                names: '$currency.names',
+                symbols: '$currency.symbols',
+                scale: '$currency.scale',
+              },
               minorPurchasePrice: 1,
-              purchaseCurrency: { id: '$purchaseCurrency._id', names: 1, symbols: 1, scale: '$purchaseCurrency.scale' },
+              purchaseCurrency: {
+                id: '$purchaseCurrency._id',
+                names: '$purchaseCurrency.names',
+                symbols: '$purchaseCurrency.symbols',
+                scale: '$purchaseCurrency.scale',
+              },
               barcodes: { id: 1, code: 1 },
               categories: { id: 1, names: 1 },
-              unit: { id: '$unit._id', names: 1, symbols: 1 },
-              quantity: { count: 1, warehouseId: 1, status: 1 },
+              unit: {
+                id: '$unit._id',
+                names: '$unit.names',
+                symbols: '$unit.symbols',
+              },
+              warehouseStock: 1,
               images: 1,
-              productProperties: { id: 1, value: 1, data: { names: 1, type: 1, isRequired: 1, showInTable: 1 }, optionData: { id: 1, names: 1, color: 1 } },
-              productPropertiesGroup: { id: '$productPropertiesGroup._id', names: 1 },
+              productProperties: {
+                id: 1,
+                value: 1,
+                data: { id: 1, names: 1, symbols: 1, type: 1, isRequired: 1, showInTable: 1 },
+                options: { id: 1, names: 1, color: 1 },
+              },
+              productPropertiesGroup: {
+                id: '$productPropertiesGroup._id',
+                names: '$productPropertiesGroup.names',
+              },
               createdAt: 1,
               updatedAt: 1,
               id: '$_id',
@@ -374,28 +401,28 @@ export async function listItems(payload: GetWarehouseTransactionsItemsRepoPayloa
         product: {
           $first: '$product',
         },
-        productId: {
-          $first: '$product.id',
-        },
       },
     },
     {
       $project: {
-        _id: 0,
+        _id: 1,
         id: '$_id',
         product: 1,
         productId: 1,
         quantity: 1,
+        receivedQuantity: { $ifNull: ['$receivedQuantity', 0] },
         transactionId: 1,
         createdAt: 1,
       },
     },
     {
       $facet: {
-        items: [
-          { $skip: (current - 1) * pageSize },
-          { $limit: pageSize },
-        ],
+        items: full
+          ? []
+          : [
+              { $skip: (current - 1) * pageSize },
+              { $limit: pageSize },
+            ],
         count: [
           { $count: 'count' },
         ],
@@ -406,7 +433,7 @@ export async function listItems(payload: GetWarehouseTransactionsItemsRepoPayloa
   const raw = await WarehouseTransactionItemModel.aggregate<AggregateResult<WarehouseTransactionItemDBPopulated>>(pipeline).exec()
   const { items, total } = unwrapAggregate(raw)
 
-  return { items, total, page: current, pageSize }
+  return { items, total, page: current, pageSize: full ? Math.max(total, pageSize) : pageSize }
 }
 
 export async function createOne(payload: CreateWarehouseTransactionRepoPayload) {
@@ -435,6 +462,10 @@ export async function updateItem({ query, payload }: { query: FilterQuery<Wareho
 
 export async function findById(id: string) {
   return WarehouseTransactionModel.findById(id).exec()
+}
+
+export async function listItemsByTransactionId(transactionId: string) {
+  return WarehouseTransactionItemModel.find({ transactionId }).exec()
 }
 
 export async function findOne(query: FilterQuery<WarehouseTransactionDB>) {

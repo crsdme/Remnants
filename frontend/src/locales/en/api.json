@@ -570,6 +570,12 @@
   "response.title.CLIENTS_REMOVED": "Clients removed",
   "response.description.CLIENTS_REMOVED": "Selected clients have been deleted",
 
+  "response.title.CLIENT_PAID": "Client paid",
+  "response.description.CLIENT_PAID": "Payment was applied to the client balance",
+
+  "response.title.ORDER_PAYED": "Order paid",
+  "response.description.ORDER_PAYED": "Payment was applied to the order",
+
   "response.title.AUTOMATION_CREATED": "Automation created",
   "response.description.AUTOMATION_CREATED": "New automation has been created",
 
@@ -647,6 +653,8 @@
 
   "response.title.SITE_PRODUCTS_SYNCED": "Products uploaded",
   "response.description.SITE_PRODUCTS_SYNCED": "Uploaded {{synced}} of {{total}} products ({{failed}} failed)",
+  "response.title.SITE_PRODUCT_SYNCED": "Product created on site",
+  "response.description.SITE_PRODUCT_SYNCED": "The product was created on the site and linked",
 
   "response.title.SITE_SYNC_MAPPING_FETCHED": "Sync mapping loaded",
   "response.description.SITE_SYNC_MAPPING_FETCHED": "Site mapping loaded",
@@ -675,6 +683,14 @@
   "error.title.SITE_SYNC_FAILED": "Could not reach the site",
   "error.description.SITE_SYNC_FAILED": "Check the site URL, API key, and that the Remnant module is enabled",
 
+  "error.title.SUPPLIER_NOT_FOUND": "Supplier not found",
+
+  "error.title.CLIENT_NOT_FOUND": "Client not found",
+  "error.description.CLIENT_NOT_FOUND": "The requested client was not found",
+  "error.title.CLIENT_REQUIRED": "Client is required",
+  "error.description.CLIENT_REQUIRED": "A client is required to take payment",
+  "error.description.SUPPLIER_NOT_FOUND": "This supplier does not exist",
+
   "response.title.SUPPLIERS_FETCHED": "Suppliers fetched",
   "response.description.SUPPLIERS_FETCHED": "Suppliers list successfully fetched",
 
@@ -691,5 +707,59 @@
   "response.description.SUPPLIERS_NOT_REMOVED": "Unable to remove selected suppliers",
 
   "response.title.SUPPLIERS_REMOVED": "Suppliers removed",
-  "response.description.SUPPLIERS_REMOVED": "Selected suppliers have been deleted"
+  "response.description.SUPPLIERS_REMOVED": "Selected suppliers have been deleted",
+
+  "response.title.PROCUREMENTS_FETCHED": "Procurements fetched",
+  "response.description.PROCUREMENTS_FETCHED": "Procurements list successfully fetched",
+  "response.title.PROCUREMENT_CREATED": "Procurement created",
+  "response.description.PROCUREMENT_CREATED": "New procurement has been created",
+  "response.title.PROCUREMENT_EDITED": "Procurement edited",
+  "response.description.PROCUREMENT_EDITED": "Procurement has been updated",
+  "response.title.PROCUREMENT_REMOVED": "Procurement removed",
+  "response.description.PROCUREMENT_REMOVED": "Procurement has been cancelled",
+  "response.title.PROCUREMENT_PAID": "Procurement paid",
+  "response.description.PROCUREMENT_PAID": "Payment has been recorded",
+  "response.title.PROCUREMENT_PAYMENT_CANCELLED": "Payment cancelled",
+  "response.description.PROCUREMENT_PAYMENT_CANCELLED": "The payment was reversed",
+  "response.title.SUPPLIER_PAID": "Supplier paid",
+  "response.description.SUPPLIER_PAID": "Payment was applied to the supplier balance",
+  "response.title.PROCUREMENT_CONFIRMED": "Procurement confirmed",
+  "response.description.PROCUREMENT_CONFIRMED": "Inbound warehouse transaction is waiting for receipt",
+  "response.title.PROCUREMENT_UNCONFIRMED": "Confirmation withdrawn",
+  "response.description.PROCUREMENT_UNCONFIRMED": "Inbound warehouse transaction was cancelled, procurement is a draft again",
+  "response.title.PROCUREMENT_RECEIVED": "Procurement received",
+  "response.description.PROCUREMENT_RECEIVED": "Stock has been received from the supplier",
+  "response.title.STOCK_LOTS_FETCHED": "Stock lots fetched",
+  "response.description.STOCK_LOTS_FETCHED": "Stock lots list successfully fetched",
+  "response.title.PAYMENT_APPLICATIONS_FETCHED": "Payment applications fetched",
+  "response.description.PAYMENT_APPLICATIONS_FETCHED": "Payment applications list successfully fetched",
+
+  "error.title.PROCUREMENT_WAREHOUSE_REQUIRED": "Warehouse required",
+  "error.description.PROCUREMENT_WAREHOUSE_REQUIRED": "Choose a warehouse to confirm the procurement",
+  "error.title.PROCUREMENT_ALREADY_CONFIRMED": "Already confirmed",
+  "error.description.PROCUREMENT_ALREADY_CONFIRMED": "This procurement already has an inbound warehouse transaction",
+  "error.title.PROCUREMENT_ITEMS_REQUIRED": "No items",
+  "error.description.PROCUREMENT_ITEMS_REQUIRED": "Add items before confirming the procurement",
+  "error.title.WAREHOUSE_TRANSACTION_NOT_AWAITING": "Not awaiting receipt",
+  "error.description.WAREHOUSE_TRANSACTION_NOT_AWAITING": "This warehouse transaction is not waiting to be received",
+  "error.title.WAREHOUSE_TRANSACTION_RECEIVE_EXCEEDS": "Too many units",
+  "error.description.WAREHOUSE_TRANSACTION_RECEIVE_EXCEEDS": "Received quantity exceeds the inbound remainder",
+  "error.title.PROCUREMENT_RECEIVE_EXCEEDS_ORDERED": "Too many units",
+  "error.description.PROCUREMENT_RECEIVE_EXCEEDS_ORDERED": "Received quantity exceeds the ordered remainder",
+  "error.title.PROCUREMENT_NOT_CONFIRMED": "Not confirmed",
+  "error.description.PROCUREMENT_NOT_CONFIRMED": "This procurement is still a draft",
+  "error.title.PROCUREMENT_CANCELLED": "Procurement cancelled",
+  "error.description.PROCUREMENT_CANCELLED": "Cancelled procurements cannot be unconfirmed",
+  "error.title.PROCUREMENT_ALREADY_RECEIVED": "Already received",
+  "error.description.PROCUREMENT_ALREADY_RECEIVED": "Stock has already been received, confirmation cannot be withdrawn",
+  "error.title.PROCUREMENT_NOT_DRAFT": "Not a draft",
+  "error.description.PROCUREMENT_NOT_DRAFT": "Items can be changed only while the procurement is a draft",
+  "error.title.PROCUREMENT_PAYMENT_NOT_FOUND": "Payment not found",
+  "error.description.PROCUREMENT_PAYMENT_NOT_FOUND": "This payment is not linked to a procurement",
+  "error.title.PROCUREMENT_PAYMENT_CANCELLED": "Already cancelled",
+  "error.description.PROCUREMENT_PAYMENT_CANCELLED": "This payment was already cancelled",
+  "error.title.WAREHOUSE_TRANSACTION_WAREHOUSE_LOCKED": "Warehouse locked",
+  "error.description.WAREHOUSE_TRANSACTION_WAREHOUSE_LOCKED": "Warehouse cannot be changed after stock has been received",
+  "error.title.WAREHOUSE_TRANSACTION_WAREHOUSE_REQUIRED": "Warehouse required",
+  "error.description.WAREHOUSE_TRANSACTION_WAREHOUSE_REQUIRED": "Choose a warehouse to receive the inbound"
 }

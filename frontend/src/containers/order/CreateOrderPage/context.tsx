@@ -273,6 +273,8 @@ export function CreateOrderProvider({ children }: { children: ReactNode }) {
         void queryClient.invalidateQueries({ queryKey: ['statistics'] })
         void queryClient.invalidateQueries({ queryKey: ['money-transactions'] })
         void queryClient.invalidateQueries({ queryKey: ['order-statuses'] })
+        void queryClient.invalidateQueries({ queryKey: ['clients'] })
+        void queryClient.invalidateQueries({ queryKey: ['payment-applications'] })
         toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description || ''}` })
         void navigate('/orders')
       },

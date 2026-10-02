@@ -1,5 +1,6 @@
 import { z } from 'zod'
-import { dateRangeSchema, idSchema, paginationSchema, responseItemSchema, responseListSchema, responseSchema, sorterParamsSchema } from './common'
+import { dateRangeSchema, idSchema, numberFromStringSchema, paginationSchema, responseItemSchema, responseListSchema, responseSchema, sorterParamsSchema } from './common'
+import { supplierBalanceSchema } from './supplier.schema'
 
 export const clientSchema = z.object({
   id: idSchema,
@@ -16,6 +17,9 @@ export const clientSchema = z.object({
     value: z.string(),
   })).optional(),
   comment: z.string().optional(),
+  debts: z.array(supplierBalanceSchema).optional().default([]),
+  payments: z.array(supplierBalanceSchema).optional().default([]),
+  balances: z.array(supplierBalanceSchema).optional().default([]),
   createdAt: z.coerce.date(),
   updatedAt: z.coerce.date(),
 })
@@ -25,6 +29,7 @@ export type ClientDTO = z.output<typeof clientSchema>
 export const getClientsSchema = z.object({
   filters: z.object({
     ids: z.array(idSchema).default([]),
+    seq: z.array(numberFromStringSchema).optional(),
     search: z.string().trim().optional(),
     emails: z.array(z.string()).default([]),
     phones: z.array(z.string()).default([]),
@@ -94,3 +99,18 @@ export type EditClientResponse = z.output<typeof editClientResponseSchema>
 
 export const removeClientsResponseSchema = responseSchema
 export type RemoveClientsResponse = z.output<typeof removeClientsResponseSchema>
+
+export const payClientSchema = z.object({
+  clientId: idSchema,
+  cashregister: idSchema.optional(),
+  account: idSchema.optional(),
+  currency: idSchema,
+  amount: z.number().positive().optional(),
+  comment: z.string().trim().optional(),
+}).refine(data => data.amount == null || (Boolean(data.cashregister) && Boolean(data.account)), {
+  message: 'Cashregister and account are required when paying from cash',
+  path: ['cashregister'],
+})
+export type PayClientRequest = z.input<typeof payClientSchema>
+export const payClientResponseSchema = responseItemSchema(clientSchema)
+export type PayClientResponse = z.output<typeof payClientResponseSchema>

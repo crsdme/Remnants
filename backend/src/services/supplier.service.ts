@@ -1,153 +1,74 @@
-// import type {
-//   CreateSupplierParams,
-//   CreateSupplierResponse,
-//   EditSupplierParams,
-//   EditSupplierResponse,
-//   GetSuppliersParams,
-//   GetSuppliersResponse,
-//   RemoveSuppliersParams,
-//   RemoveSuppliersResponse,
-// } from '@remnant/shared'
-// import { SupplierModel } from '@/models/'
-// import { buildQuery, buildSortQuery, HttpError } from '@/utils/'
+import type {
+  CreateSupplierResponse,
+  EditSupplierResponse,
+  GetSuppliersResponse,
+  RemoveSuppliersResponse,
+} from '@remnant/shared'
+import type {
+  CreateSupplierPayload,
+  EditSupplierPayload,
+  GetSuppliersPayload,
+  RemoveSuppliersPayload,
+} from '@/types'
+import { mapSupplierToDTO } from '@/mappers/'
+import * as SupplierRepo from '@/repositories/supplier.repo'
+import * as Settlement from '@/services/settlement.service'
+import { HttpError } from '@/utils/'
 
-// export async function get(payload: GetSuppliersParams): Promise<GetSuppliersResponse> {
-//   const { current = 1, pageSize = 10 } = payload.pagination || {}
+export async function get({ payload }: { payload: GetSuppliersPayload }): Promise<GetSuppliersResponse> {
+  const { items, total, page, pageSize } = await SupplierRepo.list(payload)
+  const withSettlement = await Settlement.withSettlement(items)
 
-//   const {
-//     ids = [],
-//     search = '',
-//     emails = [],
-//     phones = [],
-//     createdAt = {
-//       from: undefined,
-//       to: undefined,
-//     },
-//     updatedAt = {
-//       from: undefined,
-//       to: undefined,
-//     },
-//   } = payload.filters || {}
+  return {
+    status: 'success',
+    code: 'SUPPLIERS_FETCHED',
+    message: 'Suppliers fetched',
+    data: {
+      items: withSettlement,
+      pagination: {
+        page,
+        pageSize,
+        total,
+      },
+    },
+  }
+}
 
-//   const filterRules = {
-//     _id: { type: 'array' },
-//     search: { type: 'string' },
-//     emails: { type: 'array' },
-//     phones: { type: 'array' },
-//     createdAt: { type: 'dateRange' },
-//     updatedAt: { type: 'dateRange' },
-//   } as const
+export async function create({ payload }: { payload: CreateSupplierPayload }): Promise<CreateSupplierResponse> {
+  const supplier = await SupplierRepo.createOne(payload)
+  const [item] = await Settlement.withSettlement([mapSupplierToDTO(supplier)])
 
-//   const query = buildQuery({
-//     filters: { _id: ids, emails, phones, createdAt, updatedAt },
-//     rules: filterRules,
-//   })
+  return {
+    status: 'success',
+    code: 'SUPPLIER_CREATED',
+    message: 'Supplier created',
+    data: item,
+  }
+}
 
-//   const filterRulesLast: any = {
-//     search: {
-//       type: 'multiFieldSearch',
-//       multiFields: [
-//         { field: `name` },
-//         { field: `emails`, isArray: true, isArrayPrimitive: true },
-//         { field: `phones`, isArray: true, isArrayPrimitive: true },
-//       ],
-//     },
-//   }
+export async function edit({ payload }: { payload: EditSupplierPayload }): Promise<EditSupplierResponse> {
+  const supplier = await SupplierRepo.updateById(payload.id, payload)
 
-//   const queryLast = buildQuery({
-//     filters: { search },
-//     rules: filterRulesLast,
-//     removed: false,
-//   })
+  if (!supplier)
+    throw new HttpError(400, 'Supplier not edited', 'SUPPLIER_NOT_EDITED')
 
-//   const sorters = buildSortQuery(payload.sorters || {}, { createdAt: 1 })
+  const [item] = await Settlement.withSettlement([mapSupplierToDTO(supplier)])
 
-//   const pipeline = [
-//     {
-//       $match: query,
-//     },
-//     {
-//       $sort: sorters,
-//     },
-//     {
-//       $match: queryLast,
-//     },
-//     {
-//       $facet: {
-//         suppliers: [
-//           { $skip: (current - 1) * pageSize },
-//           { $limit: pageSize },
-//         ],
-//         totalCount: [
-//           { $count: 'count' },
-//         ],
-//       },
-//     },
-//   ]
+  return {
+    status: 'success',
+    code: 'SUPPLIER_EDITED',
+    message: 'Supplier edited',
+    data: item,
+  }
+}
 
-//   const suppliersRaw = await SupplierModel.aggregate(pipeline).exec()
+export async function remove({ payload }: { payload: RemoveSuppliersPayload }): Promise<RemoveSuppliersResponse> {
+  for (const id of payload.ids)
+    await SupplierRepo.removeById(id)
 
-//   const suppliers = suppliersRaw[0].suppliers.map((doc: any) => SupplierModel.hydrate(doc))
-//   const suppliersCount = suppliersRaw[0].totalCount[0]?.count || 0
-
-//   return {
-//     status: 'success',
-//     code: 'SUPPLIERS_FETCHED',
-//     message: 'Suppliers fetched',
-//     data: {
-//       items: suppliers,
-//       pagination: {
-//         page: current,
-//         pageSize,
-//         total: suppliersCount,
-//       },
-//     },
-//   }
-// }
-
-// export async function create(payload: CreateSupplierParams): Promise<CreateSupplierResponse> {
-//   const supplier = await SupplierModel.create(payload)
-
-//   return {
-//     status: 'success',
-//     code: 'SUPPLIER_CREATED',
-//     message: 'Supplier created',
-//     data: supplier,
-//   }
-// }
-
-// export async function edit(payload: EditSupplierParams): Promise<EditSupplierResponse> {
-//   const { id } = payload
-
-//   const supplier = await SupplierModel.findOneAndUpdate({ _id: id }, payload)
-
-//   if (!supplier) {
-//     throw new HttpError(400, 'Supplier not edited', 'SUPPLIER_NOT_EDITED')
-//   }
-
-//   return {
-//     status: 'success',
-//     code: 'SUPPLIER_EDITED',
-//     message: 'Supplier edited',
-//     data: supplier,
-//   }
-// }
-
-// export async function remove(payload: RemoveSuppliersParams): Promise<RemoveSuppliersResponse> {
-//   const { ids } = payload
-
-//   const suppliers = await SupplierModel.updateMany(
-//     { _id: { $in: ids } },
-//     { $set: { removed: true } },
-//   )
-
-//   if (!suppliers) {
-//     throw new HttpError(400, 'Suppliers not removed', 'SUPPLIERS_NOT_REMOVED')
-//   }
-
-//   return {
-//     status: 'success',
-//     code: 'SUPPLIERS_REMOVED',
-//     message: 'Suppliers removed',
-//   }
-// }
+  return {
+    status: 'success',
+    code: 'SUPPLIERS_REMOVED',
+    message: 'Suppliers removed',
+  }
+}

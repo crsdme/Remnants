@@ -1,7 +1,7 @@
-import type { CreateOrderRequest, EditOrderRequest, GetOrdersRequest, RemoveOrdersRequest } from '@remnant/shared'
+import type { CreateOrderRequest, EditOrderRequest, GetOrdersRequest, PayOrderRequest, RemoveOrdersRequest } from '@remnant/shared'
 import request from 'supertest'
 import app from '@/index'
-import { OrderModel } from '../../src/models/order.model'
+import { OrderItemModel, OrderModel } from '../../src/models/order.model'
 
 export async function create(params: CreateOrderRequest): Promise<unknown> {
   const response = await request(app).post('/api/orders/create').send(params)
@@ -36,8 +36,13 @@ export async function remove(params: RemoveOrdersRequest): Promise<unknown> {
   return response.body
 }
 
-export async function removeAll(): Promise<unknown> {
-  const response = await OrderModel.deleteMany({})
+export async function pay(params: PayOrderRequest): Promise<unknown> {
+  const response = await request(app).post('/api/orders/pay').send(params)
 
-  return response
+  return response.body
+}
+
+export async function removeAll(): Promise<unknown> {
+  await OrderItemModel.deleteMany({})
+  return OrderModel.deleteMany({})
 }

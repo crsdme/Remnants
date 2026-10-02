@@ -11,6 +11,8 @@ import type {
   GetOrderItemsResponse,
   GetOrdersRequest,
   GetOrdersResponse,
+  PayOrderRequest,
+  PayOrderResponse,
   PrintDraftInvoiceOrderRequest,
   PrintDraftInvoiceOrderResponse,
   PrintOrderShipmentLabelRequest,
@@ -51,6 +53,10 @@ export async function editOrder(params: EditOrderRequest | FormData) {
 
 export async function removeOrder(params: RemoveOrdersRequest) {
   return api.post<RemoveOrdersResponse>('orders/remove', params)
+}
+
+export async function payOrder(params: PayOrderRequest) {
+  return api.post<PayOrderResponse>('orders/pay', params)
 }
 
 export async function printDraftInvoice(params: PrintDraftInvoiceOrderRequest) {

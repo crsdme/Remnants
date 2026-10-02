@@ -1,29 +1,58 @@
 import { z } from 'zod'
-import { dateRangeSchema, idSchema, idSchemaOptional, numberFromStringSchema, paginationSchema, responseItemSchema, responseListSchema, responseSchema, sorterParamsSchema } from './common'
-import { currencySchema } from './currency.schema'
+import { barcodeDTOPopulatedSchema } from './barcode.schema'
+import { dateRangeSchema, idSchema, idSchemaOptional, languageStringSchema, numberFromStringSchema, paginationSchema, responseItemSchema, responseListSchema, responseSchema, sorterParamsSchema } from './common'
+
+export const procurementStatusSchema = z.enum([
+  'draft',
+  'ordered',
+  'partially-received',
+  'received',
+  'closed',
+  'cancelled',
+])
+export type ProcurementStatus = z.output<typeof procurementStatusSchema>
+
+export const procurementPaymentStatusSchema = z.enum([
+  'unpaid',
+  'partially-paid',
+  'paid',
+  'overpaid',
+])
+export type ProcurementPaymentStatus = z.output<typeof procurementPaymentStatusSchema>
+
+const procurementCurrencyAmountSchema = z.object({
+  currency: z.object({
+    id: idSchema,
+    names: languageStringSchema,
+    symbols: languageStringSchema,
+    scale: z.number().optional(),
+  }),
+  amount: z.number(),
+})
 
 export const procurementSchema = z.object({
   id: idSchema,
   seq: z.number(),
   supplierId: idSchema,
+  supplier: z.object({
+    id: idSchema,
+    seq: z.number().optional(),
+    name: z.string(),
+  }).optional(),
   status: z.string().trim(),
-  warehouse: idSchema,
-  expenseIds: z.array(idSchema),
-  paymentIds: z.array(idSchema),
-  itemsByCurrency: z.array(z.object({
-    currency: currencySchema,
-    amount: z.number(),
-  })),
-  paymentsByCurrency: z.array(z.object({
-    currency: currencySchema,
-    amount: z.number(),
-  })),
-  balanceByCurrency: z.array(z.object({
-    currency: currencySchema,
-    amount: z.number(),
-  })),
-  createdBy: idSchema,
-  removedBy: idSchema,
+  paymentStatus: z.string().trim().optional(),
+  warehouseId: idSchema.optional().nullable(),
+  warehouse: z.object({
+    id: idSchema,
+    names: languageStringSchema,
+  }).optional().nullable(),
+  expenseIds: z.array(idSchema).optional().default([]),
+  paymentIds: z.array(idSchema).optional().default([]),
+  itemsByCurrency: z.array(procurementCurrencyAmountSchema).optional().default([]),
+  paymentsByCurrency: z.array(procurementCurrencyAmountSchema).optional().default([]),
+  balanceByCurrency: z.array(procurementCurrencyAmountSchema).optional().default([]),
+  createdBy: idSchemaOptional,
+  removedBy: idSchema.optional().nullable(),
   comment: z.string().trim().optional(),
   createdAt: z.coerce.date(),
   updatedAt: z.coerce.date(),
@@ -35,22 +64,32 @@ export const procurementItemSchema = z.object({
   procurementId: idSchema,
   productId: idSchema,
   quantity: z.number(),
+  receivedQuantity: z.number().optional().default(0),
+  minorPurchasePrice: z.number().int().optional(),
+  purchasePrice: z.number().optional(),
+  purchaseCurrencyId: idSchema.optional(),
+  product: z.object({
+    id: idSchema,
+    names: languageStringSchema,
+  }).optional(),
 })
 export type ProcurementItemDTO = z.infer<typeof procurementItemSchema>
 
 export const getProcurementsSchema = z.object({
   filters: z.object({
+    ids: z.array(idSchema).optional(),
     seq: z.array(numberFromStringSchema).optional(),
     supplierId: idSchemaOptional,
     status: z.string().trim().optional(),
-    warehouse: idSchemaOptional,
+    paymentStatus: z.string().trim().optional(),
+    warehouseId: idSchemaOptional,
     createdAt: dateRangeSchema.optional(),
     updatedAt: dateRangeSchema.optional(),
   }).optional().default({}),
   sorters: z.object({
     supplierId: sorterParamsSchema.optional(),
     status: sorterParamsSchema.optional(),
-    warehouse: sorterParamsSchema.optional(),
+    warehouseId: sorterParamsSchema.optional(),
     updatedAt: sorterParamsSchema.optional(),
     createdAt: sorterParamsSchema.optional(),
   }).optional().default({}),
@@ -61,6 +100,7 @@ export type GetProcurementsRequest = z.input<typeof getProcurementsSchema>
 
 export const createProcurementSchema = z.object({
   comment: z.string().trim().optional(),
+  warehouseId: idSchemaOptional,
   items: z.array(z.object({
     id: idSchema,
     quantity: z.number(),
@@ -92,11 +132,17 @@ export type GetProcurementItemsRequest = z.input<typeof getProcurementItemsSchem
 export const editProcurementSchema = z.object({
   id: idSchema,
   comment: z.string().trim().optional(),
-  supplierId: idSchema,
-  status: z.string().trim(),
-  warehouse: idSchema,
-  expenseIds: z.array(idSchema),
-  paymentIds: z.array(idSchema),
+  supplierId: idSchema.optional(),
+  status: z.string().trim().optional(),
+  warehouseId: idSchemaOptional,
+  items: z.array(z.object({
+    id: idSchema,
+    quantity: z.number(),
+    purchasePrice: z.number().min(0),
+    purchaseCurrencyId: z.object({
+      id: idSchema,
+    }),
+  })).optional(),
 })
 
 export type EditProcurementRequest = z.input<typeof editProcurementSchema>
@@ -109,16 +155,52 @@ export const scanBarcodeSchema = z.object({
 export type ScanBarcodeProcurementRequest = z.input<typeof scanBarcodeSchema>
 
 export const payProcurementSchema = z.object({
-  id: idSchema,
+  id: idSchema.optional(),
   procurementId: idSchema,
-  cashregister: idSchema,
-  account: idSchema,
+  cashregister: idSchema.optional(),
+  account: idSchema.optional(),
   currency: idSchema,
-  amount: z.number(),
+  amount: z.number().positive().optional(),
   comment: z.string().trim().optional(),
+}).refine(data => data.amount == null || (Boolean(data.cashregister) && Boolean(data.account)), {
+  message: 'Cashregister and account are required when paying from cash',
+  path: ['cashregister'],
 })
 
 export type PayProcurementRequest = z.input<typeof payProcurementSchema>
+
+export const cancelProcurementPaymentSchema = z.object({
+  applicationId: idSchema,
+})
+
+export type CancelProcurementPaymentRequest = z.input<typeof cancelProcurementPaymentSchema>
+
+export const paySupplierSchema = z.object({
+  supplierId: idSchema,
+  cashregister: idSchema.optional(),
+  account: idSchema.optional(),
+  currency: idSchema,
+  amount: z.number().positive().optional(),
+  comment: z.string().trim().optional(),
+}).refine(data => data.amount == null || (Boolean(data.cashregister) && Boolean(data.account)), {
+  message: 'Cashregister and account are required when paying from cash',
+  path: ['cashregister'],
+})
+
+export type PaySupplierRequest = z.input<typeof paySupplierSchema>
+
+export const confirmProcurementSchema = z.object({
+  id: idSchema,
+  warehouseId: idSchemaOptional,
+})
+
+export type ConfirmProcurementRequest = z.input<typeof confirmProcurementSchema>
+
+export const unconfirmProcurementSchema = z.object({
+  id: idSchema,
+})
+
+export type UnconfirmProcurementRequest = z.input<typeof unconfirmProcurementSchema>
 
 export const getProcurementsResponseSchema = responseListSchema(procurementSchema)
 export type GetProcurementsResponse = z.infer<typeof getProcurementsResponseSchema>
@@ -135,8 +217,23 @@ export type RemoveProcurementsResponse = z.infer<typeof removeProcurementsRespon
 export const getProcurementItemsResponseSchema = responseListSchema(procurementItemSchema)
 export type GetProcurementItemsResponse = z.infer<typeof getProcurementItemsResponseSchema>
 
-export const scanBarcodeProcurementResponseSchema = responseSchema
+export const scanBarcodeProcurementResponseSchema = responseSchema.extend({
+  item: barcodeDTOPopulatedSchema.optional(),
+  procurementId: idSchemaOptional,
+})
 export type ScanBarcodeProcurementResponse = z.infer<typeof scanBarcodeProcurementResponseSchema>
 
-export const payProcurementResponseSchema = responseSchema
+export const payProcurementResponseSchema = responseItemSchema(procurementSchema)
 export type PayProcurementResponse = z.infer<typeof payProcurementResponseSchema>
+
+export const cancelProcurementPaymentResponseSchema = responseItemSchema(procurementSchema)
+export type CancelProcurementPaymentResponse = z.infer<typeof cancelProcurementPaymentResponseSchema>
+
+export const paySupplierResponseSchema = responseListSchema(procurementSchema)
+export type PaySupplierResponse = z.infer<typeof paySupplierResponseSchema>
+
+export const confirmProcurementResponseSchema = responseItemSchema(procurementSchema)
+export type ConfirmProcurementResponse = z.infer<typeof confirmProcurementResponseSchema>
+
+export const unconfirmProcurementResponseSchema = responseItemSchema(procurementSchema)
+export type UnconfirmProcurementResponse = z.infer<typeof unconfirmProcurementResponseSchema>

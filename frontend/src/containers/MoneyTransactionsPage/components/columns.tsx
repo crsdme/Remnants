@@ -12,7 +12,6 @@ import {
   ChevronRight,
   ChevronsUpDown,
   Copy,
-  Pencil,
 } from 'lucide-react'
 import { useMemo } from 'react'
 
@@ -45,7 +44,7 @@ function getBalanceAfterVariant({
 
 export function useColumns() {
   const { t, language } = useLocale()
-  const { isLoading, openModal, receiveMoneyTransfer, cancelMoneyTransfer } = useMoneyTransactionContext()
+  const { isLoading, receiveMoneyTransfer, cancelMoneyTransfer } = useMoneyTransactionContext()
   const { access, permissions } = useAuthContext()
   const isAdmin = hasPermission(permissions, 'other.admin')
 
@@ -181,12 +180,6 @@ export function useColumns() {
                   confirmLabel: t('page.money-transactions.confirm.cancel.action'),
                 }]
               : []),
-            {
-              permission: 'moneyTransaction.edit',
-              onClick: () => openModal(item as any),
-              label: t('table.edit'),
-              icon: <Pencil className="h-4 w-4" />,
-            },
           ]
 
           return <TableActionDropdown actions={actions} />
@@ -210,6 +203,7 @@ export function useColumns() {
             { label: t('page.money-transactions.table.type.transfer'), value: 'transfer' },
             { label: t('page.money-transactions.table.type.income'), value: 'income' },
             { label: t('page.money-transactions.table.type.expense'), value: 'expense' },
+            { label: t('page.money-transactions.table.type.procurement'), value: 'procurement' },
           ],
         },
         header: ({ column }) => sortHeader(column, t('page.money-transactions.table.type')),
@@ -334,6 +328,6 @@ export function useColumns() {
       }),
       actionColumn(),
     ]
-  }, [access.cashregisters, cancelMoneyTransfer, isAdmin, isLoading, language, openModal, receiveMoneyTransfer, t])
+  }, [access.cashregisters, cancelMoneyTransfer, isAdmin, isLoading, language, receiveMoneyTransfer, t])
   return columns
 }

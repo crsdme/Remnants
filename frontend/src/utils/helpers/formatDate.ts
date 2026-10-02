@@ -3,7 +3,7 @@ import { enUS, ru } from 'date-fns/locale'
 
 export function formatDate(
   date: string | number | Date,
-  formatString = 'MMMM dd, yyyy HH:mm:ss',
+  formatString = 'dd.MM.yyyy HH:mm',
   lang = 'en',
 ): string {
   const locale = lang === 'ru' ? ru : enUS

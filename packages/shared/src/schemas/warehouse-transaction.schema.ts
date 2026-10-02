@@ -26,6 +26,8 @@ export const warehouseTransactionSchema = z.object({
     names: languageStringSchema,
   }).optional(),
   requiresReceiving: z.boolean().optional().default(true),
+  sourceModel: z.string().trim().optional().nullable(),
+  sourceId: idSchemaOptional,
   status: z.string().trim(),
   accepted: z.boolean().optional().default(false),
   acceptedBy: idSchemaOptional,
@@ -45,7 +47,8 @@ export const warehouseTransactionItemSchema = z.object({
   productId: idSchema,
   product: productSchemaPopulated,
   quantity: z.number(),
-  price: z.number(),
+  receivedQuantity: z.number().optional().default(0),
+  price: z.number().optional().default(0),
 })
 export type WarehouseTransactionItemDTO = z.output<typeof warehouseTransactionItemSchema>
 
@@ -85,13 +88,19 @@ const baseCreateWarehouseTransactionSchema = z.object({
     id: idSchema,
     quantity: z.number(),
   })),
-  createdBy: idSchema,
+  createdBy: idSchemaOptional,
   status: z.enum(['draft', 'confirmed', 'awaiting', 'received', 'cancelled']).optional().default('draft'),
 })
 
 const inWarehouseTransactionSchema = baseCreateWarehouseTransactionSchema.extend({
   type: z.literal('in'),
   toWarehouseId: idSchema,
+  products: z.array(z.object({
+    id: idSchema,
+    quantity: z.number(),
+    minorPurchasePrice: z.number().int().optional(),
+    purchaseCurrencyId: idSchema.optional(),
+  })),
 })
 
 const outWarehouseTransactionSchema = baseCreateWarehouseTransactionSchema.extend({
@@ -181,6 +190,7 @@ export type EditWarehouseTransactionRequest = z.input<typeof editWarehouseTransa
 
 export const receiveWarehouseTransactionSchema = z.object({
   id: idSchema,
+  toWarehouseId: idSchemaOptional,
   products: z.array(z.object({
     id: idSchema,
     quantity: z.number(),
@@ -212,11 +222,13 @@ export type GetWarehouseTransactionsItemsResponse = z.output<typeof getWarehouse
 export const receiveWarehouseTransactionResponseSchema = responseSchema
 export type ReceiveWarehouseTransactionResponse = z.output<typeof receiveWarehouseTransactionResponseSchema>
 
-export const getWarehouseTransactionDetailsResponseSchema = responseSchema
-export type GetWarehouseTransactionDetailsResponse = z.output<typeof getWarehouseTransactionDetailsResponseSchema> & { data: {
-  warehouseTransaction: WarehouseTransactionDTO
-  warehouseTransactionItems: WarehouseTransactionItemDTO[]
-} }
+export const getWarehouseTransactionDetailsResponseSchema = responseSchema.extend({
+  data: z.object({
+    warehouseTransaction: warehouseTransactionSchema,
+    warehouseTransactionItems: z.array(warehouseTransactionItemSchema),
+  }),
+})
+export type GetWarehouseTransactionDetailsResponse = z.output<typeof getWarehouseTransactionDetailsResponseSchema>
 
 export const scanBarcodeToDraftResponseSchema = responseSchema.extend({
   item: barcodeDTOPopulatedSchema,

@@ -56,7 +56,7 @@ export async function listCompletedAfter(userId: string, afterDateExclusive: str
     removed: false,
     status: 'completed',
   }
-  if (afterDateExclusive)
+  if (afterDateExclusive !== null)
     query.workDate = { $gt: afterDateExclusive }
 
   return WorkShiftModel.find(query).sort({ workDate: 1 }).exec()

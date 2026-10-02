@@ -76,7 +76,17 @@ export interface GetWarehouseTransactionsRepoResult { items: WarehouseTransactio
 export type GetWarehouseTransactionsItemsRepoPayload = GetWarehouseTransactionsItemsPayload
 export interface GetWarehouseTransactionsItemsRepoResult { items: WarehouseTransactionItemDBPopulated[], total: number, page: number, pageSize: number }
 
-export type CreateWarehouseTransactionRepoPayload = CreateWarehouseTransactionPayload
+export interface CreateWarehouseTransactionRepoPayload {
+  type: CreateWarehouseTransactionPayload['type']
+  fromWarehouseId?: string | null
+  toWarehouseId?: string | null
+  requiresReceiving?: boolean
+  status?: string
+  comment?: string
+  createdBy: string
+  sourceModel?: string | null
+  sourceId?: string | null
+}
 
 export type CreateWarehouseTransactionItemsRepoPayload = z.output<typeof createWarehouseTransactionItemsRepoSchema>
 

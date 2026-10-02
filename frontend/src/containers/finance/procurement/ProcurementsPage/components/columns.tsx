@@ -10,7 +10,10 @@ import {
   ChevronsUpDown,
   Copy,
   CreditCard,
+  Eye,
+  Pencil,
   Trash,
+  Undo2,
 } from 'lucide-react'
 
 import { useMemo } from 'react'
@@ -24,10 +27,7 @@ import { useLocale } from '@/utils/hooks'
 import { useProcurementContext } from '../context'
 
 /** Строка списка: API отдаёт закупку с заполненным поставщиком и статусом оплаты */
-type ProcurementTableRow = Omit<ProcurementDTO, 'supplier'> & {
-  supplier: { id: string, name: string }
-  paymentStatus?: string
-}
+type ProcurementTableRow = ProcurementDTO
 
 const sortIcons = { asc: ArrowUp, desc: ArrowDown }
 
@@ -35,7 +35,7 @@ const columnHelper = createColumnHelper<ProcurementTableRow>()
 
 export function useColumns() {
   const { t, language } = useLocale()
-  const { removeProcurement } = useProcurementContext()
+  const { removeProcurement, confirmProcurement, unconfirmProcurement } = useProcurementContext()
   const navigate = useNavigate()
 
   const columns = useMemo(() => {
@@ -74,17 +74,50 @@ export function useColumns() {
               icon: <Copy className="h-4 w-4" />,
             },
             {
-              permission: 'procurement.pay',
-              onClick: async () => navigate(`/procurements/pay/${item.seq}`),
-              label: t('table.pay'),
-              icon: <CreditCard className="h-4 w-4" />,
+              permission: 'procurement.page',
+              onClick: () => void navigate(`/procurements/view/${item.seq}`),
+              label: t('table.view'),
+              icon: <Eye className="h-4 w-4" />,
             },
-            {
-              permission: 'procurement.pay',
-              onClick: async () => navigate(`/procurements/accept/${item.seq}`),
-              label: t('table.accept'),
-              icon: <Check className="h-4 w-4" />,
-            },
+            ...(item.status === 'draft'
+              ? [{
+                  permission: 'procurement.edit',
+                  onClick: () => void navigate(`/procurements/edit/${item.seq}`),
+                  label: t('table.edit'),
+                  icon: <Pencil className="h-4 w-4" />,
+                }]
+              : []),
+            ...(item.status !== 'cancelled'
+              ? [{
+                  permission: 'procurement.pay',
+                  onClick: () => void navigate(`/procurements/view/${item.seq}`),
+                  label: t('table.pay'),
+                  icon: <CreditCard className="h-4 w-4" />,
+                }]
+              : []),
+            ...(item.status === 'draft'
+              ? [{
+                  permission: 'procurement.edit',
+                  onClick: () => {
+                    confirmProcurement({
+                      id: item.id,
+                      ...(item.warehouseId ? { warehouseId: item.warehouseId } : {}),
+                    })
+                  },
+                  label: t('table.confirm'),
+                  icon: <Check className="h-4 w-4" />,
+                  isConfirm: true,
+                }]
+              : []),
+            ...(item.status === 'ordered'
+              ? [{
+                  permission: 'procurement.edit',
+                  onClick: () => unconfirmProcurement({ id: item.id }),
+                  label: t('table.unconfirm'),
+                  icon: <Undo2 className="h-4 w-4" />,
+                  isConfirm: true,
+                }]
+              : []),
             {
               permission: 'procurement.delete',
               onClick: () => removeProcurement({ ids: [item.id] }),
@@ -122,7 +155,21 @@ export function useColumns() {
           defaultVisible: true,
         },
         header: () => t('page.procurements.table.supplier'),
-        cell: ({ row }) => <Badge variant="outline">{row.original.supplier.name}</Badge>,
+        cell: ({ row }) => (
+          <Badge variant="outline">{row.original.supplier?.name ?? '—'}</Badge>
+        ),
+      }),
+      columnHelper.display({
+        id: 'warehouse',
+        size: 150,
+        meta: {
+          title: t('page.procurements.table.warehouse'),
+          defaultVisible: true,
+        },
+        header: () => t('page.procurements.table.warehouse'),
+        cell: ({ row }) => (
+          <Badge variant="outline">{row.original.warehouse?.names[language] ?? '—'}</Badge>
+        ),
       }),
       columnHelper.accessor('status', {
         id: 'status',
@@ -134,10 +181,12 @@ export function useColumns() {
         header: () => t('page.procurements.table.status'),
         cell: ({ row }) => {
           const badgeType = {
-            draft: 'default',
-            confirmed: 'success',
-            cancelled: 'destructive',
-            received: 'success',
+            'draft': 'default',
+            'ordered': 'warning',
+            'partially-received': 'warning',
+            'received': 'success',
+            'cancelled': 'destructive',
+            'closed': 'secondary',
           } as const
           const status = row.original.status
           return (
@@ -261,7 +310,7 @@ export function useColumns() {
       }),
       actionColumn(),
     ]
-  }, [language, navigate, removeProcurement, t])
+  }, [confirmProcurement, language, navigate, removeProcurement, t, unconfirmProcurement])
 
   return columns
 }

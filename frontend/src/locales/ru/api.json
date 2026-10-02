@@ -570,6 +570,12 @@
   "response.title.CLIENTS_REMOVED": "Клиенты удалены",
   "response.description.CLIENTS_REMOVED": "Выбранные клиенты были удалены",
 
+  "response.title.CLIENT_PAID": "Клиент оплачен",
+  "response.description.CLIENT_PAID": "Оплата записана на баланс клиента",
+
+  "response.title.ORDER_PAYED": "Заказ оплачен",
+  "response.description.ORDER_PAYED": "Оплата применена к заказу",
+
   "response.title.AUTOMATION_CREATED": "Автоматизация создана",
   "response.description.AUTOMATION_CREATED": "Новая автоматизация была создана",
 
@@ -647,6 +653,8 @@
 
   "response.title.SITE_PRODUCTS_SYNCED": "Товары выгружены",
   "response.description.SITE_PRODUCTS_SYNCED": "Выгружено {{synced}} из {{total}} товаров (ошибок: {{failed}})",
+  "response.title.SITE_PRODUCT_SYNCED": "Товар создан на сайте",
+  "response.description.SITE_PRODUCT_SYNCED": "Товар создан на сайте и связан",
 
   "response.title.SITE_SYNC_MAPPING_FETCHED": "Связи загружены",
   "response.description.SITE_SYNC_MAPPING_FETCHED": "Связи с сайтом загружены",
@@ -675,6 +683,14 @@
   "error.title.SITE_SYNC_FAILED": "Не удалось связаться с сайтом",
   "error.description.SITE_SYNC_FAILED": "Проверьте URL, ключ и что модуль Remnant включён",
 
+  "error.title.SUPPLIER_NOT_FOUND": "Поставщик не найден",
+  "error.description.SUPPLIER_NOT_FOUND": "Такого поставщика нет",
+
+  "error.title.CLIENT_NOT_FOUND": "Клиент не найден",
+  "error.description.CLIENT_NOT_FOUND": "Такого клиента нет",
+  "error.title.CLIENT_REQUIRED": "Нужен клиент",
+  "error.description.CLIENT_REQUIRED": "Чтобы принять оплату, укажите клиента",
+
   "response.title.SUPPLIERS_FETCHED": "Поставщики получены",
   "response.description.SUPPLIERS_FETCHED": "Список поставщиков успешно получен",
 
@@ -691,5 +707,59 @@
   "response.description.SUPPLIERS_NOT_REMOVED": "Не удалось удалить выбранные поставщики",
 
   "response.title.SUPPLIERS_REMOVED": "Поставщики удалены",
-  "response.description.SUPPLIERS_REMOVED": "Выбранные поставщики были удалены"
+  "response.description.SUPPLIERS_REMOVED": "Выбранные поставщики были удалены",
+
+  "response.title.PROCUREMENTS_FETCHED": "Закупки получены",
+  "response.description.PROCUREMENTS_FETCHED": "Список закупок успешно получен",
+  "response.title.PROCUREMENT_CREATED": "Закупка создана",
+  "response.description.PROCUREMENT_CREATED": "Новая закупка была создана",
+  "response.title.PROCUREMENT_EDITED": "Закупка обновлена",
+  "response.description.PROCUREMENT_EDITED": "Закупка была обновлена",
+  "response.title.PROCUREMENT_REMOVED": "Закупка удалена",
+  "response.description.PROCUREMENT_REMOVED": "Закупка отменена",
+  "response.title.PROCUREMENT_PAID": "Закупка оплачена",
+  "response.description.PROCUREMENT_PAID": "Оплата записана",
+  "response.title.PROCUREMENT_PAYMENT_CANCELLED": "Оплата отменена",
+  "response.description.PROCUREMENT_PAYMENT_CANCELLED": "Оплата сторнирована",
+  "response.title.SUPPLIER_PAID": "Поставщик оплачен",
+  "response.description.SUPPLIER_PAID": "Оплата записана на баланс поставщика",
+  "response.title.PROCUREMENT_CONFIRMED": "Закупка подтверждена",
+  "response.description.PROCUREMENT_CONFIRMED": "Приход на склад ожидает приёмки",
+  "response.title.PROCUREMENT_UNCONFIRMED": "Подтверждение снято",
+  "response.description.PROCUREMENT_UNCONFIRMED": "Приход на склад отменён, закупка снова черновик",
+  "response.title.PROCUREMENT_RECEIVED": "Закупка принята",
+  "response.description.PROCUREMENT_RECEIVED": "Товар оприходован от поставщика",
+  "response.title.STOCK_LOTS_FETCHED": "Партии получены",
+  "response.description.STOCK_LOTS_FETCHED": "Список партий успешно получен",
+  "response.title.PAYMENT_APPLICATIONS_FETCHED": "Зачёты получены",
+  "response.description.PAYMENT_APPLICATIONS_FETCHED": "Список зачётов успешно получен",
+
+  "error.title.PROCUREMENT_WAREHOUSE_REQUIRED": "Нужен склад",
+  "error.description.PROCUREMENT_WAREHOUSE_REQUIRED": "Выберите склад, чтобы подтвердить закупку",
+  "error.title.PROCUREMENT_ALREADY_CONFIRMED": "Уже подтверждена",
+  "error.description.PROCUREMENT_ALREADY_CONFIRMED": "У этой закупки уже есть приход на склад",
+  "error.title.PROCUREMENT_ITEMS_REQUIRED": "Нет позиций",
+  "error.description.PROCUREMENT_ITEMS_REQUIRED": "Добавьте товары перед подтверждением закупки",
+  "error.title.WAREHOUSE_TRANSACTION_NOT_AWAITING": "Не ожидает приёмки",
+  "error.description.WAREHOUSE_TRANSACTION_NOT_AWAITING": "Эта складская транзакция не ожидает приёмки",
+  "error.title.WAREHOUSE_TRANSACTION_RECEIVE_EXCEEDS": "Слишком много единиц",
+  "error.description.WAREHOUSE_TRANSACTION_RECEIVE_EXCEEDS": "Принятое количество больше остатка по приходу",
+  "error.title.PROCUREMENT_RECEIVE_EXCEEDS_ORDERED": "Слишком много единиц",
+  "error.description.PROCUREMENT_RECEIVE_EXCEEDS_ORDERED": "Принятое количество больше остатка по закупке",
+  "error.title.PROCUREMENT_NOT_CONFIRMED": "Не подтверждена",
+  "error.description.PROCUREMENT_NOT_CONFIRMED": "Эта закупка ещё черновик",
+  "error.title.PROCUREMENT_CANCELLED": "Закупка отменена",
+  "error.description.PROCUREMENT_CANCELLED": "Отменённую закупку нельзя вернуть в черновик",
+  "error.title.PROCUREMENT_ALREADY_RECEIVED": "Уже принята",
+  "error.description.PROCUREMENT_ALREADY_RECEIVED": "Товар уже оприходован, подтверждение снять нельзя",
+  "error.title.PROCUREMENT_NOT_DRAFT": "Не черновик",
+  "error.description.PROCUREMENT_NOT_DRAFT": "Позиции можно менять только у черновика",
+  "error.title.PROCUREMENT_PAYMENT_NOT_FOUND": "Оплата не найдена",
+  "error.description.PROCUREMENT_PAYMENT_NOT_FOUND": "Эта оплата не привязана к закупке",
+  "error.title.PROCUREMENT_PAYMENT_CANCELLED": "Уже отменена",
+  "error.description.PROCUREMENT_PAYMENT_CANCELLED": "Эта оплата уже была отменена",
+  "error.title.WAREHOUSE_TRANSACTION_WAREHOUSE_LOCKED": "Склад нельзя сменить",
+  "error.description.WAREHOUSE_TRANSACTION_WAREHOUSE_LOCKED": "После приёмки склад меняется только переводом",
+  "error.title.WAREHOUSE_TRANSACTION_WAREHOUSE_REQUIRED": "Нужен склад",
+  "error.description.WAREHOUSE_TRANSACTION_WAREHOUSE_REQUIRED": "Выберите склад для приёмки"
 }

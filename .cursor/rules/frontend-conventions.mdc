@@ -1,0 +1,35 @@
+---
+description: Remnants frontend — page layout, hooks, PermissionGate, locales; simple vs complex page refs.
+globs: frontend/**/*.{ts,tsx}
+alwaysApply: false
+---
+
+# Frontend conventions
+
+## Copy by page kind
+
+- **Simple list CRUD** (settings-style table + modal): `containers/setting/UnitsPage/` + `api/hooks/unit/` + `api/requests/units.ts`
+- **Complex create / multi-section form**: `containers/order/CreateOrderPage/` (items table, client, payments; shared bits in `order/components/`)
+- **Warehouse receive / document flow**: `containers/warehouseTransaction/WarehouseTransactionReceivePage/`
+- **Money transactions** (list + richer create form): `containers/MoneyTransactionsPage/`
+
+Same shell for all: `index.tsx` (layout) + `context.tsx` (state/mutations) + `components/`.
+
+## Structure
+
+- `app/App.tsx` — routes + `ProtectedRoute` (`entity.page`)
+- `containers/.../<X>Page/index.tsx` — shell only (Helmet + Provider + sections)
+- `context.tsx` — forms, mutations, toasts, invalidation — not raw `fetch`
+- Page `components/` — UI for this page; cross-page pieces for one domain live next to siblings (e.g. `order/components/`)
+- `components/` + `components/ui/` — shared UI / primitives
+- `api/requests/` — HTTP; `api/hooks/<entity>/` — React Query
+- `locales/en` + `locales/ru` — all user-visible strings
+
+## MUST / NEVER
+
+- MUST: wire page through context + hooks; presentational components stay dumb
+- MUST: gate actions with `PermissionGate` — **same** string as backend route
+- MUST: locale keys for each language
+- NEVER: put HTTP/business rules in page components when context exists
+- NEVER: copy UnitsPage patterns onto multi-step create docs — use CreateOrder / Receive / MoneyTransactions as above
+- Money: UI may show major; API payloads stay minor

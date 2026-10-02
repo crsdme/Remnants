@@ -3,6 +3,17 @@ import { booleanArraySchema, dateRangeSchema, idSchema, idSchemaOptional, langua
 
 export const moneyTransactionRoleSchema = z.enum(['from', 'to'])
 
+export const moneyTransactionSourceModelSchema = z.enum([
+  'manual',
+  'cashregister',
+  'cashregisterAccount',
+  'order',
+  'client',
+  'expense',
+  'procurement',
+  'supplier',
+])
+
 export const moneyTransactionActorSchema = z.object({
   id: z.string(),
   name: z.string().trim(),
@@ -60,6 +71,7 @@ export const getMoneyTransactionsSchema = z.object({
     description: z.string().trim().optional(),
     sourceModel: z.string().trim().optional(),
     sourceId: idSchemaOptional,
+    supplierId: idSchemaOptional,
     confirmed: booleanArraySchema.optional(),
     createdAt: dateRangeSchema.optional(),
     updatedAt: dateRangeSchema.optional(),
@@ -82,7 +94,7 @@ export type GetMoneyTransactionsRequest = z.input<typeof getMoneyTransactionsSch
 export const createMoneyTransactionSchema = z.object({
   currencyId: idSchema,
   amount: z.number(),
-  sourceModel: z.enum(['manual', 'cashregister', 'cashregisterAccount', 'order', 'expense', 'procurement']),
+  sourceModel: moneyTransactionSourceModelSchema,
   type: z.enum(['income', 'expense', 'procurement']),
   sourceId: idSchemaOptional,
   role: z.string().trim().optional(),
@@ -96,7 +108,7 @@ export const createMoneyTransactionSchema = z.object({
 export const createMoneyTransactionTransferSchema = z.object({
   currencyId: idSchema,
   amount: z.number(),
-  sourceModel: z.enum(['manual', 'cashregister', 'cashregisterAccount', 'order', 'expense', 'procurement']),
+  sourceModel: moneyTransactionSourceModelSchema,
   type: z.enum(['transfer-account', 'transfer-cashregister']),
   sourceId: idSchemaOptional,
   role: z.string().trim().optional(),
@@ -119,7 +131,7 @@ export const createMoneyTransactionRepoSchema = z.object({
   direction: z.enum(['in', 'out']),
   accountId: idSchema,
   cashregisterId: idSchema,
-  sourceModel: z.enum(['manual', 'cashregister', 'cashregisterAccount', 'order', 'expense', 'procurement']),
+  sourceModel: moneyTransactionSourceModelSchema,
   sourceId: idSchemaOptional,
   role: z.string().trim().optional(),
   transferId: idSchemaOptional,

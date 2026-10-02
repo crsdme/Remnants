@@ -1,0 +1,42 @@
+---
+description: Remnants — hard layer boundaries; copy unit/expense patterns; withTransaction; no mapping in services.
+alwaysApply: true
+---
+
+# Layer boundaries
+
+## Copy these (NEVER copy order/statistic/site **services**)
+
+- Simple CRUD: backend `unit.*` → frontend `UnitsPage` + `api/hooks/unit`
+- Scoped list: `expense-category.*` (`getScopeIdsForUser`)
+- Multi-write + scopes: `expense.service` (`withTransaction`)
+- Complex FE create: `CreateOrderPage` · receive: `WarehouseTransactionReceivePage` · money tx: `MoneyTransactionsPage` (not UnitsPage)
+
+## Backend MUST / NEVER
+
+```
+route → controller → service → mapper → repository → model
+```
+
+- MUST: entity DB↔DTO mapping only in `mappers/`
+- MUST: multi-write atomic work via `withTransaction` (`utils/db`) + pass `session?: DbSession`
+- MUST: scopes via `utils/scope` (`getScopeIdsForUser`, capabilities) — not ad-hoc permission arrays
+- MUST: mutating routes use `checkPermissions('entity.action')`; FE `PermissionGate` same string
+- NEVER: hand-build entity DTOs in service (decorate after map OK: scope mask, settlement)
+- NEVER: `mongoose.startSession` in new services
+- NEVER: re-check Zod shape in service; DO null-check related DB reads (currency) and old docs needed for side effects
+- NEVER: duplicate utils (`hasPermission`, `other.admin`, filename decode) inside a service — grep first
+
+Middleware: `upload?` → validate → `checkPermissions` → `validateResponse` → controller
+
+## Frontend MUST / NEVER
+
+- Page shell: `containers/.../<X>Page/{index,context,components}`
+- MUST: UI strings in `locales/en` **and** `locales/ru`
+- NEVER: raw HTTP / domain rules in page components when context + hooks exist
+- NEVER: use UnitsPage as the template for multi-section create flows — see `frontend-conventions`
+
+## Before finish
+
+1. Mapping in mapper  2. Reuse utils  3. Perms + FE gate match  
+4. UUID + money minor  5. Scope helpers if scoped  6. `withTransaction` if multi-write

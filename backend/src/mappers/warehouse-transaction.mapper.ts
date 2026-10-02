@@ -20,6 +20,8 @@ export function mapWarehouseTransactionToDTO(warehouseTransaction: WarehouseTran
         }
       : undefined,
     requiresReceiving: warehouseTransaction.requiresReceiving ?? true,
+    sourceModel: warehouseTransaction.sourceModel,
+    sourceId: warehouseTransaction.sourceId,
     status: warehouseTransaction.status,
     accepted: warehouseTransaction.accepted ?? false,
     acceptedBy: warehouseTransaction.acceptedBy,
@@ -35,11 +37,12 @@ export function mapWarehouseTransactionToDTO(warehouseTransaction: WarehouseTran
 
 export function mapWarehouseTransactionItemRepoToDTO(warehouseTransactionItem: WarehouseTransactionItemDBPopulated): WarehouseTransactionItemDTO {
   return {
-    id: warehouseTransactionItem._id,
+    id: String(warehouseTransactionItem._id),
     transactionId: warehouseTransactionItem.transactionId,
-    productId: warehouseTransactionItem.productId,
+    productId: String(warehouseTransactionItem.productId ?? ''),
     product: mapProductPopulatedRepoToDTO(warehouseTransactionItem.product),
     quantity: warehouseTransactionItem.quantity,
-    price: warehouseTransactionItem.price,
+    receivedQuantity: warehouseTransactionItem.receivedQuantity ?? 0,
+    price: warehouseTransactionItem.price ?? 0,
   }
 }

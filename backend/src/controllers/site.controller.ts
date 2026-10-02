@@ -8,6 +8,7 @@ import type {
   GetSiteSyncSiteItemsPayload,
   RemoveSitesPayload,
   SaveSiteSyncMappingPayload,
+  SyncSiteProductPayload,
   SyncSiteProductsPayload,
 } from '@/types/'
 import * as SiteService from '@/services/site.service'
@@ -88,6 +89,23 @@ export async function syncProducts(
 ) {
   try {
     const serviceResponse = await SiteService.syncProducts({
+      payload: req.validated.body,
+    })
+
+    res.status(200).json(serviceResponse)
+  }
+  catch (err) {
+    next(err)
+  }
+}
+
+export async function syncProduct(
+  req: ValidatedRequest<SyncSiteProductPayload, never>,
+  res: Response,
+  next: NextFunction,
+) {
+  try {
+    const serviceResponse = await SiteService.syncProduct({
       payload: req.validated.body,
     })
 

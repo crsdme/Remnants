@@ -1,16 +1,16 @@
 import type { ReactNode } from 'react'
 
 import { useQueryClient } from '@tanstack/react-query'
-import { createContext, useContext, useMemo } from 'react'
+import { createContext, useCallback, useContext, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 
-import {
-  useProcurementRemove,
-} from '@/api/hooks'
+import { useProcurementConfirm, useProcurementRemove, useProcurementUnconfirm } from '@/api/hooks'
 
 interface ProcurementContextType {
   removeProcurement: (params: { ids: string[] }) => void
+  confirmProcurement: (params: { id: string, warehouseId?: string }) => void
+  unconfirmProcurement: (params: { id: string }) => void
 }
 
 const ProcurementContext = createContext<ProcurementContextType | undefined>(undefined)
@@ -20,64 +20,11 @@ export function ProcurementProvider({ children }: { children: ReactNode }) {
 
   const queryClient = useQueryClient()
 
-  // const loadProcurementItemsOptions = useProcurementItemsOptions()
-
-  // const editModal = async (procurement) => {
-  //   setIsLoading(true)
-  //   setIsModalOpen(true)
-  //   setIsEdit(true)
-  //   setSelectedProcurement(procurement)
-  //   const items = await loadProcurementItemsOptions({ selectedValue: procurement?.id ? [procurement.id] : [] })
-  //   const values = {
-  //     comment: procurement.comment,
-  //     supplierId: procurement.supplierId,
-  //     items: items.map((item: any) => ({
-  //       id: item.id,
-  //       quantity: item.quantity,
-  //       purchasePrice: item.purchasePrice,
-  //       purchaseCurrencyId: item.purchaseCurrencyId,
-  //     })),
-  //   }
-  //   form.reset(values)
-  //   setIsLoading(false)
-  // }
-
-  // const useMutateCreateProcurement = useProcurementCreate({
-  //   options: {
-  //     onSuccess: ({ data }) => {
-  //       closeModal()
-  //       queryClient.invalidateQueries({ queryKey: ['procurements'] })
-  //       queryClient.invalidateQueries({ queryKey: ['products'] })
-  //       toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description || ''}` })
-  //     },
-  //     onError: ({ response }) => {
-  //       const error = response.data.error
-  //       closeModal()
-  //       toast.error(t(`error.title.${error.code}`), { description: `${t(`error.description.${error.code}`)} ${error.description || ''}` })
-  //     },
-  //   },
-  // })
-
-  // const useMutateEditProcurement = useProcurementEdit({
-  //   options: {
-  //     onSuccess: ({ data }) => {
-  //       closeModal()
-  //       queryClient.invalidateQueries({ queryKey: ['procurements'] })
-  //       queryClient.invalidateQueries({ queryKey: ['products'] })
-  //       toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description || ''}` })
-  //     },
-  //     onError: ({ response }) => {
-  //       const error = response.data.error
-  //       closeModal()
-  //       toast.error(t(`error.title.${error.code}`), { description: `${t(`error.description.${error.code}`)} ${error.description || ''}` })
-  //     },
-  //   },
-  // })
-
-  const useMutateRemoveProcurement = useProcurementRemove({
+  const { mutate: mutateRemoveProcurement } = useProcurementRemove({
     options: {
       onSuccess: ({ data }) => {
         void queryClient.invalidateQueries({ queryKey: ['procurements'] })
+        void queryClient.invalidateQueries({ queryKey: ['suppliers'] })
         void queryClient.invalidateQueries({ queryKey: ['products'] })
         toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data?.message ?? ''}` })
       },
@@ -88,56 +35,53 @@ export function ProcurementProvider({ children }: { children: ReactNode }) {
     },
   })
 
-  // const loadProcurementScanOptions = useProcurementScanOptions()
+  const { mutate: mutateConfirmProcurement } = useProcurementConfirm({
+    options: {
+      onSuccess: ({ data }) => {
+        void queryClient.invalidateQueries({ queryKey: ['procurements'] })
+        void queryClient.invalidateQueries({ queryKey: ['warehouse-transactions'] })
+        toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data?.message ?? ''}` })
+      },
+      onError: ({ response }) => {
+        const error = response.data.error
+        toast.error(t(`error.title.${error.code}`), { description: `${t(`error.description.${error.code}`)} ${error.description || ''}` })
+      },
+    },
+  })
 
-  // const getBarcode = async (code: string) => {
-  //   const { procurementItems } = await loadProcurementScanOptions({ barcode: code })
-  //   return procurementItems
-  // }
+  const { mutate: mutateUnconfirmProcurement } = useProcurementUnconfirm({
+    options: {
+      onSuccess: ({ data }) => {
+        void queryClient.invalidateQueries({ queryKey: ['procurements'] })
+        void queryClient.invalidateQueries({ queryKey: ['warehouse-transactions'] })
+        toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data?.message ?? ''}` })
+      },
+      onError: ({ response }) => {
+        const error = response.data.error
+        toast.error(t(`error.title.${error.code}`), { description: `${t(`error.description.${error.code}`)} ${error.description || ''}` })
+      },
+    },
+  })
 
-  const removeProcurement = (params: { ids: string[] }) => {
-    useMutateRemoveProcurement.mutate(params)
-  }
+  const confirmProcurement = useCallback((params: { id: string, warehouseId?: string }) => {
+    mutateConfirmProcurement(params)
+  }, [mutateConfirmProcurement])
 
-  // const submitProcurementForm = (params) => {
-  //   setIsLoading(true)
+  const unconfirmProcurement = useCallback((params: { id: string }) => {
+    mutateUnconfirmProcurement(params)
+  }, [mutateUnconfirmProcurement])
 
-  //   if (isEdit) {
-  //     return useMutateEditProcurement.mutate({
-  //       id: selectedProcurement.id,
-  //       comment: params.comment,
-  //       supplierId: params.supplierId,
-  //       status: params.status,
-  //       warehouse: params.warehouse,
-  //       expenseIds: params.expenseIds,
-  //       paymentIds: params.paymentIds,
-  //       items: params.items,
-  //     })
-  //   }
-
-  //   return useMutateCreateProcurement.mutate({
-  //     createdBy: params.createdBy,
-  //     comment: params.comment,
-  //     items: params.items,
-  //     supplierId: params.supplierId,
-  //     status: params.status,
-  //     warehouse: params.warehouse,
-  //     expenseIds: params.expenseIds,
-  //     paymentIds: params.paymentIds,
-  //   })
-  // }
-
-  // const onError = (formErrors) => {
-  //   if (formErrors.products) {
-  //     toast.error(formErrors.products.message)
-  //   }
-  // }
+  const removeProcurement = useCallback((params: { ids: string[] }) => {
+    mutateRemoveProcurement(params)
+  }, [mutateRemoveProcurement])
 
   const value: ProcurementContextType = useMemo(
     () => ({
       removeProcurement,
+      confirmProcurement,
+      unconfirmProcurement,
     }),
-    [],
+    [removeProcurement, confirmProcurement, unconfirmProcurement],
   )
 
   return <ProcurementContext.Provider value={value}>{children}</ProcurementContext.Provider>

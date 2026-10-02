@@ -205,22 +205,26 @@ export function useListQueryState<F extends Record<string, unknown> = Record<str
 ): UseListQueryStateReturn<F> {
   const [searchParams, setSearchParams] = useSearchParams()
 
+  const namespace = options?.namespace
+  const readFilters = options?.readFilters
+  const writeFilters = options?.writeFilters
+  const defaultPagination = options?.defaults?.pagination
+  const defaultSorting = options?.defaults?.sorting
+  const defaultFilters = options?.defaults?.filters
+
   // merge shallow: enough for our shape; no deep merge needed besides defaults.{...}
   const merged = useMemo(() => {
-    const o = options ?? {}
-    const d = o.defaults ?? ({} as UseListQueryStateOptions<F>['defaults'])
-
     return {
-      namespace: o.namespace ?? DEFAULTS.namespace,
+      namespace: namespace ?? DEFAULTS.namespace,
       defaults: {
-        pagination: d.pagination ?? (DEFAULTS.defaults.pagination as unknown as PaginationState),
-        sorting: d.sorting ?? (DEFAULTS.defaults.sorting as unknown as SortingState),
-        filters: (d.filters ?? (DEFAULTS.defaults.filters as unknown as AnyFilters)) as F,
+        pagination: defaultPagination ?? (DEFAULTS.defaults.pagination as unknown as PaginationState),
+        sorting: defaultSorting ?? (DEFAULTS.defaults.sorting as unknown as SortingState),
+        filters: (defaultFilters ?? (DEFAULTS.defaults.filters as unknown as AnyFilters)) as F,
       },
-      readFilters: (o.readFilters ?? (DEFAULTS.readFilters as any)) as UseListQueryStateOptions<F>['readFilters'],
-      writeFilters: (o.writeFilters ?? (DEFAULTS.writeFilters as any)) as UseListQueryStateOptions<F>['writeFilters'],
+      readFilters: (readFilters ?? (DEFAULTS.readFilters as any)) as UseListQueryStateOptions<F>['readFilters'],
+      writeFilters: (writeFilters ?? (DEFAULTS.writeFilters as any)) as UseListQueryStateOptions<F>['writeFilters'],
     } satisfies UseListQueryStateOptions<F>
-  }, [options])
+  }, [namespace, readFilters, writeFilters, defaultPagination, defaultSorting, defaultFilters])
 
   const prefix = useMemo(() => makePrefix(merged.namespace), [merged.namespace])
 
@@ -251,6 +255,8 @@ export function useListQueryState<F extends Record<string, unknown> = Record<str
     (mutate: (ns: URLSearchParams) => void, replace: boolean) => {
       const next = new URLSearchParams(searchParams)
       applyNamespaced(next, prefix, mutate)
+      if (next.toString() === searchParams.toString())
+        return
       setSearchParams(next, { replace })
     },
     [searchParams, setSearchParams, prefix],
@@ -258,9 +264,11 @@ export function useListQueryState<F extends Record<string, unknown> = Record<str
 
   const setPagination = useCallback(
     (patch: Partial<PaginationState>) => {
+      const current = patch.current ?? pagination.current
+      const pageSize = patch.pageSize ?? pagination.pageSize
+      if (current === pagination.current && pageSize === pagination.pageSize)
+        return
       updateQuery((ns) => {
-        const current = patch.current ?? pagination.current
-        const pageSize = patch.pageSize ?? pagination.pageSize
         setQueryParam(ns, 'page', current)
         setQueryParam(ns, 'pageSize', pageSize)
       }, false)
@@ -273,6 +281,8 @@ export function useListQueryState<F extends Record<string, unknown> = Record<str
       const nextSorting = typeof sortingOrUpdater === 'function'
         ? sortingOrUpdater(sorting)
         : sortingOrUpdater
+      if (serializeSort(nextSorting) === serializeSort(sorting))
+        return
       updateQuery((ns) => {
         setQueryParam(ns, 'sort', serializeSort(nextSorting) || null)
         setQueryParam(ns, 'page', 1)

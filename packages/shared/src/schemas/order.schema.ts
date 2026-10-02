@@ -234,7 +234,6 @@ export const getOrdersSchema = z.object({
     confirmedBy: idSchemaOptional,
     removedBy: idSchemaOptional,
     removed: z.boolean().default(false),
-    orderPayments: z.array(idSchema).default([]),
     createdAt: dateRangeSchema.optional(),
     updatedAt: dateRangeSchema.optional(),
   }).optional().default({}),
@@ -419,6 +418,19 @@ export type RemoveOrdersResponse = z.infer<typeof removeOrdersResponseSchema>
 
 export const getOrderItemsResponseSchema = responseListSchema(orderItemDTOPopulatedSchema)
 export type GetOrderItemsResponse = z.infer<typeof getOrderItemsResponseSchema>
+
+export const payOrderSchema = z.object({
+  id: idSchema,
+  cashregister: idSchema.optional(),
+  account: idSchema.optional(),
+  currency: idSchema,
+  amount: z.number().positive().optional(),
+  comment: z.string().trim().optional(),
+}).refine(data => data.amount == null || (Boolean(data.cashregister) && Boolean(data.account)), {
+  message: 'Cashregister and account are required when paying from cash',
+  path: ['cashregister'],
+})
+export type PayOrderRequest = z.input<typeof payOrderSchema>
 
 export const payOrderResponseSchema = responseSchema
 export type PayOrderResponse = z.infer<typeof payOrderResponseSchema>

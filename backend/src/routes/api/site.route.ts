@@ -14,6 +14,8 @@ import {
   removeSitesSchema,
   saveSiteSyncMappingResponseSchema,
   saveSiteSyncMappingSchema,
+  syncSiteProductResponseSchema,
+  syncSiteProductSchema,
   syncSiteProductsResponseSchema,
   syncSiteProductsSchema,
 } from '@remnant/shared'
@@ -60,6 +62,14 @@ router.post(
   checkPermissions('site.sync'),
   validateResponse(syncSiteProductsResponseSchema),
   SiteController.syncProducts as RequestHandler,
+)
+
+router.post(
+  '/sync-product',
+  validateBodyRequest(syncSiteProductSchema),
+  checkPermissions('site.sync'),
+  validateResponse(syncSiteProductResponseSchema),
+  SiteController.syncProduct as RequestHandler,
 )
 
 router.get(

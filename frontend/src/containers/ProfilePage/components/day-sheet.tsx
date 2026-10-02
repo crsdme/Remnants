@@ -45,7 +45,13 @@ export function ProfileDaySheet() {
   const schedule = selectedShift?.plannedSchedule || summary?.profile.defaultSchedule
 
   return (
-    <Sheet open={daySheetOpen} onOpenChange={(open) => { if (!open) closeDaySheet() }}>
+    <Sheet
+      open={daySheetOpen}
+      onOpenChange={(open) => {
+        if (!open)
+          closeDaySheet()
+      }}
+    >
       <SheetContent className="sm:max-w-xl w-full overflow-y-auto" side="right">
         <SheetHeader>
           <SheetTitle>{t('page.profile.day.title', { date: selectedDay ?? '' })}</SheetTitle>
@@ -71,7 +77,13 @@ export function ProfileDaySheet() {
               {schedule && (
                 <div className="text-sm">
                   <div className="text-muted-foreground">{t('page.profile.info.schedule')}</div>
-                  <div className="font-medium">{schedule.start} – {schedule.end}</div>
+                  <div className="font-medium">
+                    {schedule.start}
+                    {' '}
+                    –
+                    {' '}
+                    {schedule.end}
+                  </div>
                 </div>
               )}
 
@@ -98,14 +110,16 @@ export function ProfileDaySheet() {
                     <div className="space-y-1">
                       <div className="text-muted-foreground">{t('page.profile.day.early')}</div>
                       <div className="font-medium text-green-600">
-                        +{formatMinor(selectedShift.earlyBonusMinor)}
+                        +
+                        {formatMinor(selectedShift.earlyBonusMinor)}
                         {currencySymbol ? ` ${currencySymbol}` : ''}
                       </div>
                     </div>
                     <div className="space-y-1">
                       <div className="text-muted-foreground">{t('page.profile.day.late')}</div>
                       <div className="font-medium text-red-600">
-                        -{formatMinor(selectedShift.latePenaltyMinor)}
+                        -
+                        {formatMinor(selectedShift.latePenaltyMinor)}
                         {currencySymbol ? ` ${currencySymbol}` : ''}
                       </div>
                     </div>
