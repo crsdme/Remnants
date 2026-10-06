@@ -12,5 +12,6 @@ export const languageStringSchema = z.preprocess(
   z.object({
     ru: z.string().trim().optional(),
     en: z.string().trim().optional(),
+    ua: z.string().trim().optional(),
   }),
 )
