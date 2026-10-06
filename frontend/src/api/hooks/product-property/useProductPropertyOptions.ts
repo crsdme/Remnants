@@ -1,12 +1,14 @@
 import type { GetProductPropertyRequest, ProductPropertyDTO } from '@remnant/shared'
 import { useQueryClient } from '@tanstack/react-query'
 import { useCallback } from 'react'
+import { useTranslation } from 'react-i18next'
 import { getProductProperties } from '@/api/requests'
 
 const EMPTY_ITEMS: never[] = []
 
 export function useProductPropertyOptions({ defaultFilters }: { defaultFilters?: GetProductPropertyRequest['filters'] } = {}) {
   const queryClient = useQueryClient()
+  const { i18n } = useTranslation()
 
   return useCallback(
     async ({ query = '', selectedValue }: { query?: string, selectedValue?: string[] } = {}): Promise<ProductPropertyDTO[]> => {
@@ -16,6 +18,7 @@ export function useProductPropertyOptions({ defaultFilters }: { defaultFilters?:
           ...(selectedValue ? { ids: selectedValue } : { names: query }),
           ...defaultFilters,
           active: [true],
+          language: i18n.language,
         },
       }
 
@@ -27,7 +30,7 @@ export function useProductPropertyOptions({ defaultFilters }: { defaultFilters?:
 
       return data?.data?.items ?? EMPTY_ITEMS
     },
-    [queryClient],
+    [queryClient, i18n.language, defaultFilters],
   )
 }
 
