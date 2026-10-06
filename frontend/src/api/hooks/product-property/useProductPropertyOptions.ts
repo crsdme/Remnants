@@ -15,6 +15,7 @@ export function useProductPropertyOptions({ defaultFilters }: { defaultFilters?:
         filters: {
           ...(selectedValue ? { ids: selectedValue } : { names: query }),
           ...defaultFilters,
+          active: [true],
         },
       }
 

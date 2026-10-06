@@ -112,6 +112,7 @@ export function ActionBar() {
                               value={field.value}
                               onChange={field.onChange}
                               multi
+                              searchable
                               disabled={isLoading}
                             />
                           </FormControl>

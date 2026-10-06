@@ -5,7 +5,7 @@ import { Pencil, SearchIcon, Trash2 } from 'lucide-react'
 import { Fragment, useMemo, useState } from 'react'
 
 import { useProductPropertyOptionQuery, useProductPropertyQuery } from '@/api/hooks'
-import { ColumnVisibilityMenu, TablePagination } from '@/components'
+import { ColumnVisibilityMenu, ConfirmPopover, TablePagination } from '@/components'
 import { Badge, Button, Input, Skeleton, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui'
 import { useListQueryState, useLocale } from '@/utils/hooks'
 
@@ -266,14 +266,15 @@ function SubRowOptions({ property, columnsLength, editOption, removeOption }:
                       >
                         <Pencil className="h-3.5 w-3.5" />
                       </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => removeOption({ ids: [option.id] })}
-                        className="h-7 w-7 shrink-0 text-destructive"
-                      >
-                        <Trash2 className="h-3.5 w-3.5" />
-                      </Button>
+                      <ConfirmPopover onConfirm={() => removeOption({ ids: [option.id] })}>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-7 w-7 shrink-0 text-destructive"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </Button>
+                      </ConfirmPopover>
                     </div>
                   ))}
                 </div>
