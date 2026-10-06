@@ -3,7 +3,7 @@ import dotenv from 'dotenv'
 
 dotenv.config()
 
-export const SUPPORTED_LANGUAGES = ['ru', 'en'] as const
+export const SUPPORTED_LANGUAGES = ['ru', 'en', 'ua'] as const
 
 export type SUPPORTED_LANGUAGES_TYPE = (typeof SUPPORTED_LANGUAGES)[number]
 
