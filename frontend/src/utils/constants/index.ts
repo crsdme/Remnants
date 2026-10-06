@@ -8,7 +8,7 @@ export const DATE_LOCALE_MAP = {
 
 export const backendUrl = import.meta.env.VITE_BACKEND_URL
 
-export const SUPPORTED_LANGUAGES = ['ru', 'en'] as const
+export const SUPPORTED_LANGUAGES = ['ru', 'en', 'ua'] as const
 export type SupportedLanguage = typeof SUPPORTED_LANGUAGES[number]
 
 export const NAV_MENU_ITEMS = [
