@@ -183,9 +183,12 @@ function createUserFormSchema(t: (key: string, options?: Record<string, unknown>
   })
 
   return z.object({
-    name: z.string({ required_error: t('form.errors.required') }).min(5, { message: t('form.errors.min_length', { count: 5 }) }).trim(),
-    login: z.string({ required_error: t('form.errors.required') }).min(5, { message: t('form.errors.min_length', { count: 5 }) }).trim(),
-    password: z.string().optional(),
+    name: z.string({ required_error: t('form.errors.required') }).min(1, { message: t('form.errors.required') }).trim(),
+    login: z.string({ required_error: t('form.errors.required') }).min(1, { message: t('form.errors.required') }).trim(),
+    password: z.union([
+      z.literal(''),
+      z.string().min(4, { message: t('form.errors.min_length', { count: 4 }) }),
+    ]).optional(),
     roleId: z.string({ required_error: t('form.errors.required') }).min(1, { message: t('form.errors.required') }).trim(),
     active: z.boolean().default(true),
     access: z.object({
