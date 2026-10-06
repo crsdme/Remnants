@@ -680,6 +680,9 @@
   "error.title.SITE_LANGUAGES_NOT_MAPPED": "Языки не связаны",
   "error.description.SITE_LANGUAGES_NOT_MAPPED": "На странице синхронизации откройте вкладку «Языки», свяжите каждый язык программы с языком на сайте, затем выгрузите снова",
 
+  "error.title.SITE_CURRENCY_NOT_SET": "Валюта сайта не задана",
+  "error.description.SITE_CURRENCY_NOT_SET": "Укажите валюту в настройках сайта, затем выгрузите снова",
+
   "error.title.SITE_SYNC_FAILED": "Не удалось связаться с сайтом",
   "error.description.SITE_SYNC_FAILED": "Проверьте URL, ключ и что модуль Remnant включён",
 

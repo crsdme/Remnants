@@ -120,6 +120,7 @@ export async function syncProducts({ payload }: { payload: SyncSiteProductsPaylo
     throw new HttpError(400, 'Site url or key is empty', 'SITE_SYNC_NOT_CONFIGURED')
 
   await remnantAdapter.ping(ctx).catch((error: unknown) => throwSiteCatalogError(error))
+  assertSiteCurrency(site.currencyId)
   await assertLanguagesMapped(site._id)
 
   const productIds = await ProductRepo.listIds()
@@ -168,6 +169,7 @@ export async function syncProduct({ payload }: { payload: SyncSiteProductPayload
     throw new HttpError(400, 'Site url or key is empty', 'SITE_SYNC_NOT_CONFIGURED')
 
   await remnantAdapter.ping(ctx).catch((error: unknown) => throwSiteCatalogError(error))
+  assertSiteCurrency(site.currencyId)
   await assertLanguagesMapped(site._id)
 
   const existing = await SyncEntryRepo.findLink(site._id, 'product', payload.productId)
@@ -352,7 +354,7 @@ export async function saveSyncMapping({ payload }: { payload: SaveSiteSyncMappin
 
 function uniqueExternalIds(sourceType: SaveSiteSyncMappingPayload['sourceType'], ids: string[]): string[] {
   const cleaned = [...new Set(ids.map(id => id.trim()).filter(id => id !== ''))]
-  if (sourceType === 'category')
+  if (sourceType === 'category' || sourceType === 'attribute')
     return cleaned
   return cleaned.slice(0, 1)
 }
@@ -498,6 +500,11 @@ function throwSiteCatalogError(error: unknown): never {
     throw new HttpError(502, error.message, code)
   }
   throw error
+}
+
+function assertSiteCurrency(currencyId?: string | null) {
+  if (currencyId == null || currencyId === '')
+    throw new HttpError(400, 'Site currency is not set', 'SITE_CURRENCY_NOT_SET')
 }
 
 async function assertLanguagesMapped(siteId: string) {

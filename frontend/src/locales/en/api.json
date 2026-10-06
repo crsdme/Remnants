@@ -680,6 +680,9 @@
   "error.title.SITE_LANGUAGES_NOT_MAPPED": "Languages are not mapped",
   "error.description.SITE_LANGUAGES_NOT_MAPPED": "On Site sync, open the Languages tab and link each language from the program to a language on the site, then upload again",
 
+  "error.title.SITE_CURRENCY_NOT_SET": "Site currency is not set",
+  "error.description.SITE_CURRENCY_NOT_SET": "Set the site currency in site settings, then upload again",
+
   "error.title.SITE_SYNC_FAILED": "Could not reach the site",
   "error.description.SITE_SYNC_FAILED": "Check the site URL, API key, and that the Remnant module is enabled",
 

@@ -100,6 +100,7 @@ export function MappingTab({
   const debouncedSearch = useDebounceValue(search, 300)
   const isProduct = sourceType === 'product'
   const isCategory = sourceType === 'category'
+  const isAttribute = sourceType === 'attribute'
 
   const params = {
     id: siteId,
@@ -291,7 +292,7 @@ export function MappingTab({
                 item={item}
                 language={language}
                 value={linkBySource.get(item.id) ?? []}
-                multi={isCategory}
+                multi={isCategory || isAttribute}
                 showPath={isCategory}
                 showCreate={isProduct}
                 siteById={siteById}

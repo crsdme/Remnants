@@ -486,6 +486,7 @@ async function resolveSiteAttributes(
   const languageCodes = languageMap.languages.map(item => item.code)
 
   const attributes: Array<{ attributeId: number, text: Record<string, string> }> = []
+  const seen = new Set<number>()
 
   for (const property of productProperties) {
     const propertyId = property._id ?? property.id
@@ -493,9 +494,8 @@ async function resolveSiteAttributes(
       continue
 
     const link = links.find(item => item.sourceId === propertyId)
-    const externalId = linkExternalIds(link)[0]
-    const numeric = externalId != null ? Number(externalId) : Number.NaN
-    if (!Number.isFinite(numeric) || numeric <= 0)
+    const externalIds = linkExternalIds(link)
+    if (externalIds.length === 0)
       continue
 
     const text = remapNames(
@@ -505,7 +505,13 @@ async function resolveSiteAttributes(
     if (Object.keys(text).length === 0)
       continue
 
-    attributes.push({ attributeId: numeric, text })
+    for (const externalId of externalIds) {
+      const numeric = Number(externalId)
+      if (!Number.isFinite(numeric) || numeric <= 0 || seen.has(numeric))
+        continue
+      seen.add(numeric)
+      attributes.push({ attributeId: numeric, text })
+    }
   }
 
   return attributes
