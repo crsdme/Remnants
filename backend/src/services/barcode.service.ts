@@ -18,6 +18,7 @@ import type {
   PrintBarcodePayload,
   RemoveBarcodesPayload,
 } from '@/types'
+import type { DbSession } from '@/utils/db'
 import path from 'node:path'
 import bwipjs from 'bwip-js'
 import PDFDocument from 'pdfkit'
@@ -63,7 +64,13 @@ export async function getByCode({ payload }: { payload: GetBarcodeByCodePayload 
   }
 }
 
-export async function create({ payload }: { payload: CreateBarcodesPayload }): Promise<CreateBarcodeResponse> {
+export async function create({
+  payload,
+  session,
+}: {
+  payload: CreateBarcodesPayload
+  session?: DbSession
+}): Promise<CreateBarcodeResponse> {
   let { code, products, active } = payload
 
   const parsedProducts = products.map(product => ({
@@ -80,11 +87,12 @@ export async function create({ payload }: { payload: CreateBarcodesPayload }): P
     code,
     products: parsedProducts,
     active,
-  })
+  }, session)
 
   await productsRepo.addBarcodeToProducts(
     parsedProducts.map(product => product._id),
     barcode._id,
+    session,
   )
 
   await AuditLogsService.create({

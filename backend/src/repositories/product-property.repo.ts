@@ -125,10 +125,10 @@ export async function removeById(id: string) {
   ).lean<ProductPropertyDB>().exec()
 }
 
-export async function updateOptions(id: string, payload: unknown) {
+export async function updateOptions(id: string, payload: Record<string, unknown>) {
   return ProductPropertyModel.findOneAndUpdate(
     { _id: id },
-    { $set: payload as Record<string, unknown> },
+    payload,
     { new: true, runValidators: true },
   ).exec()
 }

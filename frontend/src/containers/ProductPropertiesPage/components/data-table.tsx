@@ -1,17 +1,19 @@
 import type { ProductPropertyDTO, ProductPropertyOptionDTO } from '@remnant/shared'
 import type { Row } from '@tanstack/react-table'
 import { flexRender, getCoreRowModel, getExpandedRowModel, useReactTable } from '@tanstack/react-table'
-import { Pencil, Trash2 } from 'lucide-react'
-import { Fragment, useState } from 'react'
+import { Pencil, SearchIcon, Trash2 } from 'lucide-react'
+import { Fragment, useMemo, useState } from 'react'
 
 import { useProductPropertyOptionQuery, useProductPropertyQuery } from '@/api/hooks'
 import { ColumnVisibilityMenu, TablePagination } from '@/components'
-import { Badge, Button, Skeleton, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui'
+import { Badge, Button, Input, Skeleton, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui'
 import { useListQueryState, useLocale } from '@/utils/hooks'
 
 import { useProductPropertiesContext } from '../context'
 import { useColumns } from './columns'
 import { DataTableFilters } from './data-table-filters'
+
+const OPTION_TYPES = new Set(['select', 'multiSelect', 'color'])
 
 export function DataTable() {
   const { t } = useLocale()
@@ -53,6 +55,7 @@ export function DataTable() {
     onSortingChange: setSorting,
     manualSorting: true,
     enableSortingRemoval: true,
+    getRowCanExpand: row => OPTION_TYPES.has(row.original.type),
     state: {
       sorting,
       columnVisibility,
@@ -110,10 +113,9 @@ export function DataTable() {
           </TableCell>
         ))}
       </TableRow>
-      {row.getIsExpanded() && row.original.optionIds?.length > 0 && (
+      {row.getIsExpanded() && OPTION_TYPES.has(row.original.type) && (
         <SubRowOptions
           property={row.original}
-          optionIds={row.original.optionIds}
           columnsLength={columns.length}
           editOption={productPropertiesContext.openOptionsModal}
           removeOption={productPropertiesContext.removeOption}
@@ -167,25 +169,35 @@ export function DataTable() {
   )
 }
 
-function SubRowOptions({ property, optionIds, columnsLength, editOption, removeOption }:
+function SubRowOptions({ property, columnsLength, editOption, removeOption }:
 {
   property: ProductPropertyDTO
-  optionIds: string[]
   columnsLength: number
   editOption: (option: ProductPropertyOptionDTO, property: ProductPropertyDTO) => void
   removeOption: ({ ids }: { ids: string[] }) => void
 }) {
-  const { language } = useLocale()
-  const enabled = !!optionIds.length
+  const { t, language } = useLocale()
+  const [search, setSearch] = useState('')
 
-  const { productPropertyOptions, isLoading, isFetching, error } = useProductPropertyOptionQuery(
-    { pagination: { full: true }, filters: { ids: optionIds, language } },
+  const { productPropertyOptions, isLoading, error } = useProductPropertyOptionQuery(
+    {
+      pagination: { full: true },
+      filters: { productPropertyId: property.id, language },
+      sorters: { priority: 'asc' },
+    },
     { options: { placeholderData: prevData => prevData } },
   )
 
-  if (!enabled)
-    return null
-  if (isLoading || isFetching) {
+  const filteredOptions = useMemo(() => {
+    const query = search.trim().toLowerCase()
+    if (!query)
+      return productPropertyOptions
+    return productPropertyOptions.filter(option =>
+      (option.names[language] ?? '').toLowerCase().includes(query),
+    )
+  }, [productPropertyOptions, search, language])
+
+  if (isLoading && productPropertyOptions.length === 0) {
     return (
       <TableRow className="animate-pulse">
         <TableCell colSpan={columnsLength}>
@@ -201,32 +213,71 @@ function SubRowOptions({ property, optionIds, columnsLength, editOption, removeO
       </TableRow>
     )
   }
+
   return (
     <TableRow>
-      <TableCell colSpan={columnsLength} className="w-full">
-        <div className="flex flex-wrap gap-2 w-full">
-          {productPropertyOptions.map(option => (
-            <Badge key={option.id}>
-              {option.color && <div className="w-3 h-3 rounded-full border border-black" style={{ backgroundColor: option.color }} />}
-              {option.names[language]}
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => removeOption({ ids: [option.id] })}
-                className="h-4 w-4 ml-1"
-              >
-                <Trash2 />
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => editOption(option, property)}
-                className="h-4 w-4 ml-1"
-              >
-                <Pencil />
-              </Button>
+      <TableCell colSpan={columnsLength} className="bg-muted/30">
+        <div className="flex flex-col gap-2 py-1">
+          <div className="flex items-center gap-2">
+            <div className="relative flex-1 max-w-sm">
+              <SearchIcon className="absolute inset-y-0 my-auto left-2 h-4 w-4 text-muted-foreground" />
+              <Input
+                value={search}
+                onChange={event => setSearch(event.target.value)}
+                placeholder={t('page.product-properties.options.search')}
+                className="pl-8 h-8"
+              />
+            </div>
+            <Badge variant="outline">
+              {t('page.product-properties.options.count', { count: filteredOptions.length })}
             </Badge>
-          ))}
+          </div>
+
+          {filteredOptions.length === 0
+            ? (
+                <p className="text-sm text-muted-foreground px-1 py-2">
+                  {t('page.product-properties.options.empty')}
+                </p>
+              )
+            : (
+                <div className="max-h-64 overflow-y-auto border rounded-sm divide-y bg-background">
+                  {filteredOptions.map(option => (
+                    <div
+                      key={option.id}
+                      className="flex items-center gap-2 px-3 py-1.5 hover:bg-muted/50"
+                    >
+                      {option.color && (
+                        <div
+                          className="w-3 h-3 shrink-0 rounded-full border border-black/20"
+                          style={{ backgroundColor: option.color }}
+                        />
+                      )}
+                      <span className="flex-1 truncate text-sm">
+                        {option.names[language]}
+                      </span>
+                      <Badge variant="outline" className="shrink-0 text-xs">
+                        {option.priority}
+                      </Badge>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => editOption(option, property)}
+                        className="h-7 w-7 shrink-0"
+                      >
+                        <Pencil className="h-3.5 w-3.5" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => removeOption({ ids: [option.id] })}
+                        className="h-7 w-7 shrink-0 text-destructive"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              )}
         </div>
       </TableCell>
     </TableRow>

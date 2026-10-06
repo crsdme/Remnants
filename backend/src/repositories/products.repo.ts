@@ -539,12 +539,13 @@ export async function findIndex(payload: GetProductsIndexRepoPayload) {
   return productIndex
 }
 
-export async function createOne(payload: CreateProductsRepoPayload) {
-  return ProductModel.create(payload)
+export async function createOne(payload: CreateProductsRepoPayload, session?: ClientSession) {
+  const [doc] = await ProductModel.create([payload], { session })
+  return doc
 }
 
-export async function bulkWrite(payload: AnyBulkWriteOperation<any>[]) {
-  return ProductModel.bulkWrite(payload)
+export async function bulkWrite(payload: AnyBulkWriteOperation<any>[], session?: ClientSession) {
+  return ProductModel.bulkWrite(payload, { session })
 }
 
 export async function updateById(id: string, payload: EditProductsRepoPayload) {
@@ -601,10 +602,11 @@ export async function findById(id: string, session?: ClientSession) {
   return ProductModel.findById(id, null, { session }).lean<ProductDB>().exec()
 }
 
-export async function addBarcodeToProducts(productIds: string[], barcodeId: string) {
+export async function addBarcodeToProducts(productIds: string[], barcodeId: string, session?: ClientSession) {
   return ProductModel.updateMany(
     { _id: { $in: productIds } },
     { $push: { barcodeIds: barcodeId } },
+    { session },
   ).exec()
 }
 

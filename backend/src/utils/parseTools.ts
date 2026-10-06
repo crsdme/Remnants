@@ -4,6 +4,8 @@ import { parse as parseCSVFile } from 'fast-csv'
 import xlsx from 'xlsx'
 import { HttpError } from './httpError'
 
+const HIDDEN_SHEET_NAME = 'hidden'
+
 export async function parseFile(filePath: string): Promise<Record<string, unknown>[]> {
   const ext = path.extname(filePath).toLowerCase()
 
@@ -35,9 +37,14 @@ async function parseCSV(filePath: string, delimiter = ','): Promise<Record<strin
 
 function parseXLSX(filePath: string): Record<string, unknown>[] {
   const workbook = xlsx.readFile(filePath)
-  const sheetName = workbook.SheetNames[0]
-  const sheet = workbook.Sheets[sheetName]
-  return xlsx.utils.sheet_to_json(sheet)
+  const rows: Record<string, unknown>[] = []
+  for (const sheetName of workbook.SheetNames) {
+    if (sheetName.toLowerCase() === HIDDEN_SHEET_NAME)
+      continue
+    const sheet = workbook.Sheets[sheetName]
+    rows.push(...xlsx.utils.sheet_to_json<Record<string, unknown>>(sheet))
+  }
+  return rows
 }
 
 async function parseJSON(filePath: string): Promise<Record<string, unknown>[]> {
@@ -68,12 +75,25 @@ export function toNumber(record: Record<string, unknown>, key: string): number {
   return Number(record[key].toString().replace(',', '.') ?? 0) || 0
 }
 
+const UUID_BODY = '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}'
+const UUID_RE = new RegExp(UUID_BODY, 'i')
+const UUID_STRING_RE = new RegExp(`^${UUID_BODY}$`, 'i')
+const UUID_IN_PARENS_RE = new RegExp(`\\(\\s*(${UUID_BODY})\\s*\\)`, 'gi')
+const PROPERTY_KEY_RE = new RegExp(`\\((${UUID_BODY})(?:_(\\d+))?\\)`, 'gi')
+
+/** Last `(uuid)` in the string — names with parentheses stay safe. */
+export function extractLastUuidInParens(value: string): string | undefined {
+  const matches = [...value.matchAll(UUID_IN_PARENS_RE)]
+  if (matches.length === 0)
+    return undefined
+  return matches[matches.length - 1][1]
+}
+
 export function getId(record: Record<string, unknown>, key: string): string {
   if (typeof record[key] !== 'string')
     return ''
 
-  const match = record[key].toString().match(/\(([\w-]{36})\)$/)
-  return match ? match[1] : ''
+  return extractLastUuidInParens(record[key].toString()) ?? ''
 }
 
 export function extractLangMap(record: Record<string, unknown>, prefix: string): Record<string, unknown> {
@@ -106,9 +126,6 @@ export function parseFormData(body: Record<string, unknown>): Record<string, unk
   return obj
 }
 
-const UUID_STRING_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
-const UUID_IN_PARENS_RE = /\(\s*([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})\s*\)\s*$/i
-
 export function parseId(record: Record<string, unknown>, key: string): string | undefined {
   if (typeof record[key] !== 'string')
     return undefined
@@ -117,9 +134,9 @@ export function parseId(record: Record<string, unknown>, key: string): string | 
   if (!value)
     return undefined
 
-  const parenMatch = value.match(UUID_IN_PARENS_RE)
-  if (parenMatch)
-    return parenMatch[1]
+  const fromParens = extractLastUuidInParens(value)
+  if (fromParens)
+    return fromParens
 
   if (UUID_STRING_RE.test(value))
     return value
@@ -136,15 +153,10 @@ export function parseMultiSelect(record: Record<string, unknown>, key: string, m
         return ''
       if (mode === 'values')
         return String(val)
-      const match = String(val).match(UUID_IN_PARENS_RE)
-      return match ? match[1] : ''
+      return extractLastUuidInParens(String(val)) ?? ''
     })
     .filter(Boolean)
 }
-
-const UUID_RE = /[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}/i
-const PROPERTY_KEY_RE = new RegExp(`\\((${UUID_RE.source})(?:_(\\d+))?\\)\\s*$`, 'i')
-const UUID_IN_VALUE_RE = new RegExp(`\\((${UUID_RE.source})\\)`, 'gi')
 
 export function parseProductProperties(
   row: Record<string, unknown>,
@@ -154,9 +166,10 @@ export function parseProductProperties(
   for (const [rawKey, rawVal] of Object.entries(row)) {
     if (typeof rawVal !== 'string')
       continue
-    const m = PROPERTY_KEY_RE.exec(rawKey.trim())
-    if (!m)
+    const matches = [...rawKey.trim().matchAll(PROPERTY_KEY_RE)]
+    if (matches.length === 0)
       continue
+    const m = matches[matches.length - 1]
     const id = m[1]
     const indexed = m[2] !== undefined
     const idx = indexed ? Number(m[2]) : 0
@@ -214,11 +227,9 @@ function mergeValues(values: unknown[], isMultiSelect = false): unknown {
 
 function parseCell(raw: string): unknown {
   const s = raw.trim()
-  const ids = [...s.matchAll(UUID_IN_VALUE_RE)].map(m => m[1])
-  if (ids.length > 1)
-    return ids
-  if (ids.length === 1 && /\)\s*$/.test(s))
-    return ids[0]
+  const lastUuid = extractLastUuidInParens(s)
+  if (lastUuid)
+    return lastUuid
   if (/^(?:true|false)$/i.test(s))
     return s.toLowerCase() === 'true'
   const n = Number(s.replace(',', '.'))

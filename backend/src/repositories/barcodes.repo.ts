@@ -1,5 +1,5 @@
 import type { AggregateResult } from '@remnant/shared'
-import type { PipelineStage } from 'mongoose'
+import type { ClientSession, PipelineStage } from 'mongoose'
 import type { CreateBarcodesRepoPayload, EditBarcodesRepoPayload, GetBarcodeByCodeRepoResult, GetBarcodesRepoPayload } from '@/types'
 import type { BarcodeDBPopulated } from '@/types/'
 import { BarcodeModel } from '@/models'
@@ -106,8 +106,9 @@ export async function list(payload: GetBarcodesRepoPayload): Promise<GetBarcodeB
   return { items, total, page: current, pageSize }
 }
 
-export async function createOne(payload: CreateBarcodesRepoPayload) {
-  return BarcodeModel.create(payload)
+export async function createOne(payload: CreateBarcodesRepoPayload, session?: ClientSession) {
+  const [doc] = await BarcodeModel.create([payload], { session })
+  return doc
 }
 
 export async function updateById(id: string, payload: EditBarcodesRepoPayload) {

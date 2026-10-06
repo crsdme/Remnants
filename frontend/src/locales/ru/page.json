@@ -999,6 +999,9 @@
   "page.product-properties.form.description.createOption": "Добавить новую опцию свойства товара в систему",
   "page.product-properties.form.title.editOption": "Редактирование опции свойства товара",
   "page.product-properties.form.description.editOption": "Редактирование существующей опции свойства товара",
+  "page.product-properties.options.search": "Поиск опций...",
+  "page.product-properties.options.empty": "Опции не найдены",
+  "page.product-properties.options.count": "{{count}} опций",
 
   "page.warehouses.title": "Склады",
   "page.warehouses.description": "Управление складами",

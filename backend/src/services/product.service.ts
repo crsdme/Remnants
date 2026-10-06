@@ -47,10 +47,9 @@ import {
   parseGetLanguages,
   parseGetProductPropertyGroups,
   parseGetProductPropertyOptions,
-  parseGetProductsRepo,
   parseGetUnits,
 } from '@/types/'
-import { buildAuditChanges, getDifferenceDeep, getEntityIdsWithCapabilityForUser, HttpError, toAuditSnapshot } from '@/utils'
+import { buildAuditChanges, getDifferenceDeep, getEntityIdsWithCapabilityForUser, HttpError, toAuditSnapshot, withTransaction } from '@/utils'
 import logger from '@/utils/logger'
 import { toMinor } from '@/utils/money'
 import {
@@ -451,31 +450,31 @@ export async function importHandler({ file }: { file: Express.Multer.File }): Pr
   const productsForEdit = parsedProducts.filter(product => product._id !== undefined)
   const productsForCreate = parsedProducts.filter(product => product._id === undefined)
 
-  if (productsForEdit.length > 0) {
-    const bulkProducts = productsForEdit.map(product => ({
-      updateOne: {
-        filter: { _id: product._id },
-        update: {
-          $set: {
-            names: product.names as LanguageString,
-            minorPrice: product.minorPrice,
-            currencyId: product.currencyId,
-            minorPurchasePrice: product.minorPurchasePrice,
-            purchaseCurrencyId: product.purchaseCurrencyId,
-            barcodes: product.barcodes,
-            categoryIds: product.categoryIds,
-            unitId: product.unitId,
-            productPropertiesGroupId: product.productPropertiesGroupId,
-            productProperties: product.productProperties,
+  await withTransaction(async (session) => {
+    if (productsForEdit.length > 0) {
+      const bulkProducts = productsForEdit.map(product => ({
+        updateOne: {
+          filter: { _id: product._id },
+          update: {
+            $set: {
+              names: product.names as LanguageString,
+              minorPrice: product.minorPrice,
+              currencyId: product.currencyId,
+              minorPurchasePrice: product.minorPurchasePrice,
+              purchaseCurrencyId: product.purchaseCurrencyId,
+              barcodes: product.barcodes,
+              categoryIds: product.categoryIds,
+              unitId: product.unitId,
+              productPropertiesGroupId: product.productPropertiesGroupId,
+              productProperties: product.productProperties,
+            },
           },
         },
-      },
-    }))
+      }))
 
-    await ProductRepository.bulkWrite(bulkProducts)
-  }
+      await ProductRepository.bulkWrite(bulkProducts, session)
+    }
 
-  if (productsForCreate.length > 0) {
     for (const product of productsForCreate) {
       const {
         currencyId,
@@ -516,7 +515,7 @@ export async function importHandler({ file }: { file: Express.Multer.File }): Pr
           value: property.value,
         })),
         images: product.images,
-      })
+      }, session)
 
       for (const barcode of barcodes) {
         await BarcodeService.create({
@@ -525,6 +524,7 @@ export async function importHandler({ file }: { file: Express.Multer.File }): Pr
             products: [{ id: createdProduct._id.toString(), unitsPerScan: 1 }],
             active: true,
           },
+          session,
         })
       }
 
@@ -534,16 +534,29 @@ export async function importHandler({ file }: { file: Express.Multer.File }): Pr
             products: [{ id: createdProduct._id.toString(), unitsPerScan: 1 }],
             active: true,
           },
+          session,
         })
       }
     }
-  }
+  })
 
   return {
     status: 'success',
     code: 'PRODUCTS_IMPORTED',
     message: 'Products imported',
   }
+}
+
+const HIDDEN_SHEET_NAME = 'hidden'
+const VALIDATION_ROW_END = 1000
+
+function formatRef(label: string, id: string): string {
+  return `${label} (${id})`
+}
+
+function createHiddenColumnAllocator() {
+  let next = 1
+  return () => getExcelColumnLetter(next++)
 }
 
 function addHiddenListWithValidation(params: {
@@ -553,8 +566,8 @@ function addHiddenListWithValidation(params: {
   columnLetter: string
   columnKey: string
   items: unknown[]
-  getLabel?: () => string
-  getId?: () => string
+  getLabel?: (item: Record<string, unknown>) => string
+  getId?: (item: Record<string, unknown>) => string
 }) {
   const {
     language = 'en',
@@ -567,10 +580,13 @@ function addHiddenListWithValidation(params: {
     getId = (item: Record<string, unknown>) => item._id?.toString() ?? item.id?.toString() ?? 'UNKNOWN_ID',
   } = params
 
-  const values = items.map((item: unknown) => `${getLabel(item as Record<string, unknown>)} (${getId(item as Record<string, unknown>)})`)
+  const values = items.map((item: unknown) => {
+    const record = item as Record<string, unknown>
+    return formatRef(getLabel(record), getId(record))
+  })
   setHiddenColumnValues({ hiddenSheet, columnLetter, values })
 
-  const formulaRange = `hidden!$${columnLetter}$1:$${columnLetter}$${values.length}`
+  const formulaRange = `${HIDDEN_SHEET_NAME}!$${columnLetter}$1:$${columnLetter}$${Math.max(values.length, 1)}`
   applyListValidation({ sheet, columnKey, formulaRange })
 }
 
@@ -595,7 +611,8 @@ function applyListValidation(params: {
   if (colIndex <= 0)
     return
 
-  for (let r = 2; r <= sheet.rowCount; r++) {
+  const rowEnd = Math.max(sheet.rowCount, VALIDATION_ROW_END)
+  for (let r = 2; r <= rowEnd; r++) {
     sheet.getCell(r, colIndex).dataValidation = {
       type: 'list',
       allowBlank: true,
@@ -606,11 +623,241 @@ function applyListValidation(params: {
 
 function getExcelColumnLetter(colIndex: number): string {
   let letter = ''
-  while (colIndex > 0) {
-    letter = String.fromCharCode(65 + (colIndex - 1) % 26) + letter
-    colIndex = Math.floor((colIndex - 1) / 26)
+  let n = colIndex
+  while (n > 0) {
+    letter = String.fromCharCode(65 + (n - 1) % 26) + letter
+    n = Math.floor((n - 1) / 26)
   }
   return letter
+}
+
+function safeSheetName(name: string, fallback: string): string {
+  const cleaned = name.replace(/[\\/*?:[\]]/g, '_').trim()
+  const base = (cleaned || fallback).slice(0, 31)
+  return base.length > 0 ? base : fallback.slice(0, 31)
+}
+
+type DynamicKey = { key: string, header: string, id: string, type: string }
+
+function buildDynamicColumns(
+  productPropertiesData: Array<{ type: string, id: string, names: LanguageString }>,
+  language: 'ru' | 'en' | 'ua',
+): { dynamicKeys: DynamicKey[], dynamicColumns: { key: string, header: string }[] } {
+  const dynamicKeys: DynamicKey[] = []
+  const dynamicColumns: { key: string, header: string }[] = []
+  for (const { type, id, names } of productPropertiesData) {
+    if (type === 'multiSelect') {
+      for (let i = 1; i <= 5; i++) {
+        const key = `${id}_${i}`
+        const header = `${names[language] || 'NO_NAME'}_${i} (${key})`
+        dynamicColumns.push({ header, key })
+        dynamicKeys.push({ key, id, header, type })
+      }
+    }
+    else {
+      const header = `${names[language] || 'NO_NAME'} (${id})`
+      dynamicColumns.push({ header, key: id })
+      dynamicKeys.push({ key: id, header, id, type })
+    }
+  }
+  return { dynamicKeys, dynamicColumns }
+}
+
+async function applySheetValidations(params: {
+  sheet: ExcelJS.Worksheet
+  hiddenSheet: ExcelJS.Worksheet
+  nextHiddenCol: () => string
+  language: string
+  currencies: unknown[]
+  units: unknown[]
+  productPropertiesGroups: unknown[]
+  categories: unknown[]
+  dynamicKeys: DynamicKey[]
+}) {
+  const {
+    sheet,
+    hiddenSheet,
+    nextHiddenCol,
+    language,
+    currencies,
+    units,
+    productPropertiesGroups,
+    categories,
+    dynamicKeys,
+  } = params
+
+  addHiddenListWithValidation({ sheet, hiddenSheet, language, columnLetter: nextHiddenCol(), columnKey: 'currency', items: currencies })
+  addHiddenListWithValidation({ sheet, hiddenSheet, language, columnLetter: nextHiddenCol(), columnKey: 'purchaseCurrency', items: currencies })
+  addHiddenListWithValidation({ sheet, hiddenSheet, language, columnLetter: nextHiddenCol(), columnKey: 'unit', items: units })
+  addHiddenListWithValidation({ sheet, hiddenSheet, language, columnLetter: nextHiddenCol(), columnKey: 'productPropertiesGroup', items: productPropertiesGroups })
+  for (let i = 1; i <= 5; i++) {
+    addHiddenListWithValidation({ sheet, hiddenSheet, language, columnLetter: nextHiddenCol(), columnKey: `categories_${i}`, items: categories })
+  }
+
+  const propertiesLetters: Record<string, string> = {}
+  for (const property of dynamicKeys) {
+    if (!['select', 'multiSelect', 'color'].includes(property.type))
+      continue
+
+    const productPropertiesOptions = await ProductPropertyOptionRepository.list(parseGetProductPropertyOptions(
+      { filters: { productPropertyId: property.id }, pagination: { full: true } },
+    ))
+
+    if (!propertiesLetters[property.id])
+      propertiesLetters[property.id] = nextHiddenCol()
+
+    addHiddenListWithValidation({
+      sheet,
+      language,
+      items: productPropertiesOptions.items,
+      hiddenSheet,
+      columnKey: property.key,
+      columnLetter: propertiesLetters[property.id],
+    })
+  }
+}
+
+async function buildProductWorkbook(params: {
+  language: 'ru' | 'en' | 'ua'
+  hasPurchasePricePermission: boolean
+  languages: { items: Array<{ code: string }> }
+  currencies: { items: unknown[] }
+  units: { items: unknown[] }
+  categories: { items: unknown[] }
+  productPropertiesGroups: { items: Array<{ id: string, names: LanguageString, productProperties: Array<{ type: string, id: string, names: LanguageString }> }> }
+  groups: Array<{
+    groupId: string
+    groupName: string
+    products: ProductPopulatedDTO[]
+  }>
+}): Promise<ExcelJS.Workbook> {
+  const {
+    language,
+    hasPurchasePricePermission,
+    languages,
+    currencies,
+    units,
+    categories,
+    productPropertiesGroups,
+    groups,
+  } = params
+
+  const workbook = new ExcelJS.Workbook()
+  const nextHiddenCol = createHiddenColumnAllocator()
+  const usedSheetNames = new Set<string>()
+  const sheetsToValidate: Array<{ sheet: ExcelJS.Worksheet, dynamicKeys: DynamicKey[] }> = []
+
+  const sheetGroups = groups.length > 0
+    ? groups
+    : [{ groupId: 'default', groupName: 'Products', products: [] as ProductPopulatedDTO[] }]
+
+  for (const { groupId, groupName, products } of sheetGroups) {
+    let sheetName = safeSheetName(groupName, groupId)
+    if (usedSheetNames.has(sheetName)) {
+      const suffix = `_${groupId.slice(0, 8)}`
+      sheetName = safeSheetName(`${groupName.slice(0, Math.max(0, 31 - suffix.length))}${suffix}`, groupId)
+    }
+    usedSheetNames.add(sheetName)
+
+    const sheet = workbook.addWorksheet(sheetName)
+    const productPropertiesData = productPropertiesGroups.items.find(item => item.id === groupId)?.productProperties ?? []
+    const { dynamicKeys, dynamicColumns } = buildDynamicColumns(productPropertiesData, language)
+
+    sheet.columns = [
+      { header: 'id', key: 'id' },
+      { header: 'seq', key: 'seq' },
+      { header: 'images', key: 'images' },
+      ...languages.items.map(lang => ({
+        header: `name_${lang.code}`,
+        key: `name_${lang.code}`,
+      })),
+      { header: 'price', key: 'price' },
+      { header: 'purchasePrice', key: 'purchasePrice' },
+      { header: 'currency', key: 'currency' },
+      { header: 'purchaseCurrency', key: 'purchaseCurrency' },
+      { header: 'unit', key: 'unit' },
+      { header: 'productPropertiesGroup', key: 'productPropertiesGroup' },
+      ...Array.from({ length: 5 }, (_, i) => ({ header: `categories_${i + 1}`, key: `categories_${i + 1}` })),
+      ...Array.from({ length: 5 }, (_, i) => ({ header: `barcodes_${i + 1}`, key: `barcodes_${i + 1}` })),
+      ...dynamicColumns,
+    ]
+
+    for (const product of products) {
+      const row: Record<string, unknown> = {}
+
+      row.id = product.id
+      row.seq = product.seq
+      row.images = product.images.map(image => `${STORAGE_URLS.productImages}/${image.filename}`).join(', ')
+
+      for (const lang of languages.items) {
+        row[`name_${lang.code}`] = product.names?.[lang.code as keyof typeof product.names] ?? ''
+      }
+
+      row.price = product.price
+      row.purchasePrice = hasPurchasePricePermission ? product.purchasePrice : ''
+
+      row.currency = formatRef(product.currency?.names?.[language] ?? 'NO_NAME', product.currency?.id ?? '')
+      row.purchaseCurrency = hasPurchasePricePermission
+        ? formatRef(product.purchaseCurrency?.names?.[language] ?? 'NO_NAME', product.purchaseCurrency?.id ?? '')
+        : ''
+
+      row.unit = formatRef(product.unit?.names?.[language] ?? 'NO_NAME', product.unit?.id ?? '')
+      row.productPropertiesGroup = formatRef(
+        product.productPropertiesGroup?.names?.[language] ?? 'NO_NAME',
+        product.productPropertiesGroup?.id ?? '',
+      )
+
+      for (let i = 1; i <= 5; i++) {
+        row[`barcodes_${i}`] = product?.barcodes[i - 1] !== undefined ? `${product?.barcodes[i - 1]?.code}` : ''
+        row[`categories_${i}`] = product?.categories[i - 1] !== undefined
+          ? formatRef(
+              (product?.categories[i - 1]?.names?.[language] as string) ?? 'NO_NAME',
+              product?.categories[i - 1]?.id ?? '',
+            )
+          : ''
+      }
+
+      for (const { id, type, key } of dynamicKeys) {
+        const property = product.productProperties.find(item => item.id === id)
+        if (type === 'multiSelect') {
+          const options = property?.options || []
+          const index = Number.parseInt(key.split('_')[1], 10) - 1
+          const option = options[index]
+          row[key] = option != null ? formatRef(option.names?.[language] ?? 'NO_NAME', option.id) : ''
+        }
+        else if (type === 'select' || type === 'color') {
+          row[key] = property?.options?.[0]
+            ? formatRef(property.options[0].names?.[language] ?? 'NO_NAME', property.options[0].id)
+            : ''
+        }
+        else {
+          row[key] = property?.value != null ? property.value : ''
+        }
+      }
+      sheet.addRow(row)
+    }
+
+    sheetsToValidate.push({ sheet, dynamicKeys })
+  }
+
+  const hiddenSheet = workbook.addWorksheet(HIDDEN_SHEET_NAME)
+  hiddenSheet.state = 'veryHidden'
+
+  for (const { sheet, dynamicKeys } of sheetsToValidate) {
+    await applySheetValidations({
+      sheet,
+      hiddenSheet,
+      nextHiddenCol,
+      language,
+      currencies: currencies.items,
+      units: units.items,
+      productPropertiesGroups: productPropertiesGroups.items,
+      categories: categories.items,
+      dynamicKeys,
+    })
+  }
+
+  return workbook
 }
 
 export async function exportHandler({ payload, user }: { payload: ExportProductsPayload, user: AuthUser }): Promise<ExportProductsResponse> {
@@ -639,162 +886,32 @@ export async function exportHandler({ payload, user }: { payload: ExportProducts
     }),
   ])
 
-  console.log(categories.items.length)
-
-  const workbook = new ExcelJS.Workbook()
-  const hiddenSheet = workbook.addWorksheet('hidden')
-  hiddenSheet.state = 'veryHidden'
-
   const groupedProducts: Record<string, ProductPopulatedDTO[]> = {}
   for (const product of selectedProducts.items.map(mapProductPopulatedRepoToDTO)) {
     const groupId = product.productPropertiesGroup.id.toString()
-
-    if (groupedProducts[groupId] === undefined) {
+    if (groupedProducts[groupId] === undefined)
       groupedProducts[groupId] = []
-    }
     groupedProducts[groupId].push(product)
   }
 
-  for (const [groupId, products] of Object.entries(groupedProducts)) {
-    if (products.length === 0)
-      continue
+  const groups = Object.entries(groupedProducts).map(([groupId, products]) => ({
+    groupId,
+    groupName: (products[0].productPropertiesGroup?.names?.[language] as string) ?? groupId,
+    products,
+  }))
 
-    const groupName = products[0].productPropertiesGroup?.names?.[language] as string ?? groupId
-    const sheet = workbook.addWorksheet(groupName)
-
-    const productPropertiesData = productPropertiesGroups.items.find(item => item.id === groupId)?.productProperties ?? []
-
-    const dynamicKeys: { key: string, header: string, id: string, type: string }[] = []
-    const dynamicColumns: { key: string, header: string }[] = []
-    productPropertiesData.forEach(({ type, id, names }: { type: string, id: string, names: LanguageString }) => {
-      if (type === 'multiSelect') {
-        for (let i = 1; i <= 5; i++) {
-          const key = `${id}_${i}`
-          dynamicColumns.push({
-            header: `${names[language] || 'NO_NAME'}_${i} (${key})`,
-            key,
-          })
-          dynamicKeys.push({
-            key,
-            id,
-            header: `${names[language] || 'NO_NAME'}_${i} (${key})`,
-            type,
-          })
-        }
-      }
-      else {
-        dynamicColumns.push({
-          header: `${names[language] || 'NO_NAME'} (${id})`,
-          key: id,
-        })
-        dynamicKeys.push({
-          key: id,
-          header: `${names[language] || 'NO_NAME'} (${id})`,
-          id,
-          type,
-        })
-      }
-    })
-
-    sheet.columns = [
-      { header: 'id', key: 'id' },
-      { header: 'seq', key: 'seq' },
-      { header: 'images', key: 'images' },
-      ...languages.items.map(lang => ({
-        header: `name_${lang.code}`,
-        key: `name_${lang.code}`,
-      })),
-      { header: 'price', key: 'price' },
-      { header: 'purchasePrice', key: 'purchasePrice' },
-      { header: 'currency', key: 'currency' },
-      { header: 'purchaseCurrency', key: 'purchaseCurrency' },
-      { header: 'unit', key: 'unit' },
-      { header: 'productPropertiesGroup', key: 'productPropertiesGroup' },
-      ...Array.from({ length: 5 }, (_, i) => ({ header: `categories_${i + 1}`, key: `categories_${i + 1}` })),
-      ...Array.from({ length: 5 }, (_, i) => ({ header: `barcodes_${i + 1}`, key: `barcodes_${i + 1}` })),
-      ...dynamicColumns,
-    ]
-
-    products.forEach((product: ProductPopulatedDTO) => {
-      const row: Record<string, any> = {}
-
-      row.id = product.id
-      row.seq = product.seq
-      row.images = product.images.map(image => `${STORAGE_URLS.productImages}/${image.filename}`).join(', ')
-
-      for (const lang of languages.items) {
-        row[`name_${lang.code}`] = product.names?.[lang.code as keyof typeof product.names] ?? ''
-      }
-
-      row.price = product.price
-      row.purchasePrice = hasPurchasePricePermission ? product.purchasePrice : ''
-
-      row.currency = `${product.currency?.names?.[language] ?? 'NO_NAME'} (${product.currency?.id ?? ''})`
-      row.purchaseCurrency = hasPurchasePricePermission
-        ? `${product.purchaseCurrency?.names?.[language] ?? 'NO_NAME'} (${product.purchaseCurrency?.id ?? ''})`
-        : ''
-
-      row.unit = `${product.unit?.names?.[language] ?? 'NO_NAME'} (${product.unit?.id ?? ''})`
-      row.productPropertiesGroup = `${product.productPropertiesGroup?.names?.[language] ?? 'NO_NAME'} (${product.productPropertiesGroup?.id ?? ''})`
-
-      for (let i = 1; i <= 5; i++) {
-        row[`barcodes_${i}`] = product?.barcodes[i - 1] !== undefined ? `${product?.barcodes[i - 1]?.code}` : ''
-        row[`categories_${i}`] = product?.categories[i - 1] !== undefined ? `${product?.categories[i - 1]?.names?.[language] as string ?? 'NO_NAME'} (${product?.categories[i - 1]?.id})` : ''
-      }
-
-      dynamicKeys.forEach(({ id, type, key }) => {
-        const property = product.productProperties.find(item => item.id === id)
-        if (type === 'multiSelect') {
-          const options = property?.options || []
-          const index = Number.parseInt(key.split('_')[1], 10) - 1
-          const option = options[index]
-          row[key] = option != null ? `${option.names?.[language]} (${option.id})` : ''
-        }
-        else if (type === 'select' || type === 'color') {
-          row[key] = property?.options?.[0]
-            ? `${property?.options[0].names?.[language]} (${property?.options[0].id})`
-            : ''
-        }
-        else {
-          row[key] = property?.value != null ? property.value : ''
-        }
-      })
-      sheet.addRow(row)
-    })
-
-    addHiddenListWithValidation({ sheet, hiddenSheet, columnLetter: 'A', columnKey: 'currency', items: currencies.items })
-    addHiddenListWithValidation({ sheet, hiddenSheet, columnLetter: 'A', columnKey: 'purchaseCurrency', items: currencies.items })
-    addHiddenListWithValidation({ sheet, hiddenSheet, columnLetter: 'B', columnKey: 'unit', items: units.items })
-    addHiddenListWithValidation({ sheet, hiddenSheet, columnLetter: 'C', columnKey: 'productPropertiesGroup', items: productPropertiesGroups.items })
-    addHiddenListWithValidation({ sheet, hiddenSheet, columnLetter: 'D', columnKey: 'categories_1', items: categories.items })
-    addHiddenListWithValidation({ sheet, hiddenSheet, columnLetter: 'D', columnKey: 'categories_2', items: categories.items })
-    addHiddenListWithValidation({ sheet, hiddenSheet, columnLetter: 'D', columnKey: 'categories_3', items: categories.items })
-    addHiddenListWithValidation({ sheet, hiddenSheet, columnLetter: 'D', columnKey: 'categories_4', items: categories.items })
-    addHiddenListWithValidation({ sheet, hiddenSheet, columnLetter: 'D', columnKey: 'categories_5', items: categories.items })
-
-    const propertiesLetters: Record<string, string> = {}
-    for (const [index, property] of dynamicKeys.entries()) {
-      if (['select', 'multiSelect', 'color'].includes(property.type)) {
-        const productPropertiesOptions = await ProductPropertyOptionRepository.list(parseGetProductPropertyOptions(
-          { filters: { productPropertyId: property.id }, pagination: { full: true } },
-        ))
-
-        if (!propertiesLetters[property.id])
-          propertiesLetters[property.id] = getExcelColumnLetter(5 + index)
-
-        addHiddenListWithValidation({
-          sheet,
-          items: productPropertiesOptions.items,
-          hiddenSheet,
-          columnKey: property.key,
-          columnLetter: propertiesLetters[property.id],
-        })
-      }
-    }
-  }
+  const workbook = await buildProductWorkbook({
+    language,
+    hasPurchasePricePermission,
+    languages,
+    currencies,
+    units,
+    categories,
+    productPropertiesGroups,
+    groups,
+  })
 
   await workbook.xlsx.writeFile(path.join(STORAGE_PATHS.exportProducts, `${uuidv4()}.xlsx`))
-
   const buffer = await workbook.xlsx.writeBuffer()
 
   return {
@@ -806,14 +923,47 @@ export async function exportHandler({ payload, user }: { payload: ExportProducts
 }
 
 export async function downloadTemplate({ user }: { user: AuthUser }): Promise<DownloadTemplateResponse> {
-  const { items } = await ProductRepository.list(parseGetProductsRepo({ pagination: { current: 1, pageSize: 1 } }))
-  const exportHandlerResponse = await exportHandler({ payload: { ids: items.map(product => product._id) }, user })
+  const language = 'ru' as const
+  const hasPurchasePricePermission = await UserService.checkPermission('product.purchasePrice', user.id)
+
+  const [
+    languages,
+    currencies,
+    units,
+    categories,
+    productPropertiesGroups,
+  ] = await Promise.all([
+    LanguageRepository.list(parseGetLanguages({ filters: { active: [true] }, pagination: { full: true } })),
+    CurrencyRepository.list(parseGetCurrency({ filters: { active: [true] }, pagination: { full: true } })),
+    UnitRepository.list(parseGetUnits({ filters: { active: [true] }, pagination: { full: true } })),
+    CategoryRepository.list(parseGetCategories({ filters: { active: [true] }, pagination: { full: true } })),
+    ProductPropertyGroupRepository.list(parseGetProductPropertyGroups({ filters: { active: [true] }, pagination: { full: true } })),
+  ])
+
+  const groups = productPropertiesGroups.items.map(group => ({
+    groupId: group.id,
+    groupName: (group.names?.[language] as string) ?? group.id,
+    products: [] as ProductPopulatedDTO[],
+  }))
+
+  const workbook = await buildProductWorkbook({
+    language,
+    hasPurchasePricePermission,
+    languages,
+    currencies,
+    units,
+    categories,
+    productPropertiesGroups,
+    groups,
+  })
+
+  const buffer = await workbook.xlsx.writeBuffer()
 
   return {
     status: 'success',
     code: 'PRODUCTS_DOWNLOADED',
     message: 'Products downloaded',
-    buffer: Buffer.from(exportHandlerResponse.buffer),
+    buffer: Buffer.from(buffer),
   }
 }
 

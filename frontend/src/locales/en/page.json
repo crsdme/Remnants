@@ -997,6 +997,9 @@
   "page.product-properties.form.description.createOption": "Add a new product property option to the system",
   "page.product-properties.form.title.editOption": "Edit Product Property Option",
   "page.product-properties.form.description.editOption": "Edit existing product property option",
+  "page.product-properties.options.search": "Search options...",
+  "page.product-properties.options.empty": "No options found",
+  "page.product-properties.options.count": "{{count}} options",
 
   "page.warehouses.title": "Warehouses",
   "page.warehouses.description": "Manage warehouses here",

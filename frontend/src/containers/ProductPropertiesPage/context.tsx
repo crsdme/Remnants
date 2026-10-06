@@ -214,6 +214,7 @@ export function ProductPropertiesProvider({ children }: { children: ReactNode })
       onSuccess: ({ data }) => {
         closeOptionsModal()
         void queryClient.invalidateQueries({ queryKey: ['product-properties'] })
+        void queryClient.invalidateQueries({ queryKey: ['product-properties-options'] })
         toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description || ''}` })
       },
       onError: ({ response }) => {
@@ -243,6 +244,7 @@ export function ProductPropertiesProvider({ children }: { children: ReactNode })
     options: {
       onSuccess: ({ data }) => {
         void queryClient.invalidateQueries({ queryKey: ['product-properties'] })
+        void queryClient.invalidateQueries({ queryKey: ['product-properties-options'] })
         toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description || ''}` })
       },
       onError: ({ response }) => {
