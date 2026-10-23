@@ -450,7 +450,7 @@ export function ViewProcurementDetails() {
                 {t('table.edit')}
               </Button>
             </PermissionGate>
-            <PermissionGate permission="procurement.edit">
+            <PermissionGate permission="procurement.confirm">
               <Button
                 type="button"
                 className="w-full"
@@ -467,7 +467,7 @@ export function ViewProcurementDetails() {
           </>
         )}
         {procurement.status === 'ordered' && (
-          <PermissionGate permission="procurement.edit">
+          <PermissionGate permission="procurement.confirm">
             <Button
               type="button"
               variant="outline"

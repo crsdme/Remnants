@@ -69,7 +69,7 @@ const QUICK_ACTIONS: QuickAction[] = [
   {
     id: 'createWarehouseTransaction',
     url: '/warehouse-transactions/create',
-    permissions: ['warehouseTransaction.create'],
+    permissions: ['warehouseTransaction.in', 'warehouseTransaction.out', 'warehouseTransaction.transfer', 'warehouseTransaction.create'],
     icon: ArrowLeftRight,
   },
   {

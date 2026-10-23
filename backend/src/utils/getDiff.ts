@@ -83,7 +83,15 @@ function getByPath(obj: unknown, path: string) {
   return path.split('.').reduce((o, k) => (o == null ? o : o[k as keyof typeof o]), obj)
 }
 
+function unwrapDoc(value: unknown): unknown {
+  if (value != null && typeof value === 'object' && typeof (value as { toObject?: unknown }).toObject === 'function')
+    return (value as { toObject: (options?: { flattenMaps?: boolean }) => unknown }).toObject({ flattenMaps: true })
+  return value
+}
+
 function normalizeAuditValue(value: unknown, omit: Set<string>): unknown {
+  value = unwrapDoc(value)
+
   if (value == null)
     return value
 

@@ -14,6 +14,12 @@ import {
 import { useMemo } from 'react'
 
 import { useNavigate } from 'react-router-dom'
+import {
+  useClientOptions,
+  useDeliveryServiceOptions,
+  useOrderSourceOptions,
+  useWarehouseOptions,
+} from '@/api/hooks'
 import { TableActionDropdown } from '@/components'
 import { Badge, Button, Checkbox } from '@/components/ui'
 import { useAuthContext } from '@/contexts'
@@ -44,6 +50,10 @@ export function useColumns() {
   const { permissions } = useAuthContext()
   const navigate = useNavigate()
   const { printTtn } = usePrintOrderTtn()
+  const loadWarehouses = useWarehouseOptions()
+  const loadDeliveryServices = useDeliveryServiceOptions()
+  const loadOrderSources = useOrderSourceOptions()
+  const loadClients = useClientOptions()
 
   const columns = useMemo(() => {
     function sortHeader(column: Column<OrderDTOPopulated>, label: string) {
@@ -225,7 +235,14 @@ export function useColumns() {
           batchEdit: true,
           batchEditType: 'textMultiLanguage',
           filterable: true,
-          filterType: 'text',
+          filterType: 'asyncValue',
+          loadOptions: async (query?: { query?: string, selectedValue?: string[] }) => {
+            const items = await loadClients(query)
+            return items.map(item => ({
+              value: item.id,
+              label: [item.name, item.lastName, item.middleName].filter(Boolean).join(' '),
+            }))
+          },
           sortable: true,
           defaultVisible: true,
         },
@@ -251,7 +268,14 @@ export function useColumns() {
           batchEdit: true,
           batchEditType: 'textMultiLanguage',
           filterable: true,
-          filterType: 'text',
+          filterType: 'asyncValue',
+          loadOptions: async (query?: { query?: string, selectedValue?: string[] }) => {
+            const items = await loadWarehouses(query)
+            return items.map(item => ({
+              value: item.id,
+              label: item.names?.[language] ?? '',
+            }))
+          },
           sortable: true,
           defaultVisible: true,
         },
@@ -268,7 +292,14 @@ export function useColumns() {
           batchEdit: true,
           batchEditType: 'textMultiLanguage',
           filterable: true,
-          filterType: 'text',
+          filterType: 'asyncValue',
+          loadOptions: async (query?: { query?: string, selectedValue?: string[] }) => {
+            const items = await loadDeliveryServices(query)
+            return items.map(item => ({
+              value: item.id,
+              label: item.names?.[language] ?? '',
+            }))
+          },
           sortable: true,
           defaultVisible: true,
         },
@@ -285,7 +316,14 @@ export function useColumns() {
           batchEdit: true,
           batchEditType: 'textMultiLanguage',
           filterable: true,
-          filterType: 'text',
+          filterType: 'asyncValue',
+          loadOptions: async (query?: { query?: string, selectedValue?: string[] }) => {
+            const items = await loadOrderSources(query)
+            return items.map(item => ({
+              value: item.id,
+              label: item.names?.[language] ?? '',
+            }))
+          },
           sortable: true,
           defaultVisible: true,
         },
@@ -301,8 +339,7 @@ export function useColumns() {
           title: t('page.orders.table.orderStatus'),
           batchEdit: true,
           batchEditType: 'textMultiLanguage',
-          filterable: true,
-          filterType: 'text',
+          filterable: false,
           sortable: true,
           defaultVisible: true,
         },
@@ -318,8 +355,7 @@ export function useColumns() {
           title: t('page.orders.table.orderPaymentStatus'),
           batchEdit: true,
           batchEditType: 'textMultiLanguage',
-          filterable: true,
-          filterType: 'text',
+          filterable: false,
           sortable: true,
           defaultVisible: true,
         },
@@ -380,6 +416,19 @@ export function useColumns() {
       }),
       actionColumn(),
     ]
-  }, [language, currencies, isLoading, navigate, permissions, printTtn, removeOrder, t])
+  }, [
+    currencies,
+    isLoading,
+    language,
+    loadClients,
+    loadDeliveryServices,
+    loadOrderSources,
+    loadWarehouses,
+    navigate,
+    permissions,
+    printTtn,
+    removeOrder,
+    t,
+  ])
   return columns
 }

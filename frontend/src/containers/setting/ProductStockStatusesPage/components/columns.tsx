@@ -55,19 +55,19 @@ export function useColumns() {
 
           const actions = [
             {
-              permission: 'product-stock-status.copy',
+              permission: 'other.admin',
               onClick: async () => navigator.clipboard.writeText(item.id),
               label: t('table.copy'),
               icon: <Copy className="h-4 w-4" />,
             },
             {
-              permission: 'product-stock-status.edit',
+              permission: 'productStockStatus.edit',
               onClick: () => openModal(item),
               label: t('table.edit'),
               icon: <Pencil className="h-4 w-4" />,
             },
             {
-              permission: 'product-stock-status.delete',
+              permission: 'productStockStatus.remove',
               onClick: () => removeProductStockStatus({ ids: [item.id] }),
               label: t('table.delete'),
               icon: <Trash className="h-4 w-4" />,
@@ -101,6 +101,7 @@ export function useColumns() {
           filterable: true,
           filterType: 'number',
           sortable: true,
+          defaultVisible: true,
         },
         header: ({ column }) => sortHeader(column, t('page.product-stock-statuses.table.priority')),
         cell: ({ row }) => <Badge variant="outline">{row.original.priority}</Badge>,
@@ -110,20 +111,13 @@ export function useColumns() {
         meta: {
           title: t('page.product-stock-statuses.table.color'),
           sortable: true,
+          defaultVisible: true,
         },
         header: t('page.product-stock-statuses.table.color'),
         cell: ({ row }) => {
           const color = row.original.color || '#ffffff'
           return <div className="w-6 h-6 rounded-full border border-gray-300" style={{ backgroundColor: color }} />
         },
-      }),
-      columnHelper.accessor('conditions', {
-        id: 'conditions',
-        meta: {
-          title: t('page.product-stock-statuses.table.conditions'),
-        },
-        header: t('page.product-stock-statuses.table.conditions'),
-        cell: ({ row }) => <Badge variant="outline">{row.original.conditions?.length ?? 0}</Badge>,
       }),
       columnHelper.accessor('active', {
         id: 'active',
@@ -132,6 +126,7 @@ export function useColumns() {
           filterable: true,
           filterType: 'boolean',
           sortable: true,
+          defaultVisible: true,
         },
         header: t('page.product-stock-statuses.table.active'),
         cell: ({ row }) => <Badge variant={row.original.active ? 'success' : 'destructive'}>{t(`table.yesno.${row.original.active}`)}</Badge>,
@@ -143,6 +138,7 @@ export function useColumns() {
           filterable: true,
           filterType: 'boolean',
           sortable: true,
+          defaultVisible: true,
         },
         header: t('page.product-stock-statuses.table.isDefault'),
         cell: ({ row }) => <Badge variant={row.original.isDefault ? 'success' : 'outline'}>{t(`table.yesno.${row.original.isDefault}`)}</Badge>,

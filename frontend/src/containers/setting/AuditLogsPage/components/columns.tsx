@@ -58,20 +58,20 @@ export function useColumns() {
 
           const actions = [
             {
-              permission: 'audit-log.copy',
+              permission: 'other.admin',
               onClick: () => void navigator.clipboard.writeText(item.id),
               label: t('table.copy'),
               icon: <Copy className="h-4 w-4" />,
             },
             {
-              permission: 'audit-log.view',
+              permission: 'auditLog.view',
               onClick: () => openModal(item),
               label: t('table.view'),
               icon: <Eye className="h-4 w-4" />,
             },
             ...(entityPath
               ? [{
-                  permission: 'audit-log.view',
+                  permission: 'auditLog.view',
                   type: 'link' as const,
                   link: entityPath,
                   label: t('page.audit-logs.table.openEntity'),
@@ -90,6 +90,7 @@ export function useColumns() {
         id: 'resourceType',
         meta: {
           title: t('page.audit-logs.table.resourceType'),
+          defaultVisible: true,
         },
         header: () => t('page.audit-logs.table.resourceType'),
         cell: ({ row }) => (
@@ -102,6 +103,7 @@ export function useColumns() {
         id: 'action',
         meta: {
           title: t('page.audit-logs.table.action'),
+          defaultVisible: true,
         },
         header: () => t('page.audit-logs.table.action'),
         cell: ({ row }) => (
@@ -114,6 +116,7 @@ export function useColumns() {
         id: 'changes',
         meta: {
           title: t('page.audit-logs.table.changes'),
+          defaultVisible: true,
         },
         header: () => t('page.audit-logs.table.changes'),
         cell: ({ row }) => (
@@ -122,11 +125,25 @@ export function useColumns() {
           </div>
         ),
       }),
+      columnHelper.accessor('createdAt', {
+        id: 'createdAt',
+        meta: {
+          title: t('table.createdAt'),
+          filterable: true,
+          filterType: 'date',
+          sortable: true,
+          defaultVisible: true,
+        },
+        header: ({ column }) => sortHeader(column, t('table.createdAt')),
+        cell: ({ row }) => formatDate(row.getValue('createdAt'), 'dd.MM.yyyy HH:mm', language),
+      }),
+      actionColumn(),
       columnHelper.display({
         id: 'entity',
         size: 120,
         meta: {
           title: t('page.audit-logs.table.openEntity'),
+          defaultVisible: true,
         },
         header: () => t('page.audit-logs.table.openEntity'),
         cell: ({ row }) => {
@@ -144,18 +161,6 @@ export function useColumns() {
           )
         },
       }),
-      columnHelper.accessor('createdAt', {
-        id: 'createdAt',
-        meta: {
-          title: t('table.createdAt'),
-          filterable: true,
-          filterType: 'date',
-          sortable: true,
-        },
-        header: ({ column }) => sortHeader(column, t('table.createdAt')),
-        cell: ({ row }) => formatDate(row.getValue('createdAt'), 'dd.MM.yyyy HH:mm', language),
-      }),
-      actionColumn(),
     ]
   }, [language, isLoading, openModal, t])
   return columns

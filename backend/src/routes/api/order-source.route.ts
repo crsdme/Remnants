@@ -25,7 +25,7 @@ router.get(
 router.post(
   '/create',
   validateBodyRequest(createOrderSourceSchema),
-  checkPermissions('order-source.create'),
+  checkPermissions('orderSource.create'),
   validateResponse(createOrderSourceResponseSchema),
   OrderSourceController.create as RequestHandler,
 )
@@ -33,7 +33,7 @@ router.post(
 router.post(
   '/edit',
   validateBodyRequest(editOrderSourceSchema),
-  checkPermissions('order-source.edit'),
+  checkPermissions('orderSource.edit'),
   validateResponse(editOrderSourceResponseSchema),
   OrderSourceController.edit as RequestHandler,
 )
@@ -41,7 +41,7 @@ router.post(
 router.post(
   '/remove',
   validateBodyRequest(removeOrderSourcesSchema),
-  checkPermissions('order-source.remove'),
+  checkPermissions('orderSource.remove'),
   validateResponse(removeOrderSourcesResponseSchema),
   OrderSourceController.remove as RequestHandler,
 )

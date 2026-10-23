@@ -18,8 +18,8 @@ export const WAREHOUSE_CAPABILITIES = [
   'viewStock',
   'sell',
   'transfer',
+  'transferTo',
   'receive',
-  'viewHistory',
 ] as const
 
 export type WarehouseCapability = (typeof WAREHOUSE_CAPABILITIES)[number]
@@ -183,9 +183,19 @@ export function getCashregisterIdsWithAccountCapability(
 export function normalizeUserAccessScopes(
   access?: Partial<UserAccessScopesDTO> | null,
 ): UserAccessScopesDTO {
+  const allowedWarehouseCaps = new Set<string>(WAREHOUSE_CAPABILITIES)
+  const warehouses = (access?.warehouses ?? [])
+    .map((entry) => {
+      const capabilities = entry.capabilities.filter(cap => allowedWarehouseCaps.has(cap))
+      if (capabilities.length === 0)
+        return null
+      return { ...entry, capabilities: capabilities as WarehouseCapability[] }
+    })
+    .filter((entry): entry is WarehouseAccessEntryDTO => entry != null)
+
   const cashregisters = access?.cashregisters ?? []
   return {
-    warehouses: access?.warehouses ?? [],
+    warehouses,
     cashregisters,
     siteIds: access?.siteIds ?? [],
     expenseCategoryIds: access?.expenseCategoryIds ?? [],

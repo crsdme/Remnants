@@ -3,6 +3,7 @@ import { initReactI18next } from 'react-i18next'
 
 import { apiEn, componentsEn, mainEn, pageEn, seoEn } from './en/index'
 import { apiRu, componentsRu, mainRu, pageRu, seoRu } from './ru/index'
+import { apiUa, componentsUa, mainUa, pageUa, seoUa } from './ua/index'
 
 const resources = {
   en: {
@@ -10,6 +11,9 @@ const resources = {
   },
   ru: {
     translation: Object.assign({}, mainRu, seoRu, apiRu, componentsRu, pageRu),
+  },
+  ua: {
+    translation: Object.assign({}, mainUa, seoUa, apiUa, componentsUa, pageUa),
   },
 }
 

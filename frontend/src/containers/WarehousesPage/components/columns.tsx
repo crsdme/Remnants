@@ -57,7 +57,7 @@ export function useColumns() {
 
           const actions = [
             {
-              permission: 'warehouse.copy',
+              permission: 'other.admin',
               onClick: async () => navigator.clipboard.writeText(item.id),
               label: t('table.copy'),
               icon: <Copy className="h-4 w-4" />,
@@ -69,7 +69,7 @@ export function useColumns() {
               icon: <Pencil className="h-4 w-4" />,
             },
             {
-              permission: 'warehouse.delete',
+              permission: 'warehouse.remove',
               onClick: () => removeWarehouses({ ids: [item.id] }),
               label: t('table.delete'),
               icon: <Trash className="h-4 w-4" />,

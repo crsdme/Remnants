@@ -121,7 +121,11 @@ function WarehouseRow({
     }
   }, [entry.id, language, loadWarehouseOptions])
 
-  const summary = entry.capabilities
+  const knownCapabilities = entry.capabilities.filter(
+    (cap): cap is WarehouseCapability =>
+      (WAREHOUSE_CAPABILITIES as readonly string[]).includes(cap),
+  )
+  const summary = knownCapabilities
     .map(cap => t(`page.users.form.access.capabilities.warehouses.${cap}`))
     .join(' · ')
 
@@ -147,15 +151,15 @@ function WarehouseRow({
             <CapabilityCheckbox
               key={capability}
               label={t(`page.users.form.access.capabilities.warehouses.${capability}`)}
-              checked={entry.capabilities.includes(capability)}
+              checked={knownCapabilities.includes(capability)}
               disabled={disabled}
               onToggle={() => {
-                const set = new Set(entry.capabilities)
+                const set = new Set(knownCapabilities)
                 if (set.has(capability))
                   set.delete(capability)
                 else
                   set.add(capability)
-                onChangeCaps([...set] as WarehouseCapability[])
+                onChangeCaps([...set])
               }}
             />
           ))}

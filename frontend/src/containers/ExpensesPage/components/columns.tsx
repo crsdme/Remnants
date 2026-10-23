@@ -12,10 +12,11 @@ import {
 } from 'lucide-react'
 import { useMemo } from 'react'
 
+import { useCashregisterAccountOptions, useCashregisterOptions } from '@/api/hooks'
 import { TableActionDropdown } from '@/components'
 import { Badge, Button, Checkbox } from '@/components/ui'
 import { formatDate } from '@/utils/helpers'
-import { useLocale } from '@/utils/hooks'
+import { useAccountIdsWithCapability, useEntityIdsWithCapability, useLocale } from '@/utils/hooks'
 import { useExpenseContext } from '../context'
 
 const sortIcons = { asc: ArrowUp, desc: ArrowDown }
@@ -30,6 +31,10 @@ function isImageFile(type: string, name: string) {
 export function useColumns() {
   const { t, language } = useLocale()
   const { isLoading, openModal, removeExpense } = useExpenseContext()
+  const loadCashregisters = useCashregisterOptions()
+  const loadCashregisterAccounts = useCashregisterAccountOptions()
+  const expenseCashregisterIds = useEntityIdsWithCapability('cashregisters', 'viewExpenses')
+  const expenseAccountIds = useAccountIdsWithCapability('viewExpenses')
 
   const columns = useMemo(() => {
     function sortHeader(column: Column<ExpensePopulatedDTO>, label: string) {
@@ -94,7 +99,7 @@ export function useColumns() {
 
           const actions = [
             {
-              permission: 'expense.copy',
+              permission: 'other.admin',
               onClick: async () => navigator.clipboard.writeText(item.id),
               label: t('table.copy'),
               icon: <Copy className="h-4 w-4" />,
@@ -106,7 +111,7 @@ export function useColumns() {
               icon: <Pencil className="h-4 w-4" />,
             },
             {
-              permission: 'expense.delete',
+              permission: 'expense.remove',
               onClick: () => removeExpense({ ids: [item.id] }),
               label: t('table.delete'),
               icon: <Trash className="h-4 w-4" />,
@@ -145,6 +150,7 @@ export function useColumns() {
           filterable: true,
           filterType: 'number',
           sortable: true,
+          defaultVisible: true,
         },
         header: () => t('page.expenses.table.amount'),
         cell: ({ row }) => {
@@ -152,6 +158,86 @@ export function useColumns() {
           const currency = row.original.currency.symbols[language]
           return <Badge variant="destructive">{`-${amount} ${currency}`}</Badge>
         },
+      }),
+      columnHelper.accessor('cashregister', {
+        id: 'cashregister',
+        meta: {
+          title: t('page.expenses.table.cashregister'),
+          batchEdit: true,
+          batchEditType: 'number',
+          filterable: true,
+          filterType: 'asyncValue',
+          loadOptions: async (query?: { query?: string, selectedValue?: string[] }) => {
+            const items = await loadCashregisters(query)
+            const allowed = expenseCashregisterIds == null ? null : new Set(expenseCashregisterIds)
+            return items
+              .filter(item => allowed == null || allowed.has(item.id))
+              .map(item => ({
+                value: item.id,
+                label: item.names?.[language] ?? '',
+              }))
+          },
+          sortable: true,
+          defaultVisible: true,
+        },
+        header: () => t('page.expenses.table.cashregister'),
+        cell: ({ row }) => <Badge variant="outline">{`${row.original.cashregister.names[language]}`}</Badge>,
+      }),
+      columnHelper.accessor('cashregisterAccount', {
+        id: 'cashregisterAccount',
+        meta: {
+          title: t('page.expenses.table.cashregisterAccount'),
+          batchEdit: true,
+          batchEditType: 'number',
+          filterable: true,
+          filterType: 'asyncValue',
+          loadOptions: async (query?: { query?: string, selectedValue?: string[] }) => {
+            const items = await loadCashregisterAccounts(query)
+            const allowed = expenseAccountIds == null ? null : new Set(expenseAccountIds)
+            return items
+              .filter(item => allowed == null || allowed.has(item.id))
+              .map(item => ({
+                value: item.id,
+                label: item.names?.[language] ?? '',
+              }))
+          },
+          sortable: true,
+          defaultVisible: true,
+        },
+        header: () => t('page.expenses.table.cashregisterAccount'),
+        cell: ({ row }) => <Badge variant="outline">{`${row.original.cashregisterAccount.names[language]}`}</Badge>,
+      }),
+      columnHelper.accessor('categories', {
+        id: 'categories',
+        meta: {
+          title: t('page.expenses.table.categories'),
+          batchEdit: true,
+          batchEditType: 'number',
+          filterable: true,
+          filterType: 'number',
+          sortable: true,
+          defaultVisible: true,
+        },
+        header: () => t('page.expenses.table.categories'),
+        cell: ({ row }) => (
+          <div className="flex flex-wrap gap-2">
+            {row.original.categories.map(category => <Badge variant="outline" key={category.id}>{`${category.names[language]}`}</Badge>)}
+          </div>
+        ),
+      }),
+      columnHelper.accessor('type', {
+        id: 'type',
+        meta: {
+          title: t('page.expenses.table.type'),
+          batchEdit: true,
+          batchEditType: 'number',
+          filterable: true,
+          filterType: 'number',
+          sortable: true,
+          defaultVisible: true,
+        },
+        header: () => t('page.expenses.table.type'),
+        cell: ({ row }) => <Badge variant="outline">{t(`page.expenses.table.type.${row.original.type}`)}</Badge>,
       }),
       columnHelper.accessor('files', {
         id: 'files',
@@ -200,66 +286,11 @@ export function useColumns() {
         },
         enableSorting: false,
       }),
-      columnHelper.accessor('cashregister', {
-        id: 'cashregister',
-        meta: {
-          title: t('page.expenses.table.cashregister'),
-          batchEdit: true,
-          batchEditType: 'number',
-          filterable: true,
-          filterType: 'number',
-          sortable: true,
-        },
-        header: () => t('page.expenses.table.cashregister'),
-        cell: ({ row }) => <Badge variant="outline">{`${row.original.cashregister.names[language]}`}</Badge>,
-      }),
-      columnHelper.accessor('cashregisterAccount', {
-        id: 'cashregisterAccount',
-        meta: {
-          title: t('page.expenses.table.cashregisterAccount'),
-          batchEdit: true,
-          batchEditType: 'number',
-          filterable: true,
-          filterType: 'number',
-          sortable: true,
-        },
-        header: () => t('page.expenses.table.cashregisterAccount'),
-        cell: ({ row }) => <Badge variant="outline">{`${row.original.cashregisterAccount.names[language]}`}</Badge>,
-      }),
-      columnHelper.accessor('categories', {
-        id: 'categories',
-        meta: {
-          title: t('page.expenses.table.categories'),
-          batchEdit: true,
-          batchEditType: 'number',
-          filterable: true,
-          filterType: 'number',
-          sortable: true,
-        },
-        header: () => t('page.expenses.table.categories'),
-        cell: ({ row }) => (
-          <div className="flex flex-wrap gap-2">
-            {row.original.categories.map(category => <Badge variant="outline" key={category.id}>{`${category.names[language]}`}</Badge>)}
-          </div>
-        ),
-      }),
-      columnHelper.accessor('type', {
-        id: 'type',
-        meta: {
-          title: t('page.expenses.table.type'),
-          batchEdit: true,
-          batchEditType: 'number',
-          filterable: true,
-          filterType: 'number',
-          sortable: true,
-        },
-        header: () => t('page.expenses.table.type'),
-        cell: ({ row }) => <Badge variant="outline">{t(`page.expenses.table.type.${row.original.type}`)}</Badge>,
-      }),
       columnHelper.accessor('comment', {
         id: 'comment',
         meta: {
           title: t('page.expenses.table.comment'),
+          defaultVisible: true,
           batchEdit: true,
           batchEditType: 'number',
           filterable: true,
@@ -292,6 +323,6 @@ export function useColumns() {
       }),
       actionColumn(),
     ]
-  }, [language, isLoading, openModal, removeExpense, t])
+  }, [expenseAccountIds, expenseCashregisterIds, language, isLoading, loadCashregisterAccounts, loadCashregisters, openModal, removeExpense, t])
   return columns
 }

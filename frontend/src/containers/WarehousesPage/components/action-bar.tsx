@@ -1,8 +1,9 @@
 import { Plus } from 'lucide-react'
 
 import { useTranslation } from 'react-i18next'
-import { PermissionGate } from '@/components'
 import { Button, Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui'
+import { useAuthContext } from '@/contexts'
+import { hasPermission } from '@/utils/helpers/permission'
 import { useWarehouseContext } from '../context'
 
 import { WarehouseForm } from './form'
@@ -10,6 +11,9 @@ import { WarehouseForm } from './form'
 export function ActionBar() {
   const { t } = useTranslation()
   const { isModalOpen, isLoading, openModal, isEdit, closeModal } = useWarehouseContext()
+  const { permissions } = useAuthContext()
+  const canCreate = hasPermission(permissions, 'warehouse.create')
+  const canOpenForm = canCreate || hasPermission(permissions, 'warehouse.edit')
 
   return (
     <div className="flex items-center justify-between flex-wrap gap-2">
@@ -18,17 +22,19 @@ export function ActionBar() {
         <p className="text-muted-foreground">{t('page.warehouses.description')}</p>
       </div>
       <div className="flex items-center flex-wrap gap-2">
-        <PermissionGate permission={['warehouse.create', 'warehouse.edit']}>
+        {canOpenForm && (
           <Sheet open={isModalOpen} onOpenChange={() => closeModal()}>
-            <SheetTrigger asChild>
-              <Button
-                onClick={() => openModal()}
-                disabled={isLoading}
-              >
-                <Plus />
-                {t('page.warehouses.button.create')}
-              </Button>
-            </SheetTrigger>
+            {canCreate && (
+              <SheetTrigger asChild>
+                <Button
+                  onClick={() => openModal()}
+                  disabled={isLoading}
+                >
+                  <Plus />
+                  {t('page.warehouses.button.create')}
+                </Button>
+              </SheetTrigger>
+            )}
             <SheetContent className="sm:max-w-xl w-full overflow-y-auto" side="right">
               <SheetHeader>
                 <SheetTitle>
@@ -43,7 +49,7 @@ export function ActionBar() {
               </div>
             </SheetContent>
           </Sheet>
-        </PermissionGate>
+        )}
       </div>
     </div>
   )

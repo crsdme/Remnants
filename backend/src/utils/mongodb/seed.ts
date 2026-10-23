@@ -1,4 +1,14 @@
-import { DELIVERY_CURRENCY_SETTING_KEY, DELIVERY_STATUS_MAP_SETTING_KEY, DELIVERY_TRACKING_INTERVAL_DEFAULT, DELIVERY_TRACKING_INTERVAL_SETTING_KEY, PHONE_DEFAULT_COUNTRY_FALLBACK, PHONE_DEFAULT_COUNTRY_SETTING_KEY } from '@remnant/shared'
+import type { CashregisterCapability, WarehouseCapability } from '@remnant/shared'
+import {
+  CASHREGISTER_CAPABILITIES,
+  DELIVERY_CURRENCY_SETTING_KEY,
+  DELIVERY_STATUS_MAP_SETTING_KEY,
+  DELIVERY_TRACKING_INTERVAL_DEFAULT,
+  DELIVERY_TRACKING_INTERVAL_SETTING_KEY,
+  PHONE_DEFAULT_COUNTRY_FALLBACK,
+  PHONE_DEFAULT_COUNTRY_SETTING_KEY,
+  WAREHOUSE_CAPABILITIES,
+} from '@remnant/shared'
 import { connectDB } from '../../config/db'
 import * as AutomationService from '../../services/automation.service'
 import * as CashregisterAccountService from '../../services/cashregister-account.service'
@@ -25,8 +35,10 @@ import * as UserService from '../../services/user.service'
 import * as WarehouseService from '../../services/warehouse.service'
 import {
   parseCreateProducts,
+  parseEditExchangeRate,
   parseGetCategories,
   parseGetCurrency,
+  parseGetExchangeRates,
   parseGetProductPropertyGroups,
   parseGetProductPropertyOptions,
   parseGetUnits,
@@ -49,20 +61,28 @@ async function seedData() {
     const productProperties = await createProductProperties()
     await createProducts(productProperties)
     const deliveryServices = await createDeliveryServices()
-    await createOrderSources()
+    const orderSources = await createOrderSources()
     const statuses = await createOrderStatuses(currencies.uah.id)
     await createProductStockStatuses()
-    await createCashregisters()
+    const cashregisters = await createCashregisters(currencies)
     const warehouses = await createWarehouses()
-    await createUserRoles()
+    const expenseCategoryIds = await createExpenseCategories()
+    const sites = await createSites(warehouses)
+    await createUserRoles({
+      warehouses: [warehouses.warehouse1, warehouses.warehouse2, warehouses.warehouse3, warehouses.warehouse4],
+      cashregisters,
+      siteIds: [sites.id],
+      expenseCategoryIds,
+      deliveryServiceIds: [deliveryServices.novaposhta.id, deliveryServices.selfpickup.id],
+      orderSourceIds: orderSources,
+      orderStatusIds: statuses.allIds,
+    })
     await createAutomations({
       removed: statuses.removed,
       selfpickup: deliveryServices.selfpickup,
       completed: statuses.completed,
     })
     await createClients()
-    await createExpenseCategories()
-    await createSites(warehouses)
     await ProductStockStatusService.recomputeAll()
 
     console.log('✅ Test data seeded successfully!')
@@ -75,11 +95,12 @@ async function seedData() {
 }
 
 async function createSites(warehouses: { warehouse1: { id: string }, warehouse2: { id: string } }) {
-  await SiteService.create({
+  const { data } = await SiteService.create({
     payload: {
       names: {
         en: 'Example',
         ru: 'Example',
+        ua: 'Example',
       },
       url: 'http://example.com/',
       key: 'example',
@@ -88,6 +109,7 @@ async function createSites(warehouses: { warehouse1: { id: string }, warehouse2:
       warehouseIds: [warehouses.warehouse1.id, warehouses.warehouse2.id],
     },
   })
+  return data
 }
 
 async function createLanguages() {
@@ -110,18 +132,30 @@ async function createLanguages() {
       active: true,
     },
   })
+
+  await LanguageService.create({
+    payload: {
+      name: 'Ukrainian',
+      code: 'ua',
+      priority: 3,
+      main: false,
+      active: true,
+    },
+  })
 }
 
 async function createCurrencies() {
-  await CurrencyService.create({
+  const { data: usd } = await CurrencyService.create({
     payload: {
       names: {
         en: 'USD',
         ru: 'Доллар США',
+        ua: 'Долар США',
       },
       symbols: {
         en: '$',
         ru: '$',
+        ua: '$',
       },
       priority: 1,
       scale: 2,
@@ -134,10 +168,12 @@ async function createCurrencies() {
       names: {
         en: 'Hryvnia',
         ru: 'Гривна',
+        ua: 'Гривня',
       },
       symbols: {
         en: '₴',
         ru: '₴',
+        ua: '₴',
       },
       priority: 2,
       scale: 2,
@@ -145,21 +181,50 @@ async function createCurrencies() {
     },
   })
 
-  await CurrencyService.create({
+  const { data: eur } = await CurrencyService.create({
     payload: {
       names: {
         en: 'Euro',
         ru: 'Евро',
+        ua: 'Євро',
       },
       symbols: {
         en: '€',
         ru: '€',
+        ua: '€',
       },
       priority: 3,
       scale: 2,
       active: true,
     },
   })
+
+  const rates: Record<string, number> = {
+    [`${usd.id}:${uah.id}`]: 41.5,
+    [`${uah.id}:${usd.id}`]: 0.0241,
+    [`${eur.id}:${uah.id}`]: 45.2,
+    [`${uah.id}:${eur.id}`]: 0.0221,
+    [`${eur.id}:${usd.id}`]: 1.09,
+    [`${usd.id}:${eur.id}`]: 0.917,
+  }
+
+  const { data: { items: exchangeRates } } = await CurrencyService.getExchangeRates({
+    payload: parseGetExchangeRates({ pagination: { current: 1, pageSize: 100, full: true } }),
+  })
+
+  for (const exchangeRate of exchangeRates) {
+    const rate = rates[`${exchangeRate.fromCurrency.id}:${exchangeRate.toCurrency.id}`]
+    if (rate == null)
+      continue
+
+    await CurrencyService.editExchangeRate({
+      payload: parseEditExchangeRate({
+        id: exchangeRate.id,
+        rate,
+        comment: 'Seed rate',
+      }),
+    })
+  }
 
   await SettingService.create({
     payload: {
@@ -171,7 +236,7 @@ async function createCurrencies() {
     },
   })
 
-  return { uah }
+  return { usd, uah, eur }
 }
 
 async function createUnits() {
@@ -180,10 +245,12 @@ async function createUnits() {
       names: {
         en: 'Piece',
         ru: 'Штука',
+        ua: 'Штука',
       },
       symbols: {
         en: 'pcs',
         ru: 'шт',
+        ua: 'шт',
       },
       priority: 1,
       active: true,
@@ -195,10 +262,12 @@ async function createUnits() {
       names: {
         en: 'Kilogram',
         ru: 'Килограмм',
+        ua: 'Кілограм',
       },
       symbols: {
         en: 'kg',
         ru: 'кг',
+        ua: 'кг',
       },
       priority: 1,
       active: true,
@@ -212,6 +281,7 @@ async function createCategories() {
       names: {
         en: 'Electronics',
         ru: 'Электроника',
+        ua: 'Електроніка',
       },
       priority: 1,
       active: true,
@@ -223,6 +293,7 @@ async function createCategories() {
       names: {
         en: 'Clothing',
         ru: 'Одежда',
+        ua: 'Одяг',
       },
       priority: 2,
       active: true,
@@ -236,10 +307,12 @@ async function createProductProperties() {
       names: {
         en: 'SKU',
         ru: 'Артикул',
+        ua: 'Артикул',
       },
       symbols: {
         en: 'SKU',
         ru: 'Артикул',
+        ua: 'Артикул',
       },
       type: 'text',
       showInTable: true,
@@ -255,10 +328,12 @@ async function createProductProperties() {
       names: {
         en: 'Boxes',
         ru: 'Коробки',
+        ua: 'Коробки',
       },
       symbols: {
         en: 'Boxes',
         ru: 'Коробки',
+        ua: 'Коробки',
       },
       type: 'number',
       showInTable: true,
@@ -274,10 +349,12 @@ async function createProductProperties() {
       names: {
         en: 'New',
         ru: 'Новый',
+        ua: 'Новий',
       },
       symbols: {
         en: 'New',
         ru: 'Новый',
+        ua: 'Новий',
       },
       type: 'boolean',
       showInTable: true,
@@ -293,10 +370,12 @@ async function createProductProperties() {
       names: {
         en: 'Color',
         ru: 'Цвет',
+        ua: 'Колір',
       },
       symbols: {
         en: 'Color',
         ru: 'Цвет',
+        ua: 'Колір',
       },
       type: 'color',
       showInTable: true,
@@ -312,10 +391,12 @@ async function createProductProperties() {
       names: {
         en: 'Model',
         ru: 'Модель',
+        ua: 'Модель',
       },
       symbols: {
         en: 'Model',
         ru: 'Модель',
+        ua: 'Модель',
       },
       type: 'select',
       showInTable: true,
@@ -331,10 +412,12 @@ async function createProductProperties() {
       names: {
         en: 'Parameters',
         ru: 'Параметры',
+        ua: 'Параметри',
       },
       symbols: {
         en: 'Parameters',
         ru: 'Параметры',
+        ua: 'Параметри',
       },
       type: 'multiSelect',
       showInTable: true,
@@ -351,6 +434,7 @@ async function createProductProperties() {
       names: {
         en: 'Red',
         ru: 'Красный',
+        ua: 'Червоний',
       },
       color: '#FF0000',
     },
@@ -359,6 +443,7 @@ async function createProductProperties() {
       names: {
         en: 'Blue',
         ru: 'Синий',
+        ua: 'Синій',
       },
       color: '#0000FF',
     },
@@ -367,6 +452,7 @@ async function createProductProperties() {
       names: {
         en: 'Green',
         ru: 'Зелёный',
+        ua: 'Зелений',
       },
       color: '#00FF00',
     },
@@ -375,6 +461,7 @@ async function createProductProperties() {
       names: {
         en: 'Yellow',
         ru: 'Жёлтый',
+        ua: 'Жовтий',
       },
       color: '#FFFF00',
     },
@@ -383,6 +470,7 @@ async function createProductProperties() {
       names: {
         en: 'Black',
         ru: 'Чёрный',
+        ua: 'Чорний',
       },
       color: '#000000',
     },
@@ -406,6 +494,7 @@ async function createProductProperties() {
         names: {
           en: `SK${i + 1}`,
           ru: `SK${i + 1}`,
+          ua: `SK${i + 1}`,
         },
         productPropertyId: model.id,
         active: true,
@@ -420,6 +509,7 @@ async function createProductProperties() {
         names: {
           en: `Parameter ${i + 1}`,
           ru: `Параметр ${i + 1}`,
+          ua: `Параметр ${i + 1}`,
         },
         productPropertyId: parameters.id,
         active: true,
@@ -433,6 +523,7 @@ async function createProductProperties() {
       names: {
         en: 'Product Properties',
         ru: 'Свойства продукта',
+        ua: 'Властивості продукту',
       },
       priority: 1,
       productPropertyIds: [sku.id, boxes.id, isNew.id, color.id, model.id, parameters.id],
@@ -464,6 +555,7 @@ async function createProducts(productProperties: {
       names: {
         en: 'Product 1',
         ru: 'Продукт 1',
+        ua: 'Продукт 1',
       },
       price: 100,
       currency: currencies[0].id,
@@ -503,6 +595,7 @@ async function createProducts(productProperties: {
       names: {
         en: 'Product 2',
         ru: 'Продукт 2',
+        ua: 'Продукт 2',
       },
       price: 100,
       currency: currencies[0].id,
@@ -542,6 +635,7 @@ async function createProducts(productProperties: {
       names: {
         en: 'Product 3',
         ru: 'Продукт 3',
+        ua: 'Продукт 3',
       },
       price: 100,
       currency: currencies[0].id,
@@ -581,6 +675,7 @@ async function createProducts(productProperties: {
       names: {
         en: 'Product 4',
         ru: 'Продукт 4',
+        ua: 'Продукт 4',
       },
       price: 100,
       currency: currencies[0].id,
@@ -620,6 +715,7 @@ async function createProducts(productProperties: {
       names: {
         en: 'Product 5',
         ru: 'Продукт 5',
+        ua: 'Продукт 5',
       },
       price: 100,
       currency: currencies[0].id,
@@ -659,6 +755,7 @@ async function createProducts(productProperties: {
       names: {
         en: 'Product 6',
         ru: 'Продукт 6',
+        ua: 'Продукт 6',
       },
       price: 100,
       currency: currencies[0].id,
@@ -698,6 +795,7 @@ async function createProducts(productProperties: {
       names: {
         en: 'Product 7',
         ru: 'Продукт 7',
+        ua: 'Продукт 7',
       },
       price: 100,
       currency: currencies[0].id,
@@ -737,6 +835,7 @@ async function createProducts(productProperties: {
       names: {
         en: 'Product 8',
         ru: 'Продукт 8',
+        ua: 'Продукт 8',
       },
       price: 100,
       currency: currencies[0].id,
@@ -776,6 +875,7 @@ async function createProducts(productProperties: {
       names: {
         en: 'Product 9',
         ru: 'Продукт 9',
+        ua: 'Продукт 9',
       },
       price: 100,
       currency: currencies[0].id,
@@ -815,6 +915,7 @@ async function createProducts(productProperties: {
       names: {
         en: 'Product 10',
         ru: 'Продукт 10',
+        ua: 'Продукт 10',
       },
       price: 100,
       currency: currencies[0].id,
@@ -854,6 +955,7 @@ async function createProducts(productProperties: {
       names: {
         en: 'Product 11',
         ru: 'Продукт 11',
+        ua: 'Продукт 11',
       },
       price: 100,
       currency: currencies[0].id,
@@ -893,6 +995,7 @@ async function createProducts(productProperties: {
       names: {
         en: 'Product 12',
         ru: 'Продукт 12',
+        ua: 'Продукт 12',
       },
       price: 100,
       currency: currencies[0].id,
@@ -932,6 +1035,7 @@ async function createProducts(productProperties: {
       names: {
         en: 'Product 13',
         ru: 'Продукт 13',
+        ua: 'Продукт 13',
       },
       price: 100,
       currency: currencies[0].id,
@@ -971,6 +1075,7 @@ async function createProducts(productProperties: {
       names: {
         en: 'Product 14',
         ru: 'Продукт 14',
+        ua: 'Продукт 14',
       },
       price: 100,
       currency: currencies[0].id,
@@ -1010,6 +1115,7 @@ async function createProducts(productProperties: {
       names: {
         en: 'Product 15',
         ru: 'Продукт 15',
+        ua: 'Продукт 15',
       },
       price: 100,
       currency: currencies[0].id,
@@ -1049,6 +1155,7 @@ async function createProducts(productProperties: {
       names: {
         en: 'Product 16',
         ru: 'Продукт 16',
+        ua: 'Продукт 16',
       },
       price: 100,
       currency: currencies[0].id,
@@ -1088,6 +1195,7 @@ async function createProducts(productProperties: {
       names: {
         en: 'Product 17',
         ru: 'Продукт 17',
+        ua: 'Продукт 17',
       },
       price: 100,
       currency: currencies[0].id,
@@ -1127,6 +1235,7 @@ async function createProducts(productProperties: {
       names: {
         en: 'Product 18',
         ru: 'Продукт 18',
+        ua: 'Продукт 18',
       },
       price: 100,
       currency: currencies[0].id,
@@ -1166,6 +1275,7 @@ async function createProducts(productProperties: {
       names: {
         en: 'Product 19',
         ru: 'Продукт 19',
+        ua: 'Продукт 19',
       },
       price: 100,
       currency: currencies[0].id,
@@ -1205,6 +1315,7 @@ async function createProducts(productProperties: {
       names: {
         en: 'Product 20',
         ru: 'Продукт 20',
+        ua: 'Продукт 20',
       },
       price: 100,
       currency: currencies[0].id,
@@ -1275,6 +1386,7 @@ async function createDeliveryServices() {
       names: {
         en: 'Nova Poshta',
         ru: 'Нова Пошта',
+        ua: 'Нова Пошта',
       },
       priority: 2,
       type: 'novaposhta',
@@ -1296,6 +1408,7 @@ async function createDeliveryServices() {
       names: {
         en: 'Self Pickup',
         ru: 'Самовывоз',
+        ua: 'Самовивіз',
       },
       priority: 1,
       type: 'selfpickup',
@@ -1310,31 +1423,36 @@ async function createDeliveryServices() {
 }
 
 async function createOrderSources() {
-  await OrderSourceService.create({
+  const { data: website } = await OrderSourceService.create({
     payload: {
       names: {
         en: 'Website',
         ru: 'Веб-сайт',
+        ua: 'Веб-сайт',
       },
       priority: 1,
     },
   })
 
-  await OrderSourceService.create({
+  const { data: telegram } = await OrderSourceService.create({
     payload: {
       names: {
         en: 'Telegram',
         ru: 'Телеграм',
+        ua: 'Телеграм',
       },
       priority: 2,
     },
   })
+
+  return [website.id, telegram.id]
 }
 
 async function createOrderStatuses(npCurrencyId: string) {
   async function createStatus(params: {
     en: string
     ru: string
+    ua: string
     color: string
     priority: number
     isSelectable: boolean
@@ -1344,7 +1462,7 @@ async function createOrderStatuses(npCurrencyId: string) {
   }) {
     const { data } = await OrderStatusService.create({
       payload: {
-        names: { en: params.en, ru: params.ru },
+        names: { en: params.en, ru: params.ru, ua: params.ua },
         color: params.color,
         priority: params.priority,
         isSelectable: params.isSelectable,
@@ -1359,6 +1477,7 @@ async function createOrderStatuses(npCurrencyId: string) {
   const inProgress = await createStatus({
     en: 'In Progress',
     ru: 'В работе',
+    ua: 'В роботі',
     color: '#3b82f6',
     priority: 1,
     isSelectable: true,
@@ -1370,6 +1489,7 @@ async function createOrderStatuses(npCurrencyId: string) {
   const awaitingShipment = await createStatus({
     en: 'Awaiting shipment',
     ru: 'Ожидает отправки',
+    ua: 'Очікує відправки',
     color: '#eab308',
     priority: 2,
     isSelectable: true,
@@ -1381,6 +1501,7 @@ async function createOrderStatuses(npCurrencyId: string) {
   const inTransit = await createStatus({
     en: 'In transit',
     ru: 'В пути',
+    ua: 'В дорозі',
     color: '#f97316',
     priority: 3,
     isSelectable: true,
@@ -1392,6 +1513,7 @@ async function createOrderStatuses(npCurrencyId: string) {
   const atOffice = await createStatus({
     en: 'At the warehouse',
     ru: 'В отделении',
+    ua: 'У відділенні',
     color: '#8b5cf6',
     priority: 4,
     isSelectable: true,
@@ -1403,6 +1525,7 @@ async function createOrderStatuses(npCurrencyId: string) {
   const money = await createStatus({
     en: 'Money / COD',
     ru: 'Деньги',
+    ua: 'Гроші',
     color: '#22c55e',
     priority: 5,
     isSelectable: true,
@@ -1414,6 +1537,7 @@ async function createOrderStatuses(npCurrencyId: string) {
   const completed = await createStatus({
     en: 'Completed',
     ru: 'Завершен',
+    ua: 'Завершено',
     color: '#16a34a',
     priority: 6,
     isSelectable: false,
@@ -1425,6 +1549,7 @@ async function createOrderStatuses(npCurrencyId: string) {
   const returned = await createStatus({
     en: 'Returned',
     ru: 'Возврат',
+    ua: 'Повернення',
     color: '#ef4444',
     priority: 7,
     isSelectable: true,
@@ -1436,6 +1561,7 @@ async function createOrderStatuses(npCurrencyId: string) {
   const removed = await createStatus({
     en: 'Removed',
     ru: 'Удалён',
+    ua: 'Видалений',
     color: '#6b7280',
     priority: 8,
     isSelectable: false,
@@ -1481,13 +1607,27 @@ async function createOrderStatuses(npCurrencyId: string) {
     },
   })
 
-  return { inProgress, completed, removed }
+  return {
+    inProgress,
+    completed,
+    removed,
+    allIds: [
+      inProgress.id,
+      awaitingShipment.id,
+      inTransit.id,
+      atOffice.id,
+      money.id,
+      completed.id,
+      returned.id,
+      removed.id,
+    ],
+  }
 }
 
 async function createProductStockStatuses() {
   await ProductStockStatusService.create({
     payload: {
-      names: { en: 'Out of stock', ru: 'Нет в наличии' },
+      names: { en: 'Out of stock', ru: 'Нет в наличии', ua: 'Немає в наявності' },
       color: '#ef4444',
       priority: 1,
       active: true,
@@ -1498,7 +1638,7 @@ async function createProductStockStatuses() {
 
   await ProductStockStatusService.create({
     payload: {
-      names: { en: 'Low stock', ru: 'Мало' },
+      names: { en: 'Low stock', ru: 'Мало', ua: 'Мало' },
       color: '#f97316',
       priority: 2,
       active: true,
@@ -1509,7 +1649,7 @@ async function createProductStockStatuses() {
 
   await ProductStockStatusService.create({
     payload: {
-      names: { en: 'Overstock', ru: 'Переизбыток' },
+      names: { en: 'Overstock', ru: 'Переизбыток', ua: 'Надлишок' },
       color: '#a855f7',
       priority: 3,
       active: true,
@@ -1520,7 +1660,7 @@ async function createProductStockStatuses() {
 
   await ProductStockStatusService.create({
     payload: {
-      names: { en: 'Not selling', ru: 'Не продаётся' },
+      names: { en: 'Not selling', ru: 'Не продаётся', ua: 'Не продається' },
       color: '#eab308',
       priority: 4,
       active: true,
@@ -1534,7 +1674,7 @@ async function createProductStockStatuses() {
 
   await ProductStockStatusService.create({
     payload: {
-      names: { en: 'Forgotten', ru: 'Забытый' },
+      names: { en: 'Forgotten', ru: 'Забытый', ua: 'Забутий' },
       color: '#64748b',
       priority: 5,
       active: true,
@@ -1548,7 +1688,7 @@ async function createProductStockStatuses() {
 
   await ProductStockStatusService.create({
     payload: {
-      names: { en: 'Normal', ru: 'Норм' },
+      names: { en: 'Normal', ru: 'Норм', ua: 'Норм' },
       color: '#22c55e',
       priority: 100,
       active: true,
@@ -1558,14 +1698,41 @@ async function createProductStockStatuses() {
   })
 }
 
-async function createCashregisters() {
-  const { data: { items: currencies } } = await CurrencyService.get({ payload: parseGetCurrency({}) })
+async function createCashregisters(currencies: {
+  usd: { id: string }
+  uah: { id: string }
+  eur: { id: string }
+}) {
+  const { usd, uah, eur } = currencies
 
   const registers = [
-    { en: 'Cash Register 1', ru: 'Касса 1', priority: 1 },
-    { en: 'Cash Register 2', ru: 'Касса 2', priority: 2 },
-    { en: 'Cash Register 3', ru: 'Касса 3', priority: 3 },
+    {
+      en: 'Cash Register 1',
+      ru: 'Касса 1',
+      ua: 'Каса 1',
+      priority: 1,
+      cashCurrencyIds: [uah.id],
+      cardCurrencyIds: [uah.id, usd.id, eur.id],
+    },
+    {
+      en: 'Cash Register 2',
+      ru: 'Касса 2',
+      ua: 'Каса 2',
+      priority: 2,
+      cashCurrencyIds: [usd.id],
+      cardCurrencyIds: [usd.id, uah.id],
+    },
+    {
+      en: 'Cash Register 3',
+      ru: 'Касса 3',
+      ua: 'Каса 3',
+      priority: 3,
+      cashCurrencyIds: [eur.id, uah.id],
+      cardCurrencyIds: [eur.id, usd.id, uah.id],
+    },
   ]
+
+  const created: Array<{ id: string, accountIds: string[] }> = []
 
   for (const [index, register] of registers.entries()) {
     const n = index + 1
@@ -1575,10 +1742,11 @@ async function createCashregisters() {
         names: {
           en: `Cash ${n}`,
           ru: `Наличные ${n}`,
+          ua: `Готівка ${n}`,
         },
         active: true,
         priority: 1,
-        currencyIds: [currencies[0].id],
+        currencyIds: register.cashCurrencyIds,
       },
     })
 
@@ -1587,25 +1755,33 @@ async function createCashregisters() {
         names: {
           en: `Card ${n}`,
           ru: `Карта ${n}`,
+          ua: `Картка ${n}`,
         },
         active: true,
         priority: 2,
-        currencyIds: [currencies[0].id, currencies[1].id],
+        currencyIds: register.cardCurrencyIds,
       },
     })
 
-    await CashregisterService.create({
+    const accountIds = [cashAccount.data.id, cardAccount.data.id]
+
+    const { data: cashregister } = await CashregisterService.create({
       payload: {
         names: {
           en: register.en,
           ru: register.ru,
+          ua: register.ua,
         },
         active: true,
         priority: register.priority,
-        accountIds: [cashAccount.data.id, cardAccount.data.id],
+        accountIds,
       },
     })
+
+    created.push({ id: cashregister.id, accountIds })
   }
+
+  return created
 }
 
 async function createWarehouses() {
@@ -1616,6 +1792,7 @@ async function createWarehouses() {
           names: {
             en: `Warehouse ${n}`,
             ru: `Склад ${n}`,
+            ua: `Склад ${n}`,
           },
           priority: n,
           active: true,
@@ -1632,95 +1809,271 @@ async function createWarehouses() {
   }
 }
 
-async function createUserRoles() {
+interface SeedAccessScopes {
+  warehouses: Array<{ id: string }>
+  cashregisters: Array<{ id: string, accountIds: string[] }>
+  siteIds: string[]
+  expenseCategoryIds: string[]
+  deliveryServiceIds: string[]
+  orderSourceIds: string[]
+  orderStatusIds: string[]
+}
+
+function buildSeedAccess(
+  scopes: SeedAccessScopes,
+  warehouseCapabilities: readonly WarehouseCapability[],
+  cashregisterCapabilities: readonly CashregisterCapability[],
+) {
+  return {
+    warehouses: scopes.warehouses.map(warehouse => ({
+      id: warehouse.id,
+      capabilities: [...warehouseCapabilities],
+    })),
+    cashregisters: scopes.cashregisters.map(cashregister => ({
+      id: cashregister.id,
+      accounts: cashregister.accountIds.map(accountId => ({
+        id: accountId,
+        capabilities: [...cashregisterCapabilities],
+      })),
+    })),
+    siteIds: scopes.siteIds,
+    expenseCategoryIds: scopes.expenseCategoryIds,
+    cashregisterAccountIds: [] as string[],
+    deliveryServiceIds: scopes.deliveryServiceIds,
+    orderSourceIds: scopes.orderSourceIds,
+    orderStatusIds: scopes.orderStatusIds,
+  }
+}
+
+const DIRECTOR_PERMISSIONS = [
+  'language.read',
+  'currency.page',
+  'currency.read',
+  'currency.edit',
+  'unit.read',
+  'category.page',
+  'category.read',
+  'category.create',
+  'category.edit',
+  'productProperty.read',
+  'productPropertyGroup.read',
+  'product.page',
+  'product.read',
+  'product.create',
+  'product.edit',
+  'product.purchasePrice',
+  'barcode.page',
+  'barcode.read',
+  'barcode.create',
+  'barcode.edit',
+  'warehouse.read',
+  'warehouseTransaction.page',
+  'warehouseTransaction.read',
+  'warehouseTransaction.create',
+  'warehouseTransaction.receive',
+  'inventory.page',
+  'inventory.read',
+  'inventory.create',
+  'inventory.edit',
+  'inventory.remove',
+  'client.page',
+  'client.read',
+  'client.create',
+  'client.edit',
+  'orderStatus.read',
+  'orderSource.read',
+  'deliveryService.read',
+  'cashregister.page',
+  'cashregister.read',
+  'cashregisterAccount.read',
+  'order.page',
+  'order.read',
+  'order.create',
+  'order.edit',
+  'order.export',
+  'order.profit',
+  'orderStatistic.page',
+  'orderStatistic.read',
+  'orderStatistic.export',
+  'orderStatistic.profit',
+  'moneyTransaction.page',
+  'moneyTransaction.read',
+  'moneyTransaction.create',
+  'moneyTransaction.transfer',
+  'moneyTransaction.receive',
+  'expenseCategory.read',
+  'expense.page',
+  'expense.read',
+  'expense.create',
+  'site.read',
+  'userProfile.page',
+  'userProfile.read',
+  'workShift.start',
+  'workShift.edit',
+]
+
+/** Ops mid-tier: orders/catalog/warehouse, без полного finance director. */
+const MANAGER_PERMISSIONS = [
+  'language.read',
+  'currency.read',
+  'unit.read',
+  'category.page',
+  'category.read',
+  'category.create',
+  'category.edit',
+  'productProperty.read',
+  'productPropertyGroup.read',
+  'product.page',
+  'product.read',
+  'product.create',
+  'product.edit',
+  'barcode.page',
+  'barcode.read',
+  'barcode.create',
+  'barcode.edit',
+  'warehouse.read',
+  'warehouseTransaction.page',
+  'warehouseTransaction.read',
+  'warehouseTransaction.create',
+  'warehouseTransaction.receive',
+  'inventory.page',
+  'inventory.read',
+  'inventory.create',
+  'inventory.edit',
+  'inventory.remove',
+  'client.page',
+  'client.read',
+  'client.create',
+  'client.edit',
+  'orderStatus.read',
+  'orderSource.read',
+  'deliveryService.read',
+  'cashregister.read',
+  'cashregisterAccount.read',
+  'order.page',
+  'order.read',
+  'order.create',
+  'order.edit',
+  'orderStatistic.page',
+  'orderStatistic.read',
+  'orderStatistic.export',
+  'expenseCategory.read',
+  'expense.page',
+  'expense.read',
+  'expense.create',
+  'site.read',
+  'userProfile.page',
+  'userProfile.read',
+  'workShift.start',
+]
+
+const CASHIER_PERMISSIONS = [
+  'language.read',
+  'currency.read',
+  'product.read',
+  'barcode.page',
+  'barcode.read',
+  'warehouse.read',
+  'client.page',
+  'client.read',
+  'client.create',
+  'client.edit',
+  'orderStatus.read',
+  'orderSource.read',
+  'deliveryService.read',
+  'cashregister.read',
+  'cashregisterAccount.read',
+  'order.page',
+  'order.read',
+  'order.create',
+  'order.edit',
+  'moneyTransaction.page',
+  'moneyTransaction.read',
+  'moneyTransaction.create',
+  'moneyTransaction.receive',
+  'userProfile.page',
+  'userProfile.read',
+  'workShift.start',
+]
+
+async function createUserRoles(scopes: SeedAccessScopes) {
   const { data: admin } = await UserRoleService.create({
     names: {
       en: 'Admin',
       ru: 'Администратор',
+      ua: 'Адміністратор',
     },
     priority: 1,
     permissions: ['other.admin'],
+    active: true,
+  })
+
+  const { data: director } = await UserRoleService.create({
+    names: {
+      en: 'Director',
+      ru: 'Директор',
+      ua: 'Директор',
+    },
+    priority: 2,
+    permissions: DIRECTOR_PERMISSIONS,
+    active: true,
   })
 
   const { data: manager } = await UserRoleService.create({
     names: {
       en: 'Manager',
       ru: 'Менеджер',
+      ua: 'Менеджер',
     },
-    priority: 2,
-    permissions: [
-      'order.page',
-      'order.read',
-      'order.create',
-      'order.edit',
-      'product.page',
-      'product.read',
-      'product.create',
-      'product.edit',
-      'category.page',
-      'category.read',
-      'category.create',
-      'category.edit',
-      'productPropertyGroup.read',
-      'productProperty.read',
-      'barcode.page',
-      'barcode.read',
-      'barcode.create',
-      'barcode.edit',
-      'orderStatistic.page',
-      'orderStatistic.read',
-      'orderStatistic.export',
-      'client.page',
-      'client.read',
-      'client.create',
-      'client.edit',
-      'warehouse.read',
-      'warehouseTransaction.page',
-      'warehouseTransaction.read',
-      'warehouseTransaction.create',
-      'warehouseTransaction.receive',
-      'inventory.page',
-      'inventory.read',
-      'inventory.create',
-      'inventory.edit',
-      'inventory.remove',
-      'unit.read',
-      'cashrehister.page',
-      'cashrehister.read',
-      'cashrehisterAccount.read',
-      'expense.page',
-      'expense.read',
-      'expense.create',
-      'language.read',
-      'currency.page',
-      'currency.read',
-      'currency.edit',
-      'orderStatus.read',
-      'orderSource.read',
-      'deliveryService.read',
-      'expenseCategory.read',
-      'site.read',
-      'userProfile.page',
-      'userProfile.read',
-      'workShift.start',
-    ],
+    priority: 3,
+    permissions: MANAGER_PERMISSIONS,
+    active: true,
   })
+
+  const { data: cashier } = await UserRoleService.create({
+    names: {
+      en: 'Cashier',
+      ru: 'Кассир',
+      ua: 'Касир',
+    },
+    priority: 4,
+    permissions: CASHIER_PERMISSIONS,
+    active: true,
+  })
+
+  const emptyAccess = {
+    warehouses: [],
+    cashregisters: [],
+    siteIds: [],
+    expenseCategoryIds: [],
+    cashregisterAccountIds: [],
+    deliveryServiceIds: [],
+    orderSourceIds: [],
+    orderStatusIds: [],
+  }
+
+  const fullEntityAccess = buildSeedAccess(scopes, WAREHOUSE_CAPABILITIES, CASHREGISTER_CAPABILITIES)
+  const cashierAccess = buildSeedAccess(
+    scopes,
+    ['viewStock', 'sell'],
+    ['viewBalance', 'sell', 'receive', 'viewHistory'],
+  )
 
   await UserService.create({
     name: 'Admin',
     login: 'admin',
-    access: {
-      warehouses: [],
-      cashregisters: [],
-      siteIds: [],
-      expenseCategoryIds: [],
-      cashregisterAccountIds: [],
-      deliveryServiceIds: [],
-      orderSourceIds: [],
-      orderStatusIds: [],
-    },
+    access: emptyAccess,
     password: 'admin',
     roleId: admin.id,
+    active: true,
+  })
+
+  await UserService.create({
+    name: 'Director',
+    login: 'director',
+    password: 'director',
+    access: fullEntityAccess,
+    roleId: director.id,
     active: true,
   })
 
@@ -1728,17 +2081,17 @@ async function createUserRoles() {
     name: 'Manager',
     login: 'manager',
     password: 'manager',
-    access: {
-      warehouses: [],
-      cashregisters: [],
-      siteIds: [],
-      expenseCategoryIds: [],
-      cashregisterAccountIds: [],
-      deliveryServiceIds: [],
-      orderSourceIds: [],
-      orderStatusIds: [],
-    },
+    access: fullEntityAccess,
     roleId: manager.id,
+    active: true,
+  })
+
+  await UserService.create({
+    name: 'Cashier',
+    login: 'cashier',
+    password: 'cashier',
+    access: cashierAccess,
+    roleId: cashier.id,
     active: true,
   })
 }
@@ -2131,82 +2484,28 @@ async function createClients() {
 }
 
 async function createExpenseCategories() {
-  await ExpenseCategoryService.create({
-    payload: {
-      names: {
-        en: 'Store #1',
-        ru: 'Склад #1',
-      },
-      color: '#FF0000',
-      priority: 1,
-    },
-  })
+  const categories = [
+    { en: 'Store #1', ru: 'Склад #1', ua: 'Склад #1', color: '#FF0000', priority: 1 },
+    { en: 'Store #2', ru: 'Склад #2', ua: 'Склад #2', color: '#00FF00', priority: 2 },
+    { en: 'Fee', ru: 'Комиссия', ua: 'Комісія', color: '#00FF00', priority: 3 },
+    { en: 'Salary', ru: 'Зарплата', ua: 'Зарплата', color: '#00FF00', priority: 4 },
+    { en: 'Consumables', ru: 'Расходники', ua: 'Витратники', color: '#00FF00', priority: 5 },
+    { en: 'Utilities', ru: 'Комунальные платежи', ua: 'Комунальні платежі', color: '#00FF00', priority: 6 },
+    { en: 'Other', ru: 'Другое', ua: 'Інше', color: '#00FF00', priority: 7 },
+  ]
 
-  await ExpenseCategoryService.create({
-    payload: {
-      names: {
-        en: 'Store #2',
-        ru: 'Склад #2',
+  const ids: string[] = []
+  for (const category of categories) {
+    const { data } = await ExpenseCategoryService.create({
+      payload: {
+        names: { en: category.en, ru: category.ru, ua: category.ua },
+        color: category.color,
+        priority: category.priority,
       },
-      color: '#00FF00',
-      priority: 2,
-    },
-  })
-
-  await ExpenseCategoryService.create({
-    payload: {
-      names: {
-        en: 'Fee',
-        ru: 'Комиссия',
-      },
-      color: '#00FF00',
-      priority: 3,
-    },
-  })
-
-  await ExpenseCategoryService.create({
-    payload: {
-      names: {
-        en: 'Salary',
-        ru: 'Зарплата',
-      },
-      color: '#00FF00',
-      priority: 4,
-    },
-  })
-
-  await ExpenseCategoryService.create({
-    payload: {
-      names: {
-        en: 'Consumables',
-        ru: 'Расходники',
-      },
-      color: '#00FF00',
-      priority: 5,
-    },
-  })
-
-  await ExpenseCategoryService.create({
-    payload: {
-      names: {
-        en: 'Utilities',
-        ru: 'Комунальные платежи',
-      },
-      color: '#00FF00',
-      priority: 6,
-    },
-  })
-
-  await ExpenseCategoryService.create({
-    payload: {
-      names: {
-        en: 'Other',
-        ru: 'Другое',
-      },
-      color: '#00FF00',
-      priority: 7,
-    },
-  })
+    })
+    ids.push(data.id)
+  }
+  return ids
 }
 
 seedData()

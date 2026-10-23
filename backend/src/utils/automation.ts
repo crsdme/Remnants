@@ -69,3 +69,15 @@ export function matchesAutomationTriggerParams(
 
   return true
 }
+
+export function isFullyPaidOrderStatus(status: string | null | undefined): boolean {
+  return status === 'paid' || status === 'overpaid'
+}
+
+/** Fire order-paid only on first transition into paid/overpaid. */
+export function shouldFireOrderPaidTrigger(
+  previousStatus: string | null | undefined,
+  nextStatus: string,
+): boolean {
+  return !isFullyPaidOrderStatus(previousStatus) && isFullyPaidOrderStatus(nextStatus)
+}

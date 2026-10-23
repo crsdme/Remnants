@@ -1,5 +1,6 @@
 import type { ProductPopulatedDTO } from '@remnant/shared'
 import type { Column } from '@tanstack/react-table'
+import { useQueryClient } from '@tanstack/react-query'
 import { createColumnHelper } from '@tanstack/react-table'
 import {
   ArrowDown,
@@ -12,10 +13,12 @@ import {
   Pencil,
   Trash,
 } from 'lucide-react'
-import { useMemo } from 'react'
 
+import { useMemo } from 'react'
 import { Link } from 'react-router-dom'
+import { useCategoryOptions, useCurrencyOptions } from '@/api/hooks'
 import { useProductPropertyQuery } from '@/api/hooks/product-property/useProductPropertyQuery'
+import { getProductPropertyGroups, getUnits } from '@/api/requests'
 import { ImageGallery, TableActionDropdown } from '@/components'
 import { Badge, Button, Checkbox } from '@/components/ui'
 import { useAuthContext } from '@/contexts'
@@ -29,8 +32,9 @@ const sortIcons = { asc: ArrowUp, desc: ArrowDown }
 
 const columnHelper = createColumnHelper<ProductPopulatedDTO>()
 
-export function useColumns({ filters }: { filters: { selectedWarehouse: string } }) {
+export function useColumns({ filters }: { filters: { selectedWarehouse?: string } }) {
   const { t, language } = useLocale()
+  const queryClient = useQueryClient()
   const {
     isLoading,
     openModal,
@@ -39,7 +43,8 @@ export function useColumns({ filters }: { filters: { selectedWarehouse: string }
   } = useProductContext()
   const { permissions } = useAuthContext()
   const canViewStock = useEntityCapability('warehouses', filters.selectedWarehouse, 'viewStock')
-  const canViewHistory = useEntityCapability('warehouses', filters.selectedWarehouse, 'viewHistory')
+  const loadCurrencies = useCurrencyOptions()
+  const loadCategories = useCategoryOptions()
 
   const { productProperties } = useProductPropertyQuery(
     { filters: { active: [true], language, showInTable: true }, pagination: { full: true } },
@@ -115,32 +120,31 @@ export function useColumns({ filters }: { filters: { selectedWarehouse: string }
               icon: <Pencil className="h-4 w-4" />,
             },
             {
-              permission: 'product.copy',
+              permission: 'other.admin',
               onClick: async () => navigator.clipboard.writeText(item.id),
               label: t('table.copy'),
               icon: <Copy className="h-4 w-4" />,
             },
-            ...(canViewHistory
-              ? [{
-                  permission: 'product.quantity-logs',
-                  onClick: () => openLogsModal('quantity', item.id),
-                  label: t('table.quantityLogs'),
-                  icon: <PackageIcon className="h-4 w-4" />,
-                }, {
-                  permission: 'product.quantity-logs',
-                  onClick: () => openLogsModal('lots', item.id),
-                  label: t('table.stockLots'),
-                  icon: <Layers className="h-4 w-4" />,
-                }]
-              : []),
             {
-              permission: 'product.audit-logs',
+              permission: 'product.quantityLogs',
+              onClick: () => openLogsModal('quantity', item.id),
+              label: t('table.quantityLogs'),
+              icon: <PackageIcon className="h-4 w-4" />,
+            },
+            {
+              permission: 'product.quantityLogs',
+              onClick: () => openLogsModal('lots', item.id),
+              label: t('table.stockLots'),
+              icon: <Layers className="h-4 w-4" />,
+            },
+            {
+              permission: 'product.auditLogs',
               onClick: () => openLogsModal('audit', item.id),
               label: t('table.auditLogs'),
               icon: <History className="h-4 w-4" />,
             },
             {
-              permission: 'product.delete',
+              permission: 'product.remove',
               onClick: () => removeProduct({ ids: [item.id] }),
               label: t('table.delete'),
               icon: <Trash className="h-4 w-4" />,
@@ -227,7 +231,14 @@ export function useColumns({ filters }: { filters: { selectedWarehouse: string }
             title: t('page.products.table.purchaseCurrency'),
             filterable: true,
             filterType: 'asyncValue',
-            filterMultiple: true,
+            multiFilterable: true,
+            loadOptions: async (query?: { query?: string, selectedValue?: string[] }) => {
+              const items = await loadCurrencies(query)
+              return items.map(item => ({
+                value: item.id,
+                label: item.symbols?.[language] ?? item.names?.[language] ?? '',
+              }))
+            },
             sortable: true,
           },
           header: ({ column }) => sortHeader(column, t('page.products.table.purchaseCurrency')),
@@ -294,8 +305,15 @@ export function useColumns({ filters }: { filters: { selectedWarehouse: string }
           title: t('page.products.table.currency'),
           filterable: true,
           filterType: 'asyncValue',
+          multiFilterable: true,
+          loadOptions: async (query?: { query?: string, selectedValue?: string[] }) => {
+            const items = await loadCurrencies(query)
+            return items.map(item => ({
+              value: item.id,
+              label: item.symbols?.[language] ?? item.names?.[language] ?? '',
+            }))
+          },
           sortable: true,
-          filterMultiple: true,
         },
         header: ({ column }) => sortHeader(column, t('page.products.table.currency')),
       }),
@@ -355,6 +373,28 @@ export function useColumns({ filters }: { filters: { selectedWarehouse: string }
           filterable: true,
           filterType: 'asyncValue',
           multiFilterable: true,
+          loadOptions: async (query?: { query?: string, selectedValue?: string[] }) => {
+            const params = {
+              pagination: { full: true as const },
+              filters: {
+                active: [true],
+                language,
+                ...(query?.selectedValue?.length ? {} : { names: query?.query }),
+              },
+            }
+            const { data } = await queryClient.fetchQuery({
+              queryKey: ['units', 'get', params],
+              queryFn: async () => getUnits(params),
+              staleTime: 60000,
+            })
+            let items = data?.data?.items ?? []
+            if (query?.selectedValue?.length)
+              items = items.filter(item => query?.selectedValue?.includes(item.id))
+            return items.map(item => ({
+              value: item.id,
+              label: item.names?.[language] ?? '',
+            }))
+          },
           sortable: true,
         },
         header: ({ column }) => sortHeader(column, t('page.products.table.unit')),
@@ -367,6 +407,13 @@ export function useColumns({ filters }: { filters: { selectedWarehouse: string }
           filterable: true,
           filterType: 'asyncValue',
           multiFilterable: true,
+          loadOptions: async (query?: { query?: string, selectedValue?: string[] }) => {
+            const items = await loadCategories(query)
+            return items.map(item => ({
+              value: item.id,
+              label: item.names?.[language] ?? '',
+            }))
+          },
           sortable: true,
           defaultVisible: true,
         },
@@ -386,6 +433,28 @@ export function useColumns({ filters }: { filters: { selectedWarehouse: string }
           filterable: true,
           filterType: 'asyncValue',
           multiFilterable: true,
+          loadOptions: async (query?: { query?: string, selectedValue?: string[] }) => {
+            const params = {
+              pagination: { full: true as const },
+              filters: {
+                active: [true],
+                language,
+                ...(query?.selectedValue?.length ? {} : { names: query?.query }),
+              },
+            }
+            const { data } = await queryClient.fetchQuery({
+              queryKey: ['product-properties-groups', 'get', params],
+              queryFn: async () => getProductPropertyGroups(params),
+              staleTime: 60000,
+            })
+            let items = data?.data?.items ?? []
+            if (query?.selectedValue?.length)
+              items = items.filter(item => query?.selectedValue?.includes(item.id))
+            return items.map(item => ({
+              value: item.id,
+              label: item.names?.[language] ?? '',
+            }))
+          },
         },
         header: ({ column }) => sortHeader(column, t('page.products.table.productPropertyGroup')),
       }),
@@ -437,6 +506,6 @@ export function useColumns({ filters }: { filters: { selectedWarehouse: string }
       }),
       actionColumn(),
     ]
-  }, [canViewHistory, canViewStock, language, filters.selectedWarehouse, isLoading, openModal, openLogsModal, removeProduct, productProperties, permissions, t])
+  }, [canViewStock, language, filters.selectedWarehouse, isLoading, openModal, openLogsModal, removeProduct, productProperties, permissions, t, loadCurrencies, loadCategories, queryClient])
   return columns
 }

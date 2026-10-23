@@ -25,7 +25,7 @@ export function ActionBar() {
         <p className="text-muted-foreground">{t('page.languages.description')}</p>
       </div>
       <div className="flex items-center flex-wrap gap-2">
-        <PermissionGate permission={['language.create']}>
+        <PermissionGate permission={['language.create', 'language.edit']}>
           <Sheet open={isModalOpen} onOpenChange={() => closeModal()}>
             <SheetTrigger asChild>
               <Button onClick={() => openModal()} disabled={isLoading}>

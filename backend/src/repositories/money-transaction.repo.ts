@@ -7,8 +7,26 @@ import type {
   MoneyTransactionPopulated,
 } from '@/types/'
 import { MoneyTransactionModel } from '@/models'
+import * as CurrencyRepo from '@/repositories/currencies.repo'
 import * as ProcurementRepo from '@/repositories/procurement.repo'
 import { applyScopeIdsToQuery, buildQuery, buildSortQuery, unwrapAggregate } from '@/utils'
+import { toMinorCandidates } from '@/utils/money'
+
+/** Major UI amount → minorAmount values for Mongo `$in`. */
+async function toMinorFilterValues(
+  amount: number | undefined,
+  currencyIds: string[] | undefined,
+): Promise<number[] | undefined> {
+  if (amount === undefined)
+    return undefined
+
+  const scales = currencyIds?.length
+    ? [...new Set((await CurrencyRepo.findByIds(currencyIds)).map(c => c.scale))]
+    : await CurrencyRepo.distinctScales()
+
+  // ponytail: cross-scale collisions possible without currency filter
+  return toMinorCandidates(amount, scales)
+}
 
 function projectUser(field: string) {
   return {
@@ -190,6 +208,9 @@ export async function list({
     type,
     direction,
     accountId,
+    amount,
+    currency,
+    cashregister,
     description,
     sourceModel,
     sourceId,
@@ -199,11 +220,17 @@ export async function list({
     updatedAt,
   } = payload.filters
 
+  const currencyIds = currency ? [currency] : undefined
+  const minorAmountFilter = await toMinorFilterValues(amount, currencyIds)
+
   const query = buildQuery({
     filters: {
       type,
       direction,
       accountId,
+      amount: minorAmountFilter,
+      currencyId: currency,
+      cashregisterId: cashregister,
       description,
       sourceModel,
       sourceId,
@@ -212,9 +239,12 @@ export async function list({
       updatedAt,
     },
     rules: {
-      type: { type: 'string' },
+      type: { type: 'array' },
       direction: { type: 'string' },
-      accountId: { type: 'string' },
+      accountId: { type: 'exact' },
+      amount: { type: 'array', field: 'minorAmount' },
+      currencyId: { type: 'exact' },
+      cashregisterId: { type: 'exact' },
       description: { type: 'string' },
       sourceModel: { type: 'string' },
       sourceId: { type: 'string' },

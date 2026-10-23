@@ -17,9 +17,9 @@ import type {
   OrderItemDBPopulated,
   OrderPaymentDBPopulated,
 } from '@/types'
-import { OrderItemModel, OrderModel, PaymentApplicationModel } from '@/models'
+import { ClientModel, OrderItemModel, OrderModel, PaymentApplicationModel } from '@/models'
 import { warehouseStockFromLotsAddFields, warehouseStockFromLotsLookup } from '@/repositories/stock-lot.repo'
-import { applyScopeIdsToQuery, buildQuery, buildSortQuery, unwrapAggregate } from '@/utils'
+import { applyScopeIdsToQuery, buildQuery, buildSortQuery, escapeRegex, unwrapAggregate } from '@/utils'
 
 export async function list({
   payload,
@@ -42,6 +42,7 @@ export async function list({
   const {
     ids,
     seq,
+    search,
     warehouse,
     deliveryService,
     orderSource,
@@ -89,6 +90,43 @@ export async function list({
       removed: { type: 'exact' },
     },
   })
+
+  const searchTerm = search?.trim()
+  if (searchTerm !== undefined && searchTerm !== '' && searchTerm !== null) {
+    const clientQuery = buildQuery({
+      filters: { search: searchTerm },
+      rules: {
+        search: {
+          type: 'multiFieldSearch',
+          multiFields: [
+            { field: 'name' },
+            { field: 'middleName' },
+            { field: 'lastName' },
+            { field: 'emails', isArray: true, isArrayPrimitive: true },
+            { field: 'phones', isArray: true, isArrayPrimitive: true },
+          ],
+        },
+      },
+    })
+    const clientIds = await ClientModel.distinct('_id', clientQuery)
+
+    if (!query.$and)
+      query.$and = []
+    query.$and.push({
+      $or: [
+        { clientId: { $in: clientIds } },
+        {
+          $expr: {
+            $regexMatch: {
+              input: { $toString: '$seq' },
+              regex: escapeRegex(searchTerm),
+              options: 'i',
+            },
+          },
+        },
+      ],
+    })
+  }
 
   applyScopeIdsToQuery(query, options.warehouseIds, 'warehouseId')
   applyScopeIdsToQuery(query, options.deliveryServiceIds, 'deliveryServiceId')

@@ -54,7 +54,7 @@ router.get(
 router.post(
   '/create',
   validateBodyRequest(createWarehouseTransactionSchema),
-  checkPermissions('warehouseTransaction.create'),
+  checkPermissions(['warehouseTransaction.create', 'warehouseTransaction.in', 'warehouseTransaction.out', 'warehouseTransaction.transfer']),
   validateResponse(createWarehouseTransactionResponseSchema),
   WarehouseTransactionController.create as RequestHandler,
 )

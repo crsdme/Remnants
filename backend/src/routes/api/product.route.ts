@@ -55,7 +55,7 @@ router.post(
 router.post(
   '/batch',
   validateBodyRequest(batchProductSchema),
-  checkPermissions('product.batch'),
+  checkPermissions('product.batchEdit'),
   validateResponse(batchProductResponseSchema),
   ProductController.batch as RequestHandler,
 )

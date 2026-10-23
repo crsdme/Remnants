@@ -2,13 +2,42 @@ import { flexRender, getCoreRowModel, getExpandedRowModel, useReactTable } from 
 import { Fragment, useState } from 'react'
 
 import { useMoneyTransactionQuery } from '@/api/hooks'
-import { ColumnVisibilityMenu, TablePagination, TableSelectionDropdown } from '@/components'
-import { Skeleton, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui'
-import { useListQueryState, useLocale } from '@/utils/hooks'
+import { AdvancedFilters, ColumnVisibilityMenu, TablePagination, TableSelectionDropdown } from '@/components'
+import { Separator, Skeleton, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui'
+import {
+  parseQueryCsv,
+  parseQueryDate,
+  setQueryParam,
+  setQueryParamCsv,
+  useListQueryState,
+  useLocale,
+} from '@/utils/hooks'
 
 import { useColumns } from './columns'
 import { DataTableFilters } from './data-table-filters'
 import { MoneyTransactionExpandedRow } from './expanded-row'
+
+interface DateRangeFilter {
+  from?: Date
+  to?: Date
+}
+
+interface MoneyTransactionListFilters extends Record<string, unknown> {
+  amount?: string | number
+  type?: string[]
+  accountId?: string
+  cashregister?: string
+  confirmed?: string[]
+  createdAt?: DateRangeFilter
+}
+
+function readDateRange(from?: string, to?: string): DateRangeFilter | undefined {
+  const fromDate = parseQueryDate(from)
+  const toDate = parseQueryDate(to)
+  if (!fromDate || !toDate)
+    return undefined
+  return { from: fromDate, to: toDate }
+}
 
 export function DataTable() {
   const { t } = useLocale()
@@ -25,7 +54,29 @@ export function DataTable() {
     filters,
     setFilters,
     sorters,
-  } = useListQueryState({})
+  } = useListQueryState<MoneyTransactionListFilters>({
+    readFilters: (params) => {
+      const type = parseQueryCsv(params.get('type'))
+      const confirmed = parseQueryCsv(params.get('confirmed'))
+      return {
+        amount: params.get('amount') ?? undefined,
+        ...(type.length ? { type } : {}),
+        accountId: params.get('accountId') ?? undefined,
+        cashregister: params.get('cashregister') ?? undefined,
+        ...(confirmed.length ? { confirmed } : {}),
+        createdAt: readDateRange(params.get('createdAtFrom'), params.get('createdAtTo')),
+      }
+    },
+    writeFilters: (params, next) => {
+      setQueryParam(params, 'amount', next.amount ?? '')
+      setQueryParamCsv(params, 'type', next.type ?? [])
+      setQueryParam(params, 'accountId', next.accountId ?? '')
+      setQueryParam(params, 'cashregister', next.cashregister ?? '')
+      setQueryParamCsv(params, 'confirmed', next.confirmed ?? [])
+      setQueryParam(params, 'createdAtFrom', next.createdAt?.from?.toISOString() ?? null)
+      setQueryParam(params, 'createdAtTo', next.createdAt?.to?.toISOString() ?? null)
+    },
+  })
   const columns = useColumns()
 
   const { moneyTransactions, moneyTransactionsCount, isLoading, isFetching } = useMoneyTransactionQuery(
@@ -56,6 +107,29 @@ export function DataTable() {
       },
     },
   })
+
+  const advancedFiltersSubmit = (items: { column: string, value: unknown }[]) => {
+    setFilters({
+      amount: undefined,
+      type: undefined,
+      accountId: undefined,
+      cashregister: undefined,
+      confirmed: undefined,
+      createdAt: undefined,
+      ...Object.fromEntries(items.map(({ column, value }) => [column, value])),
+    })
+  }
+
+  const advancedFiltersCancel = () => {
+    setFilters({
+      amount: undefined,
+      type: undefined,
+      accountId: undefined,
+      cashregister: undefined,
+      confirmed: undefined,
+      createdAt: undefined,
+    })
+  }
 
   const renderTableHeader = () => {
     return table.getHeaderGroups().map(headerGroup => (
@@ -129,13 +203,20 @@ export function DataTable() {
     <>
       <div className="w-full flex justify-between items-start max-md:flex-col gap-2 py-2">
         <div className="flex flex-wrap gap-2 items-center">
+          <AdvancedFilters
+            columns={columns}
+            values={filters}
+            onSubmit={advancedFiltersSubmit}
+            onCancel={advancedFiltersCancel}
+          />
+          <Separator orientation="vertical" className="min-h-6 max-md:hidden" />
           <DataTableFilters filters={filters} setFilters={setFilters} />
         </div>
         <div className="flex gap-2">
           <TableSelectionDropdown
             selectedCount={Object.keys(rowSelection).length}
           />
-          <ColumnVisibilityMenu table={table} tableId="cashregister-account" />
+          <ColumnVisibilityMenu table={table} tableId="money-transactions" />
         </div>
       </div>
       <div className="border rounded-sm">

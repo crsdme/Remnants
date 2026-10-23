@@ -83,7 +83,7 @@ export const NAV_MENU_ITEMS = [
     icon: 'Warehouse',
     permissions: ['warehouse.page', 'purchase.page', 'procurement.page', 'production.page', 'inventory.page'],
     items: [
-      { id: 'warehouses', url: '/warehouses', permissions: ['warehouses.page'] },
+      { id: 'warehouses', url: '/warehouses', permissions: ['warehouse.page'] },
       { id: 'procurements', url: '/procurements', permissions: ['procurement.page'] },
       { id: 'inventories', url: '/inventories', permissions: ['inventory.page'] },
       { id: 'warehouseTransactions', url: '/warehouse-transactions', permissions: ['warehouseTransaction.page'] },
@@ -188,6 +188,9 @@ export const AUTOMATION_TRIGGERS = [
       {
         id: 'order-status-updated',
       },
+      {
+        id: 'order-paid',
+      },
     ],
   },
 ]
@@ -237,182 +240,267 @@ export const AUTOMATION_ACTIONS = [
 
 export const USER_ROLE_PERMISSIONS = [
   {
-    group: 'orders',
-    permissions: ['order.page', 'order.read', 'order.remove', 'order.create', 'order.edit', 'order.export', 'order.profit', 'order.auditLogs'],
-  },
-  {
-    group: 'products',
-    dependencies: ['language.read', 'category.read', 'unit.read', 'currency.read'],
-    permissions: ['product.page', 'product.read', 'product.remove', 'product.create', 'product.edit', 'product.batchEdit', 'product.import', 'product.export', 'product.purchasePrice', 'product.quantityLogs', 'product.auditLogs'],
-  },
-  {
-    group: 'categories',
-    dependencies: ['language.read'],
-    permissions: ['category.page', 'category.read', 'category.remove', 'category.create', 'category.edit', 'category.batchEdit', 'category.import', 'category.export', 'category.auditLogs'],
-  },
-  {
-    group: 'product-property-group',
-    dependencies: ['language.read'],
-    permissions: ['productPropertyGroup.page', 'productPropertyGroup.read', 'productPropertyGroup.remove', 'productPropertyGroup.create', 'productPropertyGroup.edit', 'productPropertyGroup.auditLogs'],
-  },
-  {
-    group: 'product-property',
-    dependencies: ['language.read', 'productPropertyGroup.read'],
-    permissions: ['productProperty.page', 'productProperty.read', 'productProperty.remove', 'productProperty.create', 'productProperty.edit', 'productProperty.auditLogs'],
-  },
-  {
-    group: 'barcode',
-    dependencies: ['language.read'],
-    permissions: ['barcode.page', 'barcode.read', 'barcode.remove', 'barcode.create', 'barcode.edit', 'barcode.auditLogs'],
-  },
-  {
-    group: 'order-statistic',
-    dependencies: ['language.read', 'order.read'],
-    permissions: ['orderStatistic.page', 'orderStatistic.read', 'orderStatistic.export', 'orderStatistic.profit'],
-  },
-  {
-    group: 'client',
-    dependencies: ['language.read', 'client.read'],
-    permissions: ['client.page', 'client.read', 'client.remove', 'client.create', 'client.edit', 'client.export', 'client.auditLogs'],
-  },
-  {
-    group: 'supplier',
-    dependencies: ['language.read'],
-    permissions: ['supplier.page', 'supplier.read', 'supplier.remove', 'supplier.create', 'supplier.edit', 'supplier.export', 'supplier.auditLogs'],
-  },
-  {
-    group: 'warehouse',
-    dependencies: ['language.read'],
-    permissions: ['warehouse.page', 'warehouse.read', 'warehouse.remove', 'warehouse.create', 'warehouse.edit', 'warehouse.auditLogs'],
-  },
-  {
-    group: 'inventory',
-    dependencies: ['language.read', 'warehouse.read', 'category.read'],
-    permissions: ['inventory.page', 'inventory.read', 'inventory.remove', 'inventory.create', 'inventory.edit'],
-  },
-  {
-    group: 'warehouseTransaction',
-    dependencies: ['language.read', 'warehouse.read'],
-    permissions: ['warehouseTransaction.page', 'warehouseTransaction.read', 'warehouseTransaction.remove', 'warehouseTransaction.create', 'warehouseTransaction.edit', 'warehouseTransaction.export', 'warehouseTransaction.auditLogs', 'warehouseTransaction.receive'],
-  },
-  {
-    group: 'unit',
-    dependencies: ['language.read'],
-    permissions: ['unit.page', 'unit.read', 'unit.remove', 'unit.create', 'unit.edit', 'unit.auditLogs'],
-  },
-  {
-    group: 'cashregister',
-    dependencies: ['language.read'],
-    permissions: ['cashregister.page', 'cashregister.read', 'cashregister.remove', 'cashregister.create', 'cashregister.edit', 'cashregister.auditLogs'],
-  },
-  {
-    group: 'cashregisterAccount',
-    dependencies: ['language.read', 'cashregister.read'],
-    permissions: ['cashregisterAccount.page', 'cashregisterAccount.read', 'cashregisterAccount.remove', 'cashregisterAccount.create', 'cashregisterAccount.edit', 'cashregisterAccount.auditLogs'],
-  },
-  {
-    group: 'expense',
-    dependencies: ['language.read'],
-    permissions: ['expense.page', 'expense.read', 'expense.remove', 'expense.create', 'expense.edit', 'expense.export', 'expense.auditLogs'],
-  },
-  {
-    group: 'procurement',
-    dependencies: ['language.read', 'supplier.read', 'warehouse.read', 'expense.read'],
-    permissions: ['procurement.page', 'procurement.read', 'procurement.remove', 'procurement.create', 'procurement.edit', 'procurement.export', 'procurement.auditLogs'],
-  },
-  {
-    group: 'moneyTransaction',
-    dependencies: ['language.read', 'cashregister.read'],
-    permissions: [
-      'moneyTransaction.page',
-      'moneyTransaction.read',
-      'moneyTransaction.remove',
-      'moneyTransaction.create',
-      'moneyTransaction.transfer',
-      'moneyTransaction.receive',
-      'moneyTransaction.cancel',
-      'moneyTransaction.edit',
-      'moneyTransaction.export',
+    section: 'catalog',
+    groups: [
+      {
+        group: 'products',
+        dependencies: [
+          'language.read',
+          'category.read',
+          'unit.read',
+          'currency.read',
+          'productPropertyGroup.read',
+          'productProperty.read',
+          'warehouse.read',
+          'site.read',
+        ],
+        permissions: ['product.page', 'product.read', 'product.create', 'product.edit', 'product.batchEdit', 'product.remove', 'product.import', 'product.export', 'product.purchasePrice', 'product.quantityLogs', 'product.auditLogs'],
+      },
+      {
+        group: 'categories',
+        dependencies: ['language.read'],
+        permissions: ['category.page', 'category.read', 'category.create', 'category.edit', 'category.remove'],
+      },
+      {
+        group: 'product-property-group',
+        dependencies: ['language.read', 'productProperty.read'],
+        permissions: ['productPropertyGroup.page', 'productPropertyGroup.read', 'productPropertyGroup.create', 'productPropertyGroup.edit', 'productPropertyGroup.remove'],
+      },
+      {
+        group: 'product-property',
+        dependencies: ['language.read'],
+        permissions: [
+          'productProperty.page',
+          'productProperty.read',
+          'productProperty.create',
+          'productProperty.edit',
+          'productProperty.remove',
+          'productPropertyOption.create',
+          'productPropertyOption.edit',
+          'productPropertyOption.remove',
+        ],
+      },
+      {
+        group: 'barcode',
+        dependencies: ['product.read'],
+        permissions: ['barcode.page', 'barcode.read', 'barcode.create', 'barcode.edit', 'barcode.remove', 'barcode.print'],
+      },
+      {
+        group: 'unit',
+        dependencies: ['language.read'],
+        permissions: ['unit.page', 'unit.read', 'unit.create', 'unit.edit', 'unit.remove'],
+      },
+      {
+        group: 'productStockStatus',
+        dependencies: ['language.read'],
+        permissions: ['productStockStatus.page', 'productStockStatus.read', 'productStockStatus.create', 'productStockStatus.edit', 'productStockStatus.remove'],
+      },
     ],
   },
   {
-    group: 'user',
-    dependencies: ['language.read', 'userRole.read'],
-    permissions: ['user.page', 'user.read', 'user.remove', 'user.create', 'user.edit', 'user.auditLogs'],
-  },
-  {
-    group: 'userProfile',
-    dependencies: ['currency.read'],
-    permissions: [
-      'userProfile.page',
-      'userProfile.read',
-      'userProfile.readAll',
-      'userProfile.edit',
-      'workShift.start',
-      'workShift.edit',
+    section: 'orders',
+    groups: [
+      {
+        group: 'orders',
+        dependencies: [
+          'currency.read',
+          'cashregister.read',
+          'cashregisterAccount.read',
+          'warehouse.read',
+          'orderStatus.read',
+          'orderSource.read',
+          'deliveryService.read',
+          'client.read',
+          'product.read',
+          'barcode.read',
+        ],
+        permissions: ['order.page', 'order.read', 'order.create', 'order.edit', 'order.remove', 'order.export', 'order.profit', 'order.auditLogs'],
+      },
+      {
+        group: 'order-statistic',
+        dependencies: ['cashregister.read', 'cashregisterAccount.read'],
+        permissions: ['orderStatistic.page', 'orderStatistic.read', 'orderStatistic.export', 'orderStatistic.profit'],
+      },
+      {
+        group: 'client',
+        permissions: ['client.page', 'client.read', 'client.create', 'client.edit', 'client.remove', 'client.export', 'client.auditLogs'],
+      },
+      {
+        group: 'orderStatus',
+        dependencies: ['language.read'],
+        permissions: ['orderStatus.page', 'orderStatus.read', 'orderStatus.create', 'orderStatus.edit', 'orderStatus.remove', 'orderStatus.auditLogs'],
+      },
+      {
+        group: 'orderSource',
+        dependencies: ['language.read'],
+        permissions: ['orderSource.page', 'orderSource.read', 'orderSource.create', 'orderSource.edit', 'orderSource.remove', 'orderSource.auditLogs'],
+      },
+      {
+        group: 'deliveryService',
+        dependencies: ['language.read'],
+        permissions: ['deliveryService.page', 'deliveryService.read', 'deliveryService.create', 'deliveryService.edit', 'deliveryService.remove', 'deliveryService.auditLogs'],
+      },
     ],
   },
   {
-    group: 'userRole',
-    dependencies: ['language.read'],
-    permissions: ['userRole.page', 'userRole.read', 'userRole.remove', 'userRole.create', 'userRole.edit', 'userRole.auditLogs'],
+    section: 'warehouse',
+    groups: [
+      {
+        group: 'warehouse',
+        dependencies: ['language.read'],
+        permissions: ['warehouse.page', 'warehouse.read', 'warehouse.create', 'warehouse.edit', 'warehouse.remove'],
+      },
+      {
+        group: 'warehouseTransaction',
+        dependencies: ['warehouse.read', 'currency.read', 'product.read'],
+        permissions: [
+          'warehouseTransaction.page',
+          'warehouseTransaction.read',
+          'warehouseTransaction.remove',
+          'warehouseTransaction.in',
+          'warehouseTransaction.out',
+          'warehouseTransaction.transfer',
+          'warehouseTransaction.receive',
+        ],
+      },
+      {
+        group: 'inventory',
+        dependencies: ['warehouse.read', 'category.read'],
+        permissions: ['inventory.page', 'inventory.read', 'inventory.create', 'inventory.edit'],
+      },
+    ],
   },
   {
-    group: 'language',
-    permissions: ['language.page', 'language.read', 'language.remove', 'language.create', 'language.edit', 'language.auditLogs'],
+    section: 'finance',
+    groups: [
+      {
+        group: 'cashregister',
+        dependencies: ['language.read', 'cashregisterAccount.read'],
+        permissions: ['cashregister.page', 'cashregister.read', 'cashregister.create', 'cashregister.edit', 'cashregister.remove', 'cashregister.auditLogs'],
+      },
+      {
+        group: 'cashregisterAccount',
+        dependencies: ['language.read', 'currency.read'],
+        permissions: ['cashregisterAccount.page', 'cashregisterAccount.read', 'cashregisterAccount.create', 'cashregisterAccount.edit', 'cashregisterAccount.remove'],
+      },
+      {
+        group: 'moneyTransaction',
+        dependencies: ['cashregister.read', 'cashregisterAccount.read', 'currency.read'],
+        permissions: [
+          'moneyTransaction.page',
+          'moneyTransaction.read',
+          'moneyTransaction.create',
+          'moneyTransaction.transfer',
+          'moneyTransaction.receive',
+          'moneyTransaction.cancel',
+        ],
+      },
+      {
+        group: 'expense',
+        dependencies: ['expenseCategory.read', 'cashregister.read', 'cashregisterAccount.read', 'currency.read'],
+        permissions: ['expense.page', 'expense.read', 'expense.create', 'expense.edit', 'expense.remove', 'expense.export', 'expense.auditLogs'],
+      },
+      {
+        group: 'expenseCategory',
+        dependencies: ['language.read'],
+        permissions: ['expenseCategory.page', 'expenseCategory.read', 'expenseCategory.create', 'expenseCategory.edit', 'expenseCategory.remove', 'expenseCategory.auditLogs'],
+      },
+      {
+        group: 'procurement',
+        dependencies: [
+          'supplier.read',
+          'warehouse.read',
+          'currency.read',
+          'product.read',
+          'productProperty.read',
+          'cashregister.read',
+          'cashregisterAccount.read',
+        ],
+        permissions: ['procurement.page', 'procurement.read', 'procurement.create', 'procurement.edit', 'procurement.confirm', 'procurement.pay', 'procurement.remove'],
+      },
+      {
+        group: 'supplier',
+        permissions: ['supplier.page', 'supplier.read', 'supplier.create', 'supplier.edit', 'supplier.remove', 'supplier.pay'],
+      },
+      {
+        group: 'balance',
+        dependencies: ['currency.read'],
+        permissions: ['balance.page', 'balance.read', 'balance.create'],
+      },
+    ],
   },
   {
-    group: 'currency',
-    dependencies: ['language.read'],
-    permissions: ['currency.page', 'currency.read', 'currency.remove', 'currency.create', 'currency.edit', 'currency.auditLogs'],
+    section: 'users',
+    groups: [
+      {
+        group: 'user',
+        dependencies: [
+          'userRole.read',
+          'site.read',
+          'expenseCategory.read',
+          'deliveryService.read',
+          'orderSource.read',
+          'orderStatus.read',
+          'warehouse.read',
+          'cashregister.read',
+        ],
+        permissions: ['user.page', 'user.read', 'user.create', 'user.edit', 'user.remove'],
+      },
+      {
+        group: 'userRole',
+        dependencies: ['language.read'],
+        permissions: ['userRole.page', 'userRole.read', 'userRole.create', 'userRole.edit', 'userRole.remove', 'userRole.auditLogs'],
+      },
+      {
+        group: 'userProfile',
+        dependencies: ['currency.read'],
+        permissions: [
+          'userProfile.page',
+          'userProfile.read',
+          'userProfile.readAll',
+          'userProfile.edit',
+          'workShift.edit',
+          'workShift.start',
+        ],
+      },
+    ],
   },
   {
-    group: 'orderStatus',
-    dependencies: ['language.read'],
-    permissions: ['orderStatus.page', 'orderStatus.read', 'orderStatus.remove', 'orderStatus.create', 'orderStatus.edit', 'orderStatus.auditLogs'],
+    section: 'settings',
+    groups: [
+      {
+        group: 'language',
+        permissions: ['language.page', 'language.read', 'language.create', 'language.edit', 'language.remove', 'language.auditLogs'],
+      },
+      {
+        group: 'currency',
+        dependencies: ['language.read'],
+        permissions: ['currency.page', 'currency.read', 'currency.create', 'currency.edit', 'exchange-rate.edit', 'currency.remove'],
+      },
+      {
+        group: 'automation',
+        dependencies: ['orderStatus.read', 'orderSource.read', 'deliveryService.read'],
+        permissions: ['automation.page', 'automation.read', 'automation.create', 'automation.edit', 'automation.remove'],
+      },
+      {
+        group: 'site',
+        dependencies: ['language.read', 'currency.read', 'warehouse.read'],
+        permissions: ['site.page', 'site.read', 'site.create', 'site.edit', 'site.remove', 'site.sync', 'site.auditLogs'],
+      },
+      {
+        group: 'settings',
+        permissions: ['settings.page', 'settings.read', 'settings.edit', 'settings.remove'],
+      },
+    ],
   },
   {
-    group: 'productStockStatus',
-    dependencies: ['language.read'],
-    permissions: ['productStockStatus.page', 'productStockStatus.read', 'productStockStatus.remove', 'productStockStatus.create', 'productStockStatus.edit', 'productStockStatus.auditLogs'],
-  },
-  {
-    group: 'balance',
-    dependencies: ['balance.read'],
-    permissions: ['balance.page', 'balance.read', 'balance.remove', 'balance.create', 'balance.auditLogs'],
-  },
-  {
-    group: 'orderSource',
-    dependencies: ['language.read'],
-    permissions: ['orderSource.page', 'orderSource.read', 'orderSource.remove', 'orderSource.create', 'orderSource.edit', 'orderSource.auditLogs'],
-  },
-  {
-    group: 'automation',
-    dependencies: ['language.read'],
-    permissions: ['automation.page', 'automation.read', 'automation.remove', 'automation.create', 'automation.edit'],
-  },
-  {
-    group: 'deliveryService',
-    dependencies: ['language.read'],
-    permissions: ['deliveryService.page', 'deliveryService.read', 'deliveryService.remove', 'deliveryService.create', 'deliveryService.edit', 'deliveryService.auditLogs'],
-  },
-  {
-    group: 'expenseCategory',
-    dependencies: ['language.read'],
-    permissions: ['expenseCategory.page', 'expenseCategory.read', 'expenseCategory.remove', 'expenseCategory.create', 'expenseCategory.edit', 'expenseCategory.auditLogs'],
-  },
-  {
-    group: 'site',
-    dependencies: ['language.read'],
-    permissions: ['site.page', 'site.read', 'site.remove', 'site.create', 'site.edit', 'site.sync', 'site.auditLogs'],
-  },
-  {
-    group: 'settings',
-    permissions: ['settings.page', 'settings.read', 'settings.remove', 'settings.edit'],
-  },
-  {
-    group: 'other',
-    permissions: ['other.admin'],
+    section: 'other',
+    groups: [
+      {
+        group: 'other',
+        permissions: ['other.admin'],
+      },
+    ],
   },
 ] as const
 

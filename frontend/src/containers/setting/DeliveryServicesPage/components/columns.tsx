@@ -55,19 +55,19 @@ export function useColumns() {
 
           const actions = [
             {
-              permission: 'delivery-service.copy',
+              permission: 'other.admin',
               onClick: async () => navigator.clipboard.writeText(item.id),
               label: t('table.copy'),
               icon: <Copy className="h-4 w-4" />,
             },
             {
-              permission: 'delivery-service.edit',
+              permission: 'deliveryService.edit',
               onClick: () => openModal(item),
               label: t('table.edit'),
               icon: <Pencil className="h-4 w-4" />,
             },
             {
-              permission: 'delivery-service.delete',
+              permission: 'deliveryService.remove',
               onClick: () => removeDeliveryService({ ids: [item.id] }),
               label: t('table.delete'),
               icon: <Trash className="h-4 w-4" />,
@@ -96,19 +96,6 @@ export function useColumns() {
         },
         header: ({ column }) => sortHeader(column, t('page.delivery-services.table.names')),
       }),
-      columnHelper.accessor('priority', {
-        id: 'priority',
-        meta: {
-          title: t('page.delivery-services.table.priority'),
-          batchEdit: true,
-          batchEditType: 'number',
-          filterable: true,
-          filterType: 'number',
-          sortable: true,
-        },
-        header: ({ column }) => sortHeader(column, t('page.delivery-services.table.priority')),
-        cell: ({ row }) => <Badge variant="outline">{row.original.priority}</Badge>,
-      }),
       columnHelper.accessor('type', {
         id: 'type',
         meta: {
@@ -118,6 +105,7 @@ export function useColumns() {
           filterable: true,
           filterType: 'text',
           sortable: true,
+          defaultVisible: true,
         },
         header: ({ column }) => sortHeader(column, t('page.delivery-services.table.type')),
         cell: ({ row }) => <Badge variant="outline">{row.original.type}</Badge>,
@@ -131,12 +119,27 @@ export function useColumns() {
           filterable: true,
           filterType: 'boolean',
           sortable: true,
+          defaultVisible: true,
         },
         header: t('page.delivery-services.table.color'),
         cell: ({ row }) => {
           const color = row.original.color || '#ffffff'
           return <div className="w-6 h-6 rounded-full border border-gray-300" style={{ backgroundColor: color }} />
         },
+      }),
+      columnHelper.accessor('priority', {
+        id: 'priority',
+        meta: {
+          title: t('page.delivery-services.table.priority'),
+          batchEdit: true,
+          batchEditType: 'number',
+          filterable: true,
+          filterType: 'number',
+          sortable: true,
+          defaultVisible: true,
+        },
+        header: ({ column }) => sortHeader(column, t('page.delivery-services.table.priority')),
+        cell: ({ row }) => <Badge variant="outline">{row.original.priority}</Badge>,
       }),
       columnHelper.accessor('createdAt', {
         id: 'createdAt',

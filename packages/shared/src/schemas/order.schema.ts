@@ -224,6 +224,7 @@ export const getOrdersSchema = z.object({
   filters: z.object({
     ids: z.array(idSchema).optional(),
     seq: z.string().trim().optional(),
+    search: z.string().trim().optional(),
     warehouse: idSchemaOptional,
     deliveryService: idSchemaOptional,
     orderSource: idSchemaOptional,

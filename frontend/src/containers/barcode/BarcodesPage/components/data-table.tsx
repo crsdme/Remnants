@@ -158,7 +158,9 @@ export function DataTable() {
           <TableSelectionDropdown
             selectedCount={Object.keys(rowSelection).length}
             onRemove={handleBulkRemove}
+            removePermission="barcode.remove"
             onPrint={handleBulkPrint}
+            printPermission="barcode.print"
           />
           <ColumnVisibilityMenu table={table} tableId="barcode" />
         </div>

@@ -1,0 +1,369 @@
+{
+
+  "component.pagination.selected": "Вибрано {{selected}} із {{total}} рядків.",
+
+  "component.pagination.current": "Сторінка {{current}} із {{total}}",
+
+  "component.columnMenu.title": "Стовпці",
+
+  "component.columnMenu.searchPlaceholder": "Пошук стовпців",
+
+  "component.columnMenu.reset": "Скинути",
+
+  "component.multiSelect.activeFilters": "Активні фільтри",
+
+  "component.multiSelect.selected": "Вибрано: {{count}}",
+
+  "component.multiSelect.searchPlaceholder": "Пошук...",
+
+  "component.multiSelect.noResults": "Нічого не знайдено.",
+
+  "component.multiSelect.reset": "Скинути",
+
+  "component.datePicker.pickDate": "Виберіть дату",
+
+  "component.tableSelection.selected": "Вибрано: {{count}}",
+
+  "component.tableSelection.copyToClipboard": "Копіювати до буфера обміну",
+
+  "component.tableSelection.downloadCSV": "Завантажити таблицю",
+
+  "component.tableSelection.delete": "Видалити",
+
+  "component.tableSelection.duplicate": "Дублювати",
+
+  "component.tableSelection.print": "Друк",
+
+  "component.tableSelection.deleteTitle": "Видалити",
+
+  "component.tableSelection.deleteDescription": "Ви впевнені, що хочете це видалити?",
+
+  "component.tableSelection.cancel": "Скасувати",
+
+  "component.batchEdit.button": "Редагувати",
+
+  "component.batchEdit.title": "Редагувати",
+
+  "component.batchEdit.description": "Виберіть параметри для редагування",
+
+  "component.batchEdit.selectColumn": "Виберіть стовпець",
+
+  "component.batchEdit.newValue": "Нове значення",
+
+  "component.batchEdit.addItem": "Додати",
+
+  "component.batchEdit.cancel": "Скасувати",
+
+  "component.batchEdit.apply": "Застосувати",
+
+  "component.batchEdit.filterMode": "Застосувати фільтри до вибраних елементів",
+
+  "component.batchEdit.selectMode": "Ручний вибір елементів для масового редагування",
+
+  "component.batchEdit.selectValue": "Вибрати значення",
+
+  "component.batchEdit.false": "Ні",
+
+  "component.batchEdit.true": "Так",
+
+  "component.advancedFilters.button": "Розширені фільтри",
+
+  "component.advancedFilters.title": "Розширені фільтри",
+
+  "component.advancedFilters.description": "Додайте фільтри для уточнення пошуку",
+
+  "component.advancedFilters.selectColumn": "Виберіть стовпець",
+
+  "component.advancedFilters.valuePlaceholder": "Введіть значення",
+
+  "component.advancedFilters.selectValue": "Вибрати значення",
+
+  "component.advancedFilters.true": "Так",
+
+  "component.advancedFilters.false": "Ні",
+
+  "component.advancedFilters.addFilter": "Додати фільтр",
+
+  "component.advancedFilters.clear": "Скинути",
+
+  "component.advancedFilters.apply": "Застосувати",
+
+  "component.import.dialog.button": "Імпортувати дані",
+
+  "component.import.dialog.title": "Імпортувати дані",
+
+  "component.import.dialog.description": "Завантажте файл із даними або завантажте наш шаблон, щоб розпочати роботу.",
+
+  "component.import.dialog.uploadLabel": "Завантажити файл",
+
+  "component.import.dialog.chooseFile": "Виберіть файл",
+
+  "component.import.dialog.supportedFormats": "Підтримувані формати: CSV, Excel (.xlsx, .xls), JSON",
+
+  "component.import.dialog.or": "АБО",
+
+  "component.import.dialog.downloadTemplate": "Завантажити шаблон",
+
+  "component.import.dialog.cancel": "Скасувати",
+
+  "component.import.dialog.import": "Імпортувати",
+
+  "component.advancedSorters.button": "Розширене сортування",
+
+  "component.advancedSorters.title": "Розширене сортування",
+
+  "component.advancedSorters.description": "Додайте правила сортування для впорядкування даних",
+
+  "component.advancedSorters.selectColumn": "Виберіть стовпець",
+
+  "component.advancedSorters.asc": "За зростанням",
+
+  "component.advancedSorters.desc": "За спаданням",
+
+  "component.advancedSorters.addSorter": "Додати сортування",
+
+  "component.advancedSorters.clear": "Скинути",
+
+  "component.advancedSorters.apply": "Застосувати",
+
+  "component.sidemenu.label.navigation": "Навігація",
+
+  "component.sidemenu.label.dashboard": "Головна",
+
+  "component.sidemenu.label.charts": "Графіки",
+
+  "component.sidemenu.label.orders": "Замовлення",
+
+  "component.sidemenu.label.chats": "Чати",
+
+  "component.sidemenu.label.leades": "Ліди",
+
+  "component.sidemenu.label.tasks": "Завдання",
+
+  "component.sidemenu.label.catalog": "Каталог",
+
+  "component.sidemenu.label.products": "Товари",
+
+  "component.sidemenu.label.siteSync": "Синхронізація сайту",
+
+  "component.sidemenu.label.categories": "Категорії",
+
+  "component.sidemenu.label.productProperties": "Властивості товарів",
+
+  "component.sidemenu.label.productPropertiesGroups": "Групи властивостей товарів",
+
+  "component.sidemenu.label.barcodes": "Штрихкоди",
+
+  "component.sidemenu.label.statistic": "Статистика",
+
+  "component.sidemenu.label.orderStatistic": "Статистика замовлень",
+
+  "component.sidemenu.label.productStatistic": "Статистика товарів",
+
+  "component.sidemenu.label.stockStatistic": "Статистика запасів",
+
+  "component.sidemenu.label.productionStatistic": "Статистика виробництва",
+
+  "component.sidemenu.label.metrics": "Метрики",
+
+  "component.sidemenu.label.marketing": "Маркетинг",
+
+  "component.sidemenu.label.clients": "Клієнти",
+
+  "component.sidemenu.label.promocodes": "Промокоди",
+
+  "component.sidemenu.label.coupons": "Купони",
+
+  "component.sidemenu.label.bonuses": "Бонуси",
+
+  "component.sidemenu.label.warehouses": "Склади",
+
+  "component.sidemenu.label.purchases": "Закупівлі",
+
+  "component.sidemenu.label.procurements": "Закупівлі",
+
+  "component.sidemenu.label.production": "Виробництво",
+
+  "component.sidemenu.label.inventories": "Інвентаризація",
+
+  "component.sidemenu.label.warehouseTransactions": "Складські транзакції",
+
+  "component.sidemenu.label.money": "Фінанси",
+
+  "component.sidemenu.label.cashregisters": "Каси",
+
+  "component.sidemenu.label.cashregisterAccounts": "Рахунки кас",
+
+  "component.sidemenu.label.moneyTransactions": "Грошові транзакції",
+
+  "component.sidemenu.label.expenses": "Витрати",
+
+  "component.sidemenu.label.balances": "Баланси",
+
+  "component.sidemenu.label.investors": "Інвестори",
+
+  "component.sidemenu.label.suppliers": "Постачальники",
+
+  "component.sidemenu.label.socials": "Соціальні мережі",
+
+  "component.sidemenu.label.news": "Новини",
+
+  "component.sidemenu.label.updates": "Оновлення",
+
+  "component.sidemenu.label.tour": "Тур",
+
+  "component.sidemenu.label.users": "Користувачі",
+
+  "component.sidemenu.label.timetable": "Розклад",
+
+  "component.sidemenu.label.languages": "Мови",
+
+  "component.sidemenu.label.currencies": "Валюти",
+
+  "component.sidemenu.label.auditLogs": "Журнали змін",
+
+  "component.sidemenu.label.sources": "Джерела",
+
+  "component.sidemenu.label.orderStatuses": "Статуси замовлень",
+
+  "component.sidemenu.label.productStockStatuses": "Статуси залишків",
+
+  "component.sidemenu.label.orderSources": "Джерела замовлень",
+
+  "component.sidemenu.label.deliveryServices": "Служби доставки",
+
+  "component.sidemenu.label.units": "Одиниці вимірювання",
+
+  "component.sidemenu.label.settings": "Налаштування",
+
+  "component.sidemenu.label.automations": "Автоматизація",
+
+  "component.sidemenu.label.logs": "Журнали",
+
+  "component.sidemenu.label.documents": "Документи",
+
+  "component.sidemenu.label.profile": "Профіль",
+
+  "component.sidemenu.label.logout": "Вийти",
+
+  "component.sidemenu.label.userRoles": "Ролі користувачів",
+
+  "component.sidemenu.label.expenseCategories": "Категорії витрат",
+
+  "component.sidemenu.label.sites": "Сайти",
+
+  "component.commandMenu.search": "Пошук",
+
+  "component.commandMenu.title": "Командне меню",
+
+  "component.commandMenu.description": "Пошук сторінок і дій",
+
+  "component.commandMenu.placeholder": "Введіть команду або пошуковий запит...",
+
+  "component.commandMenu.empty": "Нічого не знайдено",
+
+  "component.commandMenu.navigation": "Навігація",
+
+  "component.commandMenu.actions": "Дії",
+
+  "component.commandMenu.action.createOrder": "Створити замовлення",
+
+  "component.commandMenu.action.createProcurement": "Створити закупівлю",
+
+  "component.commandMenu.action.createInventory": "Створити інвентаризацію",
+
+  "component.commandMenu.action.createWarehouseTransaction": "Створити складську транзакцію",
+
+  "component.commandMenu.action.createBarcode": "Створити штрихкод",
+
+  "component.asyncSelect.searchPlaceholder": "Пошук",
+
+  "component.asyncSelect.noResultsMessage": "Нічого не знайдено",
+
+  "component.asyncSelect.placeholder": "Виберіть",
+
+  "component.phoneInput.searchCountry": "Пошук країни...",
+
+  "component.phoneInput.noCountry": "Країну не знайдено.",
+
+  "component.phoneInput.placeholder": "Введіть номер телефону",
+
+  "component.fileUploadDnd.upload": "Завантажити файл",
+
+  "component.fileUploadDnd.noFilesUploaded": "Файли не завантажено",
+
+  "component.fileUploadDnd.dropOrSelect": "Перетягніть файли або",
+
+  "component.fileUploadDnd.select": "виберіть",
+
+  "component.fileUploadDnd.hint": "PNG, JPG, WEBP, PDF, TXT, XLS, CSV • до {{size}} МБ",
+
+  "component.countrySelect.placeholder": "Виберіть країну",
+
+  "component.countrySelect.searchPlaceholder": "Пошук країни",
+
+  "component.countrySelect.noResultsMessage": "Нічого не знайдено",
+
+  "component.countrySelect.clearSelection": "Скинути вибір",
+
+  "component.productSelectTable.filter.placeholder": "Пошук товарів",
+
+  "component.productCatalog.search": "Назва, артикул, категорія...",
+
+  "component.productCatalog.searching": "Пошук...",
+
+  "component.productCatalog.in-stock": "У наявності: {{count}} шт.",
+
+  "component.productTable.table.selectedProducts": "Вибрані товари ({{count}})",
+
+  "component.productTable.table.images": "Зображення",
+
+  "component.productTable.table.names": "Назви",
+
+  "component.productTable.table.barcodes": "Штрихкоди",
+
+  "component.productTable.table.categories": "Категорії",
+
+  "component.productTable.table.price": "Ціна",
+
+  "component.productTable.table.purchasePrice": "Закупівельна ціна",
+
+  "component.productTable.table.productPropertyGroup": "Група властивостей",
+
+  "component.productTable.table.productProperties": "Властивості",
+
+  "component.productTable.table.quantity": "Кількість",
+
+  "component.productTable.table.selectedQuantity": "Вибрана кількість",
+
+  "component.productTable.table.orderedQuantity": "Замовлено",
+
+  "component.productTable.table.alreadyReceived": "Уже прийнято",
+
+  "component.productTable.table.unit": "Одиниця вимірювання",
+
+  "component.productTable.table.discount": "Знижка",
+
+  "component.productTable.table.selectedPrice": "Ціна",
+
+  "component.productTable.table.receivedQuantity": "Отримана кількість",
+
+  "component.productTable.table.profit": "Прибуток",
+
+  "component.productTable.table.total": "Разом",
+
+  "component.tableActionDropdown.deleteTitle": "Видалити",
+
+  "component.tableActionDropdown.confirmTitle": "Підтвердити",
+
+  "component.tableActionDropdown.deleteDescription": "Ви впевнені, що хочете це видалити?",
+
+  "component.tableActionDropdown.confirmDescription": "Ви впевнені, що хочете це зробити?",
+
+  "component.tableActionDropdown.confirm": "Підтвердити",
+
+  "component.tableActionDropdown.delete": "Видалити",
+
+  "component.tableActionDropdown.cancel": "Скасувати"
+
+}

@@ -59,7 +59,7 @@ export function ActionBar() {
         </div>
         <div className="flex flex-wrap gap-2">
           {creditCurrencyId && supplier && (
-            <PermissionGate permission="procurement.pay">
+            <PermissionGate permission="supplier.pay">
               <Button
                 type="button"
                 variant="outline"
@@ -75,7 +75,7 @@ export function ActionBar() {
               </Button>
             </PermissionGate>
           )}
-          <PermissionGate permission="procurement.pay">
+          <PermissionGate permission="supplier.pay">
             <Button type="button" onClick={() => setPayOpen(true)}>
               <CreditCard className="size-4" />
               {t('page.suppliers.view.pay')}

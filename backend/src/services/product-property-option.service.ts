@@ -1,4 +1,5 @@
 import type {
+  AuthUser,
   CreateProductPropertyOptionResponse,
   EditProductPropertyOptionResponse,
   GetProductPropertyOptionsResponse,
@@ -13,6 +14,7 @@ import type {
 import { mapProductPropertyOptionToDTO } from '@/mappers/'
 import * as ProductPropertyOptionRepo from '@/repositories/product-property-option.repo'
 import * as ProductPropertyRepo from '@/repositories/product-property.repo'
+import * as AuditLogsService from '@/services/audit-logs.service'
 import { HttpError } from '@/utils/'
 
 export async function get({ payload }: { payload: GetProductPropertyOptionsPayload }): Promise<GetProductPropertyOptionsResponse> {
@@ -33,13 +35,22 @@ export async function get({ payload }: { payload: GetProductPropertyOptionsPaylo
   }
 }
 
-export async function create({ payload }: { payload: CreateProductPropertyOptionPayload }): Promise<CreateProductPropertyOptionResponse> {
+export async function create({ payload, user }: { payload: CreateProductPropertyOptionPayload, user?: AuthUser }): Promise<CreateProductPropertyOptionResponse> {
   const productPropertyOption = await ProductPropertyOptionRepo.createOne(payload)
 
   if (productPropertyOption === null)
     throw new HttpError(400, 'Product property option not created', 'PRODUCT_PROPERTY_OPTION_NOT_CREATED')
 
   await ProductPropertyRepo.updateOptions(payload.productPropertyId, { $push: { optionIds: productPropertyOption._id } })
+
+  await AuditLogsService.record({
+    resourceType: 'product-property-option',
+    resourceId: productPropertyOption._id.toString(),
+    action: 'create',
+    before: null,
+    after: productPropertyOption,
+    createdBy: user?.id,
+  })
 
   return {
     status: 'success',
@@ -49,11 +60,21 @@ export async function create({ payload }: { payload: CreateProductPropertyOption
   }
 }
 
-export async function edit({ payload }: { payload: EditProductPropertyOptionPayload }): Promise<EditProductPropertyOptionResponse> {
+export async function edit({ payload, user }: { payload: EditProductPropertyOptionPayload, user?: AuthUser }): Promise<EditProductPropertyOptionResponse> {
+  const before = await ProductPropertyOptionRepo.findById(payload.id)
   const productPropertyOption = await ProductPropertyOptionRepo.updateById(payload.id, payload)
 
   if (productPropertyOption === null)
     throw new HttpError(400, 'Product property option not edited', 'PRODUCT_PROPERTY_OPTION_NOT_EDITED')
+
+  await AuditLogsService.record({
+    resourceType: 'product-property-option',
+    resourceId: productPropertyOption._id.toString(),
+    action: 'edit',
+    before,
+    after: productPropertyOption,
+    createdBy: user?.id,
+  })
 
   return {
     status: 'success',
@@ -63,7 +84,7 @@ export async function edit({ payload }: { payload: EditProductPropertyOptionPayl
   }
 }
 
-export async function remove({ payload }: { payload: RemoveProductPropertyOptionsPayload }): Promise<RemoveProductPropertyOptionsResponse> {
+export async function remove({ payload, user }: { payload: RemoveProductPropertyOptionsPayload, user?: AuthUser }): Promise<RemoveProductPropertyOptionsResponse> {
   for (const id of payload.ids) {
     const productPropertyOption = await ProductPropertyOptionRepo.removeById(id)
 
@@ -71,6 +92,15 @@ export async function remove({ payload }: { payload: RemoveProductPropertyOption
       throw new HttpError(400, 'Product property option not removed', 'PRODUCT_PROPERTY_OPTION_NOT_REMOVED')
 
     await ProductPropertyRepo.updateOptions(productPropertyOption.productPropertyId, { $pull: { optionIds: id } })
+
+    await AuditLogsService.record({
+      resourceType: 'product-property-option',
+      resourceId: id,
+      action: 'remove',
+      before: productPropertyOption,
+      after: null,
+      createdBy: user?.id,
+    })
   }
 
   return {

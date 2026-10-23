@@ -25,7 +25,7 @@ export function ActionBar() {
         <p className="text-muted-foreground">{t('page.userRoles.description')}</p>
       </div>
       <div className="flex items-center flex-wrap gap-2">
-        <PermissionGate permission={['userRole.create']}>
+        <PermissionGate permission={['userRole.create', 'userRole.edit']}>
           <Sheet open={isModalOpen} onOpenChange={() => closeModal()}>
             <SheetTrigger asChild>
               <Button onClick={() => openModal()} disabled={isLoading}>

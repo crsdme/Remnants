@@ -119,7 +119,21 @@ export async function scanBarcodeToDraft({ payload }: { payload: ScanBarcodeToDr
   }
 }
 
+const WAREHOUSE_TRANSACTION_TYPE_PERMISSION = {
+  in: 'warehouseTransaction.in',
+  out: 'warehouseTransaction.out',
+  transfer: 'warehouseTransaction.transfer',
+} as const
+
 export async function create({ payload, user }: { payload: CreateWarehouseTransactionPayload, user: AuthUser }): Promise<CreateWarehouseTransactionResponse> {
+  const typePermission = WAREHOUSE_TRANSACTION_TYPE_PERMISSION[payload.type]
+  const allowed = user.permissions.includes('other.admin')
+    || user.permissions.includes('warehouseTransaction.create')
+    || user.permissions.includes(typePermission)
+
+  if (!allowed)
+    throw new HttpError(401, 'Access denied', 'PERMISSION_DENIED')
+
   switch (payload.type) {
     case 'in':
       return inWarehauseTransaction({ payload, user })
@@ -294,7 +308,7 @@ async function transferWarehauseTransaction({ payload, user }: { payload: Payloa
   const access = await UserAccessRepo.getScopesByUserId(user.id)
   const isAdmin = user.permissions.includes('other.admin')
   assertEntityCapability(access, 'warehouses', fromWarehouseId, 'transfer', { isAdmin })
-  assertEntityInAccess(access, 'warehouses', toWarehouseId, { isAdmin })
+  assertEntityCapability(access, 'warehouses', toWarehouseId, 'transferTo', { isAdmin })
 
   const warehouseTransaction = await WarehouseTransactionRepo.createOne({
     type,

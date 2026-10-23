@@ -84,6 +84,8 @@ export const statisticsSchema = z.object({
     profit: statisticCountAmountSchema,
     /** Product margin: sum of item profits (only when user has order.profit) */
     margin: statisticCountAmountSchema.optional(),
+    /** Accrual net: margin − expenses (only when user has order.profit) */
+    netProfit: statisticCountAmountSchema.optional(),
   }),
   products: z.object({
     count: z.number().int().nonnegative(),

@@ -1,11 +1,11 @@
-import { TrashIcon } from 'lucide-react'
+import type { ReactNode } from 'react'
+import type { ActionRow, ConditionRow } from '../context'
 
-import { useMemo } from 'react'
+import { Pencil, Plus, Trash2 } from 'lucide-react'
 import { useWatch } from 'react-hook-form'
 import { useDeliveryServiceOptions, useOrderSourceOptions, useOrderStatusOptions } from '@/api/hooks'
 import { AsyncSelectNew } from '@/components/AsyncSelectNew'
 import {
-  Badge,
   Button,
   Checkbox,
   Form,
@@ -23,209 +23,294 @@ import {
   SelectLabel,
   SelectTrigger,
   SelectValue,
-  Separator,
 } from '@/components/ui'
 import { AUTOMATION_ACTIONS, AUTOMATION_CONDITIONS, AUTOMATION_TRIGGERS } from '@/utils/constants'
 import { useLocale } from '@/utils/hooks'
+import { cn } from '@/utils/lib'
 import { useAutomationContext } from '../context'
+import { resolveParamLabel, useAutomationLabelMaps } from './labels'
+
+function Step({
+  index,
+  title,
+  hint,
+  isLast,
+  children,
+}: {
+  index: number
+  title: string
+  hint?: string
+  isLast?: boolean
+  children: ReactNode
+}) {
+  return (
+    <div className="grid grid-cols-[1.75rem_1fr] gap-x-3">
+      <div className="flex flex-col items-center">
+        <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-foreground text-xs font-medium text-background">
+          {index}
+        </div>
+        {!isLast && <div className="mt-2 w-px flex-1 bg-border" />}
+      </div>
+      <div className={cn('min-w-0 pb-8', isLast && 'pb-0')}>
+        <div className="mb-3">
+          <h3 className="text-sm font-medium leading-none">{title}</h3>
+          {hint && <p className="mt-1.5 text-xs text-muted-foreground">{hint}</p>}
+        </div>
+        {children}
+      </div>
+    </div>
+  )
+}
+
+function RuleRow({
+  title,
+  detail,
+  onEdit,
+  onRemove,
+}: {
+  title: string
+  detail?: string
+  onEdit: () => void
+  onRemove: () => void
+}) {
+  return (
+    <div className="group flex items-start gap-2 rounded-lg bg-muted/40 px-3 py-2.5 transition-colors hover:bg-muted/70">
+      <div className="min-w-0 flex-1">
+        <p className="text-sm font-medium leading-snug">{title}</p>
+        {detail && (
+          <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">{detail}</p>
+        )}
+      </div>
+      <div className="flex shrink-0 gap-0.5 opacity-70 transition-opacity group-hover:opacity-100">
+        <Button type="button" size="icon" variant="ghost" className="h-8 w-8" onClick={onEdit}>
+          <Pencil className="h-3.5 w-3.5" />
+        </Button>
+        <Button type="button" size="icon" variant="ghost" className="h-8 w-8 text-destructive hover:text-destructive" onClick={onRemove}>
+          <Trash2 className="h-3.5 w-3.5" />
+        </Button>
+      </div>
+    </div>
+  )
+}
+
+function EditorShell({ children }: { children: ReactNode }) {
+  return (
+    <div className="space-y-3 rounded-lg bg-muted/40 px-3 py-3">
+      {children}
+    </div>
+  )
+}
+
+function conditionDetail(
+  item: ConditionRow,
+  maps: ReturnType<typeof useAutomationLabelMaps>,
+  t: (key: string) => string,
+) {
+  const values = item.params.map(param => resolveParamLabel(maps, item.field, param)).join(', ')
+  return `${t(`page.automations.operator.${item.operator}`)}: ${values}`
+}
+
+function actionDetail(
+  item: ActionRow,
+  maps: ReturnType<typeof useAutomationLabelMaps>,
+) {
+  const params = item.params ?? []
+  if (!params.length)
+    return undefined
+  return params.map(param => resolveParamLabel(maps, item.field, param)).join(', ')
+}
 
 export function AutomationForm() {
   const { t, language } = useLocale()
-  const { isLoading, form, closeModal, submitAutomationForm, openConditionSheet, openActionSheet, selectedConditions, selectedActions, removeCondition, removeAction } = useAutomationContext()
+  const maps = useAutomationLabelMaps()
+  const {
+    isLoading,
+    form,
+    closeModal,
+    submitAutomationForm,
+    openConditionEditor,
+    openActionEditor,
+    selectedConditions,
+    selectedActions,
+    removeCondition,
+    removeAction,
+    isConditionEditorOpen,
+    isActionEditorOpen,
+  } = useAutomationContext()
 
   const selectedTrigger = useWatch({ control: form.control, name: 'trigger' })
-
   const loadOrderStatusOptions = useOrderStatusOptions()
 
-  const paramsField = (trigger: string) => {
-    switch (trigger) {
-      case 'order-status-updated':
-        return (
+  return (
+    <Form {...form}>
+      <form
+        className="flex w-full flex-col"
+        onSubmit={(e) => { void form.handleSubmit(submitAutomationForm)(e) }}
+      >
+        <div className="space-y-6">
           <FormField
-            name="params"
+            name="name"
             control={form.control}
             render={({ field }) => (
-              <FormItem className="flex-1">
-                <FormLabel>{t('page.automations.form.params')}</FormLabel>
+              <FormItem>
+                <FormLabel>
+                  {t('page.automations.form.name')}
+                  <span className="text-destructive ml-1">*</span>
+                </FormLabel>
                 <FormControl>
-                  <AsyncSelectNew
+                  <Input
                     {...field}
-                    loadOptions={loadOrderStatusOptions}
-                    renderOption={e => e.names[language]}
-                    getDisplayValue={e => e.names[language]}
-                    getOptionValue={e => e.id}
-                    disabled={isLoading || !selectedTrigger}
-                    name="params"
-                    clearable
-                    multi
+                    placeholder={t('page.automations.form.name')}
+                    className="w-full"
+                    disabled={isLoading}
                   />
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
-        )
-    }
-  }
 
-  return (
-    <Form {...form}>
-      <form
-        className="w-full space-y-1"
-        onSubmit={(e) => { void form.handleSubmit(submitAutomationForm)(e) }}
-      >
-        <FormField
-          name="name"
-          control={form.control}
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>
-                <p>
-                  {t('page.automations.form.name')}
-                  <span className="text-destructive ml-1">*</span>
-                </p>
-              </FormLabel>
-              <FormControl>
-                <Input
-                  {...field}
-                  placeholder={t('page.automations.form.name')}
-                  className="w-full"
-                  disabled={isLoading}
+          <div>
+            <Step index={1} title={t('page.automations.form.section.when')}>
+              <div className="space-y-3">
+                <FormField
+                  name="trigger"
+                  control={form.control}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormControl>
+                        <Select
+                          {...field}
+                          onValueChange={(value) => {
+                            field.onChange(value)
+                            form.setValue('params', [])
+                          }}
+                        >
+                          <SelectTrigger className="w-full">
+                            <SelectValue placeholder={t('page.automations.form.trigger')} />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {AUTOMATION_TRIGGERS.map(group => (
+                              <SelectGroup key={group.group}>
+                                <SelectLabel>{t(`page.automations.form.trigger.${group.group}`)}</SelectLabel>
+                                {group.items.map(item => (
+                                  <SelectItem key={item.id} value={item.id}>
+                                    {t(`page.automations.trigger.${item.id}`)}
+                                  </SelectItem>
+                                ))}
+                              </SelectGroup>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
 
-        <FormField
-          name="trigger"
-          control={form.control}
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>
-                <p>
-                  {t('page.automations.form.trigger')}
-                  <span className="text-destructive ml-1">*</span>
-                </p>
-              </FormLabel>
-              <FormControl>
-                <Select
-                  {...field}
-                  onValueChange={field.onChange}
-                >
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder={t('page.automations.form.trigger')} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {AUTOMATION_TRIGGERS.map(group => (
-                      <SelectGroup key={group.group}>
-                        <SelectLabel>{t(`page.automations.form.trigger.${group.group}`)}</SelectLabel>
-                        {group.items.map(item => (
-                          <SelectItem key={item.id} value={item.id}>
-                            {t(`page.automations.trigger.${item.id}`)}
-                          </SelectItem>
-                        ))}
-                      </SelectGroup>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+                {selectedTrigger === 'order-status-updated' && (
+                  <FormField
+                    name="params"
+                    control={form.control}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>{t('page.automations.form.params')}</FormLabel>
+                        <FormControl>
+                          <AsyncSelectNew
+                            {...field}
+                            loadOptions={loadOrderStatusOptions}
+                            renderOption={e => e.names[language]}
+                            getDisplayValue={e => e.names[language]}
+                            getOptionValue={e => e.id}
+                            disabled={isLoading || !selectedTrigger}
+                            name="params"
+                            clearable
+                            multi
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                )}
+              </div>
+            </Step>
 
-        {paramsField(selectedTrigger)}
+            <Step
+              index={2}
+              title={t('page.automations.form.section.if')}
+              hint={t('page.automations.form.conditions.optional')}
+            >
+              <div className="space-y-2">
+                {selectedConditions.map(item => (
+                  <RuleRow
+                    key={item.id}
+                    title={t(`page.automations.condition.${item.field}`)}
+                    detail={conditionDetail(item, maps, t)}
+                    onEdit={() => openConditionEditor(item)}
+                    onRemove={() => removeCondition({ id: item.id })}
+                  />
+                ))}
 
-        <Separator className="mb-5" />
+                {isConditionEditorOpen
+                  ? <ConditionEditor />
+                  : (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="h-8 px-2 text-muted-foreground"
+                        onClick={() => openConditionEditor()}
+                      >
+                        <Plus className="h-4 w-4" />
+                        {t('page.automations.form.conditions.create')}
+                      </Button>
+                    )}
+              </div>
+            </Step>
 
-        <FormField
-          name="conditions"
-          control={form.control}
-          render={() => (
-            <FormItem>
-              <FormLabel>
-                <p>
-                  {t('page.automations.form.conditions')}
-                  <span className="text-destructive ml-1">*</span>
-                </p>
-              </FormLabel>
-              <FormControl>
-                <Button type="button" onClick={() => openConditionSheet()}>{t('page.automations.form.conditions.create')}</Button>
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+            <Step
+              index={3}
+              title={t('page.automations.form.section.then')}
+              isLast
+            >
+              <div className="space-y-2">
+                {selectedActions.map(item => (
+                  <RuleRow
+                    key={item.id}
+                    title={t(`page.automations.action.${item.field}`)}
+                    detail={actionDetail(item, maps)}
+                    onEdit={() => openActionEditor(item)}
+                    onRemove={() => removeAction({ id: item.id })}
+                  />
+                ))}
 
-        {selectedConditions && (
-          <div className="flex flex-col gap-2">
-            {selectedConditions.map((item) => {
-              return (
-                <div key={item.id} className="flex flex-wrap gap-2 items-center">
-                  <Badge>{t(`page.automations.condition.${item.field}`)}</Badge>
-                  <Badge>{t(`page.automations.operator.${item.operator}`)}</Badge>
-                  {item.params.map((param: string) => (
-                    <Badge key={param}>{param}</Badge>
-                  ))}
-                  <Button type="button" size="icon" variant="destructive" onClick={() => removeCondition({ id: item.id })}>
-                    <TrashIcon className="w-4 h-4" />
-                  </Button>
-                </div>
-              )
-            })}
+                {isActionEditorOpen
+                  ? <ActionEditor />
+                  : (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="h-8 px-2 text-muted-foreground"
+                        onClick={() => openActionEditor()}
+                      >
+                        <Plus className="h-4 w-4" />
+                        {t('page.automations.form.actions.create')}
+                      </Button>
+                    )}
+              </div>
+            </Step>
           </div>
-        )}
 
-        <Separator className="mb-5" />
-
-        <FormField
-          name="actions"
-          control={form.control}
-          render={() => (
-            <FormItem>
-              <FormLabel>
-                <p>
-                  {t('page.automations.form.actions')}
-                  <span className="text-destructive ml-1">*</span>
-                </p>
-              </FormLabel>
-              <FormControl>
-                <Button type="button" onClick={() => openActionSheet()}>{t('page.automations.form.actions.create')}</Button>
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        {selectedActions && (
-          <div className="flex flex-col gap-2">
-            {selectedActions.map((item) => {
-              return (
-                <div key={item.id} className="flex flex-wrap gap-2 items-center">
-                  <Badge>{t(`page.automations.action.${item.field}`)}</Badge>
-                  {item.params.map((param: string) => (
-                    <Badge key={param}>{param}</Badge>
-                  ))}
-                  <Button type="button" size="icon" variant="destructive" onClick={() => removeAction({ id: item.id })}>
-                    <TrashIcon className="w-4 h-4" />
-                  </Button>
-                </div>
-              )
-            })}
-          </div>
-        )}
-
-        <div className="flex gap-2 flex-wrap pb-2">
           <FormField
             control={form.control}
             name="active"
             render={({ field }) => (
-              <FormItem className="flex items-center justify-between rounded-md border p-4 grow">
-                <div className="space-y-1">
+              <FormItem className="flex items-center justify-between gap-4 rounded-lg bg-muted/40 px-3 py-3">
+                <div className="space-y-0.5">
                   <FormLabel className="text-sm">{t('page.automations.form.active')}</FormLabel>
-                  <FormDescription className="text-xs text-muted-foreground">
+                  <FormDescription className="text-xs">
                     {t('page.automations.form.active.description')}
                   </FormDescription>
                 </div>
@@ -241,16 +326,11 @@ export function AutomationForm() {
           />
         </div>
 
-        <div className="flex gap-2">
-          <Button
-            type="button"
-            variant="secondary"
-            onClick={() => closeModal()}
-            disabled={isLoading}
-          >
+        <div className="sticky bottom-0 mt-6 flex gap-2 border-t bg-background pt-4 pb-1">
+          <Button type="button" variant="secondary" className="flex-1" onClick={() => closeModal()} disabled={isLoading}>
             {t('button.cancel')}
           </Button>
-          <Button type="submit" disabled={isLoading} loading={isLoading}>
+          <Button type="submit" className="flex-1" disabled={isLoading} loading={isLoading}>
             {t('button.submit')}
           </Button>
         </div>
@@ -259,158 +339,38 @@ export function AutomationForm() {
   )
 }
 
-export function AutomationConditionsForm() {
+function ConditionEditor() {
   const { t, language } = useLocale()
-  const { isLoading, conditionForm, closeConditionSheet, submitConditionForm } = useAutomationContext()
-
+  const { isLoading, conditionForm, closeConditionEditor, submitConditionForm } = useAutomationContext()
   const loadOrderStatusOptions = useOrderStatusOptions()
   const loadDeliveryServiceOptions = useDeliveryServiceOptions()
   const loadOrderSourceOptions = useOrderSourceOptions()
-
   const condition = useWatch({ control: conditionForm.control, name: 'field' })
 
-  const conditionType = useMemo(() => AUTOMATION_CONDITIONS.find(group => group.items.find(item => item.id === condition))?.items[0].type, [condition])
-
-  const conditionTypeForm = (conditionType: string) => {
-    switch (conditionType) {
-      case 'contains':
-        return (
-          <>
-            <FormField
-              control={conditionForm.control}
-              name="operator"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>
-                    <p>
-                      {t('page.automations.form.operator')}
-                      <span className="text-destructive ml-1">*</span>
-                    </p>
-                  </FormLabel>
-                  <FormControl>
-                    <Select
-                      {...field}
-                      onValueChange={field.onChange}
-                    >
-                      <SelectTrigger className="w-full">
-                        <SelectValue placeholder={t('page.automations.form.operator')} />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {['contains', 'not-contains'].map(item => (
-                          <SelectItem key={item} value={item}>
-                            {t(`page.automations.operator.${item}`)}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </>
-        )
-    }
-  }
-
-  const conditionField = (condition: string) => {
-    switch (condition) {
-      case 'orderStatus':
-        return (
-          <FormField
-            control={conditionForm.control}
-            name="params"
-            render={({ field }) => (
-              <FormItem className="flex-1">
-                <FormLabel>{t('page.automations.form.order-status')}</FormLabel>
-                <FormControl>
-                  <AsyncSelectNew
-                    {...field}
-                    loadOptions={loadOrderStatusOptions}
-                    renderOption={e => e.names[language]}
-                    getDisplayValue={e => e.names[language]}
-                    getOptionValue={e => e.id}
-                    disabled={isLoading}
-                    clearable
-                    multi
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        )
-      case 'deliveryService':
-        return (
-          <FormField
-            control={conditionForm.control}
-            name="params"
-            render={({ field }) => (
-              <FormItem className="flex-1">
-                <FormLabel>{t('page.automations.form.delivery-service')}</FormLabel>
-                <FormControl>
-                  <AsyncSelectNew
-                    {...field}
-                    loadOptions={loadDeliveryServiceOptions}
-                    renderOption={e => e.names[language]}
-                    getDisplayValue={e => e.names[language]}
-                    getOptionValue={e => e.id}
-                    disabled={isLoading}
-                    clearable
-                    multi
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        )
-      case 'orderSource':
-        return (
-          <FormField
-            control={conditionForm.control}
-            name="params"
-            render={({ field }) => (
-              <FormItem className="flex-1">
-                <FormLabel>{t('page.automations.form.order-source')}</FormLabel>
-                <FormControl>
-                  <AsyncSelectNew
-                    {...field}
-                    loadOptions={loadOrderSourceOptions}
-                    renderOption={e => e.names[language]}
-                    getDisplayValue={e => e.names[language]}
-                    getOptionValue={e => e.id}
-                    disabled={isLoading}
-                    clearable
-                    multi
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        )
-    }
-  }
+  const conditionMeta = AUTOMATION_CONDITIONS
+    .flatMap(group => group.items)
+    .find(item => item.id === condition)
 
   return (
     <Form {...conditionForm}>
-      <form className="w-full space-y-1" onSubmit={void conditionForm.handleSubmit(submitConditionForm)}>
+      <EditorShell>
         <FormField
           control={conditionForm.control}
           name="field"
           render={({ field }) => (
             <FormItem>
               <FormLabel>
-                <p>
-                  {t('page.automations.form.condition')}
-                  <span className="text-destructive ml-1">*</span>
-                </p>
+                {t('page.automations.form.condition')}
+                <span className="text-destructive ml-1">*</span>
               </FormLabel>
               <FormControl>
                 <Select
                   {...field}
-                  onValueChange={field.onChange}
+                  onValueChange={(value) => {
+                    field.onChange(value)
+                    conditionForm.setValue('operator', '')
+                    conditionForm.setValue('params', [])
+                  }}
                 >
                   <SelectTrigger className="w-full">
                     <SelectValue placeholder={t('page.automations.form.condition')} />
@@ -434,47 +394,42 @@ export function AutomationConditionsForm() {
           )}
         />
 
-        {conditionType && conditionTypeForm(conditionType)}
-
-        {condition && conditionField(condition)}
-
-        <div className="flex gap-2">
-          <Button
-            type="button"
-            variant="secondary"
-            onClick={() => closeConditionSheet()}
-            disabled={isLoading}
-          >
-            {t('button.cancel')}
-          </Button>
-          <Button type="submit" disabled={isLoading} loading={isLoading}>
-            {t('button.submit')}
-          </Button>
-        </div>
-      </form>
-    </Form>
-  )
-}
-
-export function AutomationActionsForm() {
-  const { t, language } = useLocale()
-  const { isLoading, actionForm, closeActionSheet, submitActionForm } = useAutomationContext()
-
-  const loadOrderStatusOptions = useOrderStatusOptions()
-  const loadOrderSourceOptions = useOrderSourceOptions()
-  const loadDeliveryServiceOptions = useDeliveryServiceOptions()
-
-  const action = useWatch({ control: actionForm.control, name: 'field' })
-
-  const actionField = (action: string) => {
-    switch (action) {
-      case 'order-status-update':
-        return (
+        {conditionMeta?.type === 'contains' && (
           <FormField
-            control={actionForm.control}
+            control={conditionForm.control}
+            name="operator"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>
+                  {t('page.automations.form.operator')}
+                  <span className="text-destructive ml-1">*</span>
+                </FormLabel>
+                <FormControl>
+                  <Select {...field} onValueChange={field.onChange}>
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder={t('page.automations.form.operator')} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {['contains', 'not-contains'].map(item => (
+                        <SelectItem key={item} value={item}>
+                          {t(`page.automations.operator.${item}`)}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        )}
+
+        {condition === 'orderStatus' && (
+          <FormField
+            control={conditionForm.control}
             name="params"
             render={({ field }) => (
-              <FormItem className="flex-1">
+              <FormItem>
                 <FormLabel>{t('page.automations.form.order-status')}</FormLabel>
                 <FormControl>
                   <AsyncSelectNew
@@ -492,38 +447,14 @@ export function AutomationActionsForm() {
               </FormItem>
             )}
           />
-        )
-      case 'order-source-update':
-        return (
+        )}
+
+        {condition === 'deliveryService' && (
           <FormField
-            control={actionForm.control}
+            control={conditionForm.control}
             name="params"
             render={({ field }) => (
-              <FormItem className="flex-1">
-                <FormLabel>{t('page.automations.form.order-source')}</FormLabel>
-                <FormControl>
-                  <AsyncSelectNew
-                    {...field}
-                    loadOptions={loadOrderSourceOptions}
-                    renderOption={e => e.names[language]}
-                    getDisplayValue={e => e.names[language]}
-                    getOptionValue={e => e.id}
-                    disabled={isLoading}
-                    clearable
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        )
-      case 'order-delivery-service-update':
-        return (
-          <FormField
-            control={actionForm.control}
-            name="params"
-            render={({ field }) => (
-              <FormItem className="flex-1">
+              <FormItem>
                 <FormLabel>{t('page.automations.form.delivery-service')}</FormLabel>
                 <FormControl>
                   <AsyncSelectNew
@@ -541,28 +472,78 @@ export function AutomationActionsForm() {
               </FormItem>
             )}
           />
-        )
-    }
-  }
+        )}
+
+        {condition === 'orderSource' && (
+          <FormField
+            control={conditionForm.control}
+            name="params"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>{t('page.automations.form.order-source')}</FormLabel>
+                <FormControl>
+                  <AsyncSelectNew
+                    {...field}
+                    loadOptions={loadOrderSourceOptions}
+                    renderOption={e => e.names[language]}
+                    getDisplayValue={e => e.names[language]}
+                    getOptionValue={e => e.id}
+                    disabled={isLoading}
+                    clearable
+                    multi
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        )}
+
+        <div className="flex justify-end gap-2 pt-1">
+          <Button type="button" variant="ghost" size="sm" onClick={() => closeConditionEditor()} disabled={isLoading}>
+            {t('button.cancel')}
+          </Button>
+          <Button
+            type="button"
+            size="sm"
+            disabled={isLoading}
+            onClick={() => void conditionForm.handleSubmit(submitConditionForm)()}
+          >
+            {t('button.submit')}
+          </Button>
+        </div>
+      </EditorShell>
+    </Form>
+  )
+}
+
+function ActionEditor() {
+  const { t, language } = useLocale()
+  const { isLoading, actionForm, closeActionEditor, submitActionForm } = useAutomationContext()
+  const loadOrderStatusOptions = useOrderStatusOptions()
+  const loadOrderSourceOptions = useOrderSourceOptions()
+  const loadDeliveryServiceOptions = useDeliveryServiceOptions()
+  const action = useWatch({ control: actionForm.control, name: 'field' })
 
   return (
     <Form {...actionForm}>
-      <form className="w-full space-y-1" onSubmit={void actionForm.handleSubmit(submitActionForm)}>
+      <EditorShell>
         <FormField
           name="field"
           control={actionForm.control}
           render={({ field }) => (
             <FormItem>
               <FormLabel>
-                <p>
-                  {t('page.automations.form.action')}
-                  <span className="text-destructive ml-1">*</span>
-                </p>
+                {t('page.automations.form.action')}
+                <span className="text-destructive ml-1">*</span>
               </FormLabel>
               <FormControl>
                 <Select
                   {...field}
-                  onValueChange={field.onChange}
+                  onValueChange={(value) => {
+                    field.onChange(value)
+                    actionForm.setValue('params', [])
+                  }}
                 >
                   <SelectTrigger className="w-full">
                     <SelectValue placeholder={t('page.automations.form.action')} />
@@ -586,22 +567,94 @@ export function AutomationActionsForm() {
           )}
         />
 
-        {actionField(action)}
+        {action === 'order-status-update' && (
+          <FormField
+            control={actionForm.control}
+            name="params"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>{t('page.automations.form.order-status')}</FormLabel>
+                <FormControl>
+                  <AsyncSelectNew
+                    {...field}
+                    loadOptions={loadOrderStatusOptions}
+                    renderOption={e => e.names[language]}
+                    getDisplayValue={e => e.names[language]}
+                    getOptionValue={e => e.id}
+                    disabled={isLoading}
+                    clearable
+                    multi
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        )}
 
-        <div className="flex gap-2">
-          <Button
-            type="button"
-            variant="secondary"
-            onClick={() => closeActionSheet()}
-            disabled={isLoading}
-          >
+        {action === 'order-source-update' && (
+          <FormField
+            control={actionForm.control}
+            name="params"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>{t('page.automations.form.order-source')}</FormLabel>
+                <FormControl>
+                  <AsyncSelectNew
+                    {...field}
+                    loadOptions={loadOrderSourceOptions}
+                    renderOption={e => e.names[language]}
+                    getDisplayValue={e => e.names[language]}
+                    getOptionValue={e => e.id}
+                    disabled={isLoading}
+                    clearable
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        )}
+
+        {action === 'order-delivery-service-update' && (
+          <FormField
+            control={actionForm.control}
+            name="params"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>{t('page.automations.form.delivery-service')}</FormLabel>
+                <FormControl>
+                  <AsyncSelectNew
+                    {...field}
+                    loadOptions={loadDeliveryServiceOptions}
+                    renderOption={e => e.names[language]}
+                    getDisplayValue={e => e.names[language]}
+                    getOptionValue={e => e.id}
+                    disabled={isLoading}
+                    clearable
+                    multi
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        )}
+
+        <div className="flex justify-end gap-2 pt-1">
+          <Button type="button" variant="ghost" size="sm" onClick={() => closeActionEditor()} disabled={isLoading}>
             {t('button.cancel')}
           </Button>
-          <Button type="submit" disabled={isLoading} loading={isLoading}>
+          <Button
+            type="button"
+            size="sm"
+            disabled={isLoading}
+            onClick={() => void actionForm.handleSubmit(submitActionForm)()}
+          >
             {t('button.submit')}
           </Button>
         </div>
-      </form>
+      </EditorShell>
     </Form>
   )
 }

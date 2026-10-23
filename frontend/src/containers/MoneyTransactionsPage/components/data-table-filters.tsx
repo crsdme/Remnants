@@ -1,19 +1,34 @@
 import { Filter } from 'lucide-react'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { Input } from '@/components/ui'
 import { useDebounceCallback } from '@/utils/hooks'
 
-export function DataTableFilters({ filters, setFilters }: { filters: any, setFilters: (filters: any) => void }) {
+function amountToInput(amount: string | number | undefined): string {
+  return amount == null || amount === '' ? '' : String(amount)
+}
+
+export function DataTableFilters({
+  filters,
+  setFilters,
+}: {
+  filters: { amount?: string | number }
+  setFilters: (filters: { amount?: string | number }) => void
+}) {
   const { t } = useTranslation()
-  const [localFilters, setLocalFilters] = useState(filters)
+  const [localAmount, setLocalAmount] = useState(() => amountToInput(filters.amount))
 
   const debouncedSetFilters = useDebounceCallback(setFilters, 300)
 
-  const handleFilter = (field: string, value: string) => {
-    setLocalFilters((prev: any) => ({ ...prev, [field]: value }))
-    debouncedSetFilters({ [field]: value })
+  useEffect(() => {
+    setLocalAmount(amountToInput(filters.amount))
+  }, [filters.amount])
+
+  const handleAmountChange = (value: string) => {
+    setLocalAmount(value)
+    const trimmed = value.trim()
+    debouncedSetFilters({ amount: trimmed === '' ? undefined : trimmed })
   }
 
   return (
@@ -22,9 +37,11 @@ export function DataTableFilters({ filters, setFilters }: { filters: any, setFil
         <Filter className="h-4 w-4 text-gray-400" />
       </div>
       <Input
-        placeholder={t('page.money-transactions.filter.names')}
-        value={localFilters.names}
-        onChange={event => handleFilter('names', event.target.value)}
+        type="number"
+        inputMode="decimal"
+        placeholder={t('page.money-transactions.filter.amount')}
+        value={localAmount}
+        onChange={event => handleAmountChange(event.target.value)}
         className="pl-10"
       />
     </div>

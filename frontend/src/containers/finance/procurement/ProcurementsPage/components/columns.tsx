@@ -68,7 +68,7 @@ export function useColumns() {
 
           const actions = [
             {
-              permission: 'procurement.copy',
+              permission: 'other.admin',
               onClick: async () => navigator.clipboard.writeText(item.id),
               label: t('table.copy'),
               icon: <Copy className="h-4 w-4" />,
@@ -97,7 +97,7 @@ export function useColumns() {
               : []),
             ...(item.status === 'draft'
               ? [{
-                  permission: 'procurement.edit',
+                  permission: 'procurement.confirm',
                   onClick: () => {
                     confirmProcurement({
                       id: item.id,
@@ -111,7 +111,7 @@ export function useColumns() {
               : []),
             ...(item.status === 'ordered'
               ? [{
-                  permission: 'procurement.edit',
+                  permission: 'procurement.confirm',
                   onClick: () => unconfirmProcurement({ id: item.id }),
                   label: t('table.unconfirm'),
                   icon: <Undo2 className="h-4 w-4" />,
@@ -119,7 +119,7 @@ export function useColumns() {
                 }]
               : []),
             {
-              permission: 'procurement.delete',
+              permission: 'procurement.remove',
               onClick: () => removeProcurement({ ids: [item.id] }),
               label: t('table.delete'),
               icon: <Trash className="h-4 w-4" />,
@@ -141,6 +141,7 @@ export function useColumns() {
           filterable: true,
           filterType: 'number',
           sortable: true,
+          defaultVisible: true,
         },
         cell: ({ row }) => row.original.seq,
       }),
@@ -177,6 +178,7 @@ export function useColumns() {
           title: t('page.procurements.table.status'),
           filterable: true,
           filterType: 'select',
+          defaultVisible: true,
         },
         header: () => t('page.procurements.table.status'),
         cell: ({ row }) => {
@@ -200,6 +202,7 @@ export function useColumns() {
         id: 'payments',
         meta: {
           title: t('page.procurements.table.payments'),
+          defaultVisible: true,
         },
         header: () => t('page.procurements.table.payments'),
         cell: ({ row }) => {
@@ -219,6 +222,7 @@ export function useColumns() {
         id: 'total',
         meta: {
           title: t('page.procurements.table.total'),
+          defaultVisible: true,
         },
         header: () => t('page.procurements.table.total'),
         cell: ({ row }) => {
@@ -238,6 +242,7 @@ export function useColumns() {
         id: 'debt',
         meta: {
           title: t('page.procurements.table.debt'),
+          defaultVisible: true,
         },
         header: () => t('page.procurements.table.debt'),
         cell: ({ row }) => {
@@ -257,6 +262,7 @@ export function useColumns() {
         id: 'paymentStatus',
         meta: {
           title: t('page.procurements.table.paymentStatus'),
+          defaultVisible: true,
         },
         header: () => t('page.procurements.table.paymentStatus'),
         cell: ({ row }) => {
@@ -283,6 +289,7 @@ export function useColumns() {
         id: 'comment',
         meta: {
           title: t('page.procurements.table.comment'),
+          defaultVisible: true,
         },
         header: () => t('page.procurements.table.comment'),
       }),

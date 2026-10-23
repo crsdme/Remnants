@@ -25,7 +25,7 @@ export async function create(
   next: NextFunction,
 ) {
   try {
-    const serviceResponse = await UnitService.create({ payload: req.validated.body })
+    const serviceResponse = await UnitService.create({ payload: req.validated.body, user: req.user })
 
     res.status(201).json(serviceResponse)
   }
@@ -40,7 +40,7 @@ export async function edit(
   next: NextFunction,
 ) {
   try {
-    const serviceResponse = await UnitService.edit({ payload: req.validated.body })
+    const serviceResponse = await UnitService.edit({ payload: req.validated.body, user: req.user })
 
     res.status(200).json(serviceResponse)
   }
@@ -55,7 +55,7 @@ export async function remove(
   next: NextFunction,
 ) {
   try {
-    const serviceResponse = await UnitService.remove(req.validated.body)
+    const serviceResponse = await UnitService.remove({ payload: req.validated.body, user: req.user })
 
     res.status(200).json(serviceResponse)
   }

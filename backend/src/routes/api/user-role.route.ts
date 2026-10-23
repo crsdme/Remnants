@@ -24,7 +24,7 @@ router.get(
 
 router.post(
   '/create',
-  checkPermissions('user-role.create'),
+  checkPermissions('userRole.create'),
   validateBodyRequest(createUserRoleSchema),
   validateResponse(createUserRoleResponseSchema),
   UserRoleController.create as RequestHandler,
@@ -32,7 +32,7 @@ router.post(
 
 router.post(
   '/edit',
-  checkPermissions('user-role.edit'),
+  checkPermissions('userRole.edit'),
   validateBodyRequest(editUserRoleSchema),
   validateResponse(editUserRoleResponseSchema),
   UserRoleController.edit as RequestHandler,
@@ -40,7 +40,7 @@ router.post(
 
 router.post(
   '/remove',
-  checkPermissions('user-role.remove'),
+  checkPermissions('userRole.remove'),
   validateBodyRequest(removeUserRoleSchema),
   validateResponse(removeUserRolesResponseSchema),
   UserRoleController.remove as RequestHandler,

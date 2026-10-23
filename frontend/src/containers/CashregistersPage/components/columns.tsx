@@ -116,7 +116,7 @@ export function useColumns() {
 
           const actions = [
             {
-              permission: 'cashregister.copy',
+              permission: 'other.admin',
               onClick: async () => navigator.clipboard.writeText(item.id),
               label: t('table.copy'),
               icon: <Copy className="h-4 w-4" />,
@@ -128,7 +128,7 @@ export function useColumns() {
               icon: <Pencil className="h-4 w-4" />,
             },
             {
-              permission: 'cashregister.delete',
+              permission: 'cashregister.remove',
               onClick: () => removeCashregister({ ids: [item.id] }),
               label: t('table.delete'),
               icon: <Trash className="h-4 w-4" />,

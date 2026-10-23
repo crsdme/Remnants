@@ -118,7 +118,7 @@ export function useColumns() {
                   icon: <Eye className="h-4 w-4" />,
                 },
                 {
-                  permission: 'balance.copy',
+                  permission: 'other.admin',
                   onClick: async () => navigator.clipboard.writeText(item.id),
                   label: t('table.copy'),
                   icon: <Copy className="h-4 w-4" />,

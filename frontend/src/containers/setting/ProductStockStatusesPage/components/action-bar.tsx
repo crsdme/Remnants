@@ -26,7 +26,7 @@ export function ActionBar() {
         <p className="text-muted-foreground">{t('page.product-stock-statuses.description')}</p>
       </div>
       <div className="flex items-center flex-wrap gap-2">
-        <PermissionGate permission={['product-stock-status.create']}>
+        <PermissionGate permission={['productStockStatus.create', 'productStockStatus.edit']}>
           <Sheet open={isModalOpen} onOpenChange={() => closeModal()}>
             <SheetTrigger asChild>
               <Button onClick={() => openModal()} disabled={isLoading}>

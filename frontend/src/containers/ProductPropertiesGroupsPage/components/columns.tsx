@@ -55,19 +55,19 @@ export function useColumns() {
 
           const actions = [
             {
-              permission: 'product-properties-groups.copy',
+              permission: 'other.admin',
               onClick: async () => navigator.clipboard.writeText(item.id),
               label: t('table.copy'),
               icon: <Copy className="h-4 w-4" />,
             },
             {
-              permission: 'product-properties-groups.edit',
+              permission: 'productPropertyGroup.edit',
               onClick: () => openModal(item),
               label: t('table.edit'),
               icon: <Pencil className="h-4 w-4" />,
             },
             {
-              permission: 'product-properties-groups.delete',
+              permission: 'productPropertyGroup.remove',
               onClick: () => removeGroup({ ids: [item.id] }),
               label: t('table.delete'),
               icon: <Trash className="h-4 w-4" />,

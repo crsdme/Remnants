@@ -25,7 +25,7 @@ router.get(
 router.post(
   '/create',
   validateBodyRequest(createOrderStatusSchema),
-  checkPermissions('order-status.create'),
+  checkPermissions('orderStatus.create'),
   validateResponse(createOrderStatusResponseSchema),
   OrderStatusController.create as RequestHandler,
 )
@@ -33,7 +33,7 @@ router.post(
 router.post(
   '/edit',
   validateBodyRequest(editOrderStatusSchema),
-  checkPermissions('order-status.edit'),
+  checkPermissions('orderStatus.edit'),
   validateResponse(editOrderStatusResponseSchema),
   OrderStatusController.edit as RequestHandler,
 )
@@ -41,7 +41,7 @@ router.post(
 router.post(
   '/remove',
   validateBodyRequest(removeOrderStatusesSchema),
-  checkPermissions('order-status.remove'),
+  checkPermissions('orderStatus.remove'),
   validateResponse(removeOrderStatusesResponseSchema),
   OrderStatusController.remove as RequestHandler,
 )

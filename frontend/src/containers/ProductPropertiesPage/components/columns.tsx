@@ -85,13 +85,13 @@ export function useColumns() {
           const item = row.original
           const actions = [
             {
-              permission: 'product-properties.copy',
+              permission: 'other.admin',
               onClick: async () => navigator.clipboard.writeText(item.id),
               label: t('table.copy'),
               icon: <Copy className="h-4 w-4" />,
             },
             {
-              permission: 'product-properties.edit',
+              permission: 'productProperty.edit',
               onClick: () => openPropertyModal(item),
               label: t('table.edit'),
               icon: <Pencil className="h-4 w-4" />,
@@ -99,7 +99,7 @@ export function useColumns() {
             ...((item.type === 'select' || item.type === 'multiSelect' || item.type === 'color')
               ? [
                   {
-                    permission: 'product-properties-options.create',
+                    permission: 'productPropertyOption.create',
                     onClick: () => openOptionsModal(undefined, item),
                     label: t('table.addOption'),
                     icon: <SquarePlus className="h-4 w-4" />,
@@ -107,7 +107,7 @@ export function useColumns() {
                 ]
               : []),
             {
-              permission: 'product-properties.delete',
+              permission: 'productProperty.remove',
               onClick: () => removeProperty({ ids: [item.id] }),
               label: t('table.delete'),
               icon: <Trash className="h-4 w-4" />,

@@ -122,7 +122,7 @@ export async function pay({
     })
   }
   else {
-    await Settlement.allocateClientCreditFifo(payload.clientId, payload.currency)
+    await Settlement.allocateClientCreditFifo(payload.clientId, payload.currency, user.id)
   }
 
   const [item] = await Settlement.withClientSettlement([mapClientToDTO(client)])

@@ -55,19 +55,19 @@ export function useColumns() {
 
           const actions = [
             {
-              permission: 'order-source.copy',
+              permission: 'other.admin',
               onClick: () => void navigator.clipboard.writeText(item.id),
               label: t('table.copy'),
               icon: <Copy className="h-4 w-4" />,
             },
             {
-              permission: 'order-source.edit',
+              permission: 'orderSource.edit',
               onClick: () => openModal(item),
               label: t('table.edit'),
               icon: <Pencil className="h-4 w-4" />,
             },
             {
-              permission: 'order-source.delete',
+              permission: 'orderSource.remove',
               onClick: () => removeOrderSource({ ids: [item.id] }),
               label: t('table.delete'),
               icon: <Trash className="h-4 w-4" />,
@@ -96,19 +96,6 @@ export function useColumns() {
         },
         header: ({ column }) => sortHeader(column, t('page.order-sources.table.names')),
       }),
-      columnHelper.accessor('priority', {
-        id: 'priority',
-        meta: {
-          title: t('page.order-sources.table.priority'),
-          batchEdit: true,
-          batchEditType: 'number',
-          filterable: true,
-          filterType: 'number',
-          sortable: true,
-        },
-        header: ({ column }) => sortHeader(column, t('page.order-sources.table.priority')),
-        cell: ({ row }) => <Badge variant="outline">{row.original.priority}</Badge>,
-      }),
       columnHelper.accessor('color', {
         id: 'color',
         meta: {
@@ -118,12 +105,27 @@ export function useColumns() {
           filterable: true,
           filterType: 'boolean',
           sortable: true,
+          defaultVisible: true,
         },
         header: t('page.order-sources.table.color'),
         cell: ({ row }) => {
           const color = row.original.color || '#ffffff'
           return <div className="w-6 h-6 rounded-full border border-gray-300" style={{ backgroundColor: color }} />
         },
+      }),
+      columnHelper.accessor('priority', {
+        id: 'priority',
+        meta: {
+          title: t('page.order-sources.table.priority'),
+          batchEdit: true,
+          batchEditType: 'number',
+          filterable: true,
+          filterType: 'number',
+          sortable: true,
+          defaultVisible: true,
+        },
+        header: ({ column }) => sortHeader(column, t('page.order-sources.table.priority')),
+        cell: ({ row }) => <Badge variant="outline">{row.original.priority}</Badge>,
       }),
       columnHelper.accessor('createdAt', {
         id: 'createdAt',

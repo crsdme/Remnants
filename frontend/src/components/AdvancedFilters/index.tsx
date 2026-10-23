@@ -2,7 +2,7 @@ import type { ColumnDef } from '@tanstack/react-table'
 import type { DateRange } from 'react-day-picker'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Check, Filter, Plus, X, XCircle } from 'lucide-react'
-import { useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { z } from 'zod'
@@ -35,6 +35,7 @@ interface FilterItem {
 
 interface AdvancedFiltersProps {
   columns: ColumnDef<any>[]
+  values?: Record<string, unknown>
   onSubmit: (filters: FilterItem[]) => void
   onCancel: () => void
   className?: string
@@ -63,16 +64,70 @@ const formSchema = z.object({
 type FormValues = z.infer<typeof formSchema>
 type FormItemType = z.infer<typeof filterItemSchema>
 
-export function AdvancedFilters({ columns, onSubmit, onCancel, className, align = 'start' }: AdvancedFiltersProps) {
+function isEmptyFilterValue(value: unknown): boolean {
+  if (value == null || value === '')
+    return true
+  if (Array.isArray(value))
+    return value.length === 0
+  if (typeof value === 'object' && value !== null && ('from' in value || 'to' in value)) {
+    const range = value as DateRange
+    return range.from == null || range.to == null
+  }
+  return false
+}
+
+function filtersToItems(
+  filters: Record<string, unknown> | undefined,
+  columns: ColumnDef<any>[],
+): FormItemType[] {
+  if (!filters)
+    return []
+
+  const filterableIds = new Set(
+    columns
+      .filter(column => (column.meta as ColumnMeta)?.filterable)
+      .map(column => column.id)
+      .filter((id): id is string => Boolean(id)),
+  )
+
+  return Object.entries(filters)
+    .filter(([column, value]) => filterableIds.has(column) && !isEmptyFilterValue(value))
+    .map(([column, value]) => ({
+      id: column,
+      column,
+      value: value as FormItemType['value'],
+    }))
+}
+
+function serializeFilterItems(items: FormItemType[]): string {
+  return JSON.stringify(items.map(({ column, value }) => {
+    if (value && typeof value === 'object' && !Array.isArray(value) && 'from' in value) {
+      const range = value as DateRange
+      return [column, range.from?.toISOString() ?? null, range.to?.toISOString() ?? null]
+    }
+    return [column, value]
+  }))
+}
+
+export function AdvancedFilters({ columns, values, onSubmit, onCancel, className, align = 'start' }: AdvancedFiltersProps) {
   const { t } = useTranslation()
   const [isOpen, setIsOpen] = useState(false)
+
+  const valuesKey = useMemo(
+    () => serializeFilterItems(filtersToItems(values, columns)),
+    [values, columns],
+  )
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      items: [],
+      items: filtersToItems(values, columns),
     },
   })
+
+  useEffect(() => {
+    form.reset({ items: filtersToItems(values, columns) })
+  }, [valuesKey])
 
   const filterableColumns = columns
     .filter(column => (column.meta as ColumnMeta)?.filterable)
@@ -110,13 +165,9 @@ export function AdvancedFilters({ columns, onSubmit, onCancel, className, align 
   }
 
   const handleSubmit = (values: FormValues) => {
-    const validItems = values.items.filter(
-      (item: any) =>
-        item.id !== undefined && item.column !== '' && item.value !== '',
+    onSubmit(
+      values.items.filter(item => item.column !== '' && !isEmptyFilterValue(item.value)),
     )
-    if (validItems.length === 0)
-      return
-    onSubmit(validItems)
     setIsOpen(false)
   }
 
@@ -196,7 +247,7 @@ export function AdvancedFilters({ columns, onSubmit, onCancel, className, align 
             value={item.value as string[]}
             onChange={(value) => {
               const currentItems = form.getValues('items')
-              currentItems[index].value = value as string
+              currentItems[index].value = value
               form.setValue('items', currentItems)
             }}
             clearable
@@ -227,14 +278,8 @@ export function AdvancedFilters({ columns, onSubmit, onCancel, className, align 
       open={isOpen}
       onOpenChange={(open) => {
         setIsOpen(open)
-
-        if (!open) {
+        if (!open)
           handleSubmit(form.getValues())
-        }
-
-        if (form.getValues('items').length === 0) {
-          onCancel()
-        }
       }}
     >
       <PopoverTrigger asChild>

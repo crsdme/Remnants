@@ -13,6 +13,12 @@ export function toMinor(amountStr: string | number, scale: number): Minor {
   return toMinorType(Number.parseInt(int) * 10 ** scale + Number.parseInt(padded || '0'))
 }
 
+/** Major amount → candidate minor values across currency scales (for price filters). */
+export function toMinorCandidates(amount: number, scales: number[]): number[] {
+  const resolved = scales.length > 0 ? scales : [2]
+  return [...new Set(resolved.map(scale => toMinor(amount, scale)))]
+}
+
 export function fromMinor(minor: Minor, scale: number): string {
   const sign = minor < 0 ? '-' : ''
   const abs = Math.abs(minor).toString().padStart(scale + 1, '0')

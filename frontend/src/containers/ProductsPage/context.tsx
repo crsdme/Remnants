@@ -24,7 +24,14 @@ import {
   useUnitQuery,
 } from '@/api/hooks/'
 import { downloadBlob } from '@/utils/helpers/download'
-import { useListQueryState, useLocale } from '@/utils/hooks'
+import {
+  parseQueryCsv,
+  parseQueryDate,
+  setQueryParam,
+  setQueryParamCsv,
+  useListQueryState,
+  useLocale,
+} from '@/utils/hooks'
 
 export interface UploadedFile {
   id: string
@@ -37,6 +44,35 @@ export interface UploadedFile {
   isNew: boolean
 }
 
+interface DateRangeFilter {
+  from?: Date
+  to?: Date
+}
+
+export interface ProductListFilters extends Record<string, unknown> {
+  search?: string
+  selectedWarehouse?: string
+  seq?: string | number
+  names?: string
+  price?: string | number
+  purchasePrice?: string | number
+  currency?: string[]
+  purchaseCurrency?: string[]
+  unit?: string[]
+  categories?: string[]
+  productPropertiesGroup?: string[]
+  createdAt?: DateRangeFilter
+  updatedAt?: DateRangeFilter
+}
+
+function readDateRange(from?: string | null, to?: string | null): DateRangeFilter | undefined {
+  const fromDate = parseQueryDate(from)
+  const toDate = parseQueryDate(to)
+  if (!fromDate || !toDate)
+    return undefined
+  return { from: fromDate, to: toDate }
+}
+
 interface ProductContextType {
   selectedProduct: ProductPopulatedDTO | null
   isModalOpen: boolean
@@ -47,7 +83,7 @@ interface ProductContextType {
   selectedGroup: string | null
   selectedProductLogs: { type: 'quantity' | 'audit' | 'lots', id: string } | null
   isEdit: boolean
-  listQueryState: UseListQueryStateReturn<{ search: string, selectedWarehouse: string }>
+  listQueryState: UseListQueryStateReturn<ProductListFilters>
   getPropertiesDefaultValues: (selectedGroup: string, productPropertiesGroups: ProductPropertyGroupPopulatedDTO[]) => Record<string, any>
   setSelectedGroup: (group: string) => void
   setImages: Dispatch<SetStateAction<UploadedFile[]>>
@@ -91,14 +127,45 @@ export function ProductProvider({ children }: { children: ReactNode }) {
   const [images, setImages] = useState<UploadedFile[]>([])
   const [selectedGroup, setSelectedGroup] = useState<string | null>(null)
 
-  const listQueryState = useListQueryState({
-    readFilters: params => ({
-      search: params.get('search'),
-      selectedWarehouse: params.get('selectedWarehouse'),
-    }),
-    writeFilters: (params, filters) => {
-      params.set('search', filters.search || '')
-      params.set('selectedWarehouse', filters.selectedWarehouse || '')
+  const listQueryState = useListQueryState<ProductListFilters>({
+    readFilters: (params) => {
+      const currency = parseQueryCsv(params.get('currency'))
+      const purchaseCurrency = parseQueryCsv(params.get('purchaseCurrency'))
+      const unit = parseQueryCsv(params.get('unit'))
+      const categories = parseQueryCsv(params.get('categories'))
+      const productPropertiesGroup = parseQueryCsv(params.get('productPropertiesGroup'))
+      return {
+        search: params.get('search') ?? undefined,
+        selectedWarehouse: params.get('selectedWarehouse') ?? undefined,
+        seq: params.get('seq') ?? undefined,
+        names: params.get('names') ?? undefined,
+        price: params.get('price') ?? undefined,
+        purchasePrice: params.get('purchasePrice') ?? undefined,
+        ...(currency.length ? { currency } : {}),
+        ...(purchaseCurrency.length ? { purchaseCurrency } : {}),
+        ...(unit.length ? { unit } : {}),
+        ...(categories.length ? { categories } : {}),
+        ...(productPropertiesGroup.length ? { productPropertiesGroup } : {}),
+        createdAt: readDateRange(params.get('createdAtFrom'), params.get('createdAtTo')),
+        updatedAt: readDateRange(params.get('updatedAtFrom'), params.get('updatedAtTo')),
+      }
+    },
+    writeFilters: (params, next) => {
+      setQueryParam(params, 'search', next.search ?? '')
+      setQueryParam(params, 'selectedWarehouse', next.selectedWarehouse ?? '')
+      setQueryParam(params, 'seq', next.seq ?? '')
+      setQueryParam(params, 'names', next.names ?? '')
+      setQueryParam(params, 'price', next.price ?? '')
+      setQueryParam(params, 'purchasePrice', next.purchasePrice ?? '')
+      setQueryParamCsv(params, 'currency', next.currency ?? [])
+      setQueryParamCsv(params, 'purchaseCurrency', next.purchaseCurrency ?? [])
+      setQueryParamCsv(params, 'unit', next.unit ?? [])
+      setQueryParamCsv(params, 'categories', next.categories ?? [])
+      setQueryParamCsv(params, 'productPropertiesGroup', next.productPropertiesGroup ?? [])
+      setQueryParam(params, 'createdAtFrom', next.createdAt?.from?.toISOString() ?? null)
+      setQueryParam(params, 'createdAtTo', next.createdAt?.to?.toISOString() ?? null)
+      setQueryParam(params, 'updatedAtFrom', next.updatedAt?.from?.toISOString() ?? null)
+      setQueryParam(params, 'updatedAtTo', next.updatedAt?.to?.toISOString() ?? null)
     },
   })
 

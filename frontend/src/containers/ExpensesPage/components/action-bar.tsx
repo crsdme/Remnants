@@ -33,7 +33,7 @@ export function ActionBar() {
               closeModal()
           }}
         >
-          <PermissionGate permission={['expense.create']}>
+          <PermissionGate permission={['expense.create', 'expense.edit']}>
             <SheetTrigger asChild>
               <Button onClick={() => openModal()} disabled={isLoading}>
                 <Plus />

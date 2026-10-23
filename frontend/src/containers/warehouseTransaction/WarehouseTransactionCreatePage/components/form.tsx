@@ -1,6 +1,6 @@
 import type { WarehouseDTO } from '@remnant/shared'
 import { ClipboardList, FileText, Package, Plus, ShoppingCart } from 'lucide-react'
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useFieldArray, useWatch } from 'react-hook-form'
 import { useNavigate } from 'react-router-dom'
 import { useWarehouseOptions } from '@/api/hooks'
@@ -23,6 +23,8 @@ import {
   Separator,
   Switch,
 } from '@/components/ui'
+import { useAuthContext } from '@/contexts'
+import { hasPermission } from '@/utils/helpers/permission'
 import { useEntityIdsWithCapability, useLocale } from '@/utils/hooks'
 import { useWarehouseTransactionContext } from '../context'
 
@@ -31,7 +33,21 @@ const WAREHOUSE_TRANSACTION_CREATE_FORM_ID = 'warehouse-transaction-create-form'
 export function WarehouseTransactionForm() {
   const { isLoading, form, submitWarehouseTransactionForm, onError } = useWarehouseTransactionContext()
   const { t, language } = useLocale()
+  const { permissions } = useAuthContext()
   const navigate = useNavigate()
+  const canAnyType = hasPermission(permissions, 'warehouseTransaction.create')
+  const typeOptions = useMemo(
+    () => (['in', 'out', 'transfer'] as const).filter(item =>
+      canAnyType || hasPermission(permissions, `warehouseTransaction.${item}`),
+    ),
+    [canAnyType, permissions],
+  )
+
+  useEffect(() => {
+    const current = form.getValues('type')
+    if (typeOptions.length > 0 && !typeOptions.includes(current))
+      form.setValue('type', typeOptions[0])
+  }, [form, typeOptions])
   const [catalogOpen, setCatalogOpen] = useState(false)
   const type = useWatch({
     control: form.control,
@@ -99,6 +115,7 @@ export function WarehouseTransactionForm() {
 
   const loadWarehouseOptions = useWarehouseOptions()
   const transferFromIds = useEntityIdsWithCapability('warehouses', 'transfer')
+  const transferToIds = useEntityIdsWithCapability('warehouses', 'transferTo')
 
   const loadFromWarehouseOptions = useCallback(
     async (params?: { query?: string, selectedValue?: string[] }) => {
@@ -207,15 +224,11 @@ export function WarehouseTransactionForm() {
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="in">
-                          {t('page.warehouse-transactions.form.type.in')}
-                        </SelectItem>
-                        <SelectItem value="out">
-                          {t('page.warehouse-transactions.form.type.out')}
-                        </SelectItem>
-                        <SelectItem value="transfer">
-                          {t('page.warehouse-transactions.form.type.transfer')}
-                        </SelectItem>
+                        {typeOptions.map(item => (
+                          <SelectItem key={item} value={item}>
+                            {t(`page.warehouse-transactions.form.type.${item}`)}
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -269,6 +282,7 @@ export function WarehouseTransactionForm() {
                       <FormControl>
                         <AsyncSelectNew
                           {...field}
+                          key={`${type}:${transferToIds?.join(',') ?? 'all'}`}
                           loadOptions={async (params) => {
                             const data = await loadWarehouseOptions({
                               query: params?.query ?? '',
@@ -276,7 +290,13 @@ export function WarehouseTransactionForm() {
                             })
 
                             const excludeId = form.getValues('fromWarehouse')
-                            return data.filter((warehouse: WarehouseDTO) => warehouse.id !== excludeId)
+                            return data.filter((warehouse: WarehouseDTO) => {
+                              if (warehouse.id === excludeId)
+                                return false
+                              if (type !== 'transfer' || transferToIds == null)
+                                return true
+                              return transferToIds.includes(warehouse.id)
+                            })
                           }}
                           renderOption={e => e.names[language]}
                           getDisplayValue={e => e.names[language]}

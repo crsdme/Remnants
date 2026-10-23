@@ -62,7 +62,10 @@ export type MoneyTransactionDTO = z.output<typeof moneyTransactionSchema>
 
 export const getMoneyTransactionsSchema = z.object({
   filters: z.object({
-    type: z.string().trim().optional(),
+    type: z.preprocess(
+      val => (val == null || val === '' ? undefined : Array.isArray(val) ? val : [val]),
+      z.array(z.string().trim()).optional(),
+    ),
     direction: z.string().trim().optional(),
     accountId: idSchemaOptional,
     amount: numberFromStringSchema.optional(),

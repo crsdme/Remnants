@@ -93,7 +93,7 @@ router.post(
 router.post(
   '/pay/supplier',
   validateBodyRequest(paySupplierSchema),
-  checkPermissions('procurement.pay'),
+  checkPermissions('supplier.pay'),
   validateResponse(paySupplierResponseSchema),
   ProcurementController.paySupplier as RequestHandler,
 )
@@ -101,7 +101,7 @@ router.post(
 router.post(
   '/confirm',
   validateBodyRequest(confirmProcurementSchema),
-  checkPermissions('procurement.edit'),
+  checkPermissions('procurement.confirm'),
   validateResponse(confirmProcurementResponseSchema),
   ProcurementController.confirm as RequestHandler,
 )
@@ -109,7 +109,7 @@ router.post(
 router.post(
   '/unconfirm',
   validateBodyRequest(unconfirmProcurementSchema),
-  checkPermissions('procurement.edit'),
+  checkPermissions('procurement.confirm'),
   validateResponse(unconfirmProcurementResponseSchema),
   ProcurementController.unconfirm as RequestHandler,
 )

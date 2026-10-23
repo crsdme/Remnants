@@ -111,6 +111,10 @@ export async function createOne(payload: CreateBarcodesRepoPayload, session?: Cl
   return doc
 }
 
+export async function findById(id: string) {
+  return BarcodeModel.findById(id).exec()
+}
+
 export async function updateById(id: string, payload: EditBarcodesRepoPayload) {
   return BarcodeModel.findOneAndUpdate(
     { _id: id },

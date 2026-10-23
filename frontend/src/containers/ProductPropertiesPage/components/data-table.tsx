@@ -5,7 +5,7 @@ import { Pencil, SearchIcon, Trash2 } from 'lucide-react'
 import { Fragment, useMemo, useState } from 'react'
 
 import { useProductPropertyOptionQuery, useProductPropertyQuery } from '@/api/hooks'
-import { ColumnVisibilityMenu, ConfirmPopover, TablePagination } from '@/components'
+import { ColumnVisibilityMenu, ConfirmPopover, PermissionGate, TablePagination } from '@/components'
 import { Badge, Button, Input, Skeleton, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui'
 import { useListQueryState, useLocale } from '@/utils/hooks'
 
@@ -258,23 +258,27 @@ function SubRowOptions({ property, columnsLength, editOption, removeOption }:
                       <Badge variant="outline" className="shrink-0 text-xs">
                         {option.priority}
                       </Badge>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => editOption(option, property)}
-                        className="h-7 w-7 shrink-0"
-                      >
-                        <Pencil className="h-3.5 w-3.5" />
-                      </Button>
-                      <ConfirmPopover onConfirm={() => removeOption({ ids: [option.id] })}>
+                      <PermissionGate permission="productPropertyOption.edit">
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="h-7 w-7 shrink-0 text-destructive"
+                          onClick={() => editOption(option, property)}
+                          className="h-7 w-7 shrink-0"
                         >
-                          <Trash2 className="h-3.5 w-3.5" />
+                          <Pencil className="h-3.5 w-3.5" />
                         </Button>
-                      </ConfirmPopover>
+                      </PermissionGate>
+                      <PermissionGate permission="productPropertyOption.remove">
+                        <ConfirmPopover onConfirm={() => removeOption({ ids: [option.id] })}>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-7 w-7 shrink-0 text-destructive"
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </Button>
+                        </ConfirmPopover>
+                      </PermissionGate>
                     </div>
                   ))}
                 </div>

@@ -128,7 +128,7 @@ export function DataTable() {
           <TableSelectionDropdown
             selectedCount={Object.keys(rowSelection).length}
           />
-          <ColumnVisibilityMenu table={table} tableId="order-status" />
+          <ColumnVisibilityMenu table={table} tableId="expenses" />
         </div>
       </div>
       <div className="border rounded-sm">

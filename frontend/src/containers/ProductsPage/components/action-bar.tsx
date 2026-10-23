@@ -12,6 +12,8 @@ import {
   SheetTitle,
   SheetTrigger,
 } from '@/components/ui'
+import { useAuthContext } from '@/contexts'
+import { hasPermission } from '@/utils/helpers/permission'
 import { useProductContext } from '../context'
 import { ProductForm } from './form'
 import { LogsSheet } from './logs-sheet'
@@ -19,6 +21,7 @@ import { LogsSheet } from './logs-sheet'
 export function ActionBar() {
   const { t } = useTranslation()
   const [file, setFile] = useState<File | null>(null)
+  const { permissions } = useAuthContext()
 
   const {
     isLoading,
@@ -29,6 +32,10 @@ export function ActionBar() {
     openModal,
     closeModal,
   } = useProductContext()
+
+  const canCreate = hasPermission(permissions, 'product.create')
+  const canEdit = hasPermission(permissions, 'product.edit')
+  const canOpenForm = canCreate || canEdit
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
@@ -64,14 +71,16 @@ export function ActionBar() {
             onSubmit={onImport}
           />
         </PermissionGate>
-        <PermissionGate permission={['product.create']}>
+        {canOpenForm && (
           <Sheet open={isModalOpen} onOpenChange={closeModal}>
-            <SheetTrigger asChild>
-              <Button onClick={() => openModal()} disabled={isLoading}>
-                <Plus />
-                {t('page.products.button.create')}
-              </Button>
-            </SheetTrigger>
+            {canCreate && (
+              <SheetTrigger asChild>
+                <Button onClick={() => openModal()} disabled={isLoading}>
+                  <Plus />
+                  {t('page.products.button.create')}
+                </Button>
+              </SheetTrigger>
+            )}
             <SheetContent className="sm:max-w-xl w-full overflow-y-auto" side="right">
               <SheetHeader>
                 <SheetTitle>{t(`page.products.form.title.${isEdit ? 'edit' : 'create'}`)}</SheetTitle>
@@ -84,8 +93,8 @@ export function ActionBar() {
               </div>
             </SheetContent>
           </Sheet>
-        </PermissionGate>
-        <PermissionGate permission={['product.quantity-logs']}>
+        )}
+        <PermissionGate permission={['product.quantityLogs', 'product.auditLogs']}>
           <LogsSheet />
         </PermissionGate>
       </div>

@@ -223,7 +223,7 @@ export default function App() {
               />
               <Route
                 path="/warehouse-transactions/create"
-                element={<ProtectedRoute children={<Pages.WarehouseTransactionCreatePage />} permissions={['warehouseTransaction.create']} />}
+                element={<ProtectedRoute children={<Pages.WarehouseTransactionCreatePage />} permissions={['warehouseTransaction.in', 'warehouseTransaction.out', 'warehouseTransaction.transfer', 'warehouseTransaction.create']} />}
               />
               <Route
                 path="/warehouse-transactions/receive/:seq"
@@ -231,7 +231,7 @@ export default function App() {
               />
               <Route
                 path="/warehouse-transactions/view/:seq"
-                element={<ProtectedRoute children={<Pages.WarehouseTransactionViewPage />} permissions={['warehouseTransaction.page']} />}
+                element={<ProtectedRoute children={<Pages.WarehouseTransactionViewPage />} permissions={['warehouseTransaction.read']} />}
               />
               <Route
                 path="/barcodes"

@@ -25,7 +25,7 @@ router.get(
 router.post(
   '/create',
   validateBodyRequest(createProductPropertyOptionSchema),
-  checkPermissions('product.create'),
+  checkPermissions('productPropertyOption.create'),
   validateResponse(createProductPropertyOptionResponseSchema),
   ProductPropertyOptionController.create as RequestHandler,
 )
@@ -33,7 +33,7 @@ router.post(
 router.post(
   '/edit',
   validateBodyRequest(editProductPropertyOptionSchema),
-  checkPermissions('product.edit'),
+  checkPermissions('productPropertyOption.edit'),
   validateResponse(editProductPropertyOptionResponseSchema),
   ProductPropertyOptionController.edit as RequestHandler,
 )
@@ -41,7 +41,7 @@ router.post(
 router.post(
   '/remove',
   validateBodyRequest(removeProductPropertyOptionSchema),
-  checkPermissions('product.remove'),
+  checkPermissions('productPropertyOption.remove'),
   validateResponse(removeProductPropertyOptionsResponseSchema),
   ProductPropertyOptionController.remove as RequestHandler,
 )

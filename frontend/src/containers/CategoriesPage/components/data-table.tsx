@@ -152,8 +152,9 @@ export function DataTable() {
           <TableSelectionDropdown
             selectedCount={Object.keys(rowSelection).length}
             onRemove={handleBulkRemove}
+            removePermission="category.remove"
           />
-          <ColumnVisibilityMenu table={table} tableId="category" />
+          <ColumnVisibilityMenu table={table} tableId="categories" />
         </div>
       </div>
       <div className="border rounded-sm">

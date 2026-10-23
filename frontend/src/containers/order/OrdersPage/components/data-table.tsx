@@ -2,14 +2,46 @@ import { flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-tabl
 import { useState } from 'react'
 
 import { useOrderQuery, useOrderStatusQuery } from '@/api/hooks'
-import { ColumnVisibilityMenu, TablePagination, TableSelectionDropdown } from '@/components'
-import { Skeleton, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Tabs, TabsList, TabsTrigger } from '@/components/ui'
+import { AdvancedFilters, ColumnVisibilityMenu, TablePagination, TableSelectionDropdown } from '@/components'
+import { Separator, Skeleton, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Tabs, TabsList, TabsTrigger } from '@/components/ui'
 import { useThemeContext } from '@/contexts'
 import { hexToRgba } from '@/utils/helpers'
-import { parseQueryCsv, setQueryParamCsv, useListQueryState, useLocale } from '@/utils/hooks'
+import {
+  parseQueryCsv,
+  parseQueryDate,
+  setQueryParam,
+  setQueryParamCsv,
+  useListQueryState,
+  useLocale,
+} from '@/utils/hooks'
 
 import { useColumns } from './columns'
 import { DataTableFilters } from './data-table-filters'
+
+interface DateRangeFilter {
+  from?: Date
+  to?: Date
+}
+
+interface OrderListFilters extends Record<string, unknown> {
+  orderStatus?: string[]
+  search?: string
+  seq?: string
+  warehouse?: string
+  deliveryService?: string
+  orderSource?: string
+  client?: string
+  createdAt?: DateRangeFilter
+  updatedAt?: DateRangeFilter
+}
+
+function readDateRange(from?: string, to?: string): DateRangeFilter | undefined {
+  const fromDate = parseQueryDate(from)
+  const toDate = parseQueryDate(to)
+  if (!fromDate || !toDate)
+    return undefined
+  return { from: fromDate, to: toDate }
+}
 
 export function DataTable() {
   const { t, language } = useLocale()
@@ -25,13 +57,34 @@ export function DataTable() {
     filters,
     setFilters,
     sorters,
-  } = useListQueryState({
+  } = useListQueryState<OrderListFilters>({
     defaults: { filters: { orderStatus: ['all'] } },
-    readFilters: params => ({
-      orderStatus: parseQueryCsv(params.get('orderStatus')),
-    }),
-    writeFilters: (params, filters) => {
-      setQueryParamCsv(params, 'orderStatus', filters.orderStatus ?? [])
+    readFilters: (params) => {
+      const orderStatus = parseQueryCsv(params.get('orderStatus'))
+      return {
+        ...(orderStatus.length ? { orderStatus } : {}),
+        search: params.get('search'),
+        seq: params.get('seq'),
+        warehouse: params.get('warehouse'),
+        deliveryService: params.get('deliveryService'),
+        orderSource: params.get('orderSource'),
+        client: params.get('client'),
+        createdAt: readDateRange(params.get('createdAtFrom'), params.get('createdAtTo')),
+        updatedAt: readDateRange(params.get('updatedAtFrom'), params.get('updatedAtTo')),
+      }
+    },
+    writeFilters: (params, next) => {
+      setQueryParamCsv(params, 'orderStatus', next.orderStatus ?? [])
+      setQueryParam(params, 'search', next.search ?? '')
+      setQueryParam(params, 'seq', next.seq ?? '')
+      setQueryParam(params, 'warehouse', next.warehouse ?? '')
+      setQueryParam(params, 'deliveryService', next.deliveryService ?? '')
+      setQueryParam(params, 'orderSource', next.orderSource ?? '')
+      setQueryParam(params, 'client', next.client ?? '')
+      setQueryParam(params, 'createdAtFrom', next.createdAt?.from?.toISOString() ?? null)
+      setQueryParam(params, 'createdAtTo', next.createdAt?.to?.toISOString() ?? null)
+      setQueryParam(params, 'updatedAtFrom', next.updatedAt?.from?.toISOString() ?? null)
+      setQueryParam(params, 'updatedAtTo', next.updatedAt?.to?.toISOString() ?? null)
     },
   })
   const columns = useColumns()
@@ -74,6 +127,32 @@ export function DataTable() {
       },
     },
   })
+
+  const advancedFiltersSubmit = (items: { column: string, value: unknown }[]) => {
+    setFilters({
+      warehouse: '',
+      deliveryService: '',
+      orderSource: '',
+      client: '',
+      createdAt: undefined,
+      updatedAt: undefined,
+      ...Object.fromEntries(items.map(({ column, value }) => [column, value])),
+    })
+  }
+
+  const advancedFiltersCancel = () => {
+    setFilters({
+      search: '',
+      seq: '',
+      warehouse: '',
+      deliveryService: '',
+      orderSource: '',
+      client: '',
+      createdAt: undefined,
+      updatedAt: undefined,
+      orderStatus: ['all'],
+    })
+  }
 
   const renderTableHeader = () => {
     return table.getHeaderGroups().map(headerGroup => (
@@ -147,6 +226,13 @@ export function DataTable() {
     <>
       <div className="w-full flex justify-between items-start max-md:flex-col gap-2 py-2">
         <div className="flex flex-wrap gap-2 items-center">
+          <AdvancedFilters
+            columns={columns}
+            values={filters}
+            onSubmit={advancedFiltersSubmit}
+            onCancel={advancedFiltersCancel}
+          />
+          <Separator orientation="vertical" className="min-h-6 max-md:hidden" />
           <DataTableFilters filters={filters} setFilters={setFilters} />
         </div>
         <div className="flex gap-2">

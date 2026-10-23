@@ -92,7 +92,7 @@ export function useColumns() {
 
           const actions = [
             {
-              permission: 'barcode.copy',
+              permission: 'other.admin',
               onClick: async () => navigator.clipboard.writeText(item.id),
               label: t('table.copy'),
               icon: <Copy className="h-4 w-4" />,
@@ -125,7 +125,7 @@ export function useColumns() {
               icon: <Barcode className="h-4 w-4" />,
             },
             {
-              permission: 'barcode.delete',
+              permission: 'barcode.remove',
               onClick: () => removeBarcodes({ ids: [item.id] }),
               label: t('table.delete'),
               icon: <Trash className="h-4 w-4" />,

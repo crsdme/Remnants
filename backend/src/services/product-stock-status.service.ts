@@ -1,4 +1,5 @@
 import type {
+  AuthUser,
   CreateProductStockStatusResponse,
   EditProductStockStatusResponse,
   GetProductStockStatusesResponse,
@@ -17,6 +18,7 @@ import { mapProductStockStatusToDTO } from '@/mappers'
 import * as ProductStockStatusRepo from '@/repositories/product-stock-status.repo'
 import * as StockLotRepo from '@/repositories/stock-lot.repo'
 import * as StockMoveRepo from '@/repositories/stock-move.repo'
+import * as AuditLogsService from '@/services/audit-logs.service'
 import { HttpError } from '@/utils/'
 
 const DAY_MS = 24 * 60 * 60 * 1000
@@ -223,12 +225,21 @@ export async function get({
   }
 }
 
-export async function create({ payload }: { payload: CreateProductStockStatusPayload }): Promise<CreateProductStockStatusResponse> {
+export async function create({ payload, user }: { payload: CreateProductStockStatusPayload, user?: AuthUser }): Promise<CreateProductStockStatusResponse> {
   if (payload.isDefault)
     await ProductStockStatusRepo.unsetDefaults()
 
   const status = await ProductStockStatusRepo.createOne(payload)
   scheduleRecomputeAll()
+
+  await AuditLogsService.record({
+    resourceType: 'product-stock-status',
+    resourceId: status._id.toString(),
+    action: 'create',
+    before: null,
+    after: status,
+    createdBy: user?.id,
+  })
 
   return {
     status: 'success',
@@ -238,8 +249,9 @@ export async function create({ payload }: { payload: CreateProductStockStatusPay
   }
 }
 
-export async function edit({ payload }: { payload: EditProductStockStatusPayload }): Promise<EditProductStockStatusResponse> {
+export async function edit({ payload, user }: { payload: EditProductStockStatusPayload, user?: AuthUser }): Promise<EditProductStockStatusResponse> {
   const { id } = payload
+  const before = await ProductStockStatusRepo.findById(id)
 
   if (payload.isDefault)
     await ProductStockStatusRepo.unsetDefaults(id)
@@ -252,6 +264,15 @@ export async function edit({ payload }: { payload: EditProductStockStatusPayload
 
   scheduleRecomputeAll()
 
+  await AuditLogsService.record({
+    resourceType: 'product-stock-status',
+    resourceId: status._id.toString(),
+    action: 'edit',
+    before,
+    after: status,
+    createdBy: user?.id,
+  })
+
   return {
     status: 'success',
     code: 'PRODUCT_STOCK_STATUS_EDITED',
@@ -260,9 +281,20 @@ export async function edit({ payload }: { payload: EditProductStockStatusPayload
   }
 }
 
-export async function remove({ payload }: { payload: RemoveProductStockStatusesPayload }): Promise<RemoveProductStockStatusesResponse> {
+export async function remove({ payload, user }: { payload: RemoveProductStockStatusesPayload, user?: AuthUser }): Promise<RemoveProductStockStatusesResponse> {
   for (const id of payload.ids) {
-    await ProductStockStatusRepo.removeById(id)
+    const status = await ProductStockStatusRepo.removeById(id)
+    if (!status)
+      continue
+
+    await AuditLogsService.record({
+      resourceType: 'product-stock-status',
+      resourceId: id,
+      action: 'remove',
+      before: status,
+      after: null,
+      createdBy: user?.id,
+    })
   }
 
   scheduleRecomputeAll()

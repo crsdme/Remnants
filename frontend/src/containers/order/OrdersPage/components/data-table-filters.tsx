@@ -5,14 +5,14 @@ import { useTranslation } from 'react-i18next'
 import { Input } from '@/components/ui'
 import { useDebounceCallback } from '@/utils/hooks'
 
-export function DataTableFilters({ filters, setFilters }: { filters: any, setFilters: (filters: any) => void }) {
+export function DataTableFilters({ filters, setFilters }: { filters: { search?: string }, setFilters: (filters: { search?: string }) => void }) {
   const { t } = useTranslation()
   const [localFilters, setLocalFilters] = useState(filters)
 
   const debouncedSetFilters = useDebounceCallback(setFilters, 300)
 
-  const handleFilter = (field: string, value: any) => {
-    setLocalFilters((prev: any) => ({ ...prev, [field]: value }))
+  const handleFilter = (field: string, value: string) => {
+    setLocalFilters((prev: { search?: string }) => ({ ...prev, [field]: value }))
     debouncedSetFilters({ [field]: value })
   }
 
@@ -22,9 +22,9 @@ export function DataTableFilters({ filters, setFilters }: { filters: any, setFil
         <Filter className="h-4 w-4 text-gray-400" />
       </div>
       <Input
-        placeholder={t('page.orders.filter.names')}
-        value={localFilters.names}
-        onChange={event => handleFilter('names', event.target.value)}
+        placeholder={t('page.orders.filter.search')}
+        value={localFilters.search ?? ''}
+        onChange={event => handleFilter('search', event.target.value)}
         className="pl-10"
       />
     </div>

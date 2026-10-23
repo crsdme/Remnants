@@ -15,6 +15,7 @@ import {
   Input,
 } from '@/components/ui'
 import { USER_ROLE_PERMISSIONS } from '@/utils/constants'
+import { addPermissionWithDeps } from '@/utils/helpers/permission'
 import { useLocale } from '@/utils/hooks'
 import { useUserRoleContext } from '../context'
 
@@ -69,35 +70,47 @@ export function UserRoleForm() {
             const selectedPermissions = field.value || []
 
             return (
-              <div className="space-y-4 pb-2">
-                {USER_ROLE_PERMISSIONS.map(permission => (
-                  <Collapsible key={permission.group} className="border rounded-lg">
-                    <CollapsibleTrigger className="flex flex-col items-start w-full p-4 hover:bg-muted/50 cursor-pointer">
-                      <p className="text-md font-semibold">{t(`page.userRoles.permissions.title.${permission.group}`)}</p>
-                      <p className="text-sm text-muted-foreground">{t(`page.userRoles.permissions.description.${permission.group}`)}</p>
-                    </CollapsibleTrigger>
-                    <CollapsibleContent className="border-t p-3 space-y-3">
-                      {permission.permissions.map(permission => (
-                        <div key={permission} className="flex items-center gap-2">
-                          <Checkbox
-                            checked={selectedPermissions.includes(permission)}
-                            onCheckedChange={(checked) => {
-                              const newValue = checked
-                                ? [...selectedPermissions, permission]
-                                : selectedPermissions.filter(p => p !== permission)
+              <div className="space-y-6 pb-2">
+                {USER_ROLE_PERMISSIONS.map(section => (
+                  <div key={section.section} className="space-y-3">
+                    <div>
+                      <p className="text-base font-semibold">
+                        {t(`page.userRoles.permissions.sectionTitle.${section.section}`)}
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        {t(`page.userRoles.permissions.sectionDescription.${section.section}`)}
+                      </p>
+                    </div>
+                    {section.groups.map(group => (
+                      <Collapsible key={group.group} className="border rounded-lg">
+                        <CollapsibleTrigger className="flex flex-col items-start w-full p-4 hover:bg-muted/50 cursor-pointer">
+                          <p className="text-md font-semibold">{t(`page.userRoles.permissions.title.${group.group}`)}</p>
+                          <p className="text-sm text-muted-foreground">{t(`page.userRoles.permissions.description.${group.group}`)}</p>
+                        </CollapsibleTrigger>
+                        <CollapsibleContent className="border-t p-3 space-y-3">
+                          {group.permissions.map(permission => (
+                            <div key={permission} className="flex items-center gap-2">
+                              <Checkbox
+                                checked={selectedPermissions.includes(permission)}
+                                onCheckedChange={(checked) => {
+                                  const newValue = checked
+                                    ? addPermissionWithDeps(selectedPermissions, permission)
+                                    : selectedPermissions.filter(p => p !== permission)
 
-                              field.onChange(newValue)
-                            }}
-                            disabled={isLoading}
-                          />
-                          <div>
-                            <p className="text-sm font-medium">{t(`page.userRoles.permissions.title.${permission}`)}</p>
-                            <p className="text-xs text-muted-foreground">{t(`page.userRoles.permissions.description.${permission}`)}</p>
-                          </div>
-                        </div>
-                      ))}
-                    </CollapsibleContent>
-                  </Collapsible>
+                                  field.onChange(newValue)
+                                }}
+                                disabled={isLoading}
+                              />
+                              <div>
+                                <p className="text-sm font-medium">{t(`page.userRoles.permissions.title.${permission}`)}</p>
+                                <p className="text-xs text-muted-foreground">{t(`page.userRoles.permissions.description.${permission}`)}</p>
+                              </div>
+                            </div>
+                          ))}
+                        </CollapsibleContent>
+                      </Collapsible>
+                    ))}
+                  </div>
                 ))}
               </div>
             )

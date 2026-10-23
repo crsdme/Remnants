@@ -6,6 +6,8 @@ import * as MoneyTransactionRepo from '@/repositories/money-transaction.repo'
 import * as OrderRepo from '@/repositories/order.repo'
 import * as PaymentApplicationRepo from '@/repositories/payment-application.repo'
 import * as ProcurementRepo from '@/repositories/procurement.repo'
+import * as AutomationService from '@/services/automation.service'
+import { shouldFireOrderPaidTrigger } from '@/utils/automation'
 import { fromMinor, toMinor } from '@/utils/money'
 
 export interface PartySettlement {
@@ -245,6 +247,7 @@ async function applyCreditToDocument({
   documentType,
   currencyId,
   remainingMinor,
+  userId,
 }: {
   documentId: string
   partyId: string
@@ -252,6 +255,7 @@ async function applyCreditToDocument({
   documentType: 'procurement' | 'order'
   currencyId: string
   remainingMinor: number
+  userId?: string
 }): Promise<number> {
   if (remainingMinor <= 0)
     return 0
@@ -289,7 +293,7 @@ async function applyCreditToDocument({
     if (documentType === 'procurement')
       await refreshPaymentStatus(documentId)
     else
-      await refreshOrderPaymentStatus(documentId)
+      await refreshOrderPaymentStatus(documentId, { userId })
   }
 
   return remainingMinor - left
@@ -310,7 +314,7 @@ export async function allocateCreditToProcurement(procurementId: string, currenc
   })
 }
 
-export async function allocateCreditToOrder(orderId: string, currencyId: string): Promise<number> {
+export async function allocateCreditToOrder(orderId: string, currencyId: string, userId?: string): Promise<number> {
   const debt = await remainingOrderDebtMinor(orderId, currencyId)
   if (debt === null)
     return 0
@@ -322,6 +326,7 @@ export async function allocateCreditToOrder(orderId: string, currencyId: string)
     documentType: 'order',
     currencyId,
     remainingMinor: debt.remainingMinor,
+    userId,
   })
 }
 
@@ -339,10 +344,10 @@ export async function allocateCreditFifo(supplierId: string, currencyId: string)
   }
 }
 
-export async function allocateClientCreditFifo(clientId: string, currencyId: string): Promise<void> {
+export async function allocateClientCreditFifo(clientId: string, currencyId: string, userId?: string): Promise<void> {
   const orders = await OrderRepo.listIdsByClientIds([clientId])
   for (const row of orders)
-    await allocateCreditToOrder(String(row._id), currencyId)
+    await allocateCreditToOrder(String(row._id), currencyId, userId)
 }
 
 /** If applications exceed item totals, cancel them and re-allocate — leftover stays as supplier advance. */
@@ -397,11 +402,15 @@ export async function refreshPaymentStatus(procurementId: string): Promise<void>
   await ProcurementRepo.updateById(procurementId, { paymentStatus: paymentStatusOf(row) })
 }
 
-export async function refreshOrderPaymentStatus(orderId: string): Promise<void> {
+export async function refreshOrderPaymentStatus(
+  orderId: string,
+  options?: { userId?: string },
+): Promise<void> {
   const order = await OrderRepo.findById(orderId)
   if (order === null || order.removed === true)
     return
 
+  const previousStatus = order.orderPaymentStatus
   const [itemMinors, applications] = await Promise.all([
     OrderRepo.sumItemMinorsByOrderIds([orderId]),
     PaymentApplicationRepo.sumActiveMinorsByDocumentIds([orderId]),
@@ -418,10 +427,22 @@ export async function refreshOrderPaymentStatus(orderId: string): Promise<void> 
     remainingByCurrency.set(currencyId, (remainingByCurrency.get(currencyId) ?? 0) - paid)
   }
 
+  const nextStatus = orderPaymentStatusOf(remainingByCurrency, paidByCurrency)
+
   await OrderRepo.patchById({
     id: orderId,
-    payload: { orderPaymentStatus: orderPaymentStatusOf(remainingByCurrency, paidByCurrency) },
+    payload: { orderPaymentStatus: nextStatus },
   })
+
+  if (shouldFireOrderPaidTrigger(previousStatus, nextStatus) && options?.userId) {
+    await AutomationService.run({
+      payload: {
+        type: 'order-paid',
+        entityId: orderId,
+        user: options.userId,
+      },
+    })
+  }
 }
 
 export async function withSettlement<T extends { id: string }>(

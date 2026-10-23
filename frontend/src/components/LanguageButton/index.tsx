@@ -23,6 +23,7 @@ export function LanguageButton() {
       <DropdownMenuContent>
         <DropdownMenuItem onClick={() => selectLanguage('en')}>English</DropdownMenuItem>
         <DropdownMenuItem onClick={() => selectLanguage('ru')}>Русский</DropdownMenuItem>
+        <DropdownMenuItem onClick={() => selectLanguage('ua')}>Українська</DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   )

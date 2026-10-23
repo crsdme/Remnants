@@ -77,9 +77,9 @@ export function TableActionDropdown({ actions }: { actions?: Action[] }) {
         </DropdownMenuTrigger>
 
         <DropdownMenuContent align="end">
-          {visibleActions.map(action => (
+          {visibleActions.map((action, index) => (
             <Fragment key={`${Array.isArray(action.permission) ? action.permission.join('|') : action.permission}-${action.label}`}>
-              {action.isDestructive && <DropdownMenuSeparator />}
+              {action.isDestructive && index > 0 && <DropdownMenuSeparator />}
 
               <MenuItem
                 action={action}

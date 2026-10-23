@@ -11,7 +11,6 @@ import { useListQueryState, useLocale } from '@/utils/hooks'
 
 import { useCurrencyContext } from '../context'
 import { useColumns } from './columns'
-import { DataTableFilters } from './data-table-filters'
 
 export function DataTable() {
   const { t } = useTranslation()
@@ -19,7 +18,6 @@ export function DataTable() {
 
   const {
     filters,
-    setFilters,
     sorting,
     setSorting,
     pagination,
@@ -135,10 +133,7 @@ export function DataTable() {
 
   return (
     <>
-      <div className="w-full flex justify-between items-start max-md:flex-col gap-2 py-2">
-        <div className="flex flex-wrap gap-2 items-center">
-          <DataTableFilters filters={filters} setFilters={setFilters} />
-        </div>
+      <div className="w-full flex justify-end items-start max-md:flex-col gap-2 py-2">
         <div className="flex gap-2">
           <ColumnVisibilityMenu table={table} tableId="currency" />
         </div>

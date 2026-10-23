@@ -58,7 +58,7 @@ export function useColumns() {
 
           const actions = [
             {
-              permission: 'site.copy',
+              permission: 'other.admin',
               onClick: async () => {
                 await navigator.clipboard.writeText(item.id)
               },
@@ -80,7 +80,7 @@ export function useColumns() {
               icon: <Pencil className="h-4 w-4" />,
             },
             {
-              permission: 'site.delete',
+              permission: 'site.remove',
               onClick: () => removeSite({ ids: [item.id] }),
               label: t('table.delete'),
               icon: <Trash className="h-4 w-4" />,
@@ -118,6 +118,7 @@ export function useColumns() {
           filterable: true,
           filterType: 'number',
           sortable: true,
+          defaultVisible: true,
         },
         header: t('page.sites.table.url'),
         cell: ({ row }) => <Badge>{row.original.url}</Badge>,
@@ -131,6 +132,7 @@ export function useColumns() {
           filterable: true,
           filterType: 'number',
           sortable: true,
+          defaultVisible: true,
         },
         header: t('page.sites.table.priority'),
         cell: ({ row }) => <Badge>{row.original.priority}</Badge>,

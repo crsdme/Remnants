@@ -19,7 +19,7 @@ export function ActionBar() {
         <p className="text-muted-foreground">{t('page.warehouse-transactions.description')}</p>
       </div>
       <div className="flex items-center flex-wrap gap-2">
-        <PermissionGate permission={['warehouse-transaction.create', 'warehouse-transaction.edit']}>
+        <PermissionGate permission={['warehouseTransaction.in', 'warehouseTransaction.out', 'warehouseTransaction.transfer']}>
           <Button
             onClick={() => void navigate('/warehouse-transactions/create')}
             disabled={isLoading}

@@ -1,7 +1,6 @@
 import { Plus } from 'lucide-react'
 
 import { useLanguageQuery, useProductPropertyOptions } from '@/api/hooks'
-import { PermissionGate } from '@/components'
 import { AsyncSelectNew } from '@/components/AsyncSelectNew'
 
 import {
@@ -22,12 +21,19 @@ import {
   SheetTitle,
   SheetTrigger,
 } from '@/components/ui'
+import { useAuthContext } from '@/contexts'
+import { hasPermission } from '@/utils/helpers/permission'
 import { useLocale } from '@/utils/hooks'
 import { useProductPropertiesGroupsContext } from '../context'
 
 export function ActionBar() {
   const { t, language } = useLocale()
+  const { permissions } = useAuthContext()
   const { isLoading, isEdit, form, submitGroupForm, openModal, closeModal, isModalOpen } = useProductPropertiesGroupsContext()
+
+  const canCreate = hasPermission(permissions, 'productPropertyGroup.create')
+  const canEdit = hasPermission(permissions, 'productPropertyGroup.edit')
+  const canOpenForm = canCreate || canEdit
 
   const { languages = [] } = useLanguageQuery(
     { pagination: { full: true } },
@@ -44,14 +50,16 @@ export function ActionBar() {
       </div>
       <div className="flex items-center flex-wrap gap-2">
 
-        <PermissionGate permission={['product-properties-groups.create']}>
+        {canOpenForm && (
           <Sheet open={isModalOpen} onOpenChange={closeModal}>
-            <SheetTrigger asChild>
-              <Button onClick={() => openModal()} disabled={isLoading}>
-                <Plus />
-                {t('page.product-properties-groups.button.create')}
-              </Button>
-            </SheetTrigger>
+            {canCreate && (
+              <SheetTrigger asChild>
+                <Button onClick={() => openModal()} disabled={isLoading}>
+                  <Plus />
+                  {t('page.product-properties-groups.button.create')}
+                </Button>
+              </SheetTrigger>
+            )}
             <SheetContent className="sm:max-w-xl w-full overflow-y-auto" side="right">
               <SheetHeader>
                 <SheetTitle>{t(`page.product-properties-groups.form.title.${isEdit ? 'edit' : 'create'}`)}</SheetTitle>
@@ -181,7 +189,7 @@ export function ActionBar() {
               </div>
             </SheetContent>
           </Sheet>
-        </PermissionGate>
+        )}
       </div>
     </div>
   )

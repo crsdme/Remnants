@@ -118,7 +118,7 @@ export function useColumns() {
 
           const actions = [
             {
-              permission: 'category.copy',
+              permission: 'other.admin',
               onClick: async () => navigator.clipboard.writeText(item.id),
               label: t('table.copy'),
               icon: <Copy className="h-4 w-4" />,
@@ -130,7 +130,7 @@ export function useColumns() {
               icon: <Pencil className="h-4 w-4" />,
             },
             {
-              permission: 'category.delete',
+              permission: 'category.remove',
               onClick: () => removeCategories({ ids: [item.id] }),
               label: t('table.delete'),
               icon: <Trash className="h-4 w-4" />,
@@ -151,6 +151,7 @@ export function useColumns() {
         id: 'seq',
         meta: {
           title: t('page.categories.table.seq'),
+          defaultVisible: true,
         },
         header: '#',
         cell: ({ getValue }) => getValue().toString(),

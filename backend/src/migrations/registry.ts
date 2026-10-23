@@ -30,6 +30,7 @@ import { migration028SupplierSeq } from './scripts/028_supplier_seq'
 import { migration029PaymentApplications } from './scripts/029_payment_applications'
 import { migration030OrderPaymentApplications } from './scripts/030_order_payment_applications'
 import { migration031DropOrderPayments } from './scripts/031_drop_order_payments'
+import { migration032DropWarehouseViewHistory } from './scripts/032_drop_warehouse_view_history'
 
 export const migrations: Migration[] = [
   migration001CurrencyPaymentEpsilon,
@@ -63,4 +64,5 @@ export const migrations: Migration[] = [
   migration029PaymentApplications,
   migration030OrderPaymentApplications,
   migration031DropOrderPayments,
+  migration032DropWarehouseViewHistory,
 ]

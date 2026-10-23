@@ -135,6 +135,10 @@ export async function findByIds(ids: string[]) {
   return CurrencyModel.find({ _id: { $in: ids } }).exec()
 }
 
+export async function distinctScales(): Promise<number[]> {
+  return CurrencyModel.distinct('scale', { removed: false })
+}
+
 export async function removeById(id: string) {
   return CashregisterModel.findOneAndUpdate(
     { _id: id },

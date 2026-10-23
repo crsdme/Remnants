@@ -81,7 +81,7 @@ export function useColumns() {
 
           const actions = [
             {
-              permission: 'currency.copy',
+              permission: 'other.admin',
               onClick: () => void navigator.clipboard.writeText(item.id),
               label: t('table.copy'),
               icon: <Copy className="h-4 w-4" />,
@@ -93,7 +93,7 @@ export function useColumns() {
               icon: <Pencil className="h-4 w-4" />,
             },
             {
-              permission: 'currency.delete',
+              permission: 'currency.remove',
               onClick: () => removeCurrency({ ids: [item.id] }),
               label: t('table.delete'),
               icon: <Trash className="h-4 w-4" />,

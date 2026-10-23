@@ -1,4 +1,5 @@
 import type {
+  AuthUser,
   BarcodeDTOPopulated,
   CreateBarcodeResponse,
   EditBarcodeResponse,
@@ -67,9 +68,11 @@ export async function getByCode({ payload }: { payload: GetBarcodeByCodePayload 
 export async function create({
   payload,
   session,
+  user,
 }: {
   payload: CreateBarcodesPayload
   session?: DbSession
+  user?: AuthUser
 }): Promise<CreateBarcodeResponse> {
   let { code, products, active } = payload
 
@@ -95,15 +98,13 @@ export async function create({
     session,
   )
 
-  await AuditLogsService.create({
+  await AuditLogsService.record({
     resourceType: 'barcode',
     resourceId: barcode._id.toString(),
     action: 'create',
-    changes: [
-      { path: 'code', before: null, after: barcode.code },
-      { path: 'products', before: null, after: products },
-      { path: 'active', before: null, after: active },
-    ],
+    before: null,
+    after: barcode,
+    createdBy: user?.id,
   })
 
   return {
@@ -127,8 +128,9 @@ export async function generateCode(): Promise<GenerateCodeResponse> {
   }
 }
 
-export async function edit({ payload }: { payload: EditBarcodesPayload }): Promise<EditBarcodeResponse> {
+export async function edit({ payload, user }: { payload: EditBarcodesPayload, user?: AuthUser }): Promise<EditBarcodeResponse> {
   const { id, code, products, active } = payload
+  const before = await barcodesRepo.findById(id)
 
   const parsedProducts = products.map(product => ({
     _id: product.id,
@@ -145,15 +147,13 @@ export async function edit({ payload }: { payload: EditBarcodesPayload }): Promi
     throw new HttpError(400, 'Barcode not edited', 'BARCODE_NOT_EDITED')
   }
 
-  await AuditLogsService.create({
+  await AuditLogsService.record({
     resourceType: 'barcode',
     resourceId: id.toString(),
     action: 'edit',
-    changes: [
-      { path: 'code', before: barcode.code, after: code },
-      { path: 'products', before: barcode.products, after: parsedProducts },
-      { path: 'active', before: barcode.active, after: active },
-    ],
+    before,
+    after: barcode,
+    createdBy: user?.id,
   })
 
   return {
@@ -163,7 +163,7 @@ export async function edit({ payload }: { payload: EditBarcodesPayload }): Promi
   }
 }
 
-export async function remove({ payload }: { payload: RemoveBarcodesPayload }): Promise<RemoveBarcodesResponse> {
+export async function remove({ payload, user }: { payload: RemoveBarcodesPayload, user?: AuthUser }): Promise<RemoveBarcodesResponse> {
   for (const id of payload.ids) {
     const barcode = await barcodesRepo.removeById(id)
 
@@ -172,16 +172,13 @@ export async function remove({ payload }: { payload: RemoveBarcodesPayload }): P
     if (!barcode)
       continue
 
-    await AuditLogsService.create({
+    await AuditLogsService.record({
       resourceType: 'barcode',
       resourceId: id.toString(),
       action: 'remove',
-      changes: [
-        { path: 'code', before: barcode.code, after: null },
-        { path: 'products', before: barcode.products, after: null },
-        { path: 'active', before: barcode.active, after: null },
-        { path: 'removed', before: false, after: true },
-      ],
+      before: barcode,
+      after: null,
+      createdBy: user?.id,
     })
   }
 

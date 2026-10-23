@@ -10,7 +10,7 @@ import type {
 } from '@/types'
 import { mapAuditLogDocToDTO } from '@/mappers'
 import * as auditLogsRepo from '@/repositories/audit-logs.repo'
-import { HttpError } from '@/utils'
+import { buildAuditChanges, HttpError } from '@/utils'
 
 export async function get({ payload }: { payload: GetAuditLogsPayload }): Promise<GetAuditLogsResponse> {
   const { items, total, page, pageSize } = await auditLogsRepo.list(payload)
@@ -24,6 +24,28 @@ export async function get({ payload }: { payload: GetAuditLogsPayload }): Promis
       pagination: { total, page, pageSize },
     },
   }
+}
+
+export async function record(input: {
+  resourceType: string
+  resourceId: string
+  action: 'create' | 'edit' | 'remove'
+  before: unknown
+  after: unknown
+  createdBy?: string
+  omit?: Iterable<string>
+}) {
+  const changes = buildAuditChanges(input.before, input.after, { omit: input.omit })
+  if (changes.length === 0)
+    return
+
+  await create({
+    resourceType: input.resourceType,
+    resourceId: input.resourceId,
+    action: input.action,
+    changes,
+    createdBy: input.createdBy,
+  })
 }
 
 export async function create(payload: CreateAuditLogsPayload): Promise<CreateAuditLogsResponse> {

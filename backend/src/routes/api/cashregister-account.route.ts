@@ -25,7 +25,7 @@ router.get(
 router.post(
   '/create',
   validateBodyRequest(createCashregisterAccountSchema),
-  checkPermissions('cashregister-account.create'),
+  checkPermissions('cashregisterAccount.create'),
   validateResponse(createCashregisterAccountResponseSchema),
   CashregisterAccountController.create as RequestHandler,
 )
@@ -33,7 +33,7 @@ router.post(
 router.post(
   '/edit',
   validateBodyRequest(editCashregisterAccountSchema),
-  checkPermissions('cashregister-account.edit'),
+  checkPermissions('cashregisterAccount.edit'),
   validateResponse(editCashregisterAccountResponseSchema),
   CashregisterAccountController.edit as RequestHandler,
 )
@@ -41,7 +41,7 @@ router.post(
 router.post(
   '/remove',
   validateBodyRequest(removeCashregisterAccountsSchema),
-  checkPermissions('cashregister-account.remove'),
+  checkPermissions('cashregisterAccount.remove'),
   validateResponse(removeCashregisterAccountsResponseSchema),
   CashregisterAccountController.remove as RequestHandler,
 )

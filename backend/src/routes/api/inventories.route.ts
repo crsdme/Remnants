@@ -71,7 +71,7 @@ router.post(
 router.post(
   '/upsert-item',
   validateBodyRequest(upsertInventoryItemSchema),
-  checkPermissions('inventory.edit'),
+  checkPermissions(['inventory.create', 'inventory.edit']),
   validateResponse(upsertInventoryItemResponseSchema),
   InventoriesController.upsertItem as RequestHandler,
 )
@@ -79,7 +79,7 @@ router.post(
 router.post(
   '/confirm',
   validateBodyRequest(confirmInventorySchema),
-  checkPermissions('inventory.edit'),
+  checkPermissions(['inventory.create', 'inventory.edit']),
   validateResponse(confirmInventoryResponseSchema),
   InventoriesController.confirm as RequestHandler,
 )

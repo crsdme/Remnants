@@ -28,7 +28,7 @@ export function ActionBar() {
         <h2 className="text-2xl font-bold tracking-tight">{t('page.audit-logs.title')}</h2>
         <p className="text-muted-foreground">{t('page.audit-logs.description')}</p>
       </div>
-      <PermissionGate permission={['audit-log.view']}>
+      <PermissionGate permission={['auditLog.page']}>
         <Sheet open={isModalOpen} onOpenChange={() => closeModal()}>
           <SheetContent className="sm:max-w-xl w-full overflow-y-auto" side="right">
             <SheetHeader>

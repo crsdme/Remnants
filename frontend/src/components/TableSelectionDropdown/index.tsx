@@ -1,5 +1,5 @@
 import { ClipboardList, Copy, Download, MoreVertical, Printer, Trash } from 'lucide-react'
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import {
@@ -19,29 +19,53 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
+import { useAuthContext } from '@/contexts'
+import { hasPermission } from '@/utils/helpers/permission'
 import { cn } from '@/utils/lib'
 
 interface SelectionDropdownProps {
   selectedCount: number
   onRemove?: () => void | Promise<void>
+  removePermission?: string | string[]
   onCopy?: () => void
+  copyPermission?: string | string[]
   onDuplicate?: () => void
+  duplicatePermission?: string | string[]
   onExport?: () => void
+  exportPermission?: string | string[]
   onPrint?: () => void
+  printPermission?: string | string[]
 }
 
 export function TableSelectionDropdown({
   selectedCount,
   onRemove,
+  removePermission,
   onCopy,
+  copyPermission,
   onDuplicate,
+  duplicatePermission,
   onExport,
+  exportPermission,
   onPrint,
+  printPermission,
 }: SelectionDropdownProps) {
   const { t } = useTranslation()
+  const { permissions } = useAuthContext()
   const [isConfirmOpen, setIsConfirmOpen] = useState(false)
 
-  if (selectedCount === 0)
+  const canCopy = !!onCopy && (!copyPermission || hasPermission(permissions, copyPermission))
+  const canDuplicate = !!onDuplicate && (!duplicatePermission || hasPermission(permissions, duplicatePermission))
+  const canExport = !!onExport && (!exportPermission || hasPermission(permissions, exportPermission))
+  const canRemove = !!onRemove && (!removePermission || hasPermission(permissions, removePermission))
+  const canPrint = !!onPrint && (!printPermission || hasPermission(permissions, printPermission))
+
+  const hasActions = useMemo(
+    () => canCopy || canDuplicate || canExport || canRemove || canPrint,
+    [canCopy, canDuplicate, canExport, canRemove, canPrint],
+  )
+
+  if (selectedCount === 0 || !hasActions)
     return null
 
   const handleConfirmRemove = async () => {
@@ -64,28 +88,28 @@ export function TableSelectionDropdown({
         </DropdownMenuTrigger>
 
         <DropdownMenuContent align="end">
-          {onCopy && (
+          {canCopy && (
             <DropdownMenuItem onClick={onCopy} className="flex items-center gap-2">
               <Copy className="w-4 h-4" />
               {t('component.tableSelection.copyToClipboard')}
             </DropdownMenuItem>
           )}
 
-          {onDuplicate && (
+          {canDuplicate && (
             <DropdownMenuItem onClick={onDuplicate} className="flex items-center gap-2">
               <ClipboardList className="w-4 h-4" />
               {t('component.tableSelection.duplicate')}
             </DropdownMenuItem>
           )}
 
-          {onExport && (
+          {canExport && (
             <DropdownMenuItem onClick={onExport} className="flex items-center gap-2">
               <Download className="w-4 h-4" />
               {t('component.tableSelection.downloadCSV')}
             </DropdownMenuItem>
           )}
 
-          {onRemove && (
+          {canRemove && (
             <DropdownMenuItem
               onSelect={() => setIsConfirmOpen(true)}
               className={cn(
@@ -98,7 +122,7 @@ export function TableSelectionDropdown({
             </DropdownMenuItem>
           )}
 
-          {onPrint && (
+          {canPrint && (
             <DropdownMenuItem onClick={onPrint} className="flex items-center gap-2">
               <Printer className="w-4 h-4" />
               {t('component.tableSelection.print')}
@@ -107,7 +131,7 @@ export function TableSelectionDropdown({
         </DropdownMenuContent>
       </DropdownMenu>
 
-      {onRemove && (
+      {canRemove && (
         <AlertDialog
           open={isConfirmOpen}
           onOpenChange={(open) => {

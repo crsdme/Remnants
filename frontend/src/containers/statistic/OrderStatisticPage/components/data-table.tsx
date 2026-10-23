@@ -312,6 +312,21 @@ function IncomeExpenseCards({ statistics }: { statistics: StatisticsDTO }) {
               </CardHeader>
             </Card>
           )}
+          {statistics.payments.netProfit && (
+            <Card className="@container/card">
+              <CardHeader>
+                <CardDescription>{t('page.order-statistic.net-profit')}</CardDescription>
+                <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
+                  {formatMoneyList(statistics.payments.netProfit.amount, language)}
+                </CardTitle>
+                <CardAction>
+                  <Badge variant="outline">
+                    {t('page.order-statistic.net-profit-hint')}
+                  </Badge>
+                </CardAction>
+              </CardHeader>
+            </Card>
+          )}
         </PermissionGate>
       </div>
 

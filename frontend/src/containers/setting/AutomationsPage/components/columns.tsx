@@ -16,6 +16,7 @@ import { Badge, Button } from '@/components/ui'
 import { formatDate } from '@/utils/helpers'
 import { useLocale } from '@/utils/hooks'
 import { useAutomationContext } from '../context'
+import { resolveParamLabel, useAutomationLabelMaps } from './labels'
 
 const sortIcons = { asc: ArrowUp, desc: ArrowDown }
 const columnHelper = createColumnHelper<AutomationDTO>()
@@ -23,6 +24,7 @@ const columnHelper = createColumnHelper<AutomationDTO>()
 export function useColumns() {
   const { t, language } = useLocale()
   const { isLoading, openModal, removeAutomation } = useAutomationContext()
+  const maps = useAutomationLabelMaps()
 
   const columns = useMemo(() => {
     function sortHeader(column: Column<AutomationDTO, unknown>, label: string) {
@@ -55,7 +57,7 @@ export function useColumns() {
 
           const actions = [
             {
-              permission: 'automation.copy',
+              permission: 'other.admin',
               onClick: () => void navigator.clipboard.writeText(item.id),
               label: t('table.copy'),
               icon: <Copy className="h-4 w-4" />,
@@ -67,7 +69,7 @@ export function useColumns() {
               icon: <Pencil className="h-4 w-4" />,
             },
             {
-              permission: 'automation.delete',
+              permission: 'automation.remove',
               onClick: () => removeAutomation({ ids: [item.id] }),
               label: t('table.delete'),
               icon: <Trash className="h-4 w-4" />,
@@ -87,8 +89,6 @@ export function useColumns() {
         size: 150,
         meta: {
           title: t('page.automations.table.name'),
-          batchEdit: true,
-          batchEditType: 'textMultiLanguage',
           filterable: true,
           filterType: 'text',
           sortable: true,
@@ -98,27 +98,39 @@ export function useColumns() {
       }),
       columnHelper.display({
         id: 'trigger',
-        size: 150,
+        size: 160,
         meta: {
           title: t('page.automations.table.trigger'),
+          defaultVisible: true,
         },
         header: ({ column }) => sortHeader(column, t('page.automations.table.trigger')),
         cell: ({ row }) => <Badge>{t(`page.automations.trigger.${row.original.trigger.type}`)}</Badge>,
       }),
       columnHelper.display({
         id: 'conditions',
-        size: 150,
+        size: 200,
         meta: {
           title: t('page.automations.table.conditions'),
+          defaultVisible: true,
         },
-        header: ({ column }) => sortHeader(column, t('page.automations.table.conditions')),
+        header: () => t('page.automations.table.conditions'),
         cell: ({ row }) => {
           const conditions = row.original.conditions
+          if (!conditions.length)
+            return <span className="text-muted-foreground">—</span>
 
           return (
-            <div className="flex flex-col gap-2">
+            <div className="flex flex-col gap-1">
               {conditions.map((condition, index) => (
-                <Badge key={`${condition.field}-${index}`}>{t(`page.automations.condition.${condition.field}`)}</Badge>
+                <div key={`${condition.field}-${index}`} className="flex flex-wrap gap-1">
+                  <Badge variant="secondary">{t(`page.automations.condition.${condition.field}`)}</Badge>
+                  {(condition.params ?? []).slice(0, 2).map(param => (
+                    <Badge key={param} variant="outline">{resolveParamLabel(maps, condition.field, param)}</Badge>
+                  ))}
+                  {(condition.params?.length ?? 0) > 2 && (
+                    <Badge variant="outline">+{(condition.params?.length ?? 0) - 2}</Badge>
+                  )}
+                </div>
               ))}
             </div>
           )
@@ -126,22 +138,42 @@ export function useColumns() {
       }),
       columnHelper.display({
         id: 'actions',
-        size: 150,
+        size: 200,
         meta: {
           title: t('page.automations.table.actions'),
+          defaultVisible: true,
         },
-        header: ({ column }) => sortHeader(column, t('page.automations.table.actions')),
+        header: () => t('page.automations.table.actions'),
         cell: ({ row }) => {
           const actions = row.original.actions
 
           return (
-            <div className="flex flex-col gap-2">
+            <div className="flex flex-col gap-1">
               {actions.map((action, index) => (
-                <Badge key={`${action.field}-${index}`}>{t(`page.automations.action.${action.field}`)}</Badge>
+                <div key={`${action.field}-${index}`} className="flex flex-wrap gap-1">
+                  <Badge variant="secondary">{t(`page.automations.action.${action.field}`)}</Badge>
+                  {(action.params ?? []).slice(0, 2).map(param => (
+                    <Badge key={param} variant="outline">{resolveParamLabel(maps, action.field, param)}</Badge>
+                  ))}
+                </div>
               ))}
             </div>
           )
         },
+      }),
+      columnHelper.accessor('active', {
+        id: 'active',
+        size: 90,
+        meta: {
+          title: t('page.automations.table.active'),
+          defaultVisible: true,
+        },
+        header: ({ column }) => sortHeader(column, t('page.automations.table.active')),
+        cell: ({ row }) => (
+          <Badge variant={row.original.active ? 'default' : 'outline'}>
+            {row.original.active ? t('page.automations.table.active.yes') : t('page.automations.table.active.no')}
+          </Badge>
+        ),
       }),
       columnHelper.accessor('createdAt', {
         id: 'createdAt',
@@ -167,6 +199,6 @@ export function useColumns() {
       }),
       actionColumn(),
     ]
-  }, [language, isLoading, openModal, removeAutomation, t])
+  }, [language, isLoading, openModal, removeAutomation, t, maps])
   return columns
 }

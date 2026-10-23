@@ -26,7 +26,7 @@ export function ActionBar() {
         <p className="text-muted-foreground">{t('page.order-sources.description')}</p>
       </div>
       <div className="flex items-center flex-wrap gap-2">
-        <PermissionGate permission={['order-source.create']}>
+        <PermissionGate permission={['orderSource.create', 'orderSource.edit']}>
           <Sheet open={isModalOpen} onOpenChange={() => closeModal()}>
             <SheetTrigger asChild>
               <Button onClick={() => openModal()} disabled={isLoading}>

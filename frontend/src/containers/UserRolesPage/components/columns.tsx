@@ -55,19 +55,19 @@ export function useColumns() {
 
           const actions = [
             {
-              permission: 'user-role.copy',
+              permission: 'other.admin',
               onClick: async () => navigator.clipboard.writeText(item.id),
               label: t('table.copy'),
               icon: <Copy className="h-4 w-4" />,
             },
             {
-              permission: 'user-role.edit',
+              permission: 'userRole.edit',
               onClick: () => openModal(item),
               label: t('table.edit'),
               icon: <Pencil className="h-4 w-4" />,
             },
             {
-              permission: 'user-role.delete',
+              permission: 'userRole.remove',
               onClick: () => removeUserRoles({ ids: [item.id] }),
               label: t('table.delete'),
               icon: <Trash className="h-4 w-4" />,
@@ -109,7 +109,7 @@ export function useColumns() {
           <div className="flex flex-wrap gap-1">
             {row.original.permissions.map(permission => (
               <Badge variant="outline" key={permission}>
-                {t(`permission.${permission}`)}
+                {t(`page.userRoles.permissions.title.${permission}`)}
               </Badge>
             ))}
           </div>

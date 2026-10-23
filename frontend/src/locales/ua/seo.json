@@ -1,0 +1,152 @@
+{
+  "title.page.login": "Вхід до Remnant",
+  "description.page.login": "Вхід до Remnant",
+
+  "title.page.audit-logs": "Журнал змін - Remnant",
+  "description.page.audit-logs": "Управління журналом змін у Remnant",
+
+  "title.page.currencies": "Валюти - Remnant",
+  "description.page.currencies": "Управління валютами у Remnant",
+
+  "title.page.units": "Одиниці вимірювання - Remnant",
+  "description.page.units": "Управління одиницями вимірювання у Remnant",
+
+  "title.page.users": "Користувачі - Remnant",
+  "description.page.users": "Управління користувачами у Remnant",
+
+  "title.page.profile": "Профіль - Remnant",
+  "description.page.profile": "Профіль співробітника, зміни та заробітна плата",
+
+  "title.page.languages": "Мови - Remnant",
+  "description.page.languages": "Управління мовами у Remnant",
+
+  "title.page.categories": "Категорії - Remnant",
+  "description.page.categories": "Управління категоріями у Remnant",
+
+  "title.page.userRoles": "Ролі користувачів - Remnant",
+  "description.page.userRoles": "Управління ролями користувачів у Remnant",
+
+  "title.page.error.403": "Доступ заборонено - Remnant",
+  "description.page.error.403": "У вас немає доступу до цієї сторінки",
+
+  "title.page.error.404": "Не знайдено - Remnant",
+  "description.page.error.404": "Сторінка, яку ви шукаєте, не існує",
+
+  "title.page.products": "Товари - Remnant",
+  "description.page.products": "Управління товарами у Remnant",
+
+  "title.page.product-properties": "Властивості товарів - Remnant",
+  "description.page.product-properties": "Управління властивостями товарів у Remnant",
+
+  "title.page.product-properties-groups": "Групи властивостей товарів - Remnant",
+  "description.page.product-properties-groups": "Управління групами властивостей товарів у Remnant",
+
+  "title.page.warehouses": "Склади - Remnant",
+  "description.page.warehouses": "Управління складами у Remnant",
+
+  "title.page.barcodes": "Штрихкоди - Remnant",
+  "description.page.barcodes": "Управління штрихкодами у Remnant",
+
+  "title.page.barcode-create": "Створення штрихкоду - Remnant",
+  "description.page.barcode-create": "Створення нового штрихкоду у Remnant",
+
+  "title.page.barcode-edit": "Редагування штрихкоду - Remnant",
+  "description.page.barcode-edit": "Редагування наявного штрихкоду у Remnant",
+
+  "title.page.money-transactions": "Грошові транзакції - Remnant",
+  "description.page.money-transactions": "Управління грошовими транзакціями у Remnant",
+
+  "title.page.cashregisters": "Каси - Remnant",
+  "description.page.cashregisters": "Управління касами у Remnant",
+
+  "title.page.cashregister-accounts": "Рахунки кас - Remnant",
+  "description.page.cashregister-accounts": "Управління рахунками кас у Remnant",
+
+  "title.page.warehouse-transactions": "Складські транзакції - Remnant",
+  "description.page.warehouse-transactions": "Управління складськими транзакціями у Remnant",
+  "title.page.warehouse-transaction-receive": "Приймання складської транзакції - Remnant",
+  "description.page.warehouse-transaction-receive": "Приймання складської транзакції у Remnant",
+  "title.page.warehouse-transaction-view": "Перегляд складської транзакції - Remnant",
+  "description.page.warehouse-transaction-view": "Перегляд складської транзакції у Remnant",
+
+  "title.page.order-statuses": "Статуси замовлень - Remnant",
+  "description.page.order-statuses": "Управління статусами замовлень у Remnant",
+
+  "title.page.product-stock-statuses": "Статуси залишків - Remnant",
+  "description.page.product-stock-statuses": "Управління статусами залишків товарів у Remnant",
+
+  "title.page.order-sources": "Джерела замовлень - Remnant",
+  "description.page.order-sources": "Управління джерелами замовлень у Remnant",
+
+  "title.page.delivery-services": "Служби доставки - Remnant",
+  "description.page.delivery-services": "Управління службами доставки у Remnant",
+
+  "title.page.orders": "Замовлення - Remnant",
+  "description.page.orders": "Управління замовленнями у Remnant",
+
+  "title.page.create-order": "Створення замовлення - Remnant",
+  "description.page.create-order": "Створення замовлення у Remnant",
+
+  "title.page.automations": "Автоматизація - Remnant",
+  "description.page.automations": "Управління автоматизацією у Remnant",
+
+  "title.page.edit-order": "Редагування замовлення - Remnant",
+  "description.page.edit-order": "Редагування замовлення у Remnant",
+
+  "title.page.view-order": "Перегляд замовлення - Remnant",
+  "description.page.view-order": "Перегляд замовлення у Remnant",
+
+  "title.page.clients": "Клієнти - Remnant",
+  "description.page.clients": "Управління клієнтами у Remnant",
+
+  "title.page.expense-categories": "Категорії витрат - Remnant",
+  "description.page.expense-categories": "Управління категоріями витрат у Remnant",
+
+  "title.page.expenses": "Витрати - Remnant",
+  "description.page.expenses": "Управління витратами у Remnant",
+
+  "title.page.inventories": "Інвентаризація - Remnant",
+  "description.page.inventories": "Управління інвентаризацією у Remnant",
+
+  "title.page.create-inventory": "Створення інвентаризації - Remnant",
+  "description.page.create-inventory": "Створення інвентаризації у Remnant",
+
+  "title.page.edit-inventory": "Редагування інвентаризації - Remnant",
+  "description.page.edit-inventory": "Редагування інвентаризації у Remnant",
+
+  "title.page.view-inventory": "Перегляд інвентаризації - Remnant",
+  "description.page.view-inventory": "Перегляд інвентаризації у Remnant",
+
+  "title.page.order-statistic": "Статистика замовлень - Remnant",
+  "description.page.order-statistic": "Статистика замовлень у Remnant",
+
+  "title.page.balances": "Баланси - Remnant",
+  "description.page.balances": "Управління балансами у Remnant",
+
+  "title.page.suppliers": "Постачальники - Remnant",
+  "description.page.suppliers": "Управління постачальниками у Remnant",
+
+  "title.page.procurements": "Закупівлі - Remnant",
+  "description.page.procurements": "Управління закупівлями у Remnant",
+
+  "title.page.procurement.pay": "Оплатити закупівлю - Remnant",
+  "description.page.procurement.pay": "Оплатити закупівлю у Remnant",
+
+  "title.page.sites": "Сайти - Remnant",
+  "description.page.sites": "Управління сайтами у Remnant",
+  "title.page.sites.sync": "Синхронізація сайту - Remnant",
+  "description.page.sites.sync": "Зв'язки товарів, категорій, атрибутів і мов із сайтом",
+
+  "title.page.procurement.create": "Створити закупівлю - Remnant",
+  "description.page.procurement.create": "Створити закупівлю у Remnant",
+  "title.page.procurement.accept": "Прийняти закупівлю - Remnant",
+  "description.page.procurement.accept": "Прийняти закупівлю у Remnant",
+  "title.page.procurement.view": "Перегляд закупівлі - Remnant",
+  "description.page.procurement.view": "Перегляд закупівлі у Remnant",
+  "title.page.procurement.edit": "Редагування закупівлі - Remnant",
+  "description.page.procurement.edit": "Редагування чернетки закупівлі у Remnant",
+  "title.page.supplier.view": "Постачальник - Remnant",
+  "description.page.supplier.view": "Заборгованість та оплати постачальника у Remnant",
+  "title.page.client.view": "Клієнт - Remnant",
+  "description.page.client.view": "Заборгованість та оплати клієнта у Remnant"
+}

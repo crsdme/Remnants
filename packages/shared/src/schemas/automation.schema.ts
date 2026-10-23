@@ -106,7 +106,7 @@ export const removeAutomationsSchema = z.object({
 export type RemoveAutomationsRequest = z.input<typeof removeAutomationsSchema>
 
 export const runAutomationsSchema = z.object({
-  type: z.enum(['order-created', 'order-updated', 'order-removed']),
+  type: z.enum(['order-created', 'order-updated', 'order-removed', 'order-status-updated', 'order-paid']),
   entityId: idSchema,
   user: idSchema,
 })

@@ -10,7 +10,6 @@ import {
   Eye,
   FileSpreadsheet,
   Pencil,
-  Trash,
 } from 'lucide-react'
 
 import { useMemo } from 'react'
@@ -29,7 +28,7 @@ const columnHelper = createColumnHelper<InventoryTableRow>()
 
 export function useColumns() {
   const { t, language } = useLocale()
-  const { isLoading, removeInventory, exportInventoryExcel } = useInventoryContext()
+  const { isLoading, exportInventoryExcel } = useInventoryContext()
   const navigate = useNavigate()
 
   const columns = useMemo(() => {
@@ -63,7 +62,7 @@ export function useColumns() {
 
           const actions = [
             {
-              permission: 'inventory.read',
+              permission: 'other.admin',
               onClick: async () => navigator.clipboard.writeText(item.id),
               label: t('table.copy'),
               icon: <Copy className="h-4 w-4" />,
@@ -88,16 +87,6 @@ export function useColumns() {
                   icon: <Pencil className="h-4 w-4" />,
                 }]
               : []),
-            ...(item.status === 'draft'
-              ? [{
-                  permission: 'inventory.remove',
-                  onClick: () => removeInventory({ ids: [item.id] }),
-                  label: t('table.delete'),
-                  icon: <Trash className="h-4 w-4" />,
-                  isDestructive: true,
-                  isConfirm: true,
-                }]
-              : []),
           ]
 
           return <TableActionDropdown actions={actions} />
@@ -113,6 +102,7 @@ export function useColumns() {
           filterable: true,
           filterType: 'number',
           sortable: true,
+          defaultVisible: true,
         },
         header: ({ column }) => sortHeader(column, t('page.inventories.table.seq')),
       }),
@@ -143,6 +133,7 @@ export function useColumns() {
           title: t('page.inventories.table.warehouse'),
           filterable: true,
           filterType: 'select',
+          defaultVisible: true,
         },
         header: () => t('page.inventories.table.warehouse'),
         cell: ({ row }) => (
@@ -157,6 +148,7 @@ export function useColumns() {
           title: t('page.inventories.table.status'),
           filterable: true,
           filterType: 'select',
+          defaultVisible: true,
         },
         header: () => t('page.inventories.table.status'),
         cell: ({ row }) => {
@@ -177,6 +169,7 @@ export function useColumns() {
         id: 'comment',
         meta: {
           title: t('page.inventories.table.comment'),
+          defaultVisible: true,
         },
         header: () => t('page.inventories.table.comment'),
       }),
@@ -204,7 +197,7 @@ export function useColumns() {
       }),
       actionColumn(),
     ]
-  }, [exportInventoryExcel, isLoading, language, navigate, removeInventory, t])
+  }, [exportInventoryExcel, isLoading, language, navigate, t])
 
   return columns
 }

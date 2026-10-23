@@ -25,7 +25,7 @@ router.get(
 router.post(
   '/create',
   validateBodyRequest(createProductStockStatusSchema),
-  checkPermissions('product-stock-status.create'),
+  checkPermissions('productStockStatus.create'),
   validateResponse(createProductStockStatusResponseSchema),
   ProductStockStatusController.create as RequestHandler,
 )
@@ -33,7 +33,7 @@ router.post(
 router.post(
   '/edit',
   validateBodyRequest(editProductStockStatusSchema),
-  checkPermissions('product-stock-status.edit'),
+  checkPermissions('productStockStatus.edit'),
   validateResponse(editProductStockStatusResponseSchema),
   ProductStockStatusController.edit as RequestHandler,
 )
@@ -41,7 +41,7 @@ router.post(
 router.post(
   '/remove',
   validateBodyRequest(removeProductStockStatusesSchema),
-  checkPermissions('product-stock-status.remove'),
+  checkPermissions('productStockStatus.remove'),
   validateResponse(removeProductStockStatusesResponseSchema),
   ProductStockStatusController.remove as RequestHandler,
 )

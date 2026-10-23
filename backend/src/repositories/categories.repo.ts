@@ -139,6 +139,10 @@ export async function listIdNames(): Promise<Array<{ _id: string, names: unknown
   return docs as Array<{ _id: string, names: unknown }>
 }
 
+export async function findById(id: string) {
+  return CategoryModel.findById(id).exec()
+}
+
 export async function updateById(id: string, payload: EditCategoriesRepoPayload) {
   return CategoryModel.findOneAndUpdate(
     { _id: id },

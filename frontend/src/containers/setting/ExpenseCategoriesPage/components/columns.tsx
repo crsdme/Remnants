@@ -55,19 +55,19 @@ export function useColumns() {
 
           const actions = [
             {
-              permission: 'expense-category.copy',
+              permission: 'other.admin',
               onClick: async () => navigator.clipboard.writeText(item.id),
               label: t('table.copy'),
               icon: <Copy className="h-4 w-4" />,
             },
             {
-              permission: 'expense-category.edit',
+              permission: 'expenseCategory.edit',
               onClick: () => openModal(item),
               label: t('table.edit'),
               icon: <Pencil className="h-4 w-4" />,
             },
             {
-              permission: 'expense-category.delete',
+              permission: 'expenseCategory.remove',
               onClick: () => removeExpenseCategory({ ids: [item.id] }),
               label: t('table.delete'),
               icon: <Trash className="h-4 w-4" />,
@@ -105,6 +105,7 @@ export function useColumns() {
           filterable: true,
           filterType: 'number',
           sortable: true,
+          defaultVisible: true,
         },
         header: () => t('page.expense-categories.table.priority'),
         cell: ({ row }) => <Badge variant="outline">{row.original.priority}</Badge>,
@@ -118,6 +119,7 @@ export function useColumns() {
           filterable: true,
           filterType: 'boolean',
           sortable: true,
+          defaultVisible: true,
         },
         header: t('page.expense-categories.table.color'),
         cell: ({ row }) => {

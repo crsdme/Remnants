@@ -25,7 +25,7 @@ router.get(
 router.post(
   '/create',
   validateBodyRequest(createExpenseCategorySchema),
-  checkPermissions('expense-category.create'),
+  checkPermissions('expenseCategory.create'),
   validateResponse(createExpenseCategoryResponseSchema),
   ExpenseCategoryController.create as RequestHandler,
 )
@@ -33,7 +33,7 @@ router.post(
 router.post(
   '/edit',
   validateBodyRequest(editExpenseCategorySchema),
-  checkPermissions('expense-category.edit'),
+  checkPermissions('expenseCategory.edit'),
   validateResponse(editExpenseCategoryResponseSchema),
   ExpenseCategoryController.edit as RequestHandler,
 )
@@ -41,7 +41,7 @@ router.post(
 router.post(
   '/remove',
   validateBodyRequest(removeExpenseCategoriesSchema),
-  checkPermissions('expense-category.remove'),
+  checkPermissions('expenseCategory.remove'),
   validateResponse(removeExpenseCategoriesResponseSchema),
   ExpenseCategoryController.remove as RequestHandler,
 )

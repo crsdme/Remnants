@@ -15,12 +15,13 @@ import {
 } from 'lucide-react'
 import { useMemo } from 'react'
 
+import { useCashregisterAccountOptions, useCashregisterOptions } from '@/api/hooks'
 import { TableActionDropdown } from '@/components'
 import { Badge, Button, Checkbox } from '@/components/ui'
 import { useAuthContext } from '@/contexts/AuthContext'
 import { formatDate } from '@/utils/helpers'
 import { hasPermission } from '@/utils/helpers/permission'
-import { useLocale } from '@/utils/hooks'
+import { useAccountIdsWithCapability, useEntityIdsWithCapability, useLocale } from '@/utils/hooks'
 import { useMoneyTransactionContext } from '../context'
 
 const sortIcons = { asc: ArrowUp, desc: ArrowDown }
@@ -47,6 +48,10 @@ export function useColumns() {
   const { isLoading, receiveMoneyTransfer, cancelMoneyTransfer } = useMoneyTransactionContext()
   const { access, permissions } = useAuthContext()
   const isAdmin = hasPermission(permissions, 'other.admin')
+  const loadCashregisters = useCashregisterOptions()
+  const loadCashregisterAccounts = useCashregisterAccountOptions()
+  const historyCashregisterIds = useEntityIdsWithCapability('cashregisters', 'viewHistory')
+  const historyAccountIds = useAccountIdsWithCapability('viewHistory')
 
   const columns = useMemo(() => {
     function sortHeader(column: Column<MoneyTransactionDTO>, label: string) {
@@ -150,7 +155,7 @@ export function useColumns() {
 
           const actions = [
             {
-              permission: 'moneyTransaction.copy',
+              permission: 'other.admin',
               onClick: async () => navigator.clipboard.writeText(item.id),
               label: t('table.copy'),
               icon: <Copy className="h-4 w-4" />,
@@ -210,12 +215,22 @@ export function useColumns() {
         cell: ({ row }) => <Badge variant="outline">{t(`page.money-transactions.table.type.${row.original.type.toLowerCase()}`)}</Badge>,
       }),
       columnHelper.accessor(row => row.account.names?.[language], {
-        id: 'account',
+        id: 'accountId',
         size: 100,
         meta: {
           title: t('page.money-transactions.table.account'),
           filterable: true,
-          filterType: 'text',
+          filterType: 'asyncValue',
+          loadOptions: async (query?: { query?: string, selectedValue?: string[] }) => {
+            const items = await loadCashregisterAccounts(query)
+            const allowed = historyAccountIds == null ? null : new Set(historyAccountIds)
+            return items
+              .filter(item => allowed == null || allowed.has(item.id))
+              .map(item => ({
+                value: item.id,
+                label: item.names?.[language] ?? '',
+              }))
+          },
           sortable: true,
           defaultVisible: true,
         },
@@ -227,7 +242,17 @@ export function useColumns() {
         meta: {
           title: t('page.money-transactions.table.cashregister'),
           filterable: true,
-          filterType: 'text',
+          filterType: 'asyncValue',
+          loadOptions: async (query?: { query?: string, selectedValue?: string[] }) => {
+            const items = await loadCashregisters(query)
+            const allowed = historyCashregisterIds == null ? null : new Set(historyCashregisterIds)
+            return items
+              .filter(item => allowed == null || allowed.has(item.id))
+              .map(item => ({
+                value: item.id,
+                label: item.names?.[language] ?? '',
+              }))
+          },
           sortable: true,
           defaultVisible: true,
         },
@@ -328,6 +353,18 @@ export function useColumns() {
       }),
       actionColumn(),
     ]
-  }, [access.cashregisters, cancelMoneyTransfer, isAdmin, isLoading, language, receiveMoneyTransfer, t])
+  }, [
+    access.cashregisters,
+    cancelMoneyTransfer,
+    isAdmin,
+    isLoading,
+    historyAccountIds,
+    historyCashregisterIds,
+    language,
+    loadCashregisterAccounts,
+    loadCashregisters,
+    receiveMoneyTransfer,
+    t,
+  ])
   return columns
 }

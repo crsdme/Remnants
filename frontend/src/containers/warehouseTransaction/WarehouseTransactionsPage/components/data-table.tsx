@@ -122,7 +122,7 @@ export function DataTable() {
           <DataTableFilters filters={filters} setFilters={setFilters} />
         </div>
         <div className="flex gap-2">
-          <ColumnVisibilityMenu table={table} tableId="warehouse-transaction" />
+          <ColumnVisibilityMenu table={table} tableId="warehouse-transactions" />
         </div>
       </div>
       <div className="border rounded-sm">

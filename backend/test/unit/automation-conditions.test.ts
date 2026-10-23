@@ -3,6 +3,7 @@ import {
   matchesAutomationCondition,
   matchesAutomationConditions,
   matchesAutomationTriggerParams,
+  shouldFireOrderPaidTrigger,
 } from '@/utils/automation'
 
 describe('automation conditions', () => {
@@ -47,5 +48,15 @@ describe('automation conditions', () => {
 
   it('ignores trigger params for order-removed', () => {
     expect(matchesAutomationTriggerParams(order, 'order-removed', ['anything'])).toBe(true)
+  })
+
+  it('fires order-paid on transition into paid/overpaid', () => {
+    expect(shouldFireOrderPaidTrigger('unpaid', 'paid')).toBe(true)
+    expect(shouldFireOrderPaidTrigger('partially_paid', 'paid')).toBe(true)
+    expect(shouldFireOrderPaidTrigger('unpaid', 'overpaid')).toBe(true)
+    expect(shouldFireOrderPaidTrigger('paid', 'paid')).toBe(false)
+    expect(shouldFireOrderPaidTrigger('overpaid', 'paid')).toBe(false)
+    expect(shouldFireOrderPaidTrigger('paid', 'overpaid')).toBe(false)
+    expect(shouldFireOrderPaidTrigger('unpaid', 'partially_paid')).toBe(false)
   })
 })

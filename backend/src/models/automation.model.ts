@@ -14,6 +14,7 @@ const TriggerSchema = new Schema({
       'order-created',
       'order-updated',
       'order-removed',
+      'order-paid',
     ],
     required: true,
   },

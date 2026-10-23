@@ -49,7 +49,7 @@ import {
   parseGetProductPropertyOptions,
   parseGetUnits,
 } from '@/types/'
-import { buildAuditChanges, getDifferenceDeep, getEntityIdsWithCapabilityForUser, HttpError, toAuditSnapshot, withTransaction } from '@/utils'
+import { getDifferenceDeep, getEntityIdsWithCapabilityForUser, HttpError, toAuditSnapshot, withTransaction } from '@/utils'
 import logger from '@/utils/logger'
 import { toMinor } from '@/utils/money'
 import {
@@ -190,19 +190,19 @@ export async function create({ payload, uploadedImages, user }: { payload: Creat
         products: [{ id: createdProduct._id.toString(), unitsPerScan: 1 }],
         active: true,
       },
+      user,
     })
   }
 
-  const changes = buildAuditChanges(null, createdProduct, { omit: PRODUCT_AUDIT_OMIT })
-  if (changes.length > 0) {
-    await AuditLogsService.create({
-      resourceType: 'product',
-      resourceId: createdProduct._id.toString(),
-      action: 'create',
-      changes,
-      createdBy: user?.id,
-    })
-  }
+  await AuditLogsService.record({
+    resourceType: 'product',
+    resourceId: createdProduct._id.toString(),
+    action: 'create',
+    before: null,
+    after: createdProduct,
+    createdBy: user?.id,
+    omit: PRODUCT_AUDIT_OMIT,
+  })
 
   return {
     status: 'success',
@@ -320,16 +320,15 @@ export async function edit({ payload, uploadedImages, user }: { payload: EditPro
   const syncSiteIds = await resolveSyncSiteIds(isAutoSyncEnabled, syncSites)
   await pushProductToSites('edit', updatedProduct._id.toString(), syncSiteIds, difference)
 
-  const changes = buildAuditChanges(oldProduct, newProduct, { omit: PRODUCT_AUDIT_OMIT })
-  if (changes.length > 0) {
-    await AuditLogsService.create({
-      resourceType: 'product',
-      resourceId: updatedProduct._id.toString(),
-      action: 'edit',
-      changes,
-      createdBy: user?.id,
-    })
-  }
+  await AuditLogsService.record({
+    resourceType: 'product',
+    resourceId: updatedProduct._id.toString(),
+    action: 'edit',
+    before: oldProduct,
+    after: newProduct,
+    createdBy: user?.id,
+    omit: PRODUCT_AUDIT_OMIT,
+  })
 
   return {
     status: 'success',
@@ -352,12 +351,14 @@ export async function remove({ payload, user }: { payload: RemoveProductsPayload
     if (!removed)
       throw new HttpError(400, 'Product not removed', 'PRODUCT_NOT_REMOVED')
 
-    await AuditLogsService.create({
+    await AuditLogsService.record({
       resourceType: 'product',
       resourceId: id.toString(),
       action: 'remove',
-      changes: buildAuditChanges(product, null, { omit: PRODUCT_AUDIT_OMIT }),
+      before: product,
+      after: null,
       createdBy: user?.id,
+      omit: PRODUCT_AUDIT_OMIT,
     })
   }
 

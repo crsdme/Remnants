@@ -348,6 +348,7 @@ export async function get({
   }
 
   const cashProfitMap = diffMoneyMaps(incomeMap, expenseMap)
+  const netProfitMap = diffMoneyMaps(marginMap, expenseMap)
 
   // Products aggregation
   const productsMap: Record<string, {
@@ -492,6 +493,10 @@ export async function get({
             margin: {
               count: orderItems.length,
               amount: mapToMoneyArray(marginMap),
+            },
+            netProfit: {
+              count: orderItems.length + expenses.length,
+              amount: mapToMoneyArray(netProfitMap),
             },
           }
         : {}),

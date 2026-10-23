@@ -32,7 +32,7 @@ router.get(
 router.post(
   '/create',
   validateBodyRequest(createDeliveryServiceSchema),
-  checkPermissions('delivery-service.create'),
+  checkPermissions('deliveryService.create'),
   validateResponse(createDeliveryServiceResponseSchema),
   DeliveryServiceController.create as RequestHandler,
 )
@@ -40,7 +40,7 @@ router.post(
 router.post(
   '/edit',
   validateBodyRequest(editDeliveryServiceSchema),
-  checkPermissions('delivery-service.edit'),
+  checkPermissions('deliveryService.edit'),
   validateResponse(editDeliveryServiceResponseSchema),
   DeliveryServiceController.edit as RequestHandler,
 )
@@ -48,7 +48,7 @@ router.post(
 router.post(
   '/remove',
   validateBodyRequest(removeDeliveryServicesSchema),
-  checkPermissions('delivery-service.remove'),
+  checkPermissions('deliveryService.remove'),
   validateResponse(removeDeliveryServicesResponseSchema),
   DeliveryServiceController.remove as RequestHandler,
 )

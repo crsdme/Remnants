@@ -110,7 +110,7 @@ export function DataTable() {
     <>
       <div className="w-full flex justify-end items-start max-md:flex-col gap-2 py-2">
         <div className="flex gap-2">
-          <ColumnVisibilityMenu table={table} tableId="expense-category" />
+          <ColumnVisibilityMenu table={table} tableId="expense-categories" />
         </div>
       </div>
       <div className="border rounded-sm">

@@ -14,24 +14,22 @@ import * as CurrencyRepo from '@/repositories/currencies.repo'
 import { warehouseStockFromLotsAddFields, warehouseStockFromLotsLookup } from '@/repositories/stock-lot.repo'
 import * as ProductStockStatusService from '@/services/product-stock-status.service'
 import { buildQuery, buildSortQuery, unwrapAggregate } from '@/utils'
-import { toMinor } from '@/utils/money'
+import { toMinorCandidates } from '@/utils/money'
 
-async function toMinorFilterValue(
+/** Major UI amount → minorPrice values for Mongo `$in`. */
+async function toMinorFilterValues(
   amount: number | undefined,
   currencyIds: string[] | undefined,
-): Promise<number | undefined> {
+): Promise<number[] | undefined> {
   if (amount === undefined)
     return undefined
 
-  const currencyId = currencyIds?.length === 1 ? currencyIds[0] : undefined
-  if (currencyId === undefined)
-    return amount
+  const scales = currencyIds?.length
+    ? [...new Set((await CurrencyRepo.findByIds(currencyIds)).map(c => c.scale))]
+    : await CurrencyRepo.distinctScales()
 
-  const currency = await CurrencyRepo.findOne({ _id: currencyId })
-  if (!currency)
-    return amount
-
-  return toMinor(amount, currency.scale)
+  // ponytail: cross-scale collisions possible without currency filter
+  return toMinorCandidates(amount, scales)
 }
 
 export async function list(payload: GetProductsRepoPayload): Promise<GetProductsRepoResult> {
@@ -62,8 +60,8 @@ export async function list(payload: GetProductsRepoPayload): Promise<GetProducts
     updatedAt,
   } = payload.filters
 
-  const minorPriceFilter = await toMinorFilterValue(price, currency)
-  const minorPurchasePriceFilter = await toMinorFilterValue(purchasePrice, purchaseCurrency)
+  const minorPriceFilter = await toMinorFilterValues(price, currency)
+  const minorPurchasePriceFilter = await toMinorFilterValues(purchasePrice, purchaseCurrency)
 
   let scopedIds = ids
   if (stockStatusId !== undefined && selectedWarehouse !== undefined) {
@@ -102,8 +100,8 @@ export async function list(payload: GetProductsRepoPayload): Promise<GetProducts
       _id: { type: 'array' },
       seq: { type: 'exact' },
       names: { type: 'string', langAware: true },
-      price: { type: 'exact', field: 'minorPrice' },
-      purchasePrice: { type: 'exact', field: 'minorPurchasePrice' },
+      price: { type: 'array', field: 'minorPrice' },
+      purchasePrice: { type: 'array', field: 'minorPurchasePrice' },
       currency: { type: 'array', field: 'currencyId' },
       purchaseCurrency: { type: 'array', field: 'purchaseCurrencyId' },
       barcodes: { type: 'string', field: 'barcodeIds' },
@@ -487,8 +485,8 @@ export async function findIndex(payload: GetProductsIndexRepoPayload) {
     productProperties,
   } = payload.filters
 
-  const minorPriceFilter = await toMinorFilterValue(price, undefined)
-  const minorPurchasePriceFilter = await toMinorFilterValue(purchasePrice, undefined)
+  const minorPriceFilter = await toMinorFilterValues(price, undefined)
+  const minorPurchasePriceFilter = await toMinorFilterValues(purchasePrice, undefined)
 
   const query = buildQuery({
     filters: { _id: ids, seq, names, price: minorPriceFilter, purchasePrice: minorPurchasePriceFilter, barcodes, categories, unit, productPropertiesGroup, productProperties },
@@ -497,8 +495,8 @@ export async function findIndex(payload: GetProductsIndexRepoPayload) {
       seq: { type: 'exact' },
       names: { type: 'string', langAware: true },
       active: { type: 'array' },
-      price: { type: 'exact', field: 'minorPrice' },
-      purchasePrice: { type: 'exact', field: 'minorPurchasePrice' },
+      price: { type: 'array', field: 'minorPrice' },
+      purchasePrice: { type: 'array', field: 'minorPurchasePrice' },
       barcodes: { type: 'array' },
       categories: { type: 'array' },
       unit: { type: 'exact' },

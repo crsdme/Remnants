@@ -26,7 +26,7 @@ export function ActionBar() {
         <p className="text-muted-foreground">{t('page.expense-categories.description')}</p>
       </div>
       <div className="flex items-center flex-wrap gap-2">
-        <PermissionGate permission={['expense-category.create']}>
+        <PermissionGate permission={['expenseCategory.create', 'expenseCategory.edit']}>
           <Sheet open={isModalOpen} onOpenChange={() => closeModal()}>
             <SheetTrigger asChild>
               <Button onClick={() => openModal()} disabled={isLoading}>

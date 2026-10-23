@@ -290,7 +290,7 @@ export async function create({
   if (createdOrder === null)
     throw new HttpError(400, 'Order not created', 'ORDER_NOT_CREATED')
 
-  await Settlement.refreshOrderPaymentStatus(orderId)
+  await Settlement.refreshOrderPaymentStatus(orderId, { userId: user.id })
 
   await AutomationService.run({
     payload: {
@@ -334,7 +334,7 @@ export async function payOrder({ payload, user }: { payload: PayOrderPayload, us
     })
   }
 
-  await Settlement.allocateCreditToOrder(String(order._id), payload.currency)
+  await Settlement.allocateCreditToOrder(String(order._id), payload.currency, user.id)
 
   return {
     status: 'success',
@@ -428,7 +428,7 @@ export async function edit({
     if (editedOrder === null)
       throw new HttpError(400, 'Order not edited', 'ORDER_NOT_EDITED')
 
-    await Settlement.refreshOrderPaymentStatus(payload.id)
+    await Settlement.refreshOrderPaymentStatus(payload.id, { userId: user.id })
 
     return {
       status: 'success',
@@ -533,7 +533,7 @@ export async function printInvoice({ payload }: { payload: PrintInvoiceOrderPayl
     size,
   }
 
-  const { propertyIds, hairTypes, colorCategories, segments, invoiceAddition, propertyGroups } = getHardcodeData()
+  const { propertyIds, hairTypes, colorCategories, segments, propertyGroups } = getHardcodeData()
 
   const order = await OrderRepository.findOne({ payload: { seq } })
 
@@ -1012,7 +1012,7 @@ export async function printInvoice({ payload }: { payload: PrintInvoiceOrderPayl
   const totalRow = [
     {
       ...tableColumns.name,
-      value: `${order.seq + invoiceAddition}`,
+      value: `${order.seq}`,
     },
     {
       ...tableColumns.length,
@@ -1590,8 +1590,6 @@ export async function printOrderLabel({ payload }: { payload: PrintOrderLabelOrd
     bottom: paddingMm * MM,
   }
 
-  const { invoiceAddition } = getHardcodeData()
-
   const doc = new PDFDocument({ autoFirstPage: false })
 
   doc.registerFont('Manrope', path.resolve(__dirname, '../utils/fonts/Manrope-Regular.ttf'))
@@ -1603,7 +1601,7 @@ export async function printOrderLabel({ payload }: { payload: PrintOrderLabelOrd
     doc.font('Manrope-Bold')
     doc.fontSize(70)
     doc.text(
-      `#${order.seq + invoiceAddition}`,
+      `#${order.seq}`,
       margins.left,
       doc.y - 15,
       { width: size[0] - margins.left - margins.right, height: 25, align: 'left' },

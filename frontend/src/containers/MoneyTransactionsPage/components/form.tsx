@@ -29,7 +29,7 @@ import {
   TabsTrigger,
   Textarea,
 } from '@/components/ui'
-import { useAccountIdsWithCapability, useEntityAccessIds, useEntityIdsWithCapability, useLocale } from '@/utils/hooks'
+import { useAccountIdsWithCapability, useEntityIdsWithCapability, useLocale } from '@/utils/hooks'
 import { useMoneyTransactionContext } from '../context'
 
 export function MoneyTransactionForm() {
@@ -352,6 +352,7 @@ function AccountForm() {
   const { isLoading, accountForm, closeModal, submitMoneyTransactionForm } = useMoneyTransactionContext()
   const transferFromIds = useEntityIdsWithCapability('cashregisters', 'transfer')
   const transferAccountIds = useAccountIdsWithCapability('transfer')
+  const receiveAccountIds = useAccountIdsWithCapability('receive')
   const selectedCashregister = useWatch({
     control: accountForm.control,
     name: 'cashregister',
@@ -386,8 +387,12 @@ function AccountForm() {
   }, [registerAccounts, transferAccountIds])
 
   const accountIdsTo = useMemo(() => {
-    return registerAccounts.filter(id => id !== selectedAccountFrom)
-  }, [registerAccounts, selectedAccountFrom])
+    const others = registerAccounts.filter(id => id !== selectedAccountFrom)
+    if (receiveAccountIds == null)
+      return others
+    const allowed = new Set(receiveAccountIds)
+    return others.filter(id => allowed.has(id))
+  }, [receiveAccountIds, registerAccounts, selectedAccountFrom])
 
   const { loadSearchOptions: loadAccountFromSearch, loadSelectedOptions: loadAccountSelected } = useCashregisterAccountSelectOptions({
     defaultFilters: { ids: accountIdsFrom },
@@ -645,8 +650,9 @@ function CashregisterForm() {
   const { t, language } = useLocale()
   const { isLoading, cashregisterForm, closeModal, submitMoneyTransactionForm } = useMoneyTransactionContext()
   const transferFromIds = useEntityIdsWithCapability('cashregisters', 'transfer')
-  const destCashregisterIds = useEntityAccessIds('cashregisters')
+  const destCashregisterIds = useEntityIdsWithCapability('cashregisters', 'receive')
   const transferAccountIds = useAccountIdsWithCapability('transfer')
+  const receiveAccountIds = useAccountIdsWithCapability('receive')
   const cashregisterFrom = useWatch({
     control: cashregisterForm.control,
     name: 'cashregisterFrom',
@@ -681,8 +687,12 @@ function CashregisterForm() {
   }, [cashregisters, cashregisterFrom, transferAccountIds])
 
   const accountIdsTo = useMemo(() => {
-    return cashregisters.find(cashregister => cashregister.id === cashregisterTo)?.accounts.map(account => account.id) ?? []
-  }, [cashregisters, cashregisterTo])
+    const ids = cashregisters.find(cashregister => cashregister.id === cashregisterTo)?.accounts.map(account => account.id) ?? []
+    if (receiveAccountIds == null)
+      return ids
+    const allowed = new Set(receiveAccountIds)
+    return ids.filter(id => allowed.has(id))
+  }, [cashregisters, cashregisterTo, receiveAccountIds])
 
   const { loadSearchOptions: loadAccountFromSearch, loadSelectedOptions: loadAccountFromSelected } = useCashregisterAccountSelectOptions({
     defaultFilters: { ids: accountIdsFrom },

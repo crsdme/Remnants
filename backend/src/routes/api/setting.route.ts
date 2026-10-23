@@ -21,7 +21,7 @@ router.get(
 router.post(
   '/edit',
   validateBodyRequest(editSettingSchema),
-  checkPermissions('setting.edit'),
+  checkPermissions('settings.edit'),
   validateResponse(editSettingResponseSchema),
   SettingController.edit as RequestHandler,
 )

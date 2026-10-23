@@ -16,7 +16,7 @@ export function ActionBar() {
         <p className="text-muted-foreground">{t('page.inventories.description')}</p>
       </div>
       <div className="flex items-center flex-wrap gap-2">
-        <PermissionGate permission={['inventory.create', 'inventory.edit']}>
+        <PermissionGate permission="inventory.create">
           <Button
             onClick={() => void navigate('/inventories/create')}
           >

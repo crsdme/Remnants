@@ -1,4 +1,5 @@
 import type {
+  AuthUser,
   CreateUnitResponse,
   EditUnitResponse,
   GetUnitsResponse,
@@ -7,6 +8,7 @@ import type {
 import type { CreateUnitPayload, EditUnitPayload, GetUnitsPayload, RemoveUnitsPayload } from '@/types'
 import { mapUnitToDTO } from '@/mappers/'
 import * as UnitRepo from '@/repositories/unit.repo'
+import * as AuditLogsService from '@/services/audit-logs.service'
 import { HttpError } from '@/utils/'
 
 export async function get({ payload }: { payload: GetUnitsPayload }): Promise<GetUnitsResponse> {
@@ -27,8 +29,17 @@ export async function get({ payload }: { payload: GetUnitsPayload }): Promise<Ge
   }
 }
 
-export async function create({ payload }: { payload: CreateUnitPayload }): Promise<CreateUnitResponse> {
+export async function create({ payload, user }: { payload: CreateUnitPayload, user?: AuthUser }): Promise<CreateUnitResponse> {
   const unit = await UnitRepo.createOne(payload)
+
+  await AuditLogsService.record({
+    resourceType: 'unit',
+    resourceId: unit._id.toString(),
+    action: 'create',
+    before: null,
+    after: unit,
+    createdBy: user?.id,
+  })
 
   return {
     status: 'success',
@@ -38,11 +49,21 @@ export async function create({ payload }: { payload: CreateUnitPayload }): Promi
   }
 }
 
-export async function edit({ payload }: { payload: EditUnitPayload }): Promise<EditUnitResponse> {
+export async function edit({ payload, user }: { payload: EditUnitPayload, user?: AuthUser }): Promise<EditUnitResponse> {
+  const before = await UnitRepo.findById(payload.id)
   const unit = await UnitRepo.updateById(payload.id, payload)
 
   if (unit === null)
     throw new HttpError(400, 'Unit not edited', 'UNIT_NOT_EDITED')
+
+  await AuditLogsService.record({
+    resourceType: 'unit',
+    resourceId: unit._id.toString(),
+    action: 'edit',
+    before,
+    after: unit,
+    createdBy: user?.id,
+  })
 
   return {
     status: 'success',
@@ -52,12 +73,21 @@ export async function edit({ payload }: { payload: EditUnitPayload }): Promise<E
   }
 }
 
-export async function remove({ payload }: { payload: RemoveUnitsPayload }): Promise<RemoveUnitsResponse> {
+export async function remove({ payload, user }: { payload: RemoveUnitsPayload, user?: AuthUser }): Promise<RemoveUnitsResponse> {
   for (const id of payload.ids) {
     const unit = await UnitRepo.removeById(id)
 
     if (unit === null)
       throw new HttpError(400, 'Unit not removed', 'UNIT_NOT_REMOVED')
+
+    await AuditLogsService.record({
+      resourceType: 'unit',
+      resourceId: id,
+      action: 'remove',
+      before: unit,
+      after: null,
+      createdBy: user?.id,
+    })
   }
 
   return {

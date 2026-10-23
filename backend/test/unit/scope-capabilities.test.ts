@@ -21,7 +21,7 @@ const ACCOUNT_STATS = 'cccccccc-cccc-cccc-cccc-cccccccccccc'
 const access: UserAccessScopesDTO = {
   warehouses: [
     { id: '11111111-1111-1111-1111-111111111111', capabilities: ['viewStock', 'transfer'] },
-    { id: '22222222-2222-2222-2222-222222222222', capabilities: ['viewStock', 'receive', 'viewHistory'] },
+    { id: '22222222-2222-2222-2222-222222222222', capabilities: ['viewStock', 'receive'] },
   ],
   cashregisters: [
     {

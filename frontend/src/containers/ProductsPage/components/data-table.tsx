@@ -5,7 +5,7 @@ import { Warehouse } from 'lucide-react'
 
 import { Fragment, useEffect, useState } from 'react'
 import { useLanguageQuery, useProductQuery, useWarehouseQuery } from '@/api/hooks'
-import { BatchEdit, ColumnVisibilityMenu, PermissionGate, TablePagination, TableSelectionDropdown } from '@/components'
+import { AdvancedFilters, BatchEdit, ColumnVisibilityMenu, PermissionGate, TablePagination, TableSelectionDropdown } from '@/components'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Separator, Skeleton, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui'
 
 import { useLocale } from '@/utils/hooks'
@@ -31,8 +31,7 @@ export function DataTable() {
   } = productContext.listQueryState
 
   const { products, productsCount, isLoading, isFetching } = useProductQuery(
-    { pagination, filters, sorters },
-    // { options: { placeholderData: prevData => prevData } },
+    { pagination, filters: { ...filters, language }, sorters },
   )
 
   const { languages } = useLanguageQuery(
@@ -170,21 +169,51 @@ export function DataTable() {
     setBatchEditMode(status)
   }
 
+  const advancedFiltersSubmit = (items: { column: string, value: unknown }[]) => {
+    setFilters({
+      seq: undefined,
+      names: undefined,
+      price: undefined,
+      purchasePrice: undefined,
+      currency: undefined,
+      purchaseCurrency: undefined,
+      unit: undefined,
+      categories: undefined,
+      productPropertiesGroup: undefined,
+      createdAt: undefined,
+      updatedAt: undefined,
+      ...Object.fromEntries(items.map(({ column, value }) => [column, value])),
+    })
+  }
+
+  const advancedFiltersCancel = () => {
+    setFilters({
+      search: '',
+      seq: undefined,
+      names: undefined,
+      price: undefined,
+      purchasePrice: undefined,
+      currency: undefined,
+      purchaseCurrency: undefined,
+      unit: undefined,
+      categories: undefined,
+      productPropertiesGroup: undefined,
+      createdAt: undefined,
+      updatedAt: undefined,
+    })
+  }
+
   return (
     <>
       <div className="w-full flex justify-between items-start max-md:flex-col gap-2 py-2">
         <div className="flex flex-wrap gap-2 items-center">
-          {/* <AdvancedFilters
+          <AdvancedFilters
             columns={columns}
+            values={filters}
             onSubmit={advancedFiltersSubmit}
             onCancel={advancedFiltersCancel}
           />
-          <AdvancedSorters
-            columns={columns}
-            onSubmit={advancedSortersSubmit}
-            onCancel={advancedSortersCancel}
-          /> */}
-          <PermissionGate permission="category.batchEdit">
+          <PermissionGate permission="product.batchEdit">
             <BatchEdit
               columns={columns}
               languages={languages}
@@ -194,30 +223,34 @@ export function DataTable() {
           </PermissionGate>
           <Separator orientation="vertical" className="min-h-6 max-md:hidden" />
           <DataTableFilters filters={filters} setFilters={v => setFilters({ ...filters, ...v })} />
-          <Select
-            value={filters.selectedWarehouse}
-            onValueChange={(v) => {
-              setFilters({ ...filters, selectedWarehouse: v })
-            }}
-          >
-            <SelectTrigger className="w-[150px]">
-              <Warehouse className="h-4 w-4 text-gray-400" />
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {warehouses.map(warehouse => (
-                <SelectItem key={warehouse.id} value={warehouse.id}>
-                  {warehouse.names[language]}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          {warehouses.length > 0 && (
+            <Select
+              value={filters.selectedWarehouse}
+              onValueChange={(v) => {
+                setFilters({ ...filters, selectedWarehouse: v })
+              }}
+            >
+              <SelectTrigger className="w-[150px]">
+                <Warehouse className="h-4 w-4 text-gray-400" />
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {warehouses.map(warehouse => (
+                  <SelectItem key={warehouse.id} value={warehouse.id}>
+                    {warehouse.names[language]}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
         </div>
         <div className="flex gap-2">
           <TableSelectionDropdown
             selectedCount={Object.keys(rowSelection).length}
             onExport={handleBulkExport}
+            exportPermission="product.export"
             onRemove={handleBulkRemove}
+            removePermission="product.remove"
           />
           <ColumnVisibilityMenu
             table={table}

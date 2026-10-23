@@ -77,13 +77,13 @@ export function useColumns() {
 
           const actions = [
             {
-              permission: 'warehouse-transaction.copy',
+              permission: 'other.admin',
               onClick: async () => navigator.clipboard.writeText(item.id),
               label: t('table.copy'),
               icon: <Copy className="h-4 w-4" />,
             },
             {
-              permission: 'warehouseTransaction.page',
+              permission: 'warehouseTransaction.read',
               onClick: () => void navigate(`/warehouse-transactions/view/${item.seq}`),
               label: t('table.view'),
               icon: <Eye className="h-4 w-4" />,
@@ -97,7 +97,7 @@ export function useColumns() {
                 }]
               : []),
             {
-              permission: 'warehouse-transaction.delete',
+              permission: 'warehouseTransaction.remove',
               onClick: () => removeWarehouseTransaction({ ids: [item.id] }),
               label: t('table.delete'),
               icon: <Trash className="h-4 w-4" />,
@@ -119,6 +119,7 @@ export function useColumns() {
           filterable: true,
           filterType: 'number',
           sortable: true,
+          defaultVisible: true,
         },
       }),
       columnHelper.accessor('type', {
@@ -147,6 +148,7 @@ export function useColumns() {
           title: t('page.warehouse-transactions.table.fromWarehouse'),
           filterable: true,
           filterType: 'select',
+          defaultVisible: true,
         },
         header: () => t('page.warehouse-transactions.table.fromWarehouse'),
         cell: ({ row }) => {
@@ -166,6 +168,7 @@ export function useColumns() {
           title: t('page.warehouse-transactions.table.toWarehouse'),
           filterable: true,
           filterType: 'select',
+          defaultVisible: true,
         },
         header: () => t('page.warehouse-transactions.table.toWarehouse'),
         cell: ({ row }) => {
@@ -182,6 +185,7 @@ export function useColumns() {
           title: t('page.warehouse-transactions.table.status'),
           filterable: true,
           filterType: 'select',
+          defaultVisible: true,
         },
         header: () => t('page.warehouse-transactions.table.status'),
         cell: ({ row }) => {
@@ -199,6 +203,7 @@ export function useColumns() {
         id: 'comment',
         meta: {
           title: t('page.warehouse-transactions.table.comment'),
+          defaultVisible: true,
         },
         header: () => t('page.warehouse-transactions.table.comment'),
       }),

@@ -93,9 +93,6 @@ const CONFIGS = {
       95: 'ec016440-5e2c-45c1-b3ac-92c14cdc3fb1',
       100: 'baeef84f-acb2-4d5e-a5ac-abe7cf0a7f80',
     },
-    symbol: '',
-    invoicePrefix: '#',
-    invoiceAddition: 1000,
   },
   exile: {
     providerPrice: {
@@ -167,9 +164,6 @@ const CONFIGS = {
       95: '',
       100: '',
     },
-    symbol: 'N',
-    invoicePrefix: 'N',
-    invoiceAddition: 500,
   },
 } as const
 
