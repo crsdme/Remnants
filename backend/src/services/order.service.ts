@@ -898,7 +898,7 @@ export async function printInvoice({ payload }: { payload: PrintInvoiceOrderPayl
         multiply = 1
       }
 
-      if (type.includes(hairTypes.SILKY) || type.includes(hairTypes.BROWN)) {
+      if (type.includes(hairTypes.SILKY) || type.includes(hairTypes.BROWN) || type.includes(hairTypes.NATURAL_BALAYAGE)) {
         table = [
           { min: 40, max: 44, price: 1300 },
           { min: 45, max: 49, price: 1400 },
@@ -1422,7 +1422,7 @@ export async function printDraftInvoice({ payload }: { payload: PrintDraftInvoic
         multiply = 1
       }
 
-      if (type.includes(hairTypes.SILKY) || type.includes(hairTypes.BROWN)) {
+      if (type.includes(hairTypes.SILKY) || type.includes(hairTypes.BROWN) || type.includes(hairTypes.NATURAL_BALAYAGE)) {
         table = [
           { min: 40, max: 44, price: 1300 },
           { min: 45, max: 49, price: 1400 },

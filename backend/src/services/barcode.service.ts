@@ -367,6 +367,16 @@ const PROVIDER_E_SUFFIX_CATEGORY_ID = [
   'e6946264-f2c5-4651-9160-f1b034b25883',
   'c2734e3c-9196-40b1-b05e-d3208d178eca',
   'a51b202e-29a2-4529-843c-3f00a1cec5c6',
+  'f4c5121f-4f9a-49dd-9ca3-b840d7cd40af',
+  '52a6564c-8b87-4ed9-b5b2-a7e4d7689928',
+  '709a126a-61ff-46c2-8bc7-d81e0d4e7b81',
+  '32a29099-6bf3-4636-a476-2321b29da187',
+  '4e69c54a-633c-4596-86a7-66a22fcf68f3',
+  'e4f2f644-dea7-4f12-a5cb-2c0716c34c7b',
+  'ee1da099-a653-4817-993a-fef73ea4f63b',
+  '74f5f4c6-d405-4c6d-aff7-f2cd767801cb',
+  '26ca24bb-6848-4c66-a617-acbd17dc9cdf',
+  '12d692e1-c3f4-4568-98fe-f8957d3169b6',
 ]
 
 function getProviderBarcodeSuffix(
@@ -395,6 +405,7 @@ function getHairTypeLabels(hairTypes: ReturnType<typeof getHardcodeData>['hairTy
     [hairTypes.ALBINO]: 'Albino',
     [hairTypes.RED]: 'Red',
     [hairTypes.CURLY]: 'Curly',
+    [hairTypes.NATURAL_BALAYAGE]: 'Nat. Balayage',
   }
 }
 
@@ -405,6 +416,7 @@ function getColorCategoryLabels(colorCategories: ReturnType<typeof getHardcodeDa
     [colorCategories.OMBRE]: 'Ombre',
     [colorCategories.PLATIN]: 'Platin',
     [colorCategories.BLONDE]: 'Blonde',
+    [colorCategories.NATURAL_BLONDE]: 'Nat. Blonde',
     [colorCategories.EXTREAMELY]: 'Extremely',
   }
 }
@@ -625,7 +637,7 @@ async function print55x40(payload: { barcodes: BarcodeDTOPopulated[], size: stri
 
       drawBigCode(105)
 
-      doc.font('Manrope-Bold').fontSize(70)
+      doc.font('Manrope-Bold').fontSize(68)
       doc.text(lenWgt, padding, doc.y + 80, {
         width: contentWidth,
         height: 50,
@@ -772,28 +784,36 @@ async function print55x40Dyed(payload: {
         },
       )
 
+      doc.font('Manrope-Bold').fontSize(82)
+      doc.text(segment, padding, doc.y, {
+        width: contentWidth,
+        height: 50,
+        lineBreak: false,
+        align: 'center',
+      })
+
       doc.font('Manrope-Bold').fontSize(72)
-      doc.text(lenWgt, padding, doc.y, {
+      doc.text(colorCategory, padding, doc.y - 35, {
+        width: contentWidth,
+        height: 50,
+        ellipsis: true,
+        lineBreak: false,
+        align: 'center',
+      })
+
+      doc.font('Manrope-Bold').fontSize(142)
+      doc.text(bigCode || '00000', padding, doc.y - 40, {
+        width: contentWidth,
+        height: 50,
+        lineBreak: false,
+        align: 'center',
+      })
+
+      doc.font('Manrope-Bold').fontSize(72)
+      doc.text(lenWgt, padding, doc.y - 50, {
         width: contentWidth,
         height: 50,
         ellipsis: false,
-        lineBreak: false,
-        align: 'center',
-      })
-
-      doc.font('Manrope-Bold').fontSize(72)
-      doc.text(segment, padding, doc.y + 20, {
-        width: contentWidth,
-        height: 50,
-        ellipsis: true,
-        lineBreak: false,
-        align: 'center',
-      })
-
-      doc.text(colorCategory, padding, doc.y + 20, {
-        width: contentWidth,
-        height: 50,
-        ellipsis: true,
         lineBreak: false,
         align: 'center',
       })

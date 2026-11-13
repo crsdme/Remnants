@@ -35,6 +35,16 @@ const CONFIGS = {
       '8aa5b465-78ef-4557-938c-ece7bc427f36': 1214,
       'c2734e3c-9196-40b1-b05e-d3208d178eca': 972,
       'a51b202e-29a2-4529-843c-3f00a1cec5c6': 871,
+      'f4c5121f-4f9a-49dd-9ca3-b840d7cd40af': 1256,
+      '52a6564c-8b87-4ed9-b5b2-a7e4d7689928': 1230,
+      '709a126a-61ff-46c2-8bc7-d81e0d4e7b81': 446,
+      '32a29099-6bf3-4636-a476-2321b29da187': 920,
+      '4e69c54a-633c-4596-86a7-66a22fcf68f3': 1116,
+      'e4f2f644-dea7-4f12-a5cb-2c0716c34c7b': 1220,
+      'ee1da099-a653-4817-993a-fef73ea4f63b': 1014,
+      '74f5f4c6-d405-4c6d-aff7-f2cd767801cb': 1431,
+      '26ca24bb-6848-4c66-a617-acbd17dc9cdf': 1100,
+      '12d692e1-c3f4-4568-98fe-f8957d3169b6': 567,
     },
     propertyIds: {
       LENGTH: 'efcc3c51-a146-4975-bc5b-196745f76891',
@@ -54,6 +64,7 @@ const CONFIGS = {
       BLONDE: '2a570cec-761c-4fa3-8a80-aa6cbd33cf14',
       BALAYAGE: '62d60f2e-86ed-40ee-9eda-cddd42e934e4',
       EXTREAMELY: '5d656b42-1247-4418-9bb9-0bd94941ed40',
+      NATURAL_BLONDE: '57f2a025-f595-4a9e-b9b7-30629b7f933f',
     },
     segments: {
       STANDART: '0f996011-f608-4391-9ce2-ac01bd02e816',
@@ -77,6 +88,7 @@ const CONFIGS = {
       ALBINO: '8a379f9e-4a84-4d8c-8108-b35188be2fe1',
       RED: '89b60d3c-2f97-4f94-8305-00d749fdf134',
       REMY: '9163dd30-79d6-4301-891e-33940266a8d7',
+      NATURAL_BALAYAGE: 'f00c2025-c846-494f-b9ab-220706d46cbd',
     },
     hairLengths: {
       40: 'a3b85e8b-1485-4f2a-80c6-70ae8fa05865',
@@ -125,6 +137,7 @@ const CONFIGS = {
       BLONDE: '2a570cec-761c-4fa3-8a80-aa6cbd33cf14',
       BALAYAGE: '62d60f2e-86ed-40ee-9eda-cddd42e934e4',
       EXTREAMELY: '5d656b42-1247-4418-9bb9-0bd94941ed40',
+      NATURAL_BLONDE: '57f2a025-f595-4a9e-b9b7-30629b7f933f',
     },
     segments: {
       STANDART: '',
@@ -148,6 +161,7 @@ const CONFIGS = {
       ALBINO: '5fbd09bc-f14f-4a35-8180-acf8ff3c2459',
       RED: 'eaad9e8d-94ba-43e1-83aa-71592b58a73a',
       REMY: '9163dd30-79d6-4301-891e-33940266a8d7',
+      NATURAL_BALAYAGE: 'f00c2025-c846-494f-b9ab-220706d46cbd',
     },
     hairLengths: {
       40: '',
