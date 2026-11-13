@@ -132,7 +132,7 @@ export function useColumns({ filters }: { filters: { selectedWarehouse?: string 
               icon: <PackageIcon className="h-4 w-4" />,
             },
             {
-              permission: 'product.quantityLogs',
+              permission: 'product.lots',
               onClick: () => openLogsModal('lots', item.id),
               label: t('table.stockLots'),
               icon: <Layers className="h-4 w-4" />,

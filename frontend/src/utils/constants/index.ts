@@ -258,7 +258,7 @@ export const USER_ROLE_PERMISSIONS = [
           'warehouse.read',
           'site.read',
         ],
-        permissions: ['product.page', 'product.read', 'product.create', 'product.edit', 'product.batchEdit', 'product.remove', 'product.import', 'product.export', 'product.purchasePrice', 'product.quantityLogs', 'product.auditLogs'],
+        permissions: ['product.page', 'product.read', 'product.create', 'product.edit', 'product.batchEdit', 'product.remove', 'product.import', 'product.export', 'product.purchasePrice', 'product.quantityLogs', 'product.lots', 'product.auditLogs'],
       },
       {
         group: 'categories',

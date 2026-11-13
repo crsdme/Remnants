@@ -526,7 +526,9 @@
   "page.userRoles.permissions.title.product.auditLogs": "Audit logs products",
   "page.userRoles.permissions.description.product.auditLogs": "View audit logs products",
   "page.userRoles.permissions.title.product.quantityLogs": "Product quantity history",
-  "page.userRoles.permissions.description.product.quantityLogs": "View quantity logs and stock lots",
+  "page.userRoles.permissions.description.product.quantityLogs": "View product quantity movement logs",
+  "page.userRoles.permissions.title.product.lots": "Product lots",
+  "page.userRoles.permissions.description.product.lots": "View stock lots for a product on a warehouse",
 
   "page.userRoles.permissions.title.product-property-group": "Product properties groups",
   "page.userRoles.permissions.description.product-property-group": "Manage product properties groups",

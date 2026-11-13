@@ -3,7 +3,7 @@ import { WAREHOUSE_CAPABILITIES } from '@remnant/shared'
 
 /**
  * Remove obsolete warehouses.viewHistory capability.
- * Quantity / lots history is gated by product.quantityLogs role permission.
+ * Quantity history is gated by product.quantityLogs; lots by product.lots.
  */
 export const migration032DropWarehouseViewHistory: Migration = {
   id: '032',

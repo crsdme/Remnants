@@ -9,7 +9,7 @@ const router = Router()
 router.get(
   '/get',
   validateQueryRequest(getStockLotsSchema),
-  checkPermissions('product.quantityLogs'),
+  checkPermissions('product.lots'),
   validateResponse(getStockLotsResponseSchema),
   StockLotController.get as RequestHandler,
 )

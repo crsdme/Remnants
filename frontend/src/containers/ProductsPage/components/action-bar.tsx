@@ -94,7 +94,7 @@ export function ActionBar() {
             </SheetContent>
           </Sheet>
         )}
-        <PermissionGate permission={['product.quantityLogs', 'product.auditLogs']}>
+        <PermissionGate permission={['product.quantityLogs', 'product.lots', 'product.auditLogs']}>
           <LogsSheet />
         </PermissionGate>
       </div>

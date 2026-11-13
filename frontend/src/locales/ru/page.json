@@ -524,7 +524,9 @@
   "page.userRoles.permissions.title.product.purchasePrice": "Цена закупки товаров",
   "page.userRoles.permissions.description.product.purchasePrice": "Просмотр цены закупки товаров",
   "page.userRoles.permissions.title.product.quantityLogs": "История движения товара",
-  "page.userRoles.permissions.description.product.quantityLogs": "Просмотр логов количества и партий на складе",
+  "page.userRoles.permissions.description.product.quantityLogs": "Просмотр логов движения количества товара",
+  "page.userRoles.permissions.title.product.lots": "Партии товара",
+  "page.userRoles.permissions.description.product.lots": "Просмотр партий товара на складе",
   "page.userRoles.permissions.title.product.auditLogs": "Логи изменений товаров",
   "page.userRoles.permissions.description.product.auditLogs": "Просмотр логи изменений товаров",
 
