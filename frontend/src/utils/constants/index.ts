@@ -211,6 +211,10 @@ export const AUTOMATION_CONDITIONS = [
         id: 'deliveryService',
         type: 'contains',
       },
+      {
+        id: 'orderPaymentStatus',
+        type: 'contains',
+      },
     ],
   },
 ]

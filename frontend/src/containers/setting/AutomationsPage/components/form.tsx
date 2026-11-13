@@ -4,6 +4,7 @@ import type { ActionRow, ConditionRow } from '../context'
 import { Pencil, Plus, Trash2 } from 'lucide-react'
 import { useWatch } from 'react-hook-form'
 import { useDeliveryServiceOptions, useOrderSourceOptions, useOrderStatusOptions } from '@/api/hooks'
+import { MultiSelect } from '@/components'
 import { AsyncSelectNew } from '@/components/AsyncSelectNew'
 import {
   Button,
@@ -28,7 +29,7 @@ import { AUTOMATION_ACTIONS, AUTOMATION_CONDITIONS, AUTOMATION_TRIGGERS } from '
 import { useLocale } from '@/utils/hooks'
 import { cn } from '@/utils/lib'
 import { useAutomationContext } from '../context'
-import { resolveParamLabel, useAutomationLabelMaps } from './labels'
+import { ORDER_PAYMENT_STATUSES, resolveParamLabel, useAutomationLabelMaps } from './labels'
 
 function Step({
   index,
@@ -491,6 +492,29 @@ function ConditionEditor() {
                     disabled={isLoading}
                     clearable
                     multi
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        )}
+
+        {condition === 'orderPaymentStatus' && (
+          <FormField
+            control={conditionForm.control}
+            name="params"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>{t('page.automations.form.order-payment-status')}</FormLabel>
+                <FormControl>
+                  <MultiSelect
+                    value={field.value}
+                    onChange={field.onChange}
+                    options={ORDER_PAYMENT_STATUSES.map(status => ({
+                      value: status,
+                      label: t(`order-payment.${status}`),
+                    }))}
                   />
                 </FormControl>
                 <FormMessage />

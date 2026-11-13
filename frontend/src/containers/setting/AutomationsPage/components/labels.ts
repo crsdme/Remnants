@@ -7,6 +7,8 @@ import {
 } from '@/api/hooks'
 import { useLocale } from '@/utils/hooks'
 
+const ORDER_PAYMENT_STATUSES = ['paid', 'unpaid', 'partially_paid', 'overpaid'] as const
+
 function namesMap(items: Array<{ id: string, names: Record<string, string | undefined> }>, language: string) {
   const map = new Map<string, string>()
   for (const item of items)
@@ -15,7 +17,7 @@ function namesMap(items: Array<{ id: string, names: Record<string, string | unde
 }
 
 export function useAutomationLabelMaps() {
-  const { language } = useLocale()
+  const { language, t } = useLocale()
   const full = { pagination: { full: true as const } }
 
   const { orderStatuses } = useOrderStatusQuery(full)
@@ -26,7 +28,10 @@ export function useAutomationLabelMaps() {
     orderStatus: namesMap(orderStatuses, language),
     orderSource: namesMap(orderSources, language),
     deliveryService: namesMap(deliveryServices, language),
-  }), [orderStatuses, orderSources, deliveryServices, language])
+    orderPaymentStatus: new Map(
+      ORDER_PAYMENT_STATUSES.map(status => [status, t(`order-payment.${status}`)]),
+    ),
+  }), [orderStatuses, orderSources, deliveryServices, language, t])
 }
 
 export function resolveParamLabel(
@@ -40,5 +45,9 @@ export function resolveParamLabel(
     return maps.orderSource.get(param) ?? param
   if (field === 'deliveryService' || field === 'order-delivery-service-update')
     return maps.deliveryService.get(param) ?? param
+  if (field === 'orderPaymentStatus')
+    return maps.orderPaymentStatus.get(param) ?? param
   return param
 }
+
+export { ORDER_PAYMENT_STATUSES }

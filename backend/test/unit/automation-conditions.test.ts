@@ -11,6 +11,7 @@ describe('automation conditions', () => {
     orderStatusId: 'status-a',
     orderSourceId: 'source-a',
     deliveryServiceId: 'delivery-a',
+    orderPaymentStatus: 'partially_paid',
   }
 
   it('matches contains', () => {
@@ -26,6 +27,22 @@ describe('automation conditions', () => {
       field: 'orderStatus',
       operator: 'not-contains',
       params: ['status-removed'],
+    })).toBe(true)
+  })
+
+  it('matches orderPaymentStatus contains', () => {
+    expect(matchesAutomationCondition(order, {
+      field: 'orderPaymentStatus',
+      operator: 'contains',
+      params: ['paid', 'partially_paid'],
+    })).toBe(true)
+  })
+
+  it('matches orderPaymentStatus not-contains', () => {
+    expect(matchesAutomationCondition(order, {
+      field: 'orderPaymentStatus',
+      operator: 'not-contains',
+      params: ['paid', 'overpaid'],
     })).toBe(true)
   })
 

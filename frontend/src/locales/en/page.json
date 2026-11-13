@@ -1631,6 +1631,7 @@
   "page.automations.trigger.order-updated": "Order updated",
   "page.automations.trigger.order-removed": "Order removed",
   "page.automations.trigger.order-status-updated": "Order status updated",
+  "page.automations.trigger.order-paid": "Order paid",
   "page.automations.trigger.order-payment-updated": "Order payment updated",
 
   "page.automations.form.title.condition": "Condition",
@@ -1640,6 +1641,7 @@
   "page.automations.condition.orderStatus": "Order status",
   "page.automations.condition.orderSource": "Order source",
   "page.automations.condition.deliveryService": "Delivery service",
+  "page.automations.condition.orderPaymentStatus": "Payment status",
 
   "page.automations.form.operator": "Operator",
   "page.automations.operator.contains": "Contains",
@@ -1648,6 +1650,7 @@
   "page.automations.form.order-status": "Order status",
   "page.automations.form.order-source": "Order source",
   "page.automations.form.delivery-service": "Delivery service",
+  "page.automations.form.order-payment-status": "Payment status",
 
   "page.automations.form.title.action": "Action",
   "page.automations.form.description.action": "Add action to the automation",

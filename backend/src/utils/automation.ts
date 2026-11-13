@@ -2,6 +2,7 @@ export interface AutomationOrderFields {
   orderStatusId?: string | null
   orderSourceId?: string | null
   deliveryServiceId?: string | null
+  orderPaymentStatus?: string | null
 }
 
 export interface AutomationConditionLike {
@@ -21,6 +22,8 @@ export function getAutomationConditionValue(
       return order.orderSourceId?.toString()
     case 'deliveryService':
       return order.deliveryServiceId?.toString()
+    case 'orderPaymentStatus':
+      return order.orderPaymentStatus ?? undefined
     default:
       return undefined
   }

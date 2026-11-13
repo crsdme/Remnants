@@ -1631,6 +1631,7 @@
   "page.automations.trigger.order-updated": "Заказ обновлен",
   "page.automations.trigger.order-removed": "Заказ удален",
   "page.automations.trigger.order-status-updated": "Статус заказа обновлен",
+  "page.automations.trigger.order-paid": "Заказ оплачен",
   "page.automations.trigger.order-payment-updated": "Статус оплаты заказа обновлен",
 
   "page.automations.form.title.condition": "Условие",
@@ -1640,6 +1641,7 @@
   "page.automations.condition.orderStatus": "Статус заказа",
   "page.automations.condition.orderSource": "Источник заказа",
   "page.automations.condition.deliveryService": "Служба доставки",
+  "page.automations.condition.orderPaymentStatus": "Статус оплаты",
 
   "page.automations.form.operator": "Оператор",
   "page.automations.operator.contains": "Содержит",
@@ -1648,6 +1650,7 @@
   "page.automations.form.order-status": "Статус заказа",
   "page.automations.form.order-source": "Источник заказа",
   "page.automations.form.delivery-service": "Служба доставки",
+  "page.automations.form.order-payment-status": "Статус оплаты",
 
   "page.automations.form.title.action": "Действие",
   "page.automations.form.description.action": "Добавить действие к автоматизации",
