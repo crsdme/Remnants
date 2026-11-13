@@ -46,7 +46,8 @@ export function resolveParamLabel(
   if (field === 'deliveryService' || field === 'order-delivery-service-update')
     return maps.deliveryService.get(param) ?? param
   if (field === 'orderPaymentStatus')
-    return maps.orderPaymentStatus.get(param) ?? param
+    // FIX TYPES WARNING
+    return maps.orderPaymentStatus.get(param as (typeof ORDER_PAYMENT_STATUSES)[number]) ?? param
   return param
 }
 

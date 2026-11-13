@@ -670,7 +670,7 @@ async function print55x40Dyed(payload: {
   const contentHeight = h * 8.49 - padding * 2
 
   const hardcode = getHardcodeData()
-  const { providerPrice, symbol } = hardcode
+  const { providerPrice } = hardcode
 
   const doc = new PDFDocument({ autoFirstPage: false })
 
@@ -725,16 +725,6 @@ async function print55x40Dyed(payload: {
         lineBreak: false,
         align: 'center',
       })
-
-      if (symbol) {
-        doc.font('Manrope-Bold').fontSize(50)
-        doc.text(symbol, padding + 20, doc.y - 20, {
-          width: contentWidth,
-          height: 50,
-          lineBreak: false,
-          align: 'left',
-        })
-      }
 
       doc.font('Manrope-Bold').fontSize(46)
       for (const item of info) {
