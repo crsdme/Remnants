@@ -38,9 +38,9 @@ export function LogsSheet() {
       case 'audit':
         return <AuditLogsBlock selectedProductLogs={selectedProductLogs as { type: 'audit', id: string }} />
       case 'quantity':
-        return <QuantityLogsBlock selectedProductLogs={selectedProductLogs as { type: 'quantity', id: string }} selectedWarehouse={listQueryState.filters.selectedWarehouse} />
+        return <QuantityLogsBlock selectedProductLogs={selectedProductLogs as { type: 'quantity', id: string }} selectedWarehouse={listQueryState.filters.selectedWarehouse || ''} />
       case 'lots':
-        return <StockLotsBlock selectedProductLogs={selectedProductLogs as { type: 'lots', id: string }} selectedWarehouse={listQueryState.filters.selectedWarehouse} />
+        return <StockLotsBlock selectedProductLogs={selectedProductLogs as { type: 'lots', id: string }} selectedWarehouse={listQueryState.filters.selectedWarehouse || ''} />
       case undefined:
         return (
           <div className="flex flex-col gap-2 h-full overflow-auto">

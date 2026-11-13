@@ -1,4 +1,5 @@
 import type {
+  AuthUser,
   CreateUserResponse,
   EditUserResponse,
   GetUsersResponse,
@@ -6,7 +7,24 @@ import type {
 } from '@remnant/shared'
 import type { CreateUsersPayload, EditUsersPayload, GetUsersPayload, RemoveUsersPayload } from '@/types/'
 import { mapUserToDTO } from '@/mappers/'
+import * as UserAccessRepo from '@/repositories/user-access.repo'
 import * as UserRepository from '@/repositories/users.repo'
+import * as AuditLogsService from '@/services/audit-logs.service'
+
+const USER_AUDIT_OMIT = ['password']
+
+function userAuditView(
+  user: { name: string, login: string, active: boolean, roleId?: string, role?: { _id?: string } },
+  access: unknown,
+) {
+  return {
+    name: user.name,
+    login: user.login,
+    active: user.active,
+    roleId: user.roleId ?? user.role?._id,
+    access,
+  }
+}
 
 export async function get(payload: GetUsersPayload): Promise<GetUsersResponse> {
   const { items, total, page, pageSize } = await UserRepository.list(payload)
@@ -26,8 +44,18 @@ export async function get(payload: GetUsersPayload): Promise<GetUsersResponse> {
   }
 }
 
-export async function create(payload: CreateUsersPayload): Promise<CreateUserResponse> {
+export async function create(payload: CreateUsersPayload, actor?: AuthUser): Promise<CreateUserResponse> {
   const { user, access } = await UserRepository.createOne(payload)
+
+  await AuditLogsService.record({
+    resourceType: 'user',
+    resourceId: user._id.toString(),
+    action: 'create',
+    before: null,
+    after: userAuditView(user, access),
+    createdBy: actor?.id,
+    omit: USER_AUDIT_OMIT,
+  })
 
   return {
     status: 'success',
@@ -37,8 +65,20 @@ export async function create(payload: CreateUsersPayload): Promise<CreateUserRes
   }
 }
 
-export async function edit(payload: EditUsersPayload): Promise<EditUserResponse> {
+export async function edit(payload: EditUsersPayload, actor?: AuthUser): Promise<EditUserResponse> {
+  const previous = await UserRepository.findById(payload.id)
+  const previousAccess = previous ? await UserAccessRepo.findByUserId(payload.id) : null
   const { user, access } = await UserRepository.updateById(payload.id, payload)
+
+  await AuditLogsService.record({
+    resourceType: 'user',
+    resourceId: user._id.toString(),
+    action: 'edit',
+    before: previous ? userAuditView(previous, previousAccess) : null,
+    after: userAuditView(user, access),
+    createdBy: actor?.id,
+    omit: USER_AUDIT_OMIT,
+  })
 
   return {
     status: 'success',
@@ -48,9 +88,22 @@ export async function edit(payload: EditUsersPayload): Promise<EditUserResponse>
   }
 }
 
-export async function remove(payload: RemoveUsersPayload): Promise<RemoveUserResponse> {
+export async function remove(payload: RemoveUsersPayload, actor?: AuthUser): Promise<RemoveUserResponse> {
   for (const id of payload.ids) {
-    await UserRepository.removeById(id)
+    const user = await UserRepository.removeById(id)
+    if (!user)
+      continue
+
+    const access = await UserAccessRepo.findByUserId(id)
+    await AuditLogsService.record({
+      resourceType: 'user',
+      resourceId: id,
+      action: 'remove',
+      before: userAuditView(user, access),
+      after: null,
+      createdBy: actor?.id,
+      omit: USER_AUDIT_OMIT,
+    })
   }
 
   return {

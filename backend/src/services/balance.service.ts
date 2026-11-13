@@ -19,6 +19,7 @@ import * as PaymentApplicationRepo from '@/repositories/payment-application.repo
 import * as ProcurementRepo from '@/repositories/procurement.repo'
 import * as StockLotRepo from '@/repositories/stock-lot.repo'
 import * as StockMoveRepo from '@/repositories/stock-move.repo'
+import * as AuditLogsService from '@/services/audit-logs.service'
 import { takeFromLayers } from '@/services/fifo.utils'
 import { HttpError } from '@/utils/'
 
@@ -448,6 +449,15 @@ export async function create({
     createdBy: user.id,
   })
 
+  await AuditLogsService.record({
+    resourceType: 'balance',
+    resourceId: String(created._id),
+    action: 'create',
+    before: null,
+    after: created,
+    createdBy: user.id,
+  })
+
   return {
     status: 'success',
     code: 'BALANCE_CREATED',
@@ -497,11 +507,20 @@ export async function create({
   }
 }
 
-export async function remove({ payload }: { payload: RemoveBalancesPayload }): Promise<RemoveBalancesResponse> {
+export async function remove({ payload, user }: { payload: RemoveBalancesPayload, user?: AuthUser }): Promise<RemoveBalancesResponse> {
   const balance = await BalanceRepo.removeById(payload.id)
 
   if (balance === null)
     throw new HttpError(400, 'Balance not removed', 'BALANCE_NOT_REMOVED')
+
+  await AuditLogsService.record({
+    resourceType: 'balance',
+    resourceId: payload.id,
+    action: 'remove',
+    before: balance,
+    after: null,
+    createdBy: user?.id,
+  })
 
   return {
     status: 'success',

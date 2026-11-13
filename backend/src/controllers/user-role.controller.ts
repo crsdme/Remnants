@@ -23,7 +23,7 @@ export async function create(
   next: NextFunction,
 ) {
   try {
-    const serviceResponse = await UserRoleService.create(req.validated.body)
+    const serviceResponse = await UserRoleService.create(req.validated.body, req.user)
 
     res.status(201).json(serviceResponse)
   }
@@ -38,7 +38,7 @@ export async function edit(
   next: NextFunction,
 ) {
   try {
-    const serviceResponse = await UserRoleService.edit(req.validated.body)
+    const serviceResponse = await UserRoleService.edit(req.validated.body, req.user)
 
     res.status(200).json(serviceResponse)
   }
@@ -53,7 +53,7 @@ export async function remove(
   next: NextFunction,
 ) {
   try {
-    const serviceResponse = await UserRoleService.remove(req.validated.body)
+    const serviceResponse = await UserRoleService.remove(req.validated.body, req.user)
 
     res.status(200).json(serviceResponse)
   }

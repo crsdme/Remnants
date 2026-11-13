@@ -24,6 +24,7 @@ import * as ProcurementRepo from '@/repositories/procurement.repo'
 import * as ProductsRepository from '@/repositories/products.repo'
 import * as UserAccessRepo from '@/repositories/user-access.repo'
 import * as WarehouseTransactionRepo from '@/repositories/warehouse-transaction.repo'
+import * as AuditLogsService from '@/services/audit-logs.service'
 import * as BarcodeService from '@/services/barcode.service'
 import * as ProcurementService from '@/services/procurement.service'
 import * as StockLedger from '@/services/stock-ledger.service'
@@ -146,11 +147,21 @@ export async function create({ payload, user }: { payload: CreateWarehouseTransa
   }
 }
 
-export async function edit({ payload }: { payload: EditWarehouseTransactionPayload }): Promise<EditWarehouseTransactionResponse> {
+export async function edit({ payload, user }: { payload: EditWarehouseTransactionPayload, user?: AuthUser }): Promise<EditWarehouseTransactionResponse> {
+  const before = await WarehouseTransactionRepo.findById(payload.id)
   const warehouseTransaction = await WarehouseTransactionRepo.updateById(payload.id, payload)
 
   if (warehouseTransaction === null)
     throw new HttpError(400, 'Warehouse transaction not edited', 'WAREHOUSE_TRANSACTION_NOT_EDITED')
+
+  await AuditLogsService.record({
+    resourceType: 'warehouse-transaction',
+    resourceId: payload.id,
+    action: 'edit',
+    before,
+    after: warehouseTransaction,
+    createdBy: user?.id,
+  })
 
   return {
     status: 'success',
@@ -184,6 +195,15 @@ export async function remove({ payload, user }: { payload: RemoveWarehouseTransa
     })
 
     await WarehouseTransactionRepo.removeById(id, user.id)
+
+    await AuditLogsService.record({
+      resourceType: 'warehouse-transaction',
+      resourceId: id,
+      action: 'remove',
+      before: warehouseTransaction,
+      after: null,
+      createdBy: user.id,
+    })
   }
 
   return {
@@ -249,6 +269,15 @@ async function inWarehauseTransaction({ payload, user }: { payload: PayloadByTyp
     })
   }
 
+  await AuditLogsService.record({
+    resourceType: 'warehouse-transaction',
+    resourceId: warehouseTransaction._id.toString(),
+    action: 'create',
+    before: null,
+    after: warehouseTransaction,
+    createdBy: user.id,
+  })
+
   return {
     status: 'success',
     code: 'WAREHOUSE_TRANSACTION_CREATED',
@@ -294,6 +323,15 @@ async function outWarehauseTransaction({ payload, user }: { payload: PayloadByTy
       },
     })
   }
+
+  await AuditLogsService.record({
+    resourceType: 'warehouse-transaction',
+    resourceId: warehouseTransaction._id.toString(),
+    action: 'create',
+    before: null,
+    after: warehouseTransaction,
+    createdBy: user.id,
+  })
 
   return {
     status: 'success',
@@ -359,6 +397,15 @@ async function transferWarehauseTransaction({ payload, user }: { payload: Payloa
   }
 
   await WarehouseTransactionRepo.createItems(mappedProducts)
+
+  await AuditLogsService.record({
+    resourceType: 'warehouse-transaction',
+    resourceId: warehouseTransaction._id.toString(),
+    action: 'create',
+    before: null,
+    after: warehouseTransaction,
+    createdBy: user.id,
+  })
 
   return {
     status: 'success',

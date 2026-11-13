@@ -18,6 +18,7 @@ import { mapExpenseToDTO } from '@/mappers'
 import * as CurrencyRepo from '@/repositories/currencies.repo'
 import * as ExpenseRepo from '@/repositories/expense.repo'
 import * as UserAccessRepo from '@/repositories/user-access.repo'
+import * as AuditLogsService from '@/services/audit-logs.service'
 import * as MoneyTransactionService from '@/services/money-transaction.service'
 import {
   getAccountIdsWithCapabilityForUser,
@@ -61,9 +62,11 @@ export async function get({
 export async function create({
   payload,
   uploadedFiles = [],
+  user,
 }: {
   payload: CreateExpensePayload
   uploadedFiles?: Express.Multer.File[]
+  user?: AuthUser
 }): Promise<CreateExpenseResponse> {
   const currency = await CurrencyRepo.findOne({ _id: payload.currency })
 
@@ -76,8 +79,8 @@ export async function create({
     uploadedFiles,
   })
 
-  await withTransaction(async (session) => {
-    const expense = await ExpenseRepo.createOne({
+  const expense = await withTransaction(async (session) => {
+    const created = await ExpenseRepo.createOne({
       minorAmount: toMinor(payload.amount, currency.scale),
       currencyId: payload.currency,
       cashregisterId: payload.cashregister,
@@ -96,13 +99,24 @@ export async function create({
         accountId: payload.cashregisterAccount,
         cashregisterId: payload.cashregister,
         sourceModel: 'expense',
-        sourceId: expense._id.toString(),
+        sourceId: created._id.toString(),
         currencyId: payload.currency,
         amount: payload.amount,
-        description: `Expense ${expense._id.toString()}`,
+        description: `Expense ${created._id.toString()}`,
       },
       session,
     })
+
+    return created
+  })
+
+  await AuditLogsService.record({
+    resourceType: 'expense',
+    resourceId: expense._id.toString(),
+    action: 'create',
+    before: null,
+    after: expense,
+    createdBy: user?.id,
   })
 
   return {
@@ -115,9 +129,11 @@ export async function create({
 export async function edit({
   payload,
   uploadedFiles = [],
+  user,
 }: {
   payload: EditExpensePayload
   uploadedFiles?: Express.Multer.File[]
+  user?: AuthUser
 }): Promise<EditExpenseResponse> {
   const { id } = payload
 
@@ -127,7 +143,7 @@ export async function edit({
     uploadedFiles,
   })
 
-  await withTransaction(async (session) => {
+  const edited = await withTransaction(async (session) => {
     const oldExpense = await ExpenseRepo.findById(id, session)
 
     if (oldExpense === null)
@@ -169,7 +185,7 @@ export async function edit({
       session,
     })
 
-    await ExpenseRepo.updateById(id, {
+    const updated = await ExpenseRepo.updateById(id, {
       minorAmount: toMinor(payload.amount, currency.scale),
       currencyId: payload.currency,
       cashregisterId: payload.cashregister,
@@ -179,6 +195,17 @@ export async function edit({
       comment: payload.comment,
       files: resolvedFiles,
     }, session)
+
+    return { before: oldExpense, after: updated }
+  })
+
+  await AuditLogsService.record({
+    resourceType: 'expense',
+    resourceId: id,
+    action: 'edit',
+    before: edited.before,
+    after: edited.after,
+    createdBy: user?.id,
   })
 
   return {
@@ -188,15 +215,15 @@ export async function edit({
   }
 }
 
-export async function remove({ payload }: { payload: RemoveExpensesPayload }): Promise<RemoveExpensesResponse> {
+export async function remove({ payload, user }: { payload: RemoveExpensesPayload, user?: AuthUser }): Promise<RemoveExpensesResponse> {
   for (const id of payload.ids) {
-    await withTransaction(async (session) => {
-      const expense = await ExpenseRepo.findById(id, session)
+    const expense = await withTransaction(async (session) => {
+      const current = await ExpenseRepo.findById(id, session)
 
-      if (expense === null)
+      if (current === null)
         throw new HttpError(400, 'Expense not removed', 'EXPENSE_NOT_REMOVED')
 
-      const currency = await CurrencyRepo.findOne({ _id: expense.currencyId })
+      const currency = await CurrencyRepo.findOne({ _id: current.currencyId })
 
       if (currency === null)
         throw new HttpError(400, 'Currency not found', 'CURRENCY_NOT_FOUND')
@@ -207,16 +234,27 @@ export async function remove({ payload }: { payload: RemoveExpensesPayload }): P
         payload: {
           type: 'expense',
           direction: 'in',
-          accountId: expense.cashregisterAccountId,
-          cashregisterId: expense.cashregisterId,
+          accountId: current.cashregisterAccountId,
+          cashregisterId: current.cashregisterId,
           sourceModel: 'expense',
-          sourceId: expense._id.toString(),
-          currencyId: expense.currencyId,
-          amount: Number.parseFloat(fromMinor(expense.minorAmount, currency.scale)),
-          description: `Expense removed ${expense._id.toString()}`,
+          sourceId: current._id.toString(),
+          currencyId: current.currencyId,
+          amount: Number.parseFloat(fromMinor(current.minorAmount, currency.scale)),
+          description: `Expense removed ${current._id.toString()}`,
         },
         session,
       })
+
+      return current
+    })
+
+    await AuditLogsService.record({
+      resourceType: 'expense',
+      resourceId: id,
+      action: 'remove',
+      before: expense,
+      after: null,
+      createdBy: user?.id,
     })
   }
 

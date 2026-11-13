@@ -1,4 +1,5 @@
 import type {
+  AuthUser,
   CreateSupplierResponse,
   EditSupplierResponse,
   GetSuppliersResponse,
@@ -12,6 +13,7 @@ import type {
 } from '@/types'
 import { mapSupplierToDTO } from '@/mappers/'
 import * as SupplierRepo from '@/repositories/supplier.repo'
+import * as AuditLogsService from '@/services/audit-logs.service'
 import * as Settlement from '@/services/settlement.service'
 import { HttpError } from '@/utils/'
 
@@ -34,8 +36,18 @@ export async function get({ payload }: { payload: GetSuppliersPayload }): Promis
   }
 }
 
-export async function create({ payload }: { payload: CreateSupplierPayload }): Promise<CreateSupplierResponse> {
+export async function create({ payload, user }: { payload: CreateSupplierPayload, user?: AuthUser }): Promise<CreateSupplierResponse> {
   const supplier = await SupplierRepo.createOne(payload)
+
+  await AuditLogsService.record({
+    resourceType: 'supplier',
+    resourceId: supplier._id.toString(),
+    action: 'create',
+    before: null,
+    after: supplier,
+    createdBy: user?.id,
+  })
+
   const [item] = await Settlement.withSettlement([mapSupplierToDTO(supplier)])
 
   return {
@@ -46,11 +58,21 @@ export async function create({ payload }: { payload: CreateSupplierPayload }): P
   }
 }
 
-export async function edit({ payload }: { payload: EditSupplierPayload }): Promise<EditSupplierResponse> {
+export async function edit({ payload, user }: { payload: EditSupplierPayload, user?: AuthUser }): Promise<EditSupplierResponse> {
+  const before = await SupplierRepo.findById(payload.id)
   const supplier = await SupplierRepo.updateById(payload.id, payload)
 
   if (!supplier)
     throw new HttpError(400, 'Supplier not edited', 'SUPPLIER_NOT_EDITED')
+
+  await AuditLogsService.record({
+    resourceType: 'supplier',
+    resourceId: supplier._id.toString(),
+    action: 'edit',
+    before,
+    after: supplier,
+    createdBy: user?.id,
+  })
 
   const [item] = await Settlement.withSettlement([mapSupplierToDTO(supplier)])
 
@@ -62,9 +84,22 @@ export async function edit({ payload }: { payload: EditSupplierPayload }): Promi
   }
 }
 
-export async function remove({ payload }: { payload: RemoveSuppliersPayload }): Promise<RemoveSuppliersResponse> {
-  for (const id of payload.ids)
-    await SupplierRepo.removeById(id)
+export async function remove({ payload, user }: { payload: RemoveSuppliersPayload, user?: AuthUser }): Promise<RemoveSuppliersResponse> {
+  for (const id of payload.ids) {
+    const supplier = await SupplierRepo.removeById(id)
+
+    if (!supplier)
+      continue
+
+    await AuditLogsService.record({
+      resourceType: 'supplier',
+      resourceId: id,
+      action: 'remove',
+      before: supplier,
+      after: null,
+      createdBy: user?.id,
+    })
+  }
 
   return {
     status: 'success',

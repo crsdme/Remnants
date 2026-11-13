@@ -39,6 +39,7 @@ export async function create(
   try {
     const serviceResponse = await SiteService.create({
       payload: req.validated.body,
+      user: req.user,
     })
 
     res.status(201).json(serviceResponse)
@@ -56,6 +57,7 @@ export async function edit(
   try {
     const serviceResponse = await SiteService.edit({
       payload: req.validated.body,
+      user: req.user,
     })
 
     res.status(200).json(serviceResponse)
@@ -73,6 +75,7 @@ export async function remove(
   try {
     const serviceResponse = await SiteService.remove({
       payload: req.validated.body,
+      user: req.user,
     })
 
     res.status(200).json(serviceResponse)

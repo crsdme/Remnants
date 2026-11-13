@@ -31,6 +31,7 @@ import * as ProcurementRepo from '@/repositories/procurement.repo'
 import * as SupplierRepo from '@/repositories/supplier.repo'
 import * as UserAccessRepo from '@/repositories/user-access.repo'
 import * as WarehouseTransactionRepo from '@/repositories/warehouse-transaction.repo'
+import * as AuditLogsService from '@/services/audit-logs.service'
 import * as BarcodeService from '@/services/barcode.service'
 import * as MoneyTransactionService from '@/services/money-transaction.service'
 import * as Settlement from '@/services/settlement.service'
@@ -113,6 +114,15 @@ export async function create({
   if (created === undefined)
     throw new HttpError(400, 'Procurement not created', 'PROCUREMENT_NOT_CREATED')
 
+  await AuditLogsService.record({
+    resourceType: 'procurement',
+    resourceId: procurement._id.toString(),
+    action: 'create',
+    before: null,
+    after: procurement,
+    createdBy: user.id,
+  })
+
   return {
     status: 'success',
     code: 'PROCUREMENT_CREATED',
@@ -167,6 +177,16 @@ export async function edit({
   }
 
   const updated = await loadProcurementRow(procurement.seq)
+
+  await AuditLogsService.record({
+    resourceType: 'procurement',
+    resourceId: payload.id,
+    action: 'edit',
+    before: existing,
+    after: procurement,
+    createdBy: user.id,
+  })
+
   return {
     status: 'success',
     code: 'PROCUREMENT_EDITED',
@@ -208,6 +228,15 @@ export async function remove({ payload, user }: { payload: RemoveProcurementsPay
       status: 'cancelled',
       removed: true,
       removedBy: user.id,
+    })
+
+    await AuditLogsService.record({
+      resourceType: 'procurement',
+      resourceId: id,
+      action: 'remove',
+      before: procurement,
+      after: null,
+      createdBy: user.id,
     })
   }
 

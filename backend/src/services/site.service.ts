@@ -31,9 +31,12 @@ import * as ProductRepo from '@/repositories/products.repo'
 import * as SiteRepo from '@/repositories/site.repo'
 import * as SyncEntryRepo from '@/repositories/sync-entry.repo'
 import * as UserAccessRepo from '@/repositories/user-access.repo'
+import * as AuditLogsService from '@/services/audit-logs.service'
 import * as SyncEntryService from '@/services/sync-entry.service'
 import { getScopeIdsForUser, HttpError } from '@/utils/'
 import { languageRecord } from '@/utils/language-record'
+
+const SITE_AUDIT_OMIT = ['key'] as const
 
 export async function get({
   payload,
@@ -62,8 +65,18 @@ export async function get({
   }
 }
 
-export async function create({ payload }: { payload: CreateSitePayload }): Promise<CreateSiteResponse> {
+export async function create({ payload, user }: { payload: CreateSitePayload, user?: AuthUser }): Promise<CreateSiteResponse> {
   const site = await SiteRepo.createOne(payload)
+
+  await AuditLogsService.record({
+    resourceType: 'site',
+    resourceId: site._id.toString(),
+    action: 'create',
+    before: null,
+    after: site,
+    createdBy: user?.id,
+    omit: SITE_AUDIT_OMIT,
+  })
 
   return {
     status: 'success',
@@ -73,13 +86,24 @@ export async function create({ payload }: { payload: CreateSitePayload }): Promi
   }
 }
 
-export async function edit({ payload }: { payload: EditSitePayload }): Promise<EditSiteResponse> {
+export async function edit({ payload, user }: { payload: EditSitePayload, user?: AuthUser }): Promise<EditSiteResponse> {
   const { id } = payload
 
+  const before = await SiteRepo.findById(id)
   const site = await SiteRepo.updateById(id, payload)
 
   if (site === null)
     throw new HttpError(400, 'Site not edited', 'SITE_NOT_EDITED')
+
+  await AuditLogsService.record({
+    resourceType: 'site',
+    resourceId: site._id.toString(),
+    action: 'edit',
+    before,
+    after: site,
+    createdBy: user?.id,
+    omit: SITE_AUDIT_OMIT,
+  })
 
   return {
     status: 'success',
@@ -89,11 +113,21 @@ export async function edit({ payload }: { payload: EditSitePayload }): Promise<E
   }
 }
 
-export async function remove({ payload }: { payload: RemoveSitesPayload }): Promise<RemoveSitesResponse> {
+export async function remove({ payload, user }: { payload: RemoveSitesPayload, user?: AuthUser }): Promise<RemoveSitesResponse> {
   for (const id of payload.ids) {
     const site = await SiteRepo.removeById(id)
     if (site === null)
       throw new HttpError(400, 'Sites not removed', 'SITES_NOT_REMOVED')
+
+    await AuditLogsService.record({
+      resourceType: 'site',
+      resourceId: id,
+      action: 'remove',
+      before: site,
+      after: null,
+      createdBy: user?.id,
+      omit: SITE_AUDIT_OMIT,
+    })
   }
 
   return {

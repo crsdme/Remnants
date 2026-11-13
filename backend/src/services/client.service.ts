@@ -16,6 +16,7 @@ import type {
 import { mapClientToDTO } from '@/mappers/'
 import * as ClientRepo from '@/repositories/client.repo'
 import * as CurrencyRepo from '@/repositories/currencies.repo'
+import * as AuditLogsService from '@/services/audit-logs.service'
 import * as MoneyTransactionService from '@/services/money-transaction.service'
 import * as Settlement from '@/services/settlement.service'
 import { HttpError } from '@/utils/'
@@ -39,8 +40,18 @@ export async function get({ payload }: { payload: GetClientsPayload }): Promise<
   }
 }
 
-export async function create({ payload }: { payload: CreateClientPayload }): Promise<CreateClientResponse> {
+export async function create({ payload, user }: { payload: CreateClientPayload, user?: AuthUser }): Promise<CreateClientResponse> {
   const client = await ClientRepo.createOne(payload)
+
+  await AuditLogsService.record({
+    resourceType: 'client',
+    resourceId: client._id.toString(),
+    action: 'create',
+    before: null,
+    after: client,
+    createdBy: user?.id,
+  })
+
   const [item] = await Settlement.withClientSettlement([mapClientToDTO(client)])
 
   return {
@@ -51,12 +62,22 @@ export async function create({ payload }: { payload: CreateClientPayload }): Pro
   }
 }
 
-export async function edit({ payload }: { payload: EditClientPayload }): Promise<EditClientResponse> {
+export async function edit({ payload, user }: { payload: EditClientPayload, user?: AuthUser }): Promise<EditClientResponse> {
+  const before = await ClientRepo.findById(payload.id)
   const client = await ClientRepo.updateById(payload.id, payload)
 
   if (!client) {
     throw new HttpError(400, 'Client not edited', 'CLIENT_NOT_EDITED')
   }
+
+  await AuditLogsService.record({
+    resourceType: 'client',
+    resourceId: client._id.toString(),
+    action: 'edit',
+    before,
+    after: client,
+    createdBy: user?.id,
+  })
 
   const [item] = await Settlement.withClientSettlement([mapClientToDTO(client)])
 
@@ -68,7 +89,7 @@ export async function edit({ payload }: { payload: EditClientPayload }): Promise
   }
 }
 
-export async function remove({ payload }: { payload: RemoveClientsPayload }): Promise<RemoveClientsResponse> {
+export async function remove({ payload, user }: { payload: RemoveClientsPayload, user?: AuthUser }): Promise<RemoveClientsResponse> {
   const { ids } = payload
 
   for (const id of ids) {
@@ -76,6 +97,15 @@ export async function remove({ payload }: { payload: RemoveClientsPayload }): Pr
 
     if (!client)
       continue
+
+    await AuditLogsService.record({
+      resourceType: 'client',
+      resourceId: id,
+      action: 'remove',
+      before: client,
+      after: null,
+      createdBy: user?.id,
+    })
   }
 
   return {

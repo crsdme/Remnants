@@ -1,4 +1,5 @@
 import type {
+  AuthUser,
   CreateSettingResponse,
   EditSettingResponse,
   GetSettingsResponse,
@@ -11,6 +12,7 @@ import type {
 } from '@/types/'
 import { mapSettingToDTO } from '@/mappers/'
 import * as SettingRepo from '@/repositories/setting.repo'
+import * as AuditLogsService from '@/services/audit-logs.service'
 import { HttpError } from '@/utils/'
 
 function toSettingValue(value: unknown): string {
@@ -41,8 +43,17 @@ export async function get({ payload }: { payload: GetSettingsRepoPayload }): Pro
   }
 }
 
-export async function create({ payload }: { payload: CreateSettingRepoPayload }): Promise<CreateSettingResponse> {
+export async function create({ payload, user }: { payload: CreateSettingRepoPayload, user?: AuthUser }): Promise<CreateSettingResponse> {
   const setting = await SettingRepo.createOne(payload)
+
+  await AuditLogsService.record({
+    resourceType: 'setting',
+    resourceId: setting._id.toString(),
+    action: 'create',
+    before: null,
+    after: setting,
+    createdBy: user?.id,
+  })
 
   return {
     status: 'success',
@@ -52,7 +63,7 @@ export async function create({ payload }: { payload: CreateSettingRepoPayload })
   }
 }
 
-export async function edit({ payload }: { payload: EditSettingRepoPayload }): Promise<EditSettingResponse> {
+export async function edit({ payload, user }: { payload: EditSettingRepoPayload, user?: AuthUser }): Promise<EditSettingResponse> {
   const nextValue = toSettingValue(payload.value)
   const existing = payload.id != null && payload.id !== ''
     ? await SettingRepo.findById(payload.id)
@@ -76,6 +87,15 @@ export async function edit({ payload }: { payload: EditSettingRepoPayload }): Pr
   if (!setting)
     throw new HttpError(400, 'Setting not edited', 'SETTING_NOT_EDITED')
 
+  await AuditLogsService.record({
+    resourceType: 'setting',
+    resourceId: setting._id.toString(),
+    action: existing ? 'edit' : 'create',
+    before: existing,
+    after: setting,
+    createdBy: user?.id,
+  })
+
   return {
     status: 'success',
     code: 'SETTING_EDITED',
@@ -84,8 +104,19 @@ export async function edit({ payload }: { payload: EditSettingRepoPayload }): Pr
   }
 }
 
-export async function remove({ id }: { id: string }): Promise<RemoveSettingResponse> {
-  await SettingRepo.removeById(id)
+export async function remove({ id, user }: { id: string, user?: AuthUser }): Promise<RemoveSettingResponse> {
+  const setting = await SettingRepo.removeById(id)
+
+  if (setting) {
+    await AuditLogsService.record({
+      resourceType: 'setting',
+      resourceId: id,
+      action: 'remove',
+      before: setting,
+      after: null,
+      createdBy: user?.id,
+    })
+  }
 
   return {
     status: 'success',

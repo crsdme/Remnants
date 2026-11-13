@@ -1,4 +1,5 @@
 import type {
+  AuthUser,
   CreateLanguageResponse,
   EditLanguageResponse,
   GetLanguageResponse,
@@ -6,7 +7,9 @@ import type {
 } from '@remnant/shared'
 import type { CreateLanguagePayload, EditLanguagePayload, GetLanguagesPayload, RemoveLanguagesPayload } from '@/types'
 import { mapLanguageToDTO } from '@/mappers/'
+import { LanguageModel } from '@/models'
 import * as LanguageRepo from '@/repositories/language.repo'
+import * as AuditLogsService from '@/services/audit-logs.service'
 import { HttpError } from '@/utils/'
 
 export async function get({ payload }: { payload: GetLanguagesPayload }): Promise<GetLanguageResponse> {
@@ -27,8 +30,17 @@ export async function get({ payload }: { payload: GetLanguagesPayload }): Promis
   }
 }
 
-export async function create({ payload }: { payload: CreateLanguagePayload }): Promise<CreateLanguageResponse> {
+export async function create({ payload, user }: { payload: CreateLanguagePayload, user?: AuthUser }): Promise<CreateLanguageResponse> {
   const language = await LanguageRepo.createOne(payload)
+
+  await AuditLogsService.record({
+    resourceType: 'language',
+    resourceId: language._id.toString(),
+    action: 'create',
+    before: null,
+    after: language,
+    createdBy: user?.id,
+  })
 
   return {
     status: 'success',
@@ -38,14 +50,24 @@ export async function create({ payload }: { payload: CreateLanguagePayload }): P
   }
 }
 
-export async function edit({ payload }: { payload: EditLanguagePayload }): Promise<EditLanguageResponse> {
+export async function edit({ payload, user }: { payload: EditLanguagePayload, user?: AuthUser }): Promise<EditLanguageResponse> {
   const { id } = payload
 
+  const before = await LanguageModel.findById(id).exec()
   const language = await LanguageRepo.updateById(id, payload)
 
   if (!language) {
     throw new HttpError(400, 'Language not edited', 'LANGUAGE_NOT_EDITED')
   }
+
+  await AuditLogsService.record({
+    resourceType: 'language',
+    resourceId: language._id.toString(),
+    action: 'edit',
+    before,
+    after: language,
+    createdBy: user?.id,
+  })
 
   return {
     status: 'success',
@@ -55,9 +77,21 @@ export async function edit({ payload }: { payload: EditLanguagePayload }): Promi
   }
 }
 
-export async function remove({ payload }: { payload: RemoveLanguagesPayload }): Promise<RemoveLanguageResponse> {
+export async function remove({ payload, user }: { payload: RemoveLanguagesPayload, user?: AuthUser }): Promise<RemoveLanguageResponse> {
   for (const id of payload.ids) {
-    await LanguageRepo.removeById(id)
+    const language = await LanguageRepo.removeById(id)
+
+    if (!language)
+      continue
+
+    await AuditLogsService.record({
+      resourceType: 'language',
+      resourceId: id,
+      action: 'remove',
+      before: language,
+      after: null,
+      createdBy: user?.id,
+    })
   }
 
   return {

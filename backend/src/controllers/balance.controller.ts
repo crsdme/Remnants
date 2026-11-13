@@ -67,8 +67,8 @@ export async function remove(
   try {
     const serviceResponse = await BalanceService.remove({
       payload: req.validated.body,
+      user: req.user,
     })
-
     res.status(200).json(serviceResponse)
   }
   catch (err) {

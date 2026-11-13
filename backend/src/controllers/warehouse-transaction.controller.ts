@@ -106,6 +106,7 @@ export async function edit(
   try {
     const serviceResponse = await WarehouseTransactionService.edit({
       payload: req.validated.body,
+      user: req.user,
     })
 
     res.status(200).json(serviceResponse)

@@ -14,6 +14,7 @@ import type {
 import { mapExpenseCategoryToDTO } from '@/mappers'
 import * as ExpenseCategoryRepo from '@/repositories/expense-category.repo'
 import * as UserAccessRepo from '@/repositories/user-access.repo'
+import * as AuditLogsService from '@/services/audit-logs.service'
 import { getScopeIdsForUser, HttpError } from '@/utils/'
 
 export async function get({
@@ -43,8 +44,17 @@ export async function get({
   }
 }
 
-export async function create({ payload }: { payload: CreateExpenseCategoriesPayload }): Promise<CreateExpenseCategoryResponse> {
+export async function create({ payload, user }: { payload: CreateExpenseCategoriesPayload, user?: AuthUser }): Promise<CreateExpenseCategoryResponse> {
   const expenseCategory = await ExpenseCategoryRepo.createOne(payload)
+
+  await AuditLogsService.record({
+    resourceType: 'expense-category',
+    resourceId: expenseCategory._id.toString(),
+    action: 'create',
+    before: null,
+    after: expenseCategory,
+    createdBy: user?.id,
+  })
 
   return {
     status: 'success',
@@ -54,12 +64,22 @@ export async function create({ payload }: { payload: CreateExpenseCategoriesPayl
   }
 }
 
-export async function edit({ payload }: { payload: EditExpenseCategoriesPayload }): Promise<EditExpenseCategoryResponse> {
+export async function edit({ payload, user }: { payload: EditExpenseCategoriesPayload, user?: AuthUser }): Promise<EditExpenseCategoryResponse> {
+  const before = await ExpenseCategoryRepo.findById(payload.id)
   const expenseCategory = await ExpenseCategoryRepo.updateById(payload.id, payload)
 
   if (!expenseCategory) {
     throw new HttpError(400, 'Expense category not edited', 'EXPENSE_CATEGORY_NOT_EDITED')
   }
+
+  await AuditLogsService.record({
+    resourceType: 'expense-category',
+    resourceId: expenseCategory._id.toString(),
+    action: 'edit',
+    before,
+    after: expenseCategory,
+    createdBy: user?.id,
+  })
 
   return {
     status: 'success',
@@ -69,11 +89,22 @@ export async function edit({ payload }: { payload: EditExpenseCategoriesPayload 
   }
 }
 
-export async function remove({ payload }: { payload: RemoveExpenseCategoriesPayload }): Promise<RemoveExpenseCategoriesResponse> {
+export async function remove({ payload, user }: { payload: RemoveExpenseCategoriesPayload, user?: AuthUser }): Promise<RemoveExpenseCategoriesResponse> {
   const { ids } = payload
 
   for (const id of ids) {
-    await ExpenseCategoryRepo.removeById(id)
+    const expenseCategory = await ExpenseCategoryRepo.removeById(id)
+    if (!expenseCategory)
+      continue
+
+    await AuditLogsService.record({
+      resourceType: 'expense-category',
+      resourceId: id,
+      action: 'remove',
+      before: expenseCategory,
+      after: null,
+      createdBy: user?.id,
+    })
   }
 
   return {

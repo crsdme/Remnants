@@ -15,6 +15,7 @@ import * as PayrollEntryRepo from '@/repositories/payroll-entry.repo'
 import * as UserProfileRepo from '@/repositories/user-profile.repo'
 import * as UsersRepo from '@/repositories/users.repo'
 import * as WorkShiftRepo from '@/repositories/work-shift.repo'
+import * as AuditLogsService from '@/services/audit-logs.service'
 import { HttpError } from '@/utils/'
 import { monthRange } from './payroll.utils'
 
@@ -96,9 +97,19 @@ export async function edit({
   if (!target)
     throw new HttpError(404, 'User not found', 'USER_NOT_FOUND')
 
+  const before = await UserProfileRepo.findByUserId(payload.userId)
   const profile = await UserProfileRepo.upsertByUserId(payload.userId, payload)
   if (profile === undefined)
     throw new HttpError(500, 'Failed to save profile', 'PROFILE_SAVE_FAILED')
+
+  await AuditLogsService.record({
+    resourceType: 'user-profile',
+    resourceId: profile._id.toString(),
+    action: before ? 'edit' : 'create',
+    before,
+    after: profile,
+    createdBy: user.id,
+  })
 
   return {
     status: 'success',

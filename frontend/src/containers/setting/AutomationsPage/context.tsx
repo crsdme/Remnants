@@ -1,5 +1,6 @@
 import type { AutomationAction, AutomationCondition, AutomationDTO } from '@remnant/shared'
 import type { ReactNode } from 'react'
+import type { Resolver } from 'react-hook-form'
 
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useQueryClient } from '@tanstack/react-query'
@@ -18,14 +19,18 @@ import { useLocale } from '@/utils/hooks'
 export type ConditionRow = AutomationCondition & { id: string }
 export type ActionRow = AutomationAction & { id: string }
 
+type AutomationFormValues = z.infer<ReturnType<typeof createAutomationFormSchema>>
+type ConditionFormValues = z.infer<ReturnType<typeof createConditionFormSchema>>
+type ActionFormValues = z.infer<ReturnType<typeof createActionFormSchema>>
+
 interface AutomationContextType {
   selectedAutomation: AutomationDTO | undefined
   isModalOpen: boolean
   isLoading: boolean
   isEdit: boolean
-  form: ReturnType<typeof useForm<z.infer<ReturnType<typeof createAutomationFormSchema>>>>
-  conditionForm: ReturnType<typeof useForm<z.infer<ReturnType<typeof createConditionFormSchema>>>>
-  actionForm: ReturnType<typeof useForm<z.infer<ReturnType<typeof createActionFormSchema>>>>
+  form: ReturnType<typeof useForm<AutomationFormValues>>
+  conditionForm: ReturnType<typeof useForm<ConditionFormValues>>
+  actionForm: ReturnType<typeof useForm<ActionFormValues>>
   selectedConditions: ConditionRow[]
   selectedActions: ActionRow[]
   editingConditionId: string | null
@@ -38,9 +43,9 @@ interface AutomationContextType {
   closeConditionEditor: () => void
   openActionEditor: (action?: ActionRow) => void
   closeActionEditor: () => void
-  submitAutomationForm: (params: z.infer<ReturnType<typeof createAutomationFormSchema>>) => void
-  submitConditionForm: (params: z.infer<ReturnType<typeof createConditionFormSchema>>) => void
-  submitActionForm: (params: z.infer<ReturnType<typeof createActionFormSchema>>) => void
+  submitAutomationForm: (params: AutomationFormValues) => void
+  submitConditionForm: (params: ConditionFormValues) => void
+  submitActionForm: (params: ActionFormValues) => void
   removeAutomation: (params: { ids: string[] }) => void
   removeCondition: (params: { id: string }) => void
   removeAction: (params: { id: string }) => void
@@ -132,20 +137,20 @@ export function AutomationProvider({ children }: { children: ReactNode }) {
   const { t } = useLocale()
 
   const formSchema = useMemo(() => createAutomationFormSchema(t), [t])
-  const form = useForm({
-    resolver: zodResolver(formSchema),
+  const form = useForm<AutomationFormValues>({
+    resolver: zodResolver(formSchema) as Resolver<AutomationFormValues>,
     defaultValues: getAutomationFormDefaults(),
   })
 
   const conditionFormSchema = useMemo(() => createConditionFormSchema(t), [t])
-  const conditionForm = useForm({
-    resolver: zodResolver(conditionFormSchema),
+  const conditionForm = useForm<ConditionFormValues>({
+    resolver: zodResolver(conditionFormSchema) as Resolver<ConditionFormValues>,
     defaultValues: getConditionFormDefaults(),
   })
 
   const actionFormSchema = useMemo(() => createActionFormSchema(t), [t])
-  const actionForm = useForm({
-    resolver: zodResolver(actionFormSchema),
+  const actionForm = useForm<ActionFormValues>({
+    resolver: zodResolver(actionFormSchema) as Resolver<ActionFormValues>,
     defaultValues: getActionFormDefaults(),
   })
 
@@ -205,7 +210,7 @@ export function AutomationProvider({ children }: { children: ReactNode }) {
       : getActionFormDefaults())
   }
 
-  const submitConditionForm = (params: z.infer<ReturnType<typeof createConditionFormSchema>>) => {
+  const submitConditionForm = (params: ConditionFormValues) => {
     if (editingConditionId) {
       setSelectedConditions(state => state.map(item => (
         item.id === editingConditionId ? { ...item, ...params } : item
@@ -217,7 +222,7 @@ export function AutomationProvider({ children }: { children: ReactNode }) {
     closeConditionEditor()
   }
 
-  const submitActionForm = (params: z.infer<ReturnType<typeof createActionFormSchema>>) => {
+  const submitActionForm = (params: ActionFormValues) => {
     if (editingActionId) {
       setSelectedActions(state => state.map(item => (
         item.id === editingActionId ? { ...item, ...params } : item
@@ -288,7 +293,7 @@ export function AutomationProvider({ children }: { children: ReactNode }) {
     useMutateRemoveAutomation.mutate(params)
   }
 
-  const submitAutomationForm = (params: z.infer<ReturnType<typeof createAutomationFormSchema>>) => {
+  const submitAutomationForm = (params: AutomationFormValues) => {
     if (!selectedActions.length) {
       toast.error(t('page.automations.form.actions.required'))
       return

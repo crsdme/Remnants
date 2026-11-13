@@ -14,6 +14,7 @@ import type {
 import { mapOrderStatusToDTO } from '@/mappers'
 import * as OrderStatusRepo from '@/repositories/order-status.repo'
 import * as UserAccessRepo from '@/repositories/user-access.repo'
+import * as AuditLogsService from '@/services/audit-logs.service'
 import { getScopeIdsForUser, HttpError } from '@/utils/'
 
 export async function get({
@@ -43,8 +44,17 @@ export async function get({
   }
 }
 
-export async function create({ payload }: { payload: CreateOrderStatusPayload }): Promise<CreateOrderStatusResponse> {
+export async function create({ payload, user }: { payload: CreateOrderStatusPayload, user?: AuthUser }): Promise<CreateOrderStatusResponse> {
   const orderStatus = await OrderStatusRepo.createOne(payload)
+
+  await AuditLogsService.record({
+    resourceType: 'order-status',
+    resourceId: orderStatus._id.toString(),
+    action: 'create',
+    before: null,
+    after: orderStatus,
+    createdBy: user?.id,
+  })
 
   return {
     status: 'success',
@@ -54,14 +64,24 @@ export async function create({ payload }: { payload: CreateOrderStatusPayload })
   }
 }
 
-export async function edit({ payload }: { payload: EditOrderStatusPayload }): Promise<EditOrderStatusResponse> {
+export async function edit({ payload, user }: { payload: EditOrderStatusPayload, user?: AuthUser }): Promise<EditOrderStatusResponse> {
   const { id } = payload
 
+  const before = await OrderStatusRepo.findById(id)
   const orderStatus = await OrderStatusRepo.updateById(id, payload)
 
   if (!orderStatus) {
     throw new HttpError(400, 'Order status not edited', 'ORDER_STATUS_NOT_EDITED')
   }
+
+  await AuditLogsService.record({
+    resourceType: 'order-status',
+    resourceId: orderStatus._id.toString(),
+    action: 'edit',
+    before,
+    after: orderStatus,
+    createdBy: user?.id,
+  })
 
   return {
     status: 'success',
@@ -71,9 +91,21 @@ export async function edit({ payload }: { payload: EditOrderStatusPayload }): Pr
   }
 }
 
-export async function remove({ payload }: { payload: RemoveOrderStatusesPayload }): Promise<RemoveOrderStatusesResponse> {
+export async function remove({ payload, user }: { payload: RemoveOrderStatusesPayload, user?: AuthUser }): Promise<RemoveOrderStatusesResponse> {
   for (const id of payload.ids) {
-    await OrderStatusRepo.removeById(id)
+    const orderStatus = await OrderStatusRepo.removeById(id)
+
+    if (!orderStatus)
+      continue
+
+    await AuditLogsService.record({
+      resourceType: 'order-status',
+      resourceId: id,
+      action: 'remove',
+      before: orderStatus,
+      after: null,
+      createdBy: user?.id,
+    })
   }
 
   return {

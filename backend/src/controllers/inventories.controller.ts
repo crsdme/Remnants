@@ -145,6 +145,7 @@ export async function edit(
   try {
     const serviceResponse = await InventoriesService.edit({
       payload: req.validated.body,
+      user: req.user,
     })
 
     res.status(200).json(serviceResponse)

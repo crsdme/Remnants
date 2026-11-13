@@ -1,4 +1,5 @@
 import type {
+  AuthUser,
   CreateUserRoleResponse,
   EditUserRoleResponse,
   GetUserRolesResponse,
@@ -7,6 +8,7 @@ import type {
 import type { CreateUserRolesPayload, EditUserRolesPayload, GetUserRolesPayload, RemoveUserRolesPayload } from '@/types/'
 import { mapUserRoleToDTO } from '@/mappers/'
 import * as UserRoleRepository from '@/repositories/user-role.repo'
+import * as AuditLogsService from '@/services/audit-logs.service'
 import { HttpError } from '@/utils'
 
 export async function get(payload: GetUserRolesPayload): Promise<GetUserRolesResponse> {
@@ -27,11 +29,20 @@ export async function get(payload: GetUserRolesPayload): Promise<GetUserRolesRes
   }
 }
 
-export async function create(payload: CreateUserRolesPayload): Promise<CreateUserRoleResponse> {
+export async function create(payload: CreateUserRolesPayload, actor?: AuthUser): Promise<CreateUserRoleResponse> {
   const userRole = await UserRoleRepository.createOne(payload)
 
   if (userRole === undefined)
     throw new HttpError(400, 'User role not created', 'USER_ROLE_NOT_CREATED')
+
+  await AuditLogsService.record({
+    resourceType: 'user-role',
+    resourceId: userRole._id.toString(),
+    action: 'create',
+    before: null,
+    after: userRole,
+    createdBy: actor?.id,
+  })
 
   return {
     status: 'success',
@@ -41,11 +52,21 @@ export async function create(payload: CreateUserRolesPayload): Promise<CreateUse
   }
 }
 
-export async function edit(payload: EditUserRolesPayload): Promise<EditUserRoleResponse> {
+export async function edit(payload: EditUserRolesPayload, actor?: AuthUser): Promise<EditUserRoleResponse> {
+  const before = await UserRoleRepository.findById(payload.id)
   const userRole = await UserRoleRepository.updateById(payload.id, payload)
 
   if (!userRole)
     throw new HttpError(400, 'User role not edited', 'USER_ROLE_NOT_EDITED')
+
+  await AuditLogsService.record({
+    resourceType: 'user-role',
+    resourceId: userRole._id.toString(),
+    action: 'edit',
+    before,
+    after: userRole,
+    createdBy: actor?.id,
+  })
 
   return {
     status: 'success',
@@ -55,9 +76,20 @@ export async function edit(payload: EditUserRolesPayload): Promise<EditUserRoleR
   }
 }
 
-export async function remove(payload: RemoveUserRolesPayload): Promise<RemoveUserRolesResponse> {
+export async function remove(payload: RemoveUserRolesPayload, actor?: AuthUser): Promise<RemoveUserRolesResponse> {
   for (const id of payload.ids) {
-    await UserRoleRepository.removeById(id)
+    const userRole = await UserRoleRepository.removeById(id)
+    if (!userRole)
+      continue
+
+    await AuditLogsService.record({
+      resourceType: 'user-role',
+      resourceId: id,
+      action: 'remove',
+      before: userRole,
+      after: null,
+      createdBy: actor?.id,
+    })
   }
 
   return {

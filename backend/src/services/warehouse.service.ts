@@ -14,6 +14,7 @@ import type {
 import { mapWarehouseToDTO } from '@/mappers/'
 import * as UserAccessRepo from '@/repositories/user-access.repo'
 import * as WarehouseRepo from '@/repositories/warehouse.repo'
+import * as AuditLogsService from '@/services/audit-logs.service'
 import { getEntityIdsForUser, HttpError } from '@/utils'
 
 export async function get({ payload, user }: { payload: GetWarehousesPayload, user: AuthUser }): Promise<GetWarehousesResponse> {
@@ -37,8 +38,17 @@ export async function get({ payload, user }: { payload: GetWarehousesPayload, us
   }
 }
 
-export async function create({ payload }: { payload: CreateWarehousePayload }): Promise<CreateWarehousesResponse> {
+export async function create({ payload, user }: { payload: CreateWarehousePayload, user?: AuthUser }): Promise<CreateWarehousesResponse> {
   const data = await WarehouseRepo.createOne(payload)
+
+  await AuditLogsService.record({
+    resourceType: 'warehouse',
+    resourceId: data._id.toString(),
+    action: 'create',
+    before: null,
+    after: data,
+    createdBy: user?.id,
+  })
 
   return {
     status: 'success',
@@ -48,13 +58,23 @@ export async function create({ payload }: { payload: CreateWarehousePayload }): 
   }
 }
 
-export async function edit({ payload }: { payload: EditWarehousePayload }): Promise<EditWarehousesResponse> {
+export async function edit({ payload, user }: { payload: EditWarehousePayload, user?: AuthUser }): Promise<EditWarehousesResponse> {
   const { id } = payload
 
+  const before = await WarehouseRepo.findById(id)
   const warehouse = await WarehouseRepo.updateById(id, payload)
 
   if (!warehouse)
     throw new HttpError(400, 'Warehouse not edited', 'WAREHOUSE_NOT_EDITED')
+
+  await AuditLogsService.record({
+    resourceType: 'warehouse',
+    resourceId: warehouse._id.toString(),
+    action: 'edit',
+    before,
+    after: warehouse,
+    createdBy: user?.id,
+  })
 
   return {
     status: 'success',
@@ -64,12 +84,21 @@ export async function edit({ payload }: { payload: EditWarehousePayload }): Prom
   }
 }
 
-export async function remove({ payload }: { payload: RemoveWarehousesPayload }): Promise<RemoveWarehousesResponse> {
+export async function remove({ payload, user }: { payload: RemoveWarehousesPayload, user?: AuthUser }): Promise<RemoveWarehousesResponse> {
   for (const id of payload.ids) {
     const warehouse = await WarehouseRepo.removeById(id)
 
     if (!warehouse)
       throw new HttpError(400, 'Warehouse not removed', 'WAREHOUSE_NOT_REMOVED')
+
+    await AuditLogsService.record({
+      resourceType: 'warehouse',
+      resourceId: id,
+      action: 'remove',
+      before: warehouse,
+      after: null,
+      createdBy: user?.id,
+    })
   }
 
   return {

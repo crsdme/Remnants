@@ -88,6 +88,10 @@ export async function createOne(payload: CreateExpenseCategoriesRepoPayload) {
   return ExpenseCategoryModel.create(payload)
 }
 
+export async function findById(id: string) {
+  return ExpenseCategoryModel.findById(id).exec()
+}
+
 export async function updateById(id: string, payload: EditExpenseCategoriesRepoPayload) {
   return ExpenseCategoryModel.findOneAndUpdate(
     { _id: id },

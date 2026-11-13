@@ -1,4 +1,5 @@
 import type {
+  AuthUser,
   CreateCurrencyResponse,
   EditCurrencyResponse,
   EditExchangeRateResponse,
@@ -17,6 +18,7 @@ import type {
 import { mapCurrencyToDTO, mapExchangeRateToDTO } from '@/mappers/'
 import { CurrencyModel, ExchangeRateModel } from '@/models/'
 import * as currenciesRepo from '@/repositories/currencies.repo'
+import * as AuditLogsService from '@/services/audit-logs.service'
 import { HttpError } from '@/utils/'
 
 export async function get({ payload }: { payload: GetCurrencyPayload }): Promise<GetCurrenciesResponse> {
@@ -37,7 +39,7 @@ export async function get({ payload }: { payload: GetCurrencyPayload }): Promise
   }
 }
 
-export async function create({ payload }: { payload: CreateCurrencyPayload }): Promise<CreateCurrencyResponse> {
+export async function create({ payload, user }: { payload: CreateCurrencyPayload, user?: AuthUser }): Promise<CreateCurrencyResponse> {
   const currencies = await CurrencyModel.find({})
 
   const currency = await CurrencyModel.create(payload)
@@ -64,6 +66,15 @@ export async function create({ payload }: { payload: CreateCurrencyPayload }): P
   if (exchangeRates.length > 0)
     await ExchangeRateModel.insertMany(exchangeRates)
 
+  await AuditLogsService.record({
+    resourceType: 'currency',
+    resourceId: currency._id.toString(),
+    action: 'create',
+    before: null,
+    after: currency,
+    createdBy: user?.id,
+  })
+
   return {
     status: 'success',
     code: 'CURRENCY_CREATED',
@@ -72,14 +83,24 @@ export async function create({ payload }: { payload: CreateCurrencyPayload }): P
   }
 }
 
-export async function edit({ payload }: { payload: EditCurrencyPayload }): Promise<EditCurrencyResponse> {
+export async function edit({ payload, user }: { payload: EditCurrencyPayload, user?: AuthUser }): Promise<EditCurrencyResponse> {
   const { id } = payload
 
-  const currency = await CurrencyModel.findOneAndUpdate({ _id: id }, payload)
+  const before = await CurrencyModel.findById(id).exec()
+  const currency = await CurrencyModel.findOneAndUpdate({ _id: id }, payload, { new: true })
 
   if (!currency) {
     throw new HttpError(400, 'Currency not edited', 'CURRENCY_NOT_EDITED')
   }
+
+  await AuditLogsService.record({
+    resourceType: 'currency',
+    resourceId: currency._id.toString(),
+    action: 'edit',
+    before,
+    after: currency,
+    createdBy: user?.id,
+  })
 
   return {
     status: 'success',
@@ -89,13 +110,34 @@ export async function edit({ payload }: { payload: EditCurrencyPayload }): Promi
   }
 }
 
-export async function remove({ payload }: { payload: RemoveCurrencyPayload }): Promise<RemoveCurrenciesResponse> {
+export async function remove({ payload, user }: { payload: RemoveCurrencyPayload, user?: AuthUser }): Promise<RemoveCurrenciesResponse> {
   const { ids } = payload
+  let removedCount = 0
 
-  const currencies = await CurrencyModel.updateMany(
-    { _id: { $in: ids } },
-    { $set: { removed: true } },
-  )
+  for (const id of ids) {
+    const currency = await CurrencyModel.findOneAndUpdate(
+      { _id: id },
+      { $set: { removed: true } },
+      { new: true },
+    ).exec()
+
+    if (!currency)
+      continue
+
+    removedCount += 1
+    await AuditLogsService.record({
+      resourceType: 'currency',
+      resourceId: id,
+      action: 'remove',
+      before: currency,
+      after: null,
+      createdBy: user?.id,
+    })
+  }
+
+  if (removedCount === 0) {
+    throw new HttpError(400, 'Currencies not removed', 'CURRENCIES_NOT_REMOVED')
+  }
 
   await ExchangeRateModel.updateMany(
     {
@@ -106,10 +148,6 @@ export async function remove({ payload }: { payload: RemoveCurrencyPayload }): P
     },
     { $set: { removed: true } },
   )
-
-  if (currencies.modifiedCount === 0) {
-    throw new HttpError(400, 'Currencies not removed', 'CURRENCIES_NOT_REMOVED')
-  }
 
   return {
     status: 'success',

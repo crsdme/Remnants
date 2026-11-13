@@ -29,6 +29,7 @@ import { mapInventoryToDTO } from '@/mappers'
 import * as InventoryRepo from '@/repositories/inventory.repo'
 import * as StockLotRepo from '@/repositories/stock-lot.repo'
 import * as StockMoveRepo from '@/repositories/stock-move.repo'
+import * as AuditLogsService from '@/services/audit-logs.service'
 import * as BarcodeService from '@/services/barcode.service'
 import * as ProductStockStatusService from '@/services/product-stock-status.service'
 import * as ProductService from '@/services/product.service'
@@ -195,6 +196,15 @@ export async function create({ payload, user }: { payload: CreateInventoriesPayl
 
   await InventoryRepo.createItems({ payload: mappedItems })
 
+  await AuditLogsService.record({
+    resourceType: 'inventory',
+    resourceId: inventoryId,
+    action: 'create',
+    before: null,
+    after: inventory,
+    createdBy: user.id,
+  })
+
   return {
     status: 'success',
     code: 'INVENTORY_CREATED',
@@ -323,7 +333,7 @@ export async function confirm({ payload, user }: { payload: ConfirmInventoryPayl
   }
 }
 
-export async function edit({ payload }: { payload: EditInventoriesPayload }): Promise<EditInventoryResponse> {
+export async function edit({ payload, user }: { payload: EditInventoriesPayload, user?: AuthUser }): Promise<EditInventoryResponse> {
   const inventory = await InventoryRepo.findById(payload.id)
 
   if (inventory === null || inventory.removed)
@@ -343,6 +353,15 @@ export async function edit({ payload }: { payload: EditInventoriesPayload }): Pr
 
   if (updated === null)
     throw new HttpError(400, 'Inventory not edited', 'INVENTORY_NOT_EDITED')
+
+  await AuditLogsService.record({
+    resourceType: 'inventory',
+    resourceId: payload.id,
+    action: 'edit',
+    before: inventory,
+    after: updated,
+    createdBy: user?.id,
+  })
 
   return {
     status: 'success',
@@ -366,6 +385,15 @@ export async function remove({ payload, user }: { payload: RemoveInventoriesPayl
 
     if (cancelled === null)
       throw new HttpError(400, 'Inventory already cancelled', 'INVENTORY_ALREADY_CANCELLED')
+
+    await AuditLogsService.record({
+      resourceType: 'inventory',
+      resourceId: id,
+      action: 'remove',
+      before: inventory,
+      after: null,
+      createdBy: user.id,
+    })
   }
 
   return {

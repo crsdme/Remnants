@@ -19,6 +19,7 @@ import { mapMoneyTransactionToDTO } from '@/mappers'
 import * as CurrencyRepo from '@/repositories/currencies.repo'
 import * as MoneyTransactionRepo from '@/repositories/money-transaction.repo'
 import * as UserAccessRepo from '@/repositories/user-access.repo'
+import * as AuditLogsService from '@/services/audit-logs.service'
 import {
   assertAccountCapability,
   assertEntityInAccess,
@@ -139,6 +140,15 @@ export async function createTransaction({ payload, session, user }: { payload: C
   if (created.length === 0)
     throw new HttpError(400, 'Money transaction not created', 'MONEY_TRANSACTION_NOT_CREATED')
 
+  await AuditLogsService.record({
+    resourceType: 'money-transaction',
+    resourceId: created[0]._id.toString(),
+    action: 'create',
+    before: null,
+    after: created[0],
+    createdBy: user?.id,
+  })
+
   return {
     status: 'success',
     code: 'MONEY_TRANSACTION_CREATED',
@@ -240,6 +250,23 @@ export async function createTransfer({
   if (transferOut.length === 0 || transferIn.length === 0)
     throw new HttpError(400, 'Money transaction not created', 'MONEY_TRANSACTION_NOT_CREATED')
 
+  await AuditLogsService.record({
+    resourceType: 'money-transaction',
+    resourceId: transferOut[0]._id.toString(),
+    action: 'create',
+    before: null,
+    after: transferOut[0],
+    createdBy: user.id,
+  })
+  await AuditLogsService.record({
+    resourceType: 'money-transaction',
+    resourceId: transferIn[0]._id.toString(),
+    action: 'create',
+    before: null,
+    after: transferIn[0],
+    createdBy: user.id,
+  })
+
   return {
     status: 'success',
     code: 'MONEY_TRANSACTION_CREATED',
@@ -301,6 +328,15 @@ export async function receive({
 
   if (!updated)
     throw new HttpError(400, 'Money transfer not received', 'MONEY_TRANSACTION_NOT_RECEIVED')
+
+  await AuditLogsService.record({
+    resourceType: 'money-transaction',
+    resourceId: updated._id.toString(),
+    action: 'edit',
+    before: incoming,
+    after: updated,
+    createdBy: user.id,
+  })
 
   return {
     status: 'success',
@@ -368,7 +404,25 @@ export async function cancel({
 
     if (!updatedOutgoing)
       throw new HttpError(400, 'Money transfer not cancelled', 'MONEY_TRANSACTION_NOT_CANCELLED')
+
+    await AuditLogsService.record({
+      resourceType: 'money-transaction',
+      resourceId: outgoing._id.toString(),
+      action: 'remove',
+      before: outgoing,
+      after: null,
+      createdBy: user.id,
+    })
   }
+
+  await AuditLogsService.record({
+    resourceType: 'money-transaction',
+    resourceId: incoming._id.toString(),
+    action: 'remove',
+    before: incoming,
+    after: null,
+    createdBy: user.id,
+  })
 
   return {
     status: 'success',

@@ -12,6 +12,7 @@ import type {
   RemoveCashregisterAccountsPayload,
 } from '@/types'
 import { mapCashregisterAccountToDTO } from '@/mappers/cashregister-accounts.mapper'
+import { CashregisterAccountModel } from '@/models'
 import * as cashregisterAccountsRepo from '@/repositories/cashregister-accounts.repo'
 import * as UserAccessRepo from '@/repositories/user-access.repo'
 import * as AuditLogsService from '@/services/audit-logs.service'
@@ -44,8 +45,17 @@ export async function get({
   }
 }
 
-export async function create({ payload }: { payload: CreateCashregisterAccountPayload }): Promise<CreateCashregisterAccountResponse> {
+export async function create({ payload, user }: { payload: CreateCashregisterAccountPayload, user?: AuthUser }): Promise<CreateCashregisterAccountResponse> {
   const raw = await cashregisterAccountsRepo.createOne(payload)
+
+  await AuditLogsService.record({
+    resourceType: 'cashregister-account',
+    resourceId: raw._id.toString(),
+    action: 'create',
+    before: null,
+    after: raw,
+    createdBy: user?.id,
+  })
 
   return {
     status: 'success',
@@ -55,14 +65,24 @@ export async function create({ payload }: { payload: CreateCashregisterAccountPa
   }
 }
 
-export async function edit({ payload }: { payload: EditCashregisterAccountPayload }): Promise<EditCashregisterAccountResponse> {
+export async function edit({ payload, user }: { payload: EditCashregisterAccountPayload, user?: AuthUser }): Promise<EditCashregisterAccountResponse> {
   const { id } = payload
 
+  const before = await CashregisterAccountModel.findById(id).exec()
   const data = await cashregisterAccountsRepo.updateById(id, payload)
 
   if (!data) {
     throw new HttpError(400, 'Cashregister account not edited', 'CASHREGISTER_ACCOUNT_NOT_EDITED')
   }
+
+  await AuditLogsService.record({
+    resourceType: 'cashregister-account',
+    resourceId: data._id.toString(),
+    action: 'edit',
+    before,
+    after: data,
+    createdBy: user?.id,
+  })
 
   return {
     status: 'success',
@@ -72,24 +92,20 @@ export async function edit({ payload }: { payload: EditCashregisterAccountPayloa
   }
 }
 
-export async function remove({ payload }: { payload: RemoveCashregisterAccountsPayload }): Promise<RemoveCashregisterAccountsResponse> {
+export async function remove({ payload, user }: { payload: RemoveCashregisterAccountsPayload, user?: AuthUser }): Promise<RemoveCashregisterAccountsResponse> {
   for (const id of payload.ids) {
     const data = await cashregisterAccountsRepo.removeById(id)
 
     if (!data)
       continue
 
-    await AuditLogsService.create({
+    await AuditLogsService.record({
       resourceType: 'cashregister-account',
-      resourceId: id.toString(),
+      resourceId: id,
       action: 'remove',
-      changes: [
-        { path: 'names', before: data.names, after: null },
-        { path: 'currencyIds', before: data.currencyIds, after: null },
-        { path: 'priority', before: data.priority, after: null },
-        { path: 'active', before: data.active, after: null },
-        { path: 'removed', before: false, after: true },
-      ],
+      before: data,
+      after: null,
+      createdBy: user?.id,
     })
   }
 

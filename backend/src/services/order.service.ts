@@ -51,6 +51,7 @@ import * as PaymentApplicationRepo from '@/repositories/payment-application.repo
 import * as ProductsRepository from '@/repositories/products.repo'
 import * as SettingRepo from '@/repositories/setting.repo'
 import * as UserAccessRepo from '@/repositories/user-access.repo'
+import * as AuditLogsService from '@/services/audit-logs.service'
 import * as AutomationService from '@/services/automation.service'
 import * as ExchangeRateService from '@/services/currency.service'
 import { weightedMinorUnitCostInCurrency } from '@/services/fifo.utils'
@@ -290,6 +291,15 @@ export async function create({
   if (createdOrder === null)
     throw new HttpError(400, 'Order not created', 'ORDER_NOT_CREATED')
 
+  await AuditLogsService.record({
+    resourceType: 'order',
+    resourceId: orderId,
+    action: 'create',
+    before: null,
+    after: createdOrder[0],
+    createdBy: user.id,
+  })
+
   await Settlement.refreshOrderPaymentStatus(orderId, { userId: user.id })
 
   await AutomationService.run({
@@ -356,6 +366,7 @@ export async function edit({
 
   try {
     let editedOrder = null
+    let auditBefore: unknown = null
     const resolvedFiles = resolveOrderFiles({
       files: payload.files ?? [],
       uploadedFilesIds: payload.uploadedFilesIds,
@@ -384,6 +395,7 @@ export async function edit({
       })
 
       const existingOrder = await OrderRepository.findById(id)
+      auditBefore = existingOrder
 
       const order = await OrderRepository.updateById({
         id,
@@ -430,6 +442,15 @@ export async function edit({
 
     await Settlement.refreshOrderPaymentStatus(payload.id, { userId: user.id })
 
+    await AuditLogsService.record({
+      resourceType: 'order',
+      resourceId: payload.id,
+      action: 'edit',
+      before: auditBefore,
+      after: await OrderRepository.findById(payload.id),
+      createdBy: user.id,
+    })
+
     return {
       status: 'success',
       code: 'ORDER_EDITED',
@@ -444,6 +465,7 @@ export async function edit({
 export async function remove({ payload, user }: { payload: RemoveOrdersPayload, user: AuthUser }): Promise<RemoveOrdersResponse> {
   for (const id of payload.ids) {
     const session = await mongoose.startSession()
+    let removedOrder: unknown = null
 
     try {
       await session.withTransaction(async () => {
@@ -451,6 +473,7 @@ export async function remove({ payload, user }: { payload: RemoveOrdersPayload, 
           payload: { id },
           session,
         })
+        removedOrder = order
 
         if (!order)
           throw new HttpError(404, 'Order not found', 'ORDER_NOT_FOUND')
@@ -497,6 +520,15 @@ export async function remove({ payload, user }: { payload: RemoveOrdersPayload, 
           },
           session,
         })
+      })
+
+      await AuditLogsService.record({
+        resourceType: 'order',
+        resourceId: id,
+        action: 'remove',
+        before: removedOrder,
+        after: null,
+        createdBy: user.id,
       })
     }
     finally {

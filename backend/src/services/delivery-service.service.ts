@@ -18,7 +18,10 @@ import { mapDeliveryServiceToDTO } from '@/mappers/delivery-services.mapper'
 import { DeliveryServiceModel } from '@/models/'
 import * as DeliveryServicesRepo from '@/repositories/delivery-services.repo'
 import * as UserAccessRepo from '@/repositories/user-access.repo'
+import * as AuditLogsService from '@/services/audit-logs.service'
 import { getScopeIdsForUser, HttpError } from '@/utils/'
+
+const DELIVERY_SERVICE_AUDIT_OMIT = ['credentials'] as const
 
 function isMaskedApiKey(apiKey: string): boolean {
   return apiKey.length === 0 || apiKey === DELIVERY_SERVICE_API_KEY_MASK
@@ -72,7 +75,7 @@ export async function get({
   }
 }
 
-export async function create({ payload }: { payload: CreateDeliveryServicesPayload }): Promise<CreateDeliveryServiceResponse> {
+export async function create({ payload, user }: { payload: CreateDeliveryServicesPayload, user?: AuthUser }): Promise<CreateDeliveryServiceResponse> {
   if (payload.type === 'novaposhta' && payload.credentials.type === 'novaposhta') {
     if (isMaskedApiKey(payload.credentials.apiKey)) {
       throw new HttpError(400, 'Nova Poshta API key is required', 'NOVA_POSHTA_API_KEY_REQUIRED')
@@ -80,6 +83,16 @@ export async function create({ payload }: { payload: CreateDeliveryServicesPaylo
   }
 
   const deliveryService = await DeliveryServicesRepo.createOne(payload)
+
+  await AuditLogsService.record({
+    resourceType: 'delivery-service',
+    resourceId: deliveryService._id.toString(),
+    action: 'create',
+    before: null,
+    after: deliveryService,
+    createdBy: user?.id,
+    omit: DELIVERY_SERVICE_AUDIT_OMIT,
+  })
 
   return {
     status: 'success',
@@ -89,7 +102,7 @@ export async function create({ payload }: { payload: CreateDeliveryServicesPaylo
   }
 }
 
-export async function edit({ payload }: { payload: EditDeliveryServicesPayload }): Promise<EditDeliveryServiceResponse> {
+export async function edit({ payload, user }: { payload: EditDeliveryServicesPayload, user?: AuthUser }): Promise<EditDeliveryServiceResponse> {
   const { id } = payload
 
   const existing = await DeliveryServicesRepo.findById(id)
@@ -116,6 +129,16 @@ export async function edit({ payload }: { payload: EditDeliveryServicesPayload }
     throw new HttpError(400, 'Delivery service not edited', 'DELIVERY_SERVICE_NOT_EDITED')
   }
 
+  await AuditLogsService.record({
+    resourceType: 'delivery-service',
+    resourceId: deliveryService._id.toString(),
+    action: 'edit',
+    before: existing,
+    after: deliveryService,
+    createdBy: user?.id,
+    omit: DELIVERY_SERVICE_AUDIT_OMIT,
+  })
+
   return {
     status: 'success',
     code: 'DELIVERY_SERVICE_EDITED',
@@ -124,15 +147,33 @@ export async function edit({ payload }: { payload: EditDeliveryServicesPayload }
   }
 }
 
-export async function remove({ payload }: { payload: RemoveDeliveryServicesPayload }): Promise<RemoveDeliveryServicesResponse> {
+export async function remove({ payload, user }: { payload: RemoveDeliveryServicesPayload, user?: AuthUser }): Promise<RemoveDeliveryServicesResponse> {
   const { ids } = payload
+  let removedCount = 0
 
-  const deliveryServices = await DeliveryServiceModel.updateMany(
-    { _id: { $in: ids } },
-    { $set: { removed: true } },
-  )
+  for (const id of ids) {
+    const deliveryService = await DeliveryServiceModel.findOneAndUpdate(
+      { _id: id },
+      { $set: { removed: true } },
+      { new: true },
+    ).exec()
 
-  if (deliveryServices.modifiedCount === 0) {
+    if (!deliveryService)
+      continue
+
+    removedCount += 1
+    await AuditLogsService.record({
+      resourceType: 'delivery-service',
+      resourceId: id,
+      action: 'remove',
+      before: deliveryService,
+      after: null,
+      createdBy: user?.id,
+      omit: DELIVERY_SERVICE_AUDIT_OMIT,
+    })
+  }
+
+  if (removedCount === 0) {
     throw new HttpError(400, 'Delivery services not removed', 'DELIVERY_SERVICES_NOT_REMOVED')
   }
 

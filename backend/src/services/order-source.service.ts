@@ -14,6 +14,7 @@ import type {
 import { mapOrderSourceToDTO } from '@/mappers/'
 import * as OrderSourceRepo from '@/repositories/order-source.repo'
 import * as UserAccessRepo from '@/repositories/user-access.repo'
+import * as AuditLogsService from '@/services/audit-logs.service'
 import { getScopeIdsForUser, HttpError } from '@/utils/'
 
 export async function get({
@@ -43,8 +44,17 @@ export async function get({
   }
 }
 
-export async function create({ payload }: { payload: CreateOrderSourcePayload }): Promise<CreateOrderSourceResponse> {
+export async function create({ payload, user }: { payload: CreateOrderSourcePayload, user?: AuthUser }): Promise<CreateOrderSourceResponse> {
   const orderSource = await OrderSourceRepo.createOne(payload)
+
+  await AuditLogsService.record({
+    resourceType: 'order-source',
+    resourceId: orderSource._id.toString(),
+    action: 'create',
+    before: null,
+    after: orderSource,
+    createdBy: user?.id,
+  })
 
   return {
     status: 'success',
@@ -54,13 +64,23 @@ export async function create({ payload }: { payload: CreateOrderSourcePayload })
   }
 }
 
-export async function edit({ payload }: { payload: EditOrderSourcePayload }): Promise<EditOrderSourceResponse> {
+export async function edit({ payload, user }: { payload: EditOrderSourcePayload, user?: AuthUser }): Promise<EditOrderSourceResponse> {
   const { id } = payload
 
+  const before = await OrderSourceRepo.findById(id)
   const orderSource = await OrderSourceRepo.updateById(id, payload)
 
   if (!orderSource)
     throw new HttpError(400, 'Order source not edited', 'ORDER_SOURCE_NOT_EDITED')
+
+  await AuditLogsService.record({
+    resourceType: 'order-source',
+    resourceId: orderSource._id.toString(),
+    action: 'edit',
+    before,
+    after: orderSource,
+    createdBy: user?.id,
+  })
 
   return {
     status: 'success',
@@ -70,9 +90,21 @@ export async function edit({ payload }: { payload: EditOrderSourcePayload }): Pr
   }
 }
 
-export async function remove({ payload }: { payload: RemoveOrderSourcesPayload }): Promise<RemoveOrderSourcesResponse> {
+export async function remove({ payload, user }: { payload: RemoveOrderSourcesPayload, user?: AuthUser }): Promise<RemoveOrderSourcesResponse> {
   for (const id of payload.ids) {
-    await OrderSourceRepo.removeById(id)
+    const orderSource = await OrderSourceRepo.removeById(id)
+
+    if (!orderSource)
+      continue
+
+    await AuditLogsService.record({
+      resourceType: 'order-source',
+      resourceId: id,
+      action: 'remove',
+      before: orderSource,
+      after: null,
+      createdBy: user?.id,
+    })
   }
 
   return {
