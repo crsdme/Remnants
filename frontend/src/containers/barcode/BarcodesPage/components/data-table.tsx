@@ -8,7 +8,7 @@ import { useBarcodeQuery } from '@/api/hooks'
 import { ColumnVisibilityMenu, TablePagination, TableSelectionDropdown } from '@/components'
 import { Skeleton, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui'
 import { backendUrl } from '@/utils/constants'
-import { parseQueryCsv, setQueryParamCsv, useListQueryState } from '@/utils/hooks'
+import { useListQueryState } from '@/utils/hooks'
 
 import { useBarcodeContext } from '../context'
 import { useColumns } from './columns'
@@ -29,10 +29,10 @@ export function DataTable() {
     sorters,
   } = useListQueryState({
     readFilters: params => ({
-      codes: parseQueryCsv(params.get('codes')),
+      code: params.get('code') ?? '',
     }),
     writeFilters: (params, filters) => {
-      setQueryParamCsv(params, 'codes', filters.codes)
+      params.set('code', filters.code ?? '')
     },
   })
 

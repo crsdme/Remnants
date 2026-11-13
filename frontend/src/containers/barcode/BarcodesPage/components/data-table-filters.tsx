@@ -9,12 +9,10 @@ export function DataTableFilters({ filters, setFilters }: { filters: any, setFil
   const { t } = useTranslation()
   const [localFilters, setLocalFilters] = useState(filters)
 
-  const debouncedSetFilters = useDebounceCallback((value) => {
-    setFilters(value)
-  }, 300)
+  const debouncedSetFilters = useDebounceCallback(setFilters, 300)
 
   const handleFilter = (field: string, value: string) => {
-    setLocalFilters({ [field]: value })
+    setLocalFilters((prev: any) => ({ ...prev, [field]: value }))
     debouncedSetFilters({ [field]: value })
   }
 
@@ -25,8 +23,8 @@ export function DataTableFilters({ filters, setFilters }: { filters: any, setFil
       </div>
       <Input
         placeholder={t('page.barcodes.filter.code')}
-        value={localFilters.codes}
-        onChange={event => handleFilter('codes', event.target.value)}
+        value={localFilters.code ?? ''}
+        onChange={event => handleFilter('code', event.target.value)}
         className="pl-10"
       />
     </div>

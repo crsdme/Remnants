@@ -14,6 +14,7 @@ export async function list(payload: GetBarcodesRepoPayload): Promise<GetBarcodeB
 
   const {
     ids,
+    code,
     codes,
     products,
     active,
@@ -24,7 +25,8 @@ export async function list(payload: GetBarcodesRepoPayload): Promise<GetBarcodeB
   const query = buildQuery({
     filters: {
       _id: ids,
-      code: codes,
+      code,
+      codes,
       products,
       active,
       createdAt,
@@ -32,7 +34,8 @@ export async function list(payload: GetBarcodesRepoPayload): Promise<GetBarcodeB
     },
     rules: {
       _id: { type: 'array' },
-      code: { type: 'array' },
+      code: { type: 'string' },
+      codes: { type: 'array', field: 'code' },
       products: { type: 'array', field: 'products._id' },
       active: { type: 'array' },
       createdAt: { type: 'dateRange' },

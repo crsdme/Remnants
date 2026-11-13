@@ -29,6 +29,7 @@ export type BarcodeDTOPopulated = z.output<typeof barcodeDTOPopulatedSchema>
 export const getBarcodesSchema = z.object({
   filters: z.object({
     ids: z.array(idSchema).optional().default([]),
+    code: z.string().trim().optional(),
     codes: z.array(z.string().trim()).optional().default([]),
     products: z.array(idSchema).optional(),
     active: booleanArraySchema.optional(),
