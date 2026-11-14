@@ -29,18 +29,20 @@ async function recalculateProductPrices() {
     if (product.productPropertiesGroupId === propertyGroups.services)
       continue
 
-    const props = product.productProperties ?? []
-    const lengthProp = props.find(p => p._id === propertyIds.LENGTH)
-    const weightProp = props.find(p => p._id === propertyIds.WEIGHT)
+    // lean ProductDB types props as `id`; mongoose stores `_id`
+    const props = (product.productProperties ?? []) as Array<{ id?: string, _id?: string, value?: unknown }>
+    const propId = (p: { id?: string, _id?: string }) => p._id ?? p.id
+    const lengthProp = props.find(p => propId(p) === propertyIds.LENGTH)
+    const weightProp = props.find(p => propId(p) === propertyIds.WEIGHT)
     const length = lengthProp?.value
     const weight = weightProp?.value
 
     if (typeof length !== 'number' || typeof weight !== 'number' || weight <= 0)
       continue
 
-    const typeIds = asOptionIds(props.find(p => p._id === propertyIds.HAIR_TYPE)?.value)
-    const segmentIds = asOptionIds(props.find(p => p._id === propertyIds.SEGMENT)?.value)
-    const colorCategoryIds = asOptionIds(props.find(p => p._id === propertyIds.COLOR_CATEGORY)?.value)
+    const typeIds = asOptionIds(props.find(p => propId(p) === propertyIds.HAIR_TYPE)?.value)
+    const segmentIds = asOptionIds(props.find(p => propId(p) === propertyIds.SEGMENT)?.value)
+    const colorCategoryIds = asOptionIds(props.find(p => propId(p) === propertyIds.COLOR_CATEGORY)?.value)
 
     const perKg = getInvoiceProductPrice(length, typeIds, segmentIds, colorCategoryIds)
     if (perKg == null)
