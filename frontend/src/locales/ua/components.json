@@ -1,4 +1,8 @@
 {
+  "component.confirmPopover.title": "Ви впевнені?",
+  "component.confirmPopover.description": "Цю дію неможливо скасувати.",
+  "component.confirmPopover.cancelText": "Скасувати",
+  "component.confirmPopover.confirmText": "Підтвердити",
 
   "component.pagination.selected": "Вибрано {{selected}} із {{total}} рядків.",
 

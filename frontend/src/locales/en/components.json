@@ -1,4 +1,9 @@
 {
+  "component.confirmPopover.title": "Are you sure?",
+  "component.confirmPopover.description": "This action cannot be undone.",
+  "component.confirmPopover.cancelText": "Cancel",
+  "component.confirmPopover.confirmText": "Confirm",
+
   "component.pagination.selected": "{{selected}} of {{total}} row(s) selected.",
   "component.pagination.current": "Page {{current}} of {{total}}",
 

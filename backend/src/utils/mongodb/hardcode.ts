@@ -300,20 +300,38 @@ function dyedLengthBucket(length: number): DyedLengthBucket | null {
   return null
 }
 
-/** Resolve inventory category UUID from product properties. Unmatched → Empty. */
-export function resolveInventoryCategoryId(input: {
+export type InventoryCategoryMissReason
+  = 'services'
+    | 'dyed_no_segment'
+    | 'dyed_extremely_not_india'
+    | 'dyed_no_length'
+    | 'dyed_length_out_of_range'
+    | 'dyed_unknown_color'
+    | 'raw_no_length'
+    | 'raw_length_out_of_range'
+    | 'raw_unknown_type'
+    | 'balayage_no_segment'
+    | 'remy_not_raw'
+    | 'matched'
+
+/** Why product maps to Empty (or matched). */
+export function explainInventoryCategory(input: {
   groupId?: string
   length?: number
   typeIds: string[]
   segmentIds: string[]
   colorCategoryIds: string[]
-}): string {
+}): { categoryId: string, reason: InventoryCategoryMissReason } {
   const { propertyGroups, hairTypes, segments, colorCategories } = getHardcodeData()
   const empty = INVENTORY_CATEGORY_BY_NAME.Empty
-  const { groupId, length, typeIds, segmentIds, colorCategoryIds } = input
+  const groupId = input.groupId
+  const length = input.length
+  const typeIds = input.typeIds.filter(id => id !== '')
+  const segmentIds = input.segmentIds.filter(id => id !== '')
+  const colorCategoryIds = input.colorCategoryIds.filter(id => id !== '')
 
   if (groupId === propertyGroups.services)
-    return empty
+    return { categoryId: empty, reason: 'services' }
 
   if (groupId === propertyGroups.dyed) {
     const segment
@@ -328,75 +346,126 @@ export function resolveInventoryCategoryId(input: {
               : null
 
     if (segment === null)
-      return empty
+      return { categoryId: empty, reason: 'dyed_no_segment' }
 
     if (colorCategoryIds.includes(colorCategories.EXTREAMELY)) {
-      return segment === 'India' ? INVENTORY_CATEGORY_BY_NAME['India Extremely'] : empty
+      if (segment === 'India')
+        return { categoryId: INVENTORY_CATEGORY_BY_NAME['India Extremely'], reason: 'matched' }
+      return { categoryId: empty, reason: 'dyed_extremely_not_india' }
     }
 
     if (colorCategoryIds.includes(colorCategories.NATURAL_BLONDE))
-      return INVENTORY_CATEGORY_BY_NAME[`${segment} Natural Blonde`]
+      return { categoryId: INVENTORY_CATEGORY_BY_NAME[`${segment} Natural Blonde`], reason: 'matched' }
     if (colorCategoryIds.includes(colorCategories.PLATIN))
-      return INVENTORY_CATEGORY_BY_NAME[`${segment} Platin`]
+      return { categoryId: INVENTORY_CATEGORY_BY_NAME[`${segment} Platin`], reason: 'matched' }
     if (colorCategoryIds.includes(colorCategories.OMBRE))
-      return INVENTORY_CATEGORY_BY_NAME[`${segment} Ombre`]
+      return { categoryId: INVENTORY_CATEGORY_BY_NAME[`${segment} Ombre`], reason: 'matched' }
     if (colorCategoryIds.includes(colorCategories.BALAYAGE))
-      return INVENTORY_CATEGORY_BY_NAME[`${segment} Balayage`]
+      return { categoryId: INVENTORY_CATEGORY_BY_NAME[`${segment} Balayage`], reason: 'matched' }
 
     if (typeof length !== 'number')
-      return empty
+      return { categoryId: empty, reason: 'dyed_no_length' }
 
     const bucket = dyedLengthBucket(length)
     if (bucket === null)
-      return empty
+      return { categoryId: empty, reason: 'dyed_length_out_of_range' }
 
     if (colorCategoryIds.includes(colorCategories.BLONDE))
-      return INVENTORY_CATEGORY_BY_NAME[`${segment} Blonde ${bucket}`]
-    if (colorCategoryIds.includes(colorCategories.NATURAL_COLOR))
-      return INVENTORY_CATEGORY_BY_NAME[`${segment} Natural Color ${bucket}`]
+      return { categoryId: INVENTORY_CATEGORY_BY_NAME[`${segment} Blonde ${bucket}`], reason: 'matched' }
+    // Natural Balayage hair type → same boxes as Natural Color
+    if (
+      colorCategoryIds.includes(colorCategories.NATURAL_COLOR)
+      || typeIds.includes(hairTypes.NATURAL_BALAYAGE)
+    ) {
+      return { categoryId: INVENTORY_CATEGORY_BY_NAME[`${segment} Natural Color ${bucket}`], reason: 'matched' }
+    }
 
-    return empty
+    return { categoryId: empty, reason: 'dyed_unknown_color' }
   }
 
-  // raw / default
+  // raw / default (also products without dyed/services group)
+  // Remy is dyed-only — ignore it on raw path; Remy-only must not become Raw.
   const isCurly = typeIds.includes(hairTypes.CURLY)
   const types = typeIds.filter(id => id !== hairTypes.CURLY && id !== hairTypes.REMY)
+  const isExclusiveType = types.some(id =>
+    id === hairTypes.GOLD
+    || id === hairTypes.RED
+    || id === hairTypes.GRAY
+    || id === hairTypes.ALBINO,
+  )
+
+  if (isExclusiveType)
+    return { categoryId: INVENTORY_CATEGORY_BY_NAME.Exclusive, reason: 'matched' }
 
   if (isCurly) {
     if (types.includes(hairTypes.VIRGIN))
-      return INVENTORY_CATEGORY_BY_NAME['Virgin Curly']
+      return { categoryId: INVENTORY_CATEGORY_BY_NAME['Virgin Curly'], reason: 'matched' }
     if (types.includes(hairTypes.SILKY))
-      return INVENTORY_CATEGORY_BY_NAME['Silky Curly']
+      return { categoryId: INVENTORY_CATEGORY_BY_NAME['Silky Curly'], reason: 'matched' }
     if (types.includes(hairTypes.BROWN))
-      return INVENTORY_CATEGORY_BY_NAME['Brown Curly']
-    return INVENTORY_CATEGORY_BY_NAME['Raw Curly']
+      return { categoryId: INVENTORY_CATEGORY_BY_NAME['Brown Curly'], reason: 'matched' }
+    return { categoryId: INVENTORY_CATEGORY_BY_NAME['Raw Curly'], reason: 'matched' }
   }
 
   if (typeof length !== 'number')
-    return empty
+    return { categoryId: empty, reason: 'raw_no_length' }
 
   const bucket = rawLengthBucket(length)
   if (bucket === null)
-    return empty
+    return { categoryId: empty, reason: 'raw_length_out_of_range' }
 
-  if (types.includes(hairTypes.VIRGIN))
-    return INVENTORY_CATEGORY_BY_NAME[`Virgin ${bucket}`]
-  if (types.includes(hairTypes.SILKY))
-    return INVENTORY_CATEGORY_BY_NAME[`Silky ${bucket}`]
-  if (types.includes(hairTypes.BROWN))
-    return INVENTORY_CATEGORY_BY_NAME[`Brown ${bucket}`]
-  if (types.includes(hairTypes.SLAVIC))
-    return INVENTORY_CATEGORY_BY_NAME[`Slavic ${bucket}`]
-  if (
-    types.includes(hairTypes.GOLD)
-    || types.includes(hairTypes.RED)
-    || types.includes(hairTypes.GRAY)
-    || types.includes(hairTypes.ALBINO)
-  ) {
-    return INVENTORY_CATEGORY_BY_NAME[`Raw ${bucket}`]
+  // Natural Balayage → Natural Color (needs segment + dyed length buckets)
+  if (types.includes(hairTypes.NATURAL_BALAYAGE)) {
+    const segment
+      = segmentIds.includes(segments.INDIA)
+        ? 'India'
+        : segmentIds.includes(segments.STANDART)
+          ? 'Standart'
+          : segmentIds.includes(segments.PREMIUM)
+            ? 'Premium'
+            : segmentIds.includes(segments.LUX)
+              ? 'Lux'
+              : null
+    if (segment === null)
+      return { categoryId: empty, reason: 'balayage_no_segment' }
+    const dyedBucket = dyedLengthBucket(length)
+    if (dyedBucket === null)
+      return { categoryId: empty, reason: 'raw_length_out_of_range' }
+    return {
+      categoryId: INVENTORY_CATEGORY_BY_NAME[`${segment} Natural Color ${dyedBucket}`],
+      reason: 'matched',
+    }
   }
 
-  return empty
+  if (types.includes(hairTypes.VIRGIN))
+    return { categoryId: INVENTORY_CATEGORY_BY_NAME[`Virgin ${bucket}`], reason: 'matched' }
+  if (types.includes(hairTypes.SILKY))
+    return { categoryId: INVENTORY_CATEGORY_BY_NAME[`Silky ${bucket}`], reason: 'matched' }
+  if (types.includes(hairTypes.BROWN))
+    return { categoryId: INVENTORY_CATEGORY_BY_NAME[`Brown ${bucket}`], reason: 'matched' }
+  if (types.includes(hairTypes.SLAVIC))
+    return { categoryId: INVENTORY_CATEGORY_BY_NAME[`Slavic ${bucket}`], reason: 'matched' }
+
+  // Remy-only (Remy filtered out above) — not a raw box
+  if (typeIds.includes(hairTypes.REMY) && types.length === 0)
+    return { categoryId: empty, reason: 'remy_not_raw' }
+
+  // No hair type (or blank "") → Raw length boxes
+  if (types.length === 0)
+    return { categoryId: INVENTORY_CATEGORY_BY_NAME[`Raw ${bucket}`], reason: 'matched' }
+
+  return { categoryId: empty, reason: 'raw_unknown_type' }
+}
+
+/** Resolve inventory category UUID from product properties. Unmatched → Empty. */
+export function resolveInventoryCategoryId(input: {
+  groupId?: string
+  length?: number
+  typeIds: string[]
+  segmentIds: string[]
+  colorCategoryIds: string[]
+}): string {
+  return explainInventoryCategory(input).categoryId
 }
 
 export function getHardcodeData() {

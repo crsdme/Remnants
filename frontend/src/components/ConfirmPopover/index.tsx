@@ -1,4 +1,4 @@
-import type { MouseEvent, ReactNode } from 'react'
+import type { ComponentProps, MouseEvent, ReactNode } from 'react'
 
 import { Loader2 } from 'lucide-react'
 import { useState } from 'react'
@@ -12,6 +12,7 @@ interface Props {
   description?: string
   confirmText?: string
   cancelText?: string
+  confirmVariant?: ComponentProps<typeof Button>['variant']
   side?: 'top' | 'right' | 'bottom' | 'left'
   align?: 'start' | 'center' | 'end'
   disabled?: boolean
@@ -24,6 +25,7 @@ export function ConfirmPopover({
   description,
   confirmText,
   cancelText,
+  confirmVariant = 'destructive',
   side = 'top',
   align = 'center',
   disabled = false,
@@ -68,7 +70,7 @@ export function ConfirmPopover({
               {cancelText || t('component.confirmPopover.cancelText')}
             </Button>
             <Button
-              variant="destructive"
+              variant={confirmVariant}
               size="sm"
               type="button"
               onClick={(e) => {

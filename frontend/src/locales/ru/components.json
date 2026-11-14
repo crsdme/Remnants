@@ -1,4 +1,9 @@
 {
+  "component.confirmPopover.title": "Вы уверены?",
+  "component.confirmPopover.description": "Это действие нельзя отменить.",
+  "component.confirmPopover.cancelText": "Отмена",
+  "component.confirmPopover.confirmText": "Подтвердить",
+
   "component.pagination.selected": "{{selected}} из {{total}} строк выбрано.",
   "component.pagination.current": "Страница {{current}} из {{total}}",
 

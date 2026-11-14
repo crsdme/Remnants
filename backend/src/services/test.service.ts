@@ -3,19 +3,19 @@ import * as CurrencyRepository from '@/repositories/currencies.repo'
 import * as ProductRepository from '@/repositories/products.repo'
 import * as CategoryService from '@/services/category.service'
 import {
+  explainInventoryCategory,
   getHardcodeData,
   getInvoiceProductPrice,
   HttpError,
-  INVENTORY_CATEGORY_BY_NAME,
   INVENTORY_CATEGORY_NAMES,
-  resolveInventoryCategoryId,
+  type InventoryCategoryMissReason,
   toMinor,
 } from '@/utils'
 
 function asOptionIds(value: unknown): string[] {
   if (Array.isArray(value))
-    return value.filter((v): v is string => typeof v === 'string')
-  if (typeof value === 'string')
+    return value.filter((v): v is string => typeof v === 'string' && v !== '')
+  if (typeof value === 'string' && value !== '')
     return [value]
   return []
 }
@@ -154,9 +154,13 @@ async function addProductCategories() {
   //   { $set: { removed: true } },
   // )
 
-  const { propertyIds } = getHardcodeData()
+  const { propertyIds, propertyGroups, hairTypes } = getHardcodeData()
+  const hairTypeNameById = Object.fromEntries(
+    Object.entries(hairTypes).map(([name, id]) => [id, name]),
+  )
+
   const products = await ProductModel.find({ removed: { $ne: true } })
-    .select({ productPropertiesGroupId: 1, productProperties: 1, categoryIds: 1 })
+    .select({ seq: 1, names: 1, productPropertiesGroupId: 1, productProperties: 1, categoryIds: 1 })
     .lean()
     .exec()
 
@@ -164,28 +168,55 @@ async function addProductCategories() {
   // const ops: Parameters<typeof ProductRepository.bulkWrite>[0] = []
   let matched = 0
   let unmatched = 0
+  const reasons: Record<string, number> = {}
+  const samples: Record<string, Array<{ seq?: number, id: string, name: string, length?: number, types: string[], group: string }>> = {}
 
   for (const product of products) {
     const props = productProps(product)
-    const length = props.find(p => propId(p) === propertyIds.LENGTH)?.value
+    const lengthRaw = props.find(p => propId(p) === propertyIds.LENGTH)?.value
+    const length = typeof lengthRaw === 'number' ? lengthRaw : undefined
     const typeIds = asOptionIds(props.find(p => propId(p) === propertyIds.HAIR_TYPE)?.value)
     const segmentIds = asOptionIds(props.find(p => propId(p) === propertyIds.SEGMENT)?.value)
     const colorCategoryIds = asOptionIds(props.find(p => propId(p) === propertyIds.COLOR_CATEGORY)?.value)
 
-    const categoryId = resolveInventoryCategoryId({
+    const explained = explainInventoryCategory({
       groupId: product.productPropertiesGroupId,
-      length: typeof length === 'number' ? length : undefined,
+      length,
       typeIds,
       segmentIds,
       colorCategoryIds,
     })
 
-    if (categoryId === INVENTORY_CATEGORY_BY_NAME.Empty) {
-      unmatched++
-      continue
+    if (explained.reason === 'matched') {
+      matched++
     }
-
-    matched++
+    else {
+      unmatched++
+      reasons[explained.reason] = (reasons[explained.reason] ?? 0) + 1
+      const list = samples[explained.reason] ?? (samples[explained.reason] = [])
+      if (list.length < 8) {
+        const names = product.names as Map<string, string> | Record<string, string> | undefined
+        const name = names instanceof Map
+          ? (names.get('en') ?? names.get('ru') ?? '')
+          : (names?.en ?? names?.ru ?? '')
+        const group
+          = product.productPropertiesGroupId === propertyGroups.raw
+            ? 'raw'
+            : product.productPropertiesGroupId === propertyGroups.dyed
+              ? 'dyed'
+              : product.productPropertiesGroupId === propertyGroups.services
+                ? 'services'
+                : (product.productPropertiesGroupId ?? 'none')
+        list.push({
+          seq: product.seq,
+          id: String(product._id),
+          name,
+          length,
+          types: typeIds.map(id => hairTypeNameById[id] ?? id.slice(0, 8)),
+          group,
+        })
+      }
+    }
 
     // const current = product.categoryIds ?? []
     // if (current.length === 1 && current[0] === categoryId)
@@ -194,7 +225,7 @@ async function addProductCategories() {
     // ops.push({
     //   updateOne: {
     //     filter: { _id: product._id },
-    //     update: { $set: { categoryIds: [categoryId] } },
+    //     update: { $set: { categoryIds: [explained.categoryId] } },
     //   },
     // })
   }
@@ -202,10 +233,25 @@ async function addProductCategories() {
   // if (ops.length > 0)
   //   await ProductRepository.bulkWrite(ops)
 
+  // Full breakdown in backend console — toast only shows counts
+  console.log(`[addProductCategories dry-run] ${JSON.stringify({
+    matched,
+    unmatched,
+    total: products.length,
+    reasons: reasons as Partial<Record<InventoryCategoryMissReason, number>>,
+    samples,
+  }, null, 2)}`)
+
+  const reasonSummary = Object.entries(reasons)
+    .sort((a, b) => b[1] - a[1])
+    .map(([reason, count]) => `${reason}=${count}`)
+    .join(', ')
+
   return {
     matched,
     unmatched,
     total: products.length,
+    reasonSummary,
     // legacyPulled: pullResult.modifiedCount,
     // legacyRemoved: removeResult.modifiedCount,
   }
@@ -235,7 +281,7 @@ export async function start(payload: { key: string }) {
     return {
       status: 'success' as const,
       code: 'TEST',
-      message: `dry-run: matched ${result.matched}, unmatched ${result.unmatched}, total ${result.total}`,
+      message: `dry-run: matched ${result.matched}, unmatched ${result.unmatched}, total ${result.total}; ${result.reasonSummary}`,
     }
   }
 

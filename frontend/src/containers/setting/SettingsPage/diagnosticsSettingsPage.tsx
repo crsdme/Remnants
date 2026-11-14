@@ -1,9 +1,57 @@
 import { toast } from 'sonner'
 import { useTestStart } from '@/api/hooks/test/useTestStart'
-import { ConfirmPopover } from '@/components'
-import { Button, Card, CardContent, CardHeader, CardTitle } from '@/components/ui'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+  Button,
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui'
 import { useLocale } from '@/utils/hooks'
 import { SettingRow } from './components/setting-row'
+
+function DiagnosticsConfirmButton({
+  title,
+  description,
+  onConfirm,
+}: {
+  title: string
+  description: string
+  onConfirm: () => void
+}) {
+  const { t } = useLocale()
+
+  return (
+    <AlertDialog>
+      <AlertDialogTrigger asChild>
+        <Button type="button" variant="outline">
+          {t('page.settings.diagnostics.run')}
+        </Button>
+      </AlertDialogTrigger>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>{title}</AlertDialogTitle>
+          <AlertDialogDescription>{description}</AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>{t('button.cancel')}</AlertDialogCancel>
+          <AlertDialogAction onClick={onConfirm}>
+            {t('page.settings.diagnostics.run')}
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  )
+}
 
 export function DiagnosticsSettingsPage() {
   const { t } = useLocale()
@@ -51,31 +99,21 @@ export function DiagnosticsSettingsPage() {
             label={t('page.settings.main.addProductCategories.label')}
             hint={t('page.settings.main.addProductCategories.description')}
           >
-            <ConfirmPopover
+            <DiagnosticsConfirmButton
               title={t('page.settings.diagnostics.addProductCategories.confirmTitle')}
               description={t('page.settings.diagnostics.addProductCategories.confirmDescription')}
-              confirmText={t('page.settings.diagnostics.run')}
               onConfirm={() => startTest({ key: 'addProductCategories' })}
-            >
-              <Button type="button" variant="outline">
-                {t('page.settings.diagnostics.run')}
-              </Button>
-            </ConfirmPopover>
+            />
           </SettingRow>
           <SettingRow
             label={t('page.settings.main.recalculateProductPrices')}
             hint={t('page.settings.diagnostics.recalculateProductPrices.hint')}
           >
-            <ConfirmPopover
+            <DiagnosticsConfirmButton
               title={t('page.settings.diagnostics.recalculateProductPrices.confirmTitle')}
               description={t('page.settings.diagnostics.recalculateProductPrices.confirmDescription')}
-              confirmText={t('page.settings.diagnostics.run')}
               onConfirm={() => startTest({ key: 'recalculateProductPrices' })}
-            >
-              <Button type="button" variant="outline">
-                {t('page.settings.diagnostics.run')}
-              </Button>
-            </ConfirmPopover>
+            />
           </SettingRow>
           <SettingRow
             label={t('page.settings.main.createInventoryCategories')}
