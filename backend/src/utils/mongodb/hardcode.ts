@@ -183,7 +183,355 @@ const CONFIGS = {
 
 type ConfigKey = keyof typeof CONFIGS
 
+/** Temporary inventory box categories (flat names). */
+export const INVENTORY_CATEGORY_NAMES = [
+  'Virgin 20-49',
+  'Virgin 50-59',
+  'Virgin 60-69',
+  'Virgin 70-79',
+  'Virgin 80-110',
+  'Virgin Curly',
+  'Silky 20-49',
+  'Silky 50-59',
+  'Silky 60-69',
+  'Silky 70-79',
+  'Silky 80-110',
+  'Silky Curly',
+  'Brown 20-49',
+  'Brown 50-59',
+  'Brown 60-69',
+  'Brown 70-79',
+  'Brown 80-110',
+  'Brown Curly',
+  'Slavic 20-49',
+  'Slavic 50-59',
+  'Slavic 60-69',
+  'Slavic 70-79',
+  'Slavic 80-110',
+  'Raw 20-49',
+  'Raw 50-59',
+  'Raw 60-69',
+  'Raw 70-79',
+  'Raw 80-110',
+  'Raw Curly',
+  'Exclusive',
+  'India Blonde 20-49',
+  'India Blonde 50-59',
+  'India Blonde 60-69',
+  'India Blonde 70-110',
+  'India Natural Color 20-49',
+  'India Natural Color 50-59',
+  'India Natural Color 60-69',
+  'India Natural Color 70-110',
+  'India Natural Blonde',
+  'India Platin',
+  'India Ombre',
+  'India Balayage',
+  'India Extremely',
+  'Standart Blonde 20-49',
+  'Standart Blonde 50-59',
+  'Standart Blonde 60-69',
+  'Standart Blonde 70-110',
+  'Standart Natural Color 20-49',
+  'Standart Natural Color 50-59',
+  'Standart Natural Color 60-69',
+  'Standart Natural Color 70-110',
+  'Standart Natural Blonde',
+  'Standart Platin',
+  'Standart Ombre',
+  'Standart Balayage',
+  'Premium Blonde 20-49',
+  'Premium Blonde 50-59',
+  'Premium Blonde 60-69',
+  'Premium Blonde 70-110',
+  'Premium Natural Color 20-49',
+  'Premium Natural Color 50-59',
+  'Premium Natural Color 60-69',
+  'Premium Natural Color 70-110',
+  'Premium Natural Blonde',
+  'Premium Platin',
+  'Premium Ombre',
+  'Premium Balayage',
+  'Lux Blonde 20-49',
+  'Lux Blonde 50-59',
+  'Lux Blonde 60-69',
+  'Lux Blonde 70-110',
+  'Lux Natural Color 20-49',
+  'Lux Natural Color 50-59',
+  'Lux Natural Color 60-69',
+  'Lux Natural Color 70-110',
+  'Lux Natural Blonde',
+  'Lux Platin',
+  'Lux Ombre',
+  'Lux Balayage',
+  'Empty',
+] as const
+
 export function getHardcodeData() {
   const key = APP_INSTANCE as ConfigKey
   return CONFIGS[key] ?? CONFIGS.default
+}
+
+/** Invoice sale price per kg (major units). Temporary one-tenant pricing. */
+export function getInvoiceProductPrice(
+  lengthCm: number,
+  type: string[],
+  segmentIds: string[],
+  colorCategoryIds: string[],
+): number | null {
+  const { hairTypes, colorCategories, segments } = getHardcodeData()
+
+  const segmentTables: Record<string, { min: number, max: number, price: number }[]> = {
+    [segments.INDIA]: [
+      { min: 20, max: 24, price: 800 },
+      { min: 25, max: 29, price: 850 },
+      { min: 30, max: 34, price: 900 },
+      { min: 35, max: 39, price: 950 },
+      { min: 40, max: 44, price: 1000 },
+      { min: 45, max: 49, price: 1050 },
+      { min: 50, max: 54, price: 1100 },
+      { min: 55, max: 59, price: 1150 },
+      { min: 60, max: 64, price: 1200 },
+      { min: 65, max: 69, price: 1250 },
+      { min: 70, max: 74, price: 1300 },
+      { min: 75, max: 79, price: 1350 },
+      { min: 80, max: 84, price: 1400 },
+      { min: 85, max: 89, price: 1450 },
+      { min: 90, max: 94, price: 1500 },
+      { min: 95, max: 99, price: 1550 },
+      { min: 100, max: 104, price: 1600 },
+    ],
+    [segments.STANDART]: [
+      { min: 20, max: 24, price: 1100 },
+      { min: 25, max: 29, price: 1150 },
+      { min: 30, max: 34, price: 1200 },
+      { min: 35, max: 39, price: 1250 },
+      { min: 40, max: 44, price: 1300 },
+      { min: 45, max: 49, price: 1350 },
+      { min: 50, max: 54, price: 1400 },
+      { min: 55, max: 59, price: 1450 },
+      { min: 60, max: 64, price: 1500 },
+      { min: 65, max: 69, price: 1550 },
+      { min: 70, max: 74, price: 1600 },
+      { min: 75, max: 79, price: 1650 },
+      { min: 80, max: 84, price: 1700 },
+      { min: 85, max: 89, price: 1750 },
+      { min: 90, max: 94, price: 1800 },
+      { min: 95, max: 99, price: 1850 },
+      { min: 100, max: 104, price: 1900 },
+    ],
+    [segments.PREMIUM]: [
+      { min: 20, max: 24, price: 1400 },
+      { min: 25, max: 29, price: 1450 },
+      { min: 30, max: 34, price: 1500 },
+      { min: 35, max: 39, price: 1550 },
+      { min: 40, max: 44, price: 1600 },
+      { min: 45, max: 49, price: 1650 },
+      { min: 50, max: 54, price: 1700 },
+      { min: 55, max: 59, price: 1750 },
+      { min: 60, max: 64, price: 1800 },
+      { min: 65, max: 69, price: 1850 },
+      { min: 70, max: 74, price: 1900 },
+      { min: 75, max: 79, price: 1950 },
+      { min: 80, max: 84, price: 2000 },
+      { min: 85, max: 89, price: 2050 },
+      { min: 90, max: 94, price: 2100 },
+      { min: 95, max: 99, price: 2150 },
+      { min: 100, max: 104, price: 2200 },
+    ],
+    [segments.LUX]: [
+      { min: 20, max: 24, price: 1400 },
+      { min: 25, max: 29, price: 1500 },
+      { min: 30, max: 34, price: 1600 },
+      { min: 35, max: 39, price: 1700 },
+      { min: 40, max: 44, price: 1800 },
+      { min: 45, max: 49, price: 1900 },
+      { min: 50, max: 54, price: 2000 },
+      { min: 55, max: 59, price: 2100 },
+      { min: 60, max: 64, price: 2200 },
+      { min: 65, max: 69, price: 2300 },
+      { min: 70, max: 74, price: 2400 },
+      { min: 75, max: 79, price: 2500 },
+      { min: 80, max: 84, price: 2600 },
+      { min: 85, max: 89, price: 2700 },
+      { min: 90, max: 94, price: 2800 },
+      { min: 95, max: 99, price: 2900 },
+      { min: 100, max: 104, price: 3000 },
+    ],
+  }
+
+  let table = [
+    { min: 20, max: 24, price: 700 },
+    { min: 25, max: 29, price: 750 },
+    { min: 30, max: 34, price: 800 },
+    { min: 35, max: 39, price: 850 },
+    { min: 40, max: 44, price: 900 },
+    { min: 45, max: 49, price: 950 },
+    { min: 50, max: 54, price: 1000 },
+    { min: 55, max: 59, price: 1150 },
+    { min: 60, max: 64, price: 1200 },
+    { min: 65, max: 69, price: 1250 },
+    { min: 70, max: 74, price: 1300 },
+    { min: 75, max: 79, price: 1350 },
+    { min: 80, max: 84, price: 1400 },
+    { min: 85, max: 89, price: 1500 },
+    { min: 90, max: 94, price: 1600 },
+    { min: 95, max: 99, price: 1700 },
+    { min: 100, max: 104, price: 1800 },
+    { min: 105, max: 109, price: 1900 },
+    { min: 110, max: 114, price: 2000 },
+  ]
+
+  let multiply = 1
+  let surcharge = 0
+  const matchedSegment = segmentIds.find(id => id !== '' && segmentTables[id] !== undefined)
+
+  if (matchedSegment !== undefined) {
+    table = segmentTables[matchedSegment]
+    multiply = 1
+
+    if (
+      colorCategoryIds.includes(colorCategories.BLONDE)
+      || colorCategoryIds.includes(colorCategories.PLATIN)
+      || colorCategoryIds.includes(colorCategories.OMBRE)
+      || colorCategoryIds.includes(colorCategories.BALAYAGE)
+      || colorCategoryIds.includes(colorCategories.EXTREAMELY)
+    ) {
+      surcharge = 100
+    }
+  }
+  else {
+    if (type.includes(hairTypes.CURLY)) {
+      multiply = 1.3
+    }
+
+    if (type.includes(hairTypes.VIRGIN)) {
+      table = [
+        { min: 20, max: 24, price: 1400 },
+        { min: 25, max: 29, price: 1500 },
+        { min: 30, max: 34, price: 1600 },
+        { min: 35, max: 39, price: 1700 },
+        { min: 40, max: 44, price: 1800 },
+        { min: 45, max: 49, price: 1900 },
+        { min: 50, max: 54, price: 2000 },
+        { min: 55, max: 59, price: 2100 },
+        { min: 60, max: 64, price: 2200 },
+        { min: 65, max: 69, price: 2300 },
+        { min: 70, max: 74, price: 2400 },
+        { min: 75, max: 79, price: 2500 },
+        { min: 80, max: 84, price: 2600 },
+        { min: 85, max: 89, price: 2700 },
+        { min: 90, max: 94, price: 2800 },
+        { min: 95, max: 99, price: 2900 },
+        { min: 100, max: 104, price: 3000 },
+        { min: 105, max: 109, price: 3100 },
+        { min: 110, max: 114, price: 3200 },
+      ]
+    }
+
+    if (type.includes(hairTypes.GOLD)) {
+      table = [
+        { min: 20, max: 24, price: 3800 },
+        { min: 25, max: 29, price: 4000 },
+        { min: 30, max: 34, price: 4200 },
+        { min: 35, max: 39, price: 4400 },
+        { min: 40, max: 44, price: 4600 },
+        { min: 45, max: 49, price: 4800 },
+        { min: 50, max: 54, price: 5000 },
+        { min: 55, max: 59, price: 5200 },
+        { min: 60, max: 64, price: 5400 },
+        { min: 65, max: 69, price: 5600 },
+        { min: 70, max: 74, price: 5800 },
+        { min: 75, max: 79, price: 6000 },
+        { min: 80, max: 84, price: 6200 },
+        { min: 85, max: 89, price: 6400 },
+        { min: 90, max: 94, price: 6600 },
+        { min: 95, max: 99, price: 6800 },
+        { min: 100, max: 104, price: 7000 },
+        { min: 105, max: 109, price: 7200 },
+        { min: 110, max: 114, price: 7400 },
+      ]
+    }
+
+    if (type.includes(hairTypes.RED)) {
+      table = [
+        { min: 20, max: 24, price: 1800 },
+        { min: 25, max: 29, price: 2000 },
+        { min: 30, max: 34, price: 2200 },
+        { min: 35, max: 39, price: 2400 },
+        { min: 40, max: 44, price: 2600 },
+        { min: 45, max: 49, price: 2800 },
+        { min: 50, max: 54, price: 3000 },
+        { min: 55, max: 59, price: 3200 },
+        { min: 60, max: 64, price: 3400 },
+        { min: 65, max: 69, price: 3600 },
+        { min: 70, max: 74, price: 3800 },
+        { min: 75, max: 79, price: 4000 },
+        { min: 80, max: 84, price: 4200 },
+        { min: 85, max: 89, price: 4400 },
+        { min: 90, max: 94, price: 4600 },
+        { min: 95, max: 99, price: 4800 },
+        { min: 100, max: 104, price: 5000 },
+        { min: 105, max: 109, price: 5200 },
+        { min: 110, max: 114, price: 5400 },
+      ]
+    }
+
+    if (type.includes(hairTypes.SLAVIC)) {
+      table = [
+        { min: 20, max: 24, price: 1800 },
+        { min: 25, max: 29, price: 2000 },
+        { min: 30, max: 34, price: 2200 },
+        { min: 35, max: 39, price: 2400 },
+        { min: 40, max: 44, price: 2600 },
+        { min: 45, max: 49, price: 2800 },
+        { min: 50, max: 54, price: 3000 },
+        { min: 55, max: 59, price: 3200 },
+        { min: 60, max: 64, price: 3400 },
+        { min: 65, max: 69, price: 3600 },
+        { min: 70, max: 74, price: 3800 },
+        { min: 75, max: 79, price: 4000 },
+        { min: 80, max: 84, price: 4200 },
+        { min: 85, max: 89, price: 4400 },
+        { min: 90, max: 94, price: 4600 },
+        { min: 95, max: 99, price: 4800 },
+        { min: 100, max: 104, price: 5000 },
+        { min: 105, max: 109, price: 5200 },
+        { min: 110, max: 114, price: 5400 },
+      ]
+      multiply = 1
+    }
+
+    if (type.includes(hairTypes.SILKY) || type.includes(hairTypes.BROWN) || type.includes(hairTypes.NATURAL_BALAYAGE)) {
+      table = [
+        { min: 20, max: 24, price: 900 },
+        { min: 25, max: 29, price: 1000 },
+        { min: 30, max: 34, price: 1100 },
+        { min: 35, max: 39, price: 1200 },
+        { min: 40, max: 44, price: 1300 },
+        { min: 45, max: 49, price: 1400 },
+        { min: 50, max: 54, price: 1500 },
+        { min: 55, max: 59, price: 1600 },
+        { min: 60, max: 64, price: 1700 },
+        { min: 65, max: 69, price: 1800 },
+        { min: 70, max: 74, price: 1900 },
+        { min: 75, max: 79, price: 2000 },
+        { min: 80, max: 84, price: 2100 },
+        { min: 85, max: 89, price: 2200 },
+        { min: 90, max: 94, price: 2300 },
+        { min: 95, max: 99, price: 2400 },
+        { min: 100, max: 104, price: 2500 },
+        { min: 105, max: 109, price: 2600 },
+        { min: 110, max: 114, price: 2700 },
+      ]
+    }
+  }
+
+  for (const row of table) {
+    if (lengthCm >= row.min && lengthCm <= row.max) {
+      return row.price * multiply + surcharge
+    }
+  }
+
+  return null
 }

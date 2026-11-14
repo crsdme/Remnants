@@ -1220,6 +1220,8 @@
   "page.settings.diagnostics.createProducts.hint": "Создать набор демо-товаров",
   "page.settings.diagnostics.createTelegramProducts.hint": "Создать товары для каталога Telegram",
   "page.settings.diagnostics.quantityProducts.hint": "Пересчитать остатки товаров",
+  "page.settings.diagnostics.recalculateProductPrices.hint": "Проставить цены продажи по таблицам Invoice (цена = цена/кг × вес / 1000)",
+  "page.settings.diagnostics.createInventoryCategories.hint": "Создать категории-ящики для инвентаризации, если их ещё нет",
 
   "page.settings.main.card.title": "Основные настройки",
   "page.settings.main.card.description": "Настройки основных параметров системы",
@@ -1232,6 +1234,8 @@
   "page.settings.main.createProducts": "Демо-товары",
   "page.settings.main.createTelegramProducts": "Товары Telegram",
   "page.settings.main.quantityProducts": "Остатки товаров",
+  "page.settings.main.recalculateProductPrices": "Пересчитать цены продажи",
+  "page.settings.main.createInventoryCategories": "Создать категории инвентаризации",
   "page.settings.main.startTestSuccess": "Тест запущен",
 
   "page.settings.deliveryStatusMap.title": "Статусы Новой Почты",

@@ -54,6 +54,22 @@ export function DiagnosticsSettingsPage() {
               {t('page.settings.diagnostics.run')}
             </Button>
           </SettingRow>
+          <SettingRow
+            label={t('page.settings.main.recalculateProductPrices')}
+            hint={t('page.settings.diagnostics.recalculateProductPrices.hint')}
+          >
+            <Button type="button" variant="outline" onClick={() => startTest({ key: 'recalculateProductPrices' })}>
+              {t('page.settings.diagnostics.run')}
+            </Button>
+          </SettingRow>
+          <SettingRow
+            label={t('page.settings.main.createInventoryCategories')}
+            hint={t('page.settings.diagnostics.createInventoryCategories.hint')}
+          >
+            <Button type="button" variant="outline" onClick={() => startTest({ key: 'createInventoryCategories' })}>
+              {t('page.settings.diagnostics.run')}
+            </Button>
+          </SettingRow>
         </CardContent>
       </Card>
     </div>

@@ -1220,6 +1220,8 @@
   "page.settings.diagnostics.createProducts.hint": "Create a set of demo products",
   "page.settings.diagnostics.createTelegramProducts.hint": "Create products used by the Telegram catalog",
   "page.settings.diagnostics.quantityProducts.hint": "Recalculate product quantities",
+  "page.settings.diagnostics.recalculateProductPrices.hint": "Set product sale prices from the invoice pricing tables (price = per-kg × weight / 1000)",
+  "page.settings.diagnostics.createInventoryCategories.hint": "Create inventory box categories if they do not exist yet",
 
   "page.settings.main.card.title": "Main Settings",
   "page.settings.main.card.description": "Main settings of the system",
@@ -1232,6 +1234,8 @@
   "page.settings.main.createProducts": "Demo products",
   "page.settings.main.createTelegramProducts": "Telegram products",
   "page.settings.main.quantityProducts": "Product quantities",
+  "page.settings.main.recalculateProductPrices": "Recalculate sale prices",
+  "page.settings.main.createInventoryCategories": "Create inventory categories",
   "page.settings.main.startTestSuccess": "Test started",
 
   "page.settings.deliveryStatusMap.title": "Nova Poshta statuses",
