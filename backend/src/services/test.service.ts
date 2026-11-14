@@ -122,37 +122,37 @@ async function createInventoryCategories() {
 }
 
 async function addProductCategories() {
-  // TEMP: strip legacy category ids from products + soft-remove category docs — uncomment when ready, delete later
-  // const legacyCategoryIds = [
-  //   'ec016440-5e2c-45c1-b3ac-92c14cdc3fb1',
-  //   'd2f14204-ae1f-46b0-a89f-e2768ae707d9',
-  //   '0c5d4f68-a993-4eed-ab67-736e4cd3f47f',
-  //   'a9df2aa1-8338-42e0-afc8-497320c7f1e5',
-  //   '726e6d4e-b066-486b-877f-5885528e868a',
-  //   '58e1d38b-502d-4cc6-8d9a-44a9f64289d7',
-  //   '86a08712-4d85-453c-bad1-98c098841163',
-  //   '17dfb0a0-ea23-4152-b7b2-d54d63a49e7c',
-  //   'dd904594-feaf-4f93-9b38-33d521e463f5',
-  //   'e41f0080-cfc2-4dc4-874d-d994320babd6',
-  //   'baeef84f-acb2-4d5e-a5ac-abe7cf0a7f80',
-  //   '6565143f-e160-4fd8-9ea2-12b58a2d0c4b',
-  //   'a3b85e8b-1485-4f2a-80c6-70ae8fa05865',
-  //   '6e067a1d-6729-4429-885d-d0cda2475fc5',
-  //   'f691c301-d7ab-4e3d-bc30-37e8d3567e82',
-  //   '1f45e1bb-9715-490e-bac3-046688b0dc2a',
-  //   'ee7771b0-2bde-46d3-a4a8-702324d57fc0',
-  //   '58ee2880-c8ad-4ef5-9151-76ea6477c450',
-  //   'b68b2155-21e6-47aa-8712-bb0a6ec96e3d',
-  //   'd5556940-d6c0-44d0-9172-7ee7d79272ea',
-  // ]
-  // const pullResult = await ProductModel.updateMany(
-  //   { categoryIds: { $in: legacyCategoryIds } },
-  //   { $pull: { categoryIds: { $in: legacyCategoryIds } } },
-  // )
-  // const removeResult = await CategoryModel.updateMany(
-  //   { _id: { $in: legacyCategoryIds } },
-  //   { $set: { removed: true } },
-  // )
+  // TEMP: strip legacy length-as-category ids + soft-remove those docs — delete later
+  const legacyCategoryIds = [
+    'ec016440-5e2c-45c1-b3ac-92c14cdc3fb1',
+    'd2f14204-ae1f-46b0-a89f-e2768ae707d9',
+    '0c5d4f68-a993-4eed-ab67-736e4cd3f47f',
+    'a9df2aa1-8338-42e0-afc8-497320c7f1e5',
+    '726e6d4e-b066-486b-877f-5885528e868a',
+    '58e1d38b-502d-4cc6-8d9a-44a9f64289d7',
+    '86a08712-4d85-453c-bad1-98c098841163',
+    '17dfb0a0-ea23-4152-b7b2-d54d63a49e7c',
+    'dd904594-feaf-4f93-9b38-33d521e463f5',
+    'e41f0080-cfc2-4dc4-874d-d994320babd6',
+    'baeef84f-acb2-4d5e-a5ac-abe7cf0a7f80',
+    '6565143f-e160-4fd8-9ea2-12b58a2d0c4b',
+    'a3b85e8b-1485-4f2a-80c6-70ae8fa05865',
+    '6e067a1d-6729-4429-885d-d0cda2475fc5',
+    'f691c301-d7ab-4e3d-bc30-37e8d3567e82',
+    '1f45e1bb-9715-490e-bac3-046688b0dc2a',
+    'ee7771b0-2bde-46d3-a4a8-702324d57fc0',
+    '58ee2880-c8ad-4ef5-9151-76ea6477c450',
+    'b68b2155-21e6-47aa-8712-bb0a6ec96e3d',
+    'd5556940-d6c0-44d0-9172-7ee7d79272ea',
+  ]
+  const pullResult = await ProductModel.updateMany(
+    { categoryIds: { $in: legacyCategoryIds } },
+    { $pull: { categoryIds: { $in: legacyCategoryIds } } },
+  )
+  const removeResult = await CategoryModel.updateMany(
+    { _id: { $in: legacyCategoryIds } },
+    { $set: { removed: true } },
+  )
 
   const { propertyIds, propertyGroups, hairTypes } = getHardcodeData()
   const hairTypeNameById = Object.fromEntries(
@@ -164,8 +164,7 @@ async function addProductCategories() {
     .lean()
     .exec()
 
-  // ponytail: dry-run first — uncomment writes when mapping looks right
-  // const ops: Parameters<typeof ProductRepository.bulkWrite>[0] = []
+  const ops: Parameters<typeof ProductRepository.bulkWrite>[0] = []
   let matched = 0
   let unmatched = 0
   const reasons: Record<string, number> = {}
@@ -218,26 +217,28 @@ async function addProductCategories() {
       }
     }
 
-    // const current = product.categoryIds ?? []
-    // if (current.length === 1 && current[0] === categoryId)
-    //   continue
-    //
-    // ops.push({
-    //   updateOne: {
-    //     filter: { _id: product._id },
-    //     update: { $set: { categoryIds: [explained.categoryId] } },
-    //   },
-    // })
+    const current = product.categoryIds ?? []
+    if (current.length === 1 && current[0] === explained.categoryId)
+      continue
+
+    ops.push({
+      updateOne: {
+        filter: { _id: product._id },
+        update: { $set: { categoryIds: [explained.categoryId] } },
+      },
+    })
   }
 
-  // if (ops.length > 0)
-  //   await ProductRepository.bulkWrite(ops)
+  if (ops.length > 0)
+    await ProductRepository.bulkWrite(ops)
 
-  // Full breakdown in backend console — toast only shows counts
-  console.log(`[addProductCategories dry-run] ${JSON.stringify({
+  console.log(`[addProductCategories] ${JSON.stringify({
     matched,
     unmatched,
+    updated: ops.length,
     total: products.length,
+    legacyPulled: pullResult.modifiedCount,
+    legacyRemoved: removeResult.modifiedCount,
     reasons: reasons as Partial<Record<InventoryCategoryMissReason, number>>,
     samples,
   }, null, 2)}`)
@@ -250,10 +251,11 @@ async function addProductCategories() {
   return {
     matched,
     unmatched,
+    updated: ops.length,
     total: products.length,
     reasonSummary,
-    // legacyPulled: pullResult.modifiedCount,
-    // legacyRemoved: removeResult.modifiedCount,
+    legacyPulled: pullResult.modifiedCount,
+    legacyRemoved: removeResult.modifiedCount,
   }
 }
 
@@ -281,7 +283,7 @@ export async function start(payload: { key: string }) {
     return {
       status: 'success' as const,
       code: 'TEST',
-      message: `dry-run: matched ${result.matched}, unmatched ${result.unmatched}, total ${result.total}; ${result.reasonSummary}`,
+      message: `updated ${result.updated}, matched ${result.matched}, unmatched ${result.unmatched}, total ${result.total}; ${result.reasonSummary}`,
     }
   }
 
