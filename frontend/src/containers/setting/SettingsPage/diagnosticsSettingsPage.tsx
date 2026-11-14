@@ -10,8 +10,8 @@ export function DiagnosticsSettingsPage() {
 
   const { mutate: startTest } = useTestStart({
     options: {
-      onSuccess: () => {
-        toast.success(t('page.settings.main.startTestSuccess'))
+      onSuccess: (response) => {
+        toast.success(response.data.message || t('page.settings.main.startTestSuccess'))
       },
     },
   })
@@ -51,9 +51,16 @@ export function DiagnosticsSettingsPage() {
             label={t('page.settings.main.addProductCategories.label')}
             hint={t('page.settings.main.addProductCategories.description')}
           >
-            <Button type="button" variant="outline" onClick={() => startTest({ key: 'addProductCategories' })}>
-              {t('page.settings.diagnostics.run')}
-            </Button>
+            <ConfirmPopover
+              title={t('page.settings.diagnostics.addProductCategories.confirmTitle')}
+              description={t('page.settings.diagnostics.addProductCategories.confirmDescription')}
+              confirmText={t('page.settings.diagnostics.run')}
+              onConfirm={() => startTest({ key: 'addProductCategories' })}
+            >
+              <Button type="button" variant="outline">
+                {t('page.settings.diagnostics.run')}
+              </Button>
+            </ConfirmPopover>
           </SettingRow>
           <SettingRow
             label={t('page.settings.main.recalculateProductPrices')}

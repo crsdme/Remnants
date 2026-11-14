@@ -183,89 +183,221 @@ const CONFIGS = {
 
 type ConfigKey = keyof typeof CONFIGS
 
-/** Temporary inventory box categories (flat names). */
-export const INVENTORY_CATEGORY_NAMES = [
-  'Virgin 20-49',
-  'Virgin 50-59',
-  'Virgin 60-69',
-  'Virgin 70-79',
-  'Virgin 80-110',
-  'Virgin Curly',
-  'Silky 20-49',
-  'Silky 50-59',
-  'Silky 60-69',
-  'Silky 70-79',
-  'Silky 80-110',
-  'Silky Curly',
-  'Brown 20-49',
-  'Brown 50-59',
-  'Brown 60-69',
-  'Brown 70-79',
-  'Brown 80-110',
-  'Brown Curly',
-  'Slavic 20-49',
-  'Slavic 50-59',
-  'Slavic 60-69',
-  'Slavic 70-79',
-  'Slavic 80-110',
-  'Raw 20-49',
-  'Raw 50-59',
-  'Raw 60-69',
-  'Raw 70-79',
-  'Raw 80-110',
-  'Raw Curly',
-  'Exclusive',
-  'India Blonde 20-49',
-  'India Blonde 50-59',
-  'India Blonde 60-69',
-  'India Blonde 70-110',
-  'India Natural Color 20-49',
-  'India Natural Color 50-59',
-  'India Natural Color 60-69',
-  'India Natural Color 70-110',
-  'India Natural Blonde',
-  'India Platin',
-  'India Ombre',
-  'India Balayage',
-  'India Extremely',
-  'Standart Blonde 20-49',
-  'Standart Blonde 50-59',
-  'Standart Blonde 60-69',
-  'Standart Blonde 70-110',
-  'Standart Natural Color 20-49',
-  'Standart Natural Color 50-59',
-  'Standart Natural Color 60-69',
-  'Standart Natural Color 70-110',
-  'Standart Natural Blonde',
-  'Standart Platin',
-  'Standart Ombre',
-  'Standart Balayage',
-  'Premium Blonde 20-49',
-  'Premium Blonde 50-59',
-  'Premium Blonde 60-69',
-  'Premium Blonde 70-110',
-  'Premium Natural Color 20-49',
-  'Premium Natural Color 50-59',
-  'Premium Natural Color 60-69',
-  'Premium Natural Color 70-110',
-  'Premium Natural Blonde',
-  'Premium Platin',
-  'Premium Ombre',
-  'Premium Balayage',
-  'Lux Blonde 20-49',
-  'Lux Blonde 50-59',
-  'Lux Blonde 60-69',
-  'Lux Blonde 70-110',
-  'Lux Natural Color 20-49',
-  'Lux Natural Color 50-59',
-  'Lux Natural Color 60-69',
-  'Lux Natural Color 70-110',
-  'Lux Natural Blonde',
-  'Lux Platin',
-  'Lux Ombre',
-  'Lux Balayage',
-  'Empty',
-] as const
+/** Temporary inventory box categories: name → UUID (from rawRmntDB). */
+export const INVENTORY_CATEGORY_BY_NAME = {
+  'Virgin 20-49': 'd0ca654e-bfe3-4336-85f5-f9fbf1bb9544',
+  'Virgin 50-59': '62d1ff89-471f-4307-bf5d-a5db39078480',
+  'Virgin 60-69': '1afdc036-c434-4626-99d3-c7e456064af9',
+  'Virgin 70-79': '81f50986-0d63-4f19-b8f0-7f0156ce5052',
+  'Virgin 80-110': '032ede09-e617-4a3f-8c6a-ceaf893ef58f',
+  'Virgin Curly': '5be32538-4ce3-45ce-86ab-92500bdce76e',
+  'Silky 20-49': 'e0d51d8a-683d-4756-b1f7-f72d80ab818b',
+  'Silky 50-59': '6002d0bf-9160-4df3-8f15-1bf6f62f8f69',
+  'Silky 60-69': 'da244701-3583-40b6-8d78-a518086a9387',
+  'Silky 70-79': '8abdc867-5cb1-4d3a-8830-31e48c304dd7',
+  'Silky 80-110': 'a57832f0-0af4-4263-a084-bbceb4d6b04b',
+  'Silky Curly': '92e30ddd-10fa-4972-a0e3-4c32be38c795',
+  'Brown 20-49': 'ade40cb7-b459-4d74-9f3d-8fb178b8b3c5',
+  'Brown 50-59': '52b5f384-df8e-46a0-b84f-e6a101b31086',
+  'Brown 60-69': '8daf9f59-6458-4329-8de2-02d3e2b4cb0a',
+  'Brown 70-79': '893612c0-0ae1-4a85-be7b-f53dca3abb4d',
+  'Brown 80-110': 'ab9660ac-04ca-4710-8c99-17cc7e6c5490',
+  'Brown Curly': '2b4bdeaf-3fec-4a8c-a301-bb8d7070168a',
+  'Slavic 20-49': '25a5cbf2-1a06-4e07-a707-252bf620d618',
+  'Slavic 50-59': 'cedfce46-9e3f-442f-a21c-fd38d7136696',
+  'Slavic 60-69': '030ad34c-7a2e-4814-b9bc-cb99d0d75590',
+  'Slavic 70-79': '56c68e22-5fa0-4288-b67a-fd4f60db9825',
+  'Slavic 80-110': 'd5f32105-75c5-496b-bc0b-a59710d2ea07',
+  'Raw 20-49': '33bd7a4f-8010-4579-9af6-faeb67898d66',
+  'Raw 50-59': '46855059-0551-4f93-9792-e79db4c9e5b5',
+  'Raw 60-69': '9c219c44-4c6d-4e69-a95a-b78db1017ac8',
+  'Raw 70-79': '02fdb6ab-b810-4c64-b1ef-965dfabff0b9',
+  'Raw 80-110': 'a775612a-35f2-48cf-bf85-bd78477f79ab',
+  'Raw Curly': 'f21b068d-4bb9-4196-8e74-9e90e5717be3',
+  'Exclusive': '39d75a80-df91-445c-b1f3-6e92992df234',
+  'India Blonde 20-49': '6840fdd3-a743-45c3-a665-6aec5505baa3',
+  'India Blonde 50-59': 'c1982549-c4ff-48da-8b83-a8b51faca9b7',
+  'India Blonde 60-69': '0215fb48-058b-4a5f-b1ae-239c2350fc05',
+  'India Blonde 70-110': '59e05701-0b18-4e70-a733-a7320d38852e',
+  'India Natural Color 20-49': 'e123069a-2d64-498b-90d0-b799312d3005',
+  'India Natural Color 50-59': '753fb7f7-c5ef-418c-8091-9cbd588097b4',
+  'India Natural Color 60-69': '0bdfc968-e0e5-4eaa-8097-e8654cfea92f',
+  'India Natural Color 70-110': '73273f30-a9eb-427f-ad79-f9f322cdd7bd',
+  'India Natural Blonde': '6bcaaf74-e122-4705-8993-1a029bca1d03',
+  'India Platin': '44fba70a-c135-4cba-9da9-3fe35e29f730',
+  'India Ombre': 'c31b2c41-9bbd-4556-9ab3-509ad91736d3',
+  'India Balayage': '4a479518-2409-400f-b022-eb12abef4b61',
+  'India Extremely': '6c93ecbc-15dd-41cb-a968-1560b7d0d9b5',
+  'Standart Blonde 20-49': '0f0c82f5-b2a0-473f-8e33-f41ece2f103c',
+  'Standart Blonde 50-59': '15703e03-a416-46d5-8b0f-a172540f2342',
+  'Standart Blonde 60-69': 'f61b44d5-4dd0-4404-970d-513c3a9af531',
+  'Standart Blonde 70-110': '086447ec-3d45-4011-838e-a42090b417e5',
+  'Standart Natural Color 20-49': '811e8bd0-fb6a-4298-adc2-023c55183085',
+  'Standart Natural Color 50-59': '8b2e7a0f-7e80-44bc-83b0-a46168894434',
+  'Standart Natural Color 60-69': '822b63d9-25fc-462f-81b0-d0a138e35682',
+  'Standart Natural Color 70-110': 'ca5683cb-2eca-4e3f-965c-107ac85956df',
+  'Standart Natural Blonde': '08b380af-7a53-449e-928c-4b013bea3399',
+  'Standart Platin': '0e8daad9-9fea-4e64-9263-a80c76a40e66',
+  'Standart Ombre': '353ddf0f-7728-4d03-82bf-bce7d134a016',
+  'Standart Balayage': '6793b663-15f5-4b8b-b552-6b626efd38e6',
+  'Premium Blonde 20-49': '082b4051-f96b-4605-a668-3b5e49d9cba6',
+  'Premium Blonde 50-59': '43c38c06-2fb2-410d-b049-c1add61aaa85',
+  'Premium Blonde 60-69': 'e58bebb7-b41f-4c74-838b-4e1efae56914',
+  'Premium Blonde 70-110': '4bbad5ed-33f7-4885-b5c1-6fb74c7bf5e1',
+  'Premium Natural Color 20-49': '1b2c0193-dd98-4092-814f-220718692c97',
+  'Premium Natural Color 50-59': '11ab29e3-d15b-4365-ab70-061b0948c786',
+  'Premium Natural Color 60-69': 'b9ffecdf-a378-4867-b666-c6ec51beb745',
+  'Premium Natural Color 70-110': 'cbfbf43f-5487-405d-a49d-8dbee0f9a426',
+  'Premium Natural Blonde': '2c8b87a3-49ce-4a5c-883a-72aef32097cd',
+  'Premium Platin': 'e0c67759-d1b7-4033-878a-8c589a85e71d',
+  'Premium Ombre': 'af20463c-9e77-4510-b991-231f6a248991',
+  'Premium Balayage': '5d6d6bb3-1464-4b70-95aa-6cc53b4faaee',
+  'Lux Blonde 20-49': 'b4880ee4-7184-4802-aca5-4c6558f7f793',
+  'Lux Blonde 50-59': '39e9e2bf-84e3-47b2-8628-bb83a3d079db',
+  'Lux Blonde 60-69': 'dc46970d-4397-4413-b146-ebd875db662c',
+  'Lux Blonde 70-110': 'c1d374dd-22ac-4553-9724-0a652b35c119',
+  'Lux Natural Color 20-49': '3e7bc26a-5dfa-4e4a-b862-864cdaf60662',
+  'Lux Natural Color 50-59': '901a7fb6-ded4-47c0-894d-c2ecdc7a248d',
+  'Lux Natural Color 60-69': '956aacc4-b0da-45b2-8a8a-080d4315ee9c',
+  'Lux Natural Color 70-110': '94354460-af1b-4ab3-b2bb-538508e87a19',
+  'Lux Natural Blonde': '15b25c68-3ce5-4d4b-99f9-1ed0d850fc32',
+  'Lux Platin': 'e6910c59-e364-4b6c-b3b2-f1468b51274f',
+  'Lux Ombre': 'bf99bde1-f257-43f8-8a71-581bdff72245',
+  'Lux Balayage': '603ae2ca-057e-40c1-b739-9ef9791bac26',
+  'Empty': '72252172-7c60-40d5-9aad-2126010da7e5',
+} as const
+
+export const INVENTORY_CATEGORY_NAMES = Object.keys(INVENTORY_CATEGORY_BY_NAME) as Array<
+  keyof typeof INVENTORY_CATEGORY_BY_NAME
+>
+
+type RawLengthBucket = '20-49' | '50-59' | '60-69' | '70-79' | '80-110'
+type DyedLengthBucket = '20-49' | '50-59' | '60-69' | '70-110'
+
+function rawLengthBucket(length: number): RawLengthBucket | null {
+  if (length >= 20 && length <= 49)
+    return '20-49'
+  if (length >= 50 && length <= 59)
+    return '50-59'
+  if (length >= 60 && length <= 69)
+    return '60-69'
+  if (length >= 70 && length <= 79)
+    return '70-79'
+  if (length >= 80 && length <= 110)
+    return '80-110'
+  return null
+}
+
+function dyedLengthBucket(length: number): DyedLengthBucket | null {
+  if (length >= 20 && length <= 49)
+    return '20-49'
+  if (length >= 50 && length <= 59)
+    return '50-59'
+  if (length >= 60 && length <= 69)
+    return '60-69'
+  if (length >= 70 && length <= 110)
+    return '70-110'
+  return null
+}
+
+/** Resolve inventory category UUID from product properties. Unmatched → Empty. */
+export function resolveInventoryCategoryId(input: {
+  groupId?: string
+  length?: number
+  typeIds: string[]
+  segmentIds: string[]
+  colorCategoryIds: string[]
+}): string {
+  const { propertyGroups, hairTypes, segments, colorCategories } = getHardcodeData()
+  const empty = INVENTORY_CATEGORY_BY_NAME.Empty
+  const { groupId, length, typeIds, segmentIds, colorCategoryIds } = input
+
+  if (groupId === propertyGroups.services)
+    return empty
+
+  if (groupId === propertyGroups.dyed) {
+    const segment
+      = segmentIds.includes(segments.INDIA)
+        ? 'India'
+        : segmentIds.includes(segments.STANDART)
+          ? 'Standart'
+          : segmentIds.includes(segments.PREMIUM)
+            ? 'Premium'
+            : segmentIds.includes(segments.LUX)
+              ? 'Lux'
+              : null
+
+    if (segment === null)
+      return empty
+
+    if (colorCategoryIds.includes(colorCategories.EXTREAMELY)) {
+      return segment === 'India' ? INVENTORY_CATEGORY_BY_NAME['India Extremely'] : empty
+    }
+
+    if (colorCategoryIds.includes(colorCategories.NATURAL_BLONDE))
+      return INVENTORY_CATEGORY_BY_NAME[`${segment} Natural Blonde`]
+    if (colorCategoryIds.includes(colorCategories.PLATIN))
+      return INVENTORY_CATEGORY_BY_NAME[`${segment} Platin`]
+    if (colorCategoryIds.includes(colorCategories.OMBRE))
+      return INVENTORY_CATEGORY_BY_NAME[`${segment} Ombre`]
+    if (colorCategoryIds.includes(colorCategories.BALAYAGE))
+      return INVENTORY_CATEGORY_BY_NAME[`${segment} Balayage`]
+
+    if (typeof length !== 'number')
+      return empty
+
+    const bucket = dyedLengthBucket(length)
+    if (bucket === null)
+      return empty
+
+    if (colorCategoryIds.includes(colorCategories.BLONDE))
+      return INVENTORY_CATEGORY_BY_NAME[`${segment} Blonde ${bucket}`]
+    if (colorCategoryIds.includes(colorCategories.NATURAL_COLOR))
+      return INVENTORY_CATEGORY_BY_NAME[`${segment} Natural Color ${bucket}`]
+
+    return empty
+  }
+
+  // raw / default
+  const isCurly = typeIds.includes(hairTypes.CURLY)
+  const types = typeIds.filter(id => id !== hairTypes.CURLY && id !== hairTypes.REMY)
+
+  if (isCurly) {
+    if (types.includes(hairTypes.VIRGIN))
+      return INVENTORY_CATEGORY_BY_NAME['Virgin Curly']
+    if (types.includes(hairTypes.SILKY))
+      return INVENTORY_CATEGORY_BY_NAME['Silky Curly']
+    if (types.includes(hairTypes.BROWN))
+      return INVENTORY_CATEGORY_BY_NAME['Brown Curly']
+    return INVENTORY_CATEGORY_BY_NAME['Raw Curly']
+  }
+
+  if (typeof length !== 'number')
+    return empty
+
+  const bucket = rawLengthBucket(length)
+  if (bucket === null)
+    return empty
+
+  if (types.includes(hairTypes.VIRGIN))
+    return INVENTORY_CATEGORY_BY_NAME[`Virgin ${bucket}`]
+  if (types.includes(hairTypes.SILKY))
+    return INVENTORY_CATEGORY_BY_NAME[`Silky ${bucket}`]
+  if (types.includes(hairTypes.BROWN))
+    return INVENTORY_CATEGORY_BY_NAME[`Brown ${bucket}`]
+  if (types.includes(hairTypes.SLAVIC))
+    return INVENTORY_CATEGORY_BY_NAME[`Slavic ${bucket}`]
+  if (
+    types.includes(hairTypes.GOLD)
+    || types.includes(hairTypes.RED)
+    || types.includes(hairTypes.GRAY)
+    || types.includes(hairTypes.ALBINO)
+  ) {
+    return INVENTORY_CATEGORY_BY_NAME[`Raw ${bucket}`]
+  }
+
+  return empty
+}
 
 export function getHardcodeData() {
   const key = APP_INSTANCE as ConfigKey
