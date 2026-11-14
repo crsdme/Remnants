@@ -1106,6 +1106,8 @@
   "page.settings.diagnostics.createTelegramProducts.hint": "Створити товари для каталогу Telegram",
   "page.settings.diagnostics.quantityProducts.hint": "Перерахувати залишки товарів",
   "page.settings.diagnostics.recalculateProductPrices.hint": "Проставити ціни продажу за таблицями Invoice (ціна = ціна/кг × вага / 1000)",
+  "page.settings.diagnostics.recalculateProductPrices.confirmTitle": "Перерахувати ціни продажу?",
+  "page.settings.diagnostics.recalculateProductPrices.confirmDescription": "Ціни продажу буде перезаписано у всіх товарів за правилами Invoice. Скасувати цю дію неможливо.",
   "page.settings.diagnostics.createInventoryCategories.hint": "Створити категорії-ящики для інвентаризації, якщо їх ще немає",
   "page.settings.main.card.title": "Основні налаштування",
   "page.settings.main.card.description": "Налаштування основних параметрів системи",

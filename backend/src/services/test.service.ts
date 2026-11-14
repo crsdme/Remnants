@@ -51,7 +51,8 @@ async function recalculateProductPrices() {
       continue
 
     // Invoice price is per kg; product.price is absolute for this unit's weight.
-    const minorPrice = toMinor(perKg * weight / 1000, scale)
+    // No fractional major units: .5 and any remainder round up.
+    const minorPrice = toMinor(Math.ceil(perKg * weight / 1000), scale)
     if (minorPrice === product.minorPrice)
       continue
 

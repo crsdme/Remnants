@@ -1221,6 +1221,8 @@
   "page.settings.diagnostics.createTelegramProducts.hint": "Create products used by the Telegram catalog",
   "page.settings.diagnostics.quantityProducts.hint": "Recalculate product quantities",
   "page.settings.diagnostics.recalculateProductPrices.hint": "Set product sale prices from the invoice pricing tables (price = per-kg × weight / 1000)",
+  "page.settings.diagnostics.recalculateProductPrices.confirmTitle": "Recalculate sale prices?",
+  "page.settings.diagnostics.recalculateProductPrices.confirmDescription": "This will overwrite sale prices for all products that match the invoice pricing rules. This cannot be undone.",
   "page.settings.diagnostics.createInventoryCategories.hint": "Create inventory box categories if they do not exist yet",
 
   "page.settings.main.card.title": "Main Settings",

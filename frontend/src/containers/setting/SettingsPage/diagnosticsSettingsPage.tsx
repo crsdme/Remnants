@@ -1,5 +1,6 @@
 import { toast } from 'sonner'
 import { useTestStart } from '@/api/hooks/test/useTestStart'
+import { ConfirmPopover } from '@/components'
 import { Button, Card, CardContent, CardHeader, CardTitle } from '@/components/ui'
 import { useLocale } from '@/utils/hooks'
 import { SettingRow } from './components/setting-row'
@@ -58,9 +59,16 @@ export function DiagnosticsSettingsPage() {
             label={t('page.settings.main.recalculateProductPrices')}
             hint={t('page.settings.diagnostics.recalculateProductPrices.hint')}
           >
-            <Button type="button" variant="outline" onClick={() => startTest({ key: 'recalculateProductPrices' })}>
-              {t('page.settings.diagnostics.run')}
-            </Button>
+            <ConfirmPopover
+              title={t('page.settings.diagnostics.recalculateProductPrices.confirmTitle')}
+              description={t('page.settings.diagnostics.recalculateProductPrices.confirmDescription')}
+              confirmText={t('page.settings.diagnostics.run')}
+              onConfirm={() => startTest({ key: 'recalculateProductPrices' })}
+            >
+              <Button type="button" variant="outline">
+                {t('page.settings.diagnostics.run')}
+              </Button>
+            </ConfirmPopover>
           </SettingRow>
           <SettingRow
             label={t('page.settings.main.createInventoryCategories')}

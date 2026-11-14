@@ -1221,6 +1221,8 @@
   "page.settings.diagnostics.createTelegramProducts.hint": "Создать товары для каталога Telegram",
   "page.settings.diagnostics.quantityProducts.hint": "Пересчитать остатки товаров",
   "page.settings.diagnostics.recalculateProductPrices.hint": "Проставить цены продажи по таблицам Invoice (цена = цена/кг × вес / 1000)",
+  "page.settings.diagnostics.recalculateProductPrices.confirmTitle": "Пересчитать цены продажи?",
+  "page.settings.diagnostics.recalculateProductPrices.confirmDescription": "Цены продажи будут перезаписаны у всех товаров по правилам Invoice. Отменить это действие нельзя.",
   "page.settings.diagnostics.createInventoryCategories.hint": "Создать категории-ящики для инвентаризации, если их ещё нет",
 
   "page.settings.main.card.title": "Основные настройки",
