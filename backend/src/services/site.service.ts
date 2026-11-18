@@ -345,25 +345,8 @@ export async function getSyncSiteItems({ payload }: { payload: GetSiteSyncSiteIt
 }
 
 export async function saveSyncMapping({ payload }: { payload: SaveSiteSyncMappingPayload }): Promise<SaveSiteSyncMappingResponse> {
-  const { site, ctx } = await requireConfiguredSite(payload.id)
+  const { site } = await requireConfiguredSite(payload.id)
   const externalIds = uniqueExternalIds(payload.sourceType, payload.externalIds)
-
-  if (payload.sourceType === 'product') {
-    try {
-      if (externalIds.length === 1) {
-        await remnantAdapter.linkProduct(ctx, {
-          remnantId: payload.sourceId,
-          productId: Number(externalIds[0]),
-        })
-      }
-      else {
-        await remnantAdapter.unlinkProduct(ctx, { remnantId: payload.sourceId })
-      }
-    }
-    catch (error: unknown) {
-      throwSiteCatalogError(error)
-    }
-  }
 
   await SyncEntryRepo.upsertLink({
     siteId: site._id,

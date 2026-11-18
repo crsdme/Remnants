@@ -83,7 +83,7 @@ export const remnantAdapter: SiteAdapter = {
     return requireProductId(data)
   },
 
-  async editProduct(ctx: SiteContext, payload: SiteProductPayload) {
+  async editProduct(ctx: SiteContext, payload: SiteProductPayload & { productId: number }) {
     const data = await siteRequest<{ productId: number }>({
       ctx,
       action: 'editProduct',
@@ -93,28 +93,10 @@ export const remnantAdapter: SiteAdapter = {
     return requireProductId(data)
   },
 
-  async editQuantity(ctx: SiteContext, payload: { remnantId: string, quantity: number }) {
+  async editQuantity(ctx: SiteContext, payload: { productId: number, quantity: number }) {
     await siteRequest({
       ctx,
       action: 'editQuantity',
-      method: 'POST',
-      body: payload,
-    })
-  },
-
-  async linkProduct(ctx: SiteContext, payload: { remnantId: string, productId: number }) {
-    await siteRequest({
-      ctx,
-      action: 'linkProduct',
-      method: 'POST',
-      body: payload,
-    })
-  },
-
-  async unlinkProduct(ctx: SiteContext, payload: { remnantId: string }) {
-    await siteRequest({
-      ctx,
-      action: 'unlinkProduct',
       method: 'POST',
       body: payload,
     })

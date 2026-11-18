@@ -59,6 +59,14 @@ function linkExternalIds(link: { externalIds?: string[] | null } | null | undefi
   return link.externalIds.filter(id => typeof id === 'string' && id !== '')
 }
 
+function siteProductIdFromLink(link: { externalIds?: string[] | null } | null | undefined): number | null {
+  const raw = linkExternalIds(link)[0]
+  if (raw == null)
+    return null
+  const id = Number(raw)
+  return Number.isFinite(id) && id > 0 ? id : null
+}
+
 function toSiteContext(site: { url?: string, key?: string }): SiteContext | null {
   const url = site.url?.trim() ?? ''
   const key = site.key?.trim() ?? ''
@@ -145,6 +153,13 @@ export async function remove(payload: RemoveSyncEntriesPayload): Promise<RemoveS
 
 export async function syncProductCreate(payload: SyncProductCreatePayload): Promise<SyncProductCreateResponse> {
   const { siteId, productId } = payload
+  const existing = await SyncEntryRepo.findLink(siteId, 'product', productId)
+  const linkedSiteProductId = siteProductIdFromLink(existing)
+  if (linkedSiteProductId != null) {
+    await pushProductEdit({ siteId, productId, siteProductId: linkedSiteProductId })
+    return ok('SYNC_ENTRY_CREATED', 'Sync entry created')
+  }
+
   const site = await SiteRepo.findById(siteId)
 
   if (site == null || site.removed === true || site.active !== true)
@@ -201,13 +216,23 @@ export async function syncProductCreate(payload: SyncProductCreatePayload): Prom
 export async function syncProductEdit(payload: SyncProductEditPayload): Promise<SyncProductEditResponse> {
   const { siteId, productId, difference } = payload
   const link = await SyncEntryRepo.findLink(siteId, 'product', productId)
+  const linkedSiteProductId = siteProductIdFromLink(link)
 
-  if (link == null)
+  if (linkedSiteProductId == null)
     return syncProductCreate({ siteId, productId })
 
   if (!hasRelevantDifference(difference))
     return ok('NO_CHANGES', 'No changes to sync')
 
+  return pushProductEdit({ siteId, productId, siteProductId: linkedSiteProductId })
+}
+
+async function pushProductEdit(payload: {
+  siteId: string
+  productId: string
+  siteProductId: number
+}): Promise<SyncProductEditResponse> {
+  const { siteId, productId, siteProductId } = payload
   const site = await SiteRepo.findById(siteId)
   if (site == null || site.removed === true || site.active !== true)
     return ok('SITE_SKIPPED', 'Site is missing or inactive')
@@ -226,7 +251,7 @@ export async function syncProductEdit(payload: SyncProductEditPayload): Promise<
 
   try {
     const body = await buildProductPayload(siteId, productId, site.warehouseIds ?? [], site.currencyId)
-    const result = await remnantAdapter.editProduct(ctx, body)
+    const result = await remnantAdapter.editProduct(ctx, { ...body, productId: siteProductId })
     await markLink({
       siteId,
       sourceType: 'product',
@@ -263,7 +288,8 @@ export async function syncProductQuantity(
     return ok('SITE_SKIPPED', 'Site is missing or inactive')
 
   const link = await SyncEntryRepo.findLink(siteId, 'product', productId)
-  if (link == null)
+  const linkedSiteProductId = siteProductIdFromLink(link)
+  if (linkedSiteProductId == null)
     return ok('SYNC_ENTRY_NOT_FOUND', 'Product is not linked to this site')
 
   const warehouseIds = site.warehouseIds ?? []
@@ -277,7 +303,7 @@ export async function syncProductQuantity(
   const quantity = await StockLotRepo.sumRemainingByWarehouses(productId, warehouseIds, session)
 
   try {
-    await remnantAdapter.editQuantity(ctx, { remnantId: productId, quantity })
+    await remnantAdapter.editQuantity(ctx, { productId: linkedSiteProductId, quantity })
     await markLink({
       siteId,
       sourceType: 'product',

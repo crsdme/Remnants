@@ -237,55 +237,11 @@ class ModelExtensionModuleRemnant extends Model
         return $this->withObjectNames($items);
     }
 
-    public function findProductId($remnantId)
-    {
-        if ($remnantId === '') {
-            return null;
-        }
-
-        $query = $this->db->query("
-            SELECT product_id FROM `" . DB_PREFIX . "remnant_product`
-            WHERE remnant_id = '" . $this->db->escape($remnantId) . "'
-            LIMIT 1
-        ");
-
-        return $query->num_rows ? (int) $query->row['product_id'] : null;
-    }
-
-    public function upsertLink($productId, $remnantId)
-    {
-        $this->db->query("
-            INSERT INTO `" . DB_PREFIX . "remnant_product` (`product_id`, `remnant_id`)
-            VALUES ('" . (int) $productId . "', '" . $this->db->escape($remnantId) . "')
-            ON DUPLICATE KEY UPDATE
-                `product_id` = VALUES(`product_id`),
-                `remnant_id` = VALUES(`remnant_id`)
-        ");
-    }
-
-    public function unlinkProduct($remnantId)
-    {
-        if ($remnantId === '') {
-            return;
-        }
-
-        $this->db->query("
-            DELETE FROM `" . DB_PREFIX . "remnant_product`
-            WHERE remnant_id = '" . $this->db->escape($remnantId) . "'
-        ");
-    }
-
     public function createProduct($data)
     {
         $remnantId = isset($data['remnantId']) ? (string) $data['remnantId'] : '';
         if ($remnantId === '') {
             throw new Exception('remnantId is required');
-        }
-
-        $existing = $this->findProductId($remnantId);
-        if ($existing) {
-            $this->editProduct($existing, $data);
-            return $existing;
         }
 
         $price = isset($data['price']) ? (float) $data['price'] : 0;
@@ -332,7 +288,6 @@ class ModelExtensionModuleRemnant extends Model
         $this->replaceAttributes($productId, isset($data['attributes']) ? $data['attributes'] : []);
         $this->replaceImages($productId, isset($data['images']) ? $data['images'] : []);
         $this->ensureStore($productId);
-        $this->upsertLink($productId, $remnantId);
 
         $this->cache->delete('product');
 
@@ -381,10 +336,6 @@ class ModelExtensionModuleRemnant extends Model
 
         if (isset($data['images']) && is_array($data['images'])) {
             $this->replaceImages($productId, $data['images']);
-        }
-
-        if (isset($data['remnantId']) && $data['remnantId'] !== '') {
-            $this->upsertLink($productId, (string) $data['remnantId']);
         }
 
         $this->cache->delete('product');

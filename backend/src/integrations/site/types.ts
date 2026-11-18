@@ -15,6 +15,7 @@ export interface SiteProductAttribute {
 
 export interface SiteProductPayload {
   remnantId: string
+  productId?: number
   names: Record<string, string>
   price: number
   quantity?: number
@@ -49,8 +50,6 @@ export interface SiteAdapter {
   listAttributes: (__ctx: SiteContext) => Promise<SiteNamedEntity[]>
   listLanguages: (__ctx: SiteContext) => Promise<SiteNamedEntity[]>
   createProduct: (__ctx: SiteContext, __payload: SiteProductPayload) => Promise<{ productId: number }>
-  editProduct: (__ctx: SiteContext, __payload: SiteProductPayload) => Promise<{ productId: number }>
-  editQuantity: (__ctx: SiteContext, __payload: { remnantId: string, quantity: number }) => Promise<void>
-  linkProduct: (__ctx: SiteContext, __payload: { remnantId: string, productId: number }) => Promise<void>
-  unlinkProduct: (__ctx: SiteContext, __payload: { remnantId: string }) => Promise<void>
+  editProduct: (__ctx: SiteContext, __payload: SiteProductPayload & { productId: number }) => Promise<{ productId: number }>
+  editQuantity: (__ctx: SiteContext, __payload: { productId: number, quantity: number }) => Promise<void>
 }

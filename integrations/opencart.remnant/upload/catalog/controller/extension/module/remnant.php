@@ -6,7 +6,7 @@ class ControllerExtensionModuleRemnant extends Controller
      * Bump together with REQUIRED_SITE_MODULE_PROTOCOL in the Remnant backend
      * when the shop module API changes.
      */
-    public const PROTOCOL = 2;
+    public const PROTOCOL = 3;
 
     public function index()
     {
@@ -113,19 +113,16 @@ class ControllerExtensionModuleRemnant extends Controller
             return $this->json(['ok' => false, 'error' => 'invalid_json'], 400);
         }
 
+        $productId = isset($payload['productId']) ? (int) $payload['productId'] : 0;
+        if ($productId <= 0) {
+            return $this->json(['ok' => false, 'error' => 'productId is required'], 400);
+        }
+
         $this->load->model('extension/module/remnant');
 
-        $remnantId = isset($payload['remnantId']) ? (string) $payload['remnantId'] : '';
-        $productId = $this->model_extension_module_remnant->findProductId($remnantId);
-
         try {
-            if (!$productId) {
-                $productId = $this->model_extension_module_remnant->createProduct($payload);
-            } else {
-                $this->model_extension_module_remnant->editProduct($productId, $payload);
-            }
-
-            $this->json(['ok' => true, 'data' => ['productId' => (int) $productId]]);
+            $this->model_extension_module_remnant->editProduct($productId, $payload);
+            $this->json(['ok' => true, 'data' => ['productId' => $productId]]);
         } catch (Exception $e) {
             $this->json(['ok' => false, 'error' => $e->getMessage()], 400);
         }
@@ -142,61 +139,15 @@ class ControllerExtensionModuleRemnant extends Controller
             return $this->json(['ok' => false, 'error' => 'invalid_json'], 400);
         }
 
-        $this->load->model('extension/module/remnant');
-
-        $remnantId = isset($payload['remnantId']) ? (string) $payload['remnantId'] : '';
-        $quantity = isset($payload['quantity']) ? (int) $payload['quantity'] : 0;
-        $productId = $this->model_extension_module_remnant->findProductId($remnantId);
-
-        if (!$productId) {
-            return $this->json(['ok' => false, 'error' => 'not_found'], 404);
-        }
-
-        $this->model_extension_module_remnant->editQuantity($productId, $quantity);
-        $this->json(['ok' => true]);
-    }
-
-    public function linkProduct()
-    {
-        if (!$this->authorize()) {
-            return;
-        }
-
-        $payload = $this->body();
-        if ($payload === null) {
-            return $this->json(['ok' => false, 'error' => 'invalid_json'], 400);
-        }
-
-        $remnantId = isset($payload['remnantId']) ? (string) $payload['remnantId'] : '';
         $productId = isset($payload['productId']) ? (int) $payload['productId'] : 0;
+        $quantity = isset($payload['quantity']) ? (int) $payload['quantity'] : 0;
 
-        if ($remnantId === '' || $productId <= 0) {
-            return $this->json(['ok' => false, 'error' => 'remnantId and productId are required'], 400);
+        if ($productId <= 0) {
+            return $this->json(['ok' => false, 'error' => 'productId is required'], 400);
         }
 
         $this->load->model('extension/module/remnant');
-        $this->model_extension_module_remnant->upsertLink($productId, $remnantId);
-        $this->json(['ok' => true, 'data' => ['productId' => $productId]]);
-    }
-
-    public function unlinkProduct()
-    {
-        if (!$this->authorize()) {
-            return;
-        }
-
-        $payload = $this->body();
-        if ($payload === null) {
-            return $this->json(['ok' => false, 'error' => 'invalid_json'], 400);
-        }
-
-        $remnantId = isset($payload['remnantId']) ? (string) $payload['remnantId'] : '';
-        if ($remnantId === '') {
-            return $this->json(['ok' => false, 'error' => 'remnantId is required'], 400);
-        }
-
-        $this->load->model('extension/module/remnant');
-        $this->model_extension_module_remnant->unlinkProduct($remnantId);
+        $this->model_extension_module_remnant->editQuantity($productId, $quantity);
         $this->json(['ok' => true]);
     }
 
