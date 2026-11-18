@@ -143,327 +143,332 @@ export async function list(payload: GetProductsRepoPayload): Promise<GetProducts
   //   delete payload.sorters.quantity
   // }
 
-  const pipeline: PipelineStage[] = [
+  const matchAndSort: PipelineStage[] = [
     { $match: query },
     { $match: querySearch },
     { $sort: sorters },
+  ]
+
+  const itemsPipeline: PipelineStage[] = [
     {
-      $facet: {
-        items: [
-          ...(full
-            ? []
-            : [
-                { $skip: (current - 1) * pageSize },
-                { $limit: pageSize },
-              ]),
+      $lookup: {
+        from: 'currencies',
+        localField: 'currencyId',
+        foreignField: '_id',
+        as: 'currency',
+      },
+    },
 
-          {
-            $lookup: {
-              from: 'currencies',
-              localField: 'currencyId',
-              foreignField: '_id',
-              as: 'currency',
-            },
-          },
+    {
+      $lookup: {
+        from: 'currencies',
+        localField: 'purchaseCurrencyId',
+        foreignField: '_id',
+        as: 'purchaseCurrency',
+      },
+    },
 
-          {
-            $lookup: {
-              from: 'currencies',
-              localField: 'purchaseCurrencyId',
-              foreignField: '_id',
-              as: 'purchaseCurrency',
-            },
-          },
+    {
+      $lookup: {
+        from: 'units',
+        localField: 'unitId',
+        foreignField: '_id',
+        as: 'unit',
+      },
+    },
 
-          {
-            $lookup: {
-              from: 'units',
-              localField: 'unitId',
-              foreignField: '_id',
-              as: 'unit',
-            },
-          },
+    {
+      $lookup: {
+        from: 'categories',
+        localField: 'categoryIds',
+        foreignField: '_id',
+        as: 'categories',
+      },
+    },
 
-          {
-            $lookup: {
-              from: 'categories',
-              localField: 'categoryIds',
-              foreignField: '_id',
-              as: 'categories',
-            },
-          },
+    warehouseStockFromLotsLookup(),
+    warehouseStockFromLotsAddFields(),
 
-          warehouseStockFromLotsLookup(),
-          warehouseStockFromLotsAddFields(),
+    {
+      $lookup: {
+        from: 'product-property-groups',
+        localField: 'productPropertiesGroupId',
+        foreignField: '_id',
+        as: 'productPropertiesGroup',
+      },
+    },
 
-          {
-            $lookup: {
-              from: 'product-property-groups',
-              localField: 'productPropertiesGroupId',
-              foreignField: '_id',
-              as: 'productPropertiesGroup',
-            },
-          },
-
-          {
-            $lookup: {
-              from: 'barcodes',
-              localField: 'barcodeIds',
-              foreignField: '_id',
-              as: 'barcodes',
-            },
-          },
-          {
-            $lookup: {
-              from: 'product-properties',
-              localField: 'productProperties._id',
-              foreignField: '_id',
-              as: 'productPropertiesData',
-            },
-          },
-          {
-            $addFields: {
-              productPropertyOptionIds: {
-                $reduce: {
-                  input: { $ifNull: ['$productProperties', []] },
-                  initialValue: [],
-                  in: {
-                    $setUnion: [
-                      '$$value',
-                      {
-                        $filter: {
-                          input: {
-                            $cond: [
-                              { $isArray: '$$this.value' },
-                              '$$this.value',
-                              [{ $ifNull: ['$$this.value', null] }],
-                            ],
-                          },
-                          as: 'optionId',
-                          cond: { $ne: ['$$optionId', null] },
-                        },
-                      },
-                    ],
+    {
+      $lookup: {
+        from: 'barcodes',
+        localField: 'barcodeIds',
+        foreignField: '_id',
+        as: 'barcodes',
+      },
+    },
+    {
+      $lookup: {
+        from: 'product-properties',
+        localField: 'productProperties._id',
+        foreignField: '_id',
+        as: 'productPropertiesData',
+      },
+    },
+    {
+      $addFields: {
+        productPropertyOptionIds: {
+          $reduce: {
+            input: { $ifNull: ['$productProperties', []] },
+            initialValue: [],
+            in: {
+              $setUnion: [
+                '$$value',
+                {
+                  $filter: {
+                    input: {
+                      $cond: [
+                        { $isArray: '$$this.value' },
+                        '$$this.value',
+                        [{ $ifNull: ['$$this.value', null] }],
+                      ],
+                    },
+                    as: 'optionId',
+                    cond: { $ne: ['$$optionId', null] },
                   },
                 },
-              },
+              ],
             },
           },
-          {
-            $lookup: {
-              from: 'product-property-options',
-              localField: 'productPropertyOptionIds',
-              foreignField: '_id',
-              as: 'productPropertyOptions',
-            },
-          },
-          {
-            $addFields: {
-              currency: { $arrayElemAt: ['$currency', 0] },
-              purchaseCurrency: { $arrayElemAt: ['$purchaseCurrency', 0] },
-              unit: { $arrayElemAt: ['$unit', 0] },
-              productPropertiesGroup: {
-                $arrayElemAt: ['$productPropertiesGroup', 0],
-              },
-            },
-          },
-          {
-            $addFields: {
-              productProperties: {
-                $map: {
-                  input: { $ifNull: ['$productProperties', []] },
-                  as: 'prop',
-                  in: {
-                    $let: {
-                      vars: {
-                        propData: {
-                          $arrayElemAt: [
-                            {
-                              $filter: {
-                                input: '$productPropertiesData',
-                                as: 'data',
-                                cond: { $eq: ['$$data._id', '$$prop._id'] },
-                              },
-                            },
-                            0,
-                          ],
-                        },
-                        propValueIds: {
-                          $filter: {
-                            input: {
-                              $cond: [
-                                { $isArray: '$$prop.value' },
-                                '$$prop.value',
-                                [{ $ifNull: ['$$prop.value', null] }],
-                              ],
-                            },
-                            as: 'valueId',
-                            cond: { $ne: ['$$valueId', null] },
-                          },
+        },
+      },
+    },
+    {
+      $lookup: {
+        from: 'product-property-options',
+        localField: 'productPropertyOptionIds',
+        foreignField: '_id',
+        as: 'productPropertyOptions',
+      },
+    },
+    {
+      $addFields: {
+        currency: { $arrayElemAt: ['$currency', 0] },
+        purchaseCurrency: { $arrayElemAt: ['$purchaseCurrency', 0] },
+        unit: { $arrayElemAt: ['$unit', 0] },
+        productPropertiesGroup: {
+          $arrayElemAt: ['$productPropertiesGroup', 0],
+        },
+      },
+    },
+    {
+      $addFields: {
+        productProperties: {
+          $map: {
+            input: { $ifNull: ['$productProperties', []] },
+            as: 'prop',
+            in: {
+              $let: {
+                vars: {
+                  propData: {
+                    $arrayElemAt: [
+                      {
+                        $filter: {
+                          input: '$productPropertiesData',
+                          as: 'data',
+                          cond: { $eq: ['$$data._id', '$$prop._id'] },
                         },
                       },
-                      in: {
-                        $mergeObjects: [
-                          '$$prop',
-                          {
-                            id: '$$prop._id',
-
-                            data: {
-                              id: '$$propData._id',
-                              names: '$$propData.names',
-                              symbols: '$$propData.symbols',
-                              type: '$$propData.type',
-                              isRequired: '$$propData.isRequired',
-                              showInTable: '$$propData.showInTable',
-                            },
-
-                            options: {
-                              $map: {
-                                input: {
-                                  $filter: {
-                                    input: '$productPropertyOptions',
-                                    as: 'option',
-                                    cond: {
-                                      $in: ['$$option._id', '$$propValueIds'],
-                                    },
-                                  },
-                                },
-                                as: 'option',
-                                in: {
-                                  id: '$$option._id',
-                                  names: '$$option.names',
-                                  color: '$$option.color',
-                                },
-                              },
-                            },
-                          },
+                      0,
+                    ],
+                  },
+                  propValueIds: {
+                    $filter: {
+                      input: {
+                        $cond: [
+                          { $isArray: '$$prop.value' },
+                          '$$prop.value',
+                          [{ $ifNull: ['$$prop.value', null] }],
                         ],
                       },
+                      as: 'valueId',
+                      cond: { $ne: ['$$valueId', null] },
                     },
                   },
                 },
-              },
+                in: {
+                  $mergeObjects: [
+                    '$$prop',
+                    {
+                      id: '$$prop._id',
 
-              categories: {
-                $map: {
-                  input: { $ifNull: ['$categories', []] },
-                  as: 'category',
-                  in: {
-                    id: '$$category._id',
-                    names: '$$category.names',
-                  },
-                },
-              },
+                      data: {
+                        id: '$$propData._id',
+                        names: '$$propData.names',
+                        symbols: '$$propData.symbols',
+                        type: '$$propData.type',
+                        isRequired: '$$propData.isRequired',
+                        showInTable: '$$propData.showInTable',
+                      },
 
-              barcodes: {
-                $map: {
-                  input: { $ifNull: ['$barcodes', []] },
-                  as: 'barcode',
-                  in: {
-                    id: '$$barcode._id',
-                    code: '$$barcode.code',
-                  },
+                      options: {
+                        $map: {
+                          input: {
+                            $filter: {
+                              input: '$productPropertyOptions',
+                              as: 'option',
+                              cond: {
+                                $in: ['$$option._id', '$$propValueIds'],
+                              },
+                            },
+                          },
+                          as: 'option',
+                          in: {
+                            id: '$$option._id',
+                            names: '$$option.names',
+                            color: '$$option.color',
+                          },
+                        },
+                      },
+                    },
+                  ],
                 },
               },
             },
           },
-          {
-            $unset: [
-              'productPropertiesData',
-              'productPropertyOptions',
-              'productPropertyOptionIds',
-              'productProperties._id',
-            ],
-          },
-          {
-            $project: {
-              _id: 0,
-              id: '$_id',
-              seq: 1,
-              names: 1,
-              minorPrice: 1,
-              images: 1,
-              createdAt: 1,
-              updatedAt: 1,
-              currency: {
-                id: '$currency._id',
-                names: '$currency.names',
-                symbols: '$currency.symbols',
-                scale: '$currency.scale',
-              },
-              minorPurchasePrice: {
-                $cond: [
-                  payload.hasPurchasePricePermission,
-                  '$minorPurchasePrice',
-                  '$$REMOVE',
-                ],
-              },
-              purchaseCurrency: {
-                $cond: [
-                  payload.hasPurchasePricePermission,
-                  {
-                    id: '$purchaseCurrency._id',
-                    names: '$purchaseCurrency.names',
-                    symbols: '$purchaseCurrency.symbols',
-                    scale: '$purchaseCurrency.scale',
-                  },
-                  '$$REMOVE',
-                ],
-              },
-              unit: {
-                id: '$unit._id',
-                names: '$unit.names',
-                symbols: '$unit.symbols',
-              },
-              categories: 1,
-              barcodes: 1,
-              warehouseStock: {
-                $map: {
-                  input: { $ifNull: ['$warehouseStock', []] },
-                  as: 'stock',
-                  in: {
-                    warehouseId: '$$stock.warehouseId',
-                    count: '$$stock.count',
-                    lastSaleAt: '$$stock.lastSaleAt',
-                    lastMoveAt: '$$stock.lastMoveAt',
-                  },
-                },
-              },
-              productProperties: {
-                id: 1,
-                value: 1,
-                data: {
-                  id: 1,
-                  names: 1,
-                  symbols: 1,
-                  type: 1,
-                  isRequired: 1,
-                  showInTable: 1,
-                },
-                options: {
-                  id: 1,
-                  names: 1,
-                  color: 1,
-                },
-              },
-              productPropertiesGroup: {
-                id: '$productPropertiesGroup._id',
-                names: '$productPropertiesGroup.names',
-              },
+        },
+
+        categories: {
+          $map: {
+            input: { $ifNull: ['$categories', []] },
+            as: 'category',
+            in: {
+              id: '$$category._id',
+              names: '$$category.names',
             },
           },
-        ],
+        },
 
-        count: [
-          {
-            $count: 'count',
+        barcodes: {
+          $map: {
+            input: { $ifNull: ['$barcodes', []] },
+            as: 'barcode',
+            in: {
+              id: '$$barcode._id',
+              code: '$$barcode.code',
+            },
           },
-        ],
+        },
+      },
+    },
+    {
+      $unset: [
+        'productPropertiesData',
+        'productPropertyOptions',
+        'productPropertyOptionIds',
+        'productProperties._id',
+      ],
+    },
+    {
+      $project: {
+        _id: 0,
+        id: '$_id',
+        seq: 1,
+        names: 1,
+        minorPrice: 1,
+        images: 1,
+        createdAt: 1,
+        updatedAt: 1,
+        currency: {
+          id: '$currency._id',
+          names: '$currency.names',
+          symbols: '$currency.symbols',
+          scale: '$currency.scale',
+        },
+        minorPurchasePrice: {
+          $cond: [
+            payload.hasPurchasePricePermission,
+            '$minorPurchasePrice',
+            '$$REMOVE',
+          ],
+        },
+        purchaseCurrency: {
+          $cond: [
+            payload.hasPurchasePricePermission,
+            {
+              id: '$purchaseCurrency._id',
+              names: '$purchaseCurrency.names',
+              symbols: '$purchaseCurrency.symbols',
+              scale: '$purchaseCurrency.scale',
+            },
+            '$$REMOVE',
+          ],
+        },
+        unit: {
+          id: '$unit._id',
+          names: '$unit.names',
+          symbols: '$unit.symbols',
+        },
+        categories: 1,
+        barcodes: 1,
+        warehouseStock: {
+          $map: {
+            input: { $ifNull: ['$warehouseStock', []] },
+            as: 'stock',
+            in: {
+              warehouseId: '$$stock.warehouseId',
+              count: '$$stock.count',
+              lastSaleAt: '$$stock.lastSaleAt',
+              lastMoveAt: '$$stock.lastMoveAt',
+            },
+          },
+        },
+        productProperties: {
+          id: 1,
+          value: 1,
+          data: {
+            id: 1,
+            names: 1,
+            symbols: 1,
+            type: 1,
+            isRequired: 1,
+            showInTable: 1,
+          },
+          options: {
+            id: 1,
+            names: 1,
+            color: 1,
+          },
+        },
+        productPropertiesGroup: {
+          id: '$productPropertiesGroup._id',
+          names: '$productPropertiesGroup.names',
+        },
       },
     },
   ]
 
-  const raw = await ProductModel.aggregate<AggregateResult<ProductDBPopulated>>(pipeline).exec()
+  // $facet packs the whole result into one BSON doc (16MB max). full lists stream instead.
+  if (full) {
+    const [items, countRaw] = await Promise.all([
+      ProductModel.aggregate<ProductDBPopulated>([...matchAndSort, ...itemsPipeline]).exec(),
+      ProductModel.aggregate<{ count: number }>([...matchAndSort, { $count: 'count' }]).exec(),
+    ])
+    return { items, total: countRaw[0]?.count ?? 0, page: current, pageSize }
+  }
+
+  const raw = await ProductModel.aggregate<AggregateResult<ProductDBPopulated>>([
+    ...matchAndSort,
+    {
+      $facet: {
+        items: [
+          { $skip: (current - 1) * pageSize },
+          { $limit: pageSize },
+          ...itemsPipeline,
+        ],
+        count: [{ $count: 'count' }],
+      },
+    },
+  ]).exec()
   const { items, total } = unwrapAggregate(raw)
 
   return { items, total, page: current, pageSize }

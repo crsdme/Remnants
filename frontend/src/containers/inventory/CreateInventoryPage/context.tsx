@@ -180,13 +180,23 @@ export function CreateInventoryProvider({ children }: { children: ReactNode }) {
     const queries = queryClient.getQueriesData<AxiosResponse<GetInventoryItemsResponse>>({
       queryKey: ['inventories', 'get', 'items'],
     })
+    const staleKeys: unknown[][] = []
 
     for (const [queryKey, old] of queries) {
       if (!old?.data?.data?.items)
         continue
 
-      const params = queryKey[3] as { filters?: { view?: InventoryItemViewFilter } } | undefined
-      const view = params?.filters?.view ?? 'all'
+      const params = queryKey[3] as {
+        filters?: { view?: InventoryItemViewFilter, search?: string }
+        pagination?: { current?: number }
+      } | undefined
+      // Options helper uses bare filters as key[3]; list queries use { filters, pagination }.
+      const view = params?.filters?.view
+        ?? (params as { view?: InventoryItemViewFilter } | undefined)?.view
+        ?? 'all'
+      const search = params?.filters?.search
+        ?? (params as { search?: string } | undefined)?.search
+      const page = params?.pagination?.current ?? 1
       const items = old.data.data.items
       const index = items.findIndex(item => item.productId === nextItem.productId)
       const existing = index >= 0 ? items[index] : undefined
@@ -219,9 +229,18 @@ export function CreateInventoryProvider({ children }: { children: ReactNode }) {
       else if (!matches) {
         continue
       }
-      else {
-        // Item belongs to this view but isn't on the cached page — force a refetch later.
+      else if (view === 'all') {
+        // Already in inventory; just lives on another page of "all".
         continue
+      }
+      else if (search || page !== 1) {
+        staleKeys.push(queryKey as unknown[])
+        continue
+      }
+      else {
+        // Filtered tab (counted/mismatch/…) — show scanned/updated row immediately.
+        nextItems = [merged, ...items]
+        nextTotal += 1
       }
 
       queryClient.setQueryData<AxiosResponse<GetInventoryItemsResponse>>(queryKey, {
@@ -238,6 +257,10 @@ export function CreateInventoryProvider({ children }: { children: ReactNode }) {
           },
         },
       })
+    }
+
+    for (const queryKey of staleKeys) {
+      void queryClient.invalidateQueries({ queryKey })
     }
   }, [queryClient])
 
@@ -316,27 +339,29 @@ export function CreateInventoryProvider({ children }: { children: ReactNode }) {
   }, [queryClient])
 
   const applyOptimisticQuantity = useCallback((productId: string, receivedQuantity: number, itemHint?: InventoryItemDTO) => {
-    const previousItem = queryClient
+    const cachedItem = queryClient
       .getQueriesData<AxiosResponse<GetInventoryItemsResponse>>({ queryKey: ['inventories', 'get', 'items'] })
       .flatMap(([, response]) => response?.data?.data?.items ?? [])
       .find(item => item.productId === productId)
-      ?? itemHint
+
+    const previousItem = cachedItem ?? itemHint
+    if (!previousItem)
+      return undefined
 
     const optimisticItem = {
-      ...(previousItem ?? {}),
+      ...previousItem,
       productId,
-      quantity: previousItem?.quantity ?? 0,
+      quantity: previousItem.quantity ?? 0,
       receivedQuantity,
       counted: true as const,
+      product: previousItem.product ?? itemHint?.product,
     }
 
-    if (previousItem) {
-      if (!upsertSnapshotsRef.current.has(productId))
-        upsertSnapshotsRef.current.set(productId, previousItem)
+    if (cachedItem && !upsertSnapshotsRef.current.has(productId))
+      upsertSnapshotsRef.current.set(productId, cachedItem)
 
-      syncItemAcrossItemCaches({ ...previousItem, ...optimisticItem })
-      patchProgressInCache(previousItem, optimisticItem)
-    }
+    syncItemAcrossItemCaches(optimisticItem)
+    patchProgressInCache(cachedItem ?? previousItem, optimisticItem)
 
     return previousItem
   }, [patchProgressInCache, queryClient, syncItemAcrossItemCaches])
@@ -502,7 +527,7 @@ export function CreateInventoryProvider({ children }: { children: ReactNode }) {
 
       const product = result?.product
       const item = result?.item
-      if (!product)
+      if (!product || !item)
         return
 
       const cachedItem = queryClient
@@ -512,11 +537,22 @@ export function CreateInventoryProvider({ children }: { children: ReactNode }) {
 
       const currentQty = cachedItem?.counted
         ? (cachedItem.receivedQuantity ?? 0)
-        : (item?.counted ? (item.receivedQuantity ?? 0) : 0)
+        : (item.counted ? (item.receivedQuantity ?? 0) : 0)
       const unitsPerScan = result.unitsPerScan ?? 1
       const nextQty = currentQty + unitsPerScan
 
-      saveItemQuantity(product.id, nextQty)
+      saveItemQuantity(product.id, nextQty, {
+        ...item,
+        product: cachedItem?.product ?? {
+          id: product.id,
+          seq: product.seq,
+          names: product.names,
+          barcodes: product.barcodes ?? [],
+          unit: product.unit,
+          images: product.images ?? [],
+          stockStatus: null,
+        },
+      })
       toast.success(t('page.create-inventory.scan.success'), {
         description: product.names?.ru || product.names?.en || product.id,
       })
