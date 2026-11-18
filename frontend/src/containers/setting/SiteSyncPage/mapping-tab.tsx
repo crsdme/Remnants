@@ -188,11 +188,11 @@ export function MappingTab({
       if (needle === '')
         return ordered
 
+      const tokens = needle.split(/\s+/).filter(Boolean)
       return ordered.filter((item) => {
         const path = isCategory ? categoryPath(item, siteById, language) : ''
-        return item.id.toLowerCase().includes(needle)
-          || localizedName(item.names, language).toLowerCase().includes(needle)
-          || path.toLowerCase().includes(needle)
+        const text = [item.id, localizedName(item.names, language), path].join(' ').toLowerCase()
+        return tokens.every(token => text.includes(token))
       })
     },
     [isProduct, isCategory, siteId, siteItems, siteById, language],

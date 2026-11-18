@@ -158,11 +158,16 @@ class ModelExtensionModuleRemnant extends Model
 
         $where = '';
         if ($q !== '') {
-            $escaped = $this->db->escape($q);
-            if (ctype_digit($q)) {
-                $where = "WHERE (p.product_id = " . (int) $q . " OR pd.name LIKE '%" . $escaped . "%')";
-            } else {
-                $where = "WHERE pd.name LIKE '%" . $escaped . "%'";
+            $tokens = preg_split('/\s+/u', trim($q), -1, PREG_SPLIT_NO_EMPTY);
+            if (count($tokens) === 1 && ctype_digit($tokens[0])) {
+                $escaped = $this->db->escape($tokens[0]);
+                $where = "WHERE (p.product_id = " . (int) $tokens[0] . " OR pd.name LIKE '%" . $escaped . "%')";
+            } elseif ($tokens) {
+                $likes = [];
+                foreach ($tokens as $token) {
+                    $likes[] = "pd.name LIKE '%" . $this->db->escape($token) . "%'";
+                }
+                $where = "WHERE " . implode(' AND ', $likes);
             }
         }
 

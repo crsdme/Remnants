@@ -579,12 +579,17 @@ export async function listIdNames(payload: {
 }): Promise<{ items: Array<{ _id: string, names: unknown }>, total: number }> {
   const query: Record<string, unknown> = { removed: { $ne: true } }
   const names = payload.names?.trim()
-  if (names !== undefined) {
-    const escaped = names.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-    query.$or = [
-      { 'names.ru': { $regex: escaped, $options: 'i' } },
-      { 'names.en': { $regex: escaped, $options: 'i' } },
-    ]
+  if (names !== undefined && names !== '') {
+    const tokens = names.split(/\s+/).filter(Boolean)
+    query.$and = tokens.map((token) => {
+      const escaped = token.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+      return {
+        $or: [
+          { 'names.ru': { $regex: escaped, $options: 'i' } },
+          { 'names.en': { $regex: escaped, $options: 'i' } },
+        ],
+      }
+    })
   }
 
   const total = await ProductModel.countDocuments(query)

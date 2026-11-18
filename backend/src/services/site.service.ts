@@ -466,12 +466,11 @@ function siteItemMatches(
   needle: string,
   path = '',
 ) {
-  const query = needle.toLowerCase()
-  if (item.id === needle || item.id.toLowerCase().includes(query))
+  const tokens = needle.trim().toLowerCase().split(/\s+/).filter(Boolean)
+  if (tokens.length === 0)
     return true
-  if (Object.values(item.names).some(name => name.toLowerCase().includes(query)))
-    return true
-  return path.toLowerCase().includes(query)
+  const text = [item.id, ...Object.values(item.names), path].join(' ').toLowerCase()
+  return tokens.every(token => text.includes(token))
 }
 
 function categoryPath(
