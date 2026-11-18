@@ -9,7 +9,6 @@ import {
   Button,
   Checkbox,
   Label,
-  Table,
   TableBody,
   TableCell,
   TableHead,
@@ -51,8 +50,8 @@ export function PreviewStep() {
   const canConfirm = preview.summary.valid > 0
 
   return (
-    <div className="flex flex-col gap-4">
-      <div className="flex flex-wrap items-center justify-between gap-3">
+    <div className="flex min-h-0 flex-1 flex-col gap-3">
+      <div className="flex shrink-0 flex-wrap items-center justify-between gap-3">
         <div className="flex flex-wrap items-center gap-2">
           <Badge variant="secondary">
             {t('page.productsImport.preview.summary.total', { count: preview.summary.total })}
@@ -67,15 +66,15 @@ export function PreviewStep() {
         <ColumnVisibilityMenu table={table} tableId="products-import-preview" />
       </div>
 
-      <div className="border rounded-sm overflow-x-auto">
-        <Table>
-          <TableHeader>
+      <div className="min-h-0 flex-1 overflow-auto rounded-sm border">
+        <table className="w-full caption-bottom text-sm">
+          <TableHeader className="sticky top-0 z-10 bg-background shadow-[inset_0_-1px_0_0_var(--border)]">
             {table.getHeaderGroups().map(headerGroup => (
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map(header => (
                   <TableHead
                     key={header.id}
-                    className={`max-w-[${header.column.columnDef.size}px]`}
+                    className={`max-w-[${header.column.columnDef.size}px] bg-background`}
                   >
                     {flexRender(header.column.columnDef.header, header.getContext())}
                   </TableHead>
@@ -108,12 +107,12 @@ export function PreviewStep() {
                   </TableRow>
                 )}
           </TableBody>
-        </Table>
+        </table>
       </div>
 
-      <div className="sticky bottom-0 z-10 -mx-1 border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 px-1 py-4">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-          <div className="flex flex-col gap-3 max-w-xl w-full">
+      <div className="shrink-0 border-t bg-background pt-3">
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+          <div className="flex w-full max-w-xl flex-col gap-3">
             <div className="flex items-center justify-between gap-4 rounded-md border px-4 py-3">
               <div className="space-y-0.5">
                 <Label className="text-sm">{t('page.products.form.isAutoSyncEnabled')}</Label>
@@ -149,7 +148,7 @@ export function PreviewStep() {
             )}
           </div>
 
-          <div className="flex flex-wrap gap-2 justify-end">
+          <div className="flex flex-wrap justify-end gap-2">
             <Button variant="outline" type="button" onClick={cancelPreview} disabled={isImportLoading}>
               {t('page.productsImport.preview.cancel')}
             </Button>

@@ -53,7 +53,11 @@ export function useImportPreviewColumns() {
         defaultVisible: true,
       },
       header: t('page.productsImport.preview.table.action'),
-      cell: ({ row }) => t(`page.productsImport.preview.action.${row.original.action}`),
+      cell: ({ row }) => (
+        <Badge variant={row.original.action === 'create' ? 'success' : 'secondary'}>
+          {t(`page.productsImport.preview.action.${row.original.action}`)}
+        </Badge>
+      ),
     }),
     columnHelper.accessor(row => pickName(row.names, language), {
       id: 'names',
