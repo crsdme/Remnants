@@ -463,7 +463,7 @@ export async function list(payload: GetProductsRepoPayload): Promise<GetProducts
         items: [
           { $skip: (current - 1) * pageSize },
           { $limit: pageSize },
-          ...itemsPipeline,
+          ...itemsPipeline as PipelineStage.FacetPipelineStage[],
         ],
         count: [{ $count: 'count' }],
       },
