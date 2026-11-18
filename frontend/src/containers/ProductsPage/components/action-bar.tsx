@@ -1,8 +1,8 @@
-import { Plus } from 'lucide-react'
-import { useState } from 'react'
+import { Plus, Upload } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
+import { Link } from 'react-router-dom'
 
-import { ImportButton, PermissionGate } from '@/components'
+import { PermissionGate } from '@/components'
 import {
   Button,
   Sheet,
@@ -20,15 +20,12 @@ import { LogsSheet } from './logs-sheet'
 
 export function ActionBar() {
   const { t } = useTranslation()
-  const [file, setFile] = useState<File | null>(null)
   const { permissions } = useAuthContext()
 
   const {
     isLoading,
     isModalOpen,
     isEdit,
-    downloadTemplate,
-    importProducts,
     openModal,
     closeModal,
   } = useProductContext()
@@ -36,24 +33,6 @@ export function ActionBar() {
   const canCreate = hasPermission(permissions, 'product.create')
   const canEdit = hasPermission(permissions, 'product.edit')
   const canOpenForm = canCreate || canEdit
-
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0]
-    if (file) {
-      setFile(file)
-    }
-  }
-
-  const handleDownloadTemplate = () => {
-    downloadTemplate()
-  }
-
-  const onImport = () => {
-    const formData = new FormData()
-    formData.append('file', file as File)
-    importProducts({ file: file as File })
-    setFile(null)
-  }
 
   return (
     <div className="flex items-center justify-between flex-wrap gap-2">
@@ -63,13 +42,12 @@ export function ActionBar() {
       </div>
       <div className="flex items-center flex-wrap gap-2">
         <PermissionGate permission="product.import">
-          <ImportButton
-            handleFileChange={handleFileChange}
-            handleDownloadTemplate={handleDownloadTemplate}
-            isFileSelected={!!file}
-            isLoading={isLoading}
-            onSubmit={onImport}
-          />
+          <Button variant="outline" asChild>
+            <Link to="/products/import">
+              <Upload className="mr-2 h-4 w-4" />
+              {t('page.products.button.import')}
+            </Link>
+          </Button>
         </PermissionGate>
         {canOpenForm && (
           <Sheet open={isModalOpen} onOpenChange={closeModal}>

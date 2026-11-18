@@ -1,5 +1,5 @@
 import type { NextFunction, Response } from 'express'
-import type { BatchProductsPayload, CreateProductsPayload, EditProductsPayload, GetProductsPayload, ImportProductsPayload, RemoveProductsPayload, ValidatedAuthedRequest, ValidatedRequest } from '@/types/'
+import type { BatchProductsPayload, CreateProductsPayload, EditProductsPayload, GetProductsPayload, ImportProductsPayload, PreviewImportProductsPayload, RemoveProductsPayload, ValidatedAuthedRequest, ValidatedRequest } from '@/types/'
 
 import * as ProductService from '@/services/product.service'
 import { HttpError } from '@/utils/httpError'
@@ -93,6 +93,25 @@ export async function batch(
   }
 }
 
+export async function previewImportHandler(
+  req: ValidatedRequest<never, PreviewImportProductsPayload>,
+  res: Response,
+  next: NextFunction,
+) {
+  try {
+    if (!req.file) {
+      throw new HttpError(400, 'No file uploaded', 'NO_FILE_UPLOADED')
+    }
+
+    const serviceResponse = await ProductService.previewImportHandler({ file: req.file })
+
+    res.status(200).json(serviceResponse)
+  }
+  catch (err) {
+    next(err)
+  }
+}
+
 export async function importHandler(
   req: ValidatedRequest<never, ImportProductsPayload>,
   res: Response,
@@ -103,7 +122,11 @@ export async function importHandler(
       throw new HttpError(400, 'No file uploaded', 'NO_FILE_UPLOADED')
     }
 
-    const serviceResponse = await ProductService.importHandler({ file: req.file })
+    const serviceResponse = await ProductService.importHandler({
+      file: req.file,
+      isAutoSyncEnabled: req.validated.body.isAutoSyncEnabled,
+      syncSites: req.validated.body.syncSites,
+    })
 
     res.status(200).json(serviceResponse)
   }

@@ -15,10 +15,8 @@ import {
   useCurrencyQuery,
   useProductBatch,
   useProductCreate,
-  useProductDownloadTemplate,
   useProductEdit,
   useProductExport,
-  useProductImport,
   useProductPropertyGroupQuery,
   useProductRemove,
   useUnitQuery,
@@ -94,9 +92,7 @@ interface ProductContextType {
   submitProductForm: (params: ProductFormValues) => void
   batchProduct: (params: any) => void
   removeProduct: (params: { ids: string[] }) => void
-  importProducts: (params: { file: File }) => void
   exportProducts: (params: { ids: string[] }) => void
-  downloadTemplate: () => void
 }
 
 const ProductContext = createContext<ProductContextType | undefined>(undefined)
@@ -281,19 +277,6 @@ export function ProductProvider({ children }: { children: ReactNode }) {
     },
   })
 
-  const useMutateImportProduct = useProductImport({
-    options: {
-      onSuccess: ({ data }) => {
-        void queryClient.invalidateQueries({ queryKey: ['products'] })
-        toast.success(t(`response.title.${data.code}`), { description: `${t(`response.description.${data.code}`)} ${data.description || ''}` })
-      },
-      onError: ({ response }) => {
-        const error = response.data.error
-        toast.error(t(`error.title.${error.code}`), { description: `${t(`error.description.${error.code}`)} ${error.description || ''}` })
-      },
-    },
-  })
-
   const useMutateBatchProduct = useProductBatch({
     options: {
       onSuccess: ({ data }) => {
@@ -308,19 +291,6 @@ export function ProductProvider({ children }: { children: ReactNode }) {
   })
 
   const useMutateExportProduct = useProductExport({
-    options: {
-      onSuccess: ({ data, headers }) => {
-        downloadBlob(data, 'products-template.xlsx')
-        toast.success(t(`response.title.${headers['x-export-code']}`), { description: `${t(`response.description.${headers['x-export-code']}`)} ${headers['x-export-message'] || ''}` })
-      },
-      onError: ({ response }) => {
-        const error = response.data.error
-        toast.error(t(`error.title.${error.code}`), { description: `${t(`error.description.${error.code}`)} ${error.description || ''}` })
-      },
-    },
-  })
-
-  const useMutateDownloadTemplate = useProductDownloadTemplate({
     options: {
       onSuccess: ({ data, headers }) => {
         downloadBlob(data, 'products-template.xlsx')
@@ -381,16 +351,8 @@ export function ProductProvider({ children }: { children: ReactNode }) {
     useMutateBatchProduct.mutate(params)
   }
 
-  const importProducts = (params: { file: File }) => {
-    useMutateImportProduct.mutate(params)
-  }
-
   const exportProducts = (params: { ids: string[] }) => {
     useMutateExportProduct.mutate(params)
-  }
-
-  const downloadTemplate = () => {
-    useMutateDownloadTemplate.mutate()
   }
 
   const isLoading = false
@@ -417,9 +379,7 @@ export function ProductProvider({ children }: { children: ReactNode }) {
       submitProductForm,
       removeProduct,
       batchProduct,
-      importProducts,
       exportProducts,
-      downloadTemplate,
     }),
     [
       selectedProduct,
@@ -441,9 +401,7 @@ export function ProductProvider({ children }: { children: ReactNode }) {
       submitProductForm,
       removeProduct,
       batchProduct,
-      importProducts,
       exportProducts,
-      downloadTemplate,
     ],
   )
 

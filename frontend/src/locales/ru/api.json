@@ -365,8 +365,11 @@
   "response.title.PRODUCTS_DUPLICATED": "Товары дублированы",
   "response.description.PRODUCTS_DUPLICATED": "Товары были дублированы",
 
+  "response.title.PRODUCTS_IMPORT_PREVIEWED": "Превью импорта готово",
+  "response.description.PRODUCTS_IMPORT_PREVIEWED": "Проверьте строки перед подтверждением импорта",
+
   "response.title.PRODUCTS_IMPORTED": "Товары импортированы",
-  "response.description.PRODUCTS_IMPORTED": "Товары были импортированы успешно",
+  "response.description.PRODUCTS_IMPORTED": "Создано: {{created}}, обновлено: {{updated}}, пропущено: {{skipped}}, синхронизировано: {{synced}}, ошибок синка: {{failed}}",
 
   "response.title.PRODUCTS_EXPORTED": "Товары экспортированы",
   "response.description.PRODUCTS_EXPORTED": "Товары были экспортированы успешно",

@@ -181,6 +181,7 @@ export * from './product/useProductDownloadTemplate'
 export * from './product/useProductEdit'
 export * from './product/useProductExport'
 export * from './product/useProductImport'
+export * from './product/useProductImportPreview'
 export * from './product/useProductQuery'
 
 export * from './product/useProductRemove'

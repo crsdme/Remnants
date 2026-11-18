@@ -243,8 +243,11 @@
   "response.description.PRODUCTS_BATCH_EDITED": "Оновлення товарів завершено",
   "response.title.PRODUCTS_DUPLICATED": "Товари дубльовано",
   "response.description.PRODUCTS_DUPLICATED": "Товари було дубльовано",
+  "response.title.PRODUCTS_IMPORT_PREVIEWED": "Превʼю імпорту готове",
+  "response.description.PRODUCTS_IMPORT_PREVIEWED": "Перевірте рядки перед підтвердженням імпорту",
+
   "response.title.PRODUCTS_IMPORTED": "Товари імпортовано",
-  "response.description.PRODUCTS_IMPORTED": "Товари було імпортовано успішно",
+  "response.description.PRODUCTS_IMPORTED": "Створено: {{created}}, оновлено: {{updated}}, пропущено: {{skipped}}, синхронізовано: {{synced}}, помилок синку: {{failed}}",
   "response.title.PRODUCTS_EXPORTED": "Товари експортовано",
   "response.description.PRODUCTS_EXPORTED": "Товари було експортовано успішно",
   "response.title.ORDER_STATUSES_FETCHED": "Статуси замовлень отримано",

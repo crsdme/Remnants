@@ -1,6 +1,6 @@
 import type { Buffer } from 'node:buffer'
 import { z } from 'zod'
-import { dateRangeSchema, idSchema, idSchemaOptional, languageStringSchema, numberFromStringSchema, paginationSchema, responseListSchema, responseSchema, sorterParamsSchema } from './common'
+import { dateRangeSchema, idSchema, idSchemaOptional, languageStringSchema, numberFromStringSchema, paginationSchema, responseItemSchema, responseListSchema, responseSchema, sorterParamsSchema, stringToBooleanSchema } from './common'
 
 function hasIdsOrFilters(data: {
   ids?: unknown
@@ -293,9 +293,72 @@ export type BatchProductRequest = z.input<typeof batchProductSchema>
 
 export const importProductsSchema = z.object({
   file: z.instanceof(File),
+  isAutoSyncEnabled: stringToBooleanSchema.optional().default(true),
+  syncSites: z.array(idSchema).optional().default([]),
 })
 
 export type ImportProductsRequest = z.input<typeof importProductsSchema>
+
+export const importProductsBodySchema = importProductsSchema.omit({ file: true })
+export type ImportProductsBody = z.output<typeof importProductsBodySchema>
+
+export const previewImportProductsSchema = z.object({
+  file: z.instanceof(File),
+})
+
+export type PreviewImportProductsRequest = z.input<typeof previewImportProductsSchema>
+
+export const productImportRowPreviewSchema = z.object({
+  rowIndex: z.number().int().nonnegative(),
+  action: z.enum(['create', 'edit']),
+  id: z.string().uuid().optional(),
+  names: languageStringSchema,
+  minorPrice: z.number(),
+  currencyId: z.string().uuid().optional(),
+  currencyNames: languageStringSchema.optional(),
+  currencySymbols: languageStringSchema.optional(),
+  minorPurchasePrice: z.number(),
+  purchaseCurrencyId: z.string().uuid().optional(),
+  purchaseCurrencyNames: languageStringSchema.optional(),
+  purchaseCurrencySymbols: languageStringSchema.optional(),
+  unitId: z.string().uuid().optional(),
+  unitNames: languageStringSchema.optional(),
+  unitSymbols: languageStringSchema.optional(),
+  productPropertiesGroupId: z.string().uuid().optional(),
+  productPropertiesGroupNames: languageStringSchema.optional(),
+  categoryIds: z.array(z.string().uuid()),
+  categories: z.array(z.object({
+    id: idSchema,
+    names: languageStringSchema,
+  })),
+  barcodes: z.array(z.string()),
+  generateBarcode: z.boolean(),
+  status: z.enum(['valid', 'invalid']),
+  errors: z.array(z.string()),
+})
+
+export type ProductImportRowPreviewDTO = z.output<typeof productImportRowPreviewSchema>
+
+export const previewImportProductsResultSchema = z.object({
+  rows: z.array(productImportRowPreviewSchema),
+  summary: z.object({
+    total: z.number(),
+    valid: z.number(),
+    invalid: z.number(),
+  }),
+})
+
+export type PreviewImportProductsResultDTO = z.output<typeof previewImportProductsResultSchema>
+
+export const importProductsResultSchema = z.object({
+  created: z.number(),
+  updated: z.number(),
+  skipped: z.number(),
+  synced: z.number(),
+  failed: z.number(),
+})
+
+export type ImportProductsResultDTO = z.output<typeof importProductsResultSchema>
 
 export const exportProductsSchema = z.object({
   ids: z.array(idSchema).min(1).optional(),
@@ -321,7 +384,10 @@ export type RemoveProductResponse = z.output<typeof removeProductResponseSchema>
 export const batchProductResponseSchema = responseSchema
 export type BatchProductResponse = z.output<typeof batchProductResponseSchema>
 
-export const importProductsResponseSchema = responseSchema
+export const previewImportProductsResponseSchema = responseItemSchema(previewImportProductsResultSchema)
+export type PreviewImportProductsResponse = z.output<typeof previewImportProductsResponseSchema>
+
+export const importProductsResponseSchema = responseItemSchema(importProductsResultSchema)
 export type ImportProductsResponse = z.output<typeof importProductsResponseSchema>
 
 export const exportProductsResponseSchema = responseSchema

@@ -10,6 +10,8 @@ import type {
   GetProductsResponse,
   ImportProductsRequest,
   ImportProductsResponse,
+  PreviewImportProductsRequest,
+  PreviewImportProductsResponse,
   RemoveProductRequest,
   RemoveProductResponse,
 } from '@remnant/shared'
@@ -43,8 +45,21 @@ export async function batchProduct(params: BatchProductRequest) {
   return api.post<BatchProductResponse>('products/batch', params)
 }
 
+export async function previewImportProducts(params: PreviewImportProductsRequest) {
+  return api.post<PreviewImportProductsResponse>('products/import/preview', params, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  })
+}
+
 export async function importProducts(params: ImportProductsRequest) {
-  return api.post<ImportProductsResponse>('products/import', params, {
+  const formData = new FormData()
+  formData.append('file', params.file)
+  formData.append('isAutoSyncEnabled', String(params.isAutoSyncEnabled ?? true))
+  formData.append('syncSites', JSON.stringify(params.syncSites ?? []))
+
+  return api.post<ImportProductsResponse>('products/import', formData, {
     headers: {
       'Content-Type': 'multipart/form-data',
     },

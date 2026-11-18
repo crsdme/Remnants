@@ -2,7 +2,7 @@ import type {
   batchProductSchema,
   editProductSchema,
   exportProductsSchema,
-  importProductsSchema,
+  importProductsBodySchema,
   removeProductSchema,
 } from '@remnant/shared'
 import type { z } from 'zod'
@@ -44,7 +44,9 @@ export type RemoveProductsPayload = z.output<typeof removeProductSchema>
 
 export type BatchProductsPayload = z.output<typeof batchProductSchema>
 
-export type ImportProductsPayload = z.output<typeof importProductsSchema> & { file: Express.Multer.File }
+export type ImportProductsPayload = z.output<typeof importProductsBodySchema> & { file: Express.Multer.File }
+
+export type PreviewImportProductsPayload = { file: Express.Multer.File }
 
 export type ExportProductsPayload = z.output<typeof exportProductsSchema>
 

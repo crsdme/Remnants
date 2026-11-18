@@ -9,6 +9,8 @@ import type {
   GetProductsResponse,
   ImportProductsResponse,
   LanguageString,
+  PreviewImportProductsResponse,
+  ProductImportRowPreviewDTO,
   ProductPopulatedDTO,
   RemoveProductResponse,
 } from '@remnant/shared'
@@ -19,6 +21,7 @@ import type {
   ExportProductsPayload,
   GetProductsIndexPayload,
   GetProductsPayload,
+  ImportProductsPayload,
   RemoveProductsPayload,
 } from '@/types/'
 import { Buffer } from 'node:buffer'
@@ -424,12 +427,37 @@ export async function batch({ payload }: { payload: BatchProductsPayload }): Pro
   }
 }
 
-export async function importHandler({ file }: { file: Express.Multer.File }): Promise<ImportProductsResponse> {
-  const storedFile = await parseFile(file.path)
+type ParsedImportProduct = {
+  rowIndex: number
+  _id?: string
+  names: LanguageString
+  minorPrice: number
+  currencyId?: string
+  minorPurchasePrice: number
+  purchaseCurrencyId?: string
+  barcodes: string[]
+  categoryIds: string[]
+  unitId?: string
+  productPropertiesGroupId?: string
+  productProperties: Array<{ _id: string, value: unknown }>
+  images: []
+  generateBarcode: boolean
+}
 
-  const parsedProducts = storedFile.map(row => ({
+type ValidatedImportRow = {
+  product: ParsedImportProduct
+  preview: ProductImportRowPreviewDTO
+}
+
+function hasNonEmptyName(names: LanguageString): boolean {
+  return Object.values(names).some(value => typeof value === 'string' && value.trim().length > 0)
+}
+
+function parseImportRows(rows: Record<string, unknown>[]): ParsedImportProduct[] {
+  return rows.map((row, rowIndex) => ({
+    rowIndex,
     _id: parseId(row, 'id'),
-    names: extractLangMap(row, 'name'),
+    names: extractLangMap(row, 'name') as LanguageString,
     minorPrice: toMinor(toNumber(row, 'price'), 2),
     currencyId: parseId(row, 'currency'),
     minorPurchasePrice: toMinor(toNumber(row, 'purchasePrice'), 2),
@@ -438,18 +466,192 @@ export async function importHandler({ file }: { file: Express.Multer.File }): Pr
     categoryIds: parseMultiSelect(row, 'categories', 'id'),
     unitId: parseId(row, 'unit'),
     productPropertiesGroupId: parseId(row, 'productPropertiesGroup'),
-    productProperties: parseProductProperties(row)
-      .map(property => ({
-        _id: property._id,
-        value: property.value,
-      })),
+    productProperties: parseProductProperties(row).map(property => ({
+      _id: property._id,
+      value: property.value,
+    })),
     images: [],
-    uploadedImages: [],
     generateBarcode: toBoolean(row, 'generateBarcode'),
   }))
+}
 
-  const productsForEdit = parsedProducts.filter(product => product._id !== undefined)
-  const productsForCreate = parsedProducts.filter(product => product._id === undefined)
+function toLanguageString(value: unknown): LanguageString {
+  if (value instanceof Map)
+    return Object.fromEntries(value.entries()) as LanguageString
+  if (value && typeof value === 'object' && !Array.isArray(value))
+    return value as LanguageString
+  return {}
+}
+
+async function loadImportRefSets(products: ParsedImportProduct[]) {
+  const currencyIds = [...new Set(
+    products.flatMap(product => [product.currencyId, product.purchaseCurrencyId].filter((id): id is string => !!id)),
+  )]
+  const unitIds = [...new Set(products.map(product => product.unitId).filter((id): id is string => !!id))]
+  const groupIds = [...new Set(products.map(product => product.productPropertiesGroupId).filter((id): id is string => !!id))]
+  const categoryIds = [...new Set(products.flatMap(product => product.categoryIds))]
+  const productIds = [...new Set(products.map(product => product._id).filter((id): id is string => !!id))]
+
+  const [currencies, units, groups, categories, existingProducts] = await Promise.all([
+    CurrencyRepository.findByIds(currencyIds),
+    Promise.all(unitIds.map(id => UnitRepository.findById(id))),
+    Promise.all(groupIds.map(id => ProductPropertyGroupRepository.findById(id))),
+    CategoryRepository.findByIds(categoryIds),
+    productIds.length > 0 ? ProductRepository.findByIds({ ids: productIds }) : Promise.resolve([]),
+  ])
+
+  const currencyMap = new Map(currencies.map(item => [item._id.toString(), {
+    names: toLanguageString(item.names),
+    symbols: toLanguageString(item.symbols),
+  }]))
+  const unitMap = new Map(
+    units.filter(Boolean).map(item => [item!._id.toString(), {
+      names: toLanguageString(item!.names),
+      symbols: toLanguageString(item!.symbols),
+    }]),
+  )
+  const groupMap = new Map(
+    groups.filter(Boolean).map(item => [item!._id.toString(), {
+      names: toLanguageString(item!.names),
+    }]),
+  )
+  const categoryMap = new Map(categories.map(item => [item._id.toString(), {
+    names: toLanguageString(item.names),
+  }]))
+
+  return {
+    currencyIds: new Set(currencyMap.keys()),
+    unitIds: new Set(unitMap.keys()),
+    groupIds: new Set(groupMap.keys()),
+    categoryIds: new Set(categoryMap.keys()),
+    productIds: new Set(existingProducts.map(item => item._id.toString())),
+    currencyMap,
+    unitMap,
+    groupMap,
+    categoryMap,
+  }
+}
+
+function validateImportRow(
+  product: ParsedImportProduct,
+  refs: Awaited<ReturnType<typeof loadImportRefSets>>,
+): ValidatedImportRow {
+  const errors: string[] = []
+  const action = product._id ? 'edit' as const : 'create' as const
+
+  if (!hasNonEmptyName(product.names))
+    errors.push('MISSING_NAMES')
+
+  if (!product.currencyId)
+    errors.push('MISSING_CURRENCY')
+  else if (!refs.currencyIds.has(product.currencyId))
+    errors.push('INVALID_CURRENCY')
+
+  if (!product.purchaseCurrencyId)
+    errors.push('MISSING_PURCHASE_CURRENCY')
+  else if (!refs.currencyIds.has(product.purchaseCurrencyId))
+    errors.push('INVALID_PURCHASE_CURRENCY')
+
+  if (!product.unitId)
+    errors.push('MISSING_UNIT')
+  else if (!refs.unitIds.has(product.unitId))
+    errors.push('INVALID_UNIT')
+
+  if (!product.productPropertiesGroupId)
+    errors.push('MISSING_PROPERTY_GROUP')
+  else if (!refs.groupIds.has(product.productPropertiesGroupId))
+    errors.push('INVALID_PROPERTY_GROUP')
+
+  if (product.categoryIds.length === 0) {
+    errors.push('MISSING_CATEGORY')
+  }
+  else if (product.categoryIds.some(id => !refs.categoryIds.has(id))) {
+    errors.push('INVALID_CATEGORY')
+  }
+
+  if (product._id && !refs.productIds.has(product._id))
+    errors.push('INVALID_PRODUCT_ID')
+
+  const currency = product.currencyId ? refs.currencyMap.get(product.currencyId) : undefined
+  const purchaseCurrency = product.purchaseCurrencyId ? refs.currencyMap.get(product.purchaseCurrencyId) : undefined
+  const unit = product.unitId ? refs.unitMap.get(product.unitId) : undefined
+  const group = product.productPropertiesGroupId ? refs.groupMap.get(product.productPropertiesGroupId) : undefined
+  const categories = product.categoryIds
+    .map(id => {
+      const names = refs.categoryMap.get(id)?.names
+      return names ? { id, names } : null
+    })
+    .filter((item): item is { id: string, names: LanguageString } => item != null)
+
+  return {
+    product,
+    preview: {
+      rowIndex: product.rowIndex,
+      action,
+      id: product._id,
+      names: product.names,
+      minorPrice: product.minorPrice,
+      currencyId: product.currencyId,
+      currencyNames: currency?.names,
+      currencySymbols: currency?.symbols,
+      minorPurchasePrice: product.minorPurchasePrice,
+      purchaseCurrencyId: product.purchaseCurrencyId,
+      purchaseCurrencyNames: purchaseCurrency?.names,
+      purchaseCurrencySymbols: purchaseCurrency?.symbols,
+      unitId: product.unitId,
+      unitNames: unit?.names,
+      unitSymbols: unit?.symbols,
+      productPropertiesGroupId: product.productPropertiesGroupId,
+      productPropertiesGroupNames: group?.names,
+      categoryIds: product.categoryIds,
+      categories,
+      barcodes: product.barcodes,
+      generateBarcode: product.generateBarcode,
+      status: errors.length > 0 ? 'invalid' : 'valid',
+      errors,
+    },
+  }
+}
+
+async function parseAndValidateImportFile(filePath: string): Promise<ValidatedImportRow[]> {
+  const storedFile = await parseFile(filePath)
+  const products = parseImportRows(storedFile)
+  const refs = await loadImportRefSets(products)
+  return products.map(product => validateImportRow(product, refs))
+}
+
+export async function previewImportHandler({ file }: { file: Express.Multer.File }): Promise<PreviewImportProductsResponse> {
+  const rows = await parseAndValidateImportFile(file.path)
+  const previews = rows.map(row => row.preview)
+  const valid = previews.filter(row => row.status === 'valid').length
+
+  return {
+    status: 'success',
+    code: 'PRODUCTS_IMPORT_PREVIEWED',
+    message: 'Products import previewed',
+    data: {
+      rows: previews,
+      summary: {
+        total: previews.length,
+        valid,
+        invalid: previews.length - valid,
+      },
+    },
+  }
+}
+
+export async function importHandler({
+  file,
+  isAutoSyncEnabled,
+  syncSites,
+}: ImportProductsPayload): Promise<ImportProductsResponse> {
+  const rows = await parseAndValidateImportFile(file.path)
+  const validRows = rows.filter(row => row.preview.status === 'valid')
+  const skipped = rows.length - validRows.length
+
+  const productsForEdit = validRows.filter(row => row.preview.action === 'edit').map(row => row.product)
+  const productsForCreate = validRows.filter(row => row.preview.action === 'create').map(row => row.product)
+  const createdIds: string[] = []
 
   await withTransaction(async (session) => {
     if (productsForEdit.length > 0) {
@@ -458,7 +660,7 @@ export async function importHandler({ file }: { file: Express.Multer.File }): Pr
           filter: { _id: product._id },
           update: {
             $set: {
-              names: product.names as LanguageString,
+              names: product.names,
               minorPrice: product.minorPrice,
               currencyId: product.currencyId,
               minorPurchasePrice: product.minorPurchasePrice,
@@ -477,40 +679,15 @@ export async function importHandler({ file }: { file: Express.Multer.File }): Pr
     }
 
     for (const product of productsForCreate) {
-      const {
-        currencyId,
-        purchaseCurrencyId,
-        unitId,
-        productPropertiesGroupId,
-        generateBarcode,
-        barcodes,
-      } = product
-
-      if (currencyId === undefined || purchaseCurrencyId === undefined || unitId === undefined || productPropertiesGroupId === undefined) {
-        throw new HttpError(
-          400,
-          'Product import row is missing required currency, purchase currency, unit or property group',
-          'PRODUCT_IMPORT_INVALID_ROW',
-        )
-      }
-
-      if (product.categoryIds.length === 0) {
-        throw new HttpError(
-          400,
-          'Product import row must include at least one category',
-          'PRODUCT_IMPORT_INVALID_ROW',
-        )
-      }
-
       const createdProduct = await ProductRepository.createOne({
-        names: product.names as LanguageString,
+        names: product.names,
         minorPrice: product.minorPrice,
-        currencyId,
+        currencyId: product.currencyId!,
         minorPurchasePrice: product.minorPurchasePrice,
-        purchaseCurrencyId,
+        purchaseCurrencyId: product.purchaseCurrencyId!,
         categoryIds: product.categoryIds,
-        unitId,
-        productPropertiesGroupId,
+        unitId: product.unitId!,
+        productPropertiesGroupId: product.productPropertiesGroupId!,
         productProperties: product.productProperties.map(property => ({
           _id: property._id,
           value: property.value,
@@ -518,7 +695,9 @@ export async function importHandler({ file }: { file: Express.Multer.File }): Pr
         images: product.images,
       }, session)
 
-      for (const barcode of barcodes) {
+      createdIds.push(createdProduct._id.toString())
+
+      for (const barcode of product.barcodes) {
         await BarcodeService.create({
           payload: {
             code: barcode,
@@ -529,7 +708,7 @@ export async function importHandler({ file }: { file: Express.Multer.File }): Pr
         })
       }
 
-      if (generateBarcode) {
+      if (product.generateBarcode) {
         await BarcodeService.create({
           payload: {
             products: [{ id: createdProduct._id.toString(), unitsPerScan: 1 }],
@@ -541,10 +720,34 @@ export async function importHandler({ file }: { file: Express.Multer.File }): Pr
     }
   })
 
+  let synced = 0
+  let failed = 0
+  const syncSiteIds = await resolveSyncSiteIds(isAutoSyncEnabled, syncSites)
+
+  for (const productId of createdIds) {
+    for (const siteId of syncSiteIds) {
+      try {
+        await SyncEntryService.syncProductCreate({ siteId, productId })
+        synced += 1
+      }
+      catch (error) {
+        failed += 1
+        logger.error(error)
+      }
+    }
+  }
+
   return {
     status: 'success',
     code: 'PRODUCTS_IMPORTED',
     message: 'Products imported',
+    data: {
+      created: createdIds.length,
+      updated: productsForEdit.length,
+      skipped,
+      synced,
+      failed,
+    },
   }
 }
 

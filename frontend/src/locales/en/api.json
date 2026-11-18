@@ -365,8 +365,11 @@
   "response.title.PRODUCTS_DUPLICATED": "Products duplicated",
   "response.description.PRODUCTS_DUPLICATED": "Products have been duplicated",
 
+  "response.title.PRODUCTS_IMPORT_PREVIEWED": "Import preview ready",
+  "response.description.PRODUCTS_IMPORT_PREVIEWED": "Review the rows before confirming import",
+
   "response.title.PRODUCTS_IMPORTED": "Products imported",
-  "response.description.PRODUCTS_IMPORTED": "Products have been imported successfully",
+  "response.description.PRODUCTS_IMPORTED": "Created: {{created}}, updated: {{updated}}, skipped: {{skipped}}, synced: {{synced}}, failed: {{failed}}",
 
   "response.title.PRODUCTS_EXPORTED": "Products exported",
   "response.description.PRODUCTS_EXPORTED": "Products have been exported successfully",

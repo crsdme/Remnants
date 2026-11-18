@@ -35,6 +35,9 @@
   "title.page.products": "Products - Remnant",
   "description.page.products": "Manage products in Remnant application",
 
+  "title.page.productsImport": "Import products - Remnant",
+  "description.page.productsImport": "Preview and import products into Remnant",
+
   "title.page.product-properties": "Product properties - Remnant",
   "description.page.product-properties": "Manage product properties in Remnant",
 

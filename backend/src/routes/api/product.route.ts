@@ -9,7 +9,9 @@ import {
   exportProductsSchema,
   getProductSchema,
   getProductsResponseSchema,
+  importProductsBodySchema,
   importProductsResponseSchema,
+  previewImportProductsResponseSchema,
   removeProductResponseSchema,
   removeProductSchema,
 } from '@remnant/shared'
@@ -61,9 +63,19 @@ router.post(
 )
 
 router.post(
+  '/import/preview',
+  uploadMiddleware({ fieldName: 'file', storageKey: 'importProducts' }),
+  validateUpload('file'),
+  checkPermissions('product.import'),
+  validateResponse(previewImportProductsResponseSchema),
+  ProductController.previewImportHandler as RequestHandler,
+)
+
+router.post(
   '/import',
   uploadMiddleware({ fieldName: 'file', storageKey: 'importProducts' }),
   validateUpload('file'),
+  validateBodyRequest(importProductsBodySchema, { formData: true }),
   checkPermissions('product.import'),
   validateResponse(importProductsResponseSchema),
   ProductController.importHandler as RequestHandler,
