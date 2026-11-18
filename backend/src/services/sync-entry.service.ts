@@ -376,6 +376,9 @@ async function buildProductPayload(
 
   const languageMap = await loadSiteLanguageMap(siteId)
   const names = remapNames(languageMap, languageRecord(product.names))
+  if (Object.keys(names).length === 0)
+    throw new Error('Product has no names for languages mapped to this site')
+
   const categoryIds = await resolveSiteCategoryIds(siteId, product.categoryIds ?? [])
   const attributes = await resolveSiteAttributes(siteId, product.productProperties ?? [], languageMap)
   const quantity = await StockLotRepo.sumRemainingByWarehouses(productId, warehouseIds)
@@ -425,8 +428,11 @@ function remapNames(languageMap: SiteLanguageMap, names: Record<string, string>)
       continue
 
     const externalId = languageMap.toExternal.get(language._id)
-    if (externalId == null)
-      throw new Error(`Language ${language.code} is not mapped for this site`)
+    if (externalId == null) {
+      // CRM may have more languages than the site (e.g. en in CRM, only ru/ua on site).
+      logger.warn(`Language ${language.code} is not mapped for this site; skipping name`)
+      continue
+    }
 
     remapped[externalId] = name
   }

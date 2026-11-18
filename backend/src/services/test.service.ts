@@ -1,3 +1,4 @@
+import type { InventoryCategoryMissReason } from '@/utils'
 import { CategoryModel, ProductModel } from '@/models'
 import * as CurrencyRepository from '@/repositories/currencies.repo'
 import * as ProductRepository from '@/repositories/products.repo'
@@ -8,7 +9,7 @@ import {
   getInvoiceProductPrice,
   HttpError,
   INVENTORY_CATEGORY_NAMES,
-  type InventoryCategoryMissReason,
+
   toMinor,
 } from '@/utils'
 
@@ -87,7 +88,7 @@ async function recalculateProductPrices() {
 async function createInventoryCategories() {
   const existing = await CategoryModel.find({
     'names.en': { $in: [...INVENTORY_CATEGORY_NAMES] },
-    removed: { $ne: true },
+    'removed': { $ne: true },
   }).select({ names: 1 }).lean().exec()
 
   const existingNames = new Set(
@@ -122,28 +123,28 @@ async function createInventoryCategories() {
 }
 
 async function addProductCategories() {
-  // TEMP: strip legacy length-as-category ids + soft-remove those docs — delete later
+  // Only these legacy length/type boxes — pull from products + soft-remove docs
   const legacyCategoryIds = [
-    'ec016440-5e2c-45c1-b3ac-92c14cdc3fb1',
-    'd2f14204-ae1f-46b0-a89f-e2768ae707d9',
-    '0c5d4f68-a993-4eed-ab67-736e4cd3f47f',
-    'a9df2aa1-8338-42e0-afc8-497320c7f1e5',
-    '726e6d4e-b066-486b-877f-5885528e868a',
-    '58e1d38b-502d-4cc6-8d9a-44a9f64289d7',
-    '86a08712-4d85-453c-bad1-98c098841163',
-    '17dfb0a0-ea23-4152-b7b2-d54d63a49e7c',
-    'dd904594-feaf-4f93-9b38-33d521e463f5',
-    'e41f0080-cfc2-4dc4-874d-d994320babd6',
-    'baeef84f-acb2-4d5e-a5ac-abe7cf0a7f80',
-    '6565143f-e160-4fd8-9ea2-12b58a2d0c4b',
-    'a3b85e8b-1485-4f2a-80c6-70ae8fa05865',
-    '6e067a1d-6729-4429-885d-d0cda2475fc5',
-    'f691c301-d7ab-4e3d-bc30-37e8d3567e82',
-    '1f45e1bb-9715-490e-bac3-046688b0dc2a',
-    'ee7771b0-2bde-46d3-a4a8-702324d57fc0',
-    '58ee2880-c8ad-4ef5-9151-76ea6477c450',
-    'b68b2155-21e6-47aa-8712-bb0a6ec96e3d',
-    'd5556940-d6c0-44d0-9172-7ee7d79272ea',
+    'ec016440-5e2c-45c1-b3ac-92c14cdc3fb1', // 95-99
+    'd2f14204-ae1f-46b0-a89f-e2768ae707d9', // 90-94
+    '0c5d4f68-a993-4eed-ab67-736e4cd3f47f', // 50-54
+    'a9df2aa1-8338-42e0-afc8-497320c7f1e5', // 55-59
+    '726e6d4e-b066-486b-877f-5885528e868a', // 60-64
+    '58e1d38b-502d-4cc6-8d9a-44a9f64289d7', // 65-69
+    '86a08712-4d85-453c-bad1-98c098841163', // 70-74
+    '17dfb0a0-ea23-4152-b7b2-d54d63a49e7c', // 75-79
+    'dd904594-feaf-4f93-9b38-33d521e463f5', // 80-84
+    'e41f0080-cfc2-4dc4-874d-d994320babd6', // 85-89
+    'baeef84f-acb2-4d5e-a5ac-abe7cf0a7f80', // 100-104
+    '6565143f-e160-4fd8-9ea2-12b58a2d0c4b', // 105-110
+    'a3b85e8b-1485-4f2a-80c6-70ae8fa05865', // 40-44
+    '6e067a1d-6729-4429-885d-d0cda2475fc5', // 45-49
+    'f691c301-d7ab-4e3d-bc30-37e8d3567e82', // Slavic
+    '1f45e1bb-9715-490e-bac3-046688b0dc2a', // Brown
+    'ee7771b0-2bde-46d3-a4a8-702324d57fc0', // Gray
+    '58ee2880-c8ad-4ef5-9151-76ea6477c450', // Silky
+    'b68b2155-21e6-47aa-8712-bb0a6ec96e3d', // Virgin
+    'd5556940-d6c0-44d0-9172-7ee7d79272ea', // Curly
   ]
   const pullResult = await ProductModel.updateMany(
     { categoryIds: { $in: legacyCategoryIds } },
@@ -218,13 +219,13 @@ async function addProductCategories() {
     }
 
     const current = product.categoryIds ?? []
-    if (current.length === 1 && current[0] === explained.categoryId)
+    if (current.includes(explained.categoryId))
       continue
 
     ops.push({
       updateOne: {
         filter: { _id: product._id },
-        update: { $set: { categoryIds: [explained.categoryId] } },
+        update: { $addToSet: { categoryIds: explained.categoryId } },
       },
     })
   }

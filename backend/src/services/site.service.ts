@@ -529,11 +529,12 @@ async function assertLanguagesMapped(siteId: string) {
     return
 
   const links = await SyncEntryRepo.findLinks(siteId, 'language', languages.map(item => item._id))
-  const missing = languages.some((language) => {
+  const mappedCount = languages.filter((language) => {
     const link = links.find(item => item.sourceId === language._id)
-    return linkExternalIds(link).length === 0
-  })
+    return linkExternalIds(link).length > 0
+  }).length
 
-  if (missing)
+  // Site can have fewer languages than CRM; require at least one mapped language.
+  if (mappedCount === 0)
     throw new HttpError(400, 'Site languages are not mapped', 'SITE_LANGUAGES_NOT_MAPPED')
 }
