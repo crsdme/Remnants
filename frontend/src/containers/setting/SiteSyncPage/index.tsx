@@ -103,7 +103,7 @@ export function SiteSyncPage() {
             <SelectContent>
               {sites.map(item => (
                 <SelectItem key={item.id} value={item.id}>
-                  {item.names[language] || item.names.ru || item.names.en || item.url}
+                  {item.names[language] || Object.values(item.names).find(Boolean) || item.url}
                 </SelectItem>
               ))}
             </SelectContent>

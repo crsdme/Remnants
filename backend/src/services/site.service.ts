@@ -34,7 +34,7 @@ import * as UserAccessRepo from '@/repositories/user-access.repo'
 import * as AuditLogsService from '@/services/audit-logs.service'
 import * as SyncEntryService from '@/services/sync-entry.service'
 import { getScopeIdsForUser, HttpError } from '@/utils/'
-import { languageRecord } from '@/utils/language-record'
+import { firstLanguageValue, languageRecord } from '@/utils/language-record'
 
 const SITE_AUDIT_OMIT = ['key'] as const
 
@@ -465,7 +465,7 @@ function categoryPath(
   let current: typeof item | undefined = item
   while (current != null && !seen.has(current.id)) {
     seen.add(current.id)
-    const name = current.names.ru || current.names.en || Object.values(current.names)[0] || ''
+    const name = firstLanguageValue(current.names)
     if (name !== '')
       parts.unshift(name)
     current = current.parentId != null && current.parentId !== ''

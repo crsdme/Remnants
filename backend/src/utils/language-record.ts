@@ -18,10 +18,21 @@ export function languageRecord(value: unknown): Record<string, string> {
   return {}
 }
 
-export function firstLanguageValue(names: Record<string, string>, preferred = ['ru', 'en']): string {
-  for (const code of preferred) {
-    if (names[code])
-      return names[code]
+export function firstLanguageValue(
+  names: Record<string, string>,
+  preferred?: string | string[],
+): string {
+  const codes = preferred == null
+    ? []
+    : Array.isArray(preferred)
+      ? preferred
+      : [preferred]
+
+  for (const code of codes) {
+    const value = names[code]
+    if (value)
+      return value
   }
-  return Object.values(names)[0] ?? ''
+
+  return Object.values(names).find(value => value !== '') ?? ''
 }

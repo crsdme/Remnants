@@ -14,7 +14,7 @@ function pickName(
 ) {
   if (!names)
     return '—'
-  return names[language] || names.ru || names.en || names.ua || '—'
+  return names[language] || Object.values(names).find(Boolean) || '—'
 }
 
 export function useImportPreviewColumns() {

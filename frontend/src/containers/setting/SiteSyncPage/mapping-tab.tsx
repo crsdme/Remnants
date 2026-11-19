@@ -14,7 +14,7 @@ import { useDebounceValue, useLocale } from '@/utils/hooks'
 function localizedName(names: Record<string, string> | undefined, language: string) {
   if (names == null)
     return '—'
-  return names[language] || names.ru || names.en || Object.values(names).find(Boolean) || '—'
+  return names[language] || Object.values(names).find(Boolean) || '—'
 }
 
 function categoryPath(
