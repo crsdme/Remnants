@@ -12,10 +12,14 @@ export function useProductPropertyOptions({ defaultFilters }: { defaultFilters?:
 
   return useCallback(
     async ({ query = '', selectedValue }: { query?: string, selectedValue?: string[] } = {}): Promise<ProductPropertyDTO[]> => {
+      const byIds = Boolean(selectedValue?.length)
       const params: GetProductPropertyRequest = {
-        pagination: { full: true },
+        // Selected hydrate: fetch only those ids (pageSize = count). Menu search: full list.
+        pagination: byIds
+          ? { pageSize: selectedValue!.length }
+          : { full: true },
         filters: {
-          ...(selectedValue ? { ids: selectedValue } : { names: query }),
+          ...(byIds ? { ids: selectedValue } : { names: query }),
           ...defaultFilters,
           active: [true],
           language: i18n.language,

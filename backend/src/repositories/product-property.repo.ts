@@ -13,6 +13,7 @@ export async function list(payload: GetProductPropertiesRepoPayload): Promise<{ 
   const {
     current,
     pageSize,
+    full,
   } = payload.pagination
 
   const {
@@ -76,8 +77,12 @@ export async function list(payload: GetProductPropertiesRepoPayload): Promise<{ 
     {
       $facet: {
         items: [
-          { $skip: (current - 1) * pageSize },
-          { $limit: pageSize },
+          ...(full
+            ? []
+            : [
+                { $skip: (current - 1) * pageSize },
+                { $limit: pageSize },
+              ]),
         ],
         count: [
           { $count: 'count' },
@@ -89,7 +94,7 @@ export async function list(payload: GetProductPropertiesRepoPayload): Promise<{ 
   const raw = await ProductPropertyModel.aggregate<AggregateResult<ProductPropertyDTO>>(pipeline).exec()
   const { items, total } = unwrapAggregate(raw)
 
-  return { items, total, page: current, pageSize }
+  return { items, total, page: current, pageSize: full ? Math.max(total, pageSize) : pageSize }
 }
 
 export async function createOne(payload: CreateProductPropertyRepoPayload) {
