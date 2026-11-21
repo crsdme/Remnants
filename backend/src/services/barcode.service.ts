@@ -377,6 +377,7 @@ const PROVIDER_E_SUFFIX_CATEGORY_ID = [
   '74f5f4c6-d405-4c6d-aff7-f2cd767801cb',
   '26ca24bb-6848-4c66-a617-acbd17dc9cdf',
   '12d692e1-c3f4-4568-98fe-f8957d3169b6',
+  '08313e23-0f36-4248-874e-21867e19e3a4',
 ]
 
 function getProviderBarcodeSuffix(

@@ -753,6 +753,26 @@ export async function importHandler({
 
 const HIDDEN_SHEET_NAME = 'hidden'
 const VALIDATION_ROW_END = 1000
+/** Fixed end so replacing/extending the hidden sheet picks up new list values without re-wiring validation. */
+const HIDDEN_LIST_ROW_END = 999
+
+const REQUIRED_COLUMN_KEYS = new Set([
+  'price',
+  'purchasePrice',
+  'currency',
+  'purchaseCurrency',
+  'unit',
+  'productPropertiesGroup',
+  'categories_1',
+])
+
+function isRequiredColumnKey(key: string | undefined): boolean {
+  if (!key)
+    return false
+  if (REQUIRED_COLUMN_KEYS.has(key))
+    return true
+  return key.startsWith('name_')
+}
 
 function formatRef(label: string, id: string): string {
   return `${label} (${id})`
@@ -790,7 +810,7 @@ function addHiddenListWithValidation(params: {
   })
   setHiddenColumnValues({ hiddenSheet, columnLetter, values })
 
-  const formulaRange = `${HIDDEN_SHEET_NAME}!$${columnLetter}$1:$${columnLetter}$${Math.max(values.length, 1)}`
+  const formulaRange = `${HIDDEN_SHEET_NAME}!$${columnLetter}$1:$${columnLetter}$${HIDDEN_LIST_ROW_END}`
   applyListValidation({ sheet, columnKey, formulaRange })
 }
 
@@ -841,30 +861,49 @@ function safeSheetName(name: string, fallback: string): string {
   return base.length > 0 ? base : fallback.slice(0, 31)
 }
 
-type DynamicKey = { key: string, header: string, id: string, type: string }
+type DynamicKey = { key: string, header: string, id: string, type: string, required: boolean }
+
+function requiredHeader(header: string, required: boolean): string {
+  return required ? `${header} *` : header
+}
 
 function buildDynamicColumns(
-  productPropertiesData: Array<{ type: string, id: string, names: LanguageString }>,
+  productPropertiesData: Array<{ type: string, id: string, names: LanguageString, isRequired?: boolean }>,
   language: 'ru' | 'en' | 'ua',
 ): { dynamicKeys: DynamicKey[], dynamicColumns: { key: string, header: string }[] } {
   const dynamicKeys: DynamicKey[] = []
   const dynamicColumns: { key: string, header: string }[] = []
-  for (const { type, id, names } of productPropertiesData) {
+  for (const { type, id, names, isRequired = false } of productPropertiesData) {
     if (type === 'multiSelect') {
       for (let i = 1; i <= 5; i++) {
         const key = `${id}_${i}`
-        const header = `${names[language] || 'NO_NAME'}_${i} (${key})`
+        const required = isRequired && i === 1
+        const header = requiredHeader(`${names[language] || 'NO_NAME'}_${i} (${key})`, required)
         dynamicColumns.push({ header, key })
-        dynamicKeys.push({ key, id, header, type })
+        dynamicKeys.push({ key, id, header, type, required })
       }
     }
     else {
-      const header = `${names[language] || 'NO_NAME'} (${id})`
+      const header = requiredHeader(`${names[language] || 'NO_NAME'} (${id})`, isRequired)
       dynamicColumns.push({ header, key: id })
-      dynamicKeys.push({ key: id, header, id, type })
+      dynamicKeys.push({ key: id, header, id, type, required: isRequired })
     }
   }
   return { dynamicKeys, dynamicColumns }
+}
+
+function styleRequiredHeaders(sheet: ExcelJS.Worksheet, dynamicKeys: DynamicKey[]) {
+  const requiredDynamicKeys = new Set(dynamicKeys.filter(k => k.required).map(k => k.key))
+  const headerRow = sheet.getRow(1)
+  headerRow.eachCell((cell, colNumber) => {
+    const key = sheet.getColumn(colNumber).key
+    const required = typeof key === 'string' && (isRequiredColumnKey(key) || requiredDynamicKeys.has(key))
+    if (!required)
+      return
+    if (typeof cell.value === 'string' && !cell.value.endsWith(' *'))
+      cell.value = `${cell.value} *`
+    cell.font = { ...(cell.font ?? {}), color: { argb: 'FFFF0000' }, bold: true }
+  })
 }
 
 async function applySheetValidations(params: {
@@ -972,19 +1011,23 @@ async function buildProductWorkbook(params: {
       { header: 'seq', key: 'seq' },
       { header: 'images', key: 'images' },
       ...languages.items.map(lang => ({
-        header: `name_${lang.code}`,
+        header: requiredHeader(`name_${lang.code}`, true),
         key: `name_${lang.code}`,
       })),
-      { header: 'price', key: 'price' },
-      { header: 'purchasePrice', key: 'purchasePrice' },
-      { header: 'currency', key: 'currency' },
-      { header: 'purchaseCurrency', key: 'purchaseCurrency' },
-      { header: 'unit', key: 'unit' },
-      { header: 'productPropertiesGroup', key: 'productPropertiesGroup' },
-      ...Array.from({ length: 5 }, (_, i) => ({ header: `categories_${i + 1}`, key: `categories_${i + 1}` })),
+      { header: requiredHeader('price', true), key: 'price' },
+      { header: requiredHeader('purchasePrice', true), key: 'purchasePrice' },
+      { header: requiredHeader('currency', true), key: 'currency' },
+      { header: requiredHeader('purchaseCurrency', true), key: 'purchaseCurrency' },
+      { header: requiredHeader('unit', true), key: 'unit' },
+      { header: requiredHeader('productPropertiesGroup', true), key: 'productPropertiesGroup' },
+      ...Array.from({ length: 5 }, (_, i) => ({
+        header: requiredHeader(`categories_${i + 1}`, i === 0),
+        key: `categories_${i + 1}`,
+      })),
       ...Array.from({ length: 5 }, (_, i) => ({ header: `barcodes_${i + 1}`, key: `barcodes_${i + 1}` })),
       ...dynamicColumns,
     ]
+    styleRequiredHeaders(sheet, dynamicKeys)
 
     for (const product of products) {
       const row: Record<string, unknown> = {}

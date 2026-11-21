@@ -6,21 +6,42 @@ import { HttpError } from './httpError'
 
 const HIDDEN_SHEET_NAME = 'hidden'
 
+/** Strip required-column marker (`price *` → `price`) so import keys stay stable. */
+function normalizeImportHeaderKey(key: string): string {
+  return key.replace(/\s*\*\s*$/u, '').trim()
+}
+
+function normalizeImportRows(rows: Record<string, unknown>[]): Record<string, unknown>[] {
+  return rows.map((row) => {
+    const out: Record<string, unknown> = {}
+    for (const [key, value] of Object.entries(row))
+      out[normalizeImportHeaderKey(key)] = value
+    return out
+  })
+}
+
 export async function parseFile(filePath: string): Promise<Record<string, unknown>[]> {
   const ext = path.extname(filePath).toLowerCase()
 
+  let rows: Record<string, unknown>[]
   switch (ext) {
     case '.csv':
-      return parseCSV(filePath)
+      rows = await parseCSV(filePath)
+      break
     case '.json':
-      return parseJSON(filePath)
+      rows = await parseJSON(filePath)
+      break
     case '.tsv':
-      return parseCSV(filePath, '\t')
+      rows = await parseCSV(filePath, '\t')
+      break
     case '.xlsx':
-      return parseXLSX(filePath)
+      rows = parseXLSX(filePath)
+      break
     default:
       throw new HttpError(400, `Unsupported file format: ${ext}`, 'UNSUPPORTED_FILE_FORMAT')
   }
+
+  return normalizeImportRows(rows)
 }
 
 async function parseCSV(filePath: string, delimiter = ','): Promise<Record<string, unknown>[]> {
