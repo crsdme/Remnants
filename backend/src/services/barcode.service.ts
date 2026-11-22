@@ -705,8 +705,9 @@ async function print55x40Dyed(payload: {
     const frontside = () => {
       const bigCodeHeight = doc.y
 
+      // PDFKit skips empty strings and does not advance doc.y — use ' ' to keep slots
       doc.font('Manrope-Bold').fontSize(82)
-      doc.text(segment, padding, doc.y - 90, {
+      doc.text(segment || ' ', padding, doc.y - 90, {
         width: contentWidth,
         height: 50,
         lineBreak: false,
@@ -786,7 +787,7 @@ async function print55x40Dyed(payload: {
       )
 
       doc.font('Manrope-Bold').fontSize(82)
-      doc.text(segment, padding, doc.y, {
+      doc.text(segment || ' ', padding, doc.y, {
         width: contentWidth,
         height: 50,
         lineBreak: false,
