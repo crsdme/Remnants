@@ -714,7 +714,7 @@ async function print55x40Dyed(payload: {
       })
 
       doc.font('Manrope-Bold').fontSize(72)
-      doc.text(colorCategory, padding, doc.y - 35, {
+      doc.text(colorCategory || ' ', padding, doc.y - 35, {
         width: contentWidth,
         height: 50,
         ellipsis: true,
@@ -794,7 +794,7 @@ async function print55x40Dyed(payload: {
       })
 
       doc.font('Manrope-Bold').fontSize(72)
-      doc.text(colorCategory, padding, doc.y - 35, {
+      doc.text(colorCategory || ' ', padding, doc.y - 35, {
         width: contentWidth,
         height: 50,
         ellipsis: true,
